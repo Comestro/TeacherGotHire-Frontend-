@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addSkill, removeSkill } from "../store/profileSlice";
+import { FiEdit2 } from "react-icons/fi";
 
 const Skills = () => {
   const skills = useSelector((state) => state.profile.skills);
@@ -50,7 +51,7 @@ const Skills = () => {
           onClick={handleAddSkill}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
         >
-          Add
+          <FiEdit2 />
         </button>
       </div>
     </div>
