@@ -7,6 +7,21 @@ const ProfileButton = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
+  const calculateCompletion = () => {
+    const totalFields = 5 + profile.skills.length + profile.experience.length + profile.education.length;
+    const filledFields = [
+      profile.name,
+      profile.email,
+      profile.phone,
+      profile.address,
+      profile.profileImage,
+      ...profile.skills,
+      ...profile.experience,
+      ...profile.education,
+    ].filter(Boolean).length;
+
+    return Math.round((filledFields / totalFields) * 100);
+  };
 
   // Sample data for marks and results
   const examResults = [
@@ -28,7 +43,7 @@ const ProfileButton = () => {
         className="flex items-center px-4 py-2 bg-teal-600 hover:bg-gray-200 rounded-2xl focus:outline-none"
       >
         <img
-          src="https://via.placeholder.com/40" // I will get from API
+          src={profile.profileImage || "https://via.placeholder.com/150"} // I will get from API
           alt="Profile"
           className="w-8 h-8 rounded-full mr-2"
         />
@@ -55,19 +70,22 @@ const ProfileButton = () => {
         {/* Profile Section */}
         <div className="p-4">
           <div className="flex items-center mb-4 gap-8">
-            <div className="relative">
-            <img
-                    src={profile.image || "https://via.placeholder.com/150"}
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full mr-4"
-                  />
-                   <div
-                    className="absolute top-1/2 right-[-10px] text-xs text-white font-bold bg-blue-500 rounded-full px-2 py-1 shadow-lg"
-                    style={{ transform: "translateY(-50%)" }}
-                  >
-                    {profile.completion || 0}%
-                  </div>
+          <div className="relative w-16 h-16 mr-4">
+              {/* Completion Border */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-full border-4 border-blue-500 z-0"
+                style={{
+                  clipPath: `circle(${calculateCompletion()}% at 50% 50%)`,
+                }}
+              ></div>
+              {/* Profile Image */}
+              <img
+                src={profile.profileImage || "https://via.placeholder.com/150"}
+                alt="Profile"
+                className="w-full h-full rounded-full object-cover border-2 border-gray-300 z-10"
+              />
             </div>
+
           
             <div>
               <h3 className="text-lg font-semibold">{profile.name || 'your name'}</h3>

@@ -5,6 +5,7 @@ import Input from './Input';
 import Button from './Button';
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { createaccount } from '../services/authServices';
 
 
 function SignUpPage() {
@@ -15,6 +16,12 @@ function SignUpPage() {
 
     const signup = async (data) => {
         console.log(data);
+        setError('');
+        try{
+           const response = createaccount()
+        }catch{
+
+        }
         if(role==='teacher'){
           navigate('/teacherdashbord')
         }else{

@@ -1,7 +1,7 @@
 
 
 import axios from 'axios';
-import { getApiUrl } from './configService';
+import { getApiUrl } from './configueServices';
 
 
 const apiClient = axios.create({
@@ -13,9 +13,9 @@ const apiClient = axios.create({
 }); 
 
   // Register User
-  export const createaccount = async ({ email, password, name })=> {
+  export const createaccount = async ({ email, password, name,role })=> {
     try {
-      const response = await apiClient.post('/auth/register', { email, password, name });
+      const response = await apiClient.post('/auth/register', { email, password, name,role });
       console.log('User registered:', response.data);
       localStorage.setItem('name', response.data.user.name); // Store token in local storage
       console.log('User name:', response.data.user.name);

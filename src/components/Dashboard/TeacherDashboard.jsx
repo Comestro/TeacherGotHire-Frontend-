@@ -9,16 +9,26 @@ import TeacherLevelCard from '../TeacherLevelCard';
 
 function TeacherDashboard() {
   const profile = useSelector((state) => state.profile);
-  // const calculateCompletion = () => {
-  //   const fields = ["name", "email", "password", "phone", "address", "bio"];
-  //   const filledFields = fields.filter((field) => profile[field]);
-  //   return Math.round((filledFields.length / fields.length) * 100);
-  // };
-
     const navigate = useNavigate();
 
     const handleExamStart = () => {
       navigate('/payment'); // Redirect to payment page
+    };
+
+    const calculateCompletion = () => {
+      const totalFields = 5 + profile.skills.length + profile.experience.length + profile.education.length;
+      const filledFields = [
+        profile.name,
+        profile.email,
+        profile.phone,
+        profile.address,
+        profile.profileImage,
+        ...profile.skills,
+        ...profile.experience,
+        ...profile.education,
+      ].filter(Boolean).length;
+  
+      return Math.round((filledFields / totalFields) * 100);
     };
 
   return (
@@ -34,31 +44,33 @@ function TeacherDashboard() {
                 // notifications={notifications}
                 externalComponent={ProfileButton}
               />
-        </div>
-       </nav>
-       <div className='flex w-full justify-center  mt-10'>
-       <aside className='w-[25%]'>
-       <div className="w-64 p-6 bg-gray-100 h-screen">
-                {/* Profile Image and Completion */}
-                {/* Data will show through Api */}
-                <div className="relative w-full mb-6">
-                  <img
-                    src={profile.image || "https://via.placeholder.com/150"}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full mx-auto object-cover border-2 border-gray-300"
-                  />
-                  <div
-                    className="absolute top-1/2 right-8 text-sm text-white font-bold bg-blue-500 rounded-full px-2 py-1"
-                    style={{ transform: "translateY(-50%)" }}
-                  >
-                    {profile.completion}%
-                  </div>
                 </div>
+              </nav>
+              <div className='flex w-full justify-center  mt-10'>
+              <aside className='w-[25%]'>
+              <div className="w-64 p-6 bg-gray-100 h-screen">
+               
+                  <div className="relative w-24 h-24 mx-auto mb-6">
+              {/* Completion Border */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-full border-4 border-blue-500 z-0"
+                style={{
+                  clipPath: `circle(${calculateCompletion()}% at 50% 50%)`,
+                }}
+              ></div>
+              {/* Profile Image */}
+              <img
+                src={profile.profileImage || "https://via.placeholder.com/150"}
+                alt="Profile"
+                className="w-full h-full rounded-full object-cover border-2 border-gray-300 z-10"
+              />
+            </div>
 
                 {/* Name and Email */}
                 <div className="text-center mb-6">
                   <h2 className="font-bold text-lg">{profile.name || "Your Name"}</h2>
                   <p className="text-sm text-gray-500">{profile.email || "your-email@example.com"}</p>
+                  <p className="text-sm text-gray-500">{profile.phone || "your-email@example.com"}</p>
                 </div>
 
                 {/* View Profile Button */}

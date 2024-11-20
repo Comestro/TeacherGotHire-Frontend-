@@ -11,6 +11,7 @@ import ExamPortal from "./components/ExamPortal/ExamPortal"
 import ContactUs from "./components/ContactUs/ContactUs"
 import Profile from "./components/ProfileEdit/ProfileEdit";
 import SchoolAdmin from "./components/Dashboard/SchoolAdmin";
+import Login from "./components/SignIn";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                   <Route path='/' element={<Home/>}/>
                   <Route path="/signup/:role" element={<SignUpPage />} />
                   <Route path="/signin" element={<SignUpPage/>}/>
+                  <Route path="/login" element={<Login/>}/>
                   <Route path="/teacherdashbord" element={<TeacherDashboard/>}/>
                   <Route path="/schooladmindashboard" element={<SchoolAdmin/>}/>
                   <Route path="/payment" element={<Payment/>}/>
