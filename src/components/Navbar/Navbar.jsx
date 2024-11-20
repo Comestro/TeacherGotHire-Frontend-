@@ -5,17 +5,16 @@ import Button from "../Button";
 import { IoIosNotifications } from "react-icons/io";
 
 const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
-
   return (
     <>
       <nav
         className={`flex items-center justify-between  py-2 px-10 ${
-          variant === "light" ? "bg-white text-black" : "bg-white text-black"
+          variant === "light"
+            ? "bg-white text-black"
+            : "bg-white-500 text-black"
         }`}
       >
-        <div className="text-3xl font-bold text-gray-950">
-            PTPI.COM
-        </div>
+        <div className="text-3xl font-bold text-gray-950">PTPI.COM</div>
         <div className="flex items-center justify-between">
           {/* {links.map((link, index) => (
             <a href="#" key={index}>
@@ -26,18 +25,17 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
               </div>
             </a>
           ))} */}
-           {links.map((link) => (
-              <Link 
-                key={link.id} 
-                to={link.to} 
-                className=" items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-semibold text-gray-700"
-              >
-                {link.label}
-              </Link>
-            ))}
-          <Button>
-
-          <IoIosNotifications />
+          {links.map((link) => (
+            <Link
+              key={link.id}
+              to={link.to}
+              className=" items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-semibold text-gray-700"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <Button className="ml-4 bg-black">
+            <IoIosNotifications />
           </Button>
           {ExternalComponent && (
             <div className="ml-4">
