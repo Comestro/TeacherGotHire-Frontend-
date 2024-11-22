@@ -20,94 +20,147 @@ function SignUpPage() {
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-blue-500 to-blue-700 min-h-screen flex items-center justify-center">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src="https://source.unsplash.com/featured/?education,learning"
-          alt="Background"
-          className="w-full h-full object-cover opacity-20"
-        />
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden justify-center w-full h-full grid grid-cols-1 md:grid-cols-2">
+        {/* Left Form Section */}
+        <div className='w-full justify-center'>
+          <div className="p-8 flex flex-col justify-center w-full h-screen space-y-4">
+            <h1 className="text-4xl font-bold mb-6 text-gray-700 text-center">Signup to <span className='text-4xl text-teal-600 font-bold'>PTPI</span></h1>
+            <form onSubmit={handleSubmit(signup)} className="flex justify-center w-full">
+              {/* Full Name */}
+              <div className='w-[400px] space-y-3'>
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-900">Full Name</label>
+                  <input
+                    className="w-full rounded-xl border border-gray-400 px-3 py-2 mt-1  focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Enter your full name"
+                    {...register("name", { required: true })}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    className="w-full rounded-xl border  border-gray-400   px-3 py-2 mt-1 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Enter your email"
+                    type="email"
+                    {...register("email", {
+                      required: true,
+                      validate: {
+                        matchPattern: (value) =>
+                          /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) || "Email address must be valid",
+                      },
+                    })}
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Password</label>
+                  <input
+                    className="w-full rounded-xl border border-gray-400 px-3 py-2 mt-1 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Enter your password"
+                    type="password"
+                    {...register("password", { required: true })}
+                  />
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                  <input
+                    className="w-full rounded-xl border  border-gray-400 px-3 py-2 mt-1 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Confirm your password"
+                    type="password"
+                    {...register("confirmPassword", { required: true })}
+                  />
+                </div>
+
+                {/* Role-Specific Input */}
+                {role === "teacher" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">School Name</label>
+                    <input
+                      className="w-full rounded-xl border border-gray-400  px-3 py-2 mt-1 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="Enter your school name"
+                      {...register("schoolName", { required: true })}
+                    />
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full mt-5 bg-teal-600 text-white font-semibold py-3 rounded-xl transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </form>
+            <div className="flex flex-col items-center w-full mt-8">
+      {/* Divider */}
+      <div className="flex items-center justify-center px-[21%] w-full my-4">
+        <hr className="w-full border-gray-300" />
+        <span className="px-2 text-gray-500">Or</span>
+        <hr className="w-full border-gray-300" />
       </div>
 
-      {/* Form Container */}
-      <div className="relative z-10 bg-white shadow-2xl rounded-lg p-8 max-w-md w-full">
-        <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
-          Create Your Account
-        </h2>
-
-        {/* Error Message */}
-        {error && (
-          <p className="text-red-600 text-center mb-4">{error}</p>
-        )}
-
-        <form onSubmit={handleSubmit(signup)} className="space-y-6">
-          {/* Full Name */}
-          <Input
-            label="Full Name"
-            placeholder="Enter your full name"
-            {...register('name', { required: true })}
+      {/* Social Login Buttons */}
+      <div className="flex space-x-4">
+        {/* Google Button */}
+        <button
+          className="flex items-center justify-center border border-gray-300 px-4 py-2 rounded-md shadow-sm hover:bg-gray-100 transition duration-300"
+          onClick={() => alert("Sign in with Google clicked")}
+        >
+          <img
+            src="https://img.icons8.com/color/48/google-logo.png"
+            alt="Google Logo"
+            className="w-5 h-5 mr-2"
           />
+          <span className="text-sm font-medium">Sign in with Google</span>
+        </button>
 
-          {/* Email */}
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            type="email"
-            {...register('email', {
-              required: true,
-              validate: {
-                matchPattern: (value) =>
-                  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                  'Email address must be valid',
-              },
-            })}
+        {/* Apple Button */}
+        <button
+          className="flex items-center justify-center border border-gray-300 px-4 py-2 rounded-md shadow-sm hover:bg-gray-100 transition duration-300"
+          onClick={() => alert("Sign in with Apple clicked")}
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/mac-os.png"
+            alt="Apple Logo"
+            className="w-5 h-5 mr-2"
           />
+          <span className="text-sm font-medium">Sign in with Apple</span>
+        </button>
+      </div>
 
-          {/* Password */}
-          <Input
-            label="Password"
-            placeholder="Enter your password"
-            type="password"
-            {...register('password', { required: true })}
+      {/* Sign In Link */}
+          {/* Sign In Link */}
+          <p className="mt-6 text-center text-xs text-gray-600">
+              Already have an account?{" "}
+              <span
+                onClick={() => navigate("/login")}
+                className="text-blue-600 hover:underline cursor-pointer font-semibold"
+              >
+                Sign In
+              </span>
+            </p>
+      
+    </div>
+
+        
+          </div>
+        </div>
+
+        {/* Right Image Section */}
+        <div className="hidden md:block">
+          <img
+            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="School"
+            className="object-cover w-full h-full"
           />
-
-          {/* Confirm Password */}
-          <Input
-            label="Confirm Password"
-            placeholder="Confirm your password"
-            type="password"
-            {...register('confirmPassword', { required: true })}
-          />
-
-          {/* Role-Specific Input */}
-          {role === 'teacher' && (
-            <Input
-              label="School Name"
-              placeholder="Enter your school name"
-              {...register('schoolName', { required: true })}
-            />
-          )}
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-transform duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Sign Up
-          </Button>
-        </form>
-
-        {/* Sign In Link */}
-        <p className="mt-6 text-center text-gray-600">
-          Already have an account?{' '}
-          <span
-            onClick={() => navigate('/login')}
-            className="text-blue-600 hover:underline cursor-pointer font-semibold"
-          >
-            Sign In
-          </span>
-        </p>
+        </div>
       </div>
     </div>
   );
