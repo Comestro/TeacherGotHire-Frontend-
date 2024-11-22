@@ -24,7 +24,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import SupportIcon from "@mui/icons-material/Support";
 import LockIcon from "@mui/icons-material/Lock";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
-import { Collapse } from "@mui/material";
+import { Collapse, Tooltip } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Link } from "react-router-dom";
@@ -120,31 +120,33 @@ export default function Sidebar({ open, handleDrawerClose }) {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
-            <ListItemButton
-              component={Link}
-              to={item.link}
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
+          <Tooltip key={item.text} title={item.text} placement="right" arrow>
+            <ListItem disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={Link}
+                to={item.link}
                 sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : "auto",
-                  justifyContent: "center",
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                sx={{ opacity: open ? 1 : 0 }}
-              />
-            </ListItemButton>
-          </ListItem>
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
         ))}
         <Divider />
         {/* Collapsible Settings Section */}
@@ -164,32 +166,34 @@ export default function Sidebar({ open, handleDrawerClose }) {
               { text: "Change-Password", icon: <LockIcon />, link: "/admin-change-password" },
               { text: "Contact", icon: <ContactMailIcon />, link: "/admin-contact" },
             ].map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  to={item.link}
-                  sx={{
-                    pl: 4,
-                    minHeight: 48,
-                    justifyContent: open ? "initial" : "center",
-                    px: 2.5,
-                  }}
-                >
-                  <ListItemIcon
+              <Tooltip key={item.text} title={item.text} placement="right" arrow>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    to={item.link}
                     sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : "auto",
-                      justifyContent: "center",
+                      pl: 4,
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
                     }}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.text}
-                    sx={{ opacity: open ? 1 : 0 }}
-                  />
-                </ListItemButton>
-              </ListItem>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </Tooltip>
             ))}
           </List>
         </Collapse>
@@ -197,14 +201,16 @@ export default function Sidebar({ open, handleDrawerClose }) {
       <Divider />
       {/* add logout button below */}
       <List className="">
-        <ListItem disablePadding sx={{ mt: 2 }}>
-          <ListItemButton>
-            <ListItemIcon>
-              <LogoutIcon color="error" />
-            </ListItemIcon>
-            <ListItemText primary="Logout" sx={{ color: "error.main" }} />
-          </ListItemButton>
-        </ListItem>
+        <Tooltip title="Logout" placement="right" arrow>
+          <ListItem disablePadding sx={{ mt: 2 }}>
+            <ListItemButton>
+              <ListItemIcon>
+                <LogoutIcon color="error" />
+              </ListItemIcon>
+              <ListItemText primary="Logout" sx={{ color: "error.main" }} />
+            </ListItemButton>
+          </ListItem>
+        </Tooltip>
       </List>
     </Drawer>
   );
