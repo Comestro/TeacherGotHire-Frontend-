@@ -14,6 +14,7 @@ import ManageQualification from "./admin/Manage-qualification/ManageQualificatio
 import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
+import SignIn from "./components/SignIn";
 
 const Home = lazy(() => import('./components/Home/Home'));
 const SignUpPage = lazy(() => import("./components/SignUpPage"));
@@ -33,7 +34,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/signup/:role" element={<SignUpPage />} />
-              <Route path="/signin" element={<SignUpPage />} />
+              <Route path="/signin" element={<SignIn />} />
               <Route path="/teacherdashbord" element={<TeacherDashboard />} />
               <Route path="/schooladmindashboard" element={<SchoolAdmin />} />
               <Route path="/payment" element={<Payment />} />
