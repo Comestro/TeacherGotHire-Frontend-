@@ -26,10 +26,13 @@ function SignUpPage() {
     >
 
       {/* Form Container */}
-      <div className="w-full mt-10 md:w-1/2 flex items-center md:pl-72 justify-center p-10 ">
-        <div className='max-w-md w-full'>
-          <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl text-center leading-none">
-            Signup To <span className='font-bold text-xl md:text-4xl text-teal-600'>PTPI</span>
+      <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center ">
+        <div className='max-w-md w-full mt-5'>
+          <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
+            Hello,  <span className='font-bold text-teal-600'>Teachers </span>
+          </h2>
+          <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+            Signup To <span className='font-bold text-xl md:text-4xl text-teal-600'>PTPI </span>
           </h2>
 
           {/* Error Message */}
@@ -131,7 +134,7 @@ function SignUpPage() {
               Sign Up
             </Button>
           </form>
-          <div className="text-center my-4">
+          <div className="text-center my-2">
             <div className="flex items-center">
               <hr className="flex-grow border-gray-300" />
               <span className="px-4 text-sm text-gray-600">Or</span>
