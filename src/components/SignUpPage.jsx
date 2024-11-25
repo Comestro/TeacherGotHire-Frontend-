@@ -1,23 +1,60 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { signup } from '../store/profileSlice'
 import Input from './Input';
 import Button from './Button';
+import { useForm } from 'react-hook-form';
+import { useParams, useNavigate } from 'react-router-dom';
+import { createaccount } from '../services/authServices';
+
 
 function SignUpPage() {
   const { role } = useParams(); // Get the role from the URL
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState('');
 
+
+  // const signup = async (data) => {
+  //   console.log(data);
+  //   if (role === 'teacher') {
+  //     navigate('/teacherdashbord');
+  //   } else {
+  //     navigate('/schooladmindashboard');
+  //   }
+  // };
+
   const signup = async (data) => {
     console.log(data);
-    if (role === 'teacher') {
-      navigate('/teacherdashbord');
-    } else {
-      navigate('/schooladmindashboard');
+    let username, email, password;
+    username = email = data.email;
+    password = data.password;
+    setError('');
+    try {
+
+      const response = await createaccount({ username, email, password });
+      if (response) {
+        dispatch({
+          type: 'SET_USER',
+          payload: {
+            name: username,
+            email: email,
+          }
+        });
+        navigate('/login')
+      }
+    } catch (error) {
+      setError(error.message);
     }
+
+    // if(role==='teacher'){
+    //   navigate('/teacherdashbord')
+    // }else{
+    //   navigate('/schooladmindashboard')
+    // }
   };
+
 
   return (
     <div
@@ -103,24 +140,10 @@ function SignUpPage() {
               />
             </div>
 
-            {/* Role-Specific Input */}
-            <div className="mb-4">
 
-              {role === 'teacher' && (
-
-                <Input
-
-                  placeholder="Enter your school name" className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
-
-                  {...register('schoolName', { required: true })}
-                />
-              )}
-            </div>
             <div className="flex items-center mb-3">
               <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 border-gray-300  rounded"
+                type="checkbox" id="terms" className="w-4 h-4 border-gray-300  rounded"
               />
               <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
                 I agree to the <span className="text-teal-600">terms & policy</span>
@@ -167,7 +190,7 @@ function SignUpPage() {
             <p className="text-sm font-medium text-gray-600 mt-6">
               Have an account?{' '}
               <span
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/signin')}
                 className="text-teal-600 hover:underline font-semibold"
               >
                 Sign In
@@ -178,11 +201,8 @@ function SignUpPage() {
 
 
         </div>
-      </div>
+      </div >
 
-      {/* Background Image */}
-      {/* <div className="hidden md:block w-1/2 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: 'url("https://img.freepik.com/premium-photo/pretty-teacher-holding-notebook-classroom_13339-248389.jpg?uid=R138633026&ga=GA1.1.1275289697.1728223870&semt=ais_hybrid")' }}>
-      </div> */}
 
       <div className="w-full md:w-1/2 flex flex-col pl-36 justify-center h-screen p-10 ">
         {/* Step 1 */}
@@ -229,10 +249,7 @@ function SignUpPage() {
         </div>
       </div>
 
-
-
-
-    </div>
+    </div >
 
   );
 }
