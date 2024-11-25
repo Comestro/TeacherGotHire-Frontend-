@@ -26,9 +26,9 @@ function Login() {
                 console.log("login ");
                 if (userData){
                     dispatch(authlogin(userData))
-                    navigate('/home')
+                    navigate('/teacherdashbord')
                 }
-                await getUser(dispatch);
+                // await getUser(dispatch);
             }catch(error){
         setError(error.message)
        }

@@ -1,7 +1,7 @@
 // src/services/configService.js
 
 const config = {
-    apiUrl : import.meta.env.VITE_API_URL || 'purnea-kart-frontend/.env',
+    apiUrl : import.meta.env.VITE_API_URL || 'teacher-hire-frontend/.env',
     // apiKey: process.env.REACT_APP_API_KEY || '',
       // featureFlag: process.env.REACT_APP_FEATURE_FLAG === 'true',
     };
@@ -9,6 +9,7 @@ const config = {
    
     
     export const getApiUrl = () => config.apiUrl;
+    
     // export const getApiKey = () => config.apiKey;
     // export const isFeatureEnabled = () => config.featureFlag;
     

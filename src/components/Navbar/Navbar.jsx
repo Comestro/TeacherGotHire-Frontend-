@@ -17,15 +17,6 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
             PTPI.COM
         </div>
         <div className="flex items-center justify-between">
-          {/* {links.map((link, index) => (
-            <a href="#" key={index}>
-              <div className="flex gap-4">
-              <Link href={link.href} className="font-semibold text-gray-600 px-3 p-2">
-                {link.label}
-              </Link>
-              </div>
-            </a>
-          ))} */}
            {links.map((link) => (
               <Link 
                 key={link.id} 

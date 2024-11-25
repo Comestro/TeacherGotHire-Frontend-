@@ -3,9 +3,8 @@ import { useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar'
 import { useNavigate } from 'react-router-dom';
 import ProfileButton from '../Profile_Button/Profile_Button';
-import Button from '../Button';
 import Footer from '../Footer/Footer';
-import TeacherLevelCard from '../TeacherLevelCard';
+import SubjectSelection from '../SubjectSelection';
 
 function TeacherDashboard() {
   const profile = useSelector((state) => state.profile);
@@ -37,8 +36,9 @@ function TeacherDashboard() {
         <div className=''>
           <Navbar
               links={[
-                  {id:'1', label: "Contact US", to: "/contact" },
-                  {id:"2", label: "AboutUs", to: "/about" },
+                  {id:'1',label:"Home", to:"/"},
+                  {id:'2', label: "Contact US", to: "/contact" },
+                  {id:"3", label: "AboutUs", to: "/about" },
                 ]}
                 variant="dark"
                 // notifications={notifications}
@@ -46,6 +46,7 @@ function TeacherDashboard() {
               />
                 </div>
               </nav>
+              
               <div className='flex w-full justify-center  mt-10'>
               <aside className='w-[25%]'>
               <div className="w-64 p-6 bg-gray-100 h-screen">
@@ -90,12 +91,8 @@ function TeacherDashboard() {
               </div> 
        </aside>
        <section className=''>
-            <div className='flex gap-8'>
-            <TeacherLevelCard   subject="Maths" marks={85} />
-            <TeacherLevelCard   subject="Science" marks={45} />
-            <TeacherLevelCard   subject="computer" marks={85} />
-            </div>
             
+            <SubjectSelection/>
             <div className="w-2xl p-6 mt-8 bg-gray-100 rounded-lg shadow-lg">
             <h1 className="text-3xl font-bold text-blue-600 text-center mb-4">
               Become a Certified Tutor!
