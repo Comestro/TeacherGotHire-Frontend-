@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from './store/store';
@@ -26,6 +26,8 @@ const Profile = lazy(() => import("./components/ProfileEdit/ProfileEdit"));
 const SchoolAdmin = lazy(() => import("./components/Dashboard/SchoolAdmin"));
 
 function App() {
+  const token = localStorage.getItem('jwtToken');
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -34,24 +36,24 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/signup/:role" element={<SignUpPage />} />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/teacherdashbord" element={<TeacherDashboard />} />
-              <Route path="/schooladmindashboard" element={<SchoolAdmin />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/exam-portal" element={<ExamPortal />} />
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/admin-profile" element={<AdminProfile />} />
-              <Route path="/admin-manage-subject" element={<ManageSubject />} />
-              <Route path="/admin-manage-teacher" element={<ManageTeacher />} />
-              <Route path="/admin-manage-recruiter" element={<ManageRecruiter />} />
-              <Route path="/admin-manage-question" element={<ManageQuestion />} />
-              <Route path="/admin-manage-skills" element={<ManageSkills />} />
-              <Route path="/admin-manage-qualification" element={<ManageQualification />} />
-              <Route path="/admin-support" element={<Support />} />
-              <Route path="/admin-change-password" element={<ChangePassword />} />
-              <Route path="/admin-contact" element={<Contact />} />
+              <Route path="/signin" element={token ? <Navigate to="/admin-dashboard" /> : <SignIn />} />
+              <Route path="/teacherdashbord" element={token ? <TeacherDashboard /> : <Navigate to="/signin" />} />
+              <Route path="/schooladmindashboard" element={token ? <SchoolAdmin /> : <Navigate to="/signin" />} />
+              <Route path="/payment" element={token ? <Payment /> : <Navigate to="/signin" />} />
+              <Route path="/exam-portal" element={token ? <ExamPortal /> : <Navigate to="/signin" />} />
+              <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
+              <Route path="/profile" element={token ? <Profile /> : <Navigate to="/signin" />} />
+              <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
+              <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-teacher" element={token ? <ManageTeacher /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-question" element={token ? <ManageQuestion /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-skills" element={token ? <ManageSkills /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-qualification" element={token ? <ManageQualification /> : <Navigate to="/signin" />} />
+              <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
+              <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
+              <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

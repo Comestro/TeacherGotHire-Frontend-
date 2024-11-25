@@ -28,7 +28,7 @@ function Home() {
       <nav>
         <Navbar
           links={[
-            { id: "1", label: "SignIn", to: "/login" },
+            { id: "1", label: "SignIn", to: "/signin" },
             { id: "2", label: "Contact US", to: "/contact" },
             { id: "3", label: "AboutUs", to: "/about" },
           ]}

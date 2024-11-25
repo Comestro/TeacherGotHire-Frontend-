@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Link, IconButton, InputAdornment } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Container, Box, Typography, TextField, Button, Link, IconButton, InputAdornment, Alert } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import logInservice from '../services/apiService'; 
@@ -55,6 +56,8 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -62,19 +65,21 @@ const SignIn = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    setError(''); // Clear any previous error messages
     try {
       const result = await logInservice.logInservice(email, password);
       console.log('Login successful:', result);
-      // Handle successful login (e.g., redirect to dashboard)
+      navigate('/admin-dashboard');
+      navigate(0); // Refresh the page
     } catch (error) {
       console.error('Login failed:', error);
-      // Handle login failure (e.g., show error message)
+      setError('Login failed. Please check your email and password.'); // Set error message
     }
   };
 
   return (
     <BackgroundBox>
-      <LeftSide />
+      <LeftSide />  
       <RightSide>
         <FormContainer>
           <Box textAlign="center" mb={4}>
@@ -85,6 +90,11 @@ const SignIn = () => {
               Connect with top teachers and great teaching jobs.
             </Typography>
           </Box>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <Box component="form" noValidate autoComplete="off" onSubmit={handleLogin}>
             <TextField
               fullWidth
