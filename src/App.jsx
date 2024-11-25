@@ -15,6 +15,7 @@ import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
 import SignIn from "./components/SignIn";
+import AdminSignIn from "./components/AdminLogin";
 
 const Home = lazy(() => import('./components/Home/Home'));
 const SignUpPage = lazy(() => import("./components/SignUpPage"));
@@ -36,24 +37,25 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/signup/:role" element={<SignUpPage />} />
-              <Route path="/signin" element={token ? <Navigate to="/admin-dashboard" /> : <SignIn />} />
-              <Route path="/teacherdashbord" element={token ? <TeacherDashboard /> : <Navigate to="/signin" />} />
-              <Route path="/schooladmindashboard" element={token ? <SchoolAdmin /> : <Navigate to="/signin" />} />
-              <Route path="/payment" element={token ? <Payment /> : <Navigate to="/signin" />} />
-              <Route path="/exam-portal" element={token ? <ExamPortal /> : <Navigate to="/signin" />} />
-              <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
-              <Route path="/profile" element={token ? <Profile /> : <Navigate to="/signin" />} />
-              <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
-              <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-teacher" element={token ? <ManageTeacher /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-question" element={token ? <ManageQuestion /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-skills" element={token ? <ManageSkills /> : <Navigate to="/signin" />} />
-              <Route path="/admin-manage-qualification" element={token ? <ManageQualification /> : <Navigate to="/signin" />} />
-              <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
-              <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
-              <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/admin-signin" element={token ? <Navigate to="/admin-dashboard" /> : <AdminSignIn />} />
+              <Route path="/teacherdashbord" element={token ? <TeacherDashboard /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/schooladmindashboard" element={token ? <SchoolAdmin /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/payment" element={token ? <Payment /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/exam-portal" element={token ? <ExamPortal /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/profile" element={token ? <Profile /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-teacher" element={token ? <ManageTeacher /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-question" element={token ? <ManageQuestion /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-skills" element={token ? <ManageSkills /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-manage-qualification" element={token ? <ManageQualification /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/AdminSignIn" />} />
+              <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/AdminSignIn" />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

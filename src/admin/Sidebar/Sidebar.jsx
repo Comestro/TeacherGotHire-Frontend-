@@ -90,7 +90,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
 
   const handleLogout = () => {
     logInservice.logout();
-    navigate('/signin'); // Redirect to sign-in page after logout
+    navigate('/admin-signin'); // Redirect to sign-in page after logout
     navigate(0); // Rrfresh the page
   };
 

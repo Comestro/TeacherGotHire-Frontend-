@@ -30,6 +30,7 @@ function Home() {
           links={[
             { id: "1", label: "Register", to: "/signup/teacher" },
             { id: "2", label: "Login", to: "/signin" },
+            { id: "2", label: "Admin", to: "/admin-signin" },
             { id: "3", label: "Contact Us", to: "/contact" },
             { id: "4", label: "About Us", to: "/about" },
           ]}
