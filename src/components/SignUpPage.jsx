@@ -190,7 +190,7 @@ function SignUpPage() {
             <p className="text-sm font-medium text-gray-600 mt-6">
               Have an account?{' '}
               <span
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/signin')}
                 className="text-teal-600 hover:underline font-semibold"
               >
                 Sign In
