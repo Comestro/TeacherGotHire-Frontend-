@@ -22,10 +22,7 @@ const TeacherSection = ({ onSelectRole }) => {
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center px-6 sm:px-12 ">
         {/* Left Section */}
         <div className="text-white ml-20">
-          <h1
-            className="text-4xl sm:text-5xl font-bold mb-6 leading-loose"
-            style={{ fontFamily: '"Yatra One", system-ui' }}
-          >
+          <h1 className="text-4xl  font-hindi sm:text-5xl font-bold mb-6 sm:leading-hindi">
             क्या आप शिक्षक बनना चाहते हैं?
           </h1>
 

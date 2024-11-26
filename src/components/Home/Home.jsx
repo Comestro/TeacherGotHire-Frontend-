@@ -28,18 +28,16 @@ function Home() {
       <nav>
         <Navbar
           links={[
-            { id: "1", label: "SignIn", to: "/login" },
-            { id: "2", label: "Contact US", to: "/contact" },
-            { id: "3", label: "AboutUs", to: "/about" },
+            { id: "1", label: "Register", to: "/signup/teacher" },
+            { id: "2", label: "Login", to: "/signin" },
+            { id: "2", label: "Admin", to: "/admin-signin" },
+            { id: "3", label: "Contact Us", to: "/contact" },
+            { id: "4", label: "About Us", to: "/about" },
           ]}
           variant="dark"
         />
       </nav>
-      <div className="hero h-screen w-full flex flex-col items-center justify-center px-4 "
-      //  style={{
-      //   backgroundImage: `url('Home.png')`,
-      // }}
-      >
+      <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <p className="mb-8 font-bold text-4xl md:text-5xl leading-none">
             <span className="font-bold text-5xl md:text-6xl text-teal-600">

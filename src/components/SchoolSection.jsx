@@ -17,10 +17,10 @@ const SchoolSection = ({ onSelectRole }) => {
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center px-6 sm:px-12 ">
         {/* Left Section */}
         <div className="text-teal-700 ml-20">
-          <h1 className="text-4xl sm:text-4xl font-bold mb-6 leading-loose">
+          <h1 className="text-4xl text-render sm:text-4xl font-bold mb-6 sm:leading-hindi font-hindi">
             क्या आपके स्कूल को शिक्षक की आवश्यकता है?
           </h1>
-          <p className="text-lg sm:text-xl mb-6 leading-relaxed font-serif text-gray-600">
+          <p className="text-lg font-hindi text-render sm:text-xl mb-6 leading-relaxed text-gray-600">
             हम आपके छात्रों के उज्ज्वल भविष्य के लिए समर्पित शिक्षकों की पेशकश
             करते हैं। आज ही लॉगिन करें और हमारे योग्य शिक्षकों से जुड़ें!
           </p>
