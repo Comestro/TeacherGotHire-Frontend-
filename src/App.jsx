@@ -15,6 +15,7 @@ import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
 import SignIn from "./components/SignIn";
+import AdminSignIn from "./components/AdminLogin";
 
 const Home = lazy(() => import('./components/Home/Home'));
 const SignUpPage = lazy(() => import("./components/SignUpPage"));

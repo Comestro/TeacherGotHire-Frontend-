@@ -10,6 +10,9 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
             ? "bg-white text-black"
             : "bg-white-500 text-black"
         }`}
+        // style={{
+        //   backgroundImage: `url('Home.png')`,
+        // }}
       >
         <div className="text-3xl font-bold text-gray-800">PTPI.COM</div>
         <div className="flex items-center justify-between">
