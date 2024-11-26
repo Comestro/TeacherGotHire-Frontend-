@@ -76,16 +76,16 @@ function TeacherDashboard() {
 
                 {/* View Profile Button */}
                 <button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate("/personalprofile")}
                   className="block w-full mt-5 bg-blue-500 text-white py-2 rounded-md text-center hover:bg-blue-600 transition"
                 >
-                  View Profile
+                  Edit your Profile
                 </button>
                 <button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate("/jobprofile")}
                   className="block w-full mt-5 bg-blue-500 text-white py-2 rounded-md text-center hover:bg-blue-600 transition"
                 >
-                  Help and Support
+                  Edit Your Job profile
                 </button>
 
               </div> 

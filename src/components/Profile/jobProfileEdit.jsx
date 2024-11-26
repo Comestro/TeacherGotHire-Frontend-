@@ -8,9 +8,8 @@ import ResumeUpload from "../Resume";
 import ProfileCard from "../ProfileCard";
 import Navbar from "../Navbar/Navbar";
 import ProfileButton from '../Profile_Button/Profile_Button';
-import YourProfile from "../Profile/addressEdit";
 
-const YourProfilePage = () => {
+const JobProfilePage = () => {
   // Create refs for each section
   const resumeRef = useRef(null);
   const headlineRef = useRef(null);
@@ -18,7 +17,6 @@ const YourProfilePage = () => {
   const educationRef = useRef(null);
   const experienceRef = useRef(null);
   const profileRef = useRef(null);
-  const addressRef = useRef(null);
 
   // Function to scroll to the specific section
   const scrollToSection = (sectionId) => {
@@ -27,9 +25,6 @@ const YourProfilePage = () => {
         resumeRef.current.scrollIntoView({ behavior: "smooth" });
         break;
       case "headline":
-        headlineRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "address":
         headlineRef.current.scrollIntoView({ behavior: "smooth" });
         break;
       case "skills":
@@ -75,13 +70,10 @@ const YourProfilePage = () => {
       {/* Main Content */}
       <div className="w-3/4 max-w-4xl mx-auto mt-10 bg-white shadow-lg rounded-lg p-8 border border-gray-300 space-y-6">
         {/* Profile Card */}
-        
         <div ref={profileRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <ProfileCard />
         </div>
-        <div ref={addressRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
-          <YourProfile/>
-        </div>
+
         {/* Resume Upload */}
         <div ref={resumeRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <ResumeUpload />
@@ -109,4 +101,4 @@ const YourProfilePage = () => {
   );
 };
 
-export default YourProfilePage;
+export default JobProfilePage;

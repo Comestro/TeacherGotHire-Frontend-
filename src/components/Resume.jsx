@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setResume, clearResume } from "../store/profileSlice";
+import { setResume, clearResume } from "../store/jobProfileSlice";
 
 const ResumeUpload = () => {
   const resume = useSelector((state) => state.profile.resume);

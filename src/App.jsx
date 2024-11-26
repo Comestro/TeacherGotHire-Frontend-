@@ -22,7 +22,8 @@ const TeacherDashboard = lazy(() => import("./components/Dashboard/TeacherDashbo
 const Payment = lazy(() => import("./components/Payment"));
 const ExamPortal = lazy(() => import("./components/ExamPortal/ExamPortal"));
 const ContactUs = lazy(() => import("./components/ContactUs/ContactUs"));
-const Profile = lazy(() => import("./components/ProfileEdit/ProfileEdit"));
+const PersonalProfile = lazy(() => import("./components/Personal_Profile/Personal_Profile"));
+const JobProfilePage = lazy(() => import("./components/Profile/jobProfileEdit"));
 const SchoolAdmin = lazy(() => import("./components/Dashboard/SchoolAdmin"));
 
 function App() {
@@ -37,12 +38,15 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/signup/:role" element={<SignUpPage />} />
               <Route path="/signin" element={token ? <Navigate to="/admin-dashboard" /> : <SignIn />} />
-              <Route path="/teacherdashbord" element={token ? <TeacherDashboard /> : <Navigate to="/signin" />} />
+              {/* <Route path="/teacherdashbord" element={token ? <TeacherDashboard /> : <Navigate to="/signin" />} /> */}
+              <Route path="/teacherdashboard" element={<TeacherDashboard />} />
               <Route path="/schooladmindashboard" element={token ? <SchoolAdmin /> : <Navigate to="/signin" />} />
               <Route path="/payment" element={token ? <Payment /> : <Navigate to="/signin" />} />
               <Route path="/exam-portal" element={token ? <ExamPortal /> : <Navigate to="/signin" />} />
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
-              <Route path="/profile" element={token ? <Profile /> : <Navigate to="/signin" />} />
+              {/* <Route path="/jobprofile" element={token ? <Profile /> : <Navigate to="/signin" />} /> */}
+              <Route path="/personalprofile" element= {<PersonalProfile />} />
+              <Route path="/jobprofile" element= {<JobProfilePage />} />
               <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
               <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
               <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />

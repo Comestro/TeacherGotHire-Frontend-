@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addSkill, removeSkill } from "../store/profileSlice";
+import { addSkill, removeSkill } from "../store/jobProfileSlice";
 import { FiEdit2 } from "react-icons/fi";
 
 const Skills = () => {

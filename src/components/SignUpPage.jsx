@@ -42,7 +42,7 @@ function SignUpPage() {
             email: email,
           }
         });
-        navigate('/login')
+        navigate('/teacherdashboard')
       }
     } catch (error) {
       setError(error.message);

@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateProfile } from "../store/profileSlice";
+import { updateProfile } from "../store/jobProfileSlice";
 import { FiEdit2 } from "react-icons/fi";
 
 const ProfileCard = () => {
   const dispatch = useDispatch();
-  const {username,email} = useSelector((state) => state.profile);
+  const profile = useSelector((state) => state.profile);
   //const [editDetails, setEditDetails] = useState(profile);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
@@ -14,14 +14,14 @@ const ProfileCard = () => {
 
     //setEditDetails(profile); // Sync with Redux state
 
-    const initializeUser =()=>{
-      const storeUser = localStorage.getItem({username,email})
+  //   const initializeUser =()=>{
+  //     const storeUser = localStorage.getItem({profile.username,profile.email})
   
-    }
-    useEffect(() => {
-      initializeUser (dispatch);
+  //   }
+  //   useEffect(() => {
+  //     initializeUser (dispatch);
 
-  }, [dispatch]);
+  // }, [dispatch]);
 
   // const handleInputChange = (e) => {
   //   const { name, value } = e.target;
