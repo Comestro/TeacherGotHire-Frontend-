@@ -1,160 +1,160 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Link, IconButton, InputAdornment } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import logInservice from '../services/apiService'; 
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { login as authlogin } from '../store/authSlice'; // Redux action to store the user login state
+import { login as loginService } from '../services/authServices'; // Service to authenticate the user
+import Input from './Input';
+import Button from './Button';
 
-const BackgroundBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  minHeight: '100vh',
-  backgroundColor: theme.palette.background.default,
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    background: 'url(/signin.jpeg) no-repeat center center',
-    backgroundSize: 'cover',
-    opacity: 0.8,
-  },
-}));
+function Login() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { register, handleSubmit } = useForm();
+  const [error, setError] = useState('');
 
-const LeftSide = styled(Box)(({ theme }) => ({
-  flex: 1,
-  background: 'url(/signin.jpeg) no-repeat center center',
-  backgroundSize: 'cover',
-  [theme.breakpoints.down('sm')]: {
-    display: 'none',
-  },
-}));
-
-const RightSide = styled(Box)(({ theme }) => ({
-  flex: 1,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.common.white,
-  boxShadow: theme.shadows[5],
-  [theme.breakpoints.down('sm')]: {
-    backgroundColor: 'transparent',
-    boxShadow: 'none',
-  },
-}));
-
-const FormContainer = styled(Container)(({ theme }) => ({
-  maxWidth: '400px',
-  padding: theme.spacing(4),
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[3],
-  backgroundColor: theme.palette.common.white,
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: '90%',
-    padding: theme.spacing(2),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-}));
-
-const SignIn = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
+  const login = async (data) => {
+    setError(''); // Clear any previous errors
     try {
-      const result = await logInservice.logInservice(email, password);
-      console.log('Login successful:', result);
-      // Handle successful login (e.g., redirect to dashboard)
+      const userData = await loginService(data); // Call the service function to authenticate the user
+      if (userData) {
+        dispatch(authlogin(userData)); // Dispatch action to store the user data in Redux store
+        navigate('/teacherdashboard'); // Redirect to teacher dashboard after login
+      }
     } catch (error) {
-      console.error('Login failed:', error);
-      // Handle login failure (e.g., show error message)
+      setError(error.message); // Set error message if login fails
     }
   };
 
   return (
-    <BackgroundBox>
-      <LeftSide />
-      <RightSide>
-        <FormContainer>
-          <Box textAlign="center" mb={4}>
-            <Typography variant="h5" component="h1" gutterBottom>
-              PRIVATE TEACHER PROVIDER INSTITUTE
-            </Typography>
-            <Typography variant="subtitle1">
-              Connect with top teachers and great teaching jobs.
-            </Typography>
-          </Box>
-          <Box component="form" noValidate autoComplete="off" onSubmit={handleLogin}>
-            <TextField
-              fullWidth
-              label="Email Address"
-              placeholder="Enter your email"
-              variant="outlined"
-              margin="normal"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              placeholder="Enter your password"
-              variant="outlined"
-              margin="normal"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              size="large"
-              sx={{ mt: 3, mb: 2 }}
-              type="submit"
-            >
-              Login
-            </Button>
-            <Box display="flex" justifyContent="space-between">
-              <Link href="#" variant="body2">
-                Forgot Password?
-              </Link>
-              <Link href="#" variant="body2">
-                Contact Support
-              </Link>
-            </Box>
-          </Box>
-          <Box mt={4} textAlign="center">
-            <Typography variant="body2" color="textSecondary">
-              © 2024 PTPI. All rights reserved.
-            </Typography>
-            <Link href="#" variant="body2">
-              Terms of Service
-            </Link>
-            {' | '}
-            <Link href="#" variant="body2">
-              Privacy Policy
-            </Link>
-          </Box>
-        </FormContainer>
-      </RightSide>
-    </BackgroundBox>
-  );
-};
+    <div className="flex bg-cover bg-no-repeat items-center justify-center m" style={{ backgroundImage: 'url("/bg.png")' }}>
+      {/* Form Container */}
+      <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
+        <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
+          <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
+            Hello, <span className="font-bold text-teal-600">Teachers</span>
+          </h2>
+          <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+            Sign in to <span className="font-bold text-xl md:text-4xl text-teal-600">PTPI</span>
+          </h2>
 
-export default SignIn;
+          {/* Error Message */}
+          {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleSubmit(login)} className="space-y-5">
+            {/* Email */}
+            <div className="mb-4">
+              <Input
+                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                placeholder="Enter your email"
+                type="email"
+                {...register('email', {
+                  required: 'Email is required',
+                  validate: {
+                    matchPattern: (value) =>
+                      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
+                      'Email address must be valid',
+                  },
+                })}
+              />
+            </div>
+
+            {/* Password */}
+            <div className="mb-4">
+              <Input
+                placeholder="Enter your password"
+                type="password"
+                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                {...register('password', { required: 'Password is required' })}
+              />
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
+            >
+              Log In
+            </Button>
+          </form>
+
+          <div className="text-center my-4">
+            <div className="flex items-center">
+              <hr className="flex-grow border-gray-300" />
+              <span className="px-4 text-sm text-gray-600">Or</span>
+              <hr className="flex-grow border-gray-300" />
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-center sm:space-x-4 space-y-4 sm:space-y-0 mt-2">
+              <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
+                <img
+                  src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000"
+                  alt="Google"
+                  className="w-5 h-5 mr-2"
+                />
+                <span className="text-sm font-medium text-gray-600">Sign in with Google</span>
+              </button>
+
+              <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
+                <img
+                  src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
+                  alt="Facebook"
+                  className="w-5 h-5 mr-2"
+                />
+                <span className="text-sm font-medium text-gray-600">Sign in with Facebook</span>
+              </button>
+            </div>
+
+            <p className="text-sm font-medium text-gray-600 mt-6">
+              Don't have an account?{' '}
+              <span
+                onClick={() => navigate('/signup/teacher')}
+                className="text-teal-600 hover:underline font-semibold"
+              >
+                Sign Up
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Step Progress */}
+      <div className="hidden md:flex w-full md:w-1/2 flex-col pl-36 justify-center h-screen p-10">
+        {/* Step 1 */}
+        <div className="flex items-start space-x-4 mb-4">
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-teal-500 text-white font-bold">1</div>
+            <div className="h-12 w-1 bg-teal-500"></div>
+          </div>
+          <div>
+            <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">Enter Credentials</div>
+          </div>
+        </div>
+
+        {/* Step 2 */}
+        <div className="flex items-start space-x-4 mb-4">
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">2</div>
+            <div className="h-12 w-1 bg-gray-300"></div>
+          </div>
+          <div>
+            <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">Login Successful</div>
+          </div>
+        </div>
+
+        {/* Step 3 */}
+        <div className="flex items-start space-x-4 mb-4">
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">3</div>
+          </div>
+          <div>
+            <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">Go to Dashboard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Login;
+  
