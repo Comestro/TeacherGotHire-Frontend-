@@ -111,7 +111,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className="border-gray-300 py-8 bg-white -mt-16">
+      <div className="border-gray-300 py-8 -mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           {/* Item 1 */}
           <div>
