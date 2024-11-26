@@ -26,7 +26,7 @@ const TeacherProfiles = () => {
   ];
 
   return (
-    <section className="bg-gray-100 py-12">
+    <section className="bg-slate-100 py-12">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Our Teachers <span className="text-teal-600">Who Got Placed</span>
@@ -48,7 +48,7 @@ const TeacherProfiles = () => {
               <h3 className="text-xl font-serif font-semibold text-gray-700 tracking-wider">
                 {teacher.name}
               </h3>
-              <p className="text-sm text-gray-500 mb-2">{teacher.position}</p>
+              <p className="text-sm text-teal-700 mb-2">{teacher.position}</p>
               <p className="text-gray-600 italic">"{teacher.review}"</p>
             </div>
           ))}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -28,6 +29,7 @@ import { Collapse, Tooltip } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Link } from "react-router-dom";
+import logInservice from '../../services/apiService';
 
 const drawerWidth = 240;
 
@@ -79,10 +81,17 @@ const Drawer = styled(MuiDrawer, {
 
 export default function Sidebar({ open, handleDrawerClose }) {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [collapseOpen, setCollapseOpen] = useState(false);
 
   const handleCollapseToggle = () => {
     setCollapseOpen((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    logInservice.logout();
+    navigate('/signin'); // Redirect to sign-in page after logout
+    navigate(0); // Rrfresh the page
   };
 
   const menuItems = [
@@ -201,16 +210,14 @@ export default function Sidebar({ open, handleDrawerClose }) {
       <Divider />
       {/* add logout button below */}
       <List className="">
-        <Tooltip title="Logout" placement="right" arrow>
-          <ListItem disablePadding sx={{ mt: 2 }}>
-            <ListItemButton>
-              <ListItemIcon>
-                <LogoutIcon color="error" />
-              </ListItemIcon>
-              <ListItemText primary="Logout" sx={{ color: "error.main" }} />
-            </ListItemButton>
-          </ListItem>
-        </Tooltip>
+        <ListItem disablePadding sx={{ mt: 2 }}>
+          <ListItemButton onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon color="error" />
+            </ListItemIcon>
+            <ListItemText primary="Logout" sx={{ color: "error.main" }} />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Drawer>
   );

@@ -3,7 +3,14 @@ export default {
   content: ["./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily:{
+        hindi: ['"Noto Sans Devanagari"', 'sans-serif'],
+      },
+      lineHeight: {
+        hindi: '1.3', // Adjust this value as needed
+      },
+    },
   },
   plugins: [],
 }
