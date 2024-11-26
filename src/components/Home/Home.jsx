@@ -20,10 +20,10 @@ function Home() {
 
   return (
     <div
-      className="object-center bg-no-repeat"
-      // style={{
-      //   backgroundImage: `url('https://images.unsplash.com/photo-1509078302641-7553084efc8f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-      // }}
+      className="bg-contain bg-no-repeat "
+      style={{
+        backgroundImage: `url('Home3.png')`,
+      }}
     >
       <nav>
         <Navbar
@@ -35,7 +35,11 @@ function Home() {
           variant="dark"
         />
       </nav>
-      <div className="hero h-screen w-full flex flex-col items-center justify-center px-4 ">
+      <div className="hero h-screen w-full flex flex-col items-center justify-center px-4 "
+      //  style={{
+      //   backgroundImage: `url('Home.png')`,
+      // }}
+      >
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <p className="mb-8 font-bold text-4xl md:text-5xl leading-none">
             <span className="font-bold text-5xl md:text-6xl text-teal-600">
@@ -58,7 +62,7 @@ function Home() {
               placeholder="Pin code"
               className="hidden sm:block w-20 md:w-28 p-3 border-none focus:outline-none text-gray-600 placeholder-gray-400"
             />
-            <button className="bg-teal-700 hover:bg-blue-500 p-2 rounded-full flex items-center justify-center">
+            <button className="bg-teal-700  p-2 rounded-full flex items-center justify-center">
               <IoSearchOutline className="text-white w-5 h-5 md:w-7 md:h-7 p-1" />
             </button>
           </div>
@@ -109,7 +113,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-300 py-8 bg-white -mt-20">
+      <div className="border-gray-300 py-8 bg-white -mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           {/* Item 1 */}
           <div>

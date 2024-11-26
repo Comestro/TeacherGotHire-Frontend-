@@ -8,11 +8,14 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   return (
     <>
       <nav
-        className={`flex items-center justify-between  py-2 px-10 ${
+        className={`flex items-center justify-between  py-2 px-10  ${
           variant === "light"
             ? "bg-white text-black"
             : "bg-white-500 text-black"
         }`}
+        // style={{
+        //   backgroundImage: `url('Home.png')`,
+        // }}
       >
         <div className="text-3xl font-bold text-gray-950">PTPI.COM</div>
         <div className="flex items-center justify-between">
@@ -25,7 +28,7 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
               </div>
             </a>
           ))} */}
-          {links.map((link) => (
+          {/* {links.map((link) => (
             <Link
               key={link.id}
               to={link.to}
@@ -33,10 +36,12 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
             >
               {link.label}
             </Link>
-          ))}
-          <Button className="ml-4 bg-black">
+          ))} */}
+          {/* <Button className="ml-4 ">
             <IoIosNotifications />
-          </Button>
+            
+          </Button> */}
+          {/* <p className="text-xl font-semibold text-teal-700">+91 7004672817</p> */}
           {ExternalComponent && (
             <div className="ml-4">
               <ExternalComponent />
