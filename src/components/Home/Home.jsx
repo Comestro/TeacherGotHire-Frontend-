@@ -1,14 +1,13 @@
 import React from "react";
 import Navbar from "../Navbar/Navbar";
-import Input from "../Input";
 import Button from "../Button";
 import { IoSearchOutline } from "react-icons/io5";
 import Footer from "../Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
-// import TeacherProfiles from "../Review/TeacherProfile";
-// import TeacherSection from "../TeacherSection";
-// import SchoolSection from "../SchoolSection";
+import TeacherProfiles from "../Review/TeacherProfile";
+import TeacherSection from "../TeacherSection";
+import SchoolSection from "../SchoolSection";
 
 function Home() {
   const navigate = useNavigate();
@@ -19,13 +18,17 @@ function Home() {
 
   return (
     <div
-      className="object-center bg-no-repeat"
+      className="bg-contain bg-no-repeat "
+      style={{
+        backgroundImage: `url('Home3.png')`,
+      }}
     >
       <nav>
         <Navbar
           links={[
             { id: "1", label: "Register", to: "/signup/teacher" },
             { id: "2", label: "Login", to: "/login" },
+            { id: "2", label: "Admin", to: "/admin-signin" },
             { id: "3", label: "Contact Us", to: "/contact" },
             { id: "4", label: "About Us", to: "/about" },
           ]}
@@ -55,11 +58,11 @@ function Home() {
               placeholder="Pin code"
               className="hidden sm:block w-20 md:w-28 p-3 border-none focus:outline-none text-gray-600 placeholder-gray-400"
             />
-            <button className="bg-teal-700 hover:bg-blue-500 p-2 rounded-full flex items-center justify-center">
+            <button className="bg-teal-700  p-2 rounded-full flex items-center justify-center">
               <IoSearchOutline className="text-white w-5 h-5 md:w-7 md:h-7 p-1" />
             </button>
           </div>
-
+ 
           <div className="mt-4 flex flex-nowrap gap-4 justify-center">
             <Button
               textColor="text-teal-700 font-medium"
@@ -106,7 +109,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-300 py-8 bg-white -mt-20">
+      <div className="border-gray-300 py-8 -mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           {/* Item 1 */}
           <div>
@@ -129,9 +132,9 @@ function Home() {
           </div>
         </div>
       </div>
-      {/* <TeacherSection onSelectRole={handleRoleSelection} />
+      <TeacherSection onSelectRole={handleRoleSelection} />
       <TeacherProfiles />
-      <SchoolSection onSelectRole={handleRoleSelection} /> */}
+      <SchoolSection onSelectRole={handleRoleSelection} />
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
     </div>
