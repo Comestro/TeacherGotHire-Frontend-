@@ -12,42 +12,43 @@ import YourProfile from "../Profile/addressEdit";
 
 const YourProfilePage = () => {
   // Create refs for each section
-  const resumeRef = useRef(null);
-  const headlineRef = useRef(null);
-  const skillsRef = useRef(null);
-  const educationRef = useRef(null);
-  const experienceRef = useRef(null);
-  const profileRef = useRef(null);
-  const addressRef = useRef(null);
+  // const resumeRef = useRef(null);
+  // const headlineRef = useRef(null);
+  // const skillsRef = useRef(null);
+  // const educationRef = useRef(null);
+  
+  // const experienceRef = useRef(null);
+  // const profileRef = useRef(null);
+  // const addressRef = useRef(null);
 
   // Function to scroll to the specific section
-  const scrollToSection = (sectionId) => {
-    switch (sectionId) {
-      case "resume":
-        resumeRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "headline":
-        headlineRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "address":
-        headlineRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "skills":
-        skillsRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "education":
-        educationRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "experience":
-        experienceRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      case "profile":
-        profileRef.current.scrollIntoView({ behavior: "smooth" });
-        break;
-      default:
-        break;
-    }
-  };
+  // const scrollToSection = (sectionId) => {
+  //   switch (sectionId) {
+  //     case "resume":
+  //       resumeRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "headline":
+  //       headlineRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "address":
+  //       headlineRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "skills":
+  //       skillsRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "education":
+  //       educationRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "experience":
+  //       experienceRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     case "profile":
+  //       profileRef.current.scrollIntoView({ behavior: "smooth" });
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
 
   return (
     <>
@@ -67,10 +68,10 @@ const YourProfilePage = () => {
         
     <div className="flex space-x-6 mt-32">
       {/* Sidebar */}
-      <div className="w-1/4">
+      {/* <div className="w-1/4">
         <QuickLinks scrollToSection={scrollToSection} />
         
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="w-3/4 max-w-4xl mx-auto mt-10 bg-white shadow-lg rounded-lg p-8 border border-gray-300 space-y-6">
@@ -79,23 +80,23 @@ const YourProfilePage = () => {
         <div ref={profileRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <ProfileCard />
         </div>
-        <div ref={addressRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
+        {/* <div ref={addressRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <YourProfile/>
-        </div>
+        </div> */}
         {/* Resume Upload */}
-        <div ref={resumeRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
+        {/* <div ref={resumeRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <ResumeUpload />
-        </div>
+        </div> */}
 
         {/* Skills */}
-        <div ref={skillsRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
+        {/* <div ref={skillsRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <Skills />
-        </div>
+        </div> */}
 
         {/* Experience */}
-        <div ref={experienceRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
+        {/* <div ref={experienceRef} className="p-4 bg-gray-50 rounded-md shadow-sm">
           <Experience />
-        </div>
+        </div> */}
 
         {/* Education */}
         <div ref={educationRef} className="p-4 bg-gray-50 rounded-md shadow-sm">

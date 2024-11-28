@@ -1,78 +1,83 @@
 
+
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addExperience, updateExperience, removeExperience } from "../store/jobProfileSlice";
+import { addEducation, updateEducation, removeEducation } from "../store/jobProfileSlice";
+import { FiEdit2 } from "react-icons/fi";
 
-const Experience = () => {
-  const experiences = useSelector((state) => state.profile.experience);
+const Education = () => {
+  const education = useSelector((state) => state.profile.education); // Redux education state
   const dispatch = useDispatch();
 
-  const [newExperience, setNewExperience] = useState({ title: "", company: "", duration: "" });
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newEducation, setNewEducation] = useState({ degree: "", institution: "", year: "" ,});
+  const [editingIndex, setEditingIndex] = useState(null); // Track index being edited
+  const [isModalOpen, setIsModalOpen] = useState(false); // Track modal visibility
 
+  // Open modal and set data for editing (or reset for new entry)
   const handleOpenModal = (index = null) => {
     if (index !== null) {
-      setNewExperience(experiences[index]);
+      setNewEducation(education[index]);
       setEditingIndex(index);
     } else {
-      setNewExperience({ title: "", company: "", duration: "" });
+      
+      setNewEducation({ degree: "", institution: "", year: "" });
       setEditingIndex(null);
     }
     setIsModalOpen(true);
   };
 
-  const handleSaveExperience = () => {
+  // Save education details
+  const handleSaveEducation = () => {
     if (editingIndex !== null) {
-      dispatch(updateExperience({ index: editingIndex, data: newExperience }));
+      dispatch(updateEducation({ index: editingIndex, data: newEducation }));
     } else {
-      dispatch(addExperience(newExperience));
+      dispatch(addEducation(newEducation));
     }
-    setNewExperience({ title: "", company: "", duration: "" });
-    setEditingIndex(null);
-    setIsModalOpen(false);
+    setIsModalOpen(false); // Close modal
   };
 
-  const handleRemoveExperience = (index) => {
-    dispatch(removeExperience(index));
+  // Remove an education entry
+  const handleRemoveEducation = (index) => {
+    dispatch(removeEducation(index));
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       {/* Header Section */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">Experience</h3>
+        <h3 className="text-xl font-semibold">Education</h3>
         <button
-          onClick={() => handleOpenModal()}
+          onClick={() => handleOpenModal()} // Open modal for adding new education
           className="text-blue-500 hover:underline text-sm flex items-center gap-1"
         >
-          Add Experience
+          <FiEdit2 />
+          Add Education
         </button>
       </div>
 
-      {/* Experience Cards */}
+      {/* Education Cards */}
       <div className="space-y-4">
-        {experiences.length > 0 ? (
-          experiences.map((exp, index) => (
+        {education.length > 0 ? (
+          education.map((edu, index) => (
             <div key={index} className="border p-4 rounded-lg shadow-sm bg-gray-100">
               <p>
-                <strong>Title:</strong> {exp.title}
+                <strong>Degree:</strong> {edu.degree}
               </p>
               <p>
-                <strong>Company:</strong> {exp.company}
+                <strong>Institution:</strong> {edu.institution}
               </p>
               <p>
-                <strong>Duration:</strong> {exp.duration}
+                <strong>Year:</strong> {edu.year}
               </p>
               <div className="mt-2 space-x-4">
                 <button
-                  onClick={() => handleOpenModal(index)}
+                  onClick={() => handleOpenModal(index)} // Open modal for editing
                   className="text-blue-500 hover:underline"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => handleRemoveExperience(index)}
+                  onClick={() => handleRemoveEducation(index)} // Remove education
                   className="text-red-500 hover:underline"
                 >
                   Remove
@@ -81,7 +86,7 @@ const Experience = () => {
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No experiences added yet.</p>
+          <p className="text-gray-500">No education added yet.</p>
         )}
       </div>
 
@@ -90,32 +95,32 @@ const Experience = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
             <h3 className="text-lg font-semibold mb-4">
-              {editingIndex !== null ? "Edit Experience" : "Add Experience"}
+              {editingIndex !== null ? "Edit Education" : "Add Education"}
             </h3>
 
             {/* Input Fields */}
             <div className="space-y-3">
               <input
                 type="text"
-                value={newExperience.title}
-                onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
-                placeholder="Job Title"
+                value={newEducation.degree}
+                onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })}
+                placeholder="Degree"
                 className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
               />
               <input
                 type="text"
-                value={newExperience.company}
+                value={newEducation.institution}
                 onChange={(e) =>
-                  setNewExperience({ ...newExperience, company: e.target.value })
+                  setNewEducation({ ...newEducation, institution: e.target.value })
                 }
-                placeholder="Company"
+                placeholder="Institution"
                 className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
               />
               <input
                 type="text"
-                value={newExperience.duration}
-                onChange={(e) => setNewExperience({ ...newExperience, duration: e.target.value })}
-                placeholder="Duration (e.g., Jan 2020 - Dec 2022)"
+                value={newEducation.year}
+                onChange={(e) => setNewEducation({ ...newEducation, year: e.target.value })}
+                placeholder="Year of Completion"
                 className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
               />
             </div>
@@ -129,7 +134,7 @@ const Experience = () => {
                 Cancel
               </button>
               <button
-                onClick={handleSaveExperience} // Save or update experience
+                onClick={handleSaveEducation} // Save or update education
                 className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
               >
                 Save
@@ -142,4 +147,5 @@ const Experience = () => {
   );
 };
 
-export default Experience;
+export default Education;
+
