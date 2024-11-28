@@ -14,21 +14,21 @@ function TeacherDashboard() {
       navigate('/payment'); // Redirect to payment page
     };
 
-    const calculateCompletion = () => {
-      const totalFields = 5 + profile.skills.length + profile.experience.length + profile.education.length;
-      const filledFields = [
-        profile.name,
-        profile.email,
-        profile.phone,
-        profile.address,
-        profile.profileImage,
-        ...profile.skills,
-        ...profile.experience,
-        ...profile.education,
-      ].filter(Boolean).length;
+    // const calculateCompletion = () => {
+    //   const totalFields = 5 + profile.skills.length + profile.experience.length + profile.education.length;
+    //   const filledFields = [
+    //     profile.name,
+    //     profile.email,
+    //     profile.phone,
+    //     profile.address,
+    //     profile.profileImage,
+    //     ...profile.skills,
+    //     ...profile.experience,
+    //     ...profile.education,
+    //   ].filter(Boolean).length;
   
-      return Math.round((filledFields / totalFields) * 100);
-    };
+    //   return Math.round((filledFields / totalFields) * 100);
+    // };
 
   return (
     <div >
@@ -53,12 +53,12 @@ function TeacherDashboard() {
                
                   <div className="relative w-24 h-24 mx-auto mb-6">
               {/* Completion Border */}
-              <div
+              {/* <div
                 className="absolute inset-0 w-full h-full rounded-full border-4 border-blue-500 z-0"
                 style={{
                   clipPath: `circle(${calculateCompletion()}% at 50% 50%)`,
                 }}
-              ></div>
+              ></div> */}
               {/* Profile Image */}
               <img
                 src={profile.profileImage || "https://via.placeholder.com/150"}
