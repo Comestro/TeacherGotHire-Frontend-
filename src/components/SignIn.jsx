@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { login as authlogin } from '../store/authSlice'; // Redux action to store the user login state
+import { login as authlogin } from '../features/authSlice'; // Redux action to store the user login state
 import { login as loginService } from '../services/authServices'; // Service to authenticate the user
 import Input from './Input';
 import Button from './Button';
@@ -39,6 +39,7 @@ function Login() {
           </h2>
 
           {/* Error Message */}
+
           {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
           <form onSubmit={handleSubmit(login)} className="space-y-5">
@@ -46,15 +47,10 @@ function Login() {
             <div className="mb-4">
               <Input
                 className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-                placeholder="Enter your email"
-                type="email"
-                {...register('email', {
-                  required: 'Email is required',
-                  validate: {
-                    matchPattern: (value) =>
-                      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                      'Email address must be valid',
-                  },
+                placeholder="Enter your Username"
+                type="text"
+                {...register('username', {
+                  required: 'Username is required',
                 })}
               />
             </div>
