@@ -20,6 +20,8 @@ import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
 import AdminSignIn from "./components/AdminLogin";
 
+import ContactUs from "./components/ContactUs/ContactUs";
+
 
 
 function App() {
@@ -31,23 +33,24 @@ function App() {
            <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
-              <Route path="/login" element={<Login/>}/>
+              <Route path="/signin" element={<Login/>}/>
               <Route path="/admin-signin" element={<AdminSignIn/>}/>
               <Route path="/teacherdashboard" element={<TeacherDashboard />} />
                <Route path="/personalprofile" element= {<EditPersonalProfile />} />
               {/* <Route path="/jobprofile" element= {<JobProfilePage />} /> */} 
+              <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
-              <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/login" />} />
-              <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-teacher" element={token ? <ManageTeacher /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-question" element={token ? <ManageQuestion /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-skills" element={token ? <ManageSkills /> : <Navigate to="/login" />} />
-              <Route path="/admin-manage-qualification" element={token ? <ManageQualification /> : <Navigate to="/login" />} />
-              <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/login" />} />
-              <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/login" />} />
-              <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/login" />} />
+              <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
+              <Route path="/admin-profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-teacher" element={token ? <ManageTeacher /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-question" element={token ? <ManageQuestion /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-skills" element={token ? <ManageSkills /> : <Navigate to="/signin" />} />
+              <Route path="/admin-manage-qualification" element={token ? <ManageQualification /> : <Navigate to="/signin" />} />
+              <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
+              <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
+              <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
          
            </Routes>
         </BrowserRouter>
