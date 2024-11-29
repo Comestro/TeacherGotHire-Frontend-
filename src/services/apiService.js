@@ -4,7 +4,8 @@ const API_URL = 'http://127.0.0.1:8000/api/login/';
 
 const logInservice = async (username, password) => {
   const formData = new FormData();
-  formData.append('username', username);
+  formData.append('username', email);
+  formData.append('email', email);
   formData.append('password', password);
 
   try {

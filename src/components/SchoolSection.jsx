@@ -2,7 +2,7 @@ import React from "react";
 
 const SchoolSection = ({ onSelectRole }) => {
   return (
-    <div className="relative bg-slate-200 overflow-hidden ">
+    <div className="relative bg-slate-200 overflow-hidden mb-5">
       {/* Header */}
       {/* <div className="flex justify-between items-center px-6 py-4 bg-white shadow-md">
         <button className="text-xl">

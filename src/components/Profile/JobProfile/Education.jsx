@@ -2,14 +2,14 @@
 
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addEducation, updateEducation, removeEducation } from "../store/profileSlice";
+import { addEducation, updateEducation, removeEducation } from "../store/jobProfileSlice";
 import { FiEdit2 } from "react-icons/fi";
 
 const Education = () => {
   const education = useSelector((state) => state.profile.education); // Redux education state
   const dispatch = useDispatch();
 
-  const [newEducation, setNewEducation] = useState({ degree: "", institution: "", year: "" });
+  const [newEducation, setNewEducation] = useState({ degree: "", institution: "", year: "" ,});
   const [editingIndex, setEditingIndex] = useState(null); // Track index being edited
   const [isModalOpen, setIsModalOpen] = useState(false); // Track modal visibility
 

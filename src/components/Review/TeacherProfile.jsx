@@ -34,7 +34,7 @@ const TeacherProfiles = () => {
         <p className="text-gray-600 mb-8">
           Meet the amazing teachers who secured jobs through our community. Their success stories inspire us every day!
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-auto">
           {teachers.map((teacher, index) => (
             <div
               key={index}
