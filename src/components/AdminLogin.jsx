@@ -54,7 +54,7 @@ const FormContainer = styled(Container)(({ theme }) => ({
 
 const AdminSignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -67,13 +67,13 @@ const AdminSignIn = () => {
     event.preventDefault();
     setError(''); // Clear any previous error messages
     try {
-      const result = await logInservice.logInservice(email, password);
+      const result = await logInservice.logInservice(username, password);
       console.log('Login successful:', result);
       navigate('/admin-dashboard');
       navigate(0); // Refresh the page
     } catch (error) {
       console.error('Login failed:', error);
-      setError('Login failed. Please check your email and password.'); // Set error message
+      setError('Login failed. Please check your username and password.'); // Set error message
     }
   };
 
@@ -98,13 +98,13 @@ const AdminSignIn = () => {
           <Box component="form" noValidate autoComplete="off" onSubmit={handleLogin}>
             <TextField
               fullWidth
-              label="Email Address"
-              placeholder="Enter your email"
+              label="Username"
+              placeholder="Enter your username"
               variant="outlined"
               margin="normal"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
             <TextField
               fullWidth

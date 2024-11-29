@@ -27,7 +27,7 @@ const Profile = lazy(() => import("./components/ProfileEdit/ProfileEdit"));
 const SchoolAdmin = lazy(() => import("./components/Dashboard/SchoolAdmin"));
 
 function App() {
-  const token = localStorage.getItem('jwtToken');
+  const token = localStorage.getItem('AuthToken');
 
   return (
     <Provider store={store}>
