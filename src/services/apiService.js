@@ -13,8 +13,10 @@ const logInservice = async (username, password) => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    const token = response.data.token;
-    localStorage.setItem('AuthToken', token); // Store the token
+    const accessToken = response.data.access_token;
+    const refreshToken = response.data.refresh_token;
+    localStorage.setItem('access_token', accessToken); // Store the access token
+    localStorage.setItem('refresh_token', refreshToken); // Store the refresh token
     return response.data;
   } catch (error) {
     console.error('Error logging in:', error);
@@ -23,7 +25,8 @@ const logInservice = async (username, password) => {
 };
 
 const logout = () => {
-  localStorage.removeItem('AuthToken'); // Remove the token
+  localStorage.removeItem('access_token'); // Remove the access token
+  localStorage.removeItem('refresh_token'); // Remove the refresh token
 };
 
 export default {

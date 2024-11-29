@@ -1,62 +1,72 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Box, Typography, TextField, Button, Link, IconButton, InputAdornment, Alert } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import logInservice from '../services/apiService'; 
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Link,
+  IconButton,
+  InputAdornment,
+  Alert,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
+import logInservice from "../services/apiService";
 
 const BackgroundBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  minHeight: '100vh',
+  display: "flex",
+  minHeight: "100vh",
   backgroundColor: theme.palette.background.default,
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    background: 'url(/signin.jpeg) no-repeat center center',
-    backgroundSize: 'cover',
+  [theme.breakpoints.down("sm")]: {
+    flexDirection: "column",
+    background: "url(/signin.jpeg) no-repeat center center",
+    backgroundSize: "cover",
     opacity: 0.8,
   },
 }));
 
 const LeftSide = styled(Box)(({ theme }) => ({
   flex: 1,
-  background: 'url(/signin.jpeg) no-repeat center center',
-  backgroundSize: 'cover',
-  [theme.breakpoints.down('sm')]: {
-    display: 'none',
+  background: "url(/signin.jpeg) no-repeat center center",
+  backgroundSize: "cover",
+  [theme.breakpoints.down("sm")]: {
+    display: "none",
   },
 }));
 
 const RightSide = styled(Box)(({ theme }) => ({
   flex: 1,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   backgroundColor: theme.palette.common.white,
   boxShadow: theme.shadows[5],
-  [theme.breakpoints.down('sm')]: {
-    backgroundColor: 'transparent',
-    boxShadow: 'none',
+  [theme.breakpoints.down("sm")]: {
+    backgroundColor: "transparent",
+    boxShadow: "none",
   },
 }));
 
 const FormContainer = styled(Container)(({ theme }) => ({
-  maxWidth: '400px',
+  maxWidth: "400px",
   padding: theme.spacing(4),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[3],
   backgroundColor: theme.palette.common.white,
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: '90%',
+  [theme.breakpoints.down("sm")]: {
+    maxWidth: "90%",
     padding: theme.spacing(2),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
 }));
 
 const AdminSignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
@@ -65,21 +75,21 @@ const AdminSignIn = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    setError(''); // Clear any previous error messages
+    setError(""); // Clear any previous error messages
     try {
       const result = await logInservice.logInservice(username, password);
-      console.log('Login successful:', result);
-      navigate('/admin-dashboard');
+      console.log("Login successful:", result);
+      navigate("/admin-dashboard");
       navigate(0); // Refresh the page
     } catch (error) {
-      console.error('Login failed:', error);
-      setError('Login failed. Please check your username and password.'); // Set error message
+      console.error("Login failed:", error);
+      setError("Login failed. Please check your username and password."); // Set error message
     }
   };
 
   return (
     <BackgroundBox>
-      <LeftSide />  
+      <LeftSide />
       <RightSide>
         <FormContainer>
           <Box textAlign="center" mb={4}>
@@ -95,7 +105,12 @@ const AdminSignIn = () => {
               {error}
             </Alert>
           )}
-          <Box component="form" noValidate autoComplete="off" onSubmit={handleLogin}>
+          <Box
+            component="form"
+            noValidate
+            autoComplete="off"
+            onSubmit={handleLogin}
+          >
             <TextField
               fullWidth
               label="Username"
@@ -112,7 +127,7 @@ const AdminSignIn = () => {
               placeholder="Enter your password"
               variant="outlined"
               margin="normal"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -156,7 +171,7 @@ const AdminSignIn = () => {
             <Link href="#" variant="body2">
               Terms of Service
             </Link>
-            {' | '}
+            {" | "}
             <Link href="#" variant="body2">
               Privacy Policy
             </Link>

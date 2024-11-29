@@ -1,16 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Container, Typography, Button, TextField, 
-  Table, TableBody, TableCell, TableHead, TableRow, Checkbox, 
-  IconButton, Dialog, DialogActions, DialogContent, DialogTitle, 
-  Box 
-} from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Typography,
+  Button,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Checkbox,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Box,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-import { 
-  getSubjects, updateSubject, deleteSubject, 
-  deleteAllSubjects, createSubject 
-} from '../../services/adminSubujectApi';
+import {
+  getSubjects,
+  updateSubject,
+  deleteSubject,
+  createSubject,
+} from "../../services/adminSubujectApi";
 
 const ManageSubject = () => {
   const [subjects, setSubjects] = useState([]);
@@ -18,7 +36,7 @@ const ManageSubject = () => {
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentSubject, setCurrentSubject] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchSubjects();
@@ -35,7 +53,7 @@ const ManageSubject = () => {
   };
 
   const handleAddSubject = () => {
-    setCurrentSubject({ subject_name: '', subject_description: '' });
+    setCurrentSubject({ subject_name: "", subject_description: "" });
     setIsEditModalOpen(true);
   };
 
@@ -55,7 +73,9 @@ const ManageSubject = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await Promise.all(selectedSubjects.map(subjectId => deleteSubject(subjectId)));
+      await Promise.all(
+        selectedSubjects.map((subjectId) => deleteSubject(subjectId))
+      );
       fetchSubjects();
       setSelectedSubjects([]);
     } catch (error) {
@@ -80,9 +100,12 @@ const ManageSubject = () => {
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
-      const filtered = subjects.filter(subject =>
-        subject.subject_name.toLowerCase().includes(query.toLowerCase()) ||
-        subject.subject_description.toLowerCase().includes(query.toLowerCase())
+      const filtered = subjects.filter(
+        (subject) =>
+          subject.subject_name.toLowerCase().includes(query.toLowerCase()) ||
+          subject.subject_description
+            .toLowerCase()
+            .includes(query.toLowerCase())
       );
       setFilteredSubjects(filtered);
     } else {
@@ -93,20 +116,22 @@ const ManageSubject = () => {
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>Manage Subjects</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<AddIcon />} 
+        <Typography variant="h4" gutterBottom>
+          Manage Subjects
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
           onClick={handleAddSubject}
         >
           Add Subject
         </Button>
         <Box mt={2} mb={2}>
-          <TextField 
-            label="Search Subjects" 
-            variant="outlined" 
-            fullWidth 
+          <TextField
+            label="Search Subjects"
+            variant="outlined"
+            fullWidth
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
           />
@@ -118,11 +143,13 @@ const ManageSubject = () => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                <Checkbox 
+                <Checkbox
                   checked={selectedSubjects.length === filteredSubjects.length}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSelectedSubjects(filteredSubjects.map(subject => subject.id));
+                      setSelectedSubjects(
+                        filteredSubjects.map((subject) => subject.id)
+                      );
                     } else {
                       setSelectedSubjects([]);
                     }
@@ -138,13 +165,15 @@ const ManageSubject = () => {
             {filteredSubjects.map((subject) => (
               <TableRow key={subject.id}>
                 <TableCell padding="checkbox">
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedSubjects.includes(subject.id)}
                     onChange={(e) => {
                       if (e.target.checked) {
                         setSelectedSubjects([...selectedSubjects, subject.id]);
                       } else {
-                        setSelectedSubjects(selectedSubjects.filter(id => id !== subject.id));
+                        setSelectedSubjects(
+                          selectedSubjects.filter((id) => id !== subject.id)
+                        );
                       }
                     }}
                   />
@@ -163,33 +192,50 @@ const ManageSubject = () => {
             ))}
           </TableBody>
         </Table>
-        <Button 
-          variant="contained" 
-          color="secondary" 
+        <Button
+          variant="contained"
+          color="secondary"
           onClick={handleBulkDelete}
         >
           Delete Selected
         </Button>
-        <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-          <DialogTitle>{currentSubject && currentSubject.id ? 'Edit Subject' : 'Add Subject'}</DialogTitle>
+        <Dialog
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+        >
+          <DialogTitle>
+            {currentSubject && currentSubject.id
+              ? "Edit Subject"
+              : "Add Subject"}
+          </DialogTitle>
           <DialogContent>
-            <TextField 
-              label="Subject Name" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              value={currentSubject ? currentSubject.subject_name : ''} 
-              onChange={(e) => setCurrentSubject({ ...currentSubject, subject_name: e.target.value })}
+            <TextField
+              label="Subject Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentSubject ? currentSubject.subject_name : ""}
+              onChange={(e) =>
+                setCurrentSubject({
+                  ...currentSubject,
+                  subject_name: e.target.value,
+                })
+              }
             />
-            <TextField 
-              label="Description" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              multiline 
-              rows={4} 
-              value={currentSubject ? currentSubject.subject_description : ''} 
-              onChange={(e) => setCurrentSubject({ ...currentSubject, subject_description: e.target.value })}
+            <TextField
+              label="Description"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              value={currentSubject ? currentSubject.subject_description : ""}
+              onChange={(e) =>
+                setCurrentSubject({
+                  ...currentSubject,
+                  subject_description: e.target.value,
+                })
+              }
             />
           </DialogContent>
           <DialogActions>
