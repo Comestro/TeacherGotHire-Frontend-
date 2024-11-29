@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:8000/api/login/';
 
-const logInservice = async (email, password) => {
+const logInservice = async (username, password) => {
   const formData = new FormData();
   formData.append('username', email);
   formData.append('email', email);
@@ -14,8 +14,10 @@ const logInservice = async (email, password) => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    const token = response.data.token;
-    localStorage.setItem('jwtToken', token); // Store the token
+    const accessToken = response.data.access_token;
+    const refreshToken = response.data.refresh_token;
+    localStorage.setItem('access_token', accessToken); // Store the access token
+    localStorage.setItem('refresh_token', refreshToken); // Store the refresh token
     return response.data;
   } catch (error) {
     console.error('Error logging in:', error);
@@ -24,7 +26,8 @@ const logInservice = async (email, password) => {
 };
 
 const logout = () => {
-  localStorage.removeItem('jwtToken'); // Remove the token
+  localStorage.removeItem('access_token'); // Remove the access token
+  localStorage.removeItem('refresh_token'); // Remove the refresh token
 };
 
 export default {
