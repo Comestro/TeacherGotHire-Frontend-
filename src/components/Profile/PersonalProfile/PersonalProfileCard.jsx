@@ -8,6 +8,7 @@ import { LuShoppingBag } from 'react-icons/lu';
 import { updateProfile } from "../../../features/personalProfileSlice";
 import { updateProfileService } from "../../../services/profileServices";
 import Input from "../../Input";
+import { RxCross2 } from "react-icons/rx";
 
 const PersonalProfileCard = () => {
   const dispatch = useDispatch();
@@ -144,7 +145,14 @@ const PersonalProfileCard = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg">
+            <div className="flex justify-between">
             <h3 className="text-xl font-bold mb-4">Edit Profile</h3>
+            <button className="" type="button"
+                  onClick={() => setIsModalOpen(false)} >
+            <RxCross2 />
+            </button>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Full Name */}
               {/* <div className="mb-4">

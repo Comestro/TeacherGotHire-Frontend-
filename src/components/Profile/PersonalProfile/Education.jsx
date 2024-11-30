@@ -39,9 +39,9 @@ const Education = () => {
         <h3 className="text-xl font-semibold">Education</h3>
         <button
           onClick={() => handleOpenModal()}
-          className="text-blue-500 hover:underline text-sm flex items-center gap-1"
+          className="text-blue-500 hover:underline text-sm font-bold flex items-center gap-1"
         >
-          Add Education
+          Add 
         </button>
       </div>
 

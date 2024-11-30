@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 
 const Experience = () => {
-  const [experiences, setExperiences] = useState([
-    { title: "Software Engineer", company: "Company A", duration: "Jan 2020 - Dec 2022" },
-    { title: "Frontend Developer", company: "Company B", duration: "Jan 2018 - Dec 2019" }
-  ]);
+  const [experiences, setExperiences] = useState([]); // Start with an empty array
   const [newExperience, setNewExperience] = useState({ title: "", company: "", duration: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,9 +45,9 @@ const Experience = () => {
         <h3 className="text-xl font-semibold">Experience</h3>
         <button
           onClick={() => handleOpenModal()}
-          className="text-blue-500 hover:underline text-sm flex items-center gap-1"
+          className="text-blue-500 hover:underline text-sm font-bold flex items-center gap-1"
         >
-          Add Experience
+          Add 
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FiEdit2 } from "react-icons/fi";
+import { RxCross2 } from "react-icons/rx";
 
 const Skills = () => {
   const [skills, setSkills] = useState(["JavaScript", "React", "CSS"]); 
@@ -35,13 +36,13 @@ const Skills = () => {
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-3xl">
       {/* Header Section */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">Key Skills</h3>
+        <h3 className="text-lg  font-bold text-gray-600 mb-3">Key Skills</h3>
         <button
           onClick={openModal}
-          className="text-blue-500 hover:underline text-sm flex items-center gap-1"
+          className="text-blue-500 hover:underline text-sm flex items-center font-bold gap-1"
         >
-          <FiEdit2 />
-          Edit
+          {/* <FiEdit2 /> */}
+          Add
         </button>
       </div>
 
@@ -64,23 +65,25 @@ const Skills = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Edit Skills</h3>
+          <div className="bg-white p-6  w-full max-w-3xl rounded-3xl shadow-lg">
+            <h3 className="text-lg font-semibold">Edit Skills</h3>
+            <p className="text-sm font-bold text-gray-400 mb-4">Add skills that best define your expertise, for e.g, Direct Marketing, Oracle, Java, etc. (Minimum 1)</p>
 
             {/* Temporary Skills List */}
-            <div className="mb-4 space-y-2">
+            <div className="mb-4 flex space-x-2">
               {tempSkills.length > 0 ? (
                 tempSkills.map((skill, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center bg-gray-100 px-3 py-2 rounded-md"
+                    className="bg-gray-100 px-2 py-1 rounded-3xl border flex justify-center items-center w-28"
                   >
                     <span>{skill}</span>
                     <button
                       onClick={() => handleRemoveTempSkill(skill)}
                       className="text-red-500 hover:text-red-600"
                     >
-                      Remove
+                      <RxCross2 />
+
                     </button>
                   </div>
                 ))
@@ -95,7 +98,7 @@ const Skills = () => {
                 type="text"
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Enter a skill"
+                placeholder="Add skills"
                 className="flex-grow border px-3 py-2 rounded-lg focus:outline-blue-500"
               />
               <button
@@ -105,18 +108,27 @@ const Skills = () => {
                 Add
               </button>
             </div>
+             <div className="flex flex-col">
+                <p>Or you can select from the suggested set of skills</p>
+                <div className="bg-gray-100 rounded-3xl border px-4 py-1 w-28">
+                    <button className=" flex justify-center items-center">
+                        <span>JavaScript</span>
+                        <RxCross2 />
+                    </button>
+                </div>
+             </div>
 
             {/* Modal Buttons */}
             <div className="flex justify-end gap-2">
-              <button
+              {/* <button
                 onClick={() => setIsModalOpen(false)} 
                 className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
               >
                 Cancel
-              </button>
+              </button> */}
               <button
                 onClick={handleSaveSkills} 
-                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                className="bg-green-500 text-white px-4 py-2 text-sm font-bold rounded-3xl hover:bg-green-600"
               >
                 Save
               </button>

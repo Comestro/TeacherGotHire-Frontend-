@@ -18,7 +18,20 @@ const PersonalSidebar = () => {
             </li>
             <li className="flex items-center px-6 py-3 text-white bg-teal-500 rounded-lg transition">
               <span className="material-icons text-lg mr-4"></span>
-              <span>Courses</span>
+              <span>Resume</span>
+            </li>
+
+            <li className="flex items-center px-6 py-3 text-gray-500 hover:bg-gray-100 hover:text-black transition">
+              <span className="material-icons text-lg mr-4"></span>
+              <span>Skills</span>
+            </li> 
+            <li className="flex items-center px-6 py-3 text-gray-500 hover:bg-gray-100 hover:text-black transition">
+              <span className="material-icons text-lg mr-4"></span>
+              <span>Education</span>
+            </li>
+             <li className="flex items-center px-6 py-3 text-gray-500 hover:bg-gray-100 hover:text-black transition">
+              <span className="material-icons text-lg mr-4"></span>
+              <span>Experience</span>
             </li>
             
             

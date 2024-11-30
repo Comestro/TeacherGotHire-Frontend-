@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MdOutlineDeleteForever } from "react-icons/md";
 
 const ResumeUpload = () => {
   const [resume, setResume] = useState({
@@ -29,10 +30,10 @@ const ResumeUpload = () => {
 
   return (
     <div className="bg-white border-0 rounded-3xl p-5 shadow-md max-w-4xl mx-auto">
-      <h3 className="text-xl font-semibold text-gray-800 mb-3">Resume</h3>
+      <h3 className="text-lg  font-bold text-gray-600 mb-3">Resume</h3>
 
       {resume.fileName ? (
-        <div className="flex items-center justify-between border border-gray-200 rounded-3xl p-4 bg-gray-50 mb-5">
+        <div className="flex justify-between mb-5">
           <div>
             <p className="text-sm font-medium text-gray-900">{resume.fileName}</p>
             <p className="text-xs text-gray-500">Uploaded on {resume.uploadedOn}</p>
@@ -45,33 +46,36 @@ const ResumeUpload = () => {
             >
               <i className="fa fa-download" aria-hidden="true"></i>
             </button>
-            <button
+            <button 
               onClick={handleDeleteResume}
-              className="text-red-500 hover:text-red-700 transition-all"
+              className=" hover:text-teal-700 transition-all text-teal-500 w-8 items-center flex justify-center h-8 border bg-gray-300  rounded-full"
               title="Delete"
-            > delete
+            > <MdOutlineDeleteForever className="" />
               <i className="fa fa-trash" aria-hidden="true"></i>
             </button>
           </div>
         </div>
       ) : (
-        <div className="border border-dashed border-gray-400 rounded-md p-5 bg-gray-50 text-center mb-5">
-          <p className="text-sm text-gray-500">No resume uploaded yet.</p>
+        <div className="">
+          <p className="text-sm text-gray-500 mb-3">No resume uploaded yet.</p>
         </div>
       )}
+      <div className="border border-dashed border-gray-400 rounded-md p-5 bg-gray-50 text-center mb-5">
 
-      <label className="block text-center text-blue-500 font-semibold cursor-pointer hover:underline">
-        <input
-          type="file"
-          accept=".doc,.docx,.rtf,.pdf"
-          onChange={handleResumeUpload}
-          className="hidden"
-        />
-        Update resume
-      </label>
-      <p className="text-xs text-gray-400 text-center mt-2">
-        Supported Formats: doc, docx, rtf, pdf, up to 2 MB
-      </p>
+        <label className="block text-center text-blue-500 font-semibold cursor-pointer ">
+          <input
+            type="file"
+            accept=".doc,.docx,.rtf,.pdf"
+            onChange={handleResumeUpload}
+            className="hidden"
+          />
+          
+<span className="text-gray-500 text-sm ">Already have a resume?</span> Upload resume
+        </label>
+        <p className="text-xs text-gray-400 text-center mt-2">
+          Supported Formats: doc, docx, rtf, pdf, up to 2 MB
+        </p>
+      </div>
     </div>
   );
 };
