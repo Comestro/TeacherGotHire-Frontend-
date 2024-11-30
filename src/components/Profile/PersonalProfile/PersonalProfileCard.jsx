@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,30 +16,26 @@ const PersonalProfileCard = () => {
   const profile = useSelector((state) => state.personalProfile);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  // Populate the form with the existing profile data
   useEffect(() => {
     if (profile) {
       setValue("fullname", profile.fullname);
       setValue("email", profile.email);
-      setValue("gender", profile.gender);
       setValue("phone", profile.phone);
-      // setValue("address", profile.address); // Assuming you have address as part of the profile
+
     }
   }, [profile, setValue]);
 
   const onSubmit = async (data) => {
-    console.log(data);
+
     try {
-      const response = updateProfileService(data);
-      console.log(data);
+      const response = await updateProfileService(data);
+      console.log(response)
       dispatch(updateProfile(data));
       setIsModalOpen(false);
-    }
-
-    catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -136,7 +133,6 @@ const PersonalProfileCard = () => {
             </button>
           </div>
         </div>
-
       </div>
 
 
@@ -203,7 +199,7 @@ const PersonalProfileCard = () => {
               </div> */}
 
               {/* Gender */}
-              <div className="mb-4">
+              <div>
                 <label htmlFor="gender" className="block text-gray-700">Gender</label>
                 <select
                   {...register("gender", { required: "Gender is required" })}
@@ -217,7 +213,6 @@ const PersonalProfileCard = () => {
                 </select>
                 {errors.gender && <p className="text-red-500">{errors.gender.message}</p>}
               </div>
-
               {/* Phone */}
               {/* <div className="mb-4">
                 <label htmlFor="phone" className="block text-gray-700">Phone</label>
@@ -314,7 +309,9 @@ const PersonalProfileCard = () => {
                   Save
                 </button>
               </div>
+
             </form>
+
           </div>
         </div>
       )}
@@ -323,3 +320,4 @@ const PersonalProfileCard = () => {
 };
 
 export default PersonalProfileCard;
+

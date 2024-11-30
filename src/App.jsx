@@ -25,8 +25,7 @@ import ContactUs from "./components/ContactUs/ContactUs";
 
 
 function App() {
- 
-  const token = localStorage.getItem('jwtToken');
+  const token = localStorage.getItem('access_token');
   return (
      <Provider store={store}>
        <BrowserRouter>
