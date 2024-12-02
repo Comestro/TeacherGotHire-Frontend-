@@ -40,6 +40,9 @@ export const updateProfile = createAsyncThunk(
 const personalProfileSlice = createSlice({
     name: 'personalProfile',
     initialState,
+    reducers:{},
+
+// post api user data
     extraReducers: (builder) => {
         builder
           .addCase(updateProfile.pending, (state) => {

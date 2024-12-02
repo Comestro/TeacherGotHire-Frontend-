@@ -26,8 +26,7 @@ import ExamPortal from "./components/Exam/ExamPortal";
 
 
 function App() {
- 
-  const token = localStorage.getItem('jwtToken');
+  const token = localStorage.getItem('access_token');
   return (
      <Provider store={store}>
        <BrowserRouter>
