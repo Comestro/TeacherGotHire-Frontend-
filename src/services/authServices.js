@@ -6,20 +6,20 @@ const apiClient = axios.create({
   baseURL: getApiUrl(), // Use the API URL from config service
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Token ${localStorage.getItem('access_token')}`,
+    //'Authorization': `Token ${localStorage.getItem('access_token')}`,
   },
 });
 
 // Interceptor to dynamically add the token after login
-// apiClient.interceptors.request.use((config) => {
-//   const token = localStorage.getItem('access_token');
-//   if (token) {
-//     config.headers.Authorization = `Token ${token}`;
-//   }
-//   return config;
-// }, (error) => {
-//   return Promise.reject(error);
-// });
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 // Register User
 export const createaccount = async ({ username, email, password }) => {
