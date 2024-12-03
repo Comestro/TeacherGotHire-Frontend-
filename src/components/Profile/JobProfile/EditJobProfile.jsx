@@ -2,12 +2,13 @@
 import React from "react";
 import Navbar from "../../Navbar/Navbar";
 import PersonalProfileCard from "../PersonalProfile/PersonalProfileCard";
-import AddressProfileCard from "./AddressProfileCard";
+import Education from "./Education";
+import Exprience from "./Exprience";
 
 
 
 
-const EditPersonalProfile = () => {
+const EditJobProfile = () => {
   return (
     <>
       <nav className=''>
@@ -25,14 +26,15 @@ const EditPersonalProfile = () => {
      <div className="bg-gray-50">
      <div className="md:py-7  md:mx-48">
         <PersonalProfileCard />
-
       </div>
       <div className="md:py-7  md:mx-48">
-        <AddressProfileCard  />
-
+        <Education />
+      </div>
+      <div className="md:py-7  md:mx-48">
+        <Exprience/>
       </div>
      </div>
     </>
   )
 };
-export default EditPersonalProfile;
+export default EditJobProfile;

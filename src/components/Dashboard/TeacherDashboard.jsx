@@ -1,15 +1,17 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar'
 import { useNavigate } from 'react-router-dom';
 //import ProfileButton from '../Profile_Button/Profile_Button';
 import Footer from '../Footer/Footer';
+import ResultCard from '../Result/Result';
 
 
 function TeacherDashboard() {
-  //const profile = useSelector((state) => state.profile);
+    const profile = useSelector((state) => state.personalProfile.profileData|| []);
     const navigate = useNavigate();
 
+   
 
   return (
     <div >
@@ -25,29 +27,31 @@ function TeacherDashboard() {
                 //externalComponent={ProfileButton}
               />
         </nav>
+       
               
               <div className='flex w-full justify-center  mt-10'>
               <aside className='w-[25%]'>
-              <div className="w-64 p-6 bg-gray-100 h-screen">
+              {/* 
+               */}
                  <div className="relative w-24 h-24 mx-auto mb-6">
             
               {/* Profile Image */}
-              {/* <img
+              
+              {profile.map((profile)=>(
+                <div className="">
+                <img
                 src={profile.profileImage || "https://via.placeholder.com/150"}
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover border-2 border-gray-300 z-10"
-              /> */}
-            </div>
-
+              />
                 {/* Name and Email */}
-                {/* <div className="text-center mb-6">
-                  <h2 className="font-bold text-lg">{profile.name || "Your Name"}</h2>
-                  <p className="text-sm text-gray-500">{profile.email || "your-email@example.com"}</p>
-                  <p className="text-sm text-gray-500">{profile.phone || "your-email@example.com"}</p>
-                </div> */}
-
-                {/* View Profile Button */}
-                <button
+              <div className="text-center mb-6">
+              <h2 className="font-bold text-lg">{profile.fullname || "Your Name"}</h2>
+              <p className="text-sm text-gray-500">{profile.email || "your-email@example.com"}</p>
+              <p className="text-sm text-gray-500">{profile.phone || "your-email@example.com"}</p>
+            </div>
+            {/* View Profile Button */}
+            <button
                   onClick={() => navigate("/personalprofile")}
                   className="block w-full mt-5 bg-blue-500 text-white py-2 rounded-md text-center hover:bg-blue-600 transition"
                 >
@@ -59,9 +63,21 @@ function TeacherDashboard() {
                 >
                   Edit Your Job profile
                 </button>
+                </div>
+            
+               ))}
+              
+           
 
+              
+               
+
+                
               </div> 
        </aside>
+       <div>
+        <ResultCard/>
+        </div>
        <section className=''>
             <div className="w-2xl p-6 mt-8 bg-gray-100 rounded-lg shadow-lg">
             <h1 className="text-3xl font-bold text-blue-600 text-center mb-4">

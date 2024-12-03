@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import store from "./store/store"; 
 import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
+import EditJobProfile from "./components/Profile/JobProfile/EditJobProfile"
 import AdminDashboard from "./admin/Dashboard/Dashboard";
 import AdminProfile from "./admin/Profile/Profile";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
@@ -21,6 +22,7 @@ import Contact from "./admin/Conatct/Contact";
 import AdminSignIn from "./components/AdminLogin";
 
 import ContactUs from "./components/ContactUs/ContactUs";
+import ExamPortal from "./components/Exam/ExamPortal";
 
 
 
@@ -33,9 +35,11 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
+              <Route path="/exam" element={<ExamPortal/>}/>
               <Route path="/admin-signin" element={<AdminSignIn/>}/>
               <Route path="/teacherdashboard" element={<TeacherDashboard />} />
-               <Route path="/personalprofile" element= {<EditPersonalProfile />} />
+              <Route path="/personalprofile" element= {<EditPersonalProfile />} />
+              <Route path="/jobprofile" element= {<EditJobProfile />} />
               {/* <Route path="/jobprofile" element= {<JobProfilePage />} /> */} 
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
