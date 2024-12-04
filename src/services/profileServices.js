@@ -28,6 +28,7 @@ export const updatePersonalProfile = async(personaldata)=>{
         const response = await apiClient.post('/api/admin/teacher/',personaldata);
         console.log(response.data);
         console.log("hello");
+        
         return JSON.parse(JSON.stringify(response)); 
      }
         catch (err) {
