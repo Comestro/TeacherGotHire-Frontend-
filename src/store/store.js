@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import questionReducer from '../features/questionSlice';
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage
 import { combineReducers } from "redux";
@@ -13,6 +14,8 @@ const rootReducer = combineReducers({
   personalProfile: personalProfileSlice,
   jobProfile: jobProfileSlice,
   addressProfile: addressProfileSlice,
+      questions : questionReducer,
+
 });
 
 // Step 2: Configure persist
