@@ -20,10 +20,13 @@ import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
 import AdminSignIn from "./components/AdminLogin";
-
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
-
+import Layout from "./components/Layout";
+import PersonalProfileCard from "./components/Profile/PersonalProfile/PersonalProfileCard";
+import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
+import Education from "./components/Profile/JobProfile/Education";
+import Exprience from "./components/Profile/JobProfile/Exprience";
 
 
 function App() {
@@ -36,11 +39,25 @@ function App() {
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
               <Route path="/exam" element={<ExamPortal/>}/>
-              <Route path="/admin-signin" element={<AdminSignIn/>}/>
-              <Route path="/teacherdashboard" element={<TeacherDashboard />} />
-              <Route path="/personalprofile" element= {<EditPersonalProfile />} />
-              <Route path="/jobprofile" element= {<EditJobProfile />} />
-              {/* <Route path="/jobprofile" element= {<JobProfilePage />} /> */} 
+              <Route path="/admin-signin" element={<AdminSignIn/>}/>  
+              <Route path="/teacher" element={<Layout />}>
+                  {/* Nested Routes */}
+                  <Route index element={<TeacherDashboard />} />
+
+                  {/* Edit Profile Nested Routes */}
+                  <Route path="edit-profile" element={<EditPersonalProfile />}>
+                    <Route path="basic-info" element={<PersonalProfileCard />} />
+                    <Route path="address" element={<AddressProfileCard />} />
+                  </Route>
+
+                  {/* Job Profile Nested Routes */}
+                  <Route path="job-profile" element={<EditJobProfile />}>
+                    {/* Uncomment these if needed */}
+                    <Route path="education" element={<Education />} /> 
+                    <Route path="experience" element={<Exprience />} />
+                  </Route>
+                </Route>
+
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
               <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />

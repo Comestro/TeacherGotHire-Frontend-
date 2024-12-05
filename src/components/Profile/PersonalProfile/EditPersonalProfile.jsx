@@ -1,38 +1,32 @@
-
 import React from "react";
 import Navbar from "../../Navbar/Navbar";
-import PersonalProfileCard from "../PersonalProfile/PersonalProfileCard";
-import AddressProfileCard from "./AddressProfileCard";
-
-
-
+import { Outlet } from "react-router-dom";
 
 const EditPersonalProfile = () => {
   return (
-    <>
-      <nav className=''>
+    <div className="flex flex-col h-screen">
+      {/* Navbar */}
+      <nav className="flex-shrink-0">
         <Navbar
           links={[
-            { id: '1', label: "Contact US", to: "/contact" },
-            { id: "2", label: "AboutUs", to: "/about" },
+            { id: "1", label: "Contact Us", to: "/contact" },
+            { id: "2", label: "About Us", to: "/about" },
           ]}
           variant="dark"
         />
       </nav>
 
-
-
-     <div className="bg-gray-50">
-     <div className="md:py-7  md:mx-48">
-        <PersonalProfileCard />
-
+      {/* Main Content */}
+      <div className="flex-grow overflow-y-auto">
+        <h1 className="text-2xl flex justify-center font-bold m-4">
+          Edit Profile
+        </h1>
+        <div className="px-6">
+          <Outlet /> {/* Render nested routes here */}
+        </div>
       </div>
-      <div className="md:py-7  md:mx-48">
-        <AddressProfileCard  />
-
-      </div>
-     </div>
-    </>
-  )
+    </div>
+  );
 };
+
 export default EditPersonalProfile;

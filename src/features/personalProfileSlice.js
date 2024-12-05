@@ -2,6 +2,7 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import { updatePersonalProfile } from "../services/profileServices";
 import { fetchPersonalProfile } from "../services/profileServices";
+import {fetchAddressProfile }from "../services/profileServices";
 
 
 // const initialState={
@@ -26,9 +27,44 @@ import { fetchPersonalProfile } from "../services/profileServices";
 // Initial state
 const initialState = {
   profileData: [],
+  addsress:[],
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
+
+export const getAddress = createAsyncThunk(
+  "getAddress",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await fetchAddressProfile();
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+
+export const postAddress = createAsyncThunk(
+  "postAddress",
+  async (addressData, { rejectWithValue }) => {
+    try {
+      const data = await updateAddressProfile(addressData);
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
 
 // Thunk for fetching personal profile
 export const getProfile = createAsyncThunk(
@@ -70,7 +106,51 @@ const personalProfileSlice = createSlice({
   name: "personalProfile",
   initialState,
   reducers: {}, // Add reducers if needed
-  extraReducers: (builder) => {
+    extraReducers: (builder) => {
+      // for handeling  address 
+      builder
+        // Handle pending state
+        .addCase(getAddress.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        // Handle fulfilled state
+        .addCase(getAddress.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.addsress = action.payload; // Update profile data
+          //Object.assign(state, action.payload);
+          //console.log(profileData)
+          console.log(action.payload)
+        })
+        // Handle rejected state
+        .addCase(getAddress.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
+        
+  
+        //for post data handel
+       
+        builder
+        // Handle pending state
+        .addCase(postAddress.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        // Handle fulfilled state
+        .addCase(postAddress.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.addsress = action.payload; // Update profile data
+          //Object.assign(state, action.payload);
+          //console.log(profileData)
+          console.log(action.payload)
+        })
+        // Handle rejected state
+        .addCase(postAddress.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
+  
     // for get data handeling
     builder
       // Handle pending state

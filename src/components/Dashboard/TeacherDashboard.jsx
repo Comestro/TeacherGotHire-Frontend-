@@ -1,115 +1,126 @@
-import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux';
-import Navbar from '../Navbar/Navbar'
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import Navbar from "../Navbar/Navbar";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
-import Footer from '../Footer/Footer';
-import ResultCard from '../Result/Result';
+import Footer from "../Footer/Footer";
+import ResultCard from "../Result/Result";
+import {getSubjects} from "../../features/dashboardSlice"
 
 
 function TeacherDashboard() {
-    const profile = useSelector((state) => state.personalProfile.profileData|| []);
-    const navigate = useNavigate();
+  const subjects = useSelector((state)=>state.dashboard.subjects.data);
+  console.log("sub",subjects);
+  console.log("subject",subjects)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-   
+  const [selectedSubject, setSelectedSubject] = useState(null);
+
+  useEffect(() => {
+    
+    dispatch(getSubjects());
+}, [dispatch]);
+
+  const handleSubjectSelect = (subjects) => {
+    setSelectedSubject(subjects);
+  };
+
+  const handleProceedToExam = () => {
+    alert(`Proceeding to exam for ${selectedSubject.name}`);
+    navigate('/exam');
+  };
 
   return (
-    <div >
-      <nav className=''>
-          <Navbar
-              links={[
-                  {id:'1',label:"Home", to:"/"},
-                  {id:'2', label: "Contact US", to: "/contact" },
-                  {id:"3", label: "AboutUs", to: "/about" },
-                ]}
-                variant="dark"
-                // notifications={notifications}
-                //externalComponent={ProfileButton}
-              />
-        </nav>
-       
-              
-              <div className='flex w-full justify-center  mt-10'>
-              <aside className='w-[25%]'>
-              {/* 
-               */}
-                 <div className="relative w-24 h-24 mx-auto mb-6">
-            
-              {/* Profile Image */}
-              
-              {profile.map((profile)=>(
-                <div className="">
-                <img
-                src={profile.profileImage || "https://via.placeholder.com/150"}
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover border-2 border-gray-300 z-10"
-              />
-                {/* Name and Email */}
-              <div className="text-center mb-6">
-              <h2 className="font-bold text-lg">{profile.fullname || "Your Name"}</h2>
-              <p className="text-sm text-gray-500">{profile.email || "your-email@example.com"}</p>
-              <p className="text-sm text-gray-500">{profile.phone || "your-email@example.com"}</p>
+    <div>
+      <nav className="">
+        <Navbar
+          links={[
+            { id: "1", label: "Home", to: "/" },
+            { id: "2", label: "Contact US", to: "/contact" },
+            { id: "3", label: "AboutUs", to: "/about" },
+          ]}
+          variant="dark"
+          // notifications={notifications}
+          //externalComponent={ProfileButton}
+        />
+      </nav>
+
+      <div className="flex w-full justify-center  mt-10"> 
+        <section className="">
+          <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col items-center py-10 px-4">
+            {/* Welcome Section */}
+            {!selectedSubject && (
+              <div className="bg-white shadow-lg rounded-lg p-6 max-w-4xl w-full text-center">
+                <h1 className="text-3xl font-bold text-blue-600 mb-4">
+                  Welcome to the PTPI Website!
+                </h1>
+                <p className="text-gray-700 mb-6">
+                  This platform is designed to help teachers excel. You can
+                  select a subject, understand the exam process, and proceed to
+                  the test.
+                </p>
+                <p className="text-gray-700 mb-4 font-medium">
+                  <span className="text-green-500 font-bold">
+                    How it works:
+                  </span>{" "}
+                  Select a subject below to begin. Each subject has its own
+                  dedicated exam process to evaluate your expertise.
+                </p>
+              </div>
+            )}
+                <div>
+            <ResultCard/>
             </div>
-            {/* View Profile Button */}
-            <button
-                  onClick={() => navigate("/personalprofile")}
-                  className="block w-full mt-5 bg-blue-500 text-white py-2 rounded-md text-center hover:bg-blue-600 transition"
+
+            {/* Subject Selection Section */}
+            {!selectedSubject && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl w-full">
+                {subjects.map((subject) => (
+                  <div
+                    key={subject.id}
+                    onClick={() => handleSubjectSelect(subject.subject_name)}
+                    className="bg-white shadow-md rounded-lg p-4 cursor-pointer transform hover:scale-105 transition-all"
+                  >
+                    <h3 className="text-xl font-bold text-blue-700">
+                      {subject.name}
+                    </h3>
+                    <p className="text-gray-600 mt-2">{subject.subject_description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Subject Details Section */}
+            {selectedSubject && (
+              <div className="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full text-center">
+                <h2 className="text-2xl font-bold text-blue-600 mb-4">
+                  Subject: {selectedSubject.name}
+                </h2>
+                <p className="text-gray-700 mb-6">
+                  {selectedSubject.description}
+                </p>
+                <button
+                  onClick={handleProceedToExam}
+                  className="bg-blue-500 text-white font-bold py-3 px-6 rounded-md shadow-lg hover:bg-blue-600 transition"
                 >
-                  Edit your Profile
+                  Proceed to Exam
                 </button>
                 <button
-                  onClick={() => navigate("/jobprofile")}
-                  className="block w-full mt-5 bg-blue-500 text-white py-2 rounded-md text-center hover:bg-blue-600 transition"
+                  onClick={() => setSelectedSubject(null)}
+                  className="mt-4 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
                 >
-                  Edit Your Job profile
+                  Back to Subjects
                 </button>
-                </div>
-            
-               ))}
-              
-           
-
-              
-               
-
-                
-              </div> 
-       </aside>
-       <div>
-        <ResultCard/>
-        </div>
-       <section className=''>
-            <div className="w-2xl p-6 mt-8 bg-gray-100 rounded-lg shadow-lg">
-            <h1 className="text-3xl font-bold text-blue-600 text-center mb-4">
-              Become a Certified Tutor!
-            </h1>
-            <p className="text-lg text-gray-700 mb-4">
-              Join our network of professional tutors by completing a simple exam. Here's how the process works:
-            </p>
-            <ul className="list-disc pl-5 text-gray-600 mb-6">
-              <li className="mb-2">Pay a minimal registration fee to enroll for the exam.</li>
-              <li className="mb-2">Take the exam to demonstrate your teaching skills.</li>
-              <li>Start your journey as a certified tutor with us!</li>
-            </ul>
-            <p className="text-lg font-medium text-gray-800 mb-6">
-              Registration Fee: <span className="text-green-600 font-bold">₹500</span>
-            </p>
-            <div className="text-center">
-              <button
-                // onClick={handleExamStart}
-                className="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow hover:bg-blue-600 transition"
-              >
-                Proceed to Exam
-              </button>
-            </div>
-          </div>  
-                   
-            </section>
-       </div>
-       <Footer/>
-   </div>
-    
-  )
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+      <Footer />
+    </div>
+  );
 }
 
-export default TeacherDashboard
+export default TeacherDashboard;
