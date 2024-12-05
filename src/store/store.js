@@ -13,7 +13,6 @@ const rootReducer = combineReducers({
   auth: authSlice,
   personalProfile: personalProfileSlice,
   jobProfile: jobProfileSlice,
-  addressProfile: addressProfileSlice,
   questions : questionReducer,
 });
 
