@@ -1,151 +1,159 @@
-
-
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { addEducation, updateEducation, removeEducation } from "../store/jobProfileSlice";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
+import Input from "../../Input";
+import { fetchEducationProfile, updateEducationProfile } from "../../../services/jobProfileService";
+//import { PostEducationProfile} from "../../../features/jobProfileSlic"; // Replace with actual Redux action
 
-const Education = () => {
-  const education = useSelector((state) => state.profile.education); // Redux education state
+const EducationProfileCard = () => {
   const dispatch = useDispatch();
+  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
+  const [error, setError] = useState("");
 
-  const [newEducation, setNewEducation] = useState({ degree: "", institution: "", year: "" ,});
-  const [editingIndex, setEditingIndex] = useState(null); // Track index being edited
-  const [isModalOpen, setIsModalOpen] = useState(false); // Track modal visibility
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
 
-  // Open modal and set data for editing (or reset for new entry)
-  const handleOpenModal = (index = null) => {
-    if (index !== null) {
-      setNewEducation(education[index]);
-      setEditingIndex(index);
-    } else {
-      
-      setNewEducation({ degree: "", institution: "", year: "" });
-      setEditingIndex(null);
+  // Fetch education data on component mount
+  useEffect(() => {
+    dispatch(fetchEducationProfile());
+  }, [dispatch]);
+
+  // Handle saving or updating education data
+  const onSubmit = async (data) => {
+    try {
+      if (editingIndex !== null) {
+        // Update existing education record
+        const updatedData = [...educationData];
+        updatedData[editingIndex] = data;
+        await updateEducationProfile(data); // Call API for update
+        //dispatch(PostEducationProfile(updatedData)); // Dispatch updated data
+      } else {
+        // Add new education record
+        await updateEducationProfile(data); // Call API to save
+        dispatch(postEducation([...educationData, data])); // Dispatch with new data
+      }
+      setEditingIndex(null); // Exit editing mode
+      reset(); // Reset form
+    } catch (err) {
+      setError(err.message);
     }
-    setIsModalOpen(true);
   };
 
-  // Save education details
-  const handleSaveEducation = () => {
-    if (editingIndex !== null) {
-      dispatch(updateEducation({ index: editingIndex, data: newEducation }));
-    } else {
-      dispatch(addEducation(newEducation));
-    }
-    setIsModalOpen(false); // Close modal
+  // Set form values for editing
+  const handleEdit = (index) => {
+    setEditingIndex(index);
+    const selectedEducation = educationData[index];
+    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
   };
 
-  // Remove an education entry
-  const handleRemoveEducation = (index) => {
-    dispatch(removeEducation(index));
+  // Cancel editing
+  const handleCancel = () => {
+    setEditingIndex(null);
+    reset();
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">Education</h3>
-        <button
-          onClick={() => handleOpenModal()} // Open modal for adding new education
-          className="text-blue-500 hover:underline text-sm flex items-center gap-1"
-        >
-          <FiEdit2 />
-          Add Education
-        </button>
-      </div>
+    <div className="p-6">
+      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
 
-      {/* Education Cards */}
-      <div className="space-y-4">
-        {education.length > 0 ? (
-          education.map((edu, index) => (
-            <div key={index} className="border p-4 rounded-lg shadow-sm bg-gray-100">
-              <p>
-                <strong>Degree:</strong> {edu.degree}
-              </p>
-              <p>
-                <strong>Institution:</strong> {edu.institution}
-              </p>
-              <p>
-                <strong>Year:</strong> {edu.year}
-              </p>
-              <div className="mt-2 space-x-4">
-                <button
-                  onClick={() => handleOpenModal(index)} // Open modal for editing
-                  className="text-blue-500 hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleRemoveEducation(index)} // Remove education
-                  className="text-red-500 hover:underline"
-                >
-                  Remove
-                </button>
+      {/* Add/Edit Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Input
+              label="Qualification"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Qualification"
+              type="text"
+              {...register("qualification", { required: true })}
+            />
+            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Institution"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Institution"
+              type="text"
+              {...register("institution", { required: true })}
+            />
+            {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Year of Passing"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Year of Passing"
+              type="text"
+              {...register("year_of_passing", { required: true })}
+            />
+            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Grade or Percentage"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Grade or Percentage"
+              type="text"
+              {...register("grade_or_percentage")}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end space-x-2">
+          {editingIndex !== null && (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {editingIndex !== null ? "Update" : "Save"}
+          </button>
+        </div>
+      </form>
+
+      {/* Existing Education Records */}
+      <div className="mt-6 space-y-4">
+        {educationData.length > 0 ? (
+          educationData.map((education, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
+            >
+              <div>
+                <p><strong>Qualification:</strong> {education.qualification}</p>
+                <p><strong>Institution:</strong> {education.institution}</p>
+                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
+                <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
               </div>
+              <button
+                onClick={() => handleEdit(index)}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                <FiEdit2 size={20} />
+              </button>
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No education added yet.</p>
+          <p className="text-gray-500 text-sm">No education records added yet.</p>
         )}
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingIndex !== null ? "Edit Education" : "Add Education"}
-            </h3>
-
-            {/* Input Fields */}
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={newEducation.degree}
-                onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })}
-                placeholder="Degree"
-                className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
-              />
-              <input
-                type="text"
-                value={newEducation.institution}
-                onChange={(e) =>
-                  setNewEducation({ ...newEducation, institution: e.target.value })
-                }
-                placeholder="Institution"
-                className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
-              />
-              <input
-                type="text"
-                value={newEducation.year}
-                onChange={(e) => setNewEducation({ ...newEducation, year: e.target.value })}
-                placeholder="Year of Completion"
-                className="w-full border px-3 py-2 rounded-lg focus:outline-blue-500"
-              />
-            </div>
-
-            {/* Modal Buttons */}
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setIsModalOpen(false)} // Close modal
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveEducation} // Save or update education
-                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Error Message */}
+      {error && (
+        <p className="text-red-500 text-sm mt-4">
+          Error: {error}
+        </p>
       )}
     </div>
   );
 };
 
-export default Education;
-
+export default EducationProfileCard;
