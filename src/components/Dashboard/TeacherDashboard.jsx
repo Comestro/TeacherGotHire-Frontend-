@@ -2,44 +2,29 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import Navbar from "../Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
 import Footer from "../Footer/Footer";
 import ResultCard from "../Result/Result";
+import {getSubjects} from "../../features/dashboardSlice"
 
 
 function TeacherDashboard() {
-  const profile = useSelector(
-    (state) => state.personalProfile.profileData || []
-  );
+  const subjects = useSelector((state)=>state.dashboard.subjects.data);
+  console.log("sub",subjects);
+  console.log("subject",subjects)
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
-  const subjects = [
-    {
-      id: 1,
-      name: "Mathematics",
-      description: "Master numbers and calculations.",
-    },
-    {
-      id: 2,
-      name: "Science",
-      description: "Dive into the world of experiments and discoveries.",
-    },
-    {
-      id: 3,
-      name: "English",
-      description: "Improve your grammar and communication skills.",
-    },
-    {
-      id: 4,
-      name: "History",
-      description: "Explore events that shaped the world.",
-    },
-  ];
+  useEffect(() => {
+    
+    dispatch(getSubjects());
+}, [dispatch]);
 
-  const handleSubjectSelect = (subject) => {
-    setSelectedSubject(subject);
+  const handleSubjectSelect = (subjects) => {
+    setSelectedSubject(subjects);
   };
 
   const handleProceedToExam = () => {
@@ -62,55 +47,7 @@ function TeacherDashboard() {
         />
       </nav>
 
-      <div className="flex w-full justify-center  mt-10">
-        <aside className="w-[25%]">
-          {/*
-           */}
-          <div className="relative max-w-sm mx-auto h-screen bg-gradient-to-b from-blue-50 to-blue-100 shadow-lg rounded-lg p-6 flex flex-col justify-center">
-            {/* Profile Image */}
-            {profile.map((profile, index) => (
-              <div key={index} className="text-center">
-                <div className="relative w-28 h-28 mx-auto mb-4">
-                  <img
-                    src={
-                      profile.profileImage || "https://via.placeholder.com/150"
-                    }
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover border-4 border-blue-500 shadow-md"
-                  />
-                </div>
-
-                {/* Name and Contact Info */}
-                <h2 className="text-xl font-bold text-gray-800">
-                  {profile.fullname || "Your Name"}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {profile.email || "your-email@example.com"}
-                </p>
-                <p className="text-sm text-gray-600 mb-6">
-                  {profile.phone || "your-phone-number"}
-                </p>
-
-                {/* Buttons */}
-                <div className="space-y-4">
-                  <button
-                    onClick={() => navigate("/personalprofile")}
-                    className="w-full bg-blue-500 text-white font-semibold py-2 rounded-md shadow-md hover:bg-blue-600 transition"
-                  >
-                    Edit Your Profile
-                  </button>
-                  <button
-                    onClick={() => navigate("/jobprofile")}
-                    className="w-full bg-green-500 text-white font-semibold py-2 rounded-md shadow-md hover:bg-green-600 transition"
-                  >
-                    Edit Your Job Profile
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </aside>
-        
+      <div className="flex w-full justify-center  mt-10"> 
         <section className="">
           <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col items-center py-10 px-4">
             {/* Welcome Section */}
@@ -143,13 +80,13 @@ function TeacherDashboard() {
                 {subjects.map((subject) => (
                   <div
                     key={subject.id}
-                    onClick={() => handleSubjectSelect(subject)}
+                    onClick={() => handleSubjectSelect(subject.subject_name)}
                     className="bg-white shadow-md rounded-lg p-4 cursor-pointer transform hover:scale-105 transition-all"
                   >
                     <h3 className="text-xl font-bold text-blue-700">
                       {subject.name}
                     </h3>
-                    <p className="text-gray-600 mt-2">{subject.description}</p>
+                    <p className="text-gray-600 mt-2">{subject.subject_description}</p>
                   </div>
                 ))}
               </div>
