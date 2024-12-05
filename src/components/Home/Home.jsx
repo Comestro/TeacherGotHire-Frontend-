@@ -8,6 +8,7 @@ import { IoLocationOutline } from "react-icons/io5";
 import TeacherProfiles from "../Review/TeacherProfile";
 import TeacherSection from "../TeacherSection";
 import SchoolSection from "../SchoolSection";
+import FeaturesSection from "../FeaturesSection";
 
 function Home() {
   const navigate = useNavigate();
@@ -133,7 +134,9 @@ function Home() {
         </div>
       </div>
       <TeacherSection onSelectRole={handleRoleSelection} />
+      <FeaturesSection/>
       <TeacherProfiles />
+      
       <SchoolSection onSelectRole={handleRoleSelection} />
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
