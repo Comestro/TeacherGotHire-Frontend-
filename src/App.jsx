@@ -22,6 +22,7 @@ import AdminSignIn from "./components/AdminLogin";
 
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
+import ResultPage from "./components/Exam/Results";
 
 
 
@@ -35,6 +36,7 @@ function App() {
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
               <Route path="/exam" element={<ExamPortal/>}/>
+              <Route path="/result" element={<ResultPage />} />
               <Route path="/admin-signin" element={<AdminSignIn/>}/>
               <Route path="/teacherdashboard" element={<TeacherDashboard />} />
                <Route path="/personalprofile" element= {<EditPersonalProfile />} />
