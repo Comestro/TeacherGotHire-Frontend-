@@ -5,14 +5,14 @@ import { combineReducers } from "redux";
 import authSlice from "../features/authSlice";
 import personalProfileSlice from "../features/personalProfileSlice";
 import jobProfileSlice from "../features/jobProfileSlice";
-import addressProfileSlice from "../features/addressSlice";
+import dashboardSlice from "../features/dashboardSlice";
 
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
   auth: authSlice,
   personalProfile: personalProfileSlice,
   jobProfile: jobProfileSlice,
-  addressProfile: addressProfileSlice,
+  dashboard: dashboardSlice,
 });
 
 // Step 2: Configure persist
