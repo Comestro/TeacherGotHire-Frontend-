@@ -72,7 +72,7 @@ const TeacherProfiles = () => {
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Our Teachers <span className="text-teal-600">Who Got Placed</span>
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="text-gray-600 font-serif mb-8">
           Meet the amazing teachers who secured jobs through our community.
           Their success stories inspire us every day!
         </p>
@@ -80,7 +80,7 @@ const TeacherProfiles = () => {
           {teachers.map((teacher, index) => (
             <div key={index} className="p-4">
               <div className="bg-white h-52 rounded-lg shadow-md overflow-hidden p-6 text-left">
-                <p className="text-gray-600 italic mb-4">"{teacher.review}"</p>
+                <p className="text-gray-600 font-serif italic mb-4">"{teacher.review}"</p>
                 <div className="flex items-center">
                   <img
                     src={teacher.image}

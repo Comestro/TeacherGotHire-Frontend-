@@ -18,7 +18,7 @@ const FeaturesSection = () => {
         <h2 className="text-3xl font-semibold text-gray-600 mb-6">
           Simplified 5-Step Teacher Hiring Process
         </h2>
-        <p className="text-gray-600 md:px-10 mb-12">
+        <p className="text-gray-600 font-serif md:px-10 mb-12">
           Join our team in just five easy steps and kickstart your teaching journey.
         </p>
 
@@ -30,7 +30,7 @@ const FeaturesSection = () => {
               <h3 className=" text-gray-700 font-bold mb-2">
                 Step 1: Login/Sign Up
               </h3>
-              <p className="text-gray-600 md:px-10 text-center">
+              <p className="text-gray-600 font-serif md:px-10 text-center">
                 Create an account to begin your application process.
               </p>
             </div>
@@ -40,7 +40,7 @@ const FeaturesSection = () => {
               <h3 className="text-gray-700 font-bold mb-2">
                 Step 2: Take an Exam
               </h3>
-              <p className="text-gray-600 md:px-10 text-center">
+              <p className="text-gray-600 font-serif md:px-10 text-center">
                 Complete a secure online test with a maximum of 2 attempts.
               </p>
             </div>
@@ -51,7 +51,7 @@ const FeaturesSection = () => {
               <h3 className="text-gray-700 font-bold mb-2">
                 Step 3: Interview
               </h3>
-              <p className="text-gray-600 text-center">
+              <p className="text-gray-600 font-serif text-center">
                 Showcase your skills in a virtual interview.
               </p>
             </div>
@@ -64,7 +64,7 @@ const FeaturesSection = () => {
               <h3 className="text-gray-700 font-bold mb-2">
                 Step 4: Demo Classes
               </h3>
-              <p className="text-gray-600 md:px-10 text-center">
+              <p className="text-gray-600 font-serif md:px-10 text-center">
                 Conduct 10 days of demo classes to prove your teaching ability.
               </p>
             </div>
@@ -74,7 +74,7 @@ const FeaturesSection = () => {
               <h3 className="text-gray-700 font-bold mb-2">
                 Step 5: Get Hired
               </h3>
-              <p className="text-gray-600 md:px-10 text-center">
+              <p className="text-gray-600 font-serif md:px-10 text-center">
                 Receive your salary with a 30% deduction for the hiring process.
               </p>
             </div>

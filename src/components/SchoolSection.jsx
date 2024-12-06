@@ -21,7 +21,7 @@ const SchoolSection = ({ onSelectRole }) => {
           <h1 className="text-4xl sm:text-4xl font-bold mb-6 leading-normal">
           Does your school need dedicated teachers?
           </h1>
-          <p className="text-lg sm:text-xl mb-6 leading-relaxed text-gray-600">
+          <p className="text-lg sm:text-xl mb-6 leading-relaxed font-serif text-gray-600">
             We provide qualified teachers committed to shaping a brighter
             future for your students. Login today and connect with our expert
             educators!
