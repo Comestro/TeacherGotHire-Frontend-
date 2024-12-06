@@ -17,7 +17,7 @@ const rootReducer = combineReducers({
   dashboard: dashboardSlice,
 });
 
-// Step 2: Configure persist
+// Step 2: Configure persist 
 const persistConfig = {
   key: "root",
   storage,
