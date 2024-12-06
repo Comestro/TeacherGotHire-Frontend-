@@ -25,7 +25,7 @@ apiClient.interceptors.request.use(
 
 export const updateEducationProfile = async(educationdata)=>{
      try{
-        const response = await apiClient.post('/api/admin/educationalQulification/',educationdata);
+        const response = await apiClient.post('/api/self/educationalQulification/',educationdata);
         console.log(response.data);
         console.log("hello");
         return JSON.parse(JSON.stringify(response)); 
@@ -37,7 +37,7 @@ export const updateEducationProfile = async(educationdata)=>{
 }
 export const fetchEducationProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/educationalQulification/');
+     const response = await apiClient.get('/api/self/educationalQulification/');
      console.log("get data:",response.data);
      return response.data;
   }
@@ -48,7 +48,7 @@ export const fetchEducationProfile = async()=>{
 }
 export const updateSkillsProfile = async(skillsdata)=>{
   try{
-    const response = await apiClient.post('api/admin/skill/',skillsdata);
+    const response = await apiClient.post('api/self/teacherskill/',skillsdata);
     console.log(response.data);
     return JSON.parese(JSON.stringify(response));
   }
@@ -59,7 +59,7 @@ export const updateSkillsProfile = async(skillsdata)=>{
 }
 export const fetchSkillsProfile = async()=>{
   try{
-     const response = await apiClient.get('api/admin/skill/');
+     const response = await apiClient.get('api/self/teacherskill/');
      console.log("get data:",response.data);
      return response.data;
   }
@@ -71,7 +71,7 @@ export const fetchSkillsProfile = async()=>{
 
 export const updateExprienceProfile = async(expriencedata)=>{
   try{
-    const response = await apiClient.post('api/admin/teacherexperience/',expriencedata);
+    const response = await apiClient.post('api/self/teacherexperience/',expriencedata);
     console.log(response.data);
     return JSON.parese(JSON.stringify(response));
   }
@@ -82,7 +82,7 @@ export const updateExprienceProfile = async(expriencedata)=>{
 }
 export const fetchExprienceProfile = async()=>{
   try{
-     const response = await apiClient.get('api/admin/teacherexperience/');
+     const response = await apiClient.get('api/self/teacherexperience/');
      console.log("get data:",response.data);
      return response.data;
   }
@@ -92,5 +92,28 @@ export const fetchExprienceProfile = async()=>{
   }
 }
 
+
+export const updateTeacherPrefrence = async(expriencedata)=>{
+  try{
+    const response = await apiClient.post('api/self/teacherepreference/',expriencedata);
+    console.log(response.data);
+    return JSON.parese(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+export const fetchTeacherPrefrence = async()=>{
+  try{
+     const response = await apiClient.get('api/self/teacherepreference/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 
 export default apiClient;

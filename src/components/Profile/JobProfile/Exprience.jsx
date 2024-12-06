@@ -64,16 +64,6 @@ const Experience = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label=""
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Qualification"
-              type="text"
-              {...register("qualification", { required: true })}
-            />
-            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
-          </div>
-          <div>
-            <Input
               label="Institution"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Institution"
@@ -84,24 +74,56 @@ const Experience = () => {
           </div>
           <div>
             <Input
-              label="Year of Passing"
+              label="Role"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Year of Passing"
+              placeholder="Enter your Role"
               type="text"
-              {...register("year_of_passing", { required: true })}
+              {...register("role", { required: true })}
             />
-            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
+            {errors.role && <span className="text-red-500 text-sm">{errors.role.message}</span>}
           </div>
           <div>
             <Input
-              label="Grade or Percentage"
+              label="Start-date"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Grade or Percentage"
-              type="text"
-              {...register("grade_or_percentage")}
+              type="date"
+              {...register("Start_date")}
             />
+            {errors.Start_date && <span className="text-red-500 text-sm">{errors.Start_date.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Last-date"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Grade or Percentage"
+              type="date"
+              {...register("Last_date")}
+            />
+            {errors.Last_date && <span className="text-red-500 text-sm">{errors.Last_date.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Achivements"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter your Role"
+              type="text"
+              {...register("achivements", { required: true })}
+            />
+            {errors.achivements && <span className="text-red-500 text-sm">{errors.achivements.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Discription"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter your Role"
+              type="text"
+              {...register("discription", { required: true })}
+            />
+            {errors.discription && <span className="text-red-500 text-sm">{errors.discription.message}</span>}
           </div>
         </div>
+        
         <div className="flex justify-end space-x-2">
           {editingIndex !== null && (
             <button
@@ -132,7 +154,7 @@ const Experience = () => {
               <div>
                 <p><strong>Qualification:</strong> {education.qualification}</p>
                 <p><strong>Institution:</strong> {education.institution}</p>
-                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
+                <p><strong>Year of Passing:</strong> {education.role}</p>
                 <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
               </div>
               <button

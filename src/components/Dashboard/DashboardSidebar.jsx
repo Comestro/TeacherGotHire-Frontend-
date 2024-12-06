@@ -20,9 +20,9 @@ const Sidebar = () => {
       {/* Profile Section */}
       <div className="flex-grow w-full overflow-y-auto ">
       <div>
-        {profile && profile.length > 0 ? (
-          profile.map((profile, index) => (
-            <div key={index} className="text-center mb-8">
+        
+         
+           
               <div className="relative w-28 h-28 mx-auto mb-4">
                 <img
                   src={profile.profileImage || "https://via.placeholder.com/150"}
@@ -41,24 +41,7 @@ const Sidebar = () => {
               <p className="text-sm text-gray-300 mb-4">
                 {profile.phone || "your-phone-number"}
               </p>
-            </div>
-    ))
-  ) : (
-    <div className="text-center text-gray-300">
-      <div className="relative w-28 h-28 mx-auto mb-4">
-        <img
-          src="https://via.placeholder.com/150"
-          alt="Default Profile"
-          className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
-        />
-      </div>
-
-      {/* Default Fallback Data */}
-      <h2 className="text-lg font-semibold text-gray-100">Your Name</h2>
-      <p className="text-sm text-gray-300">your-email@example.com</p>
-      <p className="text-sm text-gray-300 mb-4">your-phone-number</p>
-    </div>
-  )}
+        
 </div>
 
         {/* Navigation Links */}
@@ -75,7 +58,7 @@ const Sidebar = () => {
             <span className="text-lg">📊</span>
             <span>Dashboard</span>
           </NavLink>
-          <NavLink
+          {/* <NavLink
             to="/personal-info"
             className={({ isActive }) =>
               `flex items-center space-x-4 py-2 px-4 rounded-md ${
@@ -85,7 +68,7 @@ const Sidebar = () => {
           >
             <span className="text-lg">👤</span>
             <span>View Profile</span>
-          </NavLink>
+          </NavLink> */}
 
           {/* Edit Profile with Sub-list */}
           <div>
@@ -95,7 +78,7 @@ const Sidebar = () => {
             >
               <div className="flex items-center space-x-4">
                 <span className="text-lg">✏️</span>
-                <span>Edit Profile</span>
+                <span>Pesonal Profile</span>
               </div>
               <span>{showEditProfileSubList ? "▲" : "▼"}</span>
             </div>
@@ -109,7 +92,7 @@ const Sidebar = () => {
                     } hover:text-blue-300 transition`
                   }
                 >
-                  Basic Information
+                  Basic Details
                 </NavLink>
                 <NavLink
                   to="edit-profile/address"
@@ -119,7 +102,7 @@ const Sidebar = () => {
                     } hover:text-blue-300 transition`
                   }
                 >
-                  Address
+                  Address Details
                 </NavLink>
                 <NavLink
                   to="edit-profile/personal-info"
@@ -129,7 +112,7 @@ const Sidebar = () => {
                     } hover:text-blue-300 transition`
                   }
                 >
-                  Personal Information
+                  Personal Details
                 </NavLink>
               </div>
             )}
@@ -143,7 +126,7 @@ const Sidebar = () => {
             >
               <div className="flex items-center space-x-4">
                 <span className="text-lg">💼</span>
-                <span>Edit Job Profile</span>
+                <span>Job Profile</span>
               </div>
               <span>{showJobProfileSubList ? "▲" : "▼"}</span>
             </div>
@@ -157,7 +140,7 @@ const Sidebar = () => {
                     } hover:text-blue-300 transition`
                   }
                 >
-                  Education
+                  Educational Details
                 </NavLink>
                 <NavLink
                   to="job-profile/experience"
@@ -167,7 +150,7 @@ const Sidebar = () => {
                     } hover:text-blue-300 transition`
                   }
                 >
-                  Experience
+                  Experience Details
                 </NavLink>
                 <NavLink
                   to="job-profile/skills"
