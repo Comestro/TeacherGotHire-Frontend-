@@ -10,7 +10,7 @@ import {getSubjects} from "../../features/dashboardSlice"
 
 
 function TeacherDashboard() {
-  const subjects = useSelector((state)=>state.dashboard.subjects.data);
+  const subjects = useSelector((state)=>state.dashboard.subjects.data || []);
   console.log("sub",subjects);
   console.log("subject",subjects)
   const navigate = useNavigate();
@@ -75,9 +75,10 @@ function TeacherDashboard() {
             </div>
 
             {/* Subject Selection Section */}
-            {!selectedSubject && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl w-full">
-                {subjects.map((subject) => (
+            {/* {!selectedSubject && ( */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl w-full">
+              {subjects.length > 0 ? (
+                subjects.map((subject) => (
                   <div
                     key={subject.id}
                     onClick={() => handleSubjectSelect(subject.subject_name)}
@@ -88,9 +89,13 @@ function TeacherDashboard() {
                     </h3>
                     <p className="text-gray-600 mt-2">{subject.subject_description}</p>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              ) : (
+                <div>No subjects available</div>
+              )}
+            </div>
+
+          
 
             {/* Subject Details Section */}
             {selectedSubject && (

@@ -19,30 +19,47 @@ const Sidebar = () => {
     <div className="w-64 bg-gradient-to-b from-blue-900 to-blue-800 text-white h-screen flex flex-col items-center py-8 shadow-lg overflow-hidden">
       {/* Profile Section */}
       <div className="flex-grow w-full overflow-y-auto ">
-        {profile.map((profile, index) => (
-          <div key={index} className="text-center mb-8">
-            <div className="relative w-28 h-28 mx-auto mb-4">
-              <img
-                src={
-                  profile.profileImage || "https://via.placeholder.com/150"
-                }
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
-              />
-            </div>
+      <div>
+        {profile && profile.length > 0 ? (
+          profile.map((profile, index) => (
+            <div key={index} className="text-center mb-8">
+              <div className="relative w-28 h-28 mx-auto mb-4">
+                <img
+                  src={profile.profileImage || "https://via.placeholder.com/150"}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              </div>
 
-            {/* Name and Contact Info */}
-            <h2 className="text-lg font-semibold text-gray-100">
-              {profile.fullname || "Your Name"}
-            </h2>
-            <p className="text-sm text-gray-300">
-              {profile.email || "your-email@example.com"}
-            </p>
-            <p className="text-sm text-gray-300 mb-4">
-              {profile.phone || "your-phone-number"}
-            </p>
-          </div>
-        ))}
+              {/* Name and Contact Info */}
+              <h2 className="text-lg font-semibold text-gray-100">
+                {profile.fullname || "Your Name"}
+              </h2>
+              <p className="text-sm text-gray-300">
+                {profile.email || "your-email@example.com"}
+              </p>
+              <p className="text-sm text-gray-300 mb-4">
+                {profile.phone || "your-phone-number"}
+              </p>
+            </div>
+    ))
+  ) : (
+    <div className="text-center text-gray-300">
+      <div className="relative w-28 h-28 mx-auto mb-4">
+        <img
+          src="https://via.placeholder.com/150"
+          alt="Default Profile"
+          className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+        />
+      </div>
+
+      {/* Default Fallback Data */}
+      <h2 className="text-lg font-semibold text-gray-100">Your Name</h2>
+      <p className="text-sm text-gray-300">your-email@example.com</p>
+      <p className="text-sm text-gray-300 mb-4">your-phone-number</p>
+    </div>
+  )}
+</div>
 
         {/* Navigation Links */}
         <nav className="space-y-6 w-full px-6">
