@@ -5,10 +5,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import Footer from "../Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
-import TeacherProfiles from "../Review/TeacherProfile";
-import TeacherSection from "../TeacherSection";
-import SchoolSection from "../SchoolSection";
-import FeaturesSection from "../FeaturesSection";
+import TeacherProfiles from "../HomePage.jsx/Review/TeacherProfile";
+import TeacherSection from "../HomePage.jsx/TeacherSection";
+import SchoolSection from "../HomePage.jsx/SchoolSection";
+import FeaturesSection from "../HomePage.jsx/FeaturesSection";
+import ExamSection from "../HomePage.jsx/ExamSection";
 
 function Home() {
   const navigate = useNavigate();
@@ -136,7 +137,9 @@ function Home() {
       <TeacherSection onSelectRole={handleRoleSelection} />
       <FeaturesSection/>
       <SchoolSection onSelectRole={handleRoleSelection} />
+      <ExamSection/>
       <TeacherProfiles />
+      
       
       
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
