@@ -135,9 +135,10 @@ function Home() {
       </div>
       <TeacherSection onSelectRole={handleRoleSelection} />
       <FeaturesSection/>
+      <SchoolSection onSelectRole={handleRoleSelection} />
       <TeacherProfiles />
       
-      <SchoolSection onSelectRole={handleRoleSelection} />
+      
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
     </div>
