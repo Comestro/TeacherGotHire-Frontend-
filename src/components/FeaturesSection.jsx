@@ -1,74 +1,93 @@
 import React from "react";
-import { FaFilePdf, FaHandsHelping, FaShieldAlt, FaClipboardList, FaCheckCircle } from "react-icons/fa"; // You can use other icons based on your needs
+import { BiLogInCircle } from "react-icons/bi";
+import {
+  FaUserCheck,
+  FaPencilAlt,
+  FaVideo,
+  FaChalkboardTeacher,
+  FaMoneyCheckAlt,
+} from "react-icons/fa";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
+import { IoVideocamOutline } from "react-icons/io5";
+import { LiaChalkboardTeacherSolid, LiaMoneyCheckSolid } from "react-icons/lia";
 
 const FeaturesSection = () => {
   return (
     <section className="bg-white py-12 px-4">
       <div className="container mx-auto text-center">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-          Everything you need to create and conduct comprehensive exams
+        <h2 className="text-3xl font-semibold text-gray-600 mb-6">
+          Simplified 5-Step Teacher Hiring Process
         </h2>
-        <p className="text-gray-600 mb-12">
-          We simplify all the moving pieces so you can administer your exams
-          securely and with confidence without technical complexity.
+        <p className="text-gray-600 font-serif md:px-10 mb-12">
+          Join our team in just five easy steps and kickstart your teaching journey.
         </p>
 
-        <div className="grid grid-rows-1 md:grid-rows-2 lg:grid-rows-3 gap-8">
-          <div className=" flex justify-center">
-            <div className="feature-item flex flex-col items-center p-6">
-              <FaFilePdf className="text-4xl text-teal-500 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Create an exam in minutes</h3>
-              <p className="text-gray-600 text-center">
-                by uploading an existing exam as PDF
+        <div className="space-y-8">
+          {/* First Row */}
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+            <div className="feature-item flex flex-col items-center p-6  rounded-lg">
+              <BiLogInCircle  className="text-5xl text-teal-500 mb-4" />
+              <h3 className=" text-gray-700 font-bold mb-2">
+                Step 1: Login/Sign Up
+              </h3>
+              <p className="text-gray-600 font-serif md:px-10 text-center">
+                Create an account to begin your application process.
               </p>
             </div>
 
-            <div className="feature-item flex flex-col items-center p-6">
-              <FaHandsHelping className="text-4xl text-teal-500 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Empower every Teacher</h3>
-              <p className="text-gray-600 text-center">
-                by customizing exams to each teacher's individual needs
+            <div className="feature-item flex flex-col items-center p-6  rounded-lg">
+            <HiOutlinePencilSquare className="text-5xl text-teal-500 mb-4" />
+              <h3 className="text-gray-700 font-bold mb-2">
+                Step 2: Take an Exam
+              </h3>
+              <p className="text-gray-600 font-serif md:px-10 text-center">
+                Complete a secure online test with a maximum of 2 attempts.
               </p>
             </div>
 
-            <div className="feature-item flex flex-col items-center p-6">
-              <FaShieldAlt className="text-4xl text-teal-500 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Prevent cheating</h3>
-              <p className="text-gray-600 text-center">
-                with our secure browser lockdown mode
+            <div className="feature-item flex flex-col items-center p-6  rounded-lg">
+              <IoVideocamOutline
+              className="text-5xl text-teal-500 mb-4" />
+              <h3 className="text-gray-700 font-bold mb-2">
+                Step 3: Interview
+              </h3>
+              <p className="text-gray-600 font-serif text-center">
+                Showcase your skills in a virtual interview.
               </p>
             </div>
           </div>
 
-          <div className="flex mt-10 w-full ">
-            <div className="feature-item w-3/6 flex flex-col items-center">
-              <FaClipboardList className="text-4xl text-teal-500 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Collect the exams your way</h3>
-              <p className="text-gray-600 text-center">
-                Stand alone or through an LMS. Online or offline. With or without
-                handwritten attachments.
+          {/* Second Row */}
+          <div className="grid lg:mx-48 sm:grid-cols-1 md:grid-cols-2">
+            <div className="feature-item flex flex-col items-center p-6  rounded-lg">
+            <LiaChalkboardTeacherSolid className="text-5xl text-teal-500 mb-4" />
+              <h3 className="text-gray-700 font-bold mb-2">
+                Step 4: Demo Classes
+              </h3>
+              <p className="text-gray-600 font-serif md:px-10 text-center">
+                Conduct 10 days of demo classes to prove your teaching ability.
               </p>
             </div>
 
-            <div className="feature-item w-3/6 flex flex-col items-center">
-              <FaCheckCircle className="text-4xl text-teal-500 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Auto-mark your exams</h3>
-              <p className="text-gray-600 text-center">
-                based on the rules you’ve set up or choose to mark manually
+            <div className="feature-item flex flex-col items-center p-6  rounded-lg">
+            <LiaMoneyCheckSolid  className="text-5xl text-teal-500 mb-4" />
+              <h3 className="text-gray-700 font-bold mb-2">
+                Step 5: Get Hired
+              </h3>
+              <p className="text-gray-600 font-serif md:px-10 text-center">
+                Receive your salary with a 30% deduction for the hiring process.
               </p>
             </div>
-
-
           </div>
-
         </div>
 
-        <div className="flex justify-center gap-6">
-          <button className="px-8 py-3 text-white  bg-teal-600">
-            Discover more features
+        {/* Buttons */}
+        <div className="flex flex-row justify-center gap-6 mt-12">
+          <button className="px-8 py-3 text-white bg-teal-600 rounded-full hover:bg-teal-700">
+            Learn More
           </button>
-          <button className="px-8 py-3 text-teal-500 border-2 border-teal-500 rounded-lg hover:bg-teal-100">
-            See video
+          <button className="px-8 py-3 text-teal-500 border-2 border-teal-500 rounded-full hover:bg-teal-100">
+            Watch Process Video
           </button>
         </div>
       </div>
