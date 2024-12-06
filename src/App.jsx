@@ -25,7 +25,7 @@ import ExamPortal from "./components/Exam/ExamPortal";
 import Layout from "./components/Layout";
 import PersonalInformation from "./components/Profile/PersonalProfile/PersonalInformation";
 import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
-import EducationProfileCard  from "./components/Profile/JobProfile/Education/";
+import Education  from "./components/Profile/JobProfile/Education/";
 import Exprience from "./components/Profile/JobProfile/Exprience";
 
 
@@ -53,8 +53,8 @@ function App() {
                   {/* Job Profile Nested Routes */}
                   <Route path="job-profile" element={<JobProfileEdit  />}>
                     {/* Uncomment these if needed */}
-                    <Route path="education" element={<EducationProfileCard  />} /> 
-                    <Route path="experience" element={<Exprience />} />
+                    <Route path="education" element={<Education/>} /> 
+                    <Route path="experience" element={<Exprience/>} />
                   </Route>
                 </Route>
 

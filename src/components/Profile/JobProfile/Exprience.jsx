@@ -7,9 +7,9 @@ import {  updateEducationProfile } from "../../../services/jobProfileService";
 import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
 
 
-const EducationProfileCard = () => {
+const Experience = () => {
   const dispatch = useDispatch();
-  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  const experienceData = useSelector((state) => state || []); // Adjust state selector as needed
   
   const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ const EducationProfileCard = () => {
     try {
       if (editingIndex !== null) {
         // Update existing education record
-        const updatedData = [...educationData];
+        const updatedData = [...experienceData];
         updatedData[editingIndex] = data;
         await updateEducationProfile(data); // Call API for update
         dispatch(postEducationProfile(updatedData)); // Dispatch updated data
@@ -158,4 +158,4 @@ const EducationProfileCard = () => {
   );
 };
 
-export default EducationProfileCard;
+export default Experience;
