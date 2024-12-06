@@ -1,197 +1,161 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
+import { FiEdit2 } from "react-icons/fi";
+import Input from "../../Input";
+import {  updateEducationProfile } from "../../../services/jobProfileService";
+import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
 
-function AddSubjectDetails() {
-  const [formData, setFormData] = useState({
-    subject: "",
-    role: "",
-    expectedSalary: "",
-    preferenceLocation: {
-      state: "",
-      district: "",
-      division: "",
-      subDivision: "",
-      blockArea: "",
-      pincode: "",
-    },
-  });
 
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+const EducationProfileCard = () => {
+  const dispatch = useDispatch();
+  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  
+  const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
 
-    // For nested location fields
-    if (name in formData.preferenceLocation) {
-      setFormData((prevData) => ({
-        ...prevData,
-        preferenceLocation: {
-          ...prevData.preferenceLocation,
-          [name]: value,
-        },
-      }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
+  // Fetch education data on component mount
+  useEffect(() => {
+    dispatch(getEducationProfile());
+  }, [dispatch]);
+
+  // Handle saving or updating education data
+  const onSubmit = async (data) => {
+    try {
+      if (editingIndex !== null) {
+        // Update existing education record
+        const updatedData = [...educationData];
+        updatedData[editingIndex] = data;
+        await updateEducationProfile(data); // Call API for update
+        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
+      } else {
+        // Add new education record
+        await updateEducationProfile(data); // Call API to save
+        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
+      }
+      setEditingIndex(null); // Exit editing mode
+      reset(); // Reset form
+    } catch (err) {
+      setError(err.message);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Data:", formData);
-    // Add API call here to save form data
-    setIsPopupOpen(false); // Close the popup after submission
+  // Set form values for editing
+  const handleEdit = (index) => {
+    setEditingIndex(index);
+    const selectedEducation = educationData[index];
+    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
+  };
+
+  // Cancel editing
+  const handleCancel = () => {
+    setEditingIndex(null);
+    reset();
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-blue-600 mb-4">Add Subject Details</h2>
+    <div className="p-6">
+      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
 
-      {/* Display Data */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-700">Subject Details</h3>
-        <p><strong>Subject:</strong> {formData.subject || "N/A"}</p>
-        <p><strong>Role:</strong> {formData.role || "N/A"}</p>
-        <p><strong>Expected Salary:</strong> {formData.expectedSalary || "N/A"}</p>
-        <p><strong>Location:</strong> {`${formData.preferenceLocation.state || "N/A"}, ${formData.preferenceLocation.district || "N/A"}, ${formData.preferenceLocation.pincode || "N/A"}`}</p>
-
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          className="mt-4 bg-blue-500 text-white font-bold py-2 px-4 rounded-md shadow-md hover:bg-blue-600 transition"
-        >
-          Edit Details
-        </button>
-      </div>
-
-      {/* Popup Modal */}
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Edit Subject Details</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Subject */}
-              <div>
-                <label htmlFor="subject" className="block text-gray-700 font-semibold mb-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter Subject"
-                />
-              </div>
-
-              {/* Role */}
-              <div>
-                <label htmlFor="role" className="block text-gray-700 font-semibold mb-1">
-                  Role
-                </label>
-                <input
-                  type="text"
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter Role"
-                />
-              </div>
-
-              {/* Expected Salary */}
-              <div>
-                <label htmlFor="expectedSalary" className="block text-gray-700 font-semibold mb-1">
-                  Expected Salary
-                </label>
-                <input
-                  type="number"
-                  id="expectedSalary"
-                  name="expectedSalary"
-                  value={formData.expectedSalary}
-                  onChange={handleChange}
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter Expected Salary"
-                />
-              </div>
-
-              {/* Preference Location */}
-              <div>
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Preferred Location</h4>
-
-                {/* State */}
-                <div>
-                  <label htmlFor="state" className="block text-gray-700 font-semibold mb-1">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    id="state"
-                    name="state"
-                    value={formData.preferenceLocation.state}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter State"
-                  />
-                </div>
-
-                {/* District */}
-                <div>
-                  <label htmlFor="district" className="block text-gray-700 font-semibold mb-1">
-                    District
-                  </label>
-                  <input
-                    type="text"
-                    id="district"
-                    name="district"
-                    value={formData.preferenceLocation.district}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter District"
-                  />
-                </div>
-
-                {/* Pincode */}
-                <div>
-                  <label htmlFor="pincode" className="block text-gray-700 font-semibold mb-1">
-                    Pincode
-                  </label>
-                  <input
-                    type="text"
-                    id="pincode"
-                    name="pincode"
-                    value={formData.preferenceLocation.pincode}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter Pincode"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-4 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsPopupOpen(false)}
-                  className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md shadow-md hover:bg-blue-600 transition"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
+      {/* Add/Edit Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Input
+              label="Qualification"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Qualification"
+              type="text"
+              {...register("qualification", { required: true })}
+            />
+            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Institution"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Institution"
+              type="text"
+              {...register("institution", { required: true })}
+            />
+            {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Year of Passing"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Year of Passing"
+              type="text"
+              {...register("year_of_passing", { required: true })}
+            />
+            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
+          </div>
+          <div>
+            <Input
+              label="Grade or Percentage"
+              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+              placeholder="Enter Grade or Percentage"
+              type="text"
+              {...register("grade_or_percentage")}
+            />
           </div>
         </div>
+        <div className="flex justify-end space-x-2">
+          {editingIndex !== null && (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {editingIndex !== null ? "Update" : "Save"}
+          </button>
+        </div>
+      </form>
+
+      {/* Existing Education Records */}
+      <div className="mt-6 space-y-4">
+        {educationData.length > 0 ? (
+          educationData.map((education, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
+            >
+              <div>
+                <p><strong>Qualification:</strong> {education.qualification}</p>
+                <p><strong>Institution:</strong> {education.institution}</p>
+                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
+                <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
+              </div>
+              <button
+                onClick={() => handleEdit(index)}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                <FiEdit2 size={20} />
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm">No education records added yet.</p>
+        )}
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <p className="text-red-500 text-sm mt-4">
+          Error: {error}
+        </p>
       )}
     </div>
   );
-}
+};
 
-export default AddSubjectDetails;
+export default EducationProfileCard;

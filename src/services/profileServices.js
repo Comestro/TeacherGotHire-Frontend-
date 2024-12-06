@@ -22,6 +22,30 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+export const updateBasicProfile = async(personaldata)=>{
+  try{
+     const response = await apiClient.post('/api/admin/teacher/',personaldata);
+     console.log(response.data);
+     console.log("hello");
+     
+     return JSON.parse(JSON.stringify(response)); 
+  }
+     catch (err) {
+         console.error(' error:', err.response?.data || err);
+         throw err;
+  }
+}
+export const fetchBasicProfile = async()=>{
+  try{
+     const response = await apiClient.get('/api/admin/teacher/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 
 export const updatePersonalProfile = async(personaldata)=>{
      try{
