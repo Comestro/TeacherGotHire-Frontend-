@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import store from "./store/store"; 
 import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
-import EditJobProfile from "./components/Profile/JobProfile/EditJobProfile"
+import JobProfileEdit  from "./components/Profile/JobProfile/jobProfileEdit"
 import AdminDashboard from "./admin/Dashboard/Dashboard";
 import AdminProfile from "./admin/Profile/Profile";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
@@ -22,10 +22,11 @@ import Contact from "./admin/Conatct/Contact";
 import AdminSignIn from "./components/AdminLogin";
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
+import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
-import PersonalProfileCard from "./components/Profile/PersonalProfile/PersonalProfileCard";
+import PersonalInformation from "./components/Profile/PersonalProfile/PersonalInformation";
 import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
-import Education from "./components/Profile/JobProfile/Education";
+import EducationProfileCard  from "./components/Profile/JobProfile/Education/";
 import Exprience from "./components/Profile/JobProfile/Exprience";
 
 
@@ -39,6 +40,7 @@ function App() {
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
               <Route path="/exam" element={<ExamPortal/>}/>
+                              <Route path="/result" element={<ResultPage />} />
               <Route path="/admin-signin" element={<AdminSignIn/>}/>  
               <Route path="/teacher" element={<Layout />}>
                   {/* Nested Routes */}
@@ -46,18 +48,17 @@ function App() {
 
                   {/* Edit Profile Nested Routes */}
                   <Route path="edit-profile" element={<EditPersonalProfile />}>
-                    <Route path="basic-info" element={<PersonalProfileCard />} />
+                    <Route path="personal-info" element={<PersonalInformation />} />
                     <Route path="address" element={<AddressProfileCard />} />
                   </Route>
 
                   {/* Job Profile Nested Routes */}
-                  <Route path="job-profile" element={<EditJobProfile />}>
+                  <Route path="job-profile" element={<JobProfileEdit  />}>
                     {/* Uncomment these if needed */}
-                    <Route path="education" element={<Education />} /> 
+                    <Route path="education" element={<EducationProfileCard  />} /> 
                     <Route path="experience" element={<Exprience />} />
                   </Route>
                 </Route>
-
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
               <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />

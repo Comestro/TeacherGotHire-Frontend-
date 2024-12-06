@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
-import { fetchEducationProfile, updateEducationProfile } from "../../../services/jobProfileService";
-//import { PostEducationProfile} from "../../../features/jobProfileSlic"; // Replace with actual Redux action
+import {  updateEducationProfile } from "../../../services/jobProfileService";
+import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+
 
 const EducationProfileCard = () => {
   const dispatch = useDispatch();
   const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  
   const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
   const [error, setError] = useState("");
 
@@ -16,7 +18,7 @@ const EducationProfileCard = () => {
 
   // Fetch education data on component mount
   useEffect(() => {
-    dispatch(fetchEducationProfile());
+    dispatch(getEducationProfile());
   }, [dispatch]);
 
   // Handle saving or updating education data
@@ -27,11 +29,11 @@ const EducationProfileCard = () => {
         const updatedData = [...educationData];
         updatedData[editingIndex] = data;
         await updateEducationProfile(data); // Call API for update
-        //dispatch(PostEducationProfile(updatedData)); // Dispatch updated data
+        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
       } else {
         // Add new education record
         await updateEducationProfile(data); // Call API to save
-        dispatch(postEducation([...educationData, data])); // Dispatch with new data
+        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
       }
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form

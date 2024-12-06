@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export default function Subheader({ totalQuestion }) {
+export default function Subheader({ totalQuestion, subject }) {
   const [timeLeft, setTimeLeft] = useState(totalQuestion*2 * 60); // 30 minutes in seconds
 
   useEffect(() => {
@@ -30,7 +30,9 @@ export default function Subheader({ totalQuestion }) {
 
   return (
     <div className="bg-white rounded-md py-4 px-6 shadow-md flex justify-between items-center border-b border-gray-300">
-      <h1 className="text-xl font-bold text-teal-700">English / Level 1</h1>
+      <div className="flex flex-col">
+      <h1 className="text-xl font-bold text-teal-700">Subject : {subject?.subject.subject_name } | Level : {subject?.level.name }</h1>
+      </div>
       <div className="relative w-24 h-24 flex items-center justify-center rounded-full shadow-lg">
         {/* Clock Base */}
         <div className="absolute inset-0 bg-white rounded-full flex items-center justify-center">
