@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
-import {  updateEducationProfile } from "../../../services/jobProfileService";
-import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+import {  updateExprienceProfile } from "../../../services/jobProfileService";
+import { getExprienceProfile,postExprienceProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
 
 
 const Experience = () => {
@@ -18,7 +18,7 @@ const Experience = () => {
 
   // Fetch education data on component mount
   useEffect(() => {
-    dispatch(getEducationProfile());
+    dispatch(getExprienceProfile());
   }, [dispatch]);
 
   // Handle saving or updating education data
@@ -28,12 +28,12 @@ const Experience = () => {
         // Update existing education record
         const updatedData = [...experienceData];
         updatedData[editingIndex] = data;
-        await updateEducationProfile(data); // Call API for update
-        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
+        await updateExprienceProfile(data); // Call API for update
+        dispatch(postExprienceProfile(updatedData)); // Dispatch updated data
       } else {
         // Add new education record
-        await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
+        await updateExprienceProfile(data); // Call API to save
+        dispatch(postExprienceProfile([...xperienceDat, data])); // Dispatch with new data
       }
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form
@@ -45,8 +45,8 @@ const Experience = () => {
   // Set form values for editing
   const handleEdit = (index) => {
     setEditingIndex(index);
-    const selectedEducation = educationData[index];
-    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
+    const selectedExperience = experienceData[index];
+    Object.keys(selectedExperience).forEach((key) => setValue(key, selectedExperience[key]));
   };
 
   // Cancel editing
@@ -57,14 +57,14 @@ const Experience = () => {
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
+      <h3 className="text-xl font-semibold mb-4">Manage Experience</h3>
 
       {/* Add/Edit Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label="Qksdjflkjmfkldmlkd"
+              label=""
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Qualification"
               type="text"
@@ -123,8 +123,8 @@ const Experience = () => {
 
       {/* Existing Education Records */}
       <div className="mt-6 space-y-4">
-        {educationData.length > 0 ? (
-          educationData.map((education, index) => (
+        {experienceData && experienceData.length > 0 ? (
+          experienceData.map((education, index) => (
             <div
               key={index}
               className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
