@@ -63,42 +63,33 @@ const PersonalInformation = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label="Qualification"
+              label="Bio"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Qualification"
+              placeholder="Enter Bio"
               type="text"
-              {...register("qualification", { required: true })}
+              {...register("bio", { required: true })}
             />
-            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
+            {errors.bio && <span className="text-red-500 text-sm">{errors.bio.message}</span>}
           </div>
           <div>
             <Input
-              label="Institution"
+              label="PhoneNO"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Institution"
+              placeholder="Enter phone_no"
               type="text"
-              {...register("institution", { required: true })}
+              {...register("phone_no", { required: true })}
             />
-            {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
+            {errors.phone_no && <span className="text-red-500 text-sm">{errors.phone_no.message}</span>}
           </div>
           <div>
             <Input
-              label="Year of Passing"
+              label="Address"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Year of Passing"
               type="text"
-              {...register("year_of_passing", { required: true })}
+              {...register("address", { required: true })}
             />
-            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
-          </div>
-          <div>
-            <Input
-              label="Grade or Percentage"
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Grade or Percentage"
-              type="text"
-              {...register("grade_or_percentage")}
-            />
+            {errors.address && <span className="text-red-500 text-sm">{errors.address.message}</span>}
           </div>
         </div>
         <div className="flex justify-end space-x-2">
@@ -130,8 +121,8 @@ const PersonalInformation = () => {
             >
               <div>
                 <p><strong>Qualification:</strong> {education.qualification}</p>
-                <p><strong>Institution:</strong> {education.institution}</p>
-                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
+                <p><strong>phone_no:</strong> {education.phone_no}</p>
+                <p><strong>Year of Passing:</strong> {education.address}</p>
                 <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
               </div>
               <button

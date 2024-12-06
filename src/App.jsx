@@ -26,8 +26,9 @@ import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
 import PersonalInformation from "./components/Profile/PersonalProfile/PersonalInformation";
 import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
-import EducationProfileCard  from "./components/Profile/JobProfile/Education/";
+import Education  from "./components/Profile/JobProfile/Education/";
 import Exprience from "./components/Profile/JobProfile/Exprience";
+import BasicInformation from "./components/Profile/PersonalProfile/BasicInformation";
 
 
 function App() {
@@ -50,13 +51,14 @@ function App() {
                   <Route path="edit-profile" element={<EditPersonalProfile />}>
                     <Route path="personal-info" element={<PersonalInformation />} />
                     <Route path="address" element={<AddressProfileCard />} />
+                    <Route path="basic-info" element={<BasicInformation />} />
                   </Route>
 
                   {/* Job Profile Nested Routes */}
                   <Route path="job-profile" element={<JobProfileEdit  />}>
                     {/* Uncomment these if needed */}
-                    <Route path="education" element={<EducationProfileCard  />} /> 
-                    <Route path="experience" element={<Exprience />} />
+                    <Route path="education" element={<Education/>} /> 
+                    <Route path="experience" element={<Exprience/>} />
                   </Route>
                 </Route>
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />

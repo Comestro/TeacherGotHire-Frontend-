@@ -24,7 +24,7 @@ apiClient.interceptors.request.use(
 );
 export const updateBasicProfile = async(personaldata)=>{
   try{
-     const response = await apiClient.post('/api/admin/teacher/',personaldata);
+     const response = await apiClient.post('api/self/teacheraddress/',personaldata);
      console.log(response.data);
      console.log("hello");
      
@@ -37,7 +37,7 @@ export const updateBasicProfile = async(personaldata)=>{
 }
 export const fetchBasicProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/teacher/');
+     const response = await apiClient.get('/api/self/teacher/');
      console.log("get data:",response.data);
      return response.data;
   }
@@ -49,7 +49,7 @@ export const fetchBasicProfile = async()=>{
 
 export const updatePersonalProfile = async(personaldata)=>{
      try{
-        const response = await apiClient.post('/api/admin/teacher/',personaldata);
+        const response = await apiClient.post('/api/userprofiles/',personaldata);
         console.log(response.data);
         console.log("hello");
         
@@ -62,7 +62,7 @@ export const updatePersonalProfile = async(personaldata)=>{
 }
 export const fetchPersonalProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/teacher/');
+     const response = await apiClient.get('/api/userprofiles/');
      console.log("get data:",response.data);
      return response.data;
   }
@@ -73,7 +73,7 @@ export const fetchPersonalProfile = async()=>{
 }
 export const updateAddressProfile = async(addressdata)=>{
   try{
-    const response = await apiClient.post('api/admin/teachersAddress/',addressdata);
+    const response = await apiClient.post('api/self/teacheraddress/',addressdata);
     console.log(response.data);
     return JSON.parese(JSON.stringify(response));
   }
@@ -84,7 +84,7 @@ export const updateAddressProfile = async(addressdata)=>{
 }
 export const fetchAddressProfile = async()=>{
   try{
-     const response = await apiClient.get('api/admin/teachersAddress/');
+     const response = await apiClient.get('api/self/teachersAddress/');
      console.log("get data:",response.data);
      return response.data;
   }

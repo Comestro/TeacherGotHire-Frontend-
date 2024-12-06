@@ -25,7 +25,7 @@ function SignUpPage() {
       dispatch(authSignup(response));
       if(token)
       {
-        navigate('/teacherdashboard')
+        navigate('/teacher')
       }
     } catch (error) {
       setError(error.message);
