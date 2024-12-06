@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "../../Navbar/Navbar";
 import { Outlet } from "react-router-dom";
 
-const EditPersonalProfile = () => {
+const JobProfileEdit = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Navbar */}
@@ -29,4 +29,4 @@ const EditPersonalProfile = () => {
   );
 };
 
-export default EditPersonalProfile;
+export default JobProfileEdit;

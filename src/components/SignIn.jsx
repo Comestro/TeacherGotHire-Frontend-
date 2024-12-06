@@ -19,7 +19,7 @@ function Login() {
       const userData = await loginService(data); // Call the service function to authenticate the user
       if (userData) {
         dispatch(authlogin(userData)); // Dispatch action to store the user data in Redux store
-        navigate('/teacherdashboard'); // Redirect to teacher dashboard after login
+        navigate('/teacher'); // Redirect to teacher dashboard after login
       }
     } catch (error) {
       setError(error.message); // Set error message if login fails

@@ -7,9 +7,10 @@ import {  updateEducationProfile } from "../../../services/jobProfileService";
 import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
 
 
-const EducationProfileCard = () => {
+
+const BasicInformationProfile = () => {
   const dispatch = useDispatch();
-  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  const basicData = useSelector((state) => state || []); // Adjust state selector as needed
   
   const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
   const [error, setError] = useState("");
@@ -26,14 +27,14 @@ const EducationProfileCard = () => {
     try {
       if (editingIndex !== null) {
         // Update existing education record
-        const updatedData = [...educationData];
+        const updatedData = [...basicData];
         updatedData[editingIndex] = data;
         await updateEducationProfile(data); // Call API for update
         dispatch(postEducationProfile(updatedData)); // Dispatch updated data
       } else {
         // Add new education record
         await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
+        dispatch(postEducationProfile([...basicData, data])); // Dispatch with new data
       }
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form
@@ -45,8 +46,8 @@ const EducationProfileCard = () => {
   // Set form values for editing
   const handleEdit = (index) => {
     setEditingIndex(index);
-    const selectedEducation = educationData[index];
-    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
+    const selectedBasicData = basicData[index];
+    Object.keys(selectedBasicData).forEach((key) => setValue(key, selectedBasicData[key]));
   };
 
   // Cancel editing
@@ -64,42 +65,43 @@ const EducationProfileCard = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label="Qksdjflkjmfkldmlkd"
+              label="Name"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Qualification"
+              placeholder="Enter Name"
               type="text"
-              {...register("qualification", { required: true })}
+              {...register("name", { required: true })}
             />
-            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
+            {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
           </div>
           <div>
             <Input
-              label="Institution"
+              label="Email"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Institution"
+              placeholder="Enter Email"
               type="text"
-              {...register("institution", { required: true })}
+              {...register("email", { required: true })}
             />
-            {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
+            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
           </div>
           <div>
             <Input
-              label="Year of Passing"
+              label="Phone Number"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Year of Passing"
+              placeholder="Phone Number"
               type="text"
-              {...register("year_of_passing", { required: true })}
+              {...register("phone_no", { required: true })}
             />
-            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
+            {errors.phone_no && <span className="text-red-500 text-sm">{errors.phone_no.message}</span>}
           </div>
           <div>
             <Input
-              label="Grade or Percentage"
+              label="Location"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Grade or Percentage"
+              placeholder="Enter Location"
               type="text"
-              {...register("grade_or_percentage")}
+              {...register("location")}
             />
+            {errors.location && <span className="text-red-500 text-sm">{errors.location.message}</span>}
           </div>
         </div>
         <div className="flex justify-end space-x-2">
@@ -130,10 +132,10 @@ const EducationProfileCard = () => {
               className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
             >
               <div>
-                <p><strong>Qualification:</strong> {education.qualification}</p>
-                <p><strong>Institution:</strong> {education.institution}</p>
-                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
-                <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
+                <p><strong>Name:</strong> {basicData .name}</p>
+                <p><strong>Email:</strong> {basicData.email}</p>
+                <p><strong>Phone:</strong> {basicData.phone}</p>
+                <p><strong>Location:</strong> {basicData.location}</p>
               </div>
               <button
                 onClick={() => handleEdit(index)}
@@ -144,7 +146,7 @@ const EducationProfileCard = () => {
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-sm">No education records added yet.</p>
+          <p className="text-gray-500 text-sm">No basic records added yet.</p>
         )}
       </div>
 
@@ -158,4 +160,4 @@ const EducationProfileCard = () => {
   );
 };
 
-export default EducationProfileCard;
+export default BasicInformationProfile;
