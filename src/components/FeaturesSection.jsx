@@ -1,4 +1,5 @@
 import React from "react";
+import { BiLogInCircle } from "react-icons/bi";
 import {
   FaUserCheck,
   FaPencilAlt,
@@ -6,12 +7,15 @@ import {
   FaChalkboardTeacher,
   FaMoneyCheckAlt,
 } from "react-icons/fa";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
+import { IoVideocamOutline } from "react-icons/io5";
+import { LiaChalkboardTeacherSolid, LiaMoneyCheckSolid } from "react-icons/lia";
 
 const FeaturesSection = () => {
   return (
     <section className="bg-white py-12 px-4">
       <div className="container mx-auto text-center">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">
+        <h2 className="text-3xl font-semibold text-gray-600 mb-6">
           Simplified 5-Step Teacher Hiring Process
         </h2>
         <p className="text-gray-600 mb-12">
@@ -22,7 +26,7 @@ const FeaturesSection = () => {
           {/* First Row */}
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
-              <FaUserCheck className="text-4xl text-teal-500 mb-4" />
+              <BiLogInCircle  className="text-4xl text-teal-500 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 Step 1: Login/Sign Up
               </h3>
@@ -32,7 +36,7 @@ const FeaturesSection = () => {
             </div>
 
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
-              <FaPencilAlt className="text-4xl text-teal-500 mb-4" />
+            <HiOutlinePencilSquare className="text-4xl text-teal-500 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 Step 2: Take an Exam
               </h3>
@@ -42,7 +46,8 @@ const FeaturesSection = () => {
             </div>
 
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
-              <FaVideo className="text-4xl text-teal-500 mb-4" />
+              <IoVideocamOutline
+              className="text-4xl text-teal-500 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 Step 3: Interview
               </h3>
@@ -55,7 +60,7 @@ const FeaturesSection = () => {
           {/* Second Row */}
           <div className="grid lg:mx-44 sm:grid-cols-1 md:grid-cols-2">
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
-              <FaChalkboardTeacher className="text-4xl text-teal-500 mb-4" />
+            <LiaChalkboardTeacherSolid className="text-4xl text-teal-500 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 Step 4: Demo Classes
               </h3>
@@ -65,7 +70,7 @@ const FeaturesSection = () => {
             </div>
 
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
-              <FaMoneyCheckAlt className="text-4xl text-teal-500 mb-4" />
+            <LiaMoneyCheckSolid  className="text-4xl text-teal-500 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 Step 5: Get Hired
               </h3>
