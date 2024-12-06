@@ -3,13 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
-import {  updateEducationProfile } from "../../../services/jobProfileService";
-import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+import { getProfile ,postProfile } from "../../../features/personalProfileSlice";
+import { updatePersonalProfile } from "../../../services/profileServices";
 
-
-const EducationProfileCard = () => {
+const PersonalInformation = () => {
   const dispatch = useDispatch();
-  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
+  const personalData = useSelector((state) => state || []); // Adjust state selector as needed
   
   const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
   const [error, setError] = useState("");
@@ -18,7 +17,7 @@ const EducationProfileCard = () => {
 
   // Fetch education data on component mount
   useEffect(() => {
-    dispatch(getEducationProfile());
+    dispatch(getProfile());
   }, [dispatch]);
 
   // Handle saving or updating education data
@@ -26,14 +25,14 @@ const EducationProfileCard = () => {
     try {
       if (editingIndex !== null) {
         // Update existing education record
-        const updatedData = [...educationData];
+        const updatedData = [...personalData];
         updatedData[editingIndex] = data;
-        await updateEducationProfile(data); // Call API for update
-        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
+        await updatePersonalProfile(data); // Call API for update
+        dispatch(postProfile (updatedData)); // Dispatch updated data
       } else {
         // Add new education record
-        await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
+        await updatePersonalProfile(data); // Call API to save
+        dispatch(postProfile ([...personalData, data])); // Dispatch with new data
       }
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form
@@ -45,8 +44,8 @@ const EducationProfileCard = () => {
   // Set form values for editing
   const handleEdit = (index) => {
     setEditingIndex(index);
-    const selectedEducation = educationData[index];
-    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
+    const selectedPersonal = personalData[index];
+    Object.keys(selectedPersonal).forEach((key) => setValue(key, selectedPersonal[key]));
   };
 
   // Cancel editing
@@ -64,7 +63,7 @@ const EducationProfileCard = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label="Qksdjflkjmfkldmlkd"
+              label="Qualification"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Qualification"
               type="text"
@@ -123,8 +122,8 @@ const EducationProfileCard = () => {
 
       {/* Existing Education Records */}
       <div className="mt-6 space-y-4">
-        {educationData.length > 0 ? (
-          educationData.map((education, index) => (
+        {personalData.length > 0 ? (
+          personalData.map((education, index) => (
             <div
               key={index}
               className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
@@ -158,4 +157,4 @@ const EducationProfileCard = () => {
   );
 };
 
-export default EducationProfileCard;
+export default PersonalInformation;
