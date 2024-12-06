@@ -1,23 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchQuestions } from "../../features/questionSlice";
+import Subheader from "./ExamHeader";
 
 const ExamPortal = () => {
-  // Redux state and dispatch setup
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { data: questions, loading, error } = useSelector(
     (state) => state.questions
   );
 
-  useEffect(() => {
-    dispatch(fetchQuestions()); // Fixed: Missing parentheses to invoke the thunk
-  }, [dispatch]);
-
-  // Local state for MCQ functionality
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Handle answer selection
+  useEffect(() => {
+    dispatch(fetchQuestions());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchQuestions());
+  }, [dispatch]);
+
+  // Debug loaded questions
+  useEffect(() => {
+    if (questions && questions.length > 0) {
+      console.log("Loaded Questions:", questions);
+    }
+  }, [questions]);
+
   const handleAnswerSelect = (questionId, answer) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -25,7 +38,6 @@ const ExamPortal = () => {
     }));
   };
 
-  // Handle navigation between questions
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
@@ -38,13 +50,19 @@ const ExamPortal = () => {
     }
   };
 
-  const handleSkip = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+  const handleSubmit = () => {
+    // Check if all questions have been answered
+    const unansweredQuestions = questions.filter((q) => !selectedAnswers[q.id]);
+
+    if (unansweredQuestions.length > 0) {
+      setErrorMessage("Please attempt all questions before submitting.");
+      return;
     }
+
+    setIsSubmitted(true);
+    navigate("/result", { state: { selectedAnswers, questions } });
   };
 
-  // Rendering logic
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -63,13 +81,14 @@ const ExamPortal = () => {
         <ul className="p-2 flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
           {questions.map((q, index) => (
             <li key={q.id} className="flex">
-              <div
+              <button
+                onClick={() => setCurrentQuestionIndex(index)}
                 className={`flex items-center justify-center w-8 h-8 rounded-full ${
                   selectedAnswers[q.id] ? "bg-green-500" : "bg-gray-200"
                 } text-white font-bold`}
               >
                 {index + 1}
-              </div>
+              </button>
             </li>
           ))}
         </ul>
@@ -77,6 +96,13 @@ const ExamPortal = () => {
 
       {/* Main Content */}
       <div className="w-[80%] p-8">
+        <Subheader
+          totalQuestion={questions?.length || 0}
+          subject={currentQuestion}
+        />
+        {errorMessage && (
+          <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
+        )}
         {currentQuestion ? (
           <div className="bg-white shadow-lg rounded-lg p-6 w-full mt-4">
             <h2 className="text-xl font-semibold mb-4">
@@ -92,7 +118,9 @@ const ExamPortal = () => {
                     name={`question-${currentQuestion.id}`}
                     value={option}
                     checked={selectedAnswers[currentQuestion.id] === option}
-                    onChange={() => handleAnswerSelect(currentQuestion.id, option)}
+                    onChange={() =>
+                      handleAnswerSelect(currentQuestion.id, option)
+                    }
                     className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
                   <label
@@ -119,12 +147,6 @@ const ExamPortal = () => {
                 Previous
               </button>
               <button
-                onClick={handleSkip}
-                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Skip
-              </button>
-              <button
                 onClick={handleNext}
                 disabled={currentQuestionIndex === questions.length - 1}
                 className={`px-4 py-2 rounded ${
@@ -134,6 +156,12 @@ const ExamPortal = () => {
                 }`}
               >
                 Next
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Submit
               </button>
             </div>
           </div>

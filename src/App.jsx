@@ -22,6 +22,7 @@ import Contact from "./admin/Conatct/Contact";
 import AdminSignIn from "./components/AdminLogin";
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
+import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
 import PersonalInformation from "./components/Profile/PersonalProfile/PersonalInformation";
 import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
@@ -39,6 +40,7 @@ function App() {
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
               <Route path="/exam" element={<ExamPortal/>}/>
+                              <Route path="/result" element={<ResultPage />} />
               <Route path="/admin-signin" element={<AdminSignIn/>}/>  
               <Route path="/teacher" element={<Layout />}>
                   {/* Nested Routes */}
@@ -57,7 +59,6 @@ function App() {
                     <Route path="experience" element={<Exprience />} />
                   </Route>
                 </Route>
-
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
               <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
