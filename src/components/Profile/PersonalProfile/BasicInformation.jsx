@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
-import {  updateEducationProfile } from "../../../services/jobProfileService";
-import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+import {  updateBasicProfile } from "../../../services/profileServices";
+import { getBasic,postBasic} from "../../../features/personalProfileSlice"; // Replace with actual Redux action
 
 
 
-const BasicInformationProfile = () => {
+const BasicInformation = () => {
   const dispatch = useDispatch();
   const basicData = useSelector((state) => state || []); // Adjust state selector as needed
   
@@ -19,22 +19,22 @@ const BasicInformationProfile = () => {
 
   // Fetch education data on component mount
   useEffect(() => {
-    dispatch(getEducationProfile());
+    dispatch(getBasic());
   }, [dispatch]);
 
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
       if (editingIndex !== null) {
-        // Update existing education record
+        // Update existing basic record
         const updatedData = [...basicData];
         updatedData[editingIndex] = data;
-        await updateEducationProfile(data); // Call API for update
-        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
+        await updateBasicProfile(data); // Call API for update
+        dispatch(postBasic(updatedData)); // Dispatch updated data
       } else {
         // Add new education record
-        await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...basicData, data])); // Dispatch with new data
+        await updateBasicProfile(data); // Call API to save
+        dispatch(postBasic([...basicData, data])); // Dispatch with new data
       }
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form
@@ -58,7 +58,7 @@ const BasicInformationProfile = () => {
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
+      <h3 className="text-xl font-semibold mb-4"> Basic Information</h3>
 
       {/* Add/Edit Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
@@ -125,16 +125,16 @@ const BasicInformationProfile = () => {
 
       {/* Existing Education Records */}
       <div className="mt-6 space-y-4">
-        {educationData.length > 0 ? (
-          educationData.map((education, index) => (
+        {basicData.length > 0 ? (
+          basicData.map((basicData, index) => (
             <div
               key={index}
               className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
             >
               <div>
-                <p><strong>Name:</strong> {basicData .name}</p>
-                <p><strong>Email:</strong> {basicData.email}</p>
-                <p><strong>Phone:</strong> {basicData.phone}</p>
+                <p><strong>Name:</strong> {basicData.name }</p>
+                <p><strong>Email:</strong> {basicData.email }</p>
+                <p><strong>Phone:</strong> {basicData.phone }</p>
                 <p><strong>Location:</strong> {basicData.location}</p>
               </div>
               <button
@@ -160,4 +160,4 @@ const BasicInformationProfile = () => {
   );
 };
 
-export default BasicInformationProfile;
+export default BasicInformation;
