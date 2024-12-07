@@ -9,10 +9,10 @@ const ExamSection = () => {
 
 
                 <div className="text-gray-700 mb-10 md:mt-10">
-                    <h1 className="text-2xl sm:text-2xl font-bold mb-6 leading-normal">
+                    <h1 className="text-2xl sm:text-2xl text-gray-600 font-bold mb-6 leading-normal">
                         Create and conduct your first exam as a teacher in under an hour!
                     </h1>
-                    <p className="text-lg sm:text-md mb-6 leading-relaxed font-serif text-gray-600">
+                    <p className="text-lg pl-2 sm:text-md mb-6 leading-relaxed font-serif text-gray-600">
                         We provide qualified teachers committed to shaping a brighter future for your students. Login today and connect with our expert educators!
                     </p>
                     <ul className="space-y-4 text-lg sm:text-xl mb-6 leading-relaxed font-serif text-gray-600">
@@ -21,17 +21,17 @@ const ExamSection = () => {
 
                             Without talking to a salesperson or scheduling a demo
                         </li>
-                        <li className="flex items-center">
+                        <li className="flex text-lg text-gray-500 items-center">
                             <IoIosArrowForward />
 
                             Without putting a credit card on file
                         </li>
-                        <li className="flex items-center">
+                        <li className="flex text-lg text-gray-500 items-center">
                             <IoIosArrowForward />
 
                             Without installing software or performing technical integrations
                         </li>
-                        <li className="flex items-center">
+                        <li className="flex text-lg text-gray-500 items-center">
                             <IoIosArrowForward />
 
                             Without creating student accounts
@@ -53,7 +53,7 @@ const ExamSection = () => {
             </div>
             <div className='flex justify-center'><button
                 onClick={() => onSelectRole("school")}
-                className="bg-gray-700 text-white font-medium text-lg px-6 py-3 rounded-full shadow-md hover:bg-gray-100"
+                className="bg-gray-700 text-white font-medium text-lg px-6 py-3 rounded-full shadow-md hover:text-gray-700 hover:bg-gray-100"
             >
                 Start your free trial
             </button></div>
