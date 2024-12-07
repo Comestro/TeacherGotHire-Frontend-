@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import Navbar from "../Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
@@ -33,23 +32,11 @@ function TeacherDashboard() {
   };
 
   return (
-    <div>
-      <nav className="">
-        <Navbar
-          links={[
-            { id: "1", label: "Home", to: "/" },
-            { id: "2", label: "Contact US", to: "/contact" },
-            { id: "3", label: "AboutUs", to: "/about" },
-          ]}
-          variant="dark"
-          // notifications={notifications}
-          //externalComponent={ProfileButton}
-        />
-      </nav>
+    <div className="">
 
-      <div className="flex w-full justify-center  mt-10"> 
+      <div className="flex w-full justify-center "> 
         <section className="">
-          <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col items-center py-10 px-4">
+          <div className=" flex flex-col items-center py-10 px-4">
             {/* Welcome Section */}
             {!selectedSubject && (
               <div className="bg-white shadow-lg rounded-lg p-6 max-w-4xl w-full text-center">
@@ -123,7 +110,7 @@ function TeacherDashboard() {
           </div>
         </section>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

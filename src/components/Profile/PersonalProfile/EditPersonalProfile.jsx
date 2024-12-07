@@ -6,7 +6,7 @@ const EditPersonalProfile = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Navbar */}
-      <nav className="flex-shrink-0">
+      {/* <nav className="flex-shrink-0">
         <Navbar
           links={[
             { id: "1", label: "Contact Us", to: "/contact" },
@@ -14,7 +14,7 @@ const EditPersonalProfile = () => {
           ]}
           variant="dark"
         />
-      </nav>
+      </nav> */}
 
       {/* Main Content */}
       <div className="flex-grow overflow-y-auto">

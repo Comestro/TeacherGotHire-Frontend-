@@ -3,7 +3,9 @@ import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Sidebar = () => {
-  const profile = useSelector((state) => state.personalProfile.profileData || []);
+  const profile = useSelector(
+    (state) => state.personalProfile.profileData || []
+  );
   const [showEditProfileSubList, setShowEditProfileSubList] = useState(false);
   const [showJobProfileSubList, setShowJobProfileSubList] = useState(false);
 
@@ -16,157 +18,126 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-gradient-to-b from-blue-900 to-blue-800 text-white h-screen flex flex-col items-center py-8 shadow-lg overflow-hidden">
+    <div className="fixed w-64 bg-gray-900 text-white h-screen flex flex-col items-center py-6 shadow-lg">
       {/* Profile Section */}
-      <div className="flex-grow w-full overflow-y-auto ">
-      <div>
-        
-         
-           
-              <div className="relative w-28 h-28 mx-auto mb-4">
-                <img
-                  src={profile.profileImage || "https://via.placeholder.com/150"}
-                  alt="Profile"
-                  className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
-                />
-              </div>
-
-              {/* Name and Contact Info */}
-              <h2 className="text-lg font-semibold text-gray-100">
-                {profile.fullname || "Your Name"}
-              </h2>
-              <p className="text-sm text-gray-300">
-                {profile.email || "your-email@example.com"}
-              </p>
-              <p className="text-sm text-gray-300 mb-4">
-                {profile.phone || "your-phone-number"}
-              </p>
-        
-</div>
-
-        {/* Navigation Links */}
-        <nav className="space-y-6 w-full px-6">
-          <NavLink
-            to="/teacher"
-            end
-            className={({ isActive }) =>
-              `flex items-center space-x-4 py-2 px-4 rounded-md ${
-                isActive ? "bg-blue-700 text-white" : "text-gray-300"
-              } hover:bg-blue-700 hover:text-white transition`
-            }
-          >
-            <span className="text-lg">📊</span>
-            <span>Dashboard</span>
-          </NavLink>
-          {/* <NavLink
-            to="/personal-info"
-            className={({ isActive }) =>
-              `flex items-center space-x-4 py-2 px-4 rounded-md ${
-                isActive ? "bg-blue-700 text-white" : "text-gray-300"
-              } hover:bg-blue-700 hover:text-white transition`
-            }
-          >
-            <span className="text-lg">👤</span>
-            <span>View Profile</span>
-          </NavLink> */}
-
-          {/* Edit Profile with Sub-list */}
-          <div>
-            <div
-              onClick={toggleEditProfileSubList}
-              className="flex items-center justify-between py-2 px-4 rounded-md cursor-pointer hover:bg-blue-700 hover:text-white transition"
-            >
-              <div className="flex items-center space-x-4">
-                <span className="text-lg">✏️</span>
-                <span>Pesonal Profile</span>
-              </div>
-              <span>{showEditProfileSubList ? "▲" : "▼"}</span>
-            </div>
-            {showEditProfileSubList && (
-              <div className="ml-8 mt-2 space-y-2">
-                <NavLink
-                  to="edit-profile/basic-info"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Basic Details
-                </NavLink>
-                <NavLink
-                  to="edit-profile/address"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Address Details
-                </NavLink>
-                <NavLink
-                  to="edit-profile/personal-info"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Personal Details
-                </NavLink>
-              </div>
-            )}
-          </div>
-
-          {/* Edit Job Profile with Sub-list */}
-          <div>
-            <div
-              onClick={toggleJobProfileSubList}
-              className="flex items-center justify-between py-2 px-4 rounded-md cursor-pointer hover:bg-blue-700 hover:text-white transition"
-            >
-              <div className="flex items-center space-x-4">
-                <span className="text-lg">💼</span>
-                <span>Job Profile</span>
-              </div>
-              <span>{showJobProfileSubList ? "▲" : "▼"}</span>
-            </div>
-            {showJobProfileSubList && (
-              <div className="ml-8 mt-2 space-y-2">
-                <NavLink
-                  to="job-profile/education"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Educational Details
-                </NavLink>
-                <NavLink
-                  to="job-profile/experience"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Experience Details
-                </NavLink>
-                <NavLink
-                  to="job-profile/skills"
-                  className={({ isActive }) =>
-                    `block py-1 text-sm ${
-                      isActive ? "text-blue-300" : "text-gray-400"
-                    } hover:text-blue-300 transition`
-                  }
-                >
-                  Skills
-                </NavLink>
-              </div>
-            )}
-          </div>
-        </nav>
+      <div className="text-center mb-8">
+        <div className="relative w-20 h-20 mx-auto">
+          <img
+            src={profile.profileImage || "https://via.placeholder.com/150"}
+            alt="Profile"
+            className="w-full h-full rounded-full object-cover border-2 border-gray-700 shadow-md"
+          />
+        </div>
+        <h2 className="text-lg font-semibold mt-4">
+          {profile.fullname || "Your Name"}
+        </h2>
+        <p className="text-sm text-gray-400">{profile.email || "email@example.com"}</p>
       </div>
+
+      {/* Navigation Links */}
+      <nav className="w-full px-4 space-y-4">
+        <NavLink
+          to="/teacher"
+          end
+          className={({ isActive }) =>
+            `block py-2 px-4 rounded-md text-sm ${
+              isActive ? "bg-gray-300 text-black" : "text-gray-400"
+            } hover:bg-blue-600 hover:text-white transition`
+          }
+        >
+          Dashboard
+        </NavLink>
+
+        {/* Edit Profile */}
+        <div>
+          <button
+            onClick={toggleEditProfileSubList}
+            className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
+          >
+            Personal Profile
+            <span>{showEditProfileSubList ? "▲" : "▼"}</span>
+          </button>
+          {showEditProfileSubList && (
+            <div className="pl-6 mt-2 space-y-3">
+              <NavLink
+                to="edit-profile/basic-info"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Basic Details
+              </NavLink>
+              <NavLink
+                to="edit-profile/address"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Address Details
+              </NavLink>
+              <NavLink
+                to="edit-profile/personal-info"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Personal Details
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Job Profile */}
+        <div>
+          <button
+            onClick={toggleJobProfileSubList}
+            className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
+          >
+            Job Profile
+            <span>{showJobProfileSubList ? "▲" : "▼"}</span>
+          </button>
+          {showJobProfileSubList && (
+            <div className="pl-6 mt-2 space-y-3">
+              <NavLink
+                to="job-profile/education"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Educational Details
+              </NavLink>
+              <NavLink
+                to="job-profile/experience"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Experience Details
+              </NavLink>
+              <NavLink
+                to="job-profile/skills"
+                className={({ isActive }) =>
+                  `block text-sm ${
+                    isActive ? "text-blue-400" : "text-gray-400"
+                  } hover:text-blue-400 transition`
+                }
+              >
+                Skills
+              </NavLink>
+            </div>
+          )}
+        </div>
+      </nav>
     </div>
   );
 };

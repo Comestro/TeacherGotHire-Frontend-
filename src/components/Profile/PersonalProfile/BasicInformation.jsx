@@ -61,7 +61,7 @@ const BasicInformation = () => {
       <h3 className="text-xl font-semibold mb-4"> Basic Information</h3>
 
       {/* Add/Edit Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-2">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
@@ -116,7 +116,7 @@ const BasicInformation = () => {
           )}
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-black text-white px-5 py-2 rounded hover:bg-gray-900 w-32"
           >
             {editingIndex !== null ? "Update" : "Save"}
           </button>
