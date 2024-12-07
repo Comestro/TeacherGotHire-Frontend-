@@ -8,8 +8,8 @@ const SchoolSection = ({ onSelectRole }) => {
         {/* Left Section with Image */}
         <div className="relative w-full mt-5 text-center">
           <div className="w-full h-64 lg:h-96">
-            <img
-              src="school.png"
+          <img
+              src="https://img.freepik.com/premium-vector/teacher-teaching-classroom-vector-illustration_1253202-25002.jpg?ga=GA1.1.1207010740.1728043749&semt=ais_hybrid"
               alt="Classroom"
               className="w-full h-full object-contain items-baseline"
             />
@@ -34,6 +34,7 @@ const SchoolSection = ({ onSelectRole }) => {
           </button>
         </div>
       </div>
+     
     </div>
   );
 };

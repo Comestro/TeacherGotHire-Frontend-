@@ -15,8 +15,8 @@ const FeaturesSection = () => {
   return (
     <section className="bg-white py-12 px-4">
       <div className="container mx-auto text-center">
-        <h2 className="text-3xl font-semibold text-gray-600 mb-6">
-          Simplified 5-Step Teacher Hiring Process
+        <h2 className="text-3xl font-bold text-gray-500 mb-6">
+          Simplified <span className="text-orange-400">5-Step</span> Teacher Hiring Process
         </h2>
         <p className="text-gray-600 font-serif md:px-10 mb-12">
           Join our team in just five easy steps and kickstart your teaching journey.
@@ -27,7 +27,7 @@ const FeaturesSection = () => {
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
               <BiLogInCircle  className="text-5xl text-teal-500 mb-4" />
-              <h3 className=" text-gray-700 font-bold mb-2">
+              <h3 className=" text-gray-600 text-xl font-bold mb-2">
                 Step 1: Login/Sign Up
               </h3>
               <p className="text-gray-600 font-serif md:px-10 text-center">
@@ -37,7 +37,7 @@ const FeaturesSection = () => {
 
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
             <HiOutlinePencilSquare className="text-5xl text-teal-500 mb-4" />
-              <h3 className="text-gray-700 font-bold mb-2">
+              <h3 className="text-gray-600 text-xl font-bold mb-2">
                 Step 2: Take an Exam
               </h3>
               <p className="text-gray-600 font-serif md:px-10 text-center">
@@ -48,7 +48,7 @@ const FeaturesSection = () => {
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
               <IoVideocamOutline
               className="text-5xl text-teal-500 mb-4" />
-              <h3 className="text-gray-700 font-bold mb-2">
+              <h3 className="text-gray-600 text-xl font-bold mb-2">
                 Step 3: Interview
               </h3>
               <p className="text-gray-600 font-serif text-center">
@@ -61,7 +61,7 @@ const FeaturesSection = () => {
           <div className="grid lg:mx-48 sm:grid-cols-1 md:grid-cols-2">
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
             <LiaChalkboardTeacherSolid className="text-5xl text-teal-500 mb-4" />
-              <h3 className="text-gray-700 font-bold mb-2">
+              <h3 className="text-gray-600 text-xl font-bold mb-2">
                 Step 4: Demo Classes
               </h3>
               <p className="text-gray-600 font-serif md:px-10 text-center">
@@ -71,7 +71,7 @@ const FeaturesSection = () => {
 
             <div className="feature-item flex flex-col items-center p-6  rounded-lg">
             <LiaMoneyCheckSolid  className="text-5xl text-teal-500 mb-4" />
-              <h3 className="text-gray-700 font-bold mb-2">
+              <h3 className="text-gray-600 text-xl font-bold mb-2">
                 Step 5: Get Hired
               </h3>
               <p className="text-gray-600 font-serif md:px-10 text-center">
