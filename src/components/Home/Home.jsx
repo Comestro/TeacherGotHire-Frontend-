@@ -142,8 +142,9 @@ function Home() {
       <FeaturesSection />
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
-      <TeacherProfiles />
       <DetailSection />
+
+      <TeacherProfiles />
 
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
