@@ -42,10 +42,10 @@ function Home() {
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <div className="flex">
             <p className="mb-8 font-bold text-4xl md:text-5xl leading-none flex items-center">
-              <span className="font-bold text-5xl pb-10 md:text-6xl text-teal-600">
-                PTPI <img src="orange-border.svg" alt="" className="mx-2" />
+              <span className="font-bold text-5xl pb-10 md:text-6xl text-teal-600 me-1">
+                PTPI 
               </span>
-              – Connect with top teachers and great teaching jobs.
+               – Connect with top teachers and great teaching jobs.
             </p>
           </div>
 
@@ -143,7 +143,7 @@ function Home() {
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
       <TeacherProfiles />
-      <DetailSection />
+      {/* <DetailSection /> */}
 
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}

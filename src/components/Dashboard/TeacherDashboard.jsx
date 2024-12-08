@@ -5,22 +5,20 @@ import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
 import Footer from "../Footer/Footer";
 import ResultCard from "../Result/Result";
-import {getSubjects} from "../../features/dashboardSlice"
-
+import { getSubjects } from "../../features/dashboardSlice";
 
 function TeacherDashboard() {
-  const subjects = useSelector((state)=>state.dashboard.subjects.data || []);
-  console.log("sub",subjects);
-  console.log("subject",subjects)
+  const subjects = useSelector((state) => state.dashboard.subjects.data || []);
+  console.log("sub", subjects);
+  console.log("subject", subjects);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
-    
     dispatch(getSubjects());
-}, [dispatch]);
+  }, [dispatch]);
 
   const handleSubjectSelect = (subjects) => {
     setSelectedSubject(subjects);
@@ -28,13 +26,12 @@ function TeacherDashboard() {
 
   const handleProceedToExam = () => {
     alert(`Proceeding to exam for ${selectedSubject.name}`);
-    navigate('/exam');
+    navigate("/exam");
   };
 
   return (
     <div className="">
-
-      <div className="flex w-full justify-center "> 
+      <div className="flex w-full justify-center">
         <section className="">
           <div className=" flex flex-col items-center py-10 px-4">
             {/* Welcome Section */}
@@ -57,8 +54,8 @@ function TeacherDashboard() {
                 </p>
               </div>
             )}
-                <div>
-            <ResultCard/>
+            <div>
+              <ResultCard />
             </div>
 
             {/* Subject Selection Section */}
@@ -74,15 +71,15 @@ function TeacherDashboard() {
                     <h3 className="text-xl font-bold text-blue-700">
                       {subject.name}
                     </h3>
-                    <p className="text-gray-600 mt-2">{subject.subject_description}</p>
+                    <p className="text-gray-600 mt-2">
+                      {subject.subject_description}
+                    </p>
                   </div>
                 ))
               ) : (
                 <div>No subjects available</div>
               )}
             </div>
-
-          
 
             {/* Subject Details Section */}
             {selectedSubject && (
