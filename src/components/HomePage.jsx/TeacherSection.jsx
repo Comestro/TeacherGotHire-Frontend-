@@ -3,7 +3,7 @@ import React from "react";
 const TeacherSection = ({ onSelectRole }) => {
   return (
     <div
-      className="relative bg-teal-600 overflow-hidden mt-10"
+      className="relative bg-teal-600 overflow-hidden"
       style={{
         backgroundImage: `url('')`,
       }}

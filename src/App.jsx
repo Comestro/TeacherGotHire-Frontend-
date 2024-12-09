@@ -24,6 +24,7 @@ import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
+import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
               <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
               <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
               <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
+              <Route path="/admin-viewteacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
          
            </Routes>
         </BrowserRouter>
