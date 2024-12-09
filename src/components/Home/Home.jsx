@@ -5,10 +5,12 @@ import { IoSearchOutline } from "react-icons/io5";
 import Footer from "../Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
-import TeacherProfiles from "../Review/TeacherProfile";
-import TeacherSection from "../TeacherSection";
-import SchoolSection from "../SchoolSection";
-import FeaturesSection from "../FeaturesSection";
+import TeacherProfiles from "../HomePage.jsx/Review/TeacherProfile";
+import TeacherSection from "../HomePage.jsx/TeacherSection";
+import SchoolSection from "../HomePage.jsx/SchoolSection";
+import FeaturesSection from "../HomePage.jsx/FeaturesSection";
+import ExamSection from "../HomePage.jsx/ExamSection";
+import DetailSection from "../HomePage.jsx/DetailSection";
 
 function Home() {
   const navigate = useNavigate();
@@ -38,12 +40,15 @@ function Home() {
       </nav>
       <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
-          <p className="mb-8 font-bold text-4xl md:text-5xl leading-none">
-            <span className="font-bold text-5xl md:text-6xl text-teal-600">
-              PTPI
-            </span>{" "}
-            – Connect with top teachers and great teaching jobs.
-          </p>
+          <div className="flex">
+            <p className="mb-8 font-bold text-4xl md:text-5xl leading-none flex items-center">
+              <span className="font-bold text-5xl pb-10 md:text-6xl text-teal-600">
+                PTPI <img src="orange-border.svg" alt="" className="mx-2" />
+              </span>
+              – Connect with top teachers and great teaching jobs.
+            </p>
+          </div>
+
         </div>
         <div className="flex flex-col gap-2 w-full lg:w-[65%] px-14">
           <div className="flex items-center rounded-full border-2 p-2 bg-white mr-4">
@@ -63,7 +68,7 @@ function Home() {
               <IoSearchOutline className="text-white w-5 h-5 md:w-7 md:h-7 p-1" />
             </button>
           </div>
- 
+
           <div className="mt-4 flex flex-nowrap gap-4 justify-center">
             <Button
               textColor="text-teal-700 font-medium"
@@ -134,11 +139,14 @@ function Home() {
         </div>
       </div>
       <TeacherSection onSelectRole={handleRoleSelection} />
-      <FeaturesSection/>
+      <FeaturesSection />
       <SchoolSection onSelectRole={handleRoleSelection} />
+      <ExamSection />
+      <DetailSection />
+
       <TeacherProfiles />
-      
-      
+
+
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
     </div>
