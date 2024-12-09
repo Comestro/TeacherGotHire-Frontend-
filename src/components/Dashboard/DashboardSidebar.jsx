@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Sidebar = () => {
   const profile = useSelector(
-    (state) => state.personalProfile.profileData || []
-  );
+    (state) => state.personalProfile.profileData || {});
   
   return (
     <div className="fixed w-64 bg-gray-900 text-white h-screen flex flex-col items-center py-6 shadow-lg">
@@ -67,92 +66,4 @@ const Sidebar = () => {
 
 export default Sidebar;
 
-        {/* Edit Profile */}
-        {/* <div>
-          <button
-            onClick={toggleEditProfileSubList}
-            className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
-          >
-            Personal Profile
-          </button>
-        </div> */}
-          {/* {showEditProfileSubList && (
-            <div className="pl-6 mt-2 space-y-3">
-              <NavLink
-                to="edit-profile/basic-info"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Basic Details
-              </NavLink>
-              <NavLink
-                to="edit-profile/address"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Address Details
-              </NavLink>
-              <NavLink
-                to="edit-profile/personal-info"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Personal Details
-              </NavLink>
-            </div>
-          )} */}
-       
-
-        {/* Job Profile */}
-        {/* <div>
-          <button
-            onClick={toggleJobProfileSubList}
-            className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
-          >
-            Job Profile
-          </button>
-          {showJobProfileSubList && (
-            <div className="pl-6 mt-2 space-y-3">
-              <NavLink
-                to="job-profile/education"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Educational Details
-              </NavLink>
-              <NavLink
-                to="job-profile/experience"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Experience Details
-              </NavLink>
-              <NavLink
-                to="job-profile/skills"
-                className={({ isActive }) =>
-                  `block text-sm ${
-                    isActive ? "text-blue-400" : "text-gray-400"
-                  } hover:text-blue-400 transition`
-                }
-              >
-                Skills
-              </NavLink>
-            </div>
-          )}
-        </div> */}
      
