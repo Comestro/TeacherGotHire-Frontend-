@@ -11,8 +11,7 @@ const initialState = {
 
 
 export const getSubjects = createAsyncThunk(
-    "getSubjects",
-    async (_, { rejectWithValue }) => {
+    "getSubjects", async (_, { rejectWithValue }) => {
       try {
         const data = await fetchSubjects();
         console.log("data",data)

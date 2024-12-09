@@ -15,17 +15,18 @@ function SignUpPage() {
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState('');
 
-  const signup = async ({username,email,password}) => {
-    console.log(username,email,password);
+  const signup = async ({email,password}) => {
+    console.log(email,password);
     setError('');
     try {
-      const response = await createaccount({ username, email, password });
+      const response = await createaccount({email, password });
       const token = response.token;
+      // localStorage.setItem("authToken", token)
       
-      dispatch(authSignup(response));
+      //dispatch(authSignup(response));
       if(token)
       {
-        navigate('/teacherdashboard')
+        navigate('/teacher')
       }
     } catch (error) {
       setError(error.message);
@@ -61,11 +62,11 @@ function SignUpPage() {
             {/* <label className="block text-sm font-medium  text-gray-700 mb-1" htmlFor="name">
               Name
             </label> */}
-            <Input
+            {/* <Input
               className="w-full border-2 border-gray-300 text-sm rounded-xl px-3 py-3 "
               placeholder="Enter your full name"
               {...register('name', { required: true })}
-            />
+            /> */}
           </div>
 
           {/* Email */}

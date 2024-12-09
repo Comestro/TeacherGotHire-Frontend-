@@ -6,16 +6,18 @@ import authSlice from "../features/authSlice";
 import personalProfileSlice from "../features/personalProfileSlice";
 import jobProfileSlice from "../features/jobProfileSlice";
 import dashboardSlice from "../features/dashboardSlice";
+import questionReducer from '../features/questionSlice';
 
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
   auth: authSlice,
   personalProfile: personalProfileSlice,
+  questions : questionReducer,
   jobProfile: jobProfileSlice,
   dashboard: dashboardSlice,
 });
 
-// Step 2: Configure persist
+// Step 2: Configure persist 
 const persistConfig = {
   key: "root",
   storage,

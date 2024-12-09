@@ -3,97 +3,100 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
-import {  updateEducationProfile } from "../../../services/jobProfileService";
-import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+import { updateBasicProfile } from "../../../services/profileServices";
+import { getBasic, postBasic } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
 
-
-
-const BasicInformationProfile = () => {
+const BasicInformation = () => {
   const dispatch = useDispatch();
-  const basicData = useSelector((state) => state || []); // Adjust state selector as needed
+  const basicData = useSelector((state) => state.personalProfile.basicData || {}); // Adjust state selector as needed
   
-  const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
+
+
+  const [showForm, setShowForm] = useState(true); // Toggle between form and display mode
   const [error, setError] = useState("");
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-  // Fetch education data on component mount
   useEffect(() => {
-    dispatch(getEducationProfile());
-  }, [dispatch]);
+    // Fetch the basic data only once when the component mounts
+    dispatch(getBasic());
+  }, []);
+  
+  console.log("Redux State - Basic Data:", basicData);
+  useEffect(() => {
+    // Pre-fill the form only if basicData is updated and exists
+    if (basicData) {
+      Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
+    }
+  }, [basicData, setValue]);
 
-  // Handle saving or updating education data
+
   const onSubmit = async (data) => {
     try {
-      if (editingIndex !== null) {
-        // Update existing education record
-        const updatedData = [...basicData];
-        updatedData[editingIndex] = data;
-        await updateEducationProfile(data); // Call API for update
-        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
-      } else {
-        // Add new education record
-        await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...basicData, data])); // Dispatch with new data
-      }
-      setEditingIndex(null); // Exit editing mode
-      reset(); // Reset form
+      await updateBasicProfile(data); // Save or update data via API
+      dispatch(postBasic(data)); // Update Redux store
+      setShowForm(false); // Switch to display mode
     } catch (err) {
       setError(err.message);
     }
   };
 
-  // Set form values for editing
-  const handleEdit = (index) => {
-    setEditingIndex(index);
-    const selectedBasicData = basicData[index];
-    Object.keys(selectedBasicData).forEach((key) => setValue(key, selectedBasicData[key]));
-  };
-
-  // Cancel editing
-  const handleCancel = () => {
-    setEditingIndex(null);
-    reset();
+  const handleEdit = () => {
+    setShowForm(true); // Switch back to form mode
   };
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
+      <h3 className="text-xl font-semibold mb-4">Basic Information</h3>
 
-      {/* Add/Edit Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+      {showForm ? (
+        // Form Mode
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 bg-gray-100 p-4 rounded-md"
+        >
+          <div className="grid grid-cols-2 gap-4">
             <Input
               label="Name"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Name"
               type="text"
-              {...register("name", { required: true })}
+              {...register("name", { required: "Name is required" })}
             />
-            {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
-          </div>
-          <div>
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name.message}</span>
+            )}
+
             <Input
               label="Email"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
               placeholder="Enter Email"
-              type="text"
-              {...register("email", { required: true })}
+              type="email"
+              {...register("email", { required: "Email is required" })}
             />
-            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
-          </div>
-          <div>
+            {errors.email && (
+              <span className="text-red-500 text-sm">{errors.email.message}</span>
+            )}
+
             <Input
               label="Phone Number"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Phone Number"
+              placeholder="Enter Phone Number"
               type="text"
-              {...register("phone_no", { required: true })}
+              {...register("mobile", { required: "Phone number is required" })}
             />
-            {errors.phone_no && <span className="text-red-500 text-sm">{errors.phone_no.message}</span>}
-          </div>
-          <div>
+            {errors.phone_no && (
+              <span className="text-red-500 text-sm">
+                {errors.phone_no.message}
+              </span>
+            )}
+
             <Input
               label="Location"
               className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
@@ -101,54 +104,43 @@ const BasicInformationProfile = () => {
               type="text"
               {...register("location")}
             />
-            {errors.location && <span className="text-red-500 text-sm">{errors.location.message}</span>}
           </div>
-        </div>
-        <div className="flex justify-end space-x-2">
-          {editingIndex !== null && (
+
+          <div className="flex justify-end space-x-4 mt-4">
             <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              type="submit"
+              className="bg-black text-white px-5 py-2 rounded hover:bg-gray-900 w-32"
             >
-              Cancel
+              Save
             </button>
-          )}
+          </div>
+        </form>
+      ) : (
+        // Display Mode
+        <div className="bg-white p-4 rounded-md shadow-md">
+          <div className="mb-4">
+            <p>
+              <strong>Name:</strong> {basicData.name }
+            </p>
+            <p>
+              <strong>Email:</strong> {basicData.email }
+            </p>
+            <p>
+              <strong>Phone:</strong> {basicData.mobile }
+            </p>
+            <p>
+              <strong>Location:</strong> {basicData.location }
+            </p>
+          </div>
           <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={handleEdit}
+            className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
           >
-            {editingIndex !== null ? "Update" : "Save"}
+            <FiEdit2 size={20} />
+            <span>Edit</span>
           </button>
         </div>
-      </form>
-
-      {/* Existing Education Records */}
-      <div className="mt-6 space-y-4">
-        {educationData.length > 0 ? (
-          educationData.map((education, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
-            >
-              <div>
-                <p><strong>Name:</strong> {basicData .name}</p>
-                <p><strong>Email:</strong> {basicData.email}</p>
-                <p><strong>Phone:</strong> {basicData.phone}</p>
-                <p><strong>Location:</strong> {basicData.location}</p>
-              </div>
-              <button
-                onClick={() => handleEdit(index)}
-                className="text-blue-500 hover:text-blue-700"
-              >
-                <FiEdit2 size={20} />
-              </button>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-sm">No basic records added yet.</p>
-        )}
-      </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -160,4 +152,4 @@ const BasicInformationProfile = () => {
   );
 };
 
-export default BasicInformationProfile;
+export default BasicInformation;

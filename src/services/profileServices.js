@@ -24,8 +24,8 @@ apiClient.interceptors.request.use(
 );
 export const updateBasicProfile = async(personaldata)=>{
   try{
-     const response = await apiClient.post('/api/admin/teacher/',personaldata);
-     console.log(response.data);
+     const response = await apiClient.post('api/self/basicProfile/',personaldata);
+     console.log("post data",response.data);
      console.log("hello");
      
      return JSON.parse(JSON.stringify(response)); 
@@ -37,8 +37,8 @@ export const updateBasicProfile = async(personaldata)=>{
 }
 export const fetchBasicProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/teacher/');
-     console.log("get data:",response.data);
+     const response = await apiClient.get('/api/self/basicProfile/');
+    console.log("get newdata:",response.data);
      return response.data;
   }
      catch (err) {
@@ -49,8 +49,8 @@ export const fetchBasicProfile = async()=>{
 
 export const updatePersonalProfile = async(personaldata)=>{
      try{
-        const response = await apiClient.post('/api/admin/teacher/',personaldata);
-        console.log(response.data);
+        const response = await apiClient.post('/api/userprofiles/',personaldata);
+        //console.log(response.data);
         console.log("hello");
         
         return JSON.parse(JSON.stringify(response)); 
@@ -62,8 +62,8 @@ export const updatePersonalProfile = async(personaldata)=>{
 }
 export const fetchPersonalProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/teacher/');
-     console.log("get data:",response.data);
+     const response = await apiClient.get('/api/userprofiles/');
+    
      return response.data;
   }
      catch (err) {
@@ -73,8 +73,8 @@ export const fetchPersonalProfile = async()=>{
 }
 export const updateAddressProfile = async(addressdata)=>{
   try{
-    const response = await apiClient.post('api/admin/teachersAddress/',addressdata);
-    console.log(response.data);
+    const response = await apiClient.post('/api/self/teacherAddress/',addressdata);
+    
     return JSON.parese(JSON.stringify(response));
   }
   catch(err){
@@ -84,8 +84,8 @@ export const updateAddressProfile = async(addressdata)=>{
 }
 export const fetchAddressProfile = async()=>{
   try{
-     const response = await apiClient.get('api/admin/teachersAddress/');
-     console.log("get data:",response.data);
+     const response = await apiClient.get('/api/self/teacherAddress/');
+     
      return response.data;
   }
      catch (err) {

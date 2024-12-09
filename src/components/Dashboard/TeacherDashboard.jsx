@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import Navbar from "../Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
 import Footer from "../Footer/Footer";
 import ResultCard from "../Result/Result";
-import {getSubjects} from "../../features/dashboardSlice"
-
+import { getSubjects } from "../../features/dashboardSlice";
 
 function TeacherDashboard() {
-  const subjects = useSelector((state)=>state.dashboard.subjects.data || []);
-  console.log("sub",subjects);
-  console.log("subject",subjects)
+  const subjects = useSelector((state) => state.dashboard.subjects.data || []);
+  console.log("sub", subjects);
+  console.log("subject", subjects);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
-    
     dispatch(getSubjects());
-}, [dispatch]);
+  }, [dispatch]);
 
   const handleSubjectSelect = (subjects) => {
     setSelectedSubject(subjects);
@@ -29,27 +26,14 @@ function TeacherDashboard() {
 
   const handleProceedToExam = () => {
     alert(`Proceeding to exam for ${selectedSubject.name}`);
-    navigate('/exam');
+    navigate("/exam");
   };
 
   return (
-    <div>
-      <nav className="">
-        <Navbar
-          links={[
-            { id: "1", label: "Home", to: "/" },
-            { id: "2", label: "Contact US", to: "/contact" },
-            { id: "3", label: "AboutUs", to: "/about" },
-          ]}
-          variant="dark"
-          // notifications={notifications}
-          //externalComponent={ProfileButton}
-        />
-      </nav>
-
-      <div className="flex w-full justify-center  mt-10"> 
+    <div className="">
+      <div className="flex w-full justify-center">
         <section className="">
-          <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 flex flex-col items-center py-10 px-4">
+          <div className=" flex flex-col items-center py-10 px-4">
             {/* Welcome Section */}
             {!selectedSubject && (
               <div className="bg-white shadow-lg rounded-lg p-6 max-w-4xl w-full text-center">
@@ -70,8 +54,8 @@ function TeacherDashboard() {
                 </p>
               </div>
             )}
-                <div>
-            <ResultCard/>
+            <div>
+              <ResultCard />
             </div>
 
             {/* Subject Selection Section */}
@@ -87,15 +71,15 @@ function TeacherDashboard() {
                     <h3 className="text-xl font-bold text-blue-700">
                       {subject.name}
                     </h3>
-                    <p className="text-gray-600 mt-2">{subject.subject_description}</p>
+                    <p className="text-gray-600 mt-2">
+                      {subject.subject_description}
+                    </p>
                   </div>
                 ))
               ) : (
                 <div>No subjects available</div>
               )}
             </div>
-
-          
 
             {/* Subject Details Section */}
             {selectedSubject && (
@@ -123,7 +107,7 @@ function TeacherDashboard() {
           </div>
         </section>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

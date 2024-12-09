@@ -1,12 +1,15 @@
 import React from "react";
 import Navbar from "../../Navbar/Navbar";
 import { Outlet } from "react-router-dom";
+import BasicInformation from "./BasicInformation";
+import PersonalInformation from "./PersonalInformation";
+import AddressProfileCard from "./AddressProfileCard";
 
 const EditPersonalProfile = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Navbar */}
-      <nav className="flex-shrink-0">
+      {/* <nav className="flex-shrink-0">
         <Navbar
           links={[
             { id: "1", label: "Contact Us", to: "/contact" },
@@ -14,7 +17,7 @@ const EditPersonalProfile = () => {
           ]}
           variant="dark"
         />
-      </nav>
+      </nav> */}
 
       {/* Main Content */}
       <div className="flex-grow overflow-y-auto">
@@ -22,7 +25,10 @@ const EditPersonalProfile = () => {
           Edit Profile
         </h1>
         <div className="px-6">
-          <Outlet /> {/* Render nested routes here */}
+          {/* Render nested routes here */}
+          <BasicInformation/>
+          <PersonalInformation/>
+          <AddressProfileCard/>
         </div>
       </div>
     </div>
