@@ -26,9 +26,9 @@ import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
 
 // Initial state
 const initialState = {
-  basicData:[],
-  personalData: [],
-  addsress:[],
+  basicData:{},
+  personalData:{},
+  addsress:{},
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
@@ -37,7 +37,7 @@ export const getBasic = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchBasicProfile();
-      console.log("data",data)
+      console.log("gedata",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -54,7 +54,7 @@ export const postBasic = createAsyncThunk(
   async (addressData, { rejectWithValue }) => {
     try {
       const data = await updateBasicProfile(addressData);
-      console.log("data",data)
+      console.log("podata",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -71,7 +71,7 @@ export const getAddress = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchAddressProfile();
-      console.log("data",data)
+     // console.log("data",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -141,7 +141,7 @@ const personalProfileSlice = createSlice({
   initialState,
   reducers: {}, // Add reducers if needed
     extraReducers: (builder) => {
-      // for handeling  address 
+      // for handeling  basic profile
       builder
         // Handle pending state
         .addCase(getBasic.pending, (state) => {
@@ -151,7 +151,9 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(getBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.addsress = action.payload; // Update profile data
+          
+          state.basicData = action.payload; 
+          console.log("hi",action.payload);// Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
           console.log(action.payload)
@@ -174,7 +176,8 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.addsress = action.payload; // Update profile data
+          state.basicData = action.payload;
+          console.log("hello",action.payload); // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
           console.log(action.payload)

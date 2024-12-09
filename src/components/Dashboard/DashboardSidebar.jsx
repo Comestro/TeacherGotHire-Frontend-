@@ -6,17 +6,7 @@ const Sidebar = () => {
   const profile = useSelector(
     (state) => state.personalProfile.profileData || []
   );
-  const [showEditProfileSubList, setShowEditProfileSubList] = useState(false);
-  const [showJobProfileSubList, setShowJobProfileSubList] = useState(false);
-
-  const toggleEditProfileSubList = () => {
-    setShowEditProfileSubList(!showEditProfileSubList);
-  };
-
-  const toggleJobProfileSubList = () => {
-    setShowJobProfileSubList(!showJobProfileSubList);
-  };
-
+  
   return (
     <div className="fixed w-64 bg-gray-900 text-white h-screen flex flex-col items-center py-6 shadow-lg">
       {/* Profile Section */}
@@ -37,7 +27,7 @@ const Sidebar = () => {
       {/* Navigation Links */}
       <nav className="w-full px-4 space-y-4">
         <NavLink
-          to="/teacher"
+          to="/teacher/"
           end
           className={({ isActive }) =>
             `block py-2 px-4 rounded-md text-sm ${
@@ -47,17 +37,46 @@ const Sidebar = () => {
         >
           Dashboard
         </NavLink>
+        <NavLink
+          to="/teacher/edit-profile"
+          end
+          className={({ isActive }) =>
+            `block py-2 px-4 rounded-md text-sm ${
+              isActive ? "bg-gray-300 text-black" : "text-gray-400"
+            } hover:bg-blue-600 hover:text-white transition`
+          }
+        >
+          Personal deatails
+        </NavLink>
+        <NavLink
+          to="/teacher/job-profile"
+          end
+          className={({ isActive }) =>
+            `block py-2 px-4 rounded-md text-sm ${
+              isActive ? "bg-gray-300 text-black" : "text-gray-400"
+            } hover:bg-blue-600 hover:text-white transition`
+          }
+        >
+          Job deatails
+        </NavLink>
+
+        </nav>
+    </div>
+  );
+};
+
+export default Sidebar;
 
         {/* Edit Profile */}
-        <div>
+        {/* <div>
           <button
             onClick={toggleEditProfileSubList}
             className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
           >
             Personal Profile
-            <span>{showEditProfileSubList ? "▲" : "▼"}</span>
           </button>
-          {showEditProfileSubList && (
+        </div> */}
+          {/* {showEditProfileSubList && (
             <div className="pl-6 mt-2 space-y-3">
               <NavLink
                 to="edit-profile/basic-info"
@@ -90,17 +109,16 @@ const Sidebar = () => {
                 Personal Details
               </NavLink>
             </div>
-          )}
-        </div>
+          )} */}
+       
 
         {/* Job Profile */}
-        <div>
+        {/* <div>
           <button
             onClick={toggleJobProfileSubList}
             className="w-full flex justify-between items-center py-2 px-4 rounded-md text-sm text-gray-400 hover:bg-blue-600 hover:text-white transition"
           >
             Job Profile
-            <span>{showJobProfileSubList ? "▲" : "▼"}</span>
           </button>
           {showJobProfileSubList && (
             <div className="pl-6 mt-2 space-y-3">
@@ -136,10 +154,5 @@ const Sidebar = () => {
               </NavLink>
             </div>
           )}
-        </div>
-      </nav>
-    </div>
-  );
-};
-
-export default Sidebar;
+        </div> */}
+     

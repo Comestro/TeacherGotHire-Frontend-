@@ -18,7 +18,7 @@ const PersonalInformation = () => {
   // Fetch education data on component mount
   useEffect(() => {
     dispatch(getProfile());
-  }, [dispatch]);
+  }, []);
 
   // Handle saving or updating education data
   const onSubmit = async (data) => {

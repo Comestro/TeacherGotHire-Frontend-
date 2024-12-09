@@ -1,14 +1,13 @@
 
 import React from "react";
-import Navbar from "../../Navbar/Navbar";
-import { Outlet } from "react-router-dom";
+import EducationProfileCard from "./Education";
 
 const EditJobProfile = () => {
   return (
     <>
       <div>
           <h1 className="text-2xl font-bold mb-4">Edit Profile</h1>
-          <Outlet /> {/* Render nested routes here */}
+          <EducationProfileCard/> {/* Render nested routes here */}
       </div>
     </>
   );
