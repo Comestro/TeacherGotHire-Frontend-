@@ -49,13 +49,7 @@ const ResultPage = () => {
   };
 
   return (
-    <div className="flex flex-row items-center justify-center py-10">
-      {/* Doughnut Chart for Quiz Stats */}
-      <h2 className="text-2xl font-bold mb-4">Quiz Stats</h2>
-      <div className="w-80 h-80 mb-8">
-        <Doughnut data={data} options={options} />
-      </div>
-
+    <div className="flex flex-row items-center justify-center gap-10 py-10">
       {/* Result Card */}
       <div className="bg-blue-100 p-6 rounded-lg shadow-md w-full max-w-xl mx-auto">
         <h2 className="text-center text-xl font-bold text-blue-700 mb-4">
@@ -109,6 +103,10 @@ const ResultPage = () => {
         <p className="text-center text-gray-500 text-xs mt-4">
           Detailed results will be out on {result.rankAnnounceTime}.
         </p>
+      </div>
+      {/* Doughnut Chart for Quiz Stats */}
+      <div className="w-80 h-80">
+        <Doughnut data={data} options={options} />
       </div>
     </div>
   );
