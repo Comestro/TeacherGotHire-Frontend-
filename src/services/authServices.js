@@ -22,9 +22,9 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // Register User
-export const createaccount = async ({ username, email, password }) => {
+export const createaccount = async ({  email, password }) => {
   try {
-    const response = await apiClient.post('/api/register/', { username, email, password });
+    const response = await apiClient.post('/api/register/', { email, password });
     console.log('User registered:', response.data);
 
     const { token } = response.data;
@@ -39,10 +39,10 @@ export const createaccount = async ({ username, email, password }) => {
 };
 
 // Login User
-export const login = async ({ username, password }) => {
+export const login = async ({ email, password }) => {
   try {
     // If the backend expects JSON payload
-    const response = await apiClient.post('/api/login/', { username, password });
+    const response = await apiClient.post('/api/login/', { email, password });
 
     // Parse the token from the response
     const { access_token } = response.data;

@@ -24,11 +24,7 @@ import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
-import PersonalInformation from "./components/Profile/PersonalProfile/PersonalInformation";
-import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
-import Education  from "./components/Profile/JobProfile/Education/";
-import Exprience from "./components/Profile/JobProfile/Exprience";
-import BasicInformation from "./components/Profile/PersonalProfile/BasicInformation";
+import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 
 
 function App() {
@@ -41,26 +37,14 @@ function App() {
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
               <Route path="/exam" element={<ExamPortal/>}/>
-                              <Route path="/result" element={<ResultPage />} />
+              <Route path="/result" element={<ResultPage />} />
               <Route path="/admin-signin" element={<AdminSignIn/>}/>  
               <Route path="/teacher" element={<Layout />}>
                   {/* Nested Routes */}
                   <Route index element={<TeacherDashboard />} />
-
-                  {/* Edit Profile Nested Routes */}
-                  <Route path="edit-profile" element={<EditPersonalProfile />}>
-                    <Route path="personal-info" element={<PersonalInformation />} />
-                    <Route path="address" element={<AddressProfileCard />} />
-                    <Route path="basic-info" element={<BasicInformation />} />
-                  </Route>
-
-                  {/* Job Profile Nested Routes */}
-                  <Route path="job-profile" element={<JobProfileEdit  />}>
-                    {/* Uncomment these if needed */}
-                    <Route path="education" element={<Education/>} /> 
-                    <Route path="experience" element={<Exprience/>} />
-                  </Route>
-                </Route>
+                  <Route path="edit-profile" element={<EditPersonalProfile />}/>
+                  <Route path="job-profile" element={<JobProfileEdit  />}/> 
+              </Route>
               <Route path="/contact" element={token ? <ContactUs /> : <Navigate to="/signin" />} />
 
               <Route path="/admin-dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
@@ -74,6 +58,7 @@ function App() {
               <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
               <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
               <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
+              <Route path="/admin-viewteacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
          
            </Routes>
         </BrowserRouter>
