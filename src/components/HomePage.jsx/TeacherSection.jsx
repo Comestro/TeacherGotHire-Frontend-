@@ -25,7 +25,7 @@ const TeacherSection = ({ onSelectRole }) => {
           <div className="flex flex-1 items-center">
             <h1 className="text-4xl font-hindi sm:text-3xl font-bold mb-6 sm:leading-hindi truncate flex items-center">
               क्या आप
-              <span className="text-5xl font-bold text-orange-300 mx-2">Teacher </span>
+              <span className="text-5xl font-bold text-orange-300 mx-2"  style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>Teacher </span>
               
               बनना चाहते हैं?
             </h1>
