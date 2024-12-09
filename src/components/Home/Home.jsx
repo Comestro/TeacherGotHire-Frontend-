@@ -11,6 +11,7 @@ import SchoolSection from "../HomePage.jsx/SchoolSection";
 import FeaturesSection from "../HomePage.jsx/FeaturesSection";
 import ExamSection from "../HomePage.jsx/ExamSection";
 import DetailSection from "../HomePage.jsx/DetailSection";
+import TutorCategoriesSection from "../HomePage.jsx/TutorCategoriesSection";
 
 function Home() {
   const navigate = useNavigate();
@@ -138,13 +139,15 @@ function Home() {
           </div>
         </div>
       </div>
+      <TutorCategoriesSection/>
+
       <TeacherSection onSelectRole={handleRoleSelection} />
       <FeaturesSection />
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
       <DetailSection />
-
       <TeacherProfiles />
+      
 
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
