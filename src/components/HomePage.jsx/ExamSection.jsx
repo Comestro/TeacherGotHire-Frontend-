@@ -44,7 +44,7 @@ const ExamSection = () => {
                 <div className="relative w-full mt-5 text-center">
                     <div className="w-full h-64 lg:h-96">
                         <img
-                            src="exam.webp"
+                            src="edu.jpg"
                             alt="Classroom"
                             className="w-full h-full object-contain items-baseline"
                         />

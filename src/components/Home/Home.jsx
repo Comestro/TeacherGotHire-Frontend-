@@ -145,6 +145,8 @@ function Home() {
       <TeacherProfiles />
       {/* <DetailSection /> */}
 
+      <TeacherProfiles />
+
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
