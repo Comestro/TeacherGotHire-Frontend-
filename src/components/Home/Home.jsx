@@ -26,7 +26,7 @@ function Home() {
         backgroundImage: `url('Home3.png')`,
       }}
     >
-      <nav>
+      {/* <nav>
         <Navbar
           links={[
             { id: "1", label: "Register", to: "/signup/teacher" },
@@ -37,78 +37,77 @@ function Home() {
           ]}
           variant="dark"
         />
-      </nav>
+      </nav> */}
       <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <div className="flex">
             <p className="mb-8 font-bold text-4xl md:text-5xl leading-none flex items-center">
               <span className="font-bold text-5xl pb-10 md:text-6xl text-teal-600 me-1">
-                PTPI 
+                PTPI
               </span>
-               – Connect with top teachers and great teaching jobs.
+              – Connect with top teachers and great teaching jobs.
             </p>
           </div>
-
         </div>
-        <div className="flex flex-col gap-2 w-full lg:w-[65%] px-14">
-          <div className="flex items-center rounded-full border-2 p-2 bg-white mr-4">
+        <div className="flex flex-col gap-4 w-full px-4 lg:w-3/4 lg:px-10">
+          <div className="flex items-center rounded-full border-2 p-2 bg-white">
             <input
               type="text"
               placeholder="What subject do you need help with?"
-              className="flex-1 p-2 px-2 border-none focus:outline-none text-gray-600  placeholder-gray-400 placeholder:font-semibold placeholder:px-4"
+              className="flex-1 p-2 px-4 border-none focus:outline-none text-gray-600 placeholder-gray-400 placeholder:font-semibold"
             />
             <div className="h-6 w-px bg-gray-300 mx-4 hidden sm:block"></div>
             <IoLocationOutline className="text-gray-600 hidden sm:block" />
             <input
               type="text"
               placeholder="Pin code"
-              className="hidden sm:block w-20 md:w-28 p-3 border-none focus:outline-none text-gray-600 placeholder-gray-400"
+              className="hidden sm:block w-24 md:w-32 p-2 border-none focus:outline-none text-gray-600 placeholder-gray-400"
             />
-            <button className="bg-teal-700  p-2 rounded-full flex items-center justify-center">
-              <IoSearchOutline className="text-white w-5 h-5 md:w-7 md:h-7 p-1" />
+            <button className="bg-teal-700 p-2 rounded-full flex items-center justify-center">
+              <IoSearchOutline className="text-white w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
 
-          <div className="mt-4 flex flex-nowrap gap-4 justify-center">
+          <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-full"
+              className="px-4 py-2 rounded-full"
             >
               Math
             </Button>
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-2xl"
+              className="px-4 py-2 rounded-full"
             >
               English
             </Button>
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-2xl"
+              className="px-4 py-2 rounded-full"
             >
               Science
             </Button>
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-2xl"
+              className="px-4 py-2 rounded-full"
             >
               History
             </Button>
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-2xl"
+              className="px-4 py-2 rounded-full"
             >
               Geography
             </Button>
             <Button
               textColor="text-teal-700 font-medium"
               bgcolor="bg-teal-100"
-              className="rounded-2xl"
+              className="px-4 py-2 rounded-full"
             >
               Music
             </Button>
@@ -142,11 +141,8 @@ function Home() {
       <FeaturesSection />
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
+      <DetailSection />
       <TeacherProfiles />
-      {/* <DetailSection /> */}
-
-      <TeacherProfiles />
-
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
