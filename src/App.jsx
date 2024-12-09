@@ -28,6 +28,7 @@ import PersonalInformation from "./components/Profile/PersonalProfile/PersonalIn
 import AddressProfileCard from "./components/Profile/PersonalProfile/AddressProfileCard";
 import EducationProfileCard  from "./components/Profile/JobProfile/Education/";
 import Exprience from "./components/Profile/JobProfile/Exprience";
+import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 
 
 function App() {
@@ -72,6 +73,7 @@ function App() {
               <Route path="/admin-support" element={token ? <Support /> : <Navigate to="/signin" />} />
               <Route path="/admin-change-password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
               <Route path="/admin-contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
+              <Route path="/admin-viewteacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
          
            </Routes>
         </BrowserRouter>
