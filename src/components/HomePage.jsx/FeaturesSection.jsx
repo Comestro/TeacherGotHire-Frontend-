@@ -16,7 +16,7 @@ const FeaturesSection = () => {
     <section className="bg-white py-12 px-4">
       <div className="container mx-auto text-center">
         <h2 className="text-3xl font-bold text-gray-500 mb-6">
-          Simplified <span className="text-orange-400">5-Step</span> Teacher Hiring Process
+          Simplified <span className="text-orange-400"  style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>5-Step</span> Teacher Hiring Process
         </h2>
         <p className="text-gray-600 font-serif md:px-10 mb-12">
           Join our team in just five easy steps and kickstart your teaching journey.
