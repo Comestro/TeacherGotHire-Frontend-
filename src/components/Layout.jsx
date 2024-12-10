@@ -6,12 +6,12 @@ import Footer from "./Footer/Footer";
 
 const Layout = () => {
   return (
-    <div className="">
-      <div className="w-64 fixed">
+    <div className="p-3 bg-gradient-to-b from-teal-100 to-gray-100">
+      <div className="w-64 fixed bg-blue-200">
         <Sidebar />
       </div>
       <div className="ml-64">
-        <div className="">
+        {/* <div className=" bg-yellow-200">
           <Navbar
             links={[
               { id: "1", label: "Home", to: "/" },
@@ -22,12 +22,11 @@ const Layout = () => {
             // notifications={notifications}
             //externalComponent={ProfileButton}
           />
-        </div>
-        <div className="flex-1 p-2 bg-gray-100">
+        </div> */}
+        <div className="flex-1 p-2 bg-white rounded-xl shadow-2xl">
           <Outlet /> {/* Renders nested route content */}
         </div>
       </div>
-        <Footer/>
     </div>
   );
 };
