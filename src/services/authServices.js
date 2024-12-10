@@ -34,6 +34,7 @@ export const createaccount = async ({  Fname, Lname, email, password }) => {
     localStorage.setItem('access_token', token); // Store the token in local storage
 
     return response.data;
+    }
     
   } catch (err) {
     console.error('Registration error:', err.response?.data || err);
