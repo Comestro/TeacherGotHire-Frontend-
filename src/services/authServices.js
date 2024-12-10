@@ -22,9 +22,9 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // Register User
-export const createaccount = async ({  email, password }) => {
+export const createaccount = async ({  Fname, Lname, email, password }) => {
   try {
-    const response = await apiClient.post('/api/register/', { email, password });
+    const response = await apiClient.post('/api/register/', {Fname, Lname, email, password });
     console.log('User registered:', response.data);
 
     const { token } = response.data;
