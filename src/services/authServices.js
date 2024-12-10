@@ -26,6 +26,8 @@ export const createaccount = async ({  Fname, Lname, email, password }) => {
   try {
     const response = await apiClient.post('/api/register/', {Fname, Lname, email, password });
     console.log('User registered:', response.data);
+
+    
     if(response.data.status == 200){
     const { token } = response.data;
     console.log('Received token:', token);
@@ -33,6 +35,7 @@ export const createaccount = async ({  Fname, Lname, email, password }) => {
 
     return response.data;
     }
+    
   } catch (err) {
     console.error('Registration error:', err.response?.data || err);
     throw err;

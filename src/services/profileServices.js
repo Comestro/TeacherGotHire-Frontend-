@@ -24,7 +24,7 @@ apiClient.interceptors.request.use(
 );
 export const updateBasicProfile = async(personaldata)=>{
   try{
-     const response = await apiClient.post('/api/self/basicProfile/',personaldata);
+     const response = await apiClient.put('/api/self/basicProfile/',personaldata);
      console.log("post data",response.data);
      console.log("hello");
      
@@ -98,7 +98,7 @@ export const updateAddressProfile = async(addressdata)=>{
 }
 export const fetchAddressProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/self/teacherAddress/');
+    //  const response = await apiClient.get('/api/self/teacherAddress/');
      
      return response.data;
   }
