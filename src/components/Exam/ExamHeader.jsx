@@ -29,21 +29,22 @@ export default function Subheader({ totalQuestion, subject }) {
   };
 
   return (
-    <div className="bg-white rounded-md py-4 px-6 shadow-md flex justify-between items-center border-b border-gray-300">
+    <div className=" rounded-md py-4 px-6 bg-gray-50 shadow-md flex justify-between items-center border-b border-gray-300">
       <div className="flex flex-col">
-      <h1 className="text-xl font-bold text-teal-700">Subject : {subject?.subject.subject_name } | Level : {subject?.level.name }</h1>
+      <h1 className="lg:text-2xl text-md font-bold text-teal-600">Private Teacher Provider Institute <br />
+       <span className="text-gray-500 font-semibold lg:text-lg text-sm"> PTPI / Exam / {subject?.subject.subject_name } / {subject?.level.name }</span></h1>
       </div>
-      <div className="relative w-24 h-24 flex items-center justify-center rounded-full shadow-lg">
+      <div className="relative lg:w-24 lg:h-24 w-20 h-20 flex items-center justify-center rounded-full shadow-lg">
         {/* Clock Base */}
         <div className="absolute inset-0 bg-white rounded-full flex items-center justify-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center shadow-inner">
+          <div className="lg:w-20 lg:h-20 bg-gray-100 rounded-full flex items-center justify-center shadow-inner">
           </div>
         </div>
 
         {/* Time Remaining */}
         <div className="absolute flex flex-col items-center justify-center">
           <span className="text-sm font-medium text-gray-500">Time Left</span>
-          <span className="text-lg font-bold text-gray-700">
+          <span className="lg:text-lg text-sm font-bold text-gray-700">
             {formatTime(timeLeft)}
           </span>
         </div>
