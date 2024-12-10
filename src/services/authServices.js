@@ -26,8 +26,7 @@ export const createaccount = async ({  Fname, Lname, email, password }) => {
   try {
     const response = await apiClient.post('/api/register/', {Fname, Lname, email, password });
     console.log('User registered:', response.data);
-
-    if(response.status == 200){
+    if(response.data.status == 200){
     const { token } = response.data;
     console.log('Received token:', token);
     localStorage.setItem('access_token', token); // Store the token in local storage
