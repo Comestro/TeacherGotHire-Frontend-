@@ -45,10 +45,13 @@ function Login() {
           <form onSubmit={handleSubmit(login)} className="space-y-5">
             {/* Email */}
             <div className="mb-4">
+            <label className="block text-sm font-medium  text-gray-700 mb-1" htmlFor="email">
+                  Email
+                </label>
             <Input
 
               placeholder="Enter your email"
-              type="email" className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
+              type="email" id="email" className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
 
 
               {...register('email', {
@@ -64,9 +67,13 @@ function Login() {
 
             {/* Password */}
             <div className="mb-4">
+            <label className="block text-sm font-medium  text-gray-700 mb-1" htmlFor="pass">
+                  Password
+                </label>
               <Input
                 placeholder="Enter your password"
                 type="password"
+                id="pass"
                 className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
                 {...register('password', { required: 'Password is required' })}
               />
