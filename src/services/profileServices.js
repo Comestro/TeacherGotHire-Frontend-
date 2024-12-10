@@ -98,7 +98,7 @@ export const updateAddressProfile = async(addressdata)=>{
 }
 export const fetchAddressProfile = async()=>{
   try{
-     const response = await apiClient.get('/api/self/teacherAddress/');
+    //  const response = await apiClient.get('/api/self/teacherAddress/');
      
      return response.data;
   }
