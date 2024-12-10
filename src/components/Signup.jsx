@@ -22,7 +22,7 @@ function SignUpPage() {
         dispatch(authsignup(userData));
         navigate("/teacher");
       }
-    } catch (error) {
+    } catch (error){
       setError(error);
     }
   };
