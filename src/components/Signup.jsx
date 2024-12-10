@@ -68,7 +68,7 @@ function SignUpPage() {
                   {...register('first_name', { required: true })}
                 />
               </div>
-              <div className="">
+              <div className="flex-1">
 
                 <label className="block text-sm font-medium  text-gray-700 mb-1" htmlFor="name">
                   Last Name

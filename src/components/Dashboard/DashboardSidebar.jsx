@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { logout } from "../../services/authServices";
 
 const Sidebar = () => {
   const profile = useSelector(
@@ -56,16 +57,13 @@ const Sidebar = () => {
         >
           Job Details
         </NavLink>
-        <NavLink
-          to="/auth/logout"
-          end
-          className={({ isActive }) =>
-            `block py-2 px-4 rounded-md self-end ${isActive ? "bg-slate-700 text-white font-semibold" : "text-gray-600 font-semibold"
-            } bg-slate-600 hover:bg-slate-800 text-white transition`
+        <button
+          onClick={logout}
+          className={`block py-2 px-4 rounded-md self-end bg-slate-600 hover:bg-slate-800 text-white transition`
           }
         >
           Logout
-        </NavLink>
+        </button>
       </nav>
     </div>
 
