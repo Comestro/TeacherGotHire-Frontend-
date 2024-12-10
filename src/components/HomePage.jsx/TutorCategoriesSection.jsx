@@ -5,22 +5,22 @@ import { MdBiotech } from "react-icons/md";
 import { RiEnglishInput, RiGalleryView2 } from "react-icons/ri";
 
 const categories = [
-  { name: "Mathematics", count: 12802, icon: <BiMath />  },
-  { name: "English", count: 4723, icon: <RiEnglishInput />  },
-  { name: "Biological Science", count: 3358, icon: <MdBiotech />  },
-  { name: "Science", count: 4170, icon: <FaFlask /> },
-  { name: "Physics", count: 1876, icon: <FaAtom /> },
-  { name: "Accounting", count: 1088, icon: <FaFileInvoiceDollar /> },
-  { name: "Programming Language", count: 341, icon: <FaCode /> },
-  { name: "view all", count: 178, icon: <RiGalleryView2 />  },
+  { name: "Mathematics", count: 12802, icon: <BiMath className="text-orange-400" />  },
+  { name: "English", count: 4723, icon: <RiEnglishInput className="text-orange-400" />  },
+  { name: "Biological Science", count: 3358, icon: <MdBiotech className="text-orange-400" />  },
+  { name: "Science", count: 4170, icon: <FaFlask className="text-orange-400" /> },
+  { name: "Physics", count: 1876, icon: <FaAtom className="text-orange-400" /> },
+  { name: "Accounting", count: 1088, icon: <FaFileInvoiceDollar className="text-orange-400" /> },
+  { name: "Programming Language", count: 341, icon: <FaCode className="text-orange-400" /> },
+  { name: "view all", count: 178, icon: <RiGalleryView2 className="text-orange-400" />  },
 ];
 
 function TutorCategoriesSection() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center  p-8" >
       {/* Header Section */}
-      <div className="text-center max-w-3xl mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+      <div className="text-center my-10 max-w-3xl mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-600">
         Find the Perfect Tutor for You!
                 </h1>
         <p className="text-gray-600 mt-4">
