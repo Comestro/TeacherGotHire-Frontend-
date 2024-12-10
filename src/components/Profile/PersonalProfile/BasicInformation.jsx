@@ -4,41 +4,38 @@ import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
 import { updateBasicProfile } from "../../../services/profileServices";
-import { getBasic, postBasic } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
+import { getBasic, postBasic,setShowForm } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
-  const basicData = useSelector((state) => state.personalProfile.basicData || {}); // Adjust state selector as needed
-  
-
-
-  const [showForm, setShowForm] = useState(true); // Toggle between form and display mode
+  const basicData = useSelector((state) => state.personalProfile.basicData || {});  
+  const showForm = useSelector((state) => state.personalProfile.showForm);
   const [error, setError] = useState("");
 
   const {
     register,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
   } = useForm();
 
   useEffect(() => {
     // Fetch the basic data only once when the component mounts
     dispatch(getBasic());
+    dispatch(setShowForm(true));
   }, []);
-  
+
   console.log("Redux State - Basic Data:", basicData);
   useEffect(() => {
     // Pre-fill the form only if basicData is updated and exists
-    if (basicData) {
+    if (basicData) {  
       Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
     }
-  }, [basicData, setValue]);
-
+  }, []);
 
   const onSubmit = async (data) => {
     try {
+      console.log("kamna",data);
       await updateBasicProfile(data); // Save or update data via API
       dispatch(postBasic(data)); // Update Redux store
       setShowForm(false); // Switch to display mode
@@ -49,6 +46,7 @@ const BasicInformation = () => {
 
   const handleEdit = () => {
     setShowForm(true); // Switch back to form mode
+
   };
 
   return (
@@ -70,7 +68,9 @@ const BasicInformation = () => {
               {...register("name", { required: "Name is required" })}
             />
             {errors.name && (
-              <span className="text-red-500 text-sm">{errors.name.message}</span>
+              <span className="text-red-500 text-sm">
+                {errors.name.message}
+              </span>
             )}
 
             <Input
@@ -81,7 +81,9 @@ const BasicInformation = () => {
               {...register("email", { required: "Email is required" })}
             />
             {errors.email && (
-              <span className="text-red-500 text-sm">{errors.email.message}</span>
+              <span className="text-red-500 text-sm">
+                {errors.email.message}
+              </span>
             )}
 
             <Input
@@ -120,16 +122,16 @@ const BasicInformation = () => {
         <div className="bg-white p-4 rounded-md shadow-md">
           <div className="mb-4">
             <p>
-              <strong>Name:</strong> {basicData.name }
+              <strong>Name:</strong> {basicData[0].name}
             </p>
             <p>
-              <strong>Email:</strong> {basicData.email }
+              <strong>Email:</strong> {basicData[0].email}
             </p>
             <p>
-              <strong>Phone:</strong> {basicData.mobile }
+              <strong>Phone:</strong> {basicData[0].mobile}
             </p>
             <p>
-              <strong>Location:</strong> {basicData.location }
+              <strong>Location:</strong> {basicData[0].location}
             </p>
           </div>
           <button
@@ -143,11 +145,7 @@ const BasicInformation = () => {
       )}
 
       {/* Error Message */}
-      {error && (
-        <p className="text-red-500 text-sm mt-4">
-          Error: {error}
-        </p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-4">Error: {error}</p>}
     </div>
   );
 };

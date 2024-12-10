@@ -56,7 +56,7 @@ const PersonalInformation = () => {
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
+      <h3 className="text-xl font-semibold mb-4">Manage PersonalProfile</h3>
 
       {/* Add/Edit Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">

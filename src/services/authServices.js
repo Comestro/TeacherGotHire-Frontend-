@@ -60,30 +60,14 @@ export const login = async ({ email, password }) => {
   }
 };
 
-// Alternative Login for FormData (if needed by the backend)
-// export const loginWithFormData = async ({ username, password }) => {
-//   try {
-//     const formData = new FormData();
-//     formData.append('username', username);
-//     formData.append('password', password);
 
-//     const response = await axios.post('/api/login/', formData, {
-//       headers: { 'Content-Type': 'multipart/form-data' },
-//     });
-
-//     const { token } = response.data;
-//     console.log('Login response:', response.data);
-
-//     // Store token in localStorage
-//     localStorage.setItem('access_token', token);
-//     console.log('User logged in:', token);
-
-//     return response.data;
-//   } catch (err) {
-//     console.error('Login error (FormData):', err.response?.data || err);
-//     throw err;
-//   }
-//  };
-
-// Export the API client
+export const logout = async () =>{
+  try {
+    localStorage.removeItem('access_token'); // Remove token from local storage
+    console.log('User logged out');
+  } catch (err) {
+    console.error('Logout error:', err);
+    throw err;
+  }
+}
 export default apiClient;
