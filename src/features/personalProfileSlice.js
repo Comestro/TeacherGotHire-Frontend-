@@ -2,7 +2,7 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import { fetchPersonalProfile,updatePersonalProfile } from "../services/profileServices";
 import {fetchAddressProfile,updateAddressProfile }from "../services/profileServices";
-import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
+import {updateBasicProfile,fetchBasicProfile,editBasicProfile} from "../services/profileServices"
 
 
 // const initialState={
@@ -29,6 +29,7 @@ const initialState = {
   basicData:{},
   personalData:{},
   addsress:{},
+  showForm: false,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
@@ -54,6 +55,22 @@ export const postBasic = createAsyncThunk(
   async (addressData, { rejectWithValue }) => {
     try {
       const data = await updateBasicProfile(addressData);
+      console.log("podata",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+export const editBasic = createAsyncThunk(
+  "postBasic",
+  async (addressData, { rejectWithValue }) => {
+    try {
+      const data = await editBasicProfile(addressData);
       console.log("podata",data)
        // Call the service
       return data; // Return the updated profile data
@@ -139,7 +156,11 @@ export const postProfile = createAsyncThunk(
 const personalProfileSlice = createSlice({
   name: "personalProfile",
   initialState,
-  reducers: {}, // Add reducers if needed
+  reducers: {
+    setShowForm(state, action) {
+      state.showForm = action.payload;
+    },
+  }, // Add reducers if needed
     extraReducers: (builder) => {
       // for handeling  basic profile
       builder
@@ -280,4 +301,6 @@ const personalProfileSlice = createSlice({
 });
 
 // Export reducer
+
+export const { setShowForm } = personalProfileSlice.actions;
 export default personalProfileSlice.reducer;
