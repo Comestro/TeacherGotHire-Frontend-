@@ -18,7 +18,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 const AnalyticsCard = ({ analytics }) => {
   return (
-    <Box mt={3}>
+    <Box mt={3} mb={3}>
       <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>

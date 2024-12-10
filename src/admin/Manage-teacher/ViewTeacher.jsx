@@ -30,6 +30,7 @@ import QualificationsCard from "./QualificationsCard";
 import ExperienceCard from "./ExperienceCard";
 import AnalyticsCard from "./AnalyticsCard";
 import TeacherModal from "../TeacherInfoModal/TeacherModal";
+import TeacherTestScorePage from "./TeacherTestScore";
 
 const ViewTeacherAdmin = () => {
   const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
@@ -159,13 +160,12 @@ const ViewTeacherAdmin = () => {
             Deactivate Account
           </Button>
         </Box>
-
+        <AnalyticsCard analytics={teacherData.analytics}  />
         <TeacherCard teacherData={teacherData} />
         <SkillsCard skills={teacherData.skills} />
         <QualificationsCard qualifications={teacherData.qualifications} />
         <ExperienceCard experience={teacherData.experience} />
-        <AnalyticsCard analytics={teacherData.analytics} />
-
+        <TeacherTestScorePage teacherData={teacherData} />
         <Modal
           open={openDeactivateModal}
           onClose={() => setOpenDeactivateModal(false)}
