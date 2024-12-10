@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { FiEdit2 } from "react-icons/fi";
 import Input from "../../Input";
 import { updateBasicProfile } from "../../../services/profileServices";
-import { getBasic, postBasic } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
+import { getBasic, postBasic,setShowForm } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
@@ -19,25 +19,27 @@ const BasicInformation = () => {
     register,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
   } = useForm();
 
   useEffect(() => {
     // Fetch the basic data only once when the component mounts
     dispatch(getBasic());
+    dispatch(setShowForm(true));
   }, []);
+
 
   console.log("Redux State - Basic Data:", basicData);
   useEffect(() => {
     // Pre-fill the form only if basicData is updated and exists
-    if (basicData) {
+    if (basicData) {  
       Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
     }
   }, [basicData, setValue]);
 
   const onSubmit = async (data) => {
     try {
+      console.log("kamna",data);
       await updateBasicProfile(data); // Save or update data via API
       dispatch(postBasic(data)); // Update Redux store
       setShowForm(false); // Switch to display mode
@@ -48,6 +50,7 @@ const BasicInformation = () => {
 
   const handleEdit = () => {
     setShowForm(true); // Switch back to form mode
+
   };
 
   // for testing purpose

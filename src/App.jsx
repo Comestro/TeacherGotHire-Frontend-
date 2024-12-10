@@ -25,6 +25,7 @@ import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
 import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
+// import Logout from "./components/Logout";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/signup/teacher" element={<SignUpPage/>}/>
               <Route path="/signin" element={<Login/>}/>
+              {/* <Route path="/auth/logout" element={<Logout/>}/> */}
               <Route path="/exam" element={<ExamPortal/>}/>
               <Route path="/result" element={<ResultPage />} />
               <Route path="/admin-signin" element={<AdminSignIn/>}/>  

@@ -7,7 +7,7 @@ import {  updateEducationProfile } from "../../../services/jobProfileService";
 import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
 
 
-const EducationProfileCard = () => {
+const Education= () => {
   const dispatch = useDispatch();
   const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
   
@@ -158,4 +158,4 @@ const EducationProfileCard = () => {
   );
 };
 
-export default EducationProfileCard;
+export default Education;

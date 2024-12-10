@@ -145,7 +145,7 @@ function Home() {
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
       <DetailSection />
-      <TeacherProfiles />
+      <TeacherProfiles className="w-full" />
       
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}

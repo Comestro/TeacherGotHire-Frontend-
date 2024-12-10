@@ -7,10 +7,10 @@ import Footer from "./Footer/Footer";
 const Layout = () => {
   return (
     <div className="p-3 bg-gradient-to-b from-teal-100 to-gray-100">
-      <div className="w-64 fixed bg-blue-200">
+      <div className=" fixed bg-blue-200">
         <Sidebar />
       </div>
-      <div className="ml-64">
+      <div className="ml-60">
         {/* <div className=" bg-yellow-200">
           <Navbar
             links={[
