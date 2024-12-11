@@ -7,51 +7,51 @@ import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic, postBasic,setShowForm } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
 
 const BasicInformation = () => {
-  const dispatch = useDispatch();
-  const basicData = useSelector(
-    (state) => state.personalProfile.basicData || {}
-  ); // Adjust state selector as needed
+  // const dispatch = useDispatch();
+  // const basicData = useSelector(
+  //   (state) => state.personalProfile.basicData || {}
+  // ); // Adjust state selector as needed
 
-  const [showForm, setShowForm] = useState(true); // Toggle between form and display mode
-  const [error, setError] = useState("");
+  // const [showForm, setShowForm] = useState(true); // Toggle between form and display mode
+  // const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   setValue,
+  //   formState: { errors },
+  // } = useForm();
 
-  useEffect(() => {
-    // Fetch the basic data only once when the component mounts
-    dispatch(getBasic());
-    dispatch(setShowForm(true));
-  }, []);
+  // useEffect(() => {
+  //   // Fetch the basic data only once when the component mounts
+  //   dispatch(getBasic());
+  //   dispatch(setShowForm(true));
+  // }, []);
 
 
-  console.log("Redux State - Basic Data:", basicData);
-  useEffect(() => {
-    // Pre-fill the form only if basicData is updated and exists
-    if (basicData) {  
-      Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
-    }
-  }, [basicData, setValue]);
+  // console.log("Redux State - Basic Data:", basicData);
+  // useEffect(() => {
+  //   // Pre-fill the form only if basicData is updated and exists
+  //   if (basicData) {  
+  //     Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
+  //   }
+  // }, [basicData, setValue]);
 
-  const onSubmit = async (data) => {
-    try {
-      console.log("kamna",data);
-      await updateBasicProfile(data); // Save or update data via API
-      dispatch(postBasic(data)); // Update Redux store
-      setShowForm(false); // Switch to display mode
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  // const onSubmit = async (data) => {
+  //   try {
+  //     console.log("kamna",data);
+  //     await updateBasicProfile(data); // Save or update data via API
+  //     dispatch(postBasic(data)); // Update Redux store
+  //     setShowForm(false); // Switch to display mode
+  //   } catch (err) {
+  //     setError(err.message);
+  //   }
+  // };
 
-  const handleEdit = () => {
-    setShowForm(true); // Switch back to form mode
+  // const handleEdit = () => {
+  //   setShowForm(true); // Switch back to form mode
 
-  };
+  // };
 
   // for testing purpose
   const [isEditingName, setIsEditingName] = useState(false);
@@ -77,7 +77,7 @@ const BasicInformation = () => {
 
   return (
     <div className="max-w-3xl px-5 mt-auto">
-      <h2 className="text-xl font-bold mb-6 text-gray-700">
+      <h2 className="text-xl font-bold mb-6 text-gray-700 underline text-center">
         Basic Information
       </h2>
 

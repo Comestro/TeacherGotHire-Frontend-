@@ -21,13 +21,10 @@ const EditPersonalProfile = () => {
 
       {/* Main Content */}
       <div className="flex-grow overflow-y-auto">
-        <h1 className="text-2xl flex justify-center font-bold m-4">
-          Edit Profile
-        </h1>
-        <div className="px-6">
+        <div className="flex flex-col py-4 px-10">
           {/* Render nested routes here */}
           <BasicInformation/>
-          <PersonalInformation/>
+          {/* <PersonalInformation/> */}
           <AddressProfileCard/>
         </div>
       </div>

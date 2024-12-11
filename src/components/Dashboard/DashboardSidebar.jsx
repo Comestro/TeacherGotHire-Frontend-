@@ -22,7 +22,9 @@ const Sidebar = () => {
         <h2 className="text-xl font-semibold mt-4 text-gray-800">
           {profile.fullname || "Your Name"}
         </h2>
-        <p className="text-md text-gray-700">{profile.email || "email@example.com"}</p>
+        <p className="text-md text-gray-700">
+          {profile.email || "email@example.com"}
+        </p>
       </div>
 
       {/* Navigation Links */}
@@ -31,7 +33,10 @@ const Sidebar = () => {
           to="/teacher/"
           end
           className={({ isActive }) =>
-            `block py-2 px-4 rounded-md  ${isActive ? "bg-teal-700 text-white font-semibold" : "text-gray-600 font-semibold"
+            `block py-2 px-4 rounded-md  ${
+              isActive
+                ? "bg-teal-700 text-white font-semibold"
+                : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition`
           }
         >
@@ -41,7 +46,10 @@ const Sidebar = () => {
           to="/teacher/edit-profile"
           end
           className={({ isActive }) =>
-            `block py-2 px-4 rounded-md ${isActive ? "bg-teal-700 text-white font-semibold" : "text-gray-600 font-semibold"
+            `block py-2 px-4 rounded-md ${
+              isActive
+                ? "bg-teal-700 text-white font-semibold"
+                : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition`
           }
         >
@@ -51,7 +59,10 @@ const Sidebar = () => {
           to="/teacher/job-profile"
           end
           className={({ isActive }) =>
-            `block py-2 px-4 rounded-md ${isActive ? "bg-teal-700 text-white font-semibold" : "text-gray-600 font-semibold"
+            `block py-2 px-4 rounded-md ${
+              isActive
+                ? "bg-teal-700 text-white font-semibold"
+                : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition`
           }
         >
@@ -59,14 +70,12 @@ const Sidebar = () => {
         </NavLink>
         <button
           onClick={logout}
-          className={`block py-2 px-4 rounded-md self-end bg-slate-600 hover:bg-slate-800 text-white transition`
-          }
+          className={`block py-2 px-4 rounded-md self-end bg-slate-600 hover:bg-slate-800 text-white transition`}
         >
           Logout
         </button>
       </nav>
     </div>
-
   );
 };
 
