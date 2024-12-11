@@ -5,7 +5,7 @@ import {fetchAddressProfile,updateAddressProfile }from "../services/profileServi
 import {updateBasicProfile,fetchBasicProfile,editBasicProfile} from "../services/profileServices"
 
 
-// const initialState={
+
 // user_id : "",
 // fullname: "",
 // gender: "",
@@ -54,7 +54,7 @@ export const postBasic = createAsyncThunk(
   "postBasic",
   async (addressData, { rejectWithValue }) => {
     try {
-      const data = await updateBasicProfile(addressData);
+     // const data = await updateBasicProfile(addressData);
       console.log("podata",data)
        // Call the service
       return data; // Return the updated profile data
@@ -173,7 +173,7 @@ const personalProfileSlice = createSlice({
         .addCase(getBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
           
-          state.basicData = action.payload; 
+         // state.basicData = action.payload; 
           console.log("hi",action.payload);// Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
@@ -197,7 +197,7 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.basicData = action.payload;
+          //state.basicData = action.payload;
           console.log("hello",action.payload); // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)

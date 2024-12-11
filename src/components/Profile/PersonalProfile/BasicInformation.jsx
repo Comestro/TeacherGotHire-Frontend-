@@ -1,64 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useForm } from "react-hook-form";
-import { FiEdit2 } from "react-icons/fi";
-import Input from "../../Input";
-import { updateBasicProfile } from "../../../services/profileServices";
-import { getBasic, postBasic,setShowForm } from "../../../features/personalProfileSlice"; // Replace with actual Redux action
+import React, { useState } from "react";
 
-const BasicInformation = () => {
-  const dispatch = useDispatch();
-  const basicData = useSelector(
-    (state) => state.personalProfile.basicData || {}
-  ); // Adjust state selector as needed
-
-  const [showForm, setShowForm] = useState(true); // Toggle between form and display mode
-  const [error, setError] = useState("");
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
-
-  useEffect(() => {
-    // Fetch the basic data only once when the component mounts
-    dispatch(getBasic());
-    dispatch(setShowForm(true));
-  }, []);
-
-
-  console.log("Redux State - Basic Data:", basicData);
-  useEffect(() => {
-    // Pre-fill the form only if basicData is updated and exists
-    if (basicData) {  
-      Object.entries(basicData).forEach(([key, value]) => setValue(key, value)); // Pre-fill the form
-    }
-  }, [basicData, setValue]);
-
-  const onSubmit = async (data) => {
-    try {
-      console.log("kamna",data);
-      await updateBasicProfile(data); // Save or update data via API
-      dispatch(postBasic(data)); // Update Redux store
-      setShowForm(false); // Switch to display mode
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleEdit = () => {
-    setShowForm(true); // Switch back to form mode
-
-  };
-
-  // for testing purpose
+const AccountSettings = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [isEditingGender, setIsEditingGender] = useState(false);
 
   const [name, setName] = useState("ROYAL GAMERS");
   const [tempName, setTempName] = useState(name);
@@ -69,11 +15,8 @@ const BasicInformation = () => {
   const [contact, setContact] = useState("123-456-7890");
   const [tempContact, setTempContact] = useState(contact);
 
-  const [address, setAddress] = useState("2024-12-20");
+  const [address, setAddress] = useState("Current Address");
   const [tempAddress, setTempAddress] = useState(address);
-
-  const [gender, setGender] = useState("Male");
-  const [tempGender, setTempGender] = useState(gender);
 
   return (
     <div className="max-w-3xl px-5 mt-auto">
@@ -107,7 +50,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Name</p>
         {!isEditingName ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500">{name}</p>
+            <p className="text-gray-600 font-medium">{name}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingName(true)}
@@ -121,11 +64,11 @@ const BasicInformation = () => {
               type="text"
               value={tempName}
               onChange={(e) => setTempName(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button
               onClick={() => {
-                setTempName(name); 
+                setTempName(name);
                 setIsEditingName(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
@@ -134,10 +77,10 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                setName(tempName); 
+                setName(tempName);
                 setIsEditingName(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
             >
               Save
             </button>
@@ -151,7 +94,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Email Address</p>
         {!isEditingEmail ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500">{email}</p>
+            <p className="text-gray-600 font-medium">{email}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingEmail(true)}
@@ -165,11 +108,11 @@ const BasicInformation = () => {
               type="email"
               value={tempEmail}
               onChange={(e) => setTempEmail(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button
               onClick={() => {
-                setTempEmail(email); // Revert changes
+                setTempEmail(email);
                 setIsEditingEmail(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
@@ -178,10 +121,10 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                setEmail(tempEmail); // Save changes
+                setEmail(tempEmail);
                 setIsEditingEmail(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
             >
               Save
             </button>
@@ -189,12 +132,13 @@ const BasicInformation = () => {
         )}
       </div>
       <hr className="mb-4" />
+
       {/* Contact Number Section */}
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Contact Number</p>
         {!isEditingContact ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500">{contact}</p>
+            <p className="text-gray-600 font-medium">{contact}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingContact(true)}
@@ -212,7 +156,7 @@ const BasicInformation = () => {
             />
             <button
               onClick={() => {
-                setTempContact(contact); // Revert changes
+                setTempContact(contact);
                 setIsEditingContact(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
@@ -221,24 +165,24 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                setContact(tempContact); // Save changes
+                setContact(tempContact);
                 setIsEditingContact(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
-
       <hr className="mb-4" />
+
       {/* Address Section */}
       <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Date of Birth</p>
+        <p className="text-gray-700 font-semibold mb-2">Address</p>
         {!isEditingAddress ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500">{address}</p>
+            <p className="text-gray-600 font-medium">{address}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingAddress(true)}
@@ -247,89 +191,20 @@ const BasicInformation = () => {
             </button>
           </div>
         ) : (
-          <div className="flex items-center space-x-4">
-            <input
-              type="date"
+          <div className="flex flex-col space-y-3">
+            <select
               value={tempAddress}
               onChange={(e) => setTempAddress(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-            <button
-              onClick={() => {
-                setTempAddress(address);
-                setIsEditingAddress(false);
-              }}
-              className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setAddress(tempAddress);
-                setIsEditingAddress(false);
-              }}
-              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
-            >
-              Save
-            </button>
-          </div>
-        )}
-      </div>
-
-      <hr className="mb-4" />
-
-      {/* Gender Section */}
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Gender</p>
-        {!isEditingGender ? (
-          <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{gender}</p>
-            <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
-              onClick={() => setIsEditingGender(true)}
-            >
-              Edit
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-between space-y-3">
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setTempGender("Male")}
-                className={`px-4 py-1 rounded-md text-sm ${
-                  tempGender === "Male"
-                    ? "bg-teal-500 text-white"
-                    : "border border-gray-300 text-gray-700"
-                }`}
-              >
-                Male
-              </button>
-              <button
-                onClick={() => setTempGender("Female")}
-                className={`px-4 py-1 rounded-md text-sm ${
-                  tempGender === "Female"
-                    ? "bg-teal-500 text-white"
-                    : "border border-gray-300 text-gray-700"
-                }`}
-              >
-                Female
-              </button>
-              <button
-                onClick={() => setTempGender("Other")}
-                className={`px-4 py-1 rounded-md text-sm ${
-                  tempGender === "Other"
-                    ? "bg-teal-500 text-white"
-                    : "border border-gray-300 text-gray-700"
-                }`}
-              >
-                Other
-              </button>
-            </div>
+              <option value="Current Address">Current Address</option>
+              <option value="Permanent Address">Permanent Address</option>
+            </select>
             <div className="flex space-x-4">
               <button
                 onClick={() => {
-                  setTempGender(gender);
-                  setIsEditingGender(false);
+                  setTempAddress(address);
+                  setIsEditingAddress(false);
                 }}
                 className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
               >
@@ -337,10 +212,10 @@ const BasicInformation = () => {
               </button>
               <button
                 onClick={() => {
-                  setGender(tempGender);
-                  setIsEditingGender(false);
+                  setAddress(tempAddress);
+                  setIsEditingAddress(false);
                 }}
-                className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+                className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
               >
                 Save
               </button>
@@ -349,104 +224,8 @@ const BasicInformation = () => {
         )}
       </div>
     </div>
-    // <div className="p-5 bg-red-200">
-    //   <h3 className="text-xl font-semibold mb-4">Basic Information</h3>
-
-    //   {showForm ? (
-    //     // Form Mode
-    //     <form
-    //       onSubmit={handleSubmit(onSubmit)}
-    //       className="space-y-4 bg-gray-100 p-4 rounded-md"
-    //     >
-    //       <div className="grid grid-cols-2 gap-4">
-    //         <Input
-    //           label="Name"
-    //           className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-    //           placeholder="Enter Name"
-    //           type="text"
-    //           {...register("name", { required: "Name is required" })}
-    //         />
-    //         {errors.name && (
-    //           <span className="text-red-500 text-sm">{errors.name.message}</span>
-    //         )}
-
-    //         <Input
-    //           label="Email"
-    //           className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-    //           placeholder="Enter Email"
-    //           type="email"
-    //           {...register("email", { required: "Email is required" })}
-    //         />
-    //         {errors.email && (
-    //           <span className="text-red-500 text-sm">{errors.email.message}</span>
-    //         )}
-
-    //         <Input
-    //           label="Phone Number"
-    //           className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-    //           placeholder="Enter Phone Number"
-    //           type="text"
-    //           {...register("mobile", { required: "Phone number is required" })}
-    //         />
-    //         {errors.phone_no && (
-    //           <span className="text-red-500 text-sm">
-    //             {errors.phone_no.message}
-    //           </span>
-    //         )}
-
-    //         <Input
-    //           label="Location"
-    //           className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-    //           placeholder="Enter Location"
-    //           type="text"
-    //           {...register("location")}
-    //         />
-    //       </div>
-
-    //       <div className="flex justify-end space-x-4 mt-4">
-    //         <button
-    //           type="submit"
-    //           className="bg-black text-white px-5 py-2 rounded hover:bg-gray-900 w-32"
-    //         >
-    //           Save
-    //         </button>
-    //       </div>
-    //     </form>
-    //   ) : (
-    //     // Display Mode
-    //     <div className="bg-white p-4 rounded-md shadow-md">
-    //       <div className="mb-4">
-    //         <p>
-    //           <strong>Name:</strong> {basicData.name }
-    //         </p>
-    //         <p>
-    //           <strong>Email:</strong> {basicData.email }
-    //         </p>
-    //         <p>
-    //           <strong>Phone:</strong> {basicData.mobile }
-    //         </p>
-    //         <p>
-    //           <strong>Location:</strong> {basicData.location }
-    //         </p>
-    //       </div>
-    //       <button
-    //         onClick={handleEdit}
-    //         className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
-    //       >
-    //         <FiEdit2 size={20} />
-    //         <span>Edit</span>
-    //       </button>
-    //     </div>
-    //   )}
-
-    //   {/* Error Message */}
-    //   {error && (
-    //     <p className="text-red-500 text-sm mt-4">
-    //       Error: {error}
-    //     </p>
-    //   )}
-    // </div>
   );
 };
 
-export default BasicInformation;
+export default AccountSettings;
+
