@@ -25,8 +25,6 @@ const EditPersonalProfile = () => {
           {/* Render nested routes here */}
           <BasicInformation/>
           <AddressProfileCard/>
-          {/* <PersonalInformation /> */}
-          <AddressProfileCard />
         </div>
       </div>
     </div>
