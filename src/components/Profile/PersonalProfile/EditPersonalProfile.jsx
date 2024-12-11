@@ -26,9 +26,9 @@ const EditPersonalProfile = () => {
         </h1>
         <div className="px-6">
           {/* Render nested routes here */}
-          <BasicInformation/>
-          <PersonalInformation/>
-          <AddressProfileCard/>
+          <BasicInformation />
+          <PersonalInformation />
+          <AddressProfileCard />
         </div>
       </div>
     </div>
