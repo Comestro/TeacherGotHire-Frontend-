@@ -24,8 +24,9 @@ const EditPersonalProfile = () => {
         <div className="flex flex-col py-4 px-10">
           {/* Render nested routes here */}
           <BasicInformation/>
-          {/* <PersonalInformation/> */}
           <AddressProfileCard/>
+          {/* <PersonalInformation /> */}
+          <AddressProfileCard />
         </div>
       </div>
     </div>
