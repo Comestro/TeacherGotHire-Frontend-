@@ -18,7 +18,7 @@ const SchoolSection = ({ onSelectRole }) => {
 
         {/* Right Section with Text */}
         <div className="text-teal-700 mb-10 md:mt-10">
-          <h1 className="text-4xl sm:text-4xl font-bold mb-6 leading-normal">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-6 leading-normal">
           Does your school need dedicated teachers?
           </h1>
           <p className="text-lg sm:text-xl mb-6 leading-relaxed font-serif text-gray-600">
