@@ -10,20 +10,30 @@ import { createaccount } from "../services/authServices";
 function SignUpPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
   const [error, setError] = useState("");
+
+  const password = watch("password");
 
   const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
     setError("");
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
+
+      
+      console.log(userData);
       if (userData) {
         dispatch(authsignup(userData));
         navigate("/teacher");
       }
-    } catch (error){
-      setError(error);
+    } catch (error) {
+      setError(error.message || "Failed to create account. Please try again.");
     }
   };
 
@@ -52,33 +62,39 @@ function SignUpPage() {
             {/* Full Name */}
             <div className="flex gap-2">
               <div className="flex-1">
-                <label
-                  className="block text-sm font-medium  text-gray-700 mb-1"
-                  htmlFor="name"
-                >
-                  first Name
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name
                 </label>
                 <Input
-                  className="w-full border-2 border-gray-300 text-sm rounded-xl px-3 py-3 "
-                  placeholder="Enter your full name"
-                  {...register("Fname", { required: true })}
+                  className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.Fname
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:border-green-500"
+                    }`}
+                  placeholder="Enter your first name"
+                  {...register("Fname", { required: "First name is required" })}
                 />
+
+                {errors.Fname && (
+                  <span className="text-red-500 text-sm">
+                    {errors.Fname.message}
+                  </span>
+                )}
               </div>
-              <div className="">
-                <label
-                  className="block text-sm font-medium  text-gray-700 mb-1"
-                  htmlFor="name"
-                >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Last Name
                 </label>
                 <Input
-                  className="w-full border-2 border-gray-300 text-sm rounded-xl px-3 py-3 "
+                  className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.Lname
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:bordser-green-500"
+                  }`}
                   placeholder="Enter your last name"
-                  {...register("Lname", { required: "name is required" })}
+                  {...register("Lname", { required: "Last name is required" })}
                 />
-                {error.Lname && (
+                {errors.Lname && (
                   <span className="text-red-500 text-sm">
-                    {error.Lname.message}
+                    {errors.Lname.message}
                   </span>
                 )}
               </div>
@@ -86,70 +102,81 @@ function SignUpPage() {
 
             {/* Email */}
             <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="name"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
               <Input
                 placeholder="Enter your email"
                 type="email"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
+                className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.email
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-300 focus:bordser-green-500"
+                }`}                
                 {...register("email", {
-                  required: true,
-                  validate: {
-                    matchPattern: (value) =>
-                      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(
-                        value
-                      ) || "Email address must be valid",
+                  required: "Email is required",
+                  pattern: {
+                    value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                    message: "Invalid email format",
                   },
                 })}
               />
+              {error.email && (
+                <span className="text-red-500 text-sm">
+                  {error}
+                </span>
+              )}
             </div>
 
             {/* Password */}
             <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="password"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <Input
                 placeholder="Enter your password"
                 type="password"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
-                {...register("password", { required: true })}
+                className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.password
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-300 focus:bordser-green-500"
+                }`}                
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters long",
+                  },
+                })}
               />
+              {errors.password && (
+                <span className="text-red-500 text-sm">
+                  {errors.password.message}
+                </span>
+              )}
             </div>
 
             {/* Confirm Password */}
             <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="password"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password
               </label>
               <Input
                 placeholder="Confirm your password"
                 type="password"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
-                {...register("confirmPassword", { required: true })}
+                className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.confirmPassword
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-300 focus:bordser-green-500"
+                }`}
+                  {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === password || "Passwords do not match",
+                })}
               />
-            </div>
-
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 border-gray-300  rounded"
-              />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the{" "}
-                <span className="text-teal-600">terms & policy</span>
-              </label>
+              {errors.confirmPassword && (
+                <span className="text-red-500 text-sm">
+                  {errors.confirmPassword.message}
+                </span>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -163,7 +190,7 @@ function SignUpPage() {
 
           {error && (
             <p className="text-red-500 text-sm mt-4">
-              Error: {console.log(error)}
+              Error: {error}
             </p>
           )}
 
