@@ -33,16 +33,12 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
       console.log('Received token:', token);
       localStorage.setItem('access_token', token);
 
-      return response.data; // Return user data for success
-    
-  } catch (err) {
-    // Default error message
-
-    if(err.response.status == 403){
-      throw new Error("Registration email already in use");
+    return response.data;
+  
   }
-    // Throw a clean error message back to the calling function
-    throw new Error(err);
+  catch(err) {
+    console.error('Registration error:', err.response?.data || err);
+    throw err;
   }
 };
 
