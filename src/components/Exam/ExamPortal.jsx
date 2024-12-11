@@ -8,6 +8,7 @@ import { RxCross2 } from "react-icons/rx";
 import { FaArrowRight } from "react-icons/fa";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import LeftSidebar from "./LeftSidebar";
+import ExamNavbar from "./ExamNavbar";
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,9 +88,11 @@ const ExamPortal = () => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="lg:flex justify-between h-screen bg-gray-100 w-full">
+   <>
+   <ExamNavbar/>
+    <div className="lg:flex pt-9 justify-between h-screen bg-gray-100 w-full">
       {/*Left Sidebar */}
-     <LeftSidebar/>
+     <LeftSidebar currentQuestionIndex={currentQuestionIndex}  />
 
 
       {/* Main Content */}
@@ -102,14 +105,14 @@ const ExamPortal = () => {
           <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
         )}
         {currentQuestion ? (
-          <div className="bg-gray-50 shadow-lg rounded-lg p-6 w-full px-5 mt-4">
+          <div className="bg-white shadow-lg rounded-lg p-6 w-full px-5 mt-4">
             <div className="flex justify-between ">
               <div className="mb-3">
                 <h2 className="text-xl font-bold text-gray-600 ">
                   Question {currentQuestionIndex + 1}
                 </h2>
-                <p className="text-sm text-gray-500">Not yet answered</p>
-                <p className="text-sm text-gray-500">Marked out of 0.50</p>
+                <p className="text-sm font-semibold text-gray-500">Not yet answered</p>
+                <p className="text-sm font-semibold text-gray-500">Marked out of 0.50</p>
               </div>
               <div>
                 <button
@@ -268,6 +271,7 @@ const ExamPortal = () => {
       </div>
 
     </div>
+   </>
 
   );
 };

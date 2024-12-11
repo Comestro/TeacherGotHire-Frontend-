@@ -29,7 +29,7 @@ export default function Subheader({ totalQuestion, subject }) {
   };
 
   return (
-    <div className=" rounded-md py-4 px-6 bg-gray-50 shadow-md flex justify-between items-center border-b border-gray-300">
+    <div className=" rounded-md py-4 px-6 bg-white shadow-md flex justify-between items-center border-b border-gray-300">
       <div className="flex flex-col">
       <h1 className="lg:text-2xl text-md font-bold text-teal-600">Private Teacher Provider Institute <br />
        <span className="text-gray-500 font-semibold lg:text-lg text-sm"> PTPI / Exam / {subject?.subject.subject_name } / {subject?.level.name }</span></h1>
