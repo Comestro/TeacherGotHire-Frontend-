@@ -76,6 +76,9 @@ const TeacherProfiles = () => {
           Meet the amazing teachers who secured jobs through our community.
           Their success stories inspire us every day!
         </p>
+        <div className="w-[90%] md:w-full mx-auto">
+
+       
         <Slider {...settings}>
           {teachers.map((teacher, index) => (
             <div key={index} className="p-4">
@@ -98,7 +101,7 @@ const TeacherProfiles = () => {
             </div>
           ))}
         </Slider>
-      </div>
+      </div> </div>
     </section>
   );
 };

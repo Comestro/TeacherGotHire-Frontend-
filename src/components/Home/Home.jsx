@@ -42,8 +42,8 @@ function Home() {
       <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <div className="flex">
-            <p className="mb-8 font-bold text-4xl md:text-5xl leading-none flex items-center">
-              <span className="font-bold text-5xl pb-10 md:text-6xl text-teal-600 me-1">
+            <p className="mb-8 font-bold text-2xl md:text-5xl leading-none flex items-center">
+              <span className="font-bold lg:text-5xl text-2xl pb-10 md:text-6xl text-teal-600 me-1">
                 PTPI
               </span>
               – Connect with top teachers and great teaching jobs.
@@ -116,37 +116,37 @@ function Home() {
         </div>
       </div>
       <div className="border-gray-300 py-8 -mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-3 md:grid-cols-3 gap-6 text-center">
           {/* Item 1 */}
           <div>
-            <h2 className="text-4xl font-semibold text-gray-900">16+</h2>
-            <p className="mt-2 text-lg text-gray-600">years helping learners</p>
+            <h2 className="md:text-4xl text-xl font-semibold text-gray-900">16+</h2>
+            <p className="mt-2 md:text-lg text-sm text-gray-600">years helping learners</p>
           </div>
           {/* Item 2 */}
           <div>
-            <h2 className="text-4xl font-semibold text-gray-900">
+            <h2 className="md:text-4xl text-xl font-semibold text-gray-900">
               10 million+
             </h2>
-            <p className="mt-2 text-lg text-gray-600">
+            <p className="mt-2 md:text-lg text-sm text-gray-600">
               hours of 1-on-1 instruction
             </p>
           </div>
           {/* Item 3 */}
           <div>
-            <h2 className="text-4xl font-semibold text-gray-900">3,000+</h2>
-            <p className="mt-2 text-lg text-gray-600">subjects to explore</p>
+            <h2 className="md:text-4xl text-xl font-semibold text-gray-900">3,000+</h2>
+            <p className="mt-2 md:text-lg text-sm text-gray-600">subjects to explore</p>
           </div>
         </div>
       </div>
-      <TutorCategoriesSection/>
+      <TutorCategoriesSection />
 
       <TeacherSection onSelectRole={handleRoleSelection} />
       <FeaturesSection />
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
       <DetailSection />
-      <TeacherProfiles className="w-full" />
-      
+      <TeacherProfiles />
+
 
       {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
       <Footer />
