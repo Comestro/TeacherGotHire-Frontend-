@@ -263,7 +263,7 @@ const BasicInformation = () => {
             </select>
             <button
               onClick={() => {
-                setMaritalStatus(basicData?.marital_status);
+                setMaritalStatus(basicData.marital_status);
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
