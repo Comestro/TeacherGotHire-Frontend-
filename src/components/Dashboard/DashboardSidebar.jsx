@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { logout } from "../../services/authServices";
 
 const Sidebar = () => {
-  const profile = useSelector((state) => state.personalProfile?.basicData?.data?.profile?.user || {});
+  const profile = useSelector(
+    (state) => state.auth.userData || {}
+  );
+
+  // useEffect(()=>{
+   
+  // },[])
+  // console.log("ghdkfjlg",profile)
 
   return (
     <div className="fixed w-56 h-screen flex flex-col items-center py-6 ">
