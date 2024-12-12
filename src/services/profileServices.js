@@ -24,10 +24,9 @@ apiClient.interceptors.request.use(
 );
 export const updateBasicProfile = async(personaldata)=>{
   try{
+    console.log("personaldata",personaldata)
      const response = await apiClient.put('/api/self/basicProfile/',personaldata);
-     console.log("post data",response.data);
-     console.log("hello");
-     
+     console.log("rahuldata",response.data);
      return JSON.parse(JSON.stringify(response)); 
   }
      catch (err) {
@@ -43,19 +42,6 @@ export const fetchBasicProfile = async()=>{
   }
      catch (err) {
          console.error('error:', err.response?.data || err);
-         throw err;
-  }
-}
-export const editBasicProfile = async(editdata)=>{
-  try{
-     const response = await apiClient.put('/api/self/basicProfile/',editdata);
-     //console.log(response.data);
-     console.log("hello");
-     
-     return JSON.parse(JSON.stringify(response)); 
-  }
-     catch (err) {
-         console.error(' error:', err.response?.data || err);
          throw err;
   }
 }

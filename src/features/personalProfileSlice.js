@@ -2,33 +2,15 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import { fetchPersonalProfile,updatePersonalProfile } from "../services/profileServices";
 import {fetchAddressProfile,updateAddressProfile }from "../services/profileServices";
-import {updateBasicProfile,fetchBasicProfile,editBasicProfile} from "../services/profileServices"
+import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
 
 
-
-// user_id : "",
-// fullname: "",
-// gender: "",
-// religion: "",
-// nationality: "",
-// image: "",
-// aadhar_no: "",
-// phone: "",
-// alternate_phone: "",
-// verified: "",
-// class_categories: "",
-// rating: "",
-// date_of_birth:"",
-// status: "idle",  // 'idle' | 'loading' | 'succeeded' | 'failed'
-// error: null,
-// profileData:[],
-// }
 
 // Initial state
 const initialState = {
   basicData:{},
   personalData:{},
-  addsress:{},
+  address:{},
   showForm: false,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
@@ -52,25 +34,9 @@ export const getBasic = createAsyncThunk(
 
 export const postBasic = createAsyncThunk(
   "postBasic",
-  async (addressData, { rejectWithValue }) => {
+  async (basicData, { rejectWithValue }) => {
     try {
-     // const data = await updateBasicProfile(addressData);
-      console.log("podata",data)
-       // Call the service
-      return data; // Return the updated profile data
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-      });
-    }
-  }
-);
-export const editBasic = createAsyncThunk(
-  "postBasic",
-  async (addressData, { rejectWithValue }) => {
-    try {
-      const data = await editBasicProfile(addressData);
+     const data = await updateBasicProfile(basicData);
       console.log("podata",data)
        // Call the service
       return data; // Return the updated profile data
@@ -197,11 +163,11 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          //state.basicData = action.payload;
+          state.basicData = action.payload;
           console.log("hello",action.payload); // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
-          console.log(action.payload)
+          console.log("payload",action.payload)
         })
         // Handle rejected state
         .addCase(postBasic.rejected, (state, action) => {

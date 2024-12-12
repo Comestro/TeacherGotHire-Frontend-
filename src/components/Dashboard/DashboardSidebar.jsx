@@ -4,9 +4,7 @@ import { useSelector } from "react-redux";
 import { logout } from "../../services/authServices";
 
 const Sidebar = () => {
-  const profile = useSelector(
-    (state) => state.personalProfile.profileData || {}
-  );
+  const profile = useSelector((state) => state.personalProfile.basicData.data.profile.user || {});
 
   return (
     <div className="fixed w-56 h-screen flex flex-col items-center py-6 ">
@@ -20,7 +18,7 @@ const Sidebar = () => {
           />
         </div>
         <h2 className="text-xl font-semibold mt-4 text-gray-800">
-          {profile.fullname || "Your Name"}
+          {profile.Fname || "Your Name"}
         </h2>
         <p className="text-md text-gray-700">
           {profile.email || "email@example.com"}
@@ -43,7 +41,7 @@ const Sidebar = () => {
           Dashboard
         </NavLink>
         <NavLink
-          to="/teacher/edit-profile"
+          to="/teacher/personal-profile"
           end
           className={({ isActive }) =>
             `block py-2 px-4 rounded-md ${

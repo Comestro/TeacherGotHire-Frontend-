@@ -46,10 +46,10 @@ function App() {
           <Route path="/admin-signin" element={<AdminSignIn />} />
           <Route path="/contact" element={<ContactUs />} />
 
-          {/* Teacher Routes */}
+          {/* Teacher Routes */},
           <Route path="/teacher" element={<Layout />}>
             <Route index element={<PrivateRoute element={<TeacherDashboard />} />} />
-            <Route path="edit-profile" element={<PrivateRoute element={<EditPersonalProfile />} />} />
+            <Route path="personal-profile" element={<PrivateRoute element={<EditPersonalProfile />} />} />
             <Route path="job-profile" element={<PrivateRoute element={<JobProfileEdit />} />} />
           </Route>
 
