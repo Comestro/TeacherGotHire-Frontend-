@@ -26,7 +26,6 @@ export const updateBasicProfile = async(personaldata)=>{
   try{
     console.log("personaldata",personaldata)
      const response = await apiClient.put('/api/self/basicProfile/',personaldata);
-     console.log("rahuldata",response.data);
      return JSON.parse(JSON.stringify(response)); 
   }
      catch (err) {
@@ -46,33 +45,12 @@ export const fetchBasicProfile = async()=>{
   }
 }
 
-export const updatePersonalProfile = async(personaldata)=>{
-     try{
-        const response = await apiClient.post('/api/userprofiles/',personaldata);
-        //console.log(response.data);
-        console.log("hello");
-        
-        return JSON.parse(JSON.stringify(response)); 
-     }
-        catch (err) {
-            console.error(' error:', err.response?.data || err);
-            throw err;
-     }
-}
 
-export const fetchPersonalProfile = async()=>{
-  try{
-     const response = await apiClient.get('/api/userprofiles/');
-    
-     return response.data;
-  }
-     catch (err) {
-         console.error('error:', err.response?.data || err);
-         throw err;
-  }
-}
+
+
 export const updateAddressProfile = async(addressdata)=>{
   try{
+
     const response = await apiClient.post('/api/self/teacherAddress/',addressdata);
     
     return JSON.parese(JSON.stringify(response));

@@ -37,7 +37,7 @@ const BasicInformation = () => {
   const [tempEmail, setTempEmail] = useState(profile.email);
   const [phone_number, setphone_number] = useState(basicData.phone_number);
   const [language, setlanguage] = useState(basicData.language);
-  const [maritalStatus, setMaritalStatus] = useState(basicData.marital_status);
+  const [marital_status, setMaritalStatus] = useState(basicData.marital_status);
   const [religion, setReligion] = useState(basicData.religion);
   // const [tempAddress, setTempAddress] = useState(address);
 
@@ -254,12 +254,12 @@ const BasicInformation = () => {
         ) : (
           <div className="flex items-center space-x-4">
             <select
-              value={maritalStatus}
+              value={marital_status}
               onChange={(e) => setMaritalStatus(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="single">Single</option>
-              <option value="Married">Married</option>
+              <option value="married">Married</option>
             </select>
             <button
               onClick={() => {
@@ -272,7 +272,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({maritalStatus});
+                onSubmit({marital_status});
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"

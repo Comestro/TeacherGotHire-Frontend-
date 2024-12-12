@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "../../Navbar/Navbar";
 import { Outlet } from "react-router-dom";
 import BasicInformation from "./BasicInformation";
-//import AddressProfileCard from "./AddressProfileCard";
+import AddressProfileCard from "./AddressProfileCard";
 
 const EditPersonalProfile = () => {
   return (
@@ -23,7 +23,7 @@ const EditPersonalProfile = () => {
         <div className="flex flex-col py-4 px-10">
           {/* Render nested routes here */}
           <BasicInformation/>
-          {/* <AddressProfileCard/> */}
+          <AddressProfileCard/>
         </div>
       </div>
     </div>
