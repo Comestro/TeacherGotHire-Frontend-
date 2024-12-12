@@ -6,11 +6,8 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
-
   const basicData = useSelector((state)=>state.personalProfile.basicData);
-
-  console.log("Basic Information", basicData);
-  const profile = useSelector((state) => state.personalProfile?.basicData?.data?.profile?.user || {});
+  const profile = useSelector((state) => state.personalProfile.basicData.data.profile.user || {});
   const [error,setError] = useState('');
 
 
@@ -149,7 +146,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Contact Number</p>
         {!isEditingContact ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.phone_number}</p>
+            <p className="text-gray-600 font-medium">{basicData.data.profile.phone_number}</p>
             
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
@@ -198,7 +195,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Language</p>
         {!isEditingLanguage ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData.data?.profile?.language}</p>    
+            <p className="text-gray-600 font-medium">{basicData.data.profile.language}</p>    
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingLanguage(true)}
@@ -244,7 +241,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Marital Status</p>
         {!isEditingMarital_status ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.marital_status}</p>    
+            <p className="text-gray-600 font-medium">{basicData.data.profile.marital_status}</p>    
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingMarital_status(true)}
@@ -266,7 +263,7 @@ const BasicInformation = () => {
             </select>
             <button
               onClick={() => {
-                setMaritalStatus(basicData?.marital_status);
+                setMaritalStatus(basicData.marital_status);
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
@@ -293,7 +290,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Religion</p>
         {!isEditingReligion ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.religion}</p>
+            <p className="text-gray-600 font-medium">{basicData.data.profile.religion}</p>
             
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
