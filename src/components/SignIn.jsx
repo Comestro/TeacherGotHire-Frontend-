@@ -6,6 +6,7 @@ import { login as authlogin } from '../features/authSlice'; // Redux action to s
 import { login as loginService } from '../services/authServices'; // Service to authenticate the user
 import Input from './Input';
 import Button from './Button';
+import Navbar from './Navbar/Navbar';
 
 function Login() {
   const dispatch = useDispatch();
@@ -27,7 +28,9 @@ function Login() {
   };
 
   return (
-    <div className="flex bg-cover bg-no-repeat items-center justify-center m" style={{ backgroundImage: 'url("/bg.png")' }}>
+    <>
+    <Navbar/>
+    <div className="flex bg-cover bg-no-repeat items-center justify-center mt-5" style={{ backgroundImage: 'url("/bg.png")' }}>
       {/* Form Container */}
       <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
         <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
@@ -163,6 +166,7 @@ function Login() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { signup as authsignup } from "../features/authSlice";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
+import Navbar from "./Navbar/Navbar";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -38,8 +39,10 @@ function SignUpPage() {
   };
 
   return (
+    <>
+        <Navbar/>
     <div
-      className="flex bg-cover bg-no-repeat  items-center justify-center"
+      className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
       style={{ backgroundImage: 'url("/bg.png")' }}
     >
       {/* Form Container */}
@@ -299,6 +302,8 @@ function SignUpPage() {
         </div>
       </div>
     </div>
+    </>
+
   );
 }
 
