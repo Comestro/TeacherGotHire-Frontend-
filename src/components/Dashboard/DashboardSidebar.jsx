@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { logout } from "../../services/authServices";
 
 const Sidebar = () => {
-  const profile = useSelector((state) => state.personalProfile.basicData.data.profile.user || {});
+  const profile = useSelector((state) => state.personalProfile?.basicData?.data?.profile?.user || {});
 
   return (
     <div className="fixed w-56 h-screen flex flex-col items-center py-6 ">
