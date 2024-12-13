@@ -16,7 +16,7 @@ const Sidebar = () => {
   console.log("ghdkfjlg",profile)
 
   return (
-    <div className="fixed w-56 h-screen flex flex-col items-center py-6 ">
+    <div className="flex flex-col items-center py-6 ">
       {/* Profile Section */}
       <div className="text-center mb-8">
         <div className="relative w-24 h-24 mx-auto">

@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
-import Footer from "../Footer/Footer";
 import ResultCard from "../Result/Result";
 import { getSubjects } from "../../features/dashboardSlice";
 
@@ -30,7 +29,7 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="rounded-2xl">
+    <div className="rounded-2xl min-h-screen">
       <div className="w-full flex flex-col items-center justify-center py-5 mx-auto">
         <div className="">
           <img src="/ptpi1.png" alt="" className="rounded-lg" />

@@ -51,7 +51,7 @@ const BasicInformation = () => {
   // const [tempAddress, setTempAddress] = useState(address);
 
   return (
-    <div className="max-w-3xl px-5 mt-auto">
+    <div className=" px-5 mt-auto">
       <h2 className="text-xl font-bold mb-6 text-gray-700">
         Basic Information
       </h2>
@@ -357,6 +357,7 @@ const BasicInformation = () => {
               onChange={(e) => setTempAddress(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
+              <option value="null">coose address type</option>
               <option value="Current Address">Current Address</option>
               <option value="Permanent Address">Permanent Address</option>
             </select>

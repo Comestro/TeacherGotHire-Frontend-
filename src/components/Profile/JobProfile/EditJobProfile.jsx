@@ -1,13 +1,14 @@
 
 import React from "react";
 import EducationProfileCard from "./Education";
+import Experience from "./Exprience";
 
 const EditJobProfile = () => {
   return (
     <>
       <div>
-          <h1 className="text-2xl font-bold mb-4">Edit Profile</h1>
-          <EducationProfileCard/> {/* Render nested routes here */}
+          <EducationProfileCard/>
+          <Experience/>
       </div>
     </>
   );
