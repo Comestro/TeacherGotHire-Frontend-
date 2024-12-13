@@ -9,7 +9,7 @@ import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
 const initialState = {
   basicData:{},
   personalData:{},
-  address:{},
+  address:[],
   showForm: false,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
@@ -184,7 +184,7 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(getAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.addsress = action.payload; // Update profile data
+          state.address = action.payload; // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
           console.log(action.payload)

@@ -5,6 +5,13 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getBasic()).then((response) => {
+      console.log('Responseghjk:', response);
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
+  }, [dispatch]);
 
   const basicData = useSelector((state) => state?.personalProfile?.basicData);
 
@@ -14,9 +21,12 @@ const BasicInformation = () => {
   );
   const [error, setError] = useState("");
 
-  useEffect (()=>{
-    dispatch(getBasic());
-  },[]);
+  // useEffect (()=>{
+  //   dispatch(getBasic());
+  // },[dispatch]);
+
+  
+  
   const onSubmit = async (data) => {
     try {
       await updateBasicProfile(data);
