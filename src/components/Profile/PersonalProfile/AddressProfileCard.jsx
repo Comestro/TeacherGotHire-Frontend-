@@ -65,10 +65,12 @@ const AddressProfileCard = () => {
         <p className="text-gray-700 font-semibold mb-2">Address</p>
         {!isEditingAddress ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500">{addressData.address || "N/A"}</p>
-            {/* {addressData && addressData.map((data)=>{
-              <p>{data.pincode}</p>
-            })} */}
+            <p className="text-gray-500">{addressData.address }</p>
+            {addressData && addressData.map((data)=>{
+              <form>
+                <div></div>
+              </form>
+            })}
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingAddress(true)}
