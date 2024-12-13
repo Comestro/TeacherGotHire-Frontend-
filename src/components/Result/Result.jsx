@@ -49,7 +49,7 @@ const ResultPage = () => {
   };
 
   return (
-    <div className="flex flex-row items-center justify-center gap-10 py-10">
+    <div className="flex md:flex-row flex-col items-center justify-center gap-10 py-10">
       {/* Result Card */}
       <div className="bg-blue-100 p-6 rounded-lg shadow-md w-full max-w-xl mx-auto">
         <h2 className="text-center text-xl font-bold text-blue-700 mb-4">

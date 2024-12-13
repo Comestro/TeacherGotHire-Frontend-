@@ -46,7 +46,7 @@ const AddressProfileCard = () => {
   };
 
   return (
-    <div className="max-w-3xl px-5 mt-auto">
+    <div className="px-5 mt-auto">
       <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">Address Information</h2>
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Address</p>
@@ -62,7 +62,7 @@ const AddressProfileCard = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Address Type
