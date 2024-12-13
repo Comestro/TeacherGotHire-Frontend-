@@ -2,7 +2,6 @@ import React from "react";
 import Navbar from "../../Navbar/Navbar";
 import { Outlet } from "react-router-dom";
 import BasicInformation from "./BasicInformation";
-import PersonalInformation from "./PersonalInformation";
 import AddressProfileCard from "./AddressProfileCard";
 
 const EditPersonalProfile = () => {

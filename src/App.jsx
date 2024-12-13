@@ -25,6 +25,8 @@ import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
 import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
+import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
+// import Logout from "./components/Logout";
 
 // Private Route Component
 const PrivateRoute = ({ element }) => {
@@ -33,6 +35,8 @@ const PrivateRoute = ({ element }) => {
 };
 
 function App() {
+  const token = localStorage.getItem('access_token');
+
   return (
     <Provider store={store}>
       <BrowserRouter>
@@ -46,26 +50,27 @@ function App() {
           <Route path="/admin-signin" element={<AdminSignIn />} />
           <Route path="/contact" element={<ContactUs />} />
 
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
+          <Route path="/admin/profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/teacher" element={token ? <ManageTeacher /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/question" element={token ? <ManageQuestion /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/skills" element={token ? <ManageSkills /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/qualification" element={token ? <ManageQualification /> : <Navigate to="/signin" />} />
+          <Route path="/admin/support" element={token ? <Support /> : <Navigate to="/signin" />} />
+          <Route path="/admin/change/password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
+          <Route path="/admin/contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
+          <Route path="/admin/view/teacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/class/category" element={token ? <ManageClassCategory /> : <Navigate to="/signin" />} />
+
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
             <Route index element={<PrivateRoute element={<TeacherDashboard />} />} />
-            <Route path="edit-profile" element={<PrivateRoute element={<EditPersonalProfile />} />} />
+            <Route path="personal-profile" element={<PrivateRoute element={<EditPersonalProfile />} />} />
             <Route path="job-profile" element={<PrivateRoute element={<JobProfileEdit />} />} />
           </Route>
-
-          {/* Admin Routes */}
-          <Route path="/admin-dashboard" element={<PrivateRoute element={<AdminDashboard />} />} />
-          <Route path="/admin-profile" element={<PrivateRoute element={<AdminProfile />} />} />
-          <Route path="/admin-manage-subject" element={<PrivateRoute element={<ManageSubject />} />} />
-          <Route path="/admin-manage-teacher" element={<PrivateRoute element={<ManageTeacher />} />} />
-          <Route path="/admin-manage-recruiter" element={<PrivateRoute element={<ManageRecruiter />} />} />
-          <Route path="/admin-manage-question" element={<PrivateRoute element={<ManageQuestion />} />} />
-          <Route path="/admin-manage-skills" element={<PrivateRoute element={<ManageSkills />} />} />
-          <Route path="/admin-manage-qualification" element={<PrivateRoute element={<ManageQualification />} />} />
-          <Route path="/admin-support" element={<PrivateRoute element={<Support />} />} />
-          <Route path="/admin-change-password" element={<PrivateRoute element={<ChangePassword />} />} />
-          <Route path="/admin-contact" element={<PrivateRoute element={<Contact />} />} />
-          <Route path="/admin-viewteacher" element={<PrivateRoute element={<ViewTeacher_Admin />} />} />
         </Routes>
       </BrowserRouter>
     </Provider>

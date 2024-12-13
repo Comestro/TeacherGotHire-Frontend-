@@ -25,6 +25,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import SupportIcon from "@mui/icons-material/Support";
 import LockIcon from "@mui/icons-material/Lock";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
+import ClassIcon from "@mui/icons-material/Class";
 import { Collapse, Tooltip } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -95,15 +96,16 @@ export default function Sidebar({ open, handleDrawerClose }) {
   };
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, link: "/admin-dashboard" },
-    { text: "Your profile", icon: <PersonIcon />, link: "/admin-profile" },
-    { text: "Manage Subject", icon: <SubjectIcon />, link: "/admin-manage-subject" },
-    { text: "Manage Teacher", icon: <SchoolIcon />, link: "/admin-manage-teacher" },
-    { text: "Manage Recruiter", icon: <WorkIcon />, link: "/admin-manage-recruiter" },
-    { text: "Manage Question", icon: <QuestionAnswerIcon />, link: "/admin-manage-question" },
-    { text: "Manage Skills", icon: <BuildIcon />, link: "/admin-manage-skills" },
-    { text: "Manage Qualification", icon: <AssignmentIcon />, link: "/admin-manage-qualification" },
-  ];
+    { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
+    { text: "Your profile", icon: <PersonIcon />, link: "/admin/profile" },
+    { text: "Manage Subject", icon: <SubjectIcon />, link: "/admin/manage/subject" },
+    { text: "Manage Teacher", icon: <SchoolIcon />, link: "/admin/manage/teacher" },
+    { text: "Manage Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
+    { text: "Manage Question", icon: <QuestionAnswerIcon />, link: "/admin/manage/question" },
+    { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
+    { text: "Manage Qualification", icon: <AssignmentIcon />, link: "/admin/manage/qualification" },
+    { text: "Manage Class Category", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+];
 
   return (
     <Drawer variant="permanent" open={open}>
@@ -171,9 +173,9 @@ export default function Sidebar({ open, handleDrawerClose }) {
         <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {[
-              { text: "Support", icon: <SupportIcon />, link: "/admin-support" },
-              { text: "Change-Password", icon: <LockIcon />, link: "/admin-change-password" },
-              { text: "Contact", icon: <ContactMailIcon />, link: "/admin-contact" },
+              { text: "Support", icon: <SupportIcon />, link: "/admin/support" },
+              { text: "Change-Password", icon: <LockIcon />, link: "/admin/change/password" },
+              { text: "Contact", icon: <ContactMailIcon />, link: "/admin/contact" },
             ].map((item) => (
               <Tooltip key={item.text} title={item.text} placement="right" arrow>
                 <ListItem disablePadding>
