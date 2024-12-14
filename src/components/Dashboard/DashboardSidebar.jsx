@@ -2,38 +2,47 @@ import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { logout } from "../../services/authServices";
+import {
+  HiViewGrid,
+  HiUser,
+  HiBriefcase,
+  HiOutlineLogin,
+} from "react-icons/hi";
 
 const Sidebar = () => {
-  const profile = useSelector(
-    (state) => state.auth.userData || {}
-  );
+  const profile = useSelector((state) => state.auth.userData || {});
 
   // useEffect(()=>{
-   
+
   // },[])
   // console.log("ghdkfjlg",profile)
 
   return (
-    <div className="flex flex-col items-center py-6 ">
+    <div className="flex flex-col items-center py-6 h-screen">
       {/* Profile Section */}
-      <div className="text-center mb-8">
-        <div className="relative w-24 h-24 mx-auto">
+      <div className="flex mb-10 items-center gap-4  border-2 border-teal-600 rounded-md p-2">
+        <div className="w-16 h-16">
           <img
             src={profile.profileImage || "https://via.placeholder.com/200"}
             alt="Profile"
             className="w-full h-full rounded-full object-cover border-2 border-gray-300 shadow-md"
           />
         </div>
-        <h2 className="text-xl font-semibold mt-4 text-gray-800">
-          {profile.Fname || "Your Name"}
-        </h2>
-        <p className="text-md text-gray-700">
-          {profile.email || "email@example.com"}
-        </p>
+        <div className="flex flex-col">
+          <h2 className="text-md font-bold text-gray-700">
+            {/* {profile.Fname || "Your Name"} */}
+            Rahul Kumar
+          </h2>
+          <p className="text-md text-gray-700">
+            {profile.email || "email@example.com"}
+          </p>
+        </div>
       </div>
+      
+      <hr />  
 
       {/* Navigation Links */}
-      <nav className="w-full px-4 space-y-2">
+      <nav className="w-full px-7 space-y-2">
         <NavLink
           to="/teacher/"
           end
@@ -42,9 +51,10 @@ const Sidebar = () => {
               isActive
                 ? "bg-teal-700 text-white font-semibold"
                 : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
+            } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
           }
         >
+          <HiViewGrid />
           Dashboard
         </NavLink>
         <NavLink
@@ -55,9 +65,10 @@ const Sidebar = () => {
               isActive
                 ? "bg-teal-700 text-white font-semibold"
                 : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
+            } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
           }
         >
+          <HiUser />
           Personal Details
         </NavLink>
         <NavLink
@@ -68,17 +79,21 @@ const Sidebar = () => {
               isActive
                 ? "bg-teal-700 text-white font-semibold"
                 : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
+            } hover:bg-teal-600 hover:text-white transition flex items-center gap-2`
           }
         >
+          <HiBriefcase />
           Job Details
         </NavLink>
+        <div className="flex">
         <button
           onClick={logout}
-          className={`block py-2 px-4 rounded-md self-end bg-slate-600 hover:bg-slate-800 text-white transition`}
+          className="inline-flex items-center py-1 px-5 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition fixed bottom-5"
         >
+          <HiOutlineLogin className="mr-2" />
           Logout
         </button>
+        </div>
       </nav>
     </div>
   );
