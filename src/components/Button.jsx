@@ -4,11 +4,11 @@ const Button = forwardRef(function Button(
     {
     children,
     type='button',
-    bgcolor = 'bg-blue-600',
+    bgcolor = 'bg-teal-600',
     textColor = 'text-white',
     className="",
     ... props    
-    },ref
+    },ref, value
 ){
 return(
     <button
@@ -17,7 +17,7 @@ return(
     className={`px-4 py-2 rounded ${bgcolor} ${textColor} ${className}`}
     {...props}
   >
-    {children} 
+    {value}
   </button>
 )
 })
