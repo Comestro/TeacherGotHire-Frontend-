@@ -39,8 +39,7 @@ const Sidebar = () => {
         </div>
         <div className="flex flex-col">
           <h2 className="text-md font-bold text-gray-700">
-            {/* {profile.Fname || "Your Name"} */}
-            Rahul Kumar
+            {profile.Fname || "Your Name"}
           </h2>
           <p className="text-md text-gray-700">
             {profile.email || "email@example.com"}
