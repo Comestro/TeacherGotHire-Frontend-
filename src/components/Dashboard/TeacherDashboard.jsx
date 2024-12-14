@@ -5,6 +5,9 @@ import { useDispatch } from "react-redux";
 //import ProfileButton from '../Profile_Button/Profile_Button';
 import ResultCard from "../Result/Result";
 import { getSubjects } from "../../features/dashboardSlice";
+import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
+import { GoChevronDown } from "react-icons/go";
+import ExamLevelCard from "./ExamLevelCard";
 
 function TeacherDashboard() {
   const subjects = useSelector((state) => state.dashboard.subjects.data || []);
@@ -30,60 +33,56 @@ function TeacherDashboard() {
 
   return (
     <div className="rounded-2xl min-h-screen">
-      <div className="w-full flex flex-col items-center justify-center py-5 mx-auto">
-        <div className="">
-          <img src="/ptpi1.png" alt="" className="rounded-lg" />
+      {/* Teacher Dashboard Header */}
+      <div className="flex items-center justify-between px-2 ">
+        <div className="ml-2">
+          <IoMdMenu className="size-7 text-gray-600" />
         </div>
-        <div>
-          <ResultCard />
+        <div className="flex items-center gap-7 mr-2">
+          <button>
+            <IoMdSettings className="size-7 text-gray-600" />
+          </button>
+          <button>
+            <IoIosNotifications className="size-7 text-gray-600" />
+          </button>
+          <button className=" py-1 font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-10 h-10">
+              <img
+                src={"https://via.placeholder.com/200"}
+                alt="Profile"
+                className="w-full h-full rounded-full object-cover border-2 border-gray-300 shadow-md"
+              />
+            </div>
+            Rahul Kumar
+            <GoChevronDown className="-ml-1 mt-1" />
+          </button>
         </div>
-
-        {/* Subject Selection Section */}
-        {/* {!selectedSubject && ( */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl w-full">
-          {subjects.length > 0 ? (
-            subjects.map((subject) => (
-              <div
-                key={subject.id}
-                onClick={() => handleSubjectSelect(subject.subject_name)}
-                className="bg-white shadow-md rounded-lg p-4 cursor-pointer transform hover:scale-105 transition-all"
-              >
-                <h3 className="text-xl font-bold text-blue-700">
-                  {subject.name}
-                </h3>
-                <p className="text-gray-600 mt-2">
-                  {subject.subject_description}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div>No subjects available</div>
-          )}
-        </div>
-
-        {/* Subject Details Section */}
-        {selectedSubject && (
-          <div className="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full text-center">
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">
-              Subject: {selectedSubject.name}
-            </h2>
-            <p className="text-gray-700 mb-6">{selectedSubject.description}</p>
-            <button
-              onClick={handleProceedToExam}
-              className="bg-blue-500 text-white font-bold py-3 px-6 rounded-md shadow-lg hover:bg-blue-600 transition"
-            >
-              Proceed to Exam
-            </button>
-            <button
-              onClick={() => setSelectedSubject(null)}
-              className="mt-4 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
-            >
-              Back to Subjects
-            </button>
-          </div>
-        )}
       </div>
-      {/* <Footer /> */}
+      {/* main section */}
+      <div className="w-full flex flex-col  mt-2 mx-auto">
+        <div className="px-2">
+          <img src="/ptpi1.png" alt="" className="rounded-lg" />
+          {/* <div className="bg-teal-700 w-full h-48 max-h-60 rounded-md flex items-center justify-around text-white">
+            <div className=" bg-white  rounded-full text-teal-600 h-32 w-32 flex items-center justify-center mx-auto font-semibold capitalize cursor-pointer">
+              profile section
+            </div>
+            <div className=" bg-white  rounded-full text-teal-600 h-32 w-32 flex items-center justify-center mx-auto font-semibold capitalize cursor-pointer">
+              Exam section
+            </div>
+            <div className="bg-white  rounded-full  text-teal-600 h-32 w-32 flex items-center justify-center mx-auto font-semibold capitalize cursor-pointer">
+              Become Teacher
+            </div>
+          </div> */}
+        </div>
+      </div>
+
+      {/* exam level Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 px-2 mt-3 gap-4">
+        <ExamLevelCard level="Level-1" isLocked={false}/>
+        <ExamLevelCard level="Level-2" isLocked={true} />
+        <ExamLevelCard level="Level-3" isLocked={true}/>
+      </div>
+
     </div>
   );
 }
