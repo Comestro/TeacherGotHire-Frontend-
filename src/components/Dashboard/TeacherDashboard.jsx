@@ -74,7 +74,7 @@ function TeacherDashboard() {
         </div>
         <div className="px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Profile Section */}
-          <div className="bg-teal-100 rounded-t-lg shadow-md p-4 flex flex-col items-center">
+          <div className="bg-teal-100 rounded-t-lg  p-4 flex flex-col items-center">
             <h2 className="text-teal-700 font-bold text-lg mt-2">
               Profile Setup
             </h2>
@@ -87,7 +87,7 @@ function TeacherDashboard() {
           </div>
 
           {/* Exam Section */}
-          <div className="bg-teal-100 rounded-t-lg shadow-md p-4 flex flex-col items-center">
+          <div className="bg-teal-100 rounded-t-lg  p-4 flex flex-col items-center">
             <h2 className="text-teal-700 font-bold text-lg mt-2">Take Exams</h2>
             <p className="text-gray-600 text-sm text-center mt-2">
               Complete the exam series (Level 1, Level 2, Level 3) to qualify.
@@ -97,7 +97,7 @@ function TeacherDashboard() {
             </button>
           </div>
 
-          <div className="bg-teal-100 rounded-t-lg shadow-md p-4 flex flex-col items-center">
+          <div className="bg-teal-100 rounded-t-lg  p-4 flex flex-col items-center">
             <h2 className="text-teal-700 font-bold text-lg mt-2">
               Become a Teacher
             </h2>

@@ -5,7 +5,7 @@ import {
 
 const JobProfileCard = ({subjects, locations }) => {
   return (
-    <div className="w-full max-w-md  bg-white shadow-md rounded-md shadow-md border border-teal-500 p-4">
+    <div className="w-full max-w-md  bg-white shadow-md rounded-md border border-teal-500 p-4">
       <h2 className="text-xl font-semibold text-teal-600 mb-2 text-center flex items-center justify-center"><HiBriefcase className="mr-1"/>Job Preference</h2>
       
       <div className="mb-4">
