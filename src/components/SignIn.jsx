@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { login as authlogin } from '../features/authSlice'; // Redux action to store the user login state
+import { getPostData } from '../features/authSlice'; // Redux action to store the user login state
 import { login as loginService } from '../services/authServices'; // Service to authenticate the user
 import Input from './Input';
 import Button from './Button';
@@ -19,7 +19,7 @@ function Login() {
     try {
       const userData = await loginService({email,password}); // Call the service function to authenticate the user
       if (userData) {
-        dispatch(authlogin(userData)); // Dispatch action to store the user data in Redux store
+        dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
         navigate('/teacher'); // Redirect to teacher dashboard after login
       }
     } catch (error) {

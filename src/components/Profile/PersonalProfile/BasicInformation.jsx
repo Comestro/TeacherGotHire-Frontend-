@@ -5,28 +5,26 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
+
   useEffect(() => {
-    dispatch(getBasic()).then((response) => {
-      console.log('Responseghjk:', response);
-    }).catch((error) => {
-      console.error('Error:', error);
-    });
+    dispatch(getBasic())
+      .then((response) => {
+        console.log("Responseghjk:", response);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   }, [dispatch]);
 
-  const basicData = useSelector((state) => state?.personalProfile?.basicData);
-
-  console.log("Basic Information", basicData);
-  const profile = useSelector(
-    (state) => state?.auth?.userData || {}
-  );
+  const profile = useSelector((state) => state?.auth?.userData || {});
   const [error, setError] = useState("");
 
+  const basicData = useSelector((state) => state?.personalProfile?.basicData);
+  console.log("Basic Information", basicData);
   // useEffect (()=>{
   //   dispatch(getBasic());
   // },[dispatch]);
 
-  
-  
   const onSubmit = async (data) => {
     try {
       await updateBasicProfile(data);
@@ -158,7 +156,7 @@ const BasicInformation = () => {
         {!isEditingContact ? (
           <div className="flex justify-between items-center">
             <p className="text-gray-600 font-medium">
-              {basicData?.data?.data?.phone_number}
+              {basicData?.phone_number}
             </p>
 
             <button
@@ -205,9 +203,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Language</p>
         {!isEditingLanguage ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">
-              {basicData.data?.data?.language}
-            </p>
+            <p className="text-gray-600 font-medium">{basicData?.language}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingLanguage(true)}
@@ -252,7 +248,7 @@ const BasicInformation = () => {
         {!isEditingMarital_status ? (
           <div className="flex justify-between items-center">
             <p className="text-gray-600 font-medium">
-              {basicData?.data?.data?.marital_status}
+              {basicData.marital_status}
             </p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
@@ -301,7 +297,7 @@ const BasicInformation = () => {
         {!isEditingReligion ? (
           <div className="flex justify-between items-center">
             <p className="text-gray-600 font-medium">
-              {basicData?.data?.data?.religion}
+              {basicData.religion}
             </p>
 
             <button

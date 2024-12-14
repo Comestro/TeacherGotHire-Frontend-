@@ -42,6 +42,18 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
   }
 };
 
+export const fetchUserData = async()=>{
+  try{
+     const response = await apiClient.get('/api/self/customuser/');
+    console.log("get newdata:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
+
 // Login User
 export const login = async ({ email, password }) => {
   try {

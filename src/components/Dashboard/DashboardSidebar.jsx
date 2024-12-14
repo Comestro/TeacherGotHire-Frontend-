@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch} from "react-redux";
 import { logout } from "../../services/authServices";
 import {
   HiViewGrid,
@@ -9,13 +9,22 @@ import {
   HiOutlineLogin,
 } from "react-icons/hi";
 
-const Sidebar = () => {
-  const profile = useSelector((state) => state.auth.userData || {});
-
   // useEffect(()=>{
 
   // },[])
   // console.log("ghdkfjlg",profile)
+import { getUserData } from "../../features/authSlice";
+
+const Sidebar = () => {
+  const dispatch = useDispatch();
+  const profile = useSelector(
+    (state) => state.auth.userData || {}
+  );
+
+  useEffect(()=>{
+   dispatch(getUserData());
+  },[])
+  console.log("ghdkfjlg",profile)
 
   return (
     <div className="flex flex-col items-center py-6 h-screen">
@@ -23,7 +32,7 @@ const Sidebar = () => {
       <div className="flex mb-10 items-center gap-4  border-2 border-teal-600 rounded-md p-2">
         <div className="w-16 h-16">
           <img
-            src={profile.profileImage || "https://via.placeholder.com/200"}
+            src={profile.profileImage || ""}
             alt="Profile"
             className="w-full h-full rounded-full object-cover border-2 border-gray-300 shadow-md"
           />

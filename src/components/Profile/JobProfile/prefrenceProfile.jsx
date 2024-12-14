@@ -1,161 +1,215 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import { FiEdit2 } from "react-icons/fi";
-import Input from "../../Input";
-import {  updateEducationProfile } from "../../../services/jobProfileService";
-import { getEducationProfile,postEducationProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getAddress,
+  postAddress,
+} from "../../../features/personalProfileSlice";
+import { updateAddressProfile } from "../../../services/profileServices";
 
-
-const EducationProfileCard = () => {
+const AddressProfileCard = () => {
   const dispatch = useDispatch();
-  const educationData = useSelector((state) => state.education || []); // Adjust state selector as needed
-  
-  const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
+  const addressData = useSelector(
+    (state) => state.personalProfile.address || {}
+  );
+  console.log("add", addressData);
+
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [error, setError] = useState("");
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
 
-  // Fetch education data on component mount
+  // useEffect(() => {
+  //   dispatch(getAddress());
+  // }, [dispatch]);
+
   useEffect(() => {
-    dispatch(getEducationProfile());
+    dispatch(getAddress())
+      .then((response) => {
+        console.log("Responsedfgh:", response);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   }, [dispatch]);
 
-  // Handle saving or updating education data
+  // useEffect(() => {
+  //   if (addressData) {
+  //     Object.entries(addressData).forEach(([key, value]) =>
+  //       setValue(key, value)
+  //     );
+  //   }
+  // }, [addressData, setValue]);
+
   const onSubmit = async (data) => {
     try {
-      if (editingIndex !== null) {
-        // Update existing education record
-        const updatedData = [...educationData];
-        updatedData[editingIndex] = data;
-        await updateEducationProfile(data); // Call API for update
-        dispatch(postEducationProfile(updatedData)); // Dispatch updated data
-      } else {
-        // Add new education record
-        await updateEducationProfile(data); // Call API to save
-        dispatch(postEducationProfile([...educationData, data])); // Dispatch with new data
-      }
-      setEditingIndex(null); // Exit editing mode
-      reset(); // Reset form
+      await updateAddressProfile(data);
+      dispatch(postAddress(data));
+      setIsEditingAddress(false);
     } catch (err) {
       setError(err.message);
     }
   };
 
-  // Set form values for editing
-  const handleEdit = (index) => {
-    setEditingIndex(index);
-    const selectedEducation = educationData[index];
-    Object.keys(selectedEducation).forEach((key) => setValue(key, selectedEducation[key]));
-  };
-
-  // Cancel editing
-  const handleCancel = () => {
-    setEditingIndex(null);
-    reset();
-  };
-
   return (
-    <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Manage Education</h3>
-
-      {/* Add/Edit Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Input
-              label="Qualification"
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Qualification"
-              type="text"
-              {...register("qualification", { required: true })}
-            />
-            {errors.qualification && <span className="text-red-500 text-sm">{errors.qualification.message}</span>}
-          </div>
-          <div>
-            <Input
-              label="Institution"
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Institution"
-              type="text"
-              {...register("institution", { required: true })}
-            />
-            {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
-          </div>
-          <div>
-            <Input
-              label="Year of Passing"
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Year of Passing"
-              type="text"
-              {...register("year_of_passing", { required: true })}
-            />
-            {errors.year_of_passing && <span className="text-red-500 text-sm">{errors.year_of_passing.message}</span>}
-          </div>
-          <div>
-            <Input
-              label="Grade or Percentage"
-              className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-              placeholder="Enter Grade or Percentage"
-              type="text"
-              {...register("grade_or_percentage")}
-            />
-          </div>
-        </div>
-        <div className="flex justify-end space-x-2">
-          {editingIndex !== null && (
+    <div className="max-w-3xl px-5 mt-auto">
+      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
+        Address Information
+      </h2>
+      <div className="mb-4 pl-2">
+        <p className="text-gray-700 font-semibold mb-2">Address</p>
+        {!isEditingAddress ? (
+          <div className="flex justify-between items-center">
+            <p className="text-gray-500">{addressData.address || "N/A"}</p>
+            {/* {addressData && addressData.map((data)=>{
+              <p>{data.pincode}</p>
+            })} */}
             <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              onClick={() => setIsEditingAddress(true)}
             >
-              Cancel
+              Edit
             </button>
-          )}
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            {editingIndex !== null ? "Update" : "Save"}
-          </button>
-        </div>
-      </form>
-
-      {/* Existing Education Records */}
-      <div className="mt-6 space-y-4">
-        {educationData.length > 0 ? (
-          educationData.map((education, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center bg-white p-4 rounded-md shadow-md border"
-            >
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p><strong>Qualification:</strong> {education.qualification}</p>
-                <p><strong>Institution:</strong> {education.institution}</p>
-                <p><strong>Year of Passing:</strong> {education.year_of_passing}</p>
-                <p><strong>Grade/Percentage:</strong> {education.grade_or_percentage}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address Type
+                </label>
+                <select
+                  {...register("address", { required: true })}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="current Address">Current Address</option>
+                  <option value="permanent Address">Permanent Address</option>
+                </select>
+                {errors.address && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State
+                </label>
+                <input
+                  type="text"
+                  {...register("state", { required: true })}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter State"
+                />
+                {errors.state && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Division
+                </label>
+                <input
+                  type="text"
+                  {...register("division")}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter Division"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  District
+                </label>
+                <input
+                  type="text"
+                  {...register("district", { required: true })}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter District"
+                />
+                {errors.district && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Block
+                </label>
+                <input
+                  type="text"
+                  {...register("block")}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter Block"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Village
+                </label>
+                <input
+                  type="text"
+                  {...register("village")}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter Village"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Area
+                </label>
+                <input
+                  type="text"
+                  {...register("area")}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter Area"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  {...register("pincode", { required: true })}
+                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Enter Pincode"
+                />
+                {errors.pincode && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex space-x-4">
               <button
-                onClick={() => handleEdit(index)}
-                className="text-blue-500 hover:text-blue-700"
+                type="button"
+                onClick={() => setIsEditingAddress(false)}
+                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
               >
-                <FiEdit2 size={20} />
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+              >
+                Save
               </button>
             </div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-sm">No education records added yet.</p>
+          </form>
         )}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <p className="text-red-500 text-sm mt-4">
-          Error: {error}
-        </p>
-      )}
+      <hr className="mb-4" />
     </div>
   );
 };
 
-export default EducationProfileCard;
+export default AddressProfileCard;

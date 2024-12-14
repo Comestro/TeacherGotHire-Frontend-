@@ -3,10 +3,10 @@ import { useDispatch } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
-import { signup as authsignup } from "../features/authSlice";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
 import Navbar from "./Navbar/Navbar";
+import {getPostData} from "../features/authSlice";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ function SignUpPage() {
       
       console.log(userData);
       if (userData) {
-        dispatch(authsignup(userData));
+        dispatch(getPostData(userData));
         navigate("/teacher");
       }
     } catch (error) {
