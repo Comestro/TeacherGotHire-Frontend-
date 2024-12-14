@@ -13,7 +13,7 @@ const Sidebar = () => {
   useEffect(()=>{
    dispatch(getUserData());
   },[])
-  console.log("ghdkfjlg",profile)
+  //console.log("ghdkfjlg",profile)
 
   return (
     <div className="flex flex-col items-center py-6 ">

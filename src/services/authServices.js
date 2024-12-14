@@ -30,7 +30,7 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
    
     // Check for successful response status
       const { token } = response.data;
-      console.log('Received token:', token);
+     // console.log('Received token:', token);
       localStorage.setItem('access_token', token);
 
     return response.data;
@@ -45,7 +45,7 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
 export const fetchUserData = async()=>{
   try{
      const response = await apiClient.get('/api/self/customuser/');
-    console.log("get newdata:",response.data);
+     //console.log("get newdata:",response.data);
      return response.data;
   }
      catch (err) {
@@ -63,7 +63,7 @@ export const login = async ({ email, password }) => {
 
       // Parse the token from the response
       const { access_token } = response.data;
-      console.log('Login archana:', access_token);
+      //console.log('Login archana:', access_token);
 
       // Store token in localStorage
       localStorage.setItem('access_token', access_token);
@@ -72,7 +72,7 @@ export const login = async ({ email, password }) => {
       return response.data;
   } catch (err) {
     // Handle login errors
-    console.error('Login error:', err.response?.data || err);
+     //console.error('Login error:', err.response?.data || err);
     throw err;
   }
 };
@@ -81,7 +81,7 @@ export const login = async ({ email, password }) => {
 export const logout = () => {
   try {
     localStorage.removeItem('access_token'); // Remove token from local storage
-    console.log('User logged out');
+   // console.log('User logged out');
   } catch (err) {
     console.error('Logout error:', err);
     throw err;
