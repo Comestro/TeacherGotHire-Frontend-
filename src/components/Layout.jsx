@@ -6,12 +6,12 @@ const Layout = () => {
   return (
     <div className="w-full bg-gradient-to-b from-teal-100 to-gray-100">
       <div className="w-full max-w-screen-2xl mx-auto">
-      <div className="flex gap-5 p-3 bg-gradient-to-b from-teal-100 to-gray-100">
+      <div className="flex gap-5 bg-gradient-to-b from-teal-100 to-gray-100">
         <div className="hidden md:fixed md:block sm-hidden w-72">
           <Sidebar />
         </div>
-        <div className="w-full px-5 md:ml-72">
-          <div className="flex-1 p-2 bg-teal-50 rounded-xl shadow-xl">
+        <div className="w-full md:ml-72">
+          <div className="flex-1 p-2 bg-teal-50">
             <Outlet />
           </div>
         </div>
