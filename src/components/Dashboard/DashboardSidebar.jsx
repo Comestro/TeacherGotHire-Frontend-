@@ -57,7 +57,7 @@ const Sidebar = () => {
           className={({ isActive }) =>
             `block py-2 px-4 rounded-md  ${
               isActive
-                ? "bg-teal-700 text-white font-semibold"
+                ? "bg-[#21897e] text-white font-semibold"
                 : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
           }
@@ -71,7 +71,7 @@ const Sidebar = () => {
           className={({ isActive }) =>
             `block py-2 px-4 rounded-md ${
               isActive
-                ? "bg-teal-700 text-white font-semibold"
+                ? "bg-[#21897e] text-white font-semibold"
                 : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
           }
@@ -85,7 +85,7 @@ const Sidebar = () => {
           className={({ isActive }) =>
             `block py-2 px-4 rounded-md ${
               isActive
-                ? "bg-teal-700 text-white font-semibold"
+                ? "bg-[#21897e] text-white font-semibold"
                 : "text-gray-600 font-semibold"
             } hover:bg-teal-600 hover:text-white transition flex items-center gap-2`
           }
