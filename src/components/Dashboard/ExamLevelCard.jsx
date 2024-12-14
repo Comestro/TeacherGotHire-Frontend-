@@ -8,9 +8,9 @@ const ExamLevelCard = ({ level, isLocked }) => {
         className={`w-16 h-16 flex items-center justify-center rounded-full bg-teal-100`}
       >
         {isLocked ? (
-          <HiLockClosed className="text-teal-500 w-8 h-8" />
+          <HiLockClosed className="text-teal-700 w-8 h-8" />
         ) : (
-          <HiLockOpen className="text-teal-500 w-8 h-8" />
+          <HiLockOpen className="text-teal-700 w-8 h-8" />
         )}
       </div>
       <h2 className="text-lg font-semibold text-teal-700">{level}</h2>
