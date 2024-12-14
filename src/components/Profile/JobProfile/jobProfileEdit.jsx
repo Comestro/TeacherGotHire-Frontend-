@@ -1,6 +1,5 @@
 import React from "react";
-import Education from "./Education";
-import Experience from "./Exprience";
+import PrefrenceProfile from "./PrefrenceProfile";
 
 const JobProfileEdit = () => {
   return (
@@ -11,8 +10,7 @@ const JobProfileEdit = () => {
           Edit Profile
         </h1>
         <div className="px-6">
-          <Education/>
-          <Experience/>
+          <PrefrenceProfile/>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ export const getUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchUserData();
-      console.log("gedata",data)
+      //console.log("gedata",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -29,7 +29,7 @@ export const getPostData = createAsyncThunk(
   async ({ Fname, Lname, email, password }, { rejectWithValue }) => {
     try {
       const data = await createaccount({ Fname, Lname, email, password });
-      console.log("gedata",data)
+      //console.log("gedata",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
