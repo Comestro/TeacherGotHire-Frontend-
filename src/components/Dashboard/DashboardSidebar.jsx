@@ -27,10 +27,10 @@ const Sidebar = () => {
   //console.log("ghdkfjlg",profile)
 
   return (
-    <div className="flex flex-col items-center py-6 h-screen">
+    <div className="flex flex-col items-center py-6 h-screen bg-gradient-to-b from-teal-100 to-gray-200">
       {/* Profile Section */}
-      <div className="flex mb-10 items-center gap-4  border-2 border-teal-600 rounded-md p-2">
-        <div className="w-16 h-16">
+      <div className="flex mb-10 items-center gap-2  border-2 border-teal-600 rounded-md p-2">
+        <div className="w-14 h-14">
           <img
             src={profile.profileImage || ""}
             alt="Profile"
@@ -41,7 +41,7 @@ const Sidebar = () => {
           <h2 className="text-md font-bold text-gray-700">
             {profile.Fname || "Your Name"}
           </h2>
-          <p className="text-md text-gray-700">
+          <p className="text-md text-gray-700 truncate">
             {profile.email || "email@example.com"}
           </p>
         </div>
