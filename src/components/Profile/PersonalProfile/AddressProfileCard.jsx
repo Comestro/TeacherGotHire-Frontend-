@@ -9,11 +9,13 @@ import { updateAddressProfile } from "../../../services/profileServices";
 
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
-  const personalProfile = useSelector(
-    (state) => state.personalProfile || {}
-  );
-  const addressData = personalProfile?.address || [];
-  console.log("add", addressData);
+
+  // const addressData = personalProfile?.address || [];
+  // console.log("add", addressData);
+
+  const personalProfile = useSelector((state) => state.personalProfile || []);
+  const addressData = personalProfile.address;
+  console.log("archana", addressData[0]);
 
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [error, setError] = useState("");
@@ -37,15 +39,15 @@ const AddressProfileCard = () => {
       .catch((error) => {
         console.error("Error:", error);
       });
-  }, [dispatch]);
+  }, []);
 
-  // useEffect(() => {
-  //   if (addressData) {
-  //     Object.entries(addressData).forEach(([key, value]) =>
-  //       setValue(key, value)
-  //     );
-  //   }
-  // }, [addressData, setValue]);
+  useEffect(() => {
+    if (addressData) {
+      Object.entries(addressData).forEach(([key, value]) =>
+        setValue(key, value)
+      );
+    }
+  }, [addressData, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -59,23 +61,40 @@ const AddressProfileCard = () => {
 
   return (
     <div className="px-5 mt-auto">
-      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">Address Information</h2>
+      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
+        Address Information
+      </h2>
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Address</p>
         {!isEditingAddress ? (
-          <div className="flex justify-between items-center">
-            <p className="text-gray-500">{addressData.address }</p>
-            {addressData && addressData.map((data)=>{
-              <form>
-                <div></div>
-              </form>
-            })}
-            <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
-              onClick={() => setIsEditingAddress(true)}
-            >
-              Edit
-            </button>
+          <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white">
+            <div className="grid grid-cols-3 gap-4 items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  Address Type
+                </h3>
+                <p className="text-gray-700 text-md">
+                  {(addressData.address_type && addressData.address_type) ||
+                    "N/A"}
+                </p>
+              </div>
+              {/* <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  Address Type
+                </h3>
+                <p className="text-gray-700 text-md">
+                   {addressData.area && addressData.area  || 'N/A'} 
+                </p>
+              </div> */}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="text-white bg-teal-600 hover:bg-teal-700 transition-colors px-6 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsEditingAddress(true)}
+              >
+                Edit Preferences
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -85,11 +104,11 @@ const AddressProfileCard = () => {
                   Address Type
                 </label>
                 <select
-                  {...register("address", { required: true })}
+                  {...register("address_type", { required: true })}
                   className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="current Address">Current Address</option>
-                  <option value="permanent Address">Permanent Address</option>
+                  <option value="current">Current Address</option>
+                  <option value="permanent">Permanent Address</option>
                 </select>
                 {errors.address && (
                   <span className="text-red-500 text-sm">

@@ -39,25 +39,37 @@ const PrefrenceProfile = () => {
   // const fetchPreferences = () => {
   //   dispatch(getPrefrence())
   // };
-  useEffect(() => {
-    if (isEditingPrefrence && teacherprefrence) {
-      // Populate fields with existing data
-      setValue("class_category", teacherprefrence?.class_category?.name || "");
-      setValue("job_role", teacherprefrence?.job_role?.jobrole_name || "");
-      setValue(
-        "prefered_subject",
-        teacherprefrence?.prefered_subject?.map((sub) => sub.id) || []
-      );
-      setValue(
-        "teacher_job_type",
-        teacherprefrence?.teacher_job_type?.map((job) => job.id) || []
-      );
-    }
-  }, [isEditingPrefrence, teacherprefrence, setValue]);
+  // useEffect(() => {
+  //   if (isEditingPrefrence && teacherprefrence) {
+  //     // Populate fields with existing data
+  //     setValue("class_category", teacherprefrence?.class_category?.name || "");
+  //     setValue("job_role", teacherprefrence?.job_role?.jobrole_name || "");
+  //     setValue(
+  //       "prefered_subject",
+  //       teacherprefrence?.prefered_subject?.map((sub) => sub.id) || []
+  //     );
+  //     setValue(
+  //       "teacher_job_type",
+  //       teacherprefrence?.teacher_job_type?.map((job) => job.id) || []
+  //     );
+  //   }
+  // }, [isEditingPrefrence, teacherprefrence, setValue]);
+
+  // const fetchPreferences = () => {
+  //   dispatch(getPrefrence());
+  // };
 
   const fetchPreferences = () => {
     dispatch(getPrefrence());
   };
+  useEffect(() => {
+    if (teacherprefrence) {
+      Object.entries(teacherprefrence).forEach(([key, value]) =>
+        setValue(key, value)
+      );
+
+    }
+  }, [teacherprefrence, setValue]);
 
 
   const onSubmit = async (data) => {
