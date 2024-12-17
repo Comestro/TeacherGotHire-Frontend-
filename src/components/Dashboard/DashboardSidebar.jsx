@@ -32,7 +32,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <h1 className="font-bold text-2xl text-teal-800 text-center">
               PTPI
             </h1>
-            <p className="text-sm text-center text-gray-600 font-semibold mb-2">
+            <p className="text-sm text-center text-gray-500 font-semibold mb-2">
               Private Teacher Provider Institute.
             </p>
           </div>
@@ -56,58 +56,65 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </div>
             </div>
           </div>
-          {/* Navigation Links */}
-          <nav className="w-full mt-1">
-            <NavLink
-              to="/teacher/"
-              end
-              className={({ isActive }) =>
-                `block py-3 px-4  ${
-                  isActive
-                    ? "bg-[#E5F1F9] text-teal-600 font-semibold"
-                    : "text-gray-500 font-semibold"
-                } hover:bg-[#F5F8FA] transition flex items-center gap-1`
-              }
-            >
-              <HiViewGrid />
-              Dashboard
-            </NavLink>
-            <NavLink
-              to="/teacher/personal-profile"
-              end
-              className={({ isActive }) =>
-                `block py-3 px-4 ${
-                  isActive
-                    ? "bg-[#E5F1F9] text-teal-600 font-semibold"
-                    : "text-gray-500 font-semibold"
-                } hover:bg-[#F5F8FA] transition flex items-center gap-1`
-              }
-            >
-              <HiUser />
-              Personal Details
-            </NavLink>
-            <NavLink
-              to="/teacher/job-profile"
-              end
-              className={({ isActive }) =>
-                `block py-3 px-4 ${
-                  isActive
-                    ? "bg-[#E5F1F9] text-white font-semibold"
-                    : "text-gray-500 font-semibold"
-                } hover:bg-[#F5F8FA] transition flex items-center gap-2`
-              }
-            >
-              <HiBriefcase />
-              Job Details
-            </NavLink>
-            {/* <button
+
+          <div className="flex flex-col flex-1 justify-between">
+            <nav className="w-full mt-1">
+              <NavLink
+                to="/teacher/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiViewGrid />
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/teacher/personal-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiUser />
+                Personal Details
+              </NavLink>
+              <NavLink
+                to="/teacher/job-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-white font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiBriefcase />
+                Job Details
+              </NavLink>
+              {/* <button
               onClick={logout}
               className="inline-flex  items-center py-1 px-5 mt-4 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition"
             >
               <HiOutlineLogin className="mr-2" />
               Logout
             </button> */}
-          </nav>
+            </nav>
+            <div className="flex">
+              <div className="copyright flex justify-center w-full border-t border-gray-200">
+                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">Designed by Comestro</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
