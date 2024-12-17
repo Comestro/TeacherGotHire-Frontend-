@@ -27,13 +27,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         } md:translate-x-0 md:fixed`}
       >
         {/* Profile Section */}
-        <div className="flex flex-col h-screen">
-          <div className="flex flex-col justify-center py-2 border-b border-teal-700">
-            <h1 className="font-bold text-2xl text-teal-800 text-center">PTPI</h1>
-            <p className="text-sm text-center text-gray-600 font-semibold">Private Teacher Provider Institute.</p>
+        <div className="flex flex-col h-screen bg-white">
+          <div className="flex flex-col justify-center py-2 border-b-2 border-white">
+            <h1 className="font-bold text-2xl text-teal-800 text-center">
+              PTPI
+            </h1>
+            <p className="text-sm text-center text-gray-500 font-semibold mb-2">
+              Private Teacher Provider Institute.
+            </p>
           </div>
-          {/* <hr className=""/> */}
-          <div className="flex mb-10 items-center gap-2 p-2 bg-slate-100 px-2">
+          {/* profiel section */}
+          <div className="flex items-center gap-2 py-3 bg-[#F5F8FA] px-2">
             <div className="px-2 flex items-center gap-2">
               <div className="w-12 h-12">
                 <img
@@ -43,67 +47,74 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 />
               </div>
               <div className="flex flex-col">
-                <h2 className="text-md font-bold text-gray-700">
+                <h2 className="text-md font-semibold text-gray-600">
                   {profile.Fname || "Your Name"}
                 </h2>
-                <p className="text-sm text-teal-800 font-semibold truncate">
+                <p className="text-sm text-teal-600 truncate">
                   {profile.email || "email@example.com"}
                 </p>
               </div>
             </div>
           </div>
-          {/* Navigation Links */}
-          <nav className="w-full px-7 space-y-2">
-            <NavLink
-              to="/teacher/"
-              end
-              className={({ isActive }) =>
-                `block py-2 px-4 rounded-md ${
-                  isActive
-                    ? "bg-[#21897e] text-white font-semibold"
-                    : "text-gray-600 font-semibold"
-                } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
-              }
-            >
-              <HiViewGrid />
-              Dashboard
-            </NavLink>
-            <NavLink
-              to="/teacher/personal-profile"
-              end
-              className={({ isActive }) =>
-                `block py-2 px-4 rounded-md ${
-                  isActive
-                    ? "bg-[#21897e] text-white font-semibold"
-                    : "text-gray-600 font-semibold"
-                } hover:bg-teal-600 hover:text-white transition flex items-center gap-1`
-              }
-            >
-              <HiUser />
-              Personal Details
-            </NavLink>
-            <NavLink
-              to="/teacher/job-profile"
-              end
-              className={({ isActive }) =>
-                `block py-2 px-4 rounded-md ${
-                  isActive
-                    ? "bg-[#21897e] text-white font-semibold"
-                    : "text-gray-600 font-semibold"
-                } hover:bg-teal-600 hover:text-white transition flex items-center gap-2`
-              }
-            >
-              <HiBriefcase />
-              Job Details
-            </NavLink>
-            <button
+
+          <div className="flex flex-col flex-1 justify-between">
+            <nav className="w-full mt-1">
+              <NavLink
+                to="/teacher/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiViewGrid />
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/teacher/personal-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiUser />
+                Personal Details
+              </NavLink>
+              <NavLink
+                to="/teacher/job-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-white font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiBriefcase />
+                Job Details
+              </NavLink>
+              {/* <button
               onClick={logout}
-              className="inline-flex items-center py-1 px-5 mt-4 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition"
+              className="inline-flex  items-center py-1 px-5 mt-4 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition"
             >
               <HiOutlineLogin className="mr-2" />
               Logout
-            </button>
-          </nav>
+            </button> */}
+            </nav>
+            <div className="flex">
+              <div className="copyright flex justify-center w-full border-t border-gray-200">
+                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">Designed by Comestro</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
