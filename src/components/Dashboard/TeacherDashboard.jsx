@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-//import ProfileButton from '../Profile_Button/Profile_Button';
 import { getSubjects } from "../../features/dashboardSlice";
-import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
-import { GoChevronDown } from "react-icons/go";
 import ExamLevelCard from "./ExamLevelCard";
 import JobProfileCard from "./JobProfileCard";
 import PrefrenceLocation from "./PrefrenceLocation";
@@ -37,31 +34,6 @@ function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-white ">
-      {/* Teacher Dashboard Header */}
-      <div className="flex items-center justify-between md:justify-end px-0 md:px-2 bg-teal-800 py-2 text-white">
-        <div className="ml-2 md:hidden">
-          <IoMdMenu className="size-7" />
-        </div>
-        <div className="flex items-center gap-7 mr-2">
-          <button>
-            <IoMdSettings className="size-7" />
-          </button>
-          <button>
-            <IoIosNotifications className="size-7" />
-          </button>
-          <button className=" py-1 font-semibold flex items-center gap-2">
-            <div className="w-10 h-10">
-              <img
-                src={"https://via.placeholder.com/200"}
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover border-2 border-teal-600 shadow-md"
-              />
-            </div>
-            Rahul Kumar
-            <GoChevronDown className="-ml-1 mt-1 " />
-          </button>
-        </div>
-      </div>
       {/* main section */}
       <div className="px-2">
         <div className="w-full flex flex-col mx-auto rounded-md">

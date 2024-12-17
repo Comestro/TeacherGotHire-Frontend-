@@ -6,7 +6,7 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 const BasicInformation = () => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  useEffect(() => { 
     dispatch(getBasic())
       .then((response) => {
         console.log("Responseghjk:", response);
@@ -14,12 +14,13 @@ const BasicInformation = () => {
       .catch((error) => {
         console.error("Error:", error);
       });
-  }, [dispatch]);
+  }, []);
 
   const profile = useSelector((state) => state?.auth?.userData || {});
   const [error, setError] = useState("");
 
-  const basicData = useSelector((state) => state?.personalProfile?.basicData);
+  const personalProfile = useSelector((state) => state?.personalProfile);
+  const basicData = personalProfile?.basicData;
   console.log("Basic Information", basicData);
   // useEffect (()=>{
   //   dispatch(getBasic());

@@ -9,9 +9,10 @@ import { updateAddressProfile } from "../../../services/profileServices";
 
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
-  const addressData = useSelector(
-    (state) => state.personalProfile.address || {}
+  const personalProfile = useSelector(
+    (state) => state.personalProfile || {}
   );
+  const addressData = personalProfile?.address || [];
   console.log("add", addressData);
 
   const [isEditingAddress, setIsEditingAddress] = useState(false);
