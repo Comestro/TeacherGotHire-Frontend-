@@ -11,7 +11,7 @@ const initialState = {
   jobRole:[],
   subject:[],
   teacherjobRole:[],
-  prefrence:{},
+  prefrence:[],
   // educationData: [],
   // skillsData:[],
   // exprienceData:[],
@@ -313,7 +313,7 @@ const jobProfileSlice = createSlice({
         .addCase(getPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrence = action.payload; // Update profile data
-          
+          console.log("prefrence",action.payload);
         })
         .addCase(getPrefrence.rejected, (state, action) => {
           state.status = "failed";

@@ -156,7 +156,7 @@ export const updateTeacherPrefrence = async(prefrenceData)=>{
 }
 export const fetchTeacherPrefrence = async()=>{
   try{
-     const response = await apiClient.get('api/self/teacherepreference/');
+     const response = await apiClient.get('api/self/teacherpreference/');
      console.log("get data:",response.data);
      return response.data;
   }

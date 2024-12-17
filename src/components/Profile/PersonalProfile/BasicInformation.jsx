@@ -21,10 +21,7 @@ const BasicInformation = () => {
 
   const basicData = useSelector((state) => state?.personalProfile?.basicData);
   console.log("Basic Information", basicData);
-  // useEffect (()=>{
-  //   dispatch(getBasic());
-  // },[dispatch]);
-
+  
   const onSubmit = async (data) => {
     try {
       await updateBasicProfile(data);
