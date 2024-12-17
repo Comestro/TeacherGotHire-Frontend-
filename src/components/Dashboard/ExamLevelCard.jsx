@@ -3,7 +3,7 @@ import { HiLockClosed, HiLockOpen } from "react-icons/hi2";
 
 const ExamLevelCard = ({ level, isLocked }) => {
   return (
-    <button className="w-full max-w-sm mx-auto bg-white shadow-lg rounded-lg border-2 border-teal-500 px-3 py-3 flex flex-col items-center space-y-2">
+    <button className="w-full max-w-sm mx-auto bg-white shadow-lg rounded-lg border border-teal-500 px-3 py-3 flex flex-col items-center space-y-2">
       <div
         className={`w-16 h-16 flex items-center justify-center rounded-full bg-teal-100`}
       >
