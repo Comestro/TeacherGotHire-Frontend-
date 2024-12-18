@@ -79,7 +79,7 @@ const AdminSignIn = () => {
     try {
       const result = await logInservice.logInservice(email, password);
       console.log("Login successful:", result);
-      navigate("/admin-dashboard");
+      navigate("/admin/dashboard");
       navigate(0); // Refresh the page
     } catch (error) {
       console.error("Login failed:", error);
