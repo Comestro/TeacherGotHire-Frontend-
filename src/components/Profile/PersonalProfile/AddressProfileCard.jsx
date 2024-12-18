@@ -9,9 +9,13 @@ import { updateAddressProfile } from "../../../services/profileServices";
 
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
-  const addressData = useSelector(
-    (state) => state.personalProfile.address || {}
-  );
+
+  // const addressData = personalProfile?.address || [];
+  // console.log("add", addressData);
+
+  const personalProfile = useSelector((state) => state.personalProfile || []);
+  const addressData = personalProfile.address;
+  console.log("archana", addressData[0]);
 
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [error, setError] = useState("");
@@ -23,9 +27,19 @@ const AddressProfileCard = () => {
     formState: { errors },
   } = useForm();
 
+  // useEffect(() => {
+  //   dispatch(getAddress());
+  // }, [dispatch]);
+
   useEffect(() => {
-    dispatch(getAddress());
-  }, [dispatch]);
+    dispatch(getAddress())
+      .then((response) => {
+        console.log("Responsedfgh:", response);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, []);
 
   useEffect(() => {
     if (addressData) {
@@ -46,36 +60,60 @@ const AddressProfileCard = () => {
   };
 
   return (
-    <div className="max-w-3xl px-5 mt-auto">
-      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">Address Information</h2>
+    <div className="px-5 mt-auto">
+      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
+        Address Information
+      </h2>
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Address</p>
         {!isEditingAddress ? (
-          <div className="flex justify-between items-center">
-            <p className="text-gray-500">{addressData.address || "N/A"}</p>
-            <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
-              onClick={() => setIsEditingAddress(true)}
-            >
-              Edit
-            </button>
+          <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white">
+            <div className="grid grid-cols-3 gap-4 items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  Address Type
+                </h3>
+                <p className="text-gray-700 text-md">
+                  {(addressData.address_type && addressData.address_type) ||
+                    "N/A"}
+                </p>
+              </div>
+              {/* <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  Address Type
+                </h3>
+                <p className="text-gray-700 text-md">
+                   {addressData.area && addressData.area  || 'N/A'} 
+                </p>
+              </div> */}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="text-white bg-teal-600 hover:bg-teal-700 transition-colors px-6 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsEditingAddress(true)}
+              >
+                Edit Preferences
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Address Type
                 </label>
                 <select
-                  {...register("address", { required: true })}
+                  {...register("address_type", { required: true })}
                   className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="Current Address">Current Address</option>
-                  <option value="Permanent Address">Permanent Address</option>
+                  <option value="current">Current Address</option>
+                  <option value="permanent">Permanent Address</option>
                 </select>
                 {errors.address && (
-                  <span className="text-red-500 text-sm">This field is required</span>
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
                 )}
               </div>
               <div>
@@ -89,7 +127,9 @@ const AddressProfileCard = () => {
                   placeholder="Enter State"
                 />
                 {errors.state && (
-                  <span className="text-red-500 text-sm">This field is required</span>
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
                 )}
               </div>
               <div>
@@ -114,7 +154,9 @@ const AddressProfileCard = () => {
                   placeholder="Enter District"
                 />
                 {errors.district && (
-                  <span className="text-red-500 text-sm">This field is required</span>
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
                 )}
               </div>
               <div>
@@ -161,7 +203,9 @@ const AddressProfileCard = () => {
                   placeholder="Enter Pincode"
                 />
                 {errors.pincode && (
-                  <span className="text-red-500 text-sm">This field is required</span>
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
                 )}
               </div>
             </div>

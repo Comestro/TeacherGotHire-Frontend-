@@ -1,79 +1,131 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../services/authServices";
+import {
+  HiViewGrid,
+  HiUser,
+  HiBriefcase,
+  HiOutlineLogin,
+} from "react-icons/hi";
+import { getUserData } from "../../features/authSlice";
 
-const Sidebar = () => {
-  const profile = useSelector((state) => state.personalProfile?.basicData?.data?.profile?.user || {});
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const dispatch = useDispatch();
+  const profile = useSelector((state) => state.auth.userData || {});
+
+  useEffect(() => {
+    dispatch(getUserData());
+  }, [dispatch]);
 
   return (
-    <div className="fixed w-56 h-screen flex flex-col items-center py-6 ">
-      {/* Profile Section */}
-      <div className="text-center mb-8">
-        <div className="relative w-24 h-24 mx-auto">
-          <img
-            src={profile.profileImage || "https://via.placeholder.com/200"}
-            alt="Profile"
-            className="w-full h-full rounded-full object-cover border-2 border-gray-300 shadow-md"
-          />
+    <>
+      {/* Sidebar Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-full w-72  bg-slate-50 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 md:fixed`}
+      >
+        {/* Profile Section */}
+        <div className="flex flex-col h-screen bg-white">
+          <div className="flex flex-col justify-center py-2 border-b-2 border-white">
+            <h1 className="font-bold text-2xl text-teal-800 text-center">
+              PTPI
+            </h1>
+            <p className="text-sm text-center text-gray-500 font-semibold mb-2">
+              Private Teacher Provider Institute.
+            </p>
+          </div>
+          {/* profiel section */}
+          <div className="flex items-center gap-2 py-3 bg-[#F5F8FA] px-2">
+            <div className="px-2 flex items-center gap-2">
+              <div className="w-12 h-12">
+                <img
+                  src={profile.profileImage || ""}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover border-2 border-white shadow-md"
+                />
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-md font-semibold text-gray-600">
+                  {profile.Fname || "Your Name"}
+                </h2>
+                <p className="text-sm text-teal-600 truncate">
+                  {profile.email || "email@example.com"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col flex-1 justify-between">
+            <nav className="w-full mt-1">
+              <NavLink
+                to="/teacher/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiViewGrid />
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/teacher/personal-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiUser />
+                Personal Details
+              </NavLink>
+              <NavLink
+                to="/teacher/job-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-white font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiBriefcase />
+                Job Details
+              </NavLink>
+              {/* <button
+              onClick={logout}
+              className="inline-flex  items-center py-1 px-5 mt-4 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition"
+            >
+              <HiOutlineLogin className="mr-2" />
+              Logout
+            </button> */}
+            </nav>
+            <div className="flex">
+              <div className="copyright flex justify-center w-full border-t border-gray-200">
+                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">Designed by Comestro</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <h2 className="text-xl font-semibold mt-4 text-gray-800">
-          {profile.Fname || "Your Name"}
-        </h2>
-        <p className="text-md text-gray-700">
-          {profile.email || "email@example.com"}
-        </p>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="w-full px-4 space-y-2">
-        <NavLink
-          to="/teacher/"
-          end
-          className={({ isActive }) =>
-            `block py-2 px-4 rounded-md  ${
-              isActive
-                ? "bg-teal-700 text-white font-semibold"
-                : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
-          }
-        >
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/teacher/personal-profile"
-          end
-          className={({ isActive }) =>
-            `block py-2 px-4 rounded-md ${
-              isActive
-                ? "bg-teal-700 text-white font-semibold"
-                : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
-          }
-        >
-          Personal Details
-        </NavLink>
-        <NavLink
-          to="/teacher/job-profile"
-          end
-          className={({ isActive }) =>
-            `block py-2 px-4 rounded-md ${
-              isActive
-                ? "bg-teal-700 text-white font-semibold"
-                : "text-gray-600 font-semibold"
-            } hover:bg-teal-600 hover:text-white transition`
-          }
-        >
-          Job Details
-        </NavLink>
-        <button
-          onClick={logout}
-          className={`block py-2 px-4 rounded-md self-end bg-slate-600 hover:bg-slate-800 text-white transition`}
-        >
-          Logout
-        </button>
-      </nav>
-    </div>
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
+    </>
   );
 };
 

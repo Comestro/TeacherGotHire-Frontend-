@@ -1,5 +1,5 @@
 import React from "react";
-import Education from "./Education";
+import PrefrenceProfile from "./PrefrenceProfile";
 
 const JobProfileEdit = () => {
   return (
@@ -10,8 +10,7 @@ const JobProfileEdit = () => {
           Edit Profile
         </h1>
         <div className="px-6">
-          <Education/>
-
+          <PrefrenceProfile/>
         </div>
       </div>
     </div>

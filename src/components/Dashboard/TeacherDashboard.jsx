@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-//import ProfileButton from '../Profile_Button/Profile_Button';
-import Footer from "../Footer/Footer";
-import ResultCard from "../Result/Result";
 import { getSubjects } from "../../features/dashboardSlice";
+import ExamLevelCard from "./ExamLevelCard";
+import JobProfileCard from "./JobProfileCard";
+import PrefrenceLocation from "./PrefrenceLocation";
 
 function TeacherDashboard() {
   const subjects = useSelector((state) => state.dashboard.subjects.data || []);
@@ -29,62 +29,68 @@ function TeacherDashboard() {
     navigate("/exam");
   };
 
+  const sub = ["Mathematics", "Physics", "Programming"];
+  const location = ["Madhubani", "Pratap Nagar"];
+
   return (
-    <div className="rounded-2xl">
-      <div className="w-full flex flex-col items-center justify-center py-5 mx-auto">
-        <div className="">
-          <img src="/ptpi1.png" alt="" className="rounded-lg" />
-        </div>
-        <div>
-          <ResultCard />
-        </div>
+    <div className="min-h-screen bg-white ">
+      {/* main section */}
+      <div className="px-2">
+        <div className="w-full flex flex-col mx-auto rounded-md">
+          <div className="px-4 grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+            {/* Profile Section */}
+            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
+              <h2 className="text-teal-700 font-bold text-lg mt-2">
+                Profile Setup
+              </h2>
+              <p className="text-gray-600 text-sm text-center mt-2">
+                Create your profile with personal and professional details.
+              </p>
+              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
+                Set Up Profile
+              </button>
+            </div>
 
-        {/* Subject Selection Section */}
-        {/* {!selectedSubject && ( */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-4xl w-full">
-          {subjects.length > 0 ? (
-            subjects.map((subject) => (
-              <div
-                key={subject.id}
-                onClick={() => handleSubjectSelect(subject.subject_name)}
-                className="bg-white shadow-md rounded-lg p-4 cursor-pointer transform hover:scale-105 transition-all"
-              >
-                <h3 className="text-xl font-bold text-blue-700">
-                  {subject.name}
-                </h3>
-                <p className="text-gray-600 mt-2">
-                  {subject.subject_description}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div>No subjects available</div>
-          )}
-        </div>
+            {/* Exam Section */}
+            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
+              <h2 className="text-teal-700 font-bold text-lg mt-2">
+                Take Exams
+              </h2>
+              <p className="text-gray-600 text-sm text-center mt-2">
+                Complete the exam series (Level 1, Level 2, Level 3) to qualify.
+              </p>
+              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
+                Start Exam
+              </button>
+            </div>
 
-        {/* Subject Details Section */}
-        {selectedSubject && (
-          <div className="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full text-center">
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">
-              Subject: {selectedSubject.name}
-            </h2>
-            <p className="text-gray-700 mb-6">{selectedSubject.description}</p>
-            <button
-              onClick={handleProceedToExam}
-              className="bg-blue-500 text-white font-bold py-3 px-6 rounded-md shadow-lg hover:bg-blue-600 transition"
-            >
-              Proceed to Exam
-            </button>
-            <button
-              onClick={() => setSelectedSubject(null)}
-              className="mt-4 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
-            >
-              Back to Subjects
-            </button>
+            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
+              <h2 className="text-teal-700 font-bold text-lg mt-2">
+                Become a Teacher
+              </h2>
+              <p className="text-gray-600 text-sm text-center mt-2">
+                Qualify to teach in schools and coaching centers. Start your
+                journey!
+              </p>
+              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
+                Get Certified
+              </button>
+            </div>
           </div>
-        )}
+        </div>
       </div>
-      {/* <Footer /> */}
+
+      <div className="grid grid-cols-2 gap-4 px-6 mt-4">
+        <JobProfileCard subjects={sub} />
+        <PrefrenceLocation locations={location}/>
+      </div>
+
+      {/* exam level Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 px-6 mt-4 gap-4 mx-auto">
+        <ExamLevelCard level="Level-1" isLocked={false} />
+        <ExamLevelCard level="Level-2" isLocked={true} />
+        <ExamLevelCard level="Level-3" isLocked={true} />
+      </div>
     </div>
   );
 }

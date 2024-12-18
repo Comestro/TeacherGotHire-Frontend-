@@ -9,7 +9,7 @@ import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
 const initialState = {
   basicData:{},
   personalData:{},
-  address:{},
+  address:[],
   showForm: false,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
@@ -138,10 +138,8 @@ const personalProfileSlice = createSlice({
         .addCase(getBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
           
-         // state.basicData = action.payload; 
+          state.basicData = action.payload; 
           console.log("hi",action.payload);// Update profile data
-          //Object.assign(state, action.payload);
-          //console.log(profileData)
           console.log(action.payload)
         })
         // Handle rejected state
@@ -162,11 +160,7 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.basicData = action.payload;
-          console.log("hello",action.payload); // Update profile data
-          //Object.assign(state, action.payload);
-          //console.log(profileData)
-          console.log("payload",action.payload)
+          // state.basicData = action.payload; i will not update the basic data after post b
         })
         // Handle rejected state
         .addCase(postBasic.rejected, (state, action) => {
@@ -184,7 +178,7 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(getAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.addsress = action.payload; // Update profile data
+          state.address = action.payload; // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
           console.log(action.payload)
@@ -207,62 +201,14 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state.addsress = action.payload; // Update profile data
-          //Object.assign(state, action.payload);
-          //console.log(profileData)
-          console.log(action.payload)
+          //state.address = action.payload; // Update profile data
         })
         // Handle rejected state
         .addCase(postAddress.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-  
-    // for get data handeling
-    builder
-      // Handle pending state
-      .addCase(getProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      // Handle fulfilled state
-      .addCase(getProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profileData = action.payload; // Update profile data
-        //Object.assign(state, action.payload);
-        //console.log(profileData)
-        console.log(action.payload)
-      })
-      // Handle rejected state
-      .addCase(getProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Set error from rejected payload
-      });
-      
-
-      //for post data handel
-     
-      builder
-      // Handle pending state
-      .addCase(postProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      // Handle fulfilled state
-      .addCase(postProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profileData = action.payload; // Update profile data
-        //Object.assign(state, action.payload);
-        //console.log(profileData)
-        console.log(action.payload)
-      })
-      // Handle rejected state
-      .addCase(postProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Set error from rejected payload
-      });
-      
-  },
+      }    
 });
 
 // Export reducer

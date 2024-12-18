@@ -3,30 +3,35 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 
-
 const BasicInformation = () => {
   const dispatch = useDispatch();
 
-  const basicData = useSelector((state)=>state.personalProfile.basicData);
+  useEffect(() => { 
+    dispatch(getBasic())
+      .then((response) => {
+        console.log("Responseghjk:", response);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, []);
 
+  const profile = useSelector((state) => state?.auth?.userData || {});
+  const [error, setError] = useState("");
+
+  const personalProfile = useSelector((state) => state?.personalProfile);
+  const basicData = personalProfile?.basicData;
   console.log("Basic Information", basicData);
-  const profile = useSelector((state) => state.personalProfile?.basicData?.data?.profile?.user || {});
-  const [error,setError] = useState('');
-
-
-  // useEffect (()=>{
-  //   dispatch(getBasic());
-  // },[]);
-  const onSubmit = async(data)=>{
-    try{
+  
+  const onSubmit = async (data) => {
+    try {
       await updateBasicProfile(data);
       dispatch(postBasic(data));
-    }catch(error){
-      setError(error.message)
+    } catch (error) {
+      setError(error.message);
     }
+  };
 
-  }
-  
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -34,7 +39,6 @@ const BasicInformation = () => {
   const [isEditingMarital_status, setIsEditingMarital_status] = useState(false);
   const [isEditingReligion, setIsEditingReligion] = useState(false);
   //const [isEditingAddress, setIsEditingAddress] = useState(false);
-
 
   const [tempName, setTempName] = useState(profile.Fname);
   const [tempEmail, setTempEmail] = useState(profile.email);
@@ -45,7 +49,7 @@ const BasicInformation = () => {
   // const [tempAddress, setTempAddress] = useState(address);
 
   return (
-    <div className="max-w-3xl px-5 mt-auto">
+    <div className=" px-5 mt-auto">
       <h2 className="text-xl font-bold mb-6 text-gray-700">
         Basic Information
       </h2>
@@ -88,7 +92,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({tempName});
+                onSubmit({ tempName });
                 setIsEditingName(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -98,14 +102,14 @@ const BasicInformation = () => {
           </div>
         )}
       </div>
-      <hr className="mb-4" /> 
-    
+      <hr className="mb-4" />
+
       {/* Email Section */}
-       <div className="mb-4 pl-2">
+      <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Email Address</p>
         {!isEditingEmail ? (
           <div className="flex justify-between items-center">
-             <p className="text-gray-600 font-medium">{profile.email}</p> 
+            <p className="text-gray-600 font-medium">{profile.email}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingEmail(true)}
@@ -142,15 +146,17 @@ const BasicInformation = () => {
           </div>
         )}
       </div>
-      <hr className="mb-4" /> 
+      <hr className="mb-4" />
 
       {/* Contact Number Section */}
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Contact Number</p>
         {!isEditingContact ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.phone_number}</p>
-            
+            <p className="text-gray-600 font-medium">
+              {basicData?.phone_number}
+            </p>
+
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingContact(true)}
@@ -158,8 +164,6 @@ const BasicInformation = () => {
               Edit
             </button>
           </div>
-           
-
         ) : (
           <div className="flex items-center space-x-4">
             <input
@@ -179,7 +183,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({phone_number});
+                onSubmit({ phone_number });
                 setIsEditingContact(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -191,14 +195,13 @@ const BasicInformation = () => {
       </div>
       <hr className="mb-4" />
 
-
-{/* language */}
+      {/* language */}
 
       <div className="mb-4 pl-2">
         <p className="text-gray-700 font-semibold mb-2">Language</p>
         {!isEditingLanguage ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData.data?.profile?.language}</p>    
+            <p className="text-gray-600 font-medium">{basicData?.language}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingLanguage(true)}
@@ -206,8 +209,6 @@ const BasicInformation = () => {
               Edit
             </button>
           </div>
-           
-
         ) : (
           <div className="flex items-center space-x-4">
             <input
@@ -227,7 +228,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({language});
+                onSubmit({ language });
                 setIsEditingLanguage(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -244,7 +245,9 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Marital Status</p>
         {!isEditingMarital_status ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.marital_status}</p>    
+            <p className="text-gray-600 font-medium">
+              {basicData.marital_status}
+            </p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingMarital_status(true)}
@@ -252,8 +255,6 @@ const BasicInformation = () => {
               Edit
             </button>
           </div>
-           
-
         ) : (
           <div className="flex items-center space-x-4">
             <select
@@ -266,7 +267,7 @@ const BasicInformation = () => {
             </select>
             <button
               onClick={() => {
-                setMaritalStatus(basicData?.marital_status);
+                setMaritalStatus(basicData.marital_status);
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
@@ -275,7 +276,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({marital_status});
+                onSubmit({ marital_status });
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -293,8 +294,10 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Religion</p>
         {!isEditingReligion ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.data?.profile?.religion}</p>
-            
+            <p className="text-gray-600 font-medium">
+              {basicData.religion}
+            </p>
+
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingReligion(true)}
@@ -302,8 +305,6 @@ const BasicInformation = () => {
               Edit
             </button>
           </div>
-           
-
         ) : (
           <div className="flex items-center space-x-4">
             <input
@@ -323,7 +324,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({religion});
+                onSubmit({ religion });
                 setIsEditingReligion(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -333,9 +334,6 @@ const BasicInformation = () => {
           </div>
         )}
       </div>
-
-      
-
 
       {/* Address Section */}
       {/* <div className="mb-4 pl-2">
@@ -357,6 +355,7 @@ const BasicInformation = () => {
               onChange={(e) => setTempAddress(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
+              <option value="null">coose address type</option>
               <option value="Current Address">Current Address</option>
               <option value="Permanent Address">Permanent Address</option>
             </select>
@@ -388,4 +387,3 @@ const BasicInformation = () => {
 };
 
 export default BasicInformation;
-
