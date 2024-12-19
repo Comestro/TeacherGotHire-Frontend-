@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { getApiUrl } from '../store/configue';
+import { getApiUrl,getPincodeUrl } from '../store/configue';
 
 
 const apiClient = axios.create({
@@ -10,6 +10,13 @@ const apiClient = axios.create({
     //'Authorization': Token ${localStorage.getItem('access_token')}, // Use API key from config service
   },
 }); 
+
+const pincodeClient = axios.create({
+  baseURL: getPincodeUrl(), // Pincode API base URL
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 apiClient.interceptors.request.use(
   (config) => {
@@ -49,10 +56,22 @@ export const fetchBasicProfile = async()=>{
 
 
 
-export const updateAddressProfile = async(addressdata)=>{
+export const updateAddressProfile = async(updatedata)=>{
+  try{
+//console.log("adress",addressdata)
+    const response = await apiClient.put('/api/self/teacherAddress/',updatedata);
+    
+    return JSON.parse(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+export const addAddressProfile = async(addressdata)=>{
   try{
 console.log("adress",addressdata)
-    const response = await apiClient.put('/api/self/teacherAddress/',addressdata);
+    const response = await apiClient.post('/api/self/teacherAddress/',addressdata);
     
     return JSON.parse(JSON.stringify(response));
   }

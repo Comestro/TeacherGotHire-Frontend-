@@ -5,6 +5,9 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
+  const fetchBasicData= ()=>{
+    dispatch(getBasic());
+  }
 
   useEffect(() => { 
     dispatch(getBasic())
@@ -16,6 +19,8 @@ const BasicInformation = () => {
       });
   }, []);
 
+  
+
   const profile = useSelector((state) => state?.auth?.userData || {});
   const [error, setError] = useState("");
 
@@ -26,7 +31,9 @@ const BasicInformation = () => {
   const onSubmit = async (data) => {
     try {
       await updateBasicProfile(data);
-      dispatch(postBasic(data));
+       dispatch(postBasic(data));
+      fetchBasicData();
+
     } catch (error) {
       setError(error.message);
     }
@@ -93,6 +100,7 @@ const BasicInformation = () => {
             <button
               onClick={() => {
                 onSubmit({ tempName });
+                fetchBasicData();
                 setIsEditingName(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -137,6 +145,7 @@ const BasicInformation = () => {
             <button
               onClick={() => {
                 setEmail(tempEmail);
+                fetchBasicData();
                 setIsEditingEmail(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -183,7 +192,8 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({ phone_number });
+                onSubmit({phone_number });
+                fetchBasicData();
                 setIsEditingContact(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -229,6 +239,7 @@ const BasicInformation = () => {
             <button
               onClick={() => {
                 onSubmit({ language });
+                fetchBasicData();
                 setIsEditingLanguage(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -264,6 +275,7 @@ const BasicInformation = () => {
             >
               <option value="single">Single</option>
               <option value="married">Married</option>
+              <option value="unmarried">UnMarried</option>
             </select>
             <button
               onClick={() => {
@@ -276,7 +288,8 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({ marital_status });
+                onSubmit({marital_status});
+                fetchBasicData();
                 setIsEditingMarital_status(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
@@ -325,6 +338,7 @@ const BasicInformation = () => {
             <button
               onClick={() => {
                 onSubmit({ religion });
+                fetchBasicData();
                 setIsEditingReligion(false);
               }}
               className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
