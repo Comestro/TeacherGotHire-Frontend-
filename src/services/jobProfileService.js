@@ -52,7 +52,7 @@ export const fetchJobRole = async()=>{
 export const fetchTeacherJobRole = async()=>{
   try{
      const response = await apiClient.get('/api/admin/teacherjobtype/');
-    console.log("getteacherrole:",response.data);
+     //console.log("getteacherrole:",response.data);
      return response.data;
   }
      catch (err) {
@@ -64,7 +64,7 @@ export const fetchTeacherJobRole = async()=>{
 export const fetchSubject = async()=>{
   try{
      const response = await apiClient.get('/api/admin/subject/');
-     console.log("getsubject:",response.data);
+    // console.log("getsubject:",response.data);
      return response.data;
   }
      catch (err) {
@@ -146,7 +146,7 @@ export const fetchSubject = async()=>{
 export const updateTeacherPrefrence = async(prefrenceData)=>{
   try{
     const response = await apiClient.put('api/self/teacherpreference/',prefrenceData);
-    console.log("teacher refrence",response.data);
+    // console.log("teacher refrence",response.data);
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -157,7 +157,7 @@ export const updateTeacherPrefrence = async(prefrenceData)=>{
 export const fetchTeacherPrefrence = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherpreference/');
-     console.log("get data:",response.data);
+    //  console.log("get data:",response.data);
      return response.data;
   }
      catch (err) {
@@ -166,4 +166,27 @@ export const fetchTeacherPrefrence = async()=>{
   }
 }
 
+export const updateTeacherJobPrefrenceLocation = async(prefrenceData)=>{
+  try{
+    const response = await apiClient.post('api/self/teacherjobpreferencelocation/',prefrenceData);
+    console.log("teacher location refrence",response.data);
+    return JSON.parse(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+
+export const fetchTeacherJobPrefrenceLocation = async()=>{
+  try{
+     const response = await apiClient.get('api/self/teacherjobpreferencelocation/');
+    console.log("get teacher location refrence:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 export default apiClient;

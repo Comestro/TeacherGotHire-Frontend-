@@ -4,7 +4,7 @@ import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 //import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
 //import { updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
 import { fetchClassCategory, fetchSubject } from "../services/jobProfileService";
-import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole} from "../services/jobProfileService";
+import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation} from "../services/jobProfileService";
 
 const initialState = {
   classCategories:[],
@@ -12,6 +12,7 @@ const initialState = {
   subject:[],
   teacherjobRole:[],
   prefrence:[],
+  prefrenceLocation:[],
   // educationData: [],
   // skillsData:[],
   // exprienceData:[],
@@ -111,6 +112,39 @@ export const postPrefrence = createAsyncThunk(
         const data = await updateTeacherPrefrence(prefrenceData);
         console.log("data",data)
          // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+
+  export const getJobPrefrence= createAsyncThunk(
+    "getJobPrefrence",
+    async (_, { rejectWithValue }) => {
+      try {
+        const data = await fetchTeacherJobPrefrenceLocation();
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+
+  export const postJobPrefrence = createAsyncThunk(
+    "postJobPrefrence",
+    async (prefrenceData, { rejectWithValue }) => {
+      try {
+        const data = await updateTeacherJobPrefrenceLocation(prefrenceData);
+        console.log("data",data)
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -303,7 +337,6 @@ const jobProfileSlice = createSlice({
       
  //    handle Teacher prefrence
 
-      // 
       builder
       // for get data handeling
         .addCase(getPrefrence.pending, (state) => {
@@ -313,13 +346,32 @@ const jobProfileSlice = createSlice({
         .addCase(getPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrence = action.payload; // Update profile data
-          console.log("prefrence",action.payload);
+          //console.log("prefrence",action.payload);
         })
         .addCase(getPrefrence.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
       
+    
+    //    handle Teacher  Job prefrence
+
+    builder
+    // for get data handeling
+      .addCase(getJobPrefrence.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getJobPrefrence.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.prefrenceLocation = action.payload; // Update profile data
+        console.log("prefrenceLocation",action.payload);
+      })
+      .addCase(getJobPrefrence.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
+    
 
       //for post data handel
      
