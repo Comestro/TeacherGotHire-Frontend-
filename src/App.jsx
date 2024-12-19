@@ -26,6 +26,7 @@ import ResultPage from "./components/Exam/Results";
 import Layout from "./components/Layout";
 import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
+import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 // import Logout from "./components/Logout";
 
 // Private Route Component
@@ -49,6 +50,7 @@ function App() {
           <Route path="/result" element={<ResultPage />} />
           <Route path="/admin-signin" element={<AdminSignIn />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/exam-guide" element={<MCQGuidelinePage />} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />

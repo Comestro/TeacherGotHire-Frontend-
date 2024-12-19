@@ -49,7 +49,7 @@ const BasicInformation = () => {
   // const [tempAddress, setTempAddress] = useState(address);
 
   return (
-    <div className=" px-5 mt-auto">
+    <div className=" md:px-5 mt-auto ">
       <h2 className="text-xl font-bold mb-6 text-gray-700">
         Basic Information
       </h2>
@@ -65,7 +65,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Name</p>
         {!isEditingName ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{profile.Fname}</p>
+            <p className="text-gray-600 ">{profile.Fname}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingName(true)}
@@ -109,7 +109,7 @@ const BasicInformation = () => {
         <p className="text-gray-700 font-semibold mb-2">Email Address</p>
         {!isEditingEmail ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{profile.email}</p>
+            <p className="text-gray-500 ">{profile.email}</p>
             <button
               className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
               onClick={() => setIsEditingEmail(true)}
