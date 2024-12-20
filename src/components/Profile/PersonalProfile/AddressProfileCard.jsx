@@ -534,7 +534,7 @@ const AddressProfileCard = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
+      <h2 className="text-xl font-bold mb-6 text-gray-700 mt-2">
         Address Information
       </h2>
 

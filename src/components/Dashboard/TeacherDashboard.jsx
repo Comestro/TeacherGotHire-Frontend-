@@ -85,18 +85,7 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4 px-6 mt-4">
-        <JobProfileCard subjects={sub} />
-        <PrefrenceLocation locations={location} />
-      </div>
-
-      {/* exam level Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 px-6 mt-4 gap-4 mx-auto">
-        <ExamLevelCard level="Level-1" isLocked={false} />
-        <ExamLevelCard level="Level-2" isLocked={true} />
-        <ExamLevelCard level="Level-3" isLocked={true} />
-      </div>
+      
     </div>
   );
 }

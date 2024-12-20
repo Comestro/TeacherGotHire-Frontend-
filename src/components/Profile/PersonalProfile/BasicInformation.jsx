@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic, postBasic } from "../../../features/personalProfileSlice";
+import { HiCheck, HiPencil, HiX } from "react-icons/hi";
 
 const BasicInformation = () => {
   const dispatch = useDispatch();
-  const fetchBasicData= ()=>{
+  const fetchBasicData = () => {
     dispatch(getBasic());
-  }
+  };
 
-  useEffect(() => { 
+  useEffect(() => {
     dispatch(getBasic())
       .then((response) => {
         console.log("Responseghjk:", response);
@@ -19,21 +20,18 @@ const BasicInformation = () => {
       });
   }, []);
 
-  
-
   const profile = useSelector((state) => state?.auth?.userData || {});
   const [error, setError] = useState("");
 
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData;
   console.log("Basic Information", basicData);
-  
+
   const onSubmit = async (data) => {
     try {
       await updateBasicProfile(data);
-       dispatch(postBasic(data));
+      dispatch(postBasic(data));
       fetchBasicData();
-
     } catch (error) {
       setError(error.message);
     }
@@ -56,28 +54,24 @@ const BasicInformation = () => {
   // const [tempAddress, setTempAddress] = useState(address);
 
   return (
-    <div className=" md:px-5 mt-auto ">
+    <div className=" md:px-5 mt-auto flex flex-col gap-3">
       <h2 className="text-xl font-bold mb-6 text-gray-700">
         Basic Information
       </h2>
 
-      {/* Profile Photo Section */}
-      {/* <h1 className="text-md font-semibold text-gray-700 mb-2">
-        Profile Photo
-      </h1> */}
-
-      {/* Name Section */}
-
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Name</p>
+      {/* Name section */}
+      <div>
         {!isEditingName ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 ">{profile.Fname}</p>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Name : </p>
+              <p className="text-gray-600 ">{profile.Fname}</p>
+            </div>
             <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              className="text-gray-700 px-5  hover:bg-slate-200 rounded-md text-sm"
               onClick={() => setIsEditingName(true)}
             >
-              Edit
+              <HiPencil className="size-5" />
             </button>
           </div>
         ) : (
@@ -95,7 +89,7 @@ const BasicInformation = () => {
               }}
               className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
             >
-              Cancel
+              <HiX />
             </button>
             <button
               onClick={() => {
@@ -103,27 +97,24 @@ const BasicInformation = () => {
                 fetchBasicData();
                 setIsEditingName(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
-              Save
+              <HiCheck />
             </button>
           </div>
         )}
       </div>
-      <hr className="mb-4" />
+      <hr/>
 
       {/* Email Section */}
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Email Address</p>
+      <div>
         {!isEditingEmail ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-500 ">{profile.email}</p>
-            <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
-              onClick={() => setIsEditingEmail(true)}
-            >
-              Edit
-            </button>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Email Address :</p>
+              <p className="text-gray-500 ">{profile.email}</p>
+            </div>
+            
           </div>
         ) : (
           <div className="flex items-center space-x-4">
@@ -131,7 +122,7 @@ const BasicInformation = () => {
               type="email"
               value={tempEmail}
               onChange={(e) => setTempEmail(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button
               onClick={() => {
@@ -148,29 +139,31 @@ const BasicInformation = () => {
                 fetchBasicData();
                 setIsEditingEmail(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
-      <hr className="mb-4" />
+      <hr/>
 
       {/* Contact Number Section */}
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Contact Number</p>
+      <div>
         {!isEditingContact ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">
-              {basicData?.phone_number}
-            </p>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Contact Number :</p>
+              <p className="text-gray-600 font-medium">
+                {basicData?.phone_number}
+              </p>
+            </div>
 
             <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              className="text-gray-700 hover:bg-slate-200  px-5  rounded-md text-sm"
               onClick={() => setIsEditingContact(true)}
             >
-              Edit
+              <HiPencil className="size-5" />
             </button>
           </div>
         ) : (
@@ -179,7 +172,7 @@ const BasicInformation = () => {
               type="text"
               value={phone_number}
               onChange={(e) => setphone_number(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button
               onClick={() => {
@@ -192,31 +185,32 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({phone_number });
+                onSubmit({ phone_number });
                 fetchBasicData();
                 setIsEditingContact(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
-      <hr className="mb-4" />
+      <hr/>
 
       {/* language */}
-
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Language</p>
+      <div>
         {!isEditingLanguage ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{basicData?.language}</p>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Language :</p>
+              <p className="text-gray-600 font-medium">{basicData?.language}</p>
+            </div>
             <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              className="text-gray-700 hover:bg-slate-200  px-5  rounded-md text-sm"
               onClick={() => setIsEditingLanguage(true)}
             >
-              Edit
+              <HiPencil className="size-5" />
             </button>
           </div>
         ) : (
@@ -225,7 +219,7 @@ const BasicInformation = () => {
               type="text"
               value={language}
               onChange={(e) => setlanguage(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button
               onClick={() => {
@@ -242,28 +236,30 @@ const BasicInformation = () => {
                 fetchBasicData();
                 setIsEditingLanguage(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
-      <hr className="mb-4" />
+      <hr/>
 
       {/* Maritial Status */}
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Marital Status</p>
+      <div>
         {!isEditingMarital_status ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">
-              {basicData.marital_status}
-            </p>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Marital Status :</p>
+              <p className="text-gray-600 font-medium">
+                {basicData.marital_status}
+              </p>
+            </div>
             <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              className="text-gray-700 px-5  rounded-md text-sm"
               onClick={() => setIsEditingMarital_status(true)}
             >
-              Edit
+              <HiPencil className="size-5" />
             </button>
           </div>
         ) : (
@@ -271,7 +267,7 @@ const BasicInformation = () => {
             <select
               value={marital_status}
               onChange={(e) => setMaritalStatus(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="single">Single</option>
               <option value="married">Married</option>
@@ -288,34 +284,33 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={() => {
-                onSubmit({marital_status});
+                onSubmit({ marital_status });
                 fetchBasicData();
                 setIsEditingMarital_status(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
-      <hr className="mb-4" />
+      <hr/>
 
       {/* Religion */}
-
-      <div className="mb-4 pl-2">
-        <p className="text-gray-700 font-semibold mb-2">Religion</p>
+      <div>
         {!isEditingReligion ? (
           <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">
-              {basicData.religion}
-            </p>
+            <div className="flex items-center gap-5">
+              <p className="text-gray-700 font-semibold">Religion :</p>
+              <p className="text-gray-600 font-medium">{basicData.religion}</p>
+            </div>
 
             <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
+              className="text-gray-700 hover:bg-slate-200 px-5  rounded-md text-sm"
               onClick={() => setIsEditingReligion(true)}
             >
-              Edit
+              <HiPencil className="size-5" />
             </button>
           </div>
         ) : (
@@ -324,7 +319,7 @@ const BasicInformation = () => {
               type="text"
               value={religion}
               onChange={(e) => setReligion(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <button
               onClick={() => {
@@ -341,16 +336,17 @@ const BasicInformation = () => {
                 fetchBasicData();
                 setIsEditingReligion(false);
               }}
-              className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
+              className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
             >
               Save
             </button>
           </div>
         )}
       </div>
+      <hr/>
 
       {/* Address Section */}
-      {/* <div className="mb-4 pl-2">
+      {/* <div>
         <p className="text-gray-700 font-semibold mb-2">Address</p>
         {!isEditingAddress ? (
           <div className="flex justify-between items-center">
