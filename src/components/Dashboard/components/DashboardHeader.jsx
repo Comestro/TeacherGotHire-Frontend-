@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
-import Dropdown from "./DropDown";
+import Dropdown from "../components/DropDown";
 
 const DashboardHeader = ({isOpen, setIsOpen}) => {
   return (
