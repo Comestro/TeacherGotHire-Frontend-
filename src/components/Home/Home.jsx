@@ -27,7 +27,7 @@ function Home() {
         backgroundImage: `url('Home3.png')`,
       }}
     >
-      <nav>
+      {/* <nav>
         <Navbar
           links={[
             { id: "1", label: "Register", to: "/signup/teacher" },
@@ -38,7 +38,7 @@ function Home() {
           ]}
           variant="dark"
         />
-      </nav>
+      </nav> */}
       <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
         <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
           <div className="flex">
@@ -143,10 +143,6 @@ function Home() {
       <ExamSection />
       <DetailSection />
       <TeacherProfiles className="w-full" />
-
-
-      {/* <RoleSelection onSelectRole={handleRoleSelection} /> */}
-      <Footer />
     </div>
   );
 }

@@ -461,7 +461,6 @@ const AddressProfileCard = () => {
     formState: { errors },
   } = useForm();
 
-
   useEffect(() => {
     if (isEditingType) {
       const data =
@@ -539,22 +538,46 @@ const AddressProfileCard = () => {
       </h2>
 
       {/* Render Both Current and Permanent Address */}
-      <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
+      <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
         {/* Current Address */}
-        <div className="p-4 border rounded shadow">
-          <h3 className="font-bold text-teal-600 mb-2">Current Address</h3>
+        <div className="px-4 py-2 border rounded ">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-teal-600">Current Address</h3>
+            <button
+              onClick={() => setIsEditingType("current")}
+              className="px-4 py-1 bg-teal-500 text-white rounded"
+            >
+              Edit
+            </button>
+          </div>
           {!isEditingType || isEditingType !== "current" ? (
             <>
-              <p>Pincode: {currentAddress.pincode || "N/A"}</p>
-              <p>State: {currentAddress.state || "N/A"}</p>
-              <p>District: {currentAddress.district || "N/A"}</p>
-              <p>Area: {currentAddress.area || "N/A"}</p>
-              <button
-                onClick={() => setIsEditingType("current")}
-                className="mt-2 px-4 py-2 bg-teal-500 text-white rounded"
-              >
-                Edit
-              </button>
+              <div className="flex flex-col gap-2 ">
+                <p className="font-semibold text-gray-600">
+                  Pincode:{" "}
+                  <span className="ml-2 text-md font-normal text-gray-500">
+                    {currentAddress.pincode || "Not Provided"}
+                  </span>
+                </p>
+                <p className="font-semibold text-gray-600">
+                  State:{" "}
+                  <span className="ml-2 text-md font-normal text-gray-500">
+                    {currentAddress.state || "Not Provided"}
+                  </span>
+                </p>
+                <p className="font-semibold text-gray-600">
+                  District:{" "}
+                  <span className="ml-2 text-md font-normal text-gray-500">
+                    {currentAddress.district || "Not Provided"}
+                  </span>
+                </p>
+                <p className="font-semibold text-gray-600">
+                  Area:{" "}
+                  <span className="ml-2 text-md font-normal text-gray-500">
+                    {currentAddress.area || "Not Provided"}
+                  </span>
+                </p>
+              </div>
             </>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -601,7 +624,7 @@ const AddressProfileCard = () => {
         </div>
 
         {/* Permanent Address */}
-        <div className="p-4 border rounded shadow">
+        <div className="p-4 border rounded">
           <h3 className="font-bold text-teal-600 mb-2">Permanent Address</h3>
           {!isEditingType || isEditingType !== "permanent" ? (
             <>
