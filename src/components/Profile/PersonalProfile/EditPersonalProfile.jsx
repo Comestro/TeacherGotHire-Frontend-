@@ -4,7 +4,7 @@ import AddressProfileCard from "./AddressProfileCard";
 
 const EditPersonalProfile = () => {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-white">
       <div className="flex-1 w-full overflow-y-auto">
         <div className="flex flex-col w-full py-4 px-6">
           <BasicInformation />

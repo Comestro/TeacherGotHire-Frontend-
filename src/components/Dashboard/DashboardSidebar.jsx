@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../services/authServices";
 import {
@@ -9,14 +9,22 @@ import {
   HiOutlineLogin,
 } from "react-icons/hi";
 import { getUserData } from "../../features/authSlice";
+import { IoMdSettings } from "react-icons/io";
+import { BsPerson } from "react-icons/bs";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const profile = useSelector((state) => state.auth.userData || {});
 
   useEffect(() => {
     dispatch(getUserData());
   }, [dispatch]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/signin");
+  };
 
   return (
     <>
@@ -29,28 +37,26 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {/* Profile Section */}
         <div className="flex flex-col h-screen bg-white">
           <div className="flex flex-col justify-center py-2 border-b-2 border-white">
-            <h1 className="font-bold text-2xl text-teal-800 text-center">
+            <h1 className="font-bold text-2xl text-gray-700 text-center">
               PTPI
             </h1>
-            <p className="text-sm text-center text-gray-500 font-semibold mb-2">
+            <p className="text-sm text-center text-[#3E98C7] font-semibold mb-2">
               Private Teacher Provider Institute.
             </p>
           </div>
           {/* profiel section */}
-          <div className="flex items-center gap-2 py-3 bg-[#F5F8FA] px-2">
-            <div className="px-2 flex items-center gap-2">
-              <div className="w-12 h-12">
-                <img
-                  src={profile.profileImage || ""}
-                  alt="Profile"
-                  className="w-full h-full rounded-full object-cover border-2 border-white shadow-md"
-                />
+          <div className="flex items-center gap-3 py-3 bg-[#F5F8FA] px-4 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              {/* User Icon */}
+              <div className="p-2 bg-[#E5F1F9] rounded-full">
+              <BsPerson className="size-6 text-blue-400 font-semibold"/>
               </div>
+              {/* Profile Info */}
               <div className="flex flex-col">
-                <h2 className="text-md font-semibold text-gray-600">
+                <h2 className="text-md font-semibold text-gray-800">
                   {profile.Fname || "Your Name"}
                 </h2>
-                <p className="text-sm text-teal-600 truncate">
+                <p className="text-sm text-gray-600 truncate">
                   {profile.email || "email@example.com"}
                 </p>
               </div>
@@ -65,12 +71,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 className={({ isActive }) =>
                   `block py-3 px-4  ${
                     isActive
-                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
                       : "text-gray-500 font-semibold"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-1`
                 }
               >
-                <HiViewGrid />
+                <HiViewGrid className="size-5" />
                 Dashboard
               </NavLink>
               <NavLink
@@ -79,12 +85,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
                     isActive
-                      ? "bg-[#E5F1F9] text-teal-600 font-semibold"
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
                       : "text-gray-500 font-semibold"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-1`
                 }
               >
-                <HiUser />
+                <HiUser className="size-5" />
                 Personal Details
               </NavLink>
               <NavLink
@@ -93,12 +99,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
                     isActive
-                      ? "bg-[#E5F1F9] text-white font-semibold"
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
                       : "text-gray-500 font-semibold"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-2`
                 }
               >
-                <HiBriefcase />
+                <HiBriefcase className="size-5" />
                 Job Details
               </NavLink>
               {/* <button
@@ -109,9 +115,25 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               Logout
             </button> */}
             </nav>
-            <div className="flex">
+            <div className="flex flex-col">
+              <div className="border-t border-gray-200">
+                <button className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
+                  <IoMdSettings className="size-5" /> Setting
+                </button>
+              </div>
+              <div className="border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4"
+                >
+                  <HiOutlineLogin className="size-5" />
+                  Logout
+                </button>
+              </div>
               <div className="copyright flex justify-center w-full border-t border-gray-200">
-                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">Designed by Comestro</p>
+                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">
+                  Designed by Comestro
+                </p>
               </div>
             </div>
           </div>

@@ -69,7 +69,23 @@ export const postAddress = createAsyncThunk(
   "postAddress",
   async (addressData, { rejectWithValue }) => {
     try {
-      const data = await updateAddressProfile(addressData);
+      const data = await addAddressProfile(addressData);
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+export const putAddress = createAsyncThunk(
+  "putAddress",
+  async (updateData, { rejectWithValue }) => {
+    try {
+      const data = await updateAddressProfile(updateData);
       console.log("data",data)
        // Call the service
       return data; // Return the updated profile data
@@ -181,7 +197,7 @@ const personalProfileSlice = createSlice({
           state.address = action.payload; // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
-          console.log(action.payload)
+          console.log("address",action.payload);
         })
         // Handle rejected state
         .addCase(getAddress.rejected, (state, action) => {
@@ -201,10 +217,27 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-          //state.address = action.payload; // Update profile data
+         // state.address = action.payload; // Update profile data
         })
         // Handle rejected state
         .addCase(postAddress.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
+
+        builder
+        // Handle pending state
+        .addCase(putAddress.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        // Handle fulfilled state
+        .addCase(putAddress.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          //state.address = action.payload; // Update profile data
+        })
+        // Handle rejected state
+        .addCase(putAddress.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });

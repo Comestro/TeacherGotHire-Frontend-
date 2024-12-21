@@ -1,5 +1,6 @@
 import React from "react";
 import PrefrenceProfile from "./PrefrenceProfile";
+import JobPrefrenceLocation from "./JobPrefrenceLocation";
 
 const JobProfileEdit = () => {
   return (
@@ -11,6 +12,8 @@ const JobProfileEdit = () => {
         </h1>
         <div className="px-6">
           <PrefrenceProfile/>
+          <JobPrefrenceLocation/>
+         
         </div>
       </div>
     </div>

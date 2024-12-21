@@ -31,33 +31,13 @@ const PrefrenceProfile = () => {
   const teacherprefrence = useSelector((state) => state?.jobProfile?.prefrence);
 
   console.log("teacherprefrence",teacherprefrence);
+  console.log("Role:", teacherprefrence.teacher_job_type);
+
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
   const [error, setError] = useState("");
 
  
-  // const fetchPreferences = () => {
-  //   dispatch(getPrefrence())
-  // };
-  // useEffect(() => {
-  //   if (isEditingPrefrence && teacherprefrence) {
-  //     // Populate fields with existing data
-  //     setValue("class_category", teacherprefrence?.class_category?.name || "");
-  //     setValue("job_role", teacherprefrence?.job_role?.jobrole_name || "");
-  //     setValue(
-  //       "prefered_subject",
-  //       teacherprefrence?.prefered_subject?.map((sub) => sub.id) || []
-  //     );
-  //     setValue(
-  //       "teacher_job_type",
-  //       teacherprefrence?.teacher_job_type?.map((job) => job.id) || []
-  //     );
-  //   }
-  // }, [isEditingPrefrence, teacherprefrence, setValue]);
-
-  // const fetchPreferences = () => {
-  //   dispatch(getPrefrence());
-  // };
 
   const fetchPreferences = () => {
     dispatch(getPrefrence());
@@ -117,6 +97,7 @@ const PrefrenceProfile = () => {
                 Subject
                 </h3>
                 <p className="text-gray-700 text-md">
+                  
                   {teacherprefrence.prefered_subject && teacherprefrence.prefered_subject.length > 0
                     ? teacherprefrence.prefered_subject
                         .map((subject) => subject.subject_name)
@@ -199,26 +180,7 @@ const PrefrenceProfile = () => {
                   </span>
                 )}
               </div>
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prefered Subject
-                </label>
-                <select
-                  {...register("prefered_subject", { required: true })}
-                  className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  {subject.map((subject) => (
-                 <option key={subject.id} value={subject.subject_name} label={subject.subject_name}>
-                 </option>
-                  ))}
-                </select>
-                
-                    {errors.subject && (
-                      <span className="text-red-500 text-sm">
-                        This field is required
-                      </span>
-                    )}
-              </div> */}
+    
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Preferred Subject
@@ -258,13 +220,15 @@ const PrefrenceProfile = () => {
                     <div key={teacherjobRole.id} className="flex items-center">
                       <input
                         type="checkbox"
-                        {...register("prefered_subject", { required: true })}
+                        {...register("teacher_job_type", { required: true })}
                         value={teacherjobRole.id}
-                        id={`subject-${teacherjobRole.id}`}
+                        id={`teacherjobRole-${teacherjobRole.id}`}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
                       />
+           
+           
                       <label
-                        htmlFor={`subject-${teacherjobRole.id}`}
+                        htmlFor={`teacherjobRole-${teacherjobRole.id}`}
                         className="ml-2 text-sm text-gray-700"
                       >
                         {teacherjobRole.teacher_job_name}
