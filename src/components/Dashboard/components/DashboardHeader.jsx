@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
-import Dropdown from "../components/DropDown";
 
-const DashboardHeader = ({isOpen, setIsOpen}) => {
+const Dropdown = lazy(() => import("./Dropdown"));
+
+const DashboardHeader = ({ isOpen, setIsOpen }) => {
   return (
     <div className="flex items-center justify-between md:justify-end px-4 md:px-2 bg-[#3E98C7] py-2 text-white">
       {/* Drawer Toggle Button */}
@@ -16,12 +17,9 @@ const DashboardHeader = ({isOpen, setIsOpen}) => {
         <button>
           <IoMdSettings className="size-7" />
         </button>
-        <button>
-          <IoIosNotifications className="size-7" />
-        </button>
-        <div className="mr-5">
+        <Suspense fallback={<div>Loading...</div>}>
           <Dropdown />
-        </div>
+        </Suspense>
       </div>
     </div>
   );
