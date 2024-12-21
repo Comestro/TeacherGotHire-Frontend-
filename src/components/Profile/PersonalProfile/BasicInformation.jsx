@@ -68,7 +68,7 @@ const BasicInformation = () => {
               <p className="text-gray-600 ">{profile.Fname}</p>
             </div>
             <button
-              className="text-gray-700 px-5  hover:bg-slate-200 rounded-md text-sm"
+              className="text-gray-500 px-5 py-1  hover:bg-slate-200 rounded-md text-sm"
               onClick={() => setIsEditingName(true)}
             >
               <HiPencil className="size-5" />
@@ -160,7 +160,7 @@ const BasicInformation = () => {
             </div>
 
             <button
-              className="text-gray-700 hover:bg-slate-200  px-5  rounded-md text-sm"
+              className="text-gray-500 hover:bg-slate-200  px-5 py-1  rounded-md text-sm"
               onClick={() => setIsEditingContact(true)}
             >
               <HiPencil className="size-5" />
@@ -207,7 +207,7 @@ const BasicInformation = () => {
               <p className="text-gray-600 font-medium">{basicData?.language}</p>
             </div>
             <button
-              className="text-gray-700 hover:bg-slate-200  px-5  rounded-md text-sm"
+              className="text-gray-500 hover:bg-slate-200  px-5 py-1  rounded-md text-sm"
               onClick={() => setIsEditingLanguage(true)}
             >
               <HiPencil className="size-5" />
@@ -256,7 +256,7 @@ const BasicInformation = () => {
               </p>
             </div>
             <button
-              className="text-gray-700 px-5  rounded-md text-sm"
+              className="text-gray-500 px-5 py-1 hover:bg-slate-200  rounded-md text-sm"
               onClick={() => setIsEditingMarital_status(true)}
             >
               <HiPencil className="size-5" />
@@ -307,7 +307,7 @@ const BasicInformation = () => {
             </div>
 
             <button
-              className="text-gray-700 hover:bg-slate-200 px-5  rounded-md text-sm"
+              className="text-gray-500 hover:bg-slate-200 px-5 py-1  rounded-md text-sm"
               onClick={() => setIsEditingReligion(true)}
             >
               <HiPencil className="size-5" />
@@ -345,53 +345,6 @@ const BasicInformation = () => {
       </div>
       <hr/>
 
-      {/* Address Section */}
-      {/* <div>
-        <p className="text-gray-700 font-semibold mb-2">Address</p>
-        {!isEditingAddress ? (
-          <div className="flex justify-between items-center">
-            <p className="text-gray-600 font-medium">{address}</p>
-            <button
-              className="text-gray-700 border border-1 border-gray-400 px-8 py-2 rounded-md text-sm"
-              onClick={() => setIsEditingAddress(true)}
-            >
-              Edit
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col space-y-3">
-            <select
-              value={tempAddress}
-              onChange={(e) => setTempAddress(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="null">coose address type</option>
-              <option value="Current Address">Current Address</option>
-              <option value="Permanent Address">Permanent Address</option>
-            </select>
-            <div className="flex space-x-4">
-              <button
-                onClick={() => {
-                  setTempAddress(address);
-                  setIsEditingAddress(false);
-                }}
-                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setAddress(tempAddress);
-                  setIsEditingAddress(false);
-                }}
-                className="px-4 py-2 text-sm text-white bg-purple-500 rounded hover:bg-purple-600"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        )}
-      </div> */}
     </div>
   );
 };

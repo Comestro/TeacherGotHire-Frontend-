@@ -27,51 +27,106 @@ import Layout from "./components/Layout";
 import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
+import PublicLayout from "./components/PublicLayout";
 // import Logout from "./components/Logout";
 
 // Private Route Component
 const PrivateRoute = ({ element }) => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   return token ? element : <Navigate to="/signin" />;
 };
 
 function App() {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
 
   return (
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/signup/teacher" element={<SignUpPage />} />
-          <Route path="/signin" element={<Login />} />
-          <Route path="/exam" element={<ExamPortal />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/admin-signin" element={<AdminSignIn />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+          <Route path="/" element={<PublicLayout />}>
+            <Route index element={<Home />} />
+            <Route path="/signup/teacher" element={<SignUpPage />} />
+            <Route path="/signin" element={<Login />} />
+            <Route path="/exam" element={<ExamPortal />} />
+            <Route path="/result" element={<ResultPage />} />
+            <Route path="/admin-signin" element={<AdminSignIn />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+          </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={token ? <AdminDashboard /> : <Navigate to="/signin" />} />
-          <Route path="/admin/profile" element={token ? <AdminProfile /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/subject" element={token ? <ManageSubject /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/teacher" element={token ? <ManageTeacher /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/recruiter" element={token ? <ManageRecruiter /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/question" element={token ? <ManageQuestion /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/skills" element={token ? <ManageSkills /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/qualification" element={token ? <ManageQualification /> : <Navigate to="/signin" />} />
-          <Route path="/admin/support" element={token ? <Support /> : <Navigate to="/signin" />} />
-          <Route path="/admin/change/password" element={token ? <ChangePassword /> : <Navigate to="/signin" />} />
-          <Route path="/admin/contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
-          <Route path="/admin/view/teacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
-          <Route path="/admin/manage/class/category" element={token ? <ManageClassCategory /> : <Navigate to="/signin" />} />
+          <Route
+            path="/admin/dashboard"
+            element={token ? <AdminDashboard /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/profile"
+            element={token ? <AdminProfile /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/subject"
+            element={token ? <ManageSubject /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/teacher"
+            element={token ? <ManageTeacher /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/recruiter"
+            element={token ? <ManageRecruiter /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/question"
+            element={token ? <ManageQuestion /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/skills"
+            element={token ? <ManageSkills /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/qualification"
+            element={
+              token ? <ManageQualification /> : <Navigate to="/signin" />
+            }
+          />
+          <Route
+            path="/admin/support"
+            element={token ? <Support /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/change/password"
+            element={token ? <ChangePassword /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/contact"
+            element={token ? <Contact /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/view/teacher"
+            element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/admin/manage/class/category"
+            element={
+              token ? <ManageClassCategory /> : <Navigate to="/signin" />
+            }
+          />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
-            <Route index element={<PrivateRoute element={<TeacherDashboard />} />} />
-            <Route path="personal-profile" element={<PrivateRoute element={<EditPersonalProfile />} />} />
-            <Route path="job-profile" element={<PrivateRoute element={<JobProfileEdit />} />} />
+            <Route
+              index
+              element={<PrivateRoute element={<TeacherDashboard />} />}
+            />
+            <Route
+              path="personal-profile"
+              element={<PrivateRoute element={<EditPersonalProfile />} />}
+            />
+            <Route
+              path="job-profile"
+              element={<PrivateRoute element={<JobProfileEdit />} />}
+            />
           </Route>
         </Routes>
       </BrowserRouter>
