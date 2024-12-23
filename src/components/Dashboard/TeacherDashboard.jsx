@@ -6,6 +6,9 @@ import { getSubjects } from "../../features/dashboardSlice";
 import ExamLevelCard from "./ExamLevelCard";
 import JobProfileCard from "./JobProfileCard";
 import PrefrenceLocation from "./PrefrenceLocation";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
 
 function TeacherDashboard() {
   const subjects = useSelector((state) => state.dashboard.subjects.data || []);
@@ -15,6 +18,7 @@ function TeacherDashboard() {
   const dispatch = useDispatch();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const percentage = 60;
 
   useEffect(() => {
     dispatch(getSubjects());
@@ -39,58 +43,49 @@ function TeacherDashboard() {
         <div className="w-full flex flex-col mx-auto rounded-md">
           <div className="px-4 grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
             {/* Profile Section */}
-            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
-              <h2 className="text-teal-700 font-bold text-lg mt-2">
-                Profile Setup
-              </h2>
-              <p className="text-gray-600 text-sm text-center mt-2">
-                Create your profile with personal and professional details.
-              </p>
-              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
-                Set Up Profile
+            <div className="rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
+              <div className="">
+                {/* Progress Bar Section */}
+                <div className="flex w-20">
+                  <CircularProgressbar
+                    value={percentage}
+                    text={`${percentage}%`}
+                    styles={{
+                      path: { stroke: "#3E98C7" },
+                      trail: { stroke: "#D6EAF8" },
+                      text: {
+                        fill: "#3E98C7",
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="mt-1">
+                <p className="text-gray-500 font-semibold">
+                  {percentage}% profile completed.
+                </p>
+              </div>
+              {/* Button Section */}
+              <button className="mt-4 px-6 py-3 bg-[#3E98C7] text-white text-sm font-medium rounded-lg transition-all duration-300">
+                Complete Profile
               </button>
             </div>
 
             {/* Exam Section */}
-            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
-              <h2 className="text-teal-700 font-bold text-lg mt-2">
-                Take Exams
-              </h2>
-              <p className="text-gray-600 text-sm text-center mt-2">
-                Complete the exam series (Level 1, Level 2, Level 3) to qualify.
-              </p>
-              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
-                Start Exam
-              </button>
-            </div>
-
-            <div className="bg-teal-100 rounded-lg  p-4 flex flex-col items-center">
-              <h2 className="text-teal-700 font-bold text-lg mt-2">
-                Become a Teacher
-              </h2>
-              <p className="text-gray-600 text-sm text-center mt-2">
-                Qualify to teach in schools and coaching centers. Start your
-                journey!
-              </p>
-              <button className="mt-4 px-4 py-2 bg-[#21897e] text-white rounded-md hover:bg-teal-800">
-                Get Certified
-              </button>
+            <div className="col-span-2 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  p-4 flex flex-col gap-5">
+              <div className="">
+                <p className="text-xl font-semibold text-[#3E98C7] text-center">Compelete your exam in 3 levels</p>
+              </div>
+              <div className=" w-full mt-2">
+              <HorizontalLinearAlternativeLabelStepper />
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4 px-6 mt-4">
-        <JobProfileCard subjects={sub} />
-        <PrefrenceLocation locations={location}/>
-      </div>
-
-      {/* exam level Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 px-6 mt-4 gap-4 mx-auto">
-        <ExamLevelCard level="Level-1" isLocked={false} />
-        <ExamLevelCard level="Level-2" isLocked={true} />
-        <ExamLevelCard level="Level-3" isLocked={true} />
-      </div>
+      
     </div>
   );
 }
