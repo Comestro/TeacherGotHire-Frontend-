@@ -1,10 +1,10 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-//import { updateEducationProfile,fetchEducationProfile} from "../services/jobProfileService";
-//import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
-//import { updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
+import { updateEducationProfile,fetchEducationProfile} from "../services/jobProfileService";
+import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
+import { updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
 import { fetchClassCategory, fetchSubject } from "../services/jobProfileService";
-import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation} from "../services/jobProfileService";
+import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation} from "../services/jobProfileService";
 
 const initialState = {
   classCategories:[],
@@ -13,9 +13,9 @@ const initialState = {
   teacherjobRole:[],
   prefrence:[],
   prefrenceLocation:[],
-  // educationData: [],
-  // skillsData:[],
-  // exprienceData:[],
+  educationData: [],
+  skillsData:[],
+  exprienceData:[],
   status: "idle", 
   error: null,
 };
@@ -154,111 +154,146 @@ export const postPrefrence = createAsyncThunk(
       }
     }
   );
+  export const editJobPrefrence = createAsyncThunk(
+    "editJobPrefrence",
+    async (prefrenceData, { rejectWithValue }) => {
+      try {
+        console.log("edit",prefrenceData)
+        const data = await editTeacherJobPrefrenceLocation(prefrenceData);
+        console.log("data",data)
+         // Filter out the deleted location
+       
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+  export const deleteJobPrefrence = createAsyncThunk(
+    "deleteJobPrefrence",
+    async (prefrenceData, { rejectWithValue }) => {
+      try {
+        const data = await deleteTeacherJobPrefrenceLocation(prefrenceData);
+        console.log("data",data)
+         // Filter out the deleted location
+       
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
 
 // // Thunk for handling  education profile
-// export const getEducationProfile = createAsyncThunk(
-//   "getEducationProfile",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const data = await fetchEducationProfile();
-//       console.log("data",data)
-//        // Call the service
-//       return data; // Return the updated profile data
-//     } catch (error) {
-//       return rejectWithValue({
-//         message: error.message, // Only include the error message
-//         code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//       });
-//     }
-//   }
-// );
+export const getEducationProfile = createAsyncThunk(
+  "getEducationProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await fetchEducationProfile();
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
 
-// export const postEducationProfile = createAsyncThunk(
-//   "postEducationProfile",
-//   async (personalData, { rejectWithValue }) => {
-//     try {
-//       const data = await updateEducationProfile(personalData);
-//       console.log("data",data)
-//        // Call the service
-//       return data; // Return the updated profile data
-//     } catch (error) {
-//       return rejectWithValue({
-//         message: error.message, // Only include the error message
-//         code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//       });
-//     }
-//   }
-// );
+export const postEducationProfile = createAsyncThunk(
+  "postEducationProfile",
+  async (personalData, { rejectWithValue }) => {
+    try {
+      const data = await updateEducationProfile(personalData);
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
 
 // Thunk for handling skills profile
 
-// export const getSkillsProfile = createAsyncThunk(
-//     "getSkillProfile",
-//     async (_, { rejectWithValue }) => {
-//       try {
-//         const data = await fetchSkillsProfile ();
-//         console.log("data",data)
-//          // Call the service
-//         return data; // Return the updated profile data
-//       } catch (error) {
-//         return rejectWithValue({
-//           message: error.message, // Only include the error message
-//           code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//         });
-//       }
-//     }
-//   );
+export const getSkillsProfile = createAsyncThunk(
+    "getSkillProfile",
+    async (_, { rejectWithValue }) => {
+      try {
+        const data = await fetchSkillsProfile ();
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
   
-//   export const postSkillsProfile = createAsyncThunk(
-//     "postSkillProfile",
-//     async (personalData, { rejectWithValue }) => {
-//       try {
-//         const data = await updateExprienceProfile(personalData);
-//         console.log("data",data)
-//          // Call the service
-//         return data; // Return the updated profile data
-//       } catch (error) {
-//         return rejectWithValue({
-//           message: error.message, // Only include the error message
-//           code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//         });
-//       }
-//     }
-//   );
+  export const postSkillsProfile = createAsyncThunk(
+    "postSkillProfile",
+    async (personalData, { rejectWithValue }) => {
+      try {
+        const data = await updateExprienceProfile(personalData);
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
 
-//   export const getExprienceProfile = createAsyncThunk(
-//     "getSkillProfile",
-//     async (_, { rejectWithValue }) => {
-//       try {
-//         const data = await fetchExprienceProfile ();
-//         console.log("data",data)
-//          // Call the service
-//         return data; // Return the updated profile data
-//       } catch (error) {
-//         return rejectWithValue({
-//           message: error.message, // Only include the error message
-//           code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//         });
-//       }
-//     }
-//   );
+  export const getExprienceProfile = createAsyncThunk(
+    "getSkillProfile",
+    async (_, { rejectWithValue }) => {
+      try {
+        const data = await fetchExprienceProfile ();
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
   
-//   export const postExprienceProfile = createAsyncThunk(
-//     "postSkillProfile",
-//     async (personalData, { rejectWithValue }) => {
-//       try {
-//         const data = await updateSkillsProfile(personalData);
-//         console.log("data",data)
-//          // Call the service
-//         return data; // Return the updated profile data
-//       } catch (error) {
-//         return rejectWithValue({
-//           message: error.message, // Only include the error message
-//           code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-//         });
-//       }
-//     }
-//   );
+  export const postExprienceProfile = createAsyncThunk(
+    "postSkillProfile",
+    async (personalData, { rejectWithValue }) => {
+      try {
+        const data = await updateSkillsProfile(personalData);
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
 
 
 // Redux slice
@@ -372,43 +407,90 @@ const jobProfileSlice = createSlice({
         state.error = action.payload; // Set error from rejected payload
       });
     
+      builder
+      // for post data handeling
+        .addCase(postJobPrefrence.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        .addCase(postJobPrefrence.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.prefrenceLocation = action.payload; // Update profile data
+          console.log("prefrenceLocation",action.payload);
+        })
+        .addCase(postJobPrefrence.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
+
+        builder
+      // for post data handeling
+        .addCase(deleteJobPrefrence.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        .addCase(deleteJobPrefrence.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.prefrenceLocation = action.payload; // Update profile data
+          console.log("deleteLocation",action.payload);
+        })
+        .addCase(deleteJobPrefrence.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
+
+        builder
+      // for post data handeling
+        .addCase(editJobPrefrence.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        .addCase(editJobPrefrence.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.prefrenceLocation = action.payload; // Update profile data
+          console.log("deleteLocation",action.payload);
+        })
+        .addCase(editJobPrefrence.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
 
       //for post data handel
      
-      // builder
-      // .addCase(postEducationProfile.pending, (state) => {
-      //   state.status = "loading";
-      //   state.error = null;
-      // })
-      // .addCase(postEducationProfile.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   //state.profileData = action.payload; 
-      // })
-      // .addCase(postEducationProfile.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   state.error = action.payload; // Set error from rejected payload
-      // });
-    // handling education profile
-    // builder
-    // // for get data handeling
-    //   .addCase(getEducationProfile.pending, (state) => {
-    //     state.status = "loading";
-    //     state.error = null;
-    //   })
-    //   .addCase(getEducationProfile.fulfilled, (state, action) => {
-    //     state.status = "succeeded";
-    //     state.profileData = action.payload; // Update profile data
-    //     //Object.assign(state, action.payload);
-    //     //console.log(profileData)
-    //     console.log(action.payload)
-    //   })
-    //   .addCase(getEducationProfile.rejected, (state, action) => {
-    //     state.status = "failed";
-    //     state.error = action.payload; // Set error from rejected payload
-    //   });
+      builder
+      .addCase(postEducationProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postEducationProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        //state.profileData = action.payload; 
+      })
+      .addCase(postEducationProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
+   // handling education profile
+    builder
+    // for get data handeling
+      .addCase(getEducationProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getEducationProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.profileData = action.payload; // Update profile data
+        //Object.assign(state, action.payload);
+        //console.log(profileData)
+        console.log(action.payload)
+      })
+      .addCase(getEducationProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
       
 
-      //for post data handel
+     // for post data handel
      
       // builder
       // .addCase(postEducationProfile.pending, (state) => {
@@ -425,10 +507,10 @@ const jobProfileSlice = createSlice({
       // });
       
 
-      // hadle skills profile
+      //hadle skills profile
 
 
-      // builder
+      builder
       // .addCase(getSkillsProfile.pending, (state) => {
       //   state.status = "loading";
       //   state.error = null;
@@ -436,8 +518,6 @@ const jobProfileSlice = createSlice({
       // .addCase(getSkillsProfile.fulfilled, (state, action) => {
       //   state.status = "succeeded";
       //   state.skillsData = action.payload; // Update profile data
-      //   //Object.assign(state, action.payload);
-      //   //console.log(profileData)
       //   console.log(action.payload)
       // })
       // .addCase(getSkillsProfile.rejected, (state, action) => {
@@ -446,7 +526,7 @@ const jobProfileSlice = createSlice({
       // });
       
 
-      // //for post data handel
+       //for post data handel
      
       // builder
       // .addCase(postSkillsProfile.pending, (state) => {
@@ -465,38 +545,38 @@ const jobProfileSlice = createSlice({
       //   state.error = action.payload; // Set error from rejected payload
       // });
       
-       // handling education profile
-    //builder
-    // // for get data handeling
-    //   .addCase(getExprienceProfile.pending, (state) => {
-    //     state.status = "loading";
-    //     state.error = null;
-    //   })
-    //   .addCase(getExprienceProfile.fulfilled, (state, action) => {
-    //     state.status = "succeeded";
-    //     state.exprienceData = action.payload; // Update profile data
-    //   })
-    //   .addCase(getExprienceProfile.rejected, (state, action) => {
-    //     state.status = "failed";
-    //     state.error = action.payload; // Set error from rejected payload
-    //   });
+       //handling education profile
+    builder
+    // for get data handeling
+      .addCase(getExprienceProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getExprienceProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.exprienceData = action.payload; // Update profile data
+      })
+      .addCase(getExprienceProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
       
 
       //for post data handel
      
-      // builder
-      // .addCase(postExprienceProfile.pending, (state) => {
-      //   state.status = "loading";
-      //   state.error = null;
-      // })
-      // .addCase(postExprienceProfile.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   state.exprienceData = action.payload; // Update profile data
-      // })
-      // .addCase(postExprienceProfile.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   state.error = action.payload; // Set error from rejected payload
-      // });  
+      builder
+      .addCase(postExprienceProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postExprienceProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.exprienceData = action.payload; // Update profile data
+      })
+      .addCase(postExprienceProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });  
   },
 });
 

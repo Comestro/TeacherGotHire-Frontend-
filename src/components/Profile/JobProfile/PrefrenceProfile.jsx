@@ -64,7 +64,7 @@ const PrefrenceProfile = () => {
     }
   };
 
-  return (
+  return (      
     <div className="max-w-3xl px-5 mt-auto">
       <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
         Prefrence Information
