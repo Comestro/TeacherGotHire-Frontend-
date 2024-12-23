@@ -9,7 +9,7 @@ import { getExprienceProfile,postExprienceProfile} from "../../../features/jobPr
 
 const Experience = () => {
   const dispatch = useDispatch();
-  const experienceData = useSelector((state) => state.jobProfile.experienceData || []); // Adjust state selector as needed
+  const experienceData = useSelector((state) => state.jobProfile.exprienceData || []); // Adjust state selector as needed
   console.log("expreienceData",experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
 
@@ -57,20 +57,36 @@ const Experience = () => {
           <div className="grid grid-cols-3 gap-4 items-center">
             <div>
               <h3 className="text-sm font-semibold text-teal-600 uppercase">
-                Class Category
+               Achievenments
               </h3>
-              {/* <p className="text-gray-700 text-md">
-                {teacherprefrence.class_category && teacherprefrence.class_category.name || 'N/A'}
-              </p> */}
+              <p className="text-gray-700 text-md">
+                {experienceData && experienceData.achievements || 'N/A'}
+              </p>
             </div>
 
             <div>
                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-                  Job Role
+                  Description
                 </h3>
-                {/* <p className="text-gray-700 text-md">
-                  {teacherprefrence.job_role && teacherprefrence.job_role.jobrole_name || 'N/A'}
-                </p> */}
+                <p className="text-gray-700 text-md">
+                  {experienceData && experienceData.description || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  Start_Date
+                </h3>
+                <p className="text-gray-700 text-md">
+                  {experienceData && experienceData.start_date || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-teal-600 uppercase">
+                  End_Date
+                </h3>
+                <p className="text-gray-700 text-md">
+                  {experienceData && experienceData.end_date || 'N/A'}
+                </p>
               </div>
           </div>
 
@@ -156,7 +172,7 @@ const Experience = () => {
             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
             placeholder="Enter your Role"
             type="text"
-            {...register("discription", { required: true })}
+            {...register("description", { required: true })}
           />
           {errors.discription && <span className="text-red-500 text-sm">{errors.discription.message}</span>}
         </div>
