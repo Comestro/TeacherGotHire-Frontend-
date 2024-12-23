@@ -7,9 +7,9 @@ const Layout = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="w-full bg-gradient-to-b from-teal-100 to-gray-100">
+    <div className="w-full">
       <div className="w-full max-w-screen-2xl mx-auto">
-        <div className="flex bg-gradient-to-b from-teal-100 to-gray-100">
+        <div className="flex ">
           {/* Sidebar Drawer */}
           <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
@@ -19,10 +19,14 @@ const Layout = () => {
           >
             <div className="flex-1">
               {/* Teacher Dashboard Header */}
-              <DashboardHeader isOpen={isOpen} setIsOpen={setIsOpen} />
+              <div className="fixed top-0 md:left-72 left-0 right-0 z-50 bg-white shadow-md">
+                <DashboardHeader isOpen={isOpen} setIsOpen={setIsOpen} />
+              </div>
 
               {/* Outlet section */}
-              <Outlet />
+              <div className="mt-[54px] md:mt-[54px]">
+                <Outlet />
+              </div>
             </div>
           </div>
         </div>

@@ -108,8 +108,8 @@ const onSubmit = async (data) => {
     };
 
   return (
-    <div className="px-5 mt-auto">
-      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
+    <div className="mt-5">
+      <h2 className="text-xl font-bold mb-4 text-gray-600 ">
         Job Preference Locations
       </h2>
 
@@ -173,7 +173,7 @@ const onSubmit = async (data) => {
             setIsFormVisible(true);
             setIsEditing(false); // Reset editing state
           }}
-          className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
+          className="px-4 py-2 text-sm text-white bg-[#3E98C7] rounded hover:bg-blue-500"
         >
           Add Location
         </button>
@@ -181,7 +181,7 @@ const onSubmit = async (data) => {
 
       {/* Form section */}
       {isFormVisible && (
-        <div className="border p-4 rounded shadow-md">
+        <div className="border p-4 rounded">
           <h2 className="text-lg font-medium text-gray-700 mb-4">
             {isEditing ? "Edit Location" : "Add Location"}
           </h2>
@@ -244,20 +244,21 @@ const onSubmit = async (data) => {
                 />
               </div>
             </div>
-            <div className="flex space-x-4">
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
-              >
-                {isEditing ? "Update Location" : "Add Location"}
-              </button>
-              <button
+            <div className="flex justify-end space-x-4">
+            <button
                 type="button"
                 onClick={() => setIsFormVisible(false)} // Close form
                 className="px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600"
               >
                 Cancel
               </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm text-white bg-[#3E98C7] rounded"
+              >
+                {isEditing ? "Update Location" : "Add Location"}
+              </button>
+              
             </div>
           </form>
         </div>
