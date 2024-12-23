@@ -262,7 +262,7 @@ export const getSkillsProfile = createAsyncThunk(
   );
 
   export const getExprienceProfile = createAsyncThunk(
-    "getSkillProfile",
+    "getExprienceProfile",
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchExprienceProfile ();
@@ -279,7 +279,7 @@ export const getSkillsProfile = createAsyncThunk(
   );
   
   export const postExprienceProfile = createAsyncThunk(
-    "postSkillProfile",
+    "postExprienceProfile",
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await updateSkillsProfile(personalData);
@@ -556,6 +556,7 @@ const jobProfileSlice = createSlice({
         state.status = "succeeded";
         state.exprienceData = action.payload; // Update profile data
       })
+
       .addCase(getExprienceProfile.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
@@ -571,7 +572,7 @@ const jobProfileSlice = createSlice({
       })
       .addCase(postExprienceProfile.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.exprienceData = action.payload; // Update profile data
+        //state.exprienceData = action.payload; // Update profile data
       })
       .addCase(postExprienceProfile.rejected, (state, action) => {
         state.status = "failed";

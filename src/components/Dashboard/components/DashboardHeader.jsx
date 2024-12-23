@@ -1,6 +1,6 @@
 import React from "react";
 import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
-import Dropdown from "./DropDown";
+//import Dropdown from "./DropDown";
 
 const DashboardHeader = ({ isOpen, setIsOpen }) => {
   return (
@@ -31,7 +31,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
           <IoIosNotifications className="text-xl" />
         </button>
         <div>
-          <Dropdown />
+          {/* <Dropdown /> */}
         </div>
       </div>
     </div>

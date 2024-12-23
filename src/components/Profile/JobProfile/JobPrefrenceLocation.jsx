@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { getJobPrefrence, getPrefrence ,postJobPrefrence,editJobPrefrence,deleteJobPrefrence} from "../../../features/jobProfileSlice";
 import axios from "axios";
-import { getPincodeUrl } from "../../../store/configue"; // Pincode API URL from config
+import { getPincodeUrl } from "../../../store/configue";
 
 const JobPrefrenceLocation = () => {
   const dispatch = useDispatch();
