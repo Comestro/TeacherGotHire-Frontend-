@@ -26,7 +26,7 @@ const EditableField = ({
   };
 
   return (
-    <div className="flex justify-between items-center py-3">
+    <div className="flex justify-between items-center py-2">
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         <p className="text-gray-700 font-medium w-32">{label}:</p>
         {!isEditing ? (
@@ -71,9 +71,9 @@ const EditableField = ({
         ) : (
           <button
             onClick={() => onToggleEdit(true)}
-            className="text-gray-500 px-2 py-1 hover:bg-slate-200 rounded-md"
+            className="text-gray-500 p-2   hover:bg-[#E5F1F9] rounded-full"
           >
-            <HiPencil />
+            <HiPencil  className="size-5 text-[#3E98C7]"/>
           </button>
         )}
       </div>
