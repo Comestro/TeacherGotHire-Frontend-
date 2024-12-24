@@ -30,7 +30,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <>
       {/* Sidebar Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-72  bg-slate-50 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-72 z-50  bg-slate-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:fixed`}
       >
