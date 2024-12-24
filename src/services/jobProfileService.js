@@ -73,74 +73,74 @@ export const fetchSubject = async()=>{
   }
 }
 
-// export const updateEducationProfile = async(educationdata)=>{
-//      try{
-//         const response = await apiClient.post('/api/self/educationalQulification/',educationdata);
-//         console.log(response.data);
-//         console.log("hello");
-//         return JSON.parse(JSON.stringify(response)); 
-//      }
-//         catch (err) {
-//             console.error(' error:', err.response?.data || err);
-//             throw err;
-//      }
-// }
-// export const fetchEducationProfile = async()=>{
-//   try{
-//      const response = await apiClient.get('/api/self/educationalQulification/');
-//      console.log("get data:",response.data);
-//      return response.data;
-//   }
-//      catch (err) {
-//          console.error('error:', err.response?.data || err);
-//          throw err;
-//   }
-// }
-// export const updateSkillsProfile = async(skillsdata)=>{
-//   try{
-//     const response = await apiClient.post('api/self/teacherskill/',skillsdata);
-//     console.log(response.data);
-//     return JSON.parese(JSON.stringify(response));
-//   }
-//   catch(err){
-//             console.error('Registration error:', err.response?.data || err);
-//             throw err;
-//   }
-// }
-// export const fetchSkillsProfile = async()=>{
-//   try{
-//      const response = await apiClient.get('api/self/teacherskill/');
-//      console.log("get data:",response.data);
-//      return response.data;
-//   }
-//      catch (err) {
-//          console.error('error:', err.response?.data || err);
-//          throw err;
-//   }
-// }
+export const updateEducationProfile = async(educationdata)=>{
+     try{
+        const response = await apiClient.post('/api/self/teacherqualification/',educationdata);
+        console.log(response.data);
+        console.log("hello");
+        return JSON.parse(JSON.stringify(response)); 
+     }
+        catch (err) {
+            console.error(' error:', err.response?.data || err);
+            throw err;
+     }
+}
+export const fetchEducationProfile = async()=>{
+  try{
+     const response = await apiClient.get('/api/self/teacherqualification/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
+export const updateSkillsProfile = async(skillsdata)=>{
+  try{
+    const response = await apiClient.post('api/self/teacherskill/',skillsdata);
+    console.log(response.data);
+    return JSON.parese(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+export const fetchSkillsProfile = async()=>{
+  try{
+     const response = await apiClient.get('api/self/teacherskill/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 
-// export const updateExprienceProfile = async(expriencedata)=>{
-//   try{
-//     const response = await apiClient.post('api/self/teacherexperience/',expriencedata);
-//     console.log(response.data);
-//     return JSON.parese(JSON.stringify(response));
-//   }
-//   catch(err){
-//             console.error('Registration error:', err.response?.data || err);
-//             throw err;
-//   }
-// }
-// export const fetchExprienceProfile = async()=>{
-//   try{
-//      const response = await apiClient.get('api/self/teacherexperience/');
-//      console.log("get data:",response.data);
-//      return response.data;
-//   }
-//      catch (err) {
-//          console.error('error:', err.response?.data || err);
-//          throw err;
-//   }
-// }
+export const updateExprienceProfile = async(expriencedata)=>{
+  try{
+    const response = await apiClient.put('api/self/teacherexperience/',expriencedata);
+    console.log(response.data);
+    return JSON.parese(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+export const fetchExprienceProfile = async()=>{
+  try{
+     const response = await apiClient.get('api/self/teacherexperience/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 
 
 export const updateTeacherPrefrence = async(prefrenceData)=>{
@@ -169,6 +169,30 @@ export const fetchTeacherPrefrence = async()=>{
 export const updateTeacherJobPrefrenceLocation = async(prefrenceData)=>{
   try{
     const response = await apiClient.post('api/self/teacherjobpreferencelocation/',prefrenceData);
+    console.log("teacher location refrence",response.data);
+    return JSON.parse(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+export const editTeacherJobPrefrenceLocation = async(prefrenceData)=>{
+  try{
+    console.log("edir",prefrenceData.id)
+    const response = await apiClient.put(`api/self/teacherjobpreferencelocation/${prefrenceData.id}/`,prefrenceData.editData);
+    console.log("Edit teacher location refrence",response.data);
+    return JSON.parse(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
+
+export const deleteTeacherJobPrefrenceLocation = async(locationId)=>{
+  try{
+    const response = await apiClient.delete(`api/self/teacherjobpreferencelocation/${locationId.id}/`);
     console.log("teacher location refrence",response.data);
     return JSON.parse(JSON.stringify(response));
   }
