@@ -27,6 +27,7 @@ import Layout from "./components/Layout";
 import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
+import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherjobtype";
 // import Logout from "./components/Logout";
 
 // Private Route Component
@@ -66,6 +67,7 @@ function App() {
           <Route path="/admin/contact" element={token ? <Contact /> : <Navigate to="/signin" />} />
           <Route path="/admin/view/teacher" element={token ? <ViewTeacher_Admin /> : <Navigate to="/signin" />} />
           <Route path="/admin/manage/class/category" element={token ? <ManageClassCategory /> : <Navigate to="/signin" />} />
+          <Route path="/admin/manage/teacher/jobtype" element={token ? <ManageTeacherJobType /> : <Navigate to="/signin" />} />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
