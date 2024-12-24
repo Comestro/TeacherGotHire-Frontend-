@@ -172,7 +172,7 @@ const PrefrenceProfile = () => {
                 {/* Job Role */}
                 <div>
                   <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Job Role
+                    Job Role 
                   </label>
                   <select
                     {...register("job_role", { required: true })}

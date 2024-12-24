@@ -2,18 +2,20 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import { updateEducationProfile,fetchEducationProfile} from "../services/jobProfileService";
 import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
-import { updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
-import { fetchClassCategory, fetchSubject } from "../services/jobProfileService";
-import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation} from "../services/jobProfileService";
+import { addExprienceProfile,updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
+import { fetchClassCategory, fetchSubject,fetchQualification } from "../services/jobProfileService";
+import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation,deleteExprienceProfile} from "../services/jobProfileService";
 
 const initialState = {
   classCategories:[],
   jobRole:[],
   subject:[],
   teacherjobRole:[],
+  qualification:[],
   prefrence:[],
   prefrenceLocation:[],
-  educationData: [],
+  alleducationData: [],
+  educationData:{},
   skillsData:[],
   exprienceData:[],
   status: "idle", 
@@ -77,6 +79,22 @@ export const getSubject= createAsyncThunk(
     try {
       const data = await fetchSubject();
       console.log("getsubject",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+export const getQualification= createAsyncThunk(
+  "getQualificationt",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await fetchQualification();
+      console.log("getQualification",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -282,7 +300,41 @@ export const getSkillsProfile = createAsyncThunk(
     "postExprienceProfile",
     async (personalData, { rejectWithValue }) => {
       try {
-        const data = await updateSkillsProfile(personalData);
+        const data = await addExprienceProfile(personalData);
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+
+  export const putExprienceProfile = createAsyncThunk(
+    "putExprienceProfile",
+    async (personalData, { rejectWithValue }) => {
+      try {
+        const data = await updateExprienceProfile(personalData);
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+
+  export const delExprienceProfile = createAsyncThunk(
+    "delExprienceProfile",
+    async (personalData, { rejectWithValue }) => {
+      try {
+        const data = await deleteExprienceProfile(personalData);
         console.log("data",data)
          // Call the service
         return data; // Return the updated profile data
@@ -366,6 +418,23 @@ const jobProfileSlice = createSlice({
         console.log("subject",action.payload)
       })
       .addCase(getSubject.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; 
+      });
+
+        // for handeling  Qualification
+    builder
+    // for get data handeling
+      .addCase(getQualification.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getQualification.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.qualification = action.payload; 
+        console.log("qualification",action.payload)
+      })
+      .addCase(getQualification.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; 
       });
@@ -454,22 +523,6 @@ const jobProfileSlice = createSlice({
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-
-      //for post data handel
-     
-      builder
-      .addCase(postEducationProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(postEducationProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        //state.profileData = action.payload; 
-      })
-      .addCase(postEducationProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Set error from rejected payload
-      });
    // handling education profile
     builder
     // for get data handeling
@@ -479,10 +532,8 @@ const jobProfileSlice = createSlice({
       })
       .addCase(getEducationProfile.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.profileData = action.payload; // Update profile data
-        //Object.assign(state, action.payload);
-        //console.log(profileData)
-        console.log(action.payload)
+        state.alleducationData = action.payload; // Update profile data
+        console.log("educationdata",action.payload)
       })
       .addCase(getEducationProfile.rejected, (state, action) => {
         state.status = "failed";
@@ -490,21 +541,21 @@ const jobProfileSlice = createSlice({
       });
       
 
-     // for post data handel
+     //for post data handel
      
-      // builder
-      // .addCase(postEducationProfile.pending, (state) => {
-      //   state.status = "loading";
-      //   state.error = null;
-      // })
-      // .addCase(postEducationProfile.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   //state.profileData = action.payload; // Update profile data
-      // })
-      // .addCase(postEducationProfile.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   state.error = action.payload; // Set error from rejected payload
-      // });
+      builder
+      .addCase(postEducationProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postEducationProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.educationData = action.payload; // Update profile data
+      })
+      .addCase(postEducationProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
       
 
       //hadle skills profile
@@ -565,19 +616,19 @@ const jobProfileSlice = createSlice({
 
       //for post data handel
      
-      builder
-      .addCase(postExprienceProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(postExprienceProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        //state.exprienceData = action.payload; // Update profile data
-      })
-      .addCase(postExprienceProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Set error from rejected payload
-      });  
+      // builder
+      // .addCase(postExprienceProfile.pending, (state) => {
+      //   state.status = "loading";
+      //   state.error = null;
+      // })
+      // .addCase(postExprienceProfile.fulfilled, (state, action) => {
+      //   state.status = "succeeded";
+      //   //state.exprienceData = action.payload; // Update profile data
+      // })
+      // .addCase(postExprienceProfile.rejected, (state, action) => {
+      //   state.status = "failed";
+      //   state.error = action.payload; // Set error from rejected payload
+      // });  
   },
 });
 
