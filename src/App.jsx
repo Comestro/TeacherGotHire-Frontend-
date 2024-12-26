@@ -28,9 +28,9 @@ import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 import PublicLayout from "./components/PublicLayout";
-import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
 import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
+import ManageTeacherJobType from "./admin/Manage-teacherjobtype/ManageTeacherJobType";
 
 // import Logout from "./components/Logout";
 

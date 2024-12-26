@@ -15,9 +15,9 @@ import {
 const Experience = () => {
   const dispatch = useDispatch();
   const experienceData = useSelector(
-    (state) => state?.jobProfile || []
+    (state) => state?.jobProfile.experienceData || []
   );
-  console.log("expreinceData",experienceData)
+  console.log("experienceData",experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
   console.log("newJOb",jobRole)
   const [editingIndex, setEditingIndex] = useState(null);
