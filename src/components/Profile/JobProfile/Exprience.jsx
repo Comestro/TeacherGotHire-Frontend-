@@ -238,8 +238,10 @@ import {
 const Experience = () => {
   const dispatch = useDispatch();
   const experienceData = useSelector(
-    (state) => state.jobProfile.exprienceData || []
+    (state) => state?.jobProfile || []
   );
+
+  console.warn(experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
 
   const [editingIndex, setEditingIndex] = useState(null);
@@ -321,7 +323,7 @@ const Experience = () => {
               </tr>
             </thead>
             <tbody>
-              {experienceData.map((experience, index) => (
+              {experienceData && experienceData.map((experience, index) => (
                 <tr key={index} className="bg-white text-gray-700">
                   <td className="px-4 py-2 border border-gray-300">
                     {experience.institution || "N/A"}
