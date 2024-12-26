@@ -17,7 +17,7 @@ const Experience = () => {
   const experienceData = useSelector(
     (state) => state?.jobProfile?.exprienceData || []
   );
-  console.log("expreinceData",experienceData)
+  console.log("experienceData",experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
   console.log("newJOb",jobRole)
   const [editingIndex, setEditingIndex] = useState(null);

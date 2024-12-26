@@ -18,7 +18,7 @@ const Education = () => {
   );
   console.log("qualification", qualification);
   const educationData = useSelector(
-    (state) => state.jobProfile.educationData || []
+    (state) => state.jobProfile?.educationData || []
   );
   console.log("educatkjhionData", educationData);
 
