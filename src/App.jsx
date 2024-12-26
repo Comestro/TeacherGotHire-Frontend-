@@ -28,14 +28,10 @@ import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 import PublicLayout from "./components/PublicLayout";
-<<<<<<< HEAD
 import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
-=======
-import ManageTeacherJobType from "./admin/Manage-teacherjobtype/ManageTeacherjobtype";
 import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 
->>>>>>> f706aec5b853e9b3057900357e9abaa9068b8a27
 // import Logout from "./components/Logout";
 
 // Private Route Component
@@ -136,16 +132,7 @@ function App() {
               token ? <ManageClassCategory /> : <Navigate to="/signin" />
             }
           />
-<<<<<<< HEAD
-          <Route
-            path="/admin/manage/teacher/jobtype"
-            element={
-              token ? <ManageTeacherJobType /> : <Navigate to="/signin" />
-            }
-          />
-=======
           <Route path="/admin/manage/teacher/jobtype" element={token ? <ManageTeacherJobType/> : <Navigate to="/signin" />} />
->>>>>>> f706aec5b853e9b3057900357e9abaa9068b8a27
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
