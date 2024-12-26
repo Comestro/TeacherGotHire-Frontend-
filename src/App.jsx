@@ -29,6 +29,8 @@ import ManageClassCategory from "./admin/Manage-class-category/ManageClassCatego
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 import PublicLayout from "./components/PublicLayout";
 import ManageTeacherJobType from "./admin/Manage-teacherjobtype/ManageTeacherjobtype";
+import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
+import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 
 // import Logout from "./components/Logout";
 
@@ -55,6 +57,22 @@ function App() {
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+          </Route>
+
+          {/* Recruiter Routes */}
+          <Route path="/recruiter" element={<RecruiterLayout />}>
+            <Route
+              index
+              element={<TeacherRecruiter />}
+            />
+            <Route
+              path="personal-profile"
+              element={<PrivateRoute element={<EditPersonalProfile />} />}
+            />
+            <Route
+              path="job-profile"
+              element={<PrivateRoute element={<JobProfileEdit />} />}
+            />
           </Route>
 
           {/* Admin Routes */}
