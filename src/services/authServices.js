@@ -24,17 +24,12 @@ apiClient.interceptors.request.use((config) => {
 // Register User
 export const createaccount = async ({ Fname, Lname, email, password }) => {
   try {
-    // Send the registration request
     const response = await apiClient.post('/api/register/', { Fname, Lname, email, password });
-
-   
-    // Check for successful response status
+    if (response.status === 200){  
       const { token } = response.data;
-     // console.log('Received token:', token);
       localStorage.setItem('access_token', token);
-
+    }
     return response.data;
-  
   }
   catch(err) {
     console.error('Registration error:', err.response?.data || err);

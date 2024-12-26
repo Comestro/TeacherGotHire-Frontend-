@@ -205,12 +205,6 @@ const onSubmit = async (data) => {
   <p className="text-gray-500 mt-2">
     Choose up to <span className="font-bold text-blue-600">5 preferred locations</span> to find jobs tailored to your choices.
   </p>
-  {/* <button
-    onClick={() => setIsFormVisible(true)} // Opens the form to add locations
-    className="mt-4 px-6 py-2 text-white bg-teal-500 hover:bg-teal-600 rounded shadow-md"
-  >
-    Add Your Preferred Locations
-  </button> */}
 </div>
 
 )}

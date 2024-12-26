@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-const Dropdown = () => {
+const DropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -56,4 +56,4 @@ const Dropdown = () => {
   );
 };
 
-export default Dropdown;
+export default DropDown;

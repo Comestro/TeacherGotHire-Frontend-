@@ -1,6 +1,6 @@
 import React from "react";
 import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
-import Dropdown from "./DropDown";
+import DropDown from "./DropDown";
 
 const DashboardHeader = ({ isOpen, setIsOpen }) => {
   return (
@@ -13,7 +13,9 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
         >
           <IoMdMenu className="text-white text-xl" />
         </button>
-        <h1 className="text-lg font-semibold hidden md:block">Teacher Dashboard</h1>
+        <h1 className="text-lg font-semibold hidden md:block">
+          Teacher Dashboard
+        </h1>
       </div>
 
       {/* Action Buttons */}
@@ -31,7 +33,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
           <IoIosNotifications className="text-xl" />
         </button>
         <div>
-          <Dropdown />
+          <DropDown />
         </div>
       </div>
     </div>

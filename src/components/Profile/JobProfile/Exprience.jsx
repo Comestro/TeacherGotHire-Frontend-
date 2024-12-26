@@ -1,223 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import { useForm } from "react-hook-form";
-// import Input from "../../Input";
-// import Button from "../../Button";
-// import {  updateExprienceProfile } from "../../../services/jobProfileService";
-// import { getJob,putExprienceProfile, getExprienceProfile,postExprienceProfile} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
-
-
-// const Experience = () => {
-//   const dispatch = useDispatch();
-//   const experienceData = useSelector((state) => state.jobProfile.exprienceData || []); // Adjust state selector as needed
-//   console.log("expreienceData",experienceData)
-//   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-
-//   const [editingIndex, setEditingIndex] = useState(null); // Track which education record is being edited
-//   const [isEditingExprience, setIsEditingExprience] = useState(false);
-//   const [error, setError] = useState("");
-
-//   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
-
-//   // Fetch education data on component mount
-//   useEffect(() => {
-//     dispatch(getJob());
-//     dispatch(getExprienceProfile());
-//   }, []);
-
-//   // Handle saving or updating education data
-//   const onSubmit = async (data) => {
-//     try {
-//       if (editingIndex !== null) {
-//         // Update existing education record
-//         const updatedData = {...experienceData};
-//         updatedData[editingIndex] = data;
-//         await updateExprienceProfile(data); // Call API for update
-//         dispatch(putExprienceProfile(updatedData)); // Dispatch updated data
-//       } else {
-//         // Add new education record
-//         await updateExprienceProfile(data); // Call API to save
-//         dispatch(postExprienceProfile({...experienceData, data})); // Dispatch with new data
-//       }
-//       setEditingIndex(null); // Exit editing mode
-//       reset(); // Reset form
-//     } catch (err) {
-//       setError(err.message);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-3xl px-5 mt-auto">
-//     <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
-//       Teacher Exprience
-//     </h2>
-//     <div className="mb-4 pl-2">
-//       <p className="text-gray-700 font-semibold mb-2">Exprience</p>
-//       {!isEditingExprience ? (
-//         <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white">
-//           <div className="grid grid-cols-3 gap-4 items-center">
-//             <div>
-//               <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                Achievenments
-//               </h3>
-//               <p className="text-gray-700 text-md">
-//                 {experienceData && experienceData.achievements || 'N/A'}
-//               </p>
-//             </div>
-
-//             <div>
-//                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                  Institution
-//                 </h3>
-//                 <p className="text-gray-700 text-md">
-//                   {experienceData && experienceData.institution || 'N/A'}
-//                 </p>
-//               </div>
-//               <div>
-//                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                   Description
-//                 </h3>
-//                 <p className="text-gray-700 text-md">
-//                   {experienceData && experienceData.description || 'N/A'}
-//                 </p>
-//               </div>
-//               <div>
-//                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                  JobRole
-//                 </h3>
-//                 <p className="text-gray-700 text-md">
-//                   {experienceData && experienceData.role?.jobrole_name || 'N/A'}
-//                 </p>
-//               </div>
-//               <div>
-//                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                   Start_Date
-//                 </h3>
-//                 <p className="text-gray-700 text-md">
-//                   {experienceData && experienceData.start_date || 'N/A'}
-//                 </p>
-//               </div>
-//               <div>
-//                 <h3 className="text-sm font-semibold text-teal-600 uppercase">
-//                   End_Date
-//                 </h3>
-//                 <p className="text-gray-700 text-md">
-//                   {experienceData && experienceData.end_date || 'N/A'}
-//                 </p>
-//               </div>
-//           </div>
-
-//           <div className="mt-4 flex justify-end">
-//             <button
-//               className="text-white bg-teal-600 hover:bg-teal-700 transition-colors px-6 py-2 rounded-md text-sm font-medium"
-//               onClick={() => setIsEditingExprience(true)}
-//             >
-//               Edit Preferences
-//             </button>
-//           </div>
-//         </div>
-// )  : (
-//   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md">
-//       <div className="grid grid-cols-2 gap-4">
-//         <div>
-//            <Input
-//             label="Institution"
-//             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-//             placeholder="Enter Institution"
-//             type="text"
-//             {...register("institution", { required: true })}
-//           />
-//           {errors.institution && <span className="text-red-500 text-sm">{errors.institution.message}</span>}
-//         </div>
-//         <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">
-//                   Job Role
-//                 </label>
-//                 <select
-//                   {...register("job_role", { required: true })}
-//                   className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-//                 >
-//                   {jobRole.map((jobRole) => (
-//                     <option
-//                       key={jobRole.id}
-//                       value={jobRole.jobrole_name}
-//                       label={jobRole.jobrole_name}
-//                     ></option>
-//                   ))}
-//                 </select>
-
-//                 {errors.jobRole && (
-//                   <span className="text-red-500 text-sm">
-//                     This field is required
-//                   </span>
-//                 )}
-//               </div>
-      
-//          <div>
-//            <Input
-//             label="Start-date"
-//             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-//             placeholder="Enter Grade or Percentage"
-//             type="date"
-//             {...register("start_date")}
-//           />
-//           {errors.Start_date && <span className="text-red-500 text-sm">{errors.Start_date.message}</span>}
-//         </div>
-//          <div>
-//            <Input
-//             label="Last-date"
-//             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-//             placeholder="Enter Grade or Percentage"
-//             type="date"
-//             {...register("end_date")}
-//           />
-//           {errors.Last_date && <span className="text-red-500 text-sm">{errors.Last_date.message}</span>}
-//         </div>
-//         <div>
-//           <Input
-//             label="Achivements"
-//             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-//             placeholder="Enter your Role"
-//             type="text"
-//             {...register("achievements", { required: true })}
-//           />
-//           {errors.achivements && <span className="text-red-500 text-sm">{errors.achivements.message}</span>}
-//         </div>
-//         <div>
-//           <Input
-//             label="Discription"
-//             className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
-//             placeholder="Enter your Role"
-//             type="text"
-//             {...register("description", { required: true })}
-//           />
-//           {errors.discription && <span className="text-red-500 text-sm">{errors.discription.message}</span>}
-//         </div>
-//       </div>
-//       <Button
-//             onClick={() => {
-//               setIsEditingExprience(false);
-//             }}
-//             type="button"
-//             className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
-//           >
-//             Cancle
-//           </Button>
-//           <Button
-//             type="submit"
-//             className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
-//           >
-//             Save
-//           </Button>
-//     </form>   
-//       )}
-//     </div>
-//     <hr className="mb-4" />
-//   </div>
-//   );
-// };
-
-// export default Experience;
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -225,24 +5,23 @@ import { useForm } from "react-hook-form";
 import Input from "../../Input";
 import Button from "../../Button";
 import {
-  updateExprienceProfile,
-} from "../../../services/jobProfileService";
-import {
   getJob,
   putExprienceProfile,
   getExprienceProfile,
   postExprienceProfile,
   delExprienceProfile,
-} from "../../../features/jobProfileSlice"; // Replace with actual Redux action
+} from "../../../features/jobProfileSlice";
 
 const Experience = () => {
   const dispatch = useDispatch();
   const experienceData = useSelector(
     (state) => state.jobProfile.exprienceData || []
   );
+  console.log("expreinceData",experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-
+  console.log("newJOb",jobRole)
   const [editingIndex, setEditingIndex] = useState(null);
+  const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
 
@@ -261,16 +40,15 @@ const Experience = () => {
 
   const onSubmit = async (data) => {
     try {
+      console.log("editingindex",editingIndex);
       if (editingIndex !== null) {
-        // Update existing experience
-        const updatedExperience = {...experienceData};
-        updatedExperience[editingIndex] = data;
-        await updateExprienceProfile(data); // Call API for update
-        dispatch(putExprienceProfile(updatedExperience));
+        
+        const id = experienceData[editingIndex].id;
+        console.log("id",id)
+        
+        await dispatch(putExprienceProfile({data,id:id})).unwrap();
       } else {
-        // Add new experience
-        await updateExprienceProfile(data); // Call API to save
-        dispatch(postExprienceProfile({...experienceData, data}));
+         await  dispatch(postExprienceProfile(data)).unwrap();
       }
       setEditingIndex(null);
       setIsEditing(false);
@@ -278,6 +56,7 @@ const Experience = () => {
     } catch (err) {
       setError(err.message);
     }
+
   };
 
   const handleEdit = (index) => {
@@ -292,9 +71,8 @@ const Experience = () => {
   const handleDelete = async (index) => {
     try {
       const id = experienceData[index].id; 
-      await dispatch(delExprienceProfile({id:id})); // API call to delete
-      // const updatedExperience = experienceData.filter((_, i) => i !== index);
-      // dispatch(putExprienceProfile(updatedExperience));
+      await dispatch(delExprienceProfile({id:id})).unwrap();
+      //dispatch(putExprienceProfile({id:id})).unwrap();
     } catch (err) {
       setError(err.message);
     }
@@ -321,7 +99,7 @@ const Experience = () => {
               </tr>
             </thead>
             <tbody>
-              {experienceData.map((experience, index) => (
+              {experienceData && experienceData.map((experience, index) => (
                 <tr key={index} className="bg-white text-gray-700">
                   <td className="px-4 py-2 border border-gray-300">
                     {experience.institution || "N/A"}
@@ -342,12 +120,19 @@ const Experience = () => {
                     {experience.description || "N/A"}
                   </td>
                   <td className="px-4 py-2 border border-gray-300">
-                    <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                      onClick={() => handleEdit(index)}
-                    >
-                      Edit
-                    </button>
+                  { (
+                        <button
+                          onClick={() => {
+                            handleEdit(index)
+                            setIsFormVisible(true);
+                            setIsEditing(true); // Reset editing state
+                            setEditingRowIndex(index);
+                          }}
+                          className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                      )}
                     <button
                       className="bg-red-500 text-white px-2 py-1 rounded"
                       onClick={() => handleDelete(index)}
@@ -399,12 +184,13 @@ const Experience = () => {
                 {...register("job_role", { required: true })}
                 className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                {jobRole.map((jobRole) => (
+                {jobRole.map((role) => (
                   <option
-                    key={jobRole.id}
-                    value={jobRole.jobrole_name}
-                    label={jobRole.jobrole_name}
+                    key={role.id}
+                    value={role.id}
+                    label={role.jobrole_name}
                   ></option>
+                  
                 ))}
               </select>
               {errors.jobRole && (

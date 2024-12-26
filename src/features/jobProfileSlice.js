@@ -4,7 +4,7 @@ import { updateEducationProfile,fetchEducationProfile} from "../services/jobProf
 import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
 import { addExprienceProfile,updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
 import { fetchClassCategory, fetchSubject,fetchQualification } from "../services/jobProfileService";
-import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation,deleteExprienceProfile} from "../services/jobProfileService";
+import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation,deleteExprienceProfile,deleteEducationProfile,addEducationProfile,} from "../services/jobProfileService";
 
 const initialState = {
   classCategories:[],
@@ -14,8 +14,7 @@ const initialState = {
   qualification:[],
   prefrence:[],
   prefrenceLocation:[],
-  alleducationData: [],
-  educationData:{},
+  educationData: [],
   skillsData:[],
   exprienceData:[],
   status: "idle", 
@@ -230,7 +229,41 @@ export const postEducationProfile = createAsyncThunk(
   "postEducationProfile",
   async (personalData, { rejectWithValue }) => {
     try {
-      const data = await updateEducationProfile(personalData);
+      const data = await addEducationProfile(personalData);
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+
+export const putEducationProfile = createAsyncThunk(
+  "putEducationProfile",
+  async (personalData, id , { rejectWithValue }) => {
+    try {
+      const data = await updateEducationProfile(personalData, id);
+      console.log("data",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+
+export const delEducationProfile = createAsyncThunk(
+  "delEducationProfile",
+  async (personalData, { rejectWithValue }) => {
+    try {
+      const data = await deleteEducationProfile(personalData);
       console.log("data",data)
        // Call the service
       return data; // Return the updated profile data
@@ -317,6 +350,7 @@ export const getSkillsProfile = createAsyncThunk(
     "putExprienceProfile",
     async (personalData, { rejectWithValue }) => {
       try {
+        console.log("putexpe",personalData)
         const data = await updateExprienceProfile(personalData);
         console.log("data",data)
          // Call the service
@@ -532,8 +566,8 @@ const jobProfileSlice = createSlice({
       })
       .addCase(getEducationProfile.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.alleducationData = action.payload; // Update profile data
-        console.log("educationdata",action.payload)
+        state.educationData = action.payload; // Update profile data
+        console.log("education",action.payload)
       })
       .addCase(getEducationProfile.rejected, (state, action) => {
         state.status = "failed";
@@ -543,25 +577,25 @@ const jobProfileSlice = createSlice({
 
      //for post data handel
      
-      builder
-      .addCase(postEducationProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(postEducationProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.educationData = action.payload; // Update profile data
-      })
-      .addCase(postEducationProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Set error from rejected payload
-      });
+      // builder
+      // .addCase(postEducationProfile.pending, (state) => {
+      //   state.status = "loading";
+      //   state.error = null;
+      // })
+      // .addCase(postEducationProfile.fulfilled, (state, action) => {
+      //   state.status = "succeeded";
+      //   state.educationData = action.payload; // Update profile data
+      // })
+      // .addCase(postEducationProfile.rejected, (state, action) => {
+      //   state.status = "failed";
+      //   state.error = action.payload; // Set error from rejected payload
+      // });
       
 
       //hadle skills profile
 
 
-      builder
+      // builder
       // .addCase(getSkillsProfile.pending, (state) => {
       //   state.status = "loading";
       //   state.error = null;
@@ -612,6 +646,8 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
+
+
       
 
       //for post data handel

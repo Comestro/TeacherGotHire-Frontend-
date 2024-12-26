@@ -32,6 +32,7 @@ const PrefrenceProfile = () => {
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
+  console.log("jobrole",jobRole)
   const subject = useSelector((state) => state?.jobProfile?.subject);
   const teacherjobRole = useSelector(
     (state) => state?.jobProfile?.teacherjobRole
@@ -180,7 +181,7 @@ const PrefrenceProfile = () => {
                   >
                     <option value="">Select a job role</option>
                     {jobRole?.map((role) => (
-                      <option key={role.id} value={role.jobrole_name}>
+                      <option key={role.id} value={role.id}>
                         {role.jobrole_name}
                       </option>
                     ))}

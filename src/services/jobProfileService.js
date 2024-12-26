@@ -85,10 +85,11 @@ export const fetchQualification = async()=>{
   }
 }
 
-export const updateEducationProfile = async(educationdata)=>{
+export const updateEducationProfile = async(educationdata, id)=>{
      try{
-        const response = await apiClient.post('/api/self/teacherqualification/',educationdata);
-        console.log(response.data);
+        console.log("educdata",educationdata)
+        const response = await apiClient.put(`api/self/teacherqualification/${id}/`,{...educationdata});
+        console.log("eduresponse",response);
         console.log("hello");
         return JSON.parse(JSON.stringify(response)); 
      }
@@ -97,9 +98,34 @@ export const updateEducationProfile = async(educationdata)=>{
             throw err;
      }
 }
+
+export const addEducationProfile = async(expriencedata)=>{
+  try{
+    const response = await apiClient.post('api/self/teacherqualification/',expriencedata);
+    console.log(response.data);
+    return JSON.parse(JSON.stringify(response));
+  }
+  catch(err){
+            console.error('Registration error:', err.response?.data || err);
+            throw err;
+  }
+}
 export const fetchEducationProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/teacherqualification/');
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
+
+export const deleteEducationProfile = async(expriencedata)=>{
+  try{
+
+     const response = await apiClient.delete(`api/self/teacherqualification/${expriencedata.id}/`,expriencedata.data);
      console.log("get data:",response.data);
      return response.data;
   }
@@ -133,8 +159,9 @@ export const fetchSkillsProfile = async()=>{
 
 export const updateExprienceProfile = async(expriencedata)=>{
   try{
-    const response = await apiClient.put('api/self/teacherexperience/',expriencedata);
-    console.log(response.data);
+    console.log("exp",expriencedata.data)
+    const response = await apiClient.put(`api/self/teacherexperience/${expriencedata.id}/`,expriencedata.data);
+    console.log("response",response.data);
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -167,7 +194,7 @@ export const fetchExprienceProfile = async()=>{
 
 export const deleteExprienceProfile = async(expriencedata)=>{
   try{
-     const response = await apiClient.delete(`api/self/teacherexperience/${expriencedata.id}/`);
+     const response = await apiClient.delete(`api/self/teacherexperience/${expriencedata.id}/`,expriencedata.data);
      console.log("get data:",response.data);
      return response.data;
   }
