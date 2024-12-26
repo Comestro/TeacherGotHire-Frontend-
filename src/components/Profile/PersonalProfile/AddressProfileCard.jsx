@@ -131,32 +131,17 @@ const AddressCard = ({ title, data, onEdit }) => (
         Edit
       </button>
     </div>
-    <div className="space-y-1 px-2">
-      <div className="grid grid-cols-3  items-center">
-        <span className="font-medium text-gray-600">Pincode:</span>
-        <span className="col-span-2 text-gray-500 font-medium">
-          {data.pincode || "Not Provided"}
-        </span>
-      </div>
-      <div className="grid grid-cols-3  items-center">
-        <span className="font-medium text-gray-600">State:</span>
-        <span className="col-span-2 text-gray-500 font-medium">
-          {data.state || "Not Provided"}
-        </span>
-      </div>
-      <div className="grid grid-cols-3  items-center">
-        <span className="font-medium text-gray-600">District:</span>
-        <span className="col-span-2 text-gray-500 font-medium">
-          {data.district || "Not Provided"}
-        </span>
-      </div>
-      <div className="grid grid-cols-3  items-center">
-        <span className="font-medium text-gray-600">Area:</span>
-        <span className="col-span-2 text-gray-500 font-medium">
-          {data.area || "Not Provided"}
-        </span>
-      </div>
-    </div>
+    <p>
+  {data.area || data.district || data.state || data.pincode ? (
+    <>
+      {data.area || "Not Provided"}{", "}
+      {data.district || "Not Provided"}{", "}{data.state || "Not Provided"} (
+      {data.pincode || "Not Provided"})
+    </>
+  ) : (
+    "No address details provided"
+  )}
+</p>
   </div>
 );
 
@@ -194,7 +179,7 @@ const AddressProfileCard = () => {
       <h2 className="text-xl font-bold text-gray-700 mb-3">
         Address Information
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {isEditingType === "current" ? (
           <AddressForm
             type="current"

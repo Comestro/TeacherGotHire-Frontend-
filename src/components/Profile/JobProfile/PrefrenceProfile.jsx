@@ -42,7 +42,9 @@ const PrefrenceProfile = () => {
   );
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
-  // Populate form with existing preferences
+  // console.log("teacherprefrence", teacherprefrence);
+  // console.log("Role:", teacherprefrence.teacher_job_type);
+
   useEffect(() => {
     if (teacherprefrence) {
       Object.entries(teacherprefrence).forEach(([key, value]) =>
@@ -77,57 +79,61 @@ const PrefrenceProfile = () => {
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="mb-4 px-2">
         {!isEditingPrefrence ? (
-          <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 md:gap-6 gap-3 ">
-              {[
-                {
-                  title: "Class Category",
-                  value:
-                    teacherprefrence?.class_category?.name || "Not Provided",
-                },
-                {
-                  title: "Job Role",
-                  value:
-                    teacherprefrence?.job_role?.jobrole_name || "Not Provided",
-                },
-                {
-                  title: "Subject",
-                  value:
-                    teacherprefrence?.prefered_subject?.length > 0
-                      ? teacherprefrence.prefered_subject
-                          .map((subject) => subject.subject_name)
-                          .join(", ")
-                      : "Not Provided",
-                },
-                {
-                  title: "Preferred Job",
-                  value:
-                    teacherprefrence?.teacher_job_type?.length > 0
-                      ? teacherprefrence.teacher_job_type
-                          .map((jobrole) => jobrole.teacher_job_name)
-                          .join(", ")
-                      : "Not Provided",
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-slate-50 rounded-lg shadow p-4 flex items-start gap-4"
-                >
-                  <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
-                    <span className="text-[#3E98C7] font-bold text-lg">
-                      {item.title.charAt(0)}
-                    </span>
-                  </div>
-                  <div className="flex flex-col w-full">
-                    <h3 className="text-sm font-semibold text-[#3E98C7] uppercase tracking-wide">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-700 font-medium text-sm mt-1">
-                      {item.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
+          <div className="">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+              {/* Class Category */}
+              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
+                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
+                  Class Category
+                </h3>
+                <p className="text-gray-800 text-sm font-medium mt-1">
+                  {(teacherprefrence?.class_category &&
+                    teacherprefrence?.class_category.name) ||
+                    "N/A"}
+                </p>
+              </div>
+
+              {/* Job Role */}
+              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
+                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
+                  Job Role
+                </h3>
+                <p className="text-gray-800 text-sm font-medium mt-1">
+                  {(teacherprefrence?.job_role &&
+                    teacherprefrence?.job_role.jobrole_name) ||
+                    "N/A"}
+                </p>
+              </div>
+
+              {/* Subject */}
+              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
+                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
+                  Subject
+                </h3>
+                <p className="text-gray-800 text-sm font-medium mt-1">
+                  {teacherprefrence?.prefered_subject &&
+                  teacherprefrence?.prefered_subject.length > 0
+                    ? teacherprefrence?.prefered_subject
+                        .map((subject) => subject.subject_name)
+                        .join(", ")
+                    : "N/A"}
+                </p>
+              </div>
+
+              {/* Preferred Job */}
+              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
+                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
+                  Preferred Job
+                </h3>
+                <p className="text-gray-800 text-sm font-medium mt-1">
+                  {teacherprefrence?.teacher_job_type &&
+                  teacherprefrence?.teacher_job_type.length > 0
+                    ? teacherprefrence?.teacher_job_type
+                        .map((jobrole) => jobrole.teacher_job_name)
+                        .join(", ")
+                    : "N/A"}
+                </p>
+              </div>
             </div>
 
             <div className="mt-4 flex justify-end">
