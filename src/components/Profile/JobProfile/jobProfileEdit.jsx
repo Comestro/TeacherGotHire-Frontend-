@@ -8,7 +8,7 @@ const JobProfileEdit = () => {
   return (
     <div className="">
       {/* Main Content */}
-      <div className="min-h-screen bg-white py-5 px-8">
+      <div className="min-h-screen bg-white py-5 px-2 md:px-4 lg:px-6">
           <PrefrenceProfile/>
           <JobPrefrenceLocation/>
           <Experience/>

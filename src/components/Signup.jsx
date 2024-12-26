@@ -4,7 +4,7 @@ import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { createaccount } from "../services/authServices";
+import { createaccount, verifyOtp } from "../services/authServices";
 import Navbar from "./Navbar/Navbar";
 import { getPostData } from "../features/authSlice";
 
@@ -18,6 +18,10 @@ function SignUpPage() {
     formState: { errors },
   } = useForm();
   const [error, setError] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+
 
   const password = watch("password");
 
@@ -26,15 +30,30 @@ function SignUpPage() {
     setError("");
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
-
-      console.log(userData);
       if (userData) {
-        dispatch(getPostData(userData));
-        navigate("/teacher");
+        setOtpSent(true);
+        setEmail(email);
+        // dispatch(getPostData(userData));
+        // navigate("/teacher");
       }
     } catch (error) {
       setError(error.message || "Failed to create account. Please try again.");
     }
+  };
+
+  const verifyOtpHandler = async () => {
+    setError("");
+    try {
+      const response = await verifyOtp({ email, otp });
+      if (response.ok) {
+        dispatch(getPostData(response.data));
+        navigate("/teacher");
+      } else {
+        setError(response.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      setError(error.message || "Failed to verify OTP. Please try again.");
+    } 
   };
 
   return (
@@ -47,7 +66,9 @@ function SignUpPage() {
         {/* Form Container */}
         <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center ">
           <div className="max-w-md w-full mt-5">
-            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
+          {!otpSent ? (
+           <>
+           <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Teachers </span>
             </h2>
             <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
@@ -242,6 +263,33 @@ function SignUpPage() {
                 </span>
               </p>
             </div>
+            </>) : (
+              <>
+               <>
+                <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+                  Verify OTP
+                </h2>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Enter OTP
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter the OTP sent to your email"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full border-2 text-sm rounded-xl px-3 py-3 border-gray-300 focus:border-green-500"
+                  />
+                </div>
+                <Button
+                  onClick={verifyOtpHandler}
+                  className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
+                >
+                  Verify OTP
+                </Button>
+              </>
+              </>
+            )}
           </div>
         </div>
 
