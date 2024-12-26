@@ -38,8 +38,8 @@ const PrefrenceProfile = () => {
   );
   const teacherprefrence = useSelector((state) => state?.jobProfile?.prefrence);
 
-  console.log("teacherprefrence", teacherprefrence);
-  console.log("Role:", teacherprefrence.teacher_job_type);
+  // console.log("teacherprefrence", teacherprefrence);
+  // console.log("Role:", teacherprefrence.teacher_job_type);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
   const [error, setError] = useState("");
@@ -82,8 +82,8 @@ const PrefrenceProfile = () => {
                   Class Category
                 </h3>
                 <p className="text-gray-800 text-sm font-medium mt-1">
-                  {(teacherprefrence.class_category &&
-                    teacherprefrence.class_category.name) ||
+                  {(teacherprefrence?.class_category &&
+                    teacherprefrence?.class_category.name) ||
                     "N/A"}
                 </p>
               </div>
@@ -94,8 +94,8 @@ const PrefrenceProfile = () => {
                   Job Role
                 </h3>
                 <p className="text-gray-800 text-sm font-medium mt-1">
-                  {(teacherprefrence.job_role &&
-                    teacherprefrence.job_role.jobrole_name) ||
+                  {(teacherprefrence?.job_role &&
+                    teacherprefrence?.job_role.jobrole_name) ||
                     "N/A"}
                 </p>
               </div>
@@ -106,9 +106,9 @@ const PrefrenceProfile = () => {
                   Subject
                 </h3>
                 <p className="text-gray-800 text-sm font-medium mt-1">
-                  {teacherprefrence.prefered_subject &&
-                  teacherprefrence.prefered_subject.length > 0
-                    ? teacherprefrence.prefered_subject
+                  {teacherprefrence?.prefered_subject &&
+                  teacherprefrence?.prefered_subject.length > 0
+                    ? teacherprefrence?.prefered_subject
                         .map((subject) => subject.subject_name)
                         .join(", ")
                     : "N/A"}
@@ -121,9 +121,9 @@ const PrefrenceProfile = () => {
                   Preferred Job
                 </h3>
                 <p className="text-gray-800 text-sm font-medium mt-1">
-                  {teacherprefrence.teacher_job_type &&
-                  teacherprefrence.teacher_job_type.length > 0
-                    ? teacherprefrence.teacher_job_type
+                  {teacherprefrence?.teacher_job_type &&
+                  teacherprefrence?.teacher_job_type.length > 0
+                    ? teacherprefrence?.teacher_job_type
                         .map((jobrole) => jobrole.teacher_job_name)
                         .join(", ")
                     : "N/A"}

@@ -28,10 +28,7 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
     const response = await apiClient.post('/api/register/', { Fname, Lname, email, password });
 
    
-    // Check for successful response status
-      const { token } = response.data;
-     // console.log('Received token:', token);
-      localStorage.setItem('access_token', token);
+    
 
     return response.data;
   
@@ -53,6 +50,19 @@ export const fetchUserData = async()=>{
          throw err;
   }
 }
+//verify otp service
+export const verifyOtp = async ({ email, otp }) => {
+  try {
+    // Send the OTP verification request
+    const response = await apiClient.post('/api/verify/', { email, otp });
+    return response.data;
+
+
+  } catch (err) {
+    console.error('OTP verification error:', err.response?.data || err);
+    throw err;
+  }
+};
 
 // Login User
 export const login = async ({ email, password }) => {
@@ -71,8 +81,6 @@ export const login = async ({ email, password }) => {
 
       return response.data;
   } catch (err) {
-    // Handle login errors
-     //console.error('Login error:', err.response?.data || err);
     throw err;
   }
 };
