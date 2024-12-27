@@ -30,7 +30,7 @@ import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 import PublicLayout from "./components/PublicLayout";
 import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
-import ManageTeacherJobType from "./admin/Manage-teacherjobtype/ManageTeacherJobType";
+import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
 
 // import Logout from "./components/Logout";
 

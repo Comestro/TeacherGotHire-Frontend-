@@ -85,6 +85,18 @@ export const fetchQualification = async()=>{
   }
 }
 
+export const fetchAllSkills = async()=>{
+  try{
+     const response = await apiClient.get('/api/admin/skill/');
+     console.log("getallskill:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
+
 export const updateEducationProfile = async({payload, id })=>{
      try{
         console.log("payload",payload,id)
@@ -136,9 +148,10 @@ export const deleteEducationProfile = async(expriencedata)=>{
 }
 export const updateSkillsProfile = async(skillsdata)=>{
   try{
+    console.log("data sadique " + skillsdata);
     const response = await apiClient.post('api/self/teacherskill/',skillsdata);
     console.log(response.data);
-    return JSON.parese(JSON.stringify(response));
+    return JSON.parse(JSON.stringify(response));
   }
   catch(err){
             console.error('Registration error:', err.response?.data || err);
@@ -156,12 +169,23 @@ export const fetchSkillsProfile = async()=>{
          throw err;
   }
 }
-
-export const updateExprienceProfile = async({payload, id })=>{
+export const deleteSkillProfile = async(expriencedata)=>{
   try{
-    console.log("exp",{payload, id })
+     const response = await apiClient.delete(`api/self/teacherskill/${expriencedata.id}/`,expriencedata.name);
+     console.log("get data:",response.data);
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
+
+export const updateExprienceProfile = async({payload, id})=>{
+  try{
+    console.log("exp",{payload, id})
     const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
-    console.log("response",response.data);
+    console.log("exp_response",response.data);
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){

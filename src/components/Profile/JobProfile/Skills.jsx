@@ -1,138 +1,188 @@
-import React, { useState } from "react";
-import { FiEdit2 } from "react-icons/fi";
-import { RxCross2 } from "react-icons/rx";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
+import {
+  getAllSkills,
+  postSkillsProfile,
+  getSkillsProfile,
+  delSkillProfile,
+} from "../../../features/jobProfileSlice";
 
 const Skills = () => {
-  const [skills, setSkills] = useState(["JavaScript", "React", "CSS"]); 
-  const [newSkill, setNewSkill] = useState(""); 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [tempSkills, setTempSkills] = useState([]); 
+  const [skills, setSkills] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
-  const openModal = () => {
-    setTempSkills([...skills]); 
-    setIsModalOpen(true); // Open modal
-  };
+  const dispatch = useDispatch();
 
-  // Add a new skill to temporary state
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !tempSkills.includes(newSkill.trim())) {
-      setTempSkills((prevSkills) => [...prevSkills, newSkill.trim()]);
-      setNewSkill(""); // Clear input field
+  const skillsData = useSelector((state) => state.jobProfile.allSkill || []);
+  const teacherSkill = useSelector(
+    (state) => state.jobProfile.teacherSkill || []
+  );
+
+  console.log("teacherSkill", teacherSkill);
+
+  const [teacherSkills, setTeacherSkills] = useState(teacherSkill || []);
+  console.log("skill", teacherSkills);
+  // useForm hook from react-hook-form
+  const { handleSubmit, register, watch, setValue } = useForm();
+
+  const inputValue = watch("skillInput", "");
+
+  // Fetch skills when the modal opens
+  useEffect(() => {
+    if (isModalOpen) {
+      dispatch(getAllSkills());
+      dispatch(getSkillsProfile());
+    }
+  }, [isModalOpen]);
+
+  // Update suggestions when input value changes
+  //  useEffect(() => {
+  //   if (inputValue) {
+  //     const filteredSuggestions = skillsData.filter((skill) =>
+  //       skill.toLowerCase().includes(inputValue.toLowerCase())
+  //     );
+  //     setSuggestions(filteredSuggestions);
+  //   } else {
+  //     setSuggestions(skillsData);
+  //   }
+  // }, [inputValue]);
+
+  const handleInputFocus = () => {
+    if (inputValue === "") {
+      setSuggestions(skillsData);
     }
   };
 
-  // Remove a skill from the temporary state
-  const handleRemoveTempSkill = (skill) => {
-    setTempSkills((prevSkills) => prevSkills.filter((s) => s !== skill));
+  const handleSuggestionClick = async (skill) => {
+    console.log("data", skill);
+    //    Check if the skill is already selected
+    try {
+      setSkills(skill);
+      setSuggestions([]);
+      await dispatch(postSkillsProfile({ skill: skill.id })).unwrap(); // Post the selected skill to the backend
+      setSkills({});
+    } catch (error) {
+      console.error("Error posting skill:", error);
+    }
   };
 
-  // Save skills to the local state and close modal
-  const handleSaveSkills = () => {
-    setSkills([...tempSkills]); // Update the skills with temporary skills
-    setIsModalOpen(false); // Close modal
+  const handleRemoveSelectedSkill = async (skillToRemove) => {
+    console.log("vhbjnkm", skillToRemove);
+    console.log("archu", teacherSkill);
+    // const skill = teacherSkill.
+    setTeacherSkills(
+      teacherSkills.filter((skill) => skill.id !== skillToRemove.id)
+    );
+    await dispatch(delSkillProfile(skillToRemove)).unwrap();
+
+    console.log("archu", teacherSkills);
+  };
+
+  const onSubmit = async (data) => {
+    //setSkills(selectedSkills);
+    setIsModalOpen(false);
+    setSelectedSkills([]);
+    setValue("skillInput", "");
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-3xl">
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg  font-bold text-gray-600 mb-3">Key Skills</h3>
-        <button
-          onClick={openModal}
-          className="text-blue-500 hover:underline text-sm flex items-center font-bold gap-1"
-        >
-          {/* <FiEdit2 /> */}
-          Add
-        </button>
-      </div>
-
-      {/* Skills Chips */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        {skills.length > 0 ? (
-          skills.map((skill, index) => (
-            <div
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Skills</h1>
+      {teacherSkills.length === 0 ? (
+        <p className="text-gray-500">No skills added</p>
+      ) : (
+        <div className="flex flex-wrap mb-4">
+          {teacherSkills.map((skill, index) => (
+            <span
               key={index}
-              className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-1 rounded-full"
+              className="bg-blue-500 text-white px-3 py-1 rounded-full mr-2 mb-2"
             >
-              {skill}
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No skills added yet.</p>
-        )}
-      </div>
+              {skill.skill.name}
+            </span>
+          ))}
+        </div>
+      )}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition mr-2"
+      >
+        Edit
+      </button>
 
-      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6  w-full max-w-3xl rounded-3xl shadow-lg">
-            <h3 className="text-lg font-semibold">Edit Skills</h3>
-            <p className="text-sm font-bold text-gray-400 mb-4">Add skills that best define your expertise, for e.g, Direct Marketing, Oracle, Java, etc. (Minimum 1)</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+            <h2 className="text-xl font-semibold mb-4">Edit Skills</h2>
 
-            {/* Temporary Skills List */}
-            <div className="mb-4 flex space-x-2">
-              {tempSkills.length > 0 ? (
-                tempSkills.map((skill, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-100 px-2 py-1 rounded-3xl border flex justify-center items-center w-28"
-                  >
-                    <span>{skill}</span>
-                    <button
-                      onClick={() => handleRemoveTempSkill(skill)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <RxCross2 />
-
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500">No skills added yet.</p>
-              )}
-            </div>
-
-            {/* Add New Skill */}
-            <div className="flex gap-2 mb-4">
+            <form onSubmit={handleSubmit(onSubmit)}>
               <input
                 type="text"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Add skills"
-                className="flex-grow border px-3 py-2 rounded-lg focus:outline-blue-500"
+                {...register("skill")}
+                onFocus={handleInputFocus}
+                value={skills ? skills.name : ""}
+                placeholder="Type a skill..."
+                className="border border-gray-300 rounded w-full p-2 mb-2"
               />
-              <button
-                onClick={handleAddSkill}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-              >
-                Add
-              </button>
-            </div>
-             <div className="flex flex-col">
-                <p>Or you can select from the suggested set of skills</p>
-                <div className="bg-gray-100 rounded-3xl border px-4 py-1 w-28">
-                    <button className=" flex justify-center items-center">
-                        <span>JavaScript</span>
-                        <RxCross2 />
-                    </button>
-                </div>
-             </div>
-
-            {/* Modal Buttons */}
-            <div className="flex justify-end gap-2">
-              {/* <button
-                onClick={() => setIsModalOpen(false)} 
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button> */}
-              <button
-                onClick={handleSaveSkills} 
-                className="bg-green-500 text-white px-4 py-2 text-sm font-bold rounded-3xl hover:bg-green-600"
-              >
-                Save
-              </button>
-            </div>
+              {suggestions.length > 0 && (
+                <ul className="border border-gray-300 rounded max-h-40 overflow-y-auto mb-2 absolute z-10 bg-white w-11/12">
+                  {suggestions.map((skill, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(skill)}
+                      className="cursor-pointer hover:bg-gray-200 p-2"
+                    >
+                      {skill.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mb-4">
+                <h3 className="font-semibold mb-2">Selected Skills:</h3>
+                {teacherSkills.length === 0 ? (
+                  <p className="text-gray-500">No skills selected</p>
+                ) : (
+                  <div className="flex flex-wrap">
+                    {teacherSkills.map((skill, index) => (
+                      <div
+                        key={index}
+                        className="bg-blue-500 text-white flex items-center px-3 py-1 rounded-full mr-2 mb-2"
+                      >
+                        <span className="mr-2">{skill.skill.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSelectedSkill(skill)}
+                          className="text-white hover:text-gray-300 focus:outline-none"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setSelectedSkills([]);
+                    setValue("skillInput", "");
+                    setSuggestions([]);
+                  }}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -141,5 +191,3 @@ const Skills = () => {
 };
 
 export default Skills;
-
-

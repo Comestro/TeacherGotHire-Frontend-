@@ -203,33 +203,30 @@ const JobPrefrenceLocation = () => {
                     </button>
                   }
 
-                  <button
-                    className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
-                    onClick={() => handleDelete(index)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-700 text-lg font-semibold">
-            You haven't added any job preference locations yet!
-          </p>
-          <p className="text-gray-500 mt-2">
-            Choose up to{" "}
-            <span className="font-bold text-blue-600">
-              5 preferred locations
-            </span>{" "}
-            to find jobs tailored to your choices.
-          </p>
-        </div>
-      )}
+            <button
+              className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+              onClick={() => handleDelete(index)}
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <div className="text-center py-8">
+  <p className="text-gray-700 text-lg font-semibold">
+    You haven't added any job preference locations yet!
+  </p>
+  <p className="text-gray-500 mt-2">
+    Choose up to <span className="font-bold text-blue-600">5 preferred locations</span> to find jobs tailored to your choices.
+  </p>
+</div>
+
+)}
       {/* Add button to open form */}
-      {/* {!isFormVisible && (
+      {!isFormVisible && (
         <div className="flex justify-center items-center">
           <button
             onClick={() => {
@@ -241,7 +238,7 @@ const JobPrefrenceLocation = () => {
             Add Your Preferred Locations
           </button>
         </div>
-      )} */}
+      )}
 
       {/* Form section */}
       {isFormVisible && (
@@ -350,7 +347,7 @@ const JobPrefrenceLocation = () => {
 
             {/* Buttons */}
             <div className="flex justify-end items-center space-x-4">
-              <button
+            <button
                 type="button"
                 onClick={() => setIsFormVisible(false)}
                 className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
@@ -363,6 +360,7 @@ const JobPrefrenceLocation = () => {
               >
                 {isEditing ? "Update Location" : "Add Location"}
               </button>
+              
             </div>
           </form>
         </div>

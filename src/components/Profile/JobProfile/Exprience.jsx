@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
@@ -17,9 +16,7 @@ const Experience = () => {
   const experienceData = useSelector(
     (state) => state?.jobProfile?.exprienceData || []
   );
-  console.log("experienceData",experienceData)
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("newJOb",jobRole)
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,14 +45,14 @@ const Experience = () => {
         const payload = {
           institution: data.institution,
           achievements: data.achievements,
-          role: data.role.id,
-          qualification: data.description,
+          role: data.role,
+          description: data.description,
           start_date: data.start_date,
           end_date: data.end_date,
         };
-        console.log("payload",payload,id)
+        console.log("payload", payload, id);
 
-        await dispatch(putExprienceProfile({payload, id })).unwrap();
+        await dispatch(putExprienceProfile({ payload, id })).unwrap();
       } else {
         await dispatch(postExprienceProfile(data)).unwrap(); // Dispatch with new data
       }
@@ -66,7 +63,6 @@ const Experience = () => {
     } catch (err) {
       setError(err.message);
     }
-
   };
 
   const handleEdit = (index) => {
@@ -80,9 +76,8 @@ const Experience = () => {
 
   const handleDelete = async (index) => {
     try {
-      const id = experienceData[index].id; 
-      await dispatch(delExprienceProfile({id:id})).unwrap();
-      //dispatch(putExprienceProfile({id:id})).unwrap();
+      const id = experienceData[index].id;
+      await dispatch(delExprienceProfile({ id: id })).unwrap();
     } catch (err) {
       setError(err.message);
     }
@@ -99,42 +94,49 @@ const Experience = () => {
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-teal-600 text-white">
-                <th className="px-4 py-2 border border-gray-300">Institution</th>
+                <th className="px-4 py-2 border border-gray-300">
+                  Institution
+                </th>
                 <th className="px-4 py-2 border border-gray-300">Job Role</th>
                 <th className="px-4 py-2 border border-gray-300">Start Date</th>
                 <th className="px-4 py-2 border border-gray-300">End Date</th>
-                <th className="px-4 py-2 border border-gray-300">Achievements</th>
-                <th className="px-4 py-2 border border-gray-300">Description</th>
+                <th className="px-4 py-2 border border-gray-300">
+                  Achievements
+                </th>
+                <th className="px-4 py-2 border border-gray-300">
+                  Description
+                </th>
                 <th className="px-4 py-2 border border-gray-300">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {experienceData && experienceData.map((experience, index) => (
-                <tr key={index} className="bg-white text-gray-700">
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.institution || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.job_role || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.start_date || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.end_date || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.achievements || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                    {experience.description || "N/A"}
-                  </td>
-                  <td className="px-4 py-2 border border-gray-300">
-                  { (
+              {experienceData &&
+                experienceData.map((experience, index) => (
+                  <tr key={index} className="bg-white text-gray-700">
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.institution || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.role.jobrole_name || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.start_date || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.end_date || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.achievements || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {experience.description || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {
                         <button
                           onClick={() => {
-                            handleEdit(index)
-                            setIsFormVisible(true);
+                            handleEdit(index);
+                            // setIsFormVisible(true);
                             setIsEditing(true); // Reset editing state
                             setEditingRowIndex(index);
                           }}
@@ -142,16 +144,16 @@ const Experience = () => {
                         >
                           Edit
                         </button>
-                      )}
-                    <button
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      }
+                      <button
+                        className="bg-red-500 text-white px-2 py-1 rounded"
+                        onClick={() => handleDelete(index)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
           <div className="mt-4 flex justify-end">
@@ -191,7 +193,7 @@ const Experience = () => {
                 Job Role
               </label>
               <select
-                {...register("job_role", { required: true })}
+                {...register("role", { required: true })}
                 className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 {jobRole.map((role) => (
@@ -200,7 +202,6 @@ const Experience = () => {
                     value={role.id}
                     label={role.jobrole_name}
                   ></option>
-                  
                 ))}
               </select>
               {errors.jobRole && (
@@ -248,6 +249,7 @@ const Experience = () => {
               {errors.achievements && (
                 <span className="text-red-500 text-sm">
                   {errors.achievements.message}
+                  Achievments must be atleat 10 characters long
                 </span>
               )}
             </div>
@@ -291,4 +293,3 @@ const Experience = () => {
 };
 
 export default Experience;
-
