@@ -10,6 +10,7 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
+import { HiPencil } from "react-icons/hi";
 
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
@@ -36,7 +37,7 @@ const PrefrenceProfile = () => {
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("jobrole",jobRole)
+  console.log("jobrole", jobRole);
   const subject = useSelector((state) => state?.jobProfile?.subject);
   const teacherjobRole = useSelector(
     (state) => state.jobProfile?.teacherjobRole
@@ -74,77 +75,87 @@ const PrefrenceProfile = () => {
 
   return (
     <div className="px-2 py-2 ">
-      <h2 className="text-xl font-bold mb-4 mt-2 text-gray-600">
-        Preference Information
-      </h2>
+      <div className="flex  mb-4 items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-600">
+          Preference Information
+        </h2>
+        {!isEditingPrefrence && (
+          <button
+            className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition flex items-center gap-1"
+            onClick={() => setIsEditingPrefrence(true)}
+          >
+            Edit Preferences
+            <HiPencil  className="size-5 "/>
+          </button>
+        )}
+      </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="mb-4 px-2">
         {!isEditingPrefrence ? (
           <div className="">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-              {/* Class Category */}
-              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
-                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
-                  Class Category
-                </h3>
-                <p className="text-gray-800 text-sm font-medium mt-1">
-                  {(teacherprefrence?.class_category &&
-                    teacherprefrence?.class_category.name) ||
-                    "N/A"}
-                </p>
-              </div>
-
-              {/* Job Role */}
-              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
-                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
-                  Job Role
-                </h3>
-                <p className="text-gray-800 text-sm font-medium mt-1">
-                  {(teacherprefrence?.job_role &&
-                    teacherprefrence?.job_role.jobrole_name) ||
-                    "N/A"}
-                </p>
-              </div>
-
-              {/* Subject */}
-              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
-                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
-                  Subject
-                </h3>
-                <p className="text-gray-800 text-sm font-medium mt-1">
-                  {teacherprefrence?.prefered_subject &&
-                  teacherprefrence?.prefered_subject.length > 0
-                    ? teacherprefrence?.prefered_subject
-                        .map((subject) => subject.subject_name)
-                        .join(", ")
-                    : "N/A"}
-                </p>
-              </div>
-
-              {/* Preferred Job */}
-              <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
-                <h3 className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
-                  Preferred Job
-                </h3>
-                <p className="text-gray-800 text-sm font-medium mt-1">
-                  {teacherprefrence?.teacher_job_type &&
-                  teacherprefrence?.teacher_job_type.length > 0
-                    ? teacherprefrence?.teacher_job_type
-                        .map((jobrole) => jobrole.teacher_job_name)
-                        .join(", ")
-                    : "N/A"}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+              {[
+                {
+                  title: "Class Category",
+                  value:
+                    teacherprefrence?.class_category?.name || "Not Provided",
+                },
+                {
+                  title: "Job Role",
+                  value:
+                    teacherprefrence?.job_role?.jobrole_name || "Not Provided",
+                },
+                {
+                  title: "Subject",
+                  value:
+                    teacherprefrence?.prefered_subject?.length > 0
+                      ? teacherprefrence.prefered_subject
+                          .map((subject) => subject.subject_name)
+                          .join(", ")
+                      : "Not Provided",
+                },
+                {
+                  title: "Preferred Job",
+                  value:
+                    teacherprefrence?.teacher_job_type?.length > 0
+                      ? teacherprefrence.teacher_job_type
+                          .map((jobrole) => jobrole.teacher_job_name)
+                          .join(", ")
+                      : "Not Provided",
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-slate-50 rounded-lg shadow p-4 flex items-start gap-4 transition"
+                >
+                  {/* Icon Placeholder */}
+                  <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
+                    <span className="text-[#3E98C7] font-bold text-lg">
+                      {item.title.charAt(0)}
+                    </span>
+                  </div>
+                  {/* Content */}
+                  <div className="flex flex-col w-full">
+                    <h3 className="text-sm font-semibold text-[#3E98C7] uppercase tracking-wide">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-500 font-medium text-sm mt-1">
+                      {item.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-4 flex justify-end">
+            {/* Edit Button */}
+            {/* <div className="mt-6 flex justify-end">
               <button
-                className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow hover:bg-blue-700 transition"
+                className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition"
                 onClick={() => setIsEditingPrefrence(true)}
               >
                 Edit Preferences
               </button>
-            </div>
+            </div> */}
           </div>
         ) : (
           <form
@@ -175,28 +186,28 @@ const PrefrenceProfile = () => {
                 )}
               </div>
 
-                {/* Job Role */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Job Role 
-                  </label>
-                  <select
-                    {...register("job_role", { required: true })}
-                    className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    <option value="">Select a job role</option>
-                    {jobRole?.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.jobrole_name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.jobRole && (
-                    <span className="text-red-500 text-sm">
-                      This field is required
-                    </span>
-                  )}
-                </div>
+              {/* Job Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">
+                  Job Role
+                </label>
+                <select
+                  {...register("job_role", { required: true })}
+                  className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="">Select a job role</option>
+                  {jobRole?.map((role) => (
+                    <option key={role.id} value={role.jobrole_name}>
+                      {role.jobrole_name}
+                    </option>
+                  ))}
+                </select>
+                {errors.jobRole && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div>
 
               {/* Preferred Subjects */}
               <div>
@@ -266,13 +277,13 @@ const PrefrenceProfile = () => {
               <button
                 type="button"
                 onClick={() => setIsEditingPrefrence(false)}
-                className="py-2 px-5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                className="py-2 px-5 text-sm font-medium text-[#3E98C7] border border-[#3E98C7] rounded-lg hover:bg-blue-50 transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="py-2 px-7 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+                className="py-2 px-7 text-sm font-medium text-white bg-[#3E98C7] rounded-lg transition"
               >
                 Save
               </button>

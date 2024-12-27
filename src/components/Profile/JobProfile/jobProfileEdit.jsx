@@ -12,7 +12,7 @@ const JobProfileEdit = () => {
           <PrefrenceProfile/>
           <JobPrefrenceLocation/>
           <Experience/>
-          <Education/>
+          {/* <Education/> */}
         </div>
       </div>
   );
