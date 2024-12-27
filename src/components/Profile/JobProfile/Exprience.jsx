@@ -222,7 +222,7 @@ const Experience = () => {
                       {experience.institution || "N/A"}
                     </th>
                     <td className="px-6 py-4">
-                      {experience.job_role || "N/A"}
+                      {experience.role.jobrole_name || "N/A"}
                     </td>
                     <td className="px-6 py-4">
                       {experience.start_date || "N/A"}
@@ -237,7 +237,9 @@ const Experience = () => {
                       {experience.description || "N/A"}
                     </td>
                     <td className="pr-6 py-4 text-right">
-                      <button className="font-medium text-[#3E98C7] dark:text-blue-500">
+                      <button className="font-medium text-[#3E98C7] dark:text-blue-500"
+                        
+                      >
                         <HiPencil className="size-5" />
                       </button>
                       <button className="font-medium text-red-600 dark:text-red-600 ml-4">
