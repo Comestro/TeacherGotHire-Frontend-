@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/api/login/";
+const API_URL = "https://ptpi.tech/api/login/";
 
 const logInservice = async (email, password) => {
   const formData = new FormData();

@@ -15,12 +15,14 @@ function SignUpPage() {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm();
   const [error, setError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
 
   const password = watch("password");
@@ -28,32 +30,42 @@ function SignUpPage() {
   const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
     setError("");
+    setLoading(true); // Set loading to true
+
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
       if (userData) {
         setOtpSent(true);
         setEmail(email);
-        // dispatch(getPostData(userData));
-        // navigate("/teacher");
+        setSuccessMessage("An OTP has been sent to your email.");
       }
     } catch (error) {
       setError(error.message || "Failed to create account. Please try again.");
+    }
+    finally {
+      setLoading(false); // Set loading to false
     }
   };
 
   const verifyOtpHandler = async () => {
     setError("");
+    setLoading(true); // Set loading to true
+    setSuccessMessage("");
+
     try {
       const response = await verifyOtp({ email, otp });
-      if (response.ok) {
+      if (response) {
         dispatch(getPostData(response.data));
         navigate("/teacher");
       } else {
         setError(response.message || "Invalid OTP. Please try again.");
       }
     } catch (error) {
-      setError(error.message || "Failed to verify OTP. Please try again.");
+      setError(error.name || "Failed to verify OTP. Please try again.");
     } 
+    finally {
+      setLoading(false); // Set loading to false
+    }
   };
 
   return (
@@ -79,8 +91,8 @@ function SignUpPage() {
             </h2>
 
             {/* Error Message */}
-            {/* {error && <p className="text-red-600 text-center mb-4">{error}</p>} */}
-
+            {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+           
             <form onSubmit={handleSubmit(signup)} className="space-y-5">
               {/* Full Name */}
               <div className="flex gap-2">
@@ -211,10 +223,12 @@ function SignUpPage() {
 
               {/* Submit Button */}
               <Button
-                type="submit"
-                className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
+                type="submit" disabled={!isValid || loading} 
+                className={`w-full py-2 rounded-xl transition ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
+                }`}
               >
-                Sign Up
+                 {loading ? "Sending..." : "Sign Up"}
               </Button>
             </form>
 
@@ -266,9 +280,14 @@ function SignUpPage() {
             </>) : (
               <>
                <>
+               {successMessage && (
+                  <p className="bg-green-200 text-green-900 px-3 py-2 rounded border border-green-700 text-center mb-4">{successMessage}</p>
+                )}
                 <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
                   Verify OTP
                 </h2>
+                {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Enter OTP
@@ -283,9 +302,11 @@ function SignUpPage() {
                 </div>
                 <Button
                   onClick={verifyOtpHandler}
-                  className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
-                >
-                  Verify OTP
+                  disabled={!otp || loading} // Disable button when loading or OTP is empty
+                  className={`w-full py-2 rounded-xl transition ${
+                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
+                  }`}                >
+                  {loading ? "Verifying..." : "Verify OTP"}
                 </Button>
               </>
               </>

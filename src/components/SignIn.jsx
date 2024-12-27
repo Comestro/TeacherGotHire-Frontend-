@@ -13,9 +13,12 @@ function Login() {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const login = async ({ email, password }) => {
     setError(""); // Clear any previous errors
+    setLoading(true); // Set loading to true
+
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
       if (userData) {
@@ -24,6 +27,9 @@ function Login() {
       }
     } catch (error) {
       setError(error.message); // Set error message if login fails
+    }
+    finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -99,9 +105,35 @@ function Login() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition"
+                className={`w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition flex items-center justify-center ${
+                  loading ? "cursor-not-allowed" : ""
+                }`}
+                disabled={loading}
               >
-                Log In
+                {loading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Log In"
+                )}
               </Button>
             </form>
 

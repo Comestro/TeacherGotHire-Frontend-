@@ -93,7 +93,7 @@ const Skills = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg  font-bold text-gray-600 mb-3">Key Skills</h3>
         <button
-          onClick={openModal}
+          onClick={isModalOpen}
           className="text-blue-500 hover:underline text-sm flex items-center font-bold gap-1"
         >
           {/* <FiEdit2 /> */}
@@ -110,10 +110,9 @@ const Skills = () => {
               className="bg-blue-500 text-white px-3 py-1 rounded-full mr-2 mb-2"
             >
               {skill.skill.name}
-            </span>
-          ))}
-        </div>
-      )}
+            </div>
+          )) 
+      ) : null}
       <button
         onClick={() => setIsModalOpen(true)}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition mr-2"
@@ -197,7 +196,8 @@ const Skills = () => {
         </div>
       )}
     </div>
+    </div>
   );
-};
+}
 
 export default Skills;
