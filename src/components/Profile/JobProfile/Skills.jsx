@@ -33,7 +33,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-3xl">
+    <div className=" mt-5 p-6 bg-white shadow-md rounded-md">
       {/* Header Section */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg  font-bold text-gray-600 mb-3">Key Skills</h3>

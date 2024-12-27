@@ -54,9 +54,9 @@ const Experience = () => {
           start_date: data.start_date,
           end_date: data.end_date,
         };
-        console.log("payload",payload,id)
+        console.log("payload", payload, id);
 
-        await dispatch(putExprienceProfile({payload, id })).unwrap();
+        await dispatch(putExprienceProfile({ payload, id })).unwrap();
       } else {
         await dispatch(postExprienceProfile(data)).unwrap(); // Dispatch with new data
       }
@@ -241,19 +241,28 @@ const Experience = () => {
                     <td className="px-6 py-4">
                       {experience.start_date || "N/A"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 ">
                       {experience.achievements || "N/A"}
                     </td>
                     <td className="px-6 py-4">
                       {experience.description || "N/A"}
                     </td>
-                    <td className="pr-6 py-4 text-right">
-                      <button className="font-medium text-[#3E98C7] dark:text-blue-500"
-                        
+                    <td className="pr-6 py-4 text-right flex justify-center items-center">
+                      <button
+                        onClick={() => {
+                          handleEdit(index);
+                          setIsFormVisible(true);
+                          setIsEditing(true); // Reset editing state
+                          setEditingRowIndex(index);
+                        }}
+                        className="font-medium text-[#3E98C7] dark:text-blue-500"
                       >
                         <HiPencil className="size-5" />
                       </button>
-                      <button className="font-medium text-red-600 dark:text-red-600 ml-4">
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="font-medium text-red-600 dark:text-red-600 ml-2"
+                      >
                         <HiOutlineTrash className="size-5" />
                       </button>
                     </td>

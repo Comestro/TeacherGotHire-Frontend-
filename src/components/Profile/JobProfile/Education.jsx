@@ -10,6 +10,7 @@ import {
   putEducationProfile,
   delEducationProfile,
 } from "../../../features/jobProfileSlice";
+import { HiOutlineTrash, HiPencil } from "react-icons/hi";
 
 const Education = () => {
   const dispatch = useDispatch();
@@ -56,9 +57,9 @@ const Education = () => {
           year_of_passing: data.year_of_passing,
           grade_or_percentage: data.grade_or_percentage,
         };
-        console.log("payload",payload,id)
+        console.log("payload", payload, id);
 
-        await dispatch(putEducationProfile({payload, id })).unwrap();
+        await dispatch(putEducationProfile({ payload, id })).unwrap();
       } else {
         await dispatch(postEducationProfile(data)).unwrap(); // Dispatch with new data
       }
@@ -92,92 +93,157 @@ const Education = () => {
   };
 
   return (
-    <div className="max-w-4xl px-5 mt-auto">
-      <h2 className="text-xl font-bold mb-6 text-gray-700 text-center underline">
-        Teacher Education
-      </h2>
+    <div className="px-5 mt-5">
+      <div className="flex mb-4 justify-between items-center">
+        <h2 className="text-xl font-bold  text-gray-600">Teacher Education</h2>
+        <button
+          className="text-white bg-[#3E98C7] transition-colors px-6 py-2 rounded-md text-sm font-medium"
+          onClick={() => {
+            reset();
+            setIsEditing(true);
+          }}
+        >
+          Add Education
+        </button>
+      </div>
 
       {!isEditing ? (
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-teal-600 text-white">
-                <th className="px-4 py-2 border border-gray-300">
+        // <div className="overflow-x-auto">
+        //   <table className="table-auto w-full border-collapse border border-gray-300">
+        //     <thead>
+        //       <tr className="bg-teal-600 text-white">
+        //         <th className="px-4 py-2 border border-gray-300">
+        //           Institution
+        //         </th>
+        //         <th className="px-4 py-2 border border-gray-300">
+        //           qaulification
+        //         </th>
+        //         <th className="px-4 py-2 border border-gray-300">
+        //           Year of Passing
+        //         </th>
+        //         <th className="px-4 py-2 border border-gray-300">Grade</th>
+        //         <th className="px-4 py-2 border border-gray-300">Actions</th>
+        //       </tr>
+        //     </thead>
+        //     <tbody>
+        //       {educationData &&
+        //         educationData.map((experience, index) => (
+        //           <tr key={index} className="bg-white text-gray-700">
+        //             <td className="px-4 py-2 border border-gray-300">
+        //               {experience.institution || "N/A"}
+        //             </td>
+        //             <td className="px-4 py-2 border border-gray-300">
+        //               {experience.qualification.name || "N/A"}
+        //             </td>
+        //             <td className="px-4 py-2 border border-gray-300">
+        //               {experience.year_of_passing || "N/A"}
+        //             </td>
+        //             <td className="px-4 py-2 border border-gray-300">
+        //               {experience.grade_or_percentage || "N/A"}
+        //             </td>
+        //             <td className="px-4 py-2 border border-gray-300">
+        //               {
+        //                 <button
+        //                   onClick={() => {
+        //                     handleEdit(index);
+        //                     setIsFormVisible(true);
+        //                     setIsEditing(true); // Reset editing state
+        //                     setEditingRowIndex(index);
+        //                   }}
+        //                   className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
+        //                 >
+        //                   Edit
+        //                 </button>
+        //               }
+        //               <button
+        //                 className="bg-red-500 text-white px-2 py-1 rounded"
+        //                 onClick={() => handleDelete(index)}
+        //               >
+        //                 Delete
+        //               </button>
+        //             </td>
+        //           </tr>
+        //         ))}
+        //     </tbody>
+        //   </table>
+        // </div>
+        <div className="relative overflow-x-auto shadow sm:rounded-lg">
+          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+              <tr>
+                <th scope="col" className="px-6 py-3">
                   Institution
                 </th>
-                <th className="px-4 py-2 border border-gray-300">
-                  qaulification
+                <th scope="col" className="px-6 py-3">
+                  Qualification
                 </th>
-                <th className="px-4 py-2 border border-gray-300">
+                <th scope="col" className="px-6 py-3">
                   Year of Passing
                 </th>
-                <th className="px-4 py-2 border border-gray-300">Grade</th>
-                <th className="px-4 py-2 border border-gray-300">Actions</th>
+                <th scope="col" className="px-6 py-3">
+                  Grade
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  <span className="sr-only">Edit</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {educationData &&
                 educationData.map((experience, index) => (
-                  <tr key={index} className="bg-white text-gray-700">
-                    <td className="px-4 py-2 border border-gray-300">
+                  <tr
+                    key={index}
+                    className="bg-white border-b hover:bg-gray-50 "
+                  >
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+                    >
                       {experience.institution || "N/A"}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-300">
+                    </th>
+                    <td className="px-6 py-4">
                       {experience.qualification.name || "N/A"}
                     </td>
-                    <td className="px-4 py-2 border border-gray-300">
+                    <td className="px-6 py-4">
                       {experience.year_of_passing || "N/A"}
                     </td>
-                    <td className="px-4 py-2 border border-gray-300">
+                    <td className="px-6 py-4">
                       {experience.grade_or_percentage || "N/A"}
                     </td>
-                    <td className="px-4 py-2 border border-gray-300">
-                      {
-                        <button
-                          onClick={() => {
-                            handleEdit(index);
-                            setIsFormVisible(true);
-                            setIsEditing(true); // Reset editing state
-                            setEditingRowIndex(index);
-                          }}
-                          className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-                        >
-                          Edit
-                        </button>
-                      }
+                    <td className="pr-6 py-4 text-right flex justify-center items-center">
                       <button
-                        className="bg-red-500 text-white px-2 py-1 rounded"
-                        onClick={() => handleDelete(index)}
+                        onClick={() => {
+                          handleEdit(index);
+                          setIsFormVisible(true);
+                          setIsEditing(true); // Reset editing state
+                          setEditingRowIndex(index);
+                        }}
+                        className="font-medium text-[#3E98C7] dark:text-blue-500"
                       >
-                        Delete
+                        <HiPencil className="size-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="font-medium text-red-600 dark:text-red-600 ml-2"
+                      >
+                        <HiOutlineTrash className="size-5" />
                       </button>
                     </td>
                   </tr>
                 ))}
             </tbody>
           </table>
-          <div className="mt-4 flex justify-end">
-            <button
-              className="text-white bg-teal-600 hover:bg-teal-700 transition-colors px-6 py-2 rounded-md text-sm font-medium"
-              onClick={() => {
-                reset();
-                setIsEditing(true);
-              }}
-            >
-              Add Education
-            </button>
-          </div>
         </div>
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4 bg-gray-100 p-4 rounded-md shadow-md"
+          className="space-y-4 px-6 py-4 rounded-md border border-gray-300"
         >
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Input
                 label="Institution"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                className="w-full border-b border-gray-300 text-sm focus:outline-none p-3"
                 placeholder="Enter Institution"
                 type="text"
                 {...register("institution", { required: true })}
@@ -194,8 +260,11 @@ const Education = () => {
               </label>
               <select
                 {...register("qualification", { required: true })}
-                className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border-b border-gray-300 text-sm focus:outline-none p-3 focus:ring-teal-500"
               >
+                <option value="" disabled>
+                  Select Qualification
+                </option>
                 {qualification.map((role) => (
                   <option
                     key={role.id}
@@ -213,7 +282,7 @@ const Education = () => {
             <div>
               <Input
                 label="Year_of_Passing"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                className="w-full border-b border-gray-300 text-sm focus:outline-none p-3 focus:ring-teal-500"
                 placeholder="Enter Start Date"
                 type="text"
                 {...register("year_of_passing")}
@@ -227,7 +296,7 @@ const Education = () => {
             <div>
               <Input
                 label="Grade of percentage"
-                className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                className="w-full border-b border-gray-300 text-sm focus:outline-none p-3 focus:ring-teal-500"
                 placeholder="Grade of percentage"
                 type="text"
                 {...register("grade_or_percentage")}
@@ -239,23 +308,25 @@ const Education = () => {
               )}
             </div>
           </div>
-          <div className="flex justify-between">
-            <Button
-              onClick={() => {
-                setIsEditing(false);
-                reset();
-              }}
-              type="button"
-              className="bg-gray-500 text-white py-2 px-4 rounded-md"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="bg-teal-600 text-white py-2 px-4 rounded-md"
-            >
-              Save
-            </Button>
+          <div className="flex justify-end">
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setIsEditing(false);
+                  reset();
+                }}
+                type="button"
+                className="bg-red-500 text-white py-2 px-4 rounded-md"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-[#3E98C7] text-white py-2 px-4 rounded-md"
+              >
+                Save
+              </Button>
+            </div>
           </div>
         </form>
       )}
