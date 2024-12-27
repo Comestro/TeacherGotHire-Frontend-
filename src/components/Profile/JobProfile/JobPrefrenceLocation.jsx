@@ -362,7 +362,7 @@ const JobPrefrenceLocation = () => {
 
             {/* Buttons */}
             <div className="flex justify-end items-center space-x-4">
-              <button
+            <button
                 type="button"
                 onClick={() => setIsFormVisible(false)}
                 className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
@@ -375,6 +375,7 @@ const JobPrefrenceLocation = () => {
               >
                 {isEditing ? "Update Location" : "Add Location"}
               </button>
+              
             </div>
           </form>
         </div>

@@ -1,21 +1,22 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import { updateEducationProfile,fetchEducationProfile} from "../services/jobProfileService";
-import { updateSkillsProfile,fetchSkillsProfile } from "../services/jobProfileService";
+import { updateSkillsProfile,fetchSkillsProfile,deleteSkillProfile} from "../services/jobProfileService";
 import { addExprienceProfile,updateExprienceProfile,fetchExprienceProfile } from "../services/jobProfileService";
-import { fetchClassCategory, fetchSubject,fetchQualification } from "../services/jobProfileService";
+import { fetchClassCategory, fetchSubject,fetchQualification,fetchAllSkills} from "../services/jobProfileService";
 import { fetchTeacherPrefrence,updateTeacherPrefrence,fetchJobRole,fetchTeacherJobRole,fetchTeacherJobPrefrenceLocation,updateTeacherJobPrefrenceLocation,deleteTeacherJobPrefrenceLocation,editTeacherJobPrefrenceLocation,deleteExprienceProfile,deleteEducationProfile,addEducationProfile,} from "../services/jobProfileService";
 
 const initialState = {
   classCategories:[],
   jobRole:[],
   subject:[],
+  allSkill:[],
   teacherjobRole:[],
   qualification:[],
   prefrence:[],
   prefrenceLocation:[],
   educationData: [],
-  skillsData:[],
+  teacherSkill:[],
   exprienceData:[],
   status: "idle", 
   error: null,
@@ -93,6 +94,23 @@ export const getQualification= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchQualification();
+      console.log("getQualification",data)
+       // Call the service
+      return data; // Return the updated profile data
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+
+export const getAllSkills= createAsyncThunk(
+  "getAllSkills",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await fetchAllSkills();
       console.log("getQualification",data)
        // Call the service
       return data; // Return the updated profile data
@@ -301,7 +319,24 @@ export const getSkillsProfile = createAsyncThunk(
     "postSkillProfile",
     async (personalData, { rejectWithValue }) => {
       try {
-        const data = await updateExprienceProfile(personalData);
+        const data = await updateSkillsProfile(personalData);
+        console.log("data",data)
+         // Call the service
+        return data; // Return the updated profile data
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, // Only include the error message
+          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        });
+      }
+    }
+  );
+
+  export const delSkillProfile = createAsyncThunk(
+    "delSkillProfile",
+    async (personalData, { rejectWithValue }) => {
+      try {
+        const data = await deleteSkillProfile(personalData);
         console.log("data",data)
          // Call the service
         return data; // Return the updated profile data
@@ -426,7 +461,7 @@ const jobProfileSlice = createSlice({
 
        // for handeling  Teacherjob type
     builder
-    // for get data handeling
+    
       .addCase(getTeacherjobType.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -471,6 +506,24 @@ const jobProfileSlice = createSlice({
         console.log("qualification",action.payload)
       })
       .addCase(getQualification.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; 
+      });
+
+    // for handeling  All Skills
+    
+    builder
+    // for get data handeling
+      .addCase(getAllSkills.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getAllSkills.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.allSkill = action.payload; 
+        console.log("allSkill",action.payload)
+      })
+      .addCase(getAllSkills.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; 
       });
@@ -594,23 +647,23 @@ const jobProfileSlice = createSlice({
       // });
       
 
-      //hadle skills profile
+      // hadle skills profile
 
 
-      // builder
-      // .addCase(getSkillsProfile.pending, (state) => {
-      //   state.status = "loading";
-      //   state.error = null;
-      // })
-      // .addCase(getSkillsProfile.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   state.skillsData = action.payload; // Update profile data
-      //   console.log(action.payload)
-      // })
-      // .addCase(getSkillsProfile.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   state.error = action.payload; // Set error from rejected payload
-      // });
+      builder
+      .addCase(getSkillsProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getSkillsProfile.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.teacherSkill = action.payload; // Update profile data
+        console.log(action.payload)
+      })
+      .addCase(getSkillsProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
       
 
        //for post data handel

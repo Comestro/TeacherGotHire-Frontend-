@@ -49,8 +49,8 @@ const Experience = () => {
         const payload = {
           institution: data.institution,
           achievements: data.achievements,
-          role: data.role.id,
-          qualification: data.description,
+          role: data.role,
+          description: data.description,
           start_date: data.start_date,
           end_date: data.end_date,
         };
