@@ -3,6 +3,7 @@ import PrefrenceProfile from "./PrefrenceProfile";
 import JobPrefrenceLocation from "./JobPrefrenceLocation";
 import Experience from "./Exprience";
 import Education from "./Education";
+import Skills from "./Skills";
 
 const JobProfileEdit = () => {
   return (
@@ -12,7 +13,8 @@ const JobProfileEdit = () => {
           <PrefrenceProfile/>
           <JobPrefrenceLocation/>
           <Experience/>
-          {/* <Education/> */}
+          <Education/>
+          <Skills/>
         </div>
       </div>
   );

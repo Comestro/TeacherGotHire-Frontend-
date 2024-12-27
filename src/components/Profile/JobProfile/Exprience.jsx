@@ -16,7 +16,7 @@ import { HiOutlineTrash, HiPencil } from "react-icons/hi";
 const Experience = () => {
   const dispatch = useDispatch();
   const experienceData = useSelector(
-    (state) => state?.jobProfile.experienceData || []
+    (state) => state?.jobProfile?.exprienceData || []
   );
   console.log("experienceData", experienceData);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
@@ -41,15 +41,26 @@ const Experience = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("editingindex", editingIndex);
+      console.log("expata", data);
+      console.log("editindex", editingIndex);
       if (editingIndex !== null) {
         const id = experienceData[editingIndex].id;
-        console.log("id", id);
+        // Construct payload with only necessary fields
+        const payload = {
+          institution: data.institution,
+          achievements: data.achievements,
+          role: data.role.id,
+          qualification: data.description,
+          start_date: data.start_date,
+          end_date: data.end_date,
+        };
+        console.log("payload",payload,id)
 
-        await dispatch(putExprienceProfile({ data, id: id })).unwrap();
+        await dispatch(putExprienceProfile({payload, id })).unwrap();
       } else {
-        await dispatch(postExprienceProfile(data)).unwrap();
+        await dispatch(postExprienceProfile(data)).unwrap(); // Dispatch with new data
       }
+
       setEditingIndex(null);
       setIsEditing(false);
       reset();

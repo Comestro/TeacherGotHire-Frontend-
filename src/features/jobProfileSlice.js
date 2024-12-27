@@ -244,10 +244,12 @@ export const postEducationProfile = createAsyncThunk(
 
 export const putEducationProfile = createAsyncThunk(
   "putEducationProfile",
-  async (personalData, id , { rejectWithValue }) => {
+  
+  async ({payload, id }, { rejectWithValue }) => {
     try {
-      const data = await updateEducationProfile(personalData, id);
-      console.log("data",data)
+      console.log("payload",payload,id)
+      const data = await updateEducationProfile({payload, id });
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -348,10 +350,10 @@ export const getSkillsProfile = createAsyncThunk(
 
   export const putExprienceProfile = createAsyncThunk(
     "putExprienceProfile",
-    async (personalData, { rejectWithValue }) => {
+    async ({payload, id }, { rejectWithValue }) => {
       try {
-        console.log("putexpe",personalData)
-        const data = await updateExprienceProfile(personalData);
+        console.log("putexpe",{payload, id })
+        const data = await updateExprienceProfile({payload, id });
         console.log("data",data)
          // Call the service
         return data; // Return the updated profile data

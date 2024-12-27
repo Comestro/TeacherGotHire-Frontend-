@@ -85,10 +85,10 @@ export const fetchQualification = async()=>{
   }
 }
 
-export const updateEducationProfile = async(educationdata, id)=>{
+export const updateEducationProfile = async({payload, id })=>{
      try{
-        console.log("educdata",educationdata)
-        const response = await apiClient.put(`api/self/teacherqualification/${id}/`,{...educationdata});
+        console.log("payload",payload,id)
+        const response = await apiClient.put(`api/self/teacherqualification/${id}/`,payload);
         console.log("eduresponse",response);
         console.log("hello");
         return JSON.parse(JSON.stringify(response)); 
@@ -157,10 +157,10 @@ export const fetchSkillsProfile = async()=>{
   }
 }
 
-export const updateExprienceProfile = async(expriencedata)=>{
+export const updateExprienceProfile = async({payload, id })=>{
   try{
-    console.log("exp",expriencedata.data)
-    const response = await apiClient.put(`api/self/teacherexperience/${expriencedata.id}/`,expriencedata.data);
+    console.log("exp",{payload, id })
+    const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
     console.log("response",response.data);
     return JSON.parse(JSON.stringify(response));
   }

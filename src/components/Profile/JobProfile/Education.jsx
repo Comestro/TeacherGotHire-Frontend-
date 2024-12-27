@@ -56,8 +56,9 @@ const Education = () => {
           year_of_passing: data.year_of_passing,
           grade_or_percentage: data.grade_or_percentage,
         };
+        console.log("payload",payload,id)
 
-        await dispatch(putEducationProfile({ ...payload, id })).unwrap();
+        await dispatch(putEducationProfile({payload, id })).unwrap();
       } else {
         await dispatch(postEducationProfile(data)).unwrap(); // Dispatch with new data
       }

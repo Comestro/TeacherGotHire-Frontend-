@@ -61,10 +61,7 @@ function App() {
 
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
-            <Route
-              index
-              element={<TeacherRecruiter />}
-            />
+            <Route index element={<TeacherRecruiter />} />
             <Route
               path="personal-profile"
               element={<PrivateRoute element={<EditPersonalProfile />} />}
@@ -132,7 +129,12 @@ function App() {
               token ? <ManageClassCategory /> : <Navigate to="/signin" />
             }
           />
-          <Route path="/admin/manage/teacher/jobtype" element={token ? <ManageTeacherJobType/> : <Navigate to="/signin" />} />
+          <Route
+            path="/admin/manage/teacher/jobtype"
+            element={
+              token ? <ManageTeacherJobType /> : <Navigate to="/signin" />
+            }
+          />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
