@@ -10,6 +10,7 @@ const EditableField = ({
   isEditing,
   onToggleEdit,
   onSave,
+  field,
   inputType = "text",
   options = [],
 }) => {
@@ -47,11 +48,13 @@ const EditableField = ({
           <input
             type={inputType}
             value={tempValue}
+            placeholder={"Type " + label}
             onChange={(e) => setTempValue(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         )}
       </div>
+      {(field != "email" && field != "Fname" )&& (
       <div className="flex items-center space-x-2">
         {isEditing ? (
           <>
@@ -77,6 +80,7 @@ const EditableField = ({
           </button>
         )}
       </div>
+      )}
     </div>
   );
 };
@@ -109,7 +113,7 @@ const BasicInformation = () => {
   };
 
   const fields = [
-    { label: "Name", field: "Fname", value: profile.Fname },
+    { label: "Name", field: "Fname", value: profile.Fname + " " + profile.Lname },
     {
       label: "Email Address",
       field: "email",
@@ -121,7 +125,17 @@ const BasicInformation = () => {
       field: "phone_number",
       value: basicData.phone_number,
     },
-    { label: "Language", field: "language", value: basicData.language },
+    { 
+      label: "Language", 
+      field: "language", 
+      value: basicData.language,
+      inputType: "select",
+      options: [
+        { label: "Hindi", value: "Hindi" },
+        { label: "English", value: "English" },
+        { label: "Other", value: "Other" },
+      ],
+       },
     {
       label: "Marital Status",
       field: "marital_status",
@@ -129,11 +143,23 @@ const BasicInformation = () => {
       inputType: "select",
       options: [
         { label: "Single", value: "single" },
-        { label: "Married", value: "married" },
+        { label: "Married", value: "Married" },
         { label: "Unmarried", value: "unmarried" },
       ],
     },
-    { label: "Religion", field: "religion", value: basicData.religion },
+    { 
+      label: "Religion",
+      field:"religion",
+      inputType:"select",
+      value: basicData.religion,
+      options: [
+        { label: "Hindu", value: "Hindu" },
+        { label: "Muslim", value: "Muslim" },
+        { label: "Sikh", value: "Sikh" }, 
+        { label: "Cristian", value: "Cristian" },
+        { label: "Other", value: "Other" },
+      ],
+     },
   ];
 
   return (
@@ -145,6 +171,7 @@ const BasicInformation = () => {
         <React.Fragment key={field}>
           <EditableField
             label={label}
+            field={field}
             value={value}
             isEditing={editingFields[field]}
             onToggleEdit={(state) => toggleEditingField(field, state)}
