@@ -1,16 +1,22 @@
 import React from 'react'
 import TeacherRecruiterHeader from './components/RecruiterHeader'
 import { Outlet } from 'react-router-dom'
+import RecruiterSidebar from './components/RecruiterSidebar'
 
 const RecruiterLayout = () => {
   return (
-    <div className='flex flex-col min:h-screen bg-gray-100"'>
-        <div className="">
-            <TeacherRecruiterHeader />
+    <div className="">
+      <div className="">
+        <TeacherRecruiterHeader />
+      </div>
+      <div className="flex ">
+        <div className="w-72">
+          <RecruiterSidebar />
         </div>
-        <div className="">
-            <Outlet />
+        <div className="w-full">
+          <Outlet />
         </div>
+      </div>
     </div>
   )
 }

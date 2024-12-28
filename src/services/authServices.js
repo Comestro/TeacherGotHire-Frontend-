@@ -37,6 +37,22 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
   }
 };
 
+// recruiter register
+export const createRecruiterAccount = async ({ Fname, Lname, email, password }) => {
+  try {
+    const response = await apiClient.post('/api/recruiter/register/', { Fname, Lname, email, password });
+    if (response.status === 200){  
+      const { token } = response.data;
+      localStorage.setItem('access_token', token);
+    }
+    return response.data;
+  }
+  catch(err) {
+    console.error('Registration error:', err.response?.data || err);
+    throw err;
+  }
+};
+
 export const fetchUserData = async()=>{
   try{
      const response = await apiClient.get('/api/self/customuser/');
@@ -65,23 +81,19 @@ export const verifyOtp = async ({ email, otp }) => {
 // Login User
 export const login = async ({ email, password }) => {
   try {
-    // If the backend expects JSON payload
     const response = await apiClient.post('/api/login/', { email, password });
 
+    const { access_token, role } = response.data; 
 
-      // Parse the token from the response
-      const { access_token } = response.data;
-      //console.log('Login archana:', access_token);
+    localStorage.setItem('access_token', access_token);
+    console.log('User logged in:', access_token);
 
-      // Store token in localStorage
-      localStorage.setItem('access_token', access_token);
-      console.log('User logged in:', access_token);
-
-      return response.data;
+    return { access_token, role };
   } catch (err) {
     throw err;
   }
 };
+
 
 
 export const logout = () => {

@@ -20,7 +20,12 @@ function Login() {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
       if (userData) {
         dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
-        navigate("/teacher"); // Redirect to teacher dashboard after login
+        
+        if (userData.role === "recruiter") {
+          navigate("/recruiter");
+        } else {
+          navigate("/teacher"); 
+        }
       }
     } catch (error) {
       setError(error.message); // Set error message if login fails
@@ -48,7 +53,6 @@ function Login() {
             </h2>
 
             {/* Error Message */}
-
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
             <form onSubmit={handleSubmit(login)} className="space-y-5">

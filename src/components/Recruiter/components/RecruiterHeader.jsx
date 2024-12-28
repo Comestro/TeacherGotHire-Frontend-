@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -65,22 +67,20 @@ const TeacherRecruiterHeader = () => {
           </button>
         </div>
 
-        {/* Buttons */}
         <div className="flex items-center space-x-4">
-          <a
-            href="/login"
+          <Link
+            to="/signin"
             className="hidden md:inline-block px-4 py-2 text-sm text-teal-500 border border-teal-500 rounded hover:bg-teal-500 hover:text-white transition"
           >
             Login
-          </a>
-          <a
-            href="/register"
+          </Link>
+          <Link
+            to="/recruitersignup/recruiter"
             className="hidden md:inline-block px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600 transition"
           >
             Register
-          </a>
+          </Link>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-gray-700 hover:text-teal-500 focus:outline-none"
             onClick={toggleMobileMenu}

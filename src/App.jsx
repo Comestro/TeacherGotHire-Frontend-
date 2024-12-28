@@ -28,14 +28,15 @@ import ViewTeacher_Admin from "./admin/Manage-teacher/ViewTeacher";
 import ManageClassCategory from "./admin/Manage-class-category/ManageClassCategory";
 import MCQGuidelinePage from "./components/Exam/MCQGuidelinePage";
 import PublicLayout from "./components/PublicLayout";
-import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
+import ManageTeacherJobType from "./admin/Manage-teacherjobtype/ManageTeacherJobType";
 import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
+import RecruiterSignUpPage from "./components/RecruiterSignup";
 
 // import Logout from "./components/Logout";
 
 // Private Route Component
-const PrivateRoute = ({ element }) => {
+const PrivateRoute = ({ element}) => {
   const token = localStorage.getItem("access_token");
   return token ? element : <Navigate to="/signin" />;
 };
@@ -55,6 +56,7 @@ function App() {
             <Route path="/exam" element={<ExamPortal />} />
             <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
+            <Route path="/recruitersignup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-guide" element={<MCQGuidelinePage />} />
           </Route>
@@ -63,10 +65,10 @@ function App() {
           <Route path="/recruiter" element={<RecruiterLayout />}>
             <Route
               index
-              element={<TeacherRecruiter />}
+              element={<PrivateRoute element={<TeacherRecruiter/>} />}
             />
             <Route
-              path="personal-profile"
+              path="single_view"
               element={<PrivateRoute element={<EditPersonalProfile />} />}
             />
             <Route

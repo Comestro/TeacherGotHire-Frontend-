@@ -1,6 +1,6 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import {createaccount,fetchUserData} from "../services/authServices";
+import {createaccount,createRecruiterAccount,fetchUserData} from "../services/authServices";
 
 const initialState = {
   userData: {},
@@ -40,7 +40,20 @@ export const getPostData = createAsyncThunk(
     }
   }
 );
-
+export const createRecruiter = createAsyncThunk(
+  "auth/createRecruiter",
+  async ({ Fname, Lname, email, password }, { rejectWithValue }) => {
+    try {
+      const data = await createRecruiterAccount({ Fname, Lname, email, password });
+      return data; // Return the recruiter data after successful registration
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Provide error message
+        code: error.code || "UNKNOWN_ERROR", // Add custom error code
+      });
+    }
+  }
+);
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -81,6 +94,28 @@ const authSlice = createSlice({
       })
       // Handle rejected state
       .addCase(getPostData.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
+
+
+
+      // recruiter data
+
+      builder
+      // Handle pending state
+      .addCase(createRecruiter.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      // Handle fulfilled state
+      .addCase(createRecruiter.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.userData = action.payload; 
+      
+      })
+      // Handle rejected state
+      .addCase(createRecruiter.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
