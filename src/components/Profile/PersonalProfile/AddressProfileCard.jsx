@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -13,6 +13,12 @@ import {
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { toast } from "react-toastify";
+
+const Loader = () => (
+  <div className="flex justify-center items-center py-4">
+    <div className="loader border-t-[#3E98C7] border-4 w-8 h-8 rounded-full animate-spin"></div>
+  </div>
+);
 
 const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const {
@@ -132,16 +138,18 @@ const AddressCard = ({ title, data, onEdit }) => (
       </button>
     </div>
     <p>
-  {data.area || data.district || data.state || data.pincode ? (
-    <>
-      {data.area || "Not Provided"}{", "}
-      {data.district || "Not Provided"}{", "}{data.state || "Not Provided"} (
-      {data.pincode || "Not Provided"})
-    </>
-  ) : (
-    "No address details provided"
-  )}
-</p>
+      {data.area || data.district || data.state || data.pincode ? (
+        <>
+          {data.area || "Not Provided"}
+          {", "}
+          {data.district || "Not Provided"}
+          {", "}
+          {data.state || "Not Provided"} ({data.pincode || "Not Provided"})
+        </>
+      ) : (
+        "No address details provided"
+      )}
+    </p>
   </div>
 );
 
@@ -151,6 +159,8 @@ const AddressProfileCard = () => {
     (state) => state.personalProfile.address || {}
   );
   const [isEditingType, setIsEditingType] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const formRef = useRef(null);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -158,6 +168,7 @@ const AddressProfileCard = () => {
 
   const handleSave = async (data) => {
     const payload = { ...data, address_type: isEditingType };
+    setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
         await updateAddressProfile(payload);
@@ -171,8 +182,16 @@ const AddressProfileCard = () => {
       dispatch(getAddress());
     } catch {
       toast.error("Failed to save address");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isEditingType && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isEditingType]);
 
   return (
     <div className="md:p-5 space-y-4 mt-4">
@@ -180,13 +199,16 @@ const AddressProfileCard = () => {
         Address Information
       </h2>
       <div className="grid grid-cols-1 gap-6">
+        {loading && <Loader />}
         {isEditingType === "current" ? (
-          <AddressForm
-            type="current"
-            addressData={personalProfile.current_address}
-            onSubmit={handleSave}
-            onCancel={() => setIsEditingType(null)}
-          />
+          <div ref={formRef}>
+            <AddressForm
+              type="current"
+              addressData={personalProfile.current_address}
+              onSubmit={handleSave}
+              onCancel={() => setIsEditingType(null)}
+            />
+          </div>
         ) : (
           <AddressCard
             title="Current Address"
@@ -195,12 +217,14 @@ const AddressProfileCard = () => {
           />
         )}
         {isEditingType === "permanent" ? (
-          <AddressForm
-            type="permanent"
-            addressData={personalProfile.permanent_address}
-            onSubmit={handleSave}
-            onCancel={() => setIsEditingType(null)}
-          />
+          <div ref={formRef}>
+            <AddressForm
+              type="permanent"
+              addressData={personalProfile.permanent_address}
+              onSubmit={handleSave}
+              onCancel={() => setIsEditingType(null)}
+            />
+          </div>
         ) : (
           <AddressCard
             title="Permanent Address"
