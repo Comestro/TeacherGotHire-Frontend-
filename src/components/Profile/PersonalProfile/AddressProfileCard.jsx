@@ -29,6 +29,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
     formState: { errors },
   } = useForm();
 
+  const [loadingPincode, setLoadingPincode] = useState(false);
+
+
   useEffect(() => {
     if (addressData) reset(addressData);
   }, [addressData, reset]);
@@ -36,6 +39,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const handlePincodeChange = async (e) => {
     const pincode = e.target.value;
     if (pincode.length === 6) {
+      setLoadingPincode(true);
       try {
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
         if (response.data[0].Status === "Success") {
@@ -49,6 +53,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
         }
       } catch {
         toast.error("Failed to fetch Pincode details");
+      }
+      finally {
+        setLoadingPincode(false);
       }
     }
   };
@@ -71,6 +78,11 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           {errors.pincode && (
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
+           {loadingPincode && (
+            <div className="mt-2">
+              <Loader />
+            </div>
+          )}
         </div>
 
         {/* State and District Fields */}
@@ -81,7 +93,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
               {...register("state")}
               placeholder="State"
               readOnly
-              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -90,7 +102,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
               {...register("district")}
               placeholder="District"
               readOnly
-              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
             />
           </div>
         </div>
