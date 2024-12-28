@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { IoLocationSharp } from "react-icons/io5";
-import { HiOutlineTrash, HiPencil  } from "react-icons/hi";
+import { HiOutlineTrash, HiPencil } from "react-icons/hi";
 
 const JobPrefrenceLocation = () => {
   const dispatch = useDispatch();
@@ -173,71 +173,121 @@ const JobPrefrenceLocation = () => {
         )}
       </div>
       {jobLocations.length > 0 && (
-
-        <div className="relative overflow-x-auto shadow sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-              <tr>
-                <th scope="col" className="px-6 py-3">
-                  Pincode
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  State
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  District
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Block
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Area
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Postoffice
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  <span className="sr-only">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobLocations.map((location, index) => (
-                <tr className="bg-white border-b hover:bg-gray-50 ">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        // <div className="relative overflow-x-auto shadow sm:rounded-lg">
+        //   <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+        //     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+        //       <tr>
+        //         <th scope="col" className="px-6 py-3">
+        //           Pincode
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           State
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           District
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           Block
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           Area
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           Postoffice
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           <span className="sr-only">Edit</span>
+        //         </th>
+        //       </tr>
+        //     </thead>
+        //     <tbody>
+        //       {jobLocations.map((location, index) => (
+        //         <tr className="bg-white border-b hover:bg-gray-50 ">
+        //           <th
+        //             scope="row"
+        //             className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        //           >
+        //             {location.pincode}
+        //           </th>
+        //           <td className="px-6 py-4">{location.state}</td>
+        //           <td className="px-6 py-4">{location.city}</td>
+        //           <td className="px-6 py-4">{location.block}</td>
+        //           <td className="px-6 py-4">{location.area}</td>
+        //           <td className="px-6 py-4">{location.post_office}</td>
+        //           <td className="pr-6 py-4 text-right">
+        //             <button
+        //               onClick={() => {
+        //                 handleEdit(index);
+        //                 setIsFormVisible(true);
+        //                 setIsEditing(true); // Reset editing state
+        //                 setEditingRowIndex(index);
+        //               }}
+        //               className="font-medium text-[#3E98C7] dark:text-blue-500"
+        //             >
+        //               <HiPencil className="size-5"/>
+        //             </button>
+        //             <button
+        //               onClick={() => handleDelete(index)}
+        //               className="font-medium text-red-600 dark:text-red-600 ml-4"
+        //             >
+        //               <HiOutlineTrash className="size-5"/>
+        //             </button>
+        //           </td>
+        //         </tr>
+        //       ))}
+        //     </tbody>
+        //   </table>
+        // </div>
+        <div className="grid grid-cols-1 border rounded-md px-5 gap-4 bg-slate-50">
+          {jobLocations.map((location, index) => (
+            <div
+              key={index}
+              className=" rounded-lg p-4 transition-shadow"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg font-medium text-gray-900">
+                  {location.area}
+                </h2>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => {
+                      handleEdit(index);
+                      setIsFormVisible(true);
+                      setIsEditing(true);
+                      setEditingRowIndex(index);
+                    }}
+                    className="text-gray-500 hover:text-gray-600"
                   >
-                    {location.pincode}
-                  </th>
-                  <td className="px-6 py-4">{location.state}</td>
-                  <td className="px-6 py-4">{location.city}</td>
-                  <td className="px-6 py-4">{location.block}</td>
-                  <td className="px-6 py-4">{location.area}</td>
-                  <td className="px-6 py-4">{location.post_office}</td>
-                  <td className="pr-6 py-4 text-right">
-                    <button
-                      onClick={() => {
-                        handleEdit(index);
-                        setIsFormVisible(true);
-                        setIsEditing(true); // Reset editing state
-                        setEditingRowIndex(index);
-                      }}
-                      className="font-medium text-[#3E98C7] dark:text-blue-500"
-                    >
-                      <HiPencil className="size-5"/>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="font-medium text-red-600 dark:text-red-600 ml-4"
-                    >
-                      <HiOutlineTrash className="size-5"/>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <HiPencil className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(index)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <HiOutlineTrash className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+              <div className="text-sm text-gray-700">
+                <p>
+                  <strong className="mr-2">District:</strong> {location.city}
+                </p>
+                <p>
+                  <strong className="mr-2">State:</strong> {location.state}
+                </p>
+                <p>
+                  <strong className="mr-2">Block:</strong> {location.block}
+                </p>
+                <p>
+                  <strong className="mr-2">Pincode:</strong> {location.pincode}
+                </p>
+                <p>
+                  <strong className="mr-2">Postoffice:</strong> {location.post_office}
+                </p>
+              </div>
+              <hr className="mt-4"/>
+            </div>
+          ))}
         </div>
       )}
       {!isFormVisible && jobLocations.length < 0 && (
@@ -362,7 +412,7 @@ const JobPrefrenceLocation = () => {
 
             {/* Buttons */}
             <div className="flex justify-end items-center space-x-4">
-            <button
+              <button
                 type="button"
                 onClick={() => setIsFormVisible(false)}
                 className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
@@ -375,7 +425,6 @@ const JobPrefrenceLocation = () => {
               >
                 {isEditing ? "Update Location" : "Add Location"}
               </button>
-              
             </div>
           </form>
         </div>
