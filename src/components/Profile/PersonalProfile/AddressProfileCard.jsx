@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +14,12 @@ import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { toast } from "react-toastify";
 
+const Loader = () => (
+  <div className="flex justify-center items-center py-4">
+    <div className="loader border-t-[#3E98C7] border-4 w-8 h-8 rounded-full animate-spin"></div>
+  </div>
+);
+
 const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const {
     register,
@@ -23,6 +29,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
     formState: { errors },
   } = useForm();
 
+  const [loadingPincode, setLoadingPincode] = useState(false);
+
+
   useEffect(() => {
     if (addressData) reset(addressData);
   }, [addressData, reset]);
@@ -30,6 +39,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const handlePincodeChange = async (e) => {
     const pincode = e.target.value;
     if (pincode.length === 6) {
+      setLoadingPincode(true);
       try {
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
         if (response.data[0].Status === "Success") {
@@ -43,6 +53,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
         }
       } catch {
         toast.error("Failed to fetch Pincode details");
+      }
+      finally {
+        setLoadingPincode(false);
       }
     }
   };
@@ -65,6 +78,11 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           {errors.pincode && (
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
+           {loadingPincode && (
+            <div className="mt-2">
+              <Loader />
+            </div>
+          )}
         </div>
 
         {/* State and District Fields */}
@@ -75,7 +93,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
               {...register("state")}
               placeholder="State"
               readOnly
-              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -84,7 +102,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
               {...register("district")}
               placeholder="District"
               readOnly
-              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
             />
           </div>
         </div>
@@ -132,16 +150,18 @@ const AddressCard = ({ title, data, onEdit }) => (
       </button>
     </div>
     <p>
-  {data.area || data.district || data.state || data.pincode ? (
-    <>
-      {data.area || "Not Provided"}{", "}
-      {data.district || "Not Provided"}{", "}{data.state || "Not Provided"} (
-      {data.pincode || "Not Provided"})
-    </>
-  ) : (
-    "No address details provided"
-  )}
-</p>
+      {data.area || data.district || data.state || data.pincode ? (
+        <>
+          {data.area || "Not Provided"}
+          {", "}
+          {data.district || "Not Provided"}
+          {", "}
+          {data.state || "Not Provided"} ({data.pincode || "Not Provided"})
+        </>
+      ) : (
+        "No address details provided"
+      )}
+    </p>
   </div>
 );
 
@@ -151,6 +171,8 @@ const AddressProfileCard = () => {
     (state) => state.personalProfile.address || {}
   );
   const [isEditingType, setIsEditingType] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const formRef = useRef(null);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -158,6 +180,7 @@ const AddressProfileCard = () => {
 
   const handleSave = async (data) => {
     const payload = { ...data, address_type: isEditingType };
+    setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
         await updateAddressProfile(payload);
@@ -171,8 +194,16 @@ const AddressProfileCard = () => {
       dispatch(getAddress());
     } catch {
       toast.error("Failed to save address");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isEditingType && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isEditingType]);
 
   return (
     <div className="md:p-5 space-y-4 mt-4">
@@ -180,13 +211,16 @@ const AddressProfileCard = () => {
         Address Information
       </h2>
       <div className="grid grid-cols-1 gap-6">
+        {loading && <Loader />}
         {isEditingType === "current" ? (
-          <AddressForm
-            type="current"
-            addressData={personalProfile.current_address}
-            onSubmit={handleSave}
-            onCancel={() => setIsEditingType(null)}
-          />
+          <div ref={formRef}>
+            <AddressForm
+              type="current"
+              addressData={personalProfile.current_address}
+              onSubmit={handleSave}
+              onCancel={() => setIsEditingType(null)}
+            />
+          </div>
         ) : (
           <AddressCard
             title="Current Address"
@@ -195,12 +229,14 @@ const AddressProfileCard = () => {
           />
         )}
         {isEditingType === "permanent" ? (
-          <AddressForm
-            type="permanent"
-            addressData={personalProfile.permanent_address}
-            onSubmit={handleSave}
-            onCancel={() => setIsEditingType(null)}
-          />
+          <div ref={formRef}>
+            <AddressForm
+              type="permanent"
+              addressData={personalProfile.permanent_address}
+              onSubmit={handleSave}
+              onCancel={() => setIsEditingType(null)}
+            />
+          </div>
         ) : (
           <AddressCard
             title="Permanent Address"

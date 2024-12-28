@@ -31,6 +31,7 @@ import PublicLayout from "./components/PublicLayout";
 import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
+import ManageLevel from "./admin/Manage-level/ManageLevel";
 
 // import Logout from "./components/Logout";
 
@@ -45,7 +46,7 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
@@ -133,6 +134,12 @@ function App() {
             path="/admin/manage/teacher/jobtype"
             element={
               token ? <ManageTeacherJobType /> : <Navigate to="/signin" />
+            }
+          />
+          <Route
+            path="/admin/manage/level"
+            element={
+              token ? <ManageLevel /> : <Navigate to="/signin" />
             }
           />
 
