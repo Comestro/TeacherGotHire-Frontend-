@@ -26,6 +26,7 @@ import SupportIcon from "@mui/icons-material/Support";
 import LockIcon from "@mui/icons-material/Lock";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import ClassIcon from "@mui/icons-material/Class";
+import LayersIcon from "@mui/icons-material/Layers";
 import { Collapse, Tooltip } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -105,6 +106,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
     { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
     { text: "Manage Qualification", icon: <AssignmentIcon />, link: "/admin/manage/qualification" },
     { text: "Manage Class Category", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+    { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
 ];
 
   return (

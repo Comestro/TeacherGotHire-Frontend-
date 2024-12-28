@@ -23,22 +23,25 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Alert } from "@mui/material";
 import Layout from "../Admin/Layout";
 import {
-  getClassCategory,
-  updateClassCategory,
-  deleteClassCategory,
-  createClassCategory,
-} from "../../services/adminClassCategoryApi";
+  getLevel,
+  updateLevel,
+  createLevel,
+  deleteLevel,
+  deleteAllLevel,
+} from "../../services/adminManageLevel";
 
 const ManageLevel = () => {
-  const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openAddEditModal, setOpenAddEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState(null);
+  const [selectedLevels, setSelectedLevels] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -50,86 +53,96 @@ const ManageLevel = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchLevels = async () => {
       try {
-        const data = await getClassCategory();
-        setCategories(data);
+        const data = await getLevel();
+        setLevels(data);
       } catch (error) {
-        setError("Failed to fetch class categories");
+        setError("Failed to fetch levels");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
+    fetchLevels();
   }, []);
 
-  const handleOpenAddEditModal = (category = null) => {
-    setSelectedCategory(category);
+  const handleOpenAddEditModal = (level = null) => {
+    setSelectedLevel(level);
     setOpenAddEditModal(true);
   };
 
   const handleCloseAddEditModal = () => {
-    setSelectedCategory(null);
+    setSelectedLevel(null);
     setOpenAddEditModal(false);
   };
 
-  const handleOpenDeleteModal = (category) => {
-    setSelectedCategory(category);
+  const handleOpenDeleteModal = (level) => {
+    setSelectedLevel(level);
     setOpenDeleteModal(true);
   };
 
   const handleCloseDeleteModal = () => {
-    setSelectedCategory(null);
+    setSelectedLevel(null);
     setOpenDeleteModal(false);
   };
 
-  const handleSaveCategory = async () => {
+  const handleOpenViewModal = (level) => {
+    setSelectedLevel(level);
+    setOpenViewModal(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setSelectedLevel(null);
+    setOpenViewModal(false);
+  };
+
+  const handleSaveLevel = async () => {
     try {
-      if (selectedCategory.id) {
-        await updateClassCategory(selectedCategory.id, selectedCategory);
-        setCategories(
-          categories.map((cat) =>
-            cat.id === selectedCategory.id ? selectedCategory : cat
+      if (selectedLevel.id) {
+        await updateLevel(selectedLevel.id, selectedLevel);
+        setLevels(
+          levels.map((lvl) =>
+            lvl.id === selectedLevel.id ? selectedLevel : lvl
           )
         );
         setSnackbar({
           open: true,
-          message: "Category updated successfully!",
+          message: "Level updated successfully!",
           severity: "success",
         });
       } else {
-        const newCategory = await createClassCategory(selectedCategory);
-        setCategories([...categories, newCategory]);
+        const newLevel = await createLevel(selectedLevel);
+        setLevels([...levels, newLevel]);
         setSnackbar({
           open: true,
-          message: "Category added successfully!",
+          message: "Level added successfully!",
           severity: "success",
         });
       }
     } catch (error) {
       setSnackbar({
         open: true,
-        message: "Failed to save category",
+        message: "Failed to save level",
         severity: "error",
       });
     }
     handleCloseAddEditModal();
   };
 
-  const handleDeleteCategory = async () => {
+  const handleDeleteLevel = async () => {
     try {
-      await deleteClassCategory(selectedCategory.id);
-      setCategories(categories.filter((cat) => cat.id !== selectedCategory.id));
+      await deleteLevel(selectedLevel.id);
+      setLevels(levels.filter((lvl) => lvl.id !== selectedLevel.id));
       setSnackbar({
         open: true,
-        message: "Category deleted successfully!",
+        message: "Level deleted successfully!",
         severity: "success",
       });
     } catch (error) {
       setSnackbar({
         open: true,
-        message: "Failed to delete category",
+        message: "Failed to delete level",
         severity: "error",
       });
     }
@@ -139,30 +152,30 @@ const ManageLevel = () => {
   const handleBulkDelete = async () => {
     try {
       await Promise.all(
-        selectedCategories.map((categoryId) => deleteClassCategory(categoryId))
+        selectedLevels.map((levelId) => deleteLevel(levelId))
       );
-      setCategories(categories.filter((cat) => !selectedCategories.includes(cat.id)));
-      setSelectedCategories([]);
+      setLevels(levels.filter((lvl) => !selectedLevels.includes(lvl.id)));
+      setSelectedLevels([]);
       setSnackbar({
         open: true,
-        message: "Selected categories deleted successfully!",
+        message: "Selected levels deleted successfully!",
         severity: "success",
       });
     } catch (error) {
       setSnackbar({
         open: true,
-        message: "Failed to delete selected categories",
+        message: "Failed to delete selected levels",
         severity: "error",
       });
     }
   };
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLevels = levels.filter((lvl) =>
+    lvl.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const pageCount = Math.ceil(filteredCategories.length / itemsPerPage);
-  const currentCategories = filteredCategories.slice(
+  const pageCount = Math.ceil(filteredLevels.length / itemsPerPage);
+  const currentLevels = filteredLevels.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -189,7 +202,7 @@ const ManageLevel = () => {
               startIcon={<AddIcon />}
               onClick={() => handleOpenAddEditModal()}
             >
-              Add New Class Category
+              Add New Level
             </Button>
           </CardContent>
         </Card>
@@ -203,13 +216,13 @@ const ManageLevel = () => {
                 alignItems="center"
               >
                 <Typography variant="h6" gutterBottom>
-                  Class Categories
+                  Levels
                 </Typography>
                 <Box display="flex" alignItems="center">
                   <TextField
                     variant="outlined"
                     size="small"
-                    placeholder="Search by category name"
+                    placeholder="Search by level name"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     InputProps={{
@@ -228,51 +241,69 @@ const ManageLevel = () => {
                     <TableRow>
                       <TableCell padding="checkbox">
                         <Checkbox
-                          checked={selectedCategories.length === filteredCategories.length}
+                          checked={
+                            selectedLevels.length === filteredLevels.length
+                          }
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedCategories(filteredCategories.map((category) => category.id));
+                              setSelectedLevels(
+                                filteredLevels.map((level) => level.id)
+                              );
                             } else {
-                              setSelectedCategories([]);
+                              setSelectedLevels([]);
                             }
                           }}
                         />
                       </TableCell>
                       <TableCell>ID</TableCell>
                       <TableCell>Name</TableCell>
+                      <TableCell>Description</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentCategories.map((category) => (
-                      <TableRow key={category.id}>
+                    {currentLevels.map((level, index) => (
+                      <TableRow key={level.id}>
                         <TableCell padding="checkbox">
                           <Checkbox
-                            checked={selectedCategories.includes(category.id)}
+                            checked={selectedLevels.includes(level.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedCategories([...selectedCategories, category.id]);
+                                setSelectedLevels([
+                                  ...selectedLevels,
+                                  level.id,
+                                ]);
                               } else {
-                                setSelectedCategories(
-                                  selectedCategories.filter((id) => id !== category.id)
+                                setSelectedLevels(
+                                  selectedLevels.filter(
+                                    (id) => id !== level.id
+                                  )
                                 );
                               }
                             }}
                           />
                         </TableCell>
-                        <TableCell>{category.id}</TableCell>
-                        <TableCell>{category.name}</TableCell>
+                        <TableCell>{index + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
+                        <TableCell>{level.name}</TableCell>
+                        <TableCell>{level.description}</TableCell>
                         <TableCell>
+                          <Tooltip title="View">
+                            <IconButton
+                              onClick={() => handleOpenViewModal(level)}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
                           <Tooltip title="Edit">
                             <IconButton
-                              onClick={() => handleOpenAddEditModal(category)}
+                              onClick={() => handleOpenAddEditModal(level)}
                             >
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete">
                             <IconButton
-                              onClick={() => handleOpenDeleteModal(category)}
+                              onClick={() => handleOpenDeleteModal(level)}
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -297,7 +328,7 @@ const ManageLevel = () => {
                 variant="contained"
                 color="secondary"
                 onClick={handleBulkDelete}
-                disabled={selectedCategories.length === 0}
+                disabled={selectedLevels.length === 0}
               >
                 Delete Selected
               </Button>
@@ -321,19 +352,29 @@ const ManageLevel = () => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              {selectedCategory
-                ? "Edit Class Category"
-                : "Add New Class Category"}
+              {selectedLevel ? "Edit Level" : "Add New Level"}
             </Typography>
             <TextField
               fullWidth
               margin="normal"
-              label="Category Name"
-              value={selectedCategory ? selectedCategory.name : ""}
+              label="Level Name"
+              value={selectedLevel ? selectedLevel.name : ""}
               onChange={(e) =>
-                setSelectedCategory({
-                  ...selectedCategory,
+                setSelectedLevel({
+                  ...selectedLevel,
                   name: e.target.value,
+                })
+              }
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Description"
+              value={selectedLevel ? selectedLevel.description : ""}
+              onChange={(e) =>
+                setSelectedLevel({
+                  ...selectedLevel,
+                  description: e.target.value,
                 })
               }
             />
@@ -348,9 +389,45 @@ const ManageLevel = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSaveCategory}
+                onClick={handleSaveLevel}
               >
                 Save
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+
+        <Modal open={openViewModal} onClose={handleCloseViewModal}>
+          <Box
+            p={4}
+            bgcolor="background.paper"
+            sx={{
+              width: "90%",
+              maxWidth: "400px",
+              margin: "auto",
+              marginTop: "10%",
+              boxShadow: 3,
+              borderRadius: 2,
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              View Level
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              <strong>Name:</strong> {selectedLevel?.name}
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              <strong>Description:</strong> {selectedLevel?.description}
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCloseViewModal}
+              >
+                Close
               </Button>
             </Box>
           </Box>
@@ -372,11 +449,11 @@ const ManageLevel = () => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              Delete Class Category
+              Delete Level
             </Typography>
             <Typography variant="body1" gutterBottom>
-              Are you sure you want to delete this class category? This action
-              cannot be undone.
+              Are you sure you want to delete this level? This action cannot be
+              undone.
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -389,7 +466,7 @@ const ManageLevel = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleDeleteCategory}
+                onClick={handleDeleteLevel}
               >
                 Confirm
               </Button>
