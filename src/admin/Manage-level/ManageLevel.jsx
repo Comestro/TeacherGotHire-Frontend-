@@ -32,7 +32,7 @@ import {
   createClassCategory,
 } from "../../services/adminClassCategoryApi";
 
-const ManageClassCategory = () => {
+const ManageLevel = () => {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openAddEditModal, setOpenAddEditModal] = useState(false);
@@ -181,7 +181,7 @@ const ManageClassCategory = () => {
         <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
           <CardContent>
             <Typography variant="h4" gutterBottom>
-              Manage Class Categories
+              Manage Level
             </Typography>
             <Button
               variant="contained"
@@ -293,7 +293,6 @@ const ManageClassCategory = () => {
                   />
                 </Box>
               )}
-              <br />
               <Button
                 variant="contained"
                 color="secondary"
@@ -415,4 +414,4 @@ const ManageClassCategory = () => {
   );
 };
 
-export default ManageClassCategory;
+export default ManageLevel;
