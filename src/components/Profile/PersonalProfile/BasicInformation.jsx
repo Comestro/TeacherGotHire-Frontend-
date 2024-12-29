@@ -54,32 +54,32 @@ const EditableField = ({
           />
         )}
       </div>
-      {(field != "email" && field != "Fname" )&& (
-      <div className="flex items-center space-x-2">
-        {isEditing ? (
-          <>
+      {field != "email" && field != "Fname" && (
+        <div className="flex items-center space-x-2">
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleCancel}
+                className="px-5 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
+              >
+                <HiX />
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-5 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
+              >
+                <HiCheck />
+              </button>
+            </>
+          ) : (
             <button
-              onClick={handleCancel}
-              className="px-5 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
+              onClick={() => onToggleEdit(true)}
+              className="text-gray-500 p-2   hover:bg-[#E5F1F9] rounded-full"
             >
-              <HiX />
+              <HiPencil className="size-5 text-[#3E98C7]" />
             </button>
-            <button
-              onClick={handleSave}
-              className="px-5 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600"
-            >
-              <HiCheck />
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => onToggleEdit(true)}
-            className="text-gray-500 p-2   hover:bg-[#E5F1F9] rounded-full"
-          >
-            <HiPencil  className="size-5 text-[#3E98C7]"/>
-          </button>
-        )}
-      </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -113,7 +113,11 @@ const BasicInformation = () => {
   };
 
   const fields = [
-    { label: "Name", field: "Fname", value: profile.Fname + " " + profile.Lname },
+    {
+      label: "Name",
+      field: "Fname",
+      value: profile.Fname + " " + profile.Lname,
+    },
     {
       label: "Email Address",
       field: "email",
@@ -125,17 +129,17 @@ const BasicInformation = () => {
       field: "phone_number",
       value: basicData.phone_number,
     },
-    { 
-      label: "Language", 
-      field: "language", 
+    {
+      label: "Language",
+      field: "language",
       value: basicData.language,
       inputType: "select",
       options: [
-        { label: "Hindi", value: "Hindi" },
+        { label: "Hindi", value: "hindi" },
         { label: "English", value: "English" },
         { label: "Other", value: "Other" },
       ],
-       },
+    },
     {
       label: "Marital Status",
       field: "marital_status",
@@ -147,19 +151,19 @@ const BasicInformation = () => {
         { label: "Unmarried", value: "unmarried" },
       ],
     },
-    { 
+    {
       label: "Religion",
-      field:"religion",
-      inputType:"select",
+      field: "religion",
+      inputType: "select",
       value: basicData.religion,
       options: [
         { label: "Hindu", value: "Hindu" },
         { label: "Muslim", value: "Muslim" },
-        { label: "Sikh", value: "Sikh" }, 
+        { label: "Sikh", value: "Sikh" },
         { label: "Cristian", value: "Cristian" },
         { label: "Other", value: "Other" },
       ],
-     },
+    },
   ];
 
   return (

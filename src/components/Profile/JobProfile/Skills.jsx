@@ -13,9 +13,12 @@ const Skills = () => {
   const dispatch = useDispatch();
 
   const skillsData = useSelector((state) => state.jobProfile.allSkill || []);
+
   const teacherSkill = useSelector(
     (state) => state.jobProfile.teacherSkill || []
   );
+  console.log("teacherSkill",teacherSkill)
+  console.log("teacherSkill",skillsData)
 
   const [teacherSkills, setTeacherSkills] = useState(teacherSkill || []);
   const { handleSubmit, register, watch, setValue } = useForm();
@@ -27,6 +30,10 @@ const Skills = () => {
     dispatch(getAllSkills());
     dispatch(getSkillsProfile());
   }, [dispatch]);
+
+  const fetchSkills=()=>{
+    dispatch(getSkillsProfile());
+  }
 
   // Update suggestions when input value changes
   useEffect(() => {
@@ -46,6 +53,7 @@ const Skills = () => {
         return; // Skill already added
       }
       await dispatch(postSkillsProfile({ skill: skill.id })).unwrap();
+      fetchSkills();
       setTeacherSkills([...teacherSkills, { skill }]);
       setValue("skillInput", "");
       setSuggestions([]);
@@ -56,14 +64,23 @@ const Skills = () => {
 
   const handleRemoveSelectedSkill = async (skillToRemove) => {
     try {
+      console.log("skilldata",skillToRemove)
       await dispatch(delSkillProfile(skillToRemove)).unwrap();
+      fetchSkills();
       setTeacherSkills(
-        teacherSkills.filter(
+        teacherSkill.filter(
           (skill) => skill.skill.id !== skillToRemove.skill.id
         )
       );
+     
     } catch (error) {
       console.error("Error removing skill:", error);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (inputValue === "") {
+      setSuggestions(skillsData);
     }
   };
 
@@ -80,6 +97,7 @@ const Skills = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="mb-2">
           <input
             type="text"
+            onFocus={handleInputFocus}
             {...register("skillInput")}
             placeholder="Type a skill..."
             className="border-b border-gray-300 w-full p-2 mb-2 focus:outline-none"
@@ -102,11 +120,11 @@ const Skills = () => {
 
       <div className="mb-4 px-4">
         <h3 className="font-semibold mb-2 text-gray-600">Selected Skills:</h3>
-        {teacherSkills.length === 0 ? (
+        {teacherSkill.length === 0 ? (
           <p className="text-gray-500">No skills added yet</p>
         ) : (
           <div className="flex flex-wrap">
-            {teacherSkills.map((skill, index) => (
+            {teacherSkill.map((skill, index) => (
               <div
                 key={index}
                 className="bg-[#E5F1F9] text-[#3E98C7] flex items-center px-3 py-1 rounded-full mr-2 mb-2"

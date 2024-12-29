@@ -1,7 +1,20 @@
 import React from 'react';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 const MCQGuidelinePage = () => {
+
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
+
+  const questions = useSelector((state)=>state.examQues.allQuestion)
+  console.log("allqyes",questions)
+
+  const handleLanguageChange = (event) => {
+    setSelectedLanguage(event.target.value);
+    console.log("Selected Language:", event.target.value);
+  };
+
   return (
     <div className="min-h-screen text-gray-800">
       {/* Header */}
@@ -30,11 +43,26 @@ const MCQGuidelinePage = () => {
           </ul>
 
           <div className="mt-6">
+          <div className="flex flex-col items-start space-y-2">
+              <label htmlFor="language" className="text-gray-700 font-medium">
+                Choose the language:
+              </label>
+              <select
+                id="language"
+                value={selectedLanguage}
+                onChange={handleLanguageChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Hindi">Hindi</option>
+                <option value="English">English</option>
+              </select>
+            </div>
             <label className="flex items-center space-x-2">
               <input type="checkbox" className="form-checkbox h-5 w-5 text-teal-600" />
               <span>I have read and agree to the guidelines</span>
             </label>
           </div>
+
 
           <div className="mt-4 text-center">
             <Link to="/exam" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">

@@ -12,8 +12,8 @@ import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
 
 function TeacherDashboard() {
   const subjects = useSelector((state) => state.dashboard.subjects.data || []);
-  console.log("sub", subjects);
-  console.log("subject", subjects);
+  // console.log("sub", subjects);
+  // console.log("subject", subjects);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
