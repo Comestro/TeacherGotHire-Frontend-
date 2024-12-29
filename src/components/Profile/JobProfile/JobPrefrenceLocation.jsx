@@ -172,72 +172,7 @@ const JobPrefrenceLocation = () => {
           </button>
         )}
       </div>
-      {jobLocations.length > 0 && (
-        // <div className="relative overflow-x-auto shadow sm:rounded-lg">
-        //   <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-        //     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-        //       <tr>
-        //         <th scope="col" className="px-6 py-3">
-        //           Pincode
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           State
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           District
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Block
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Area
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Postoffice
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           <span className="sr-only">Edit</span>
-        //         </th>
-        //       </tr>
-        //     </thead>
-        //     <tbody>
-        //       {jobLocations.map((location, index) => (
-        //         <tr className="bg-white border-b hover:bg-gray-50 ">
-        //           <th
-        //             scope="row"
-        //             className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
-        //           >
-        //             {location.pincode}
-        //           </th>
-        //           <td className="px-6 py-4">{location.state}</td>
-        //           <td className="px-6 py-4">{location.city}</td>
-        //           <td className="px-6 py-4">{location.block}</td>
-        //           <td className="px-6 py-4">{location.area}</td>
-        //           <td className="px-6 py-4">{location.post_office}</td>
-        //           <td className="pr-6 py-4 text-right">
-        //             <button
-        //               onClick={() => {
-        //                 handleEdit(index);
-        //                 setIsFormVisible(true);
-        //                 setIsEditing(true); // Reset editing state
-        //                 setEditingRowIndex(index);
-        //               }}
-        //               className="font-medium text-[#3E98C7] dark:text-blue-500"
-        //             >
-        //               <HiPencil className="size-5"/>
-        //             </button>
-        //             <button
-        //               onClick={() => handleDelete(index)}
-        //               className="font-medium text-red-600 dark:text-red-600 ml-4"
-        //             >
-        //               <HiOutlineTrash className="size-5"/>
-        //             </button>
-        //           </td>
-        //         </tr>
-        //       ))}
-        //     </tbody>
-        //   </table>
-        // </div>
+      {jobLocations.length > 0 && !isFormVisible && (
         <div className="grid grid-cols-1 border rounded-md px-5 gap-4 bg-slate-50">
           {jobLocations.map((location, index) => (
             <div
