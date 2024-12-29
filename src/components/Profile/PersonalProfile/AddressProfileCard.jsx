@@ -167,15 +167,18 @@ const AddressProfileCard = () => {
   }, [dispatch]);
 
   const handleSave = async (data) => {
+    console.log("archana",data)
     const payload = { ...data, address_type: isEditingType };
+    console.log("arcPayload",payload);
+    //console.log("adreestype",address_type)
     setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
-        await updateAddressProfile(payload);
-        dispatch(putAddress(payload));
+        //await updateAddressProfile(payload);
+        await dispatch(putAddress(payload)).unwrap();
       } else {
-        await addAddressProfile(payload);
-        dispatch(postAddress(payload));
+        //await addAddressProfile(payload);
+        await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");
       setIsEditingType(null);

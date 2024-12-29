@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {getAllQues} from "../../features/examQuesSlice"
 import { useNavigate } from "react-router-dom";
-import { fetchQuestions } from "../../features/questionSlice";
 import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
@@ -22,9 +22,13 @@ const ExamPortal = () => {
   ];
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { data: questions, loading, error } = useSelector(
-    (state) => state.questions
-  );
+
+  const questions = useSelector((state)=>state.examQues.allQuestion)
+  console.log("allqyes",questions)
+
+  
+  //const questions = useSelector((state)= state?.examQues);
+  //console.log("allquestion",questions)
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -32,13 +36,10 @@ const ExamPortal = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    dispatch(fetchQuestions());
+    dispatch(getAllQues());
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(fetchQuestions());
-  }, [dispatch]);
-
+ 
   // Debug loaded questions
   useEffect(() => {
     if (questions && questions.length > 0) {
@@ -78,8 +79,8 @@ const ExamPortal = () => {
     navigate("/result", { state: { selectedAnswers, questions } });
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
 
   const currentQuestion = questions[currentQuestionIndex];
 

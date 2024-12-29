@@ -334,9 +334,9 @@ export const getSkillsProfile = createAsyncThunk(
 
   export const delSkillProfile = createAsyncThunk(
     "delSkillProfile",
-    async (personalData, { rejectWithValue }) => {
+    async (skillToRemove, { rejectWithValue }) => {
       try {
-        const data = await deleteSkillProfile(personalData);
+        const data = await deleteSkillProfile(skillToRemove);
         console.log("data",data)
          // Call the service
         return data; // Return the updated profile data
@@ -658,7 +658,7 @@ const jobProfileSlice = createSlice({
       .addCase(getSkillsProfile.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.teacherSkill = action.payload; // Update profile data
-        console.log(action.payload)
+        console.log("teacher",action.payload)
       })
       .addCase(getSkillsProfile.rejected, (state, action) => {
         state.status = "failed";

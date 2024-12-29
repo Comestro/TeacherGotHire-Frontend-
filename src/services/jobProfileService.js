@@ -148,7 +148,7 @@ export const deleteEducationProfile = async(expriencedata)=>{
 }
 export const updateSkillsProfile = async(skillsdata)=>{
   try{
-    console.log("data sadique " + skillsdata);
+    // console.log("data sadique ", skillsdata);
     const response = await apiClient.post('api/self/teacherskill/',skillsdata);
     console.log(response.data);
     return JSON.parse(JSON.stringify(response));
@@ -169,10 +169,10 @@ export const fetchSkillsProfile = async()=>{
          throw err;
   }
 }
-export const deleteSkillProfile = async(expriencedata)=>{
+export const deleteSkillProfile = async(skillToRemove)=>{
   try{
-     const response = await apiClient.delete(`api/self/teacherskill/${expriencedata.id}/`,expriencedata.name);
-     console.log("get data:",response.data);
+     console.log("sikll",skillToRemove)
+     const response = await apiClient.delete(`api/self/teacherskill/${skillToRemove.id}/`,skillToRemove.name);
      return response.data;
   }
      catch (err) {
