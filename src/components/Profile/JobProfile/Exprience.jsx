@@ -106,170 +106,142 @@ const Experience = () => {
       </div>
 
       {!isEditing ? (
-        // <div className="overflow-x-auto">
-        //   <table className="table-auto w-full border-collapse border border-gray-300">
-        //     <thead>
-        //       <tr className="text-gray-500">
-        //         <th className="px-4 py-2 text-base font-medium border">
+        // <div className="relative overflow-x-auto shadow sm:rounded-lg">
+        //   <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+        //     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+        //       <tr>
+        //         <th scope="col" className="px-6 py-3">
         //           Institution
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
+        //         <th scope="col" className="px-6 py-3">
         //           Job Role
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
+        //         <th scope="col" className="px-6 py-3">
         //           Start Date
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
+        //         <th scope="col" className="px-6 py-3">
         //           End Date
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
+        //         <th scope="col" className="px-6 py-3">
         //           Achievements
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
+        //         <th scope="col" className="px-6 py-3">
         //           Description
         //         </th>
-        //         <th className="px-4 py-2 text-base font-medium border">
-        //           Actions
+        //         <th scope="col" className="px-6 py-3">
+        //           <span className="sr-only">Edit</span>
         //         </th>
         //       </tr>
         //     </thead>
         //     <tbody>
         //       {experienceData &&
         //         experienceData.map((experience, index) => (
-        //           <tr key={index} className="bg-white text-gray-700">
-        //             <td className="px-4 py-2 border border-gray-300">
+        //           <tr
+        //             key={index}
+        //             className="bg-white border-b hover:bg-gray-50 "
+        //           >
+        //             <th
+        //               scope="row"
+        //               className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        //             >
         //               {experience.institution || "N/A"}
+        //             </th>
+        //             <td className="px-6 py-4">
+        //               {experience.role.jobrole_name || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
-        //               {experience.job_role || "N/A"}
-        //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             <td className="px-6 py-4">
         //               {experience.start_date || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
-        //               {experience.end_date || "N/A"}
+        //             <td className="px-6 py-4">
+        //               {experience.start_date || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             <td className="px-6 py-4 ">
         //               {experience.achievements || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             <td className="px-6 py-4">
         //               {experience.description || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
-        //               {
-        //                 <button
-        //                   onClick={() => {
-        //                     handleEdit(index);
-        //                     setIsFormVisible(true);
-        //                     setIsEditing(true); // Reset editing state
-        //                     setEditingRowIndex(index);
-        //                   }}
-        //                   className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-        //                 >
-        //                   Edit
-        //                 </button>
-        //               }
+        //             <td className="pr-6 py-4 text-right flex justify-center items-center">
         //               <button
-        //                 className="bg-red-500 text-white px-2 py-1 rounded"
-        //                 onClick={() => handleDelete(index)}
+        //                 onClick={() => {
+        //                   handleEdit(index);
+        //                   setIsFormVisible(true);
+        //                   setIsEditing(true); // Reset editing state
+        //                   setEditingRowIndex(index);
+        //                 }}
+        //                 className="font-medium text-[#3E98C7] dark:text-blue-500"
         //               >
-        //                 Delete
+        //                 <HiPencil className="size-5" />
+        //               </button>
+        //               <button
+        //                 onClick={() => handleDelete(index)}
+        //                 className="font-medium text-red-600 dark:text-red-600 ml-2"
+        //               >
+        //                 <HiOutlineTrash className="size-5" />
         //               </button>
         //             </td>
         //           </tr>
         //         ))}
         //     </tbody>
         //   </table>
-        //   <div className="mt-4 flex justify-end">
-        //     {/* <button
-        //       className="text-white flex items-center bg-[#3E98C7] hover:bg-teal-700 transition-colors px-4 py-2 rounded-md text-sm font-medium"
-        //       onClick={() => {
-        //         reset();
-        //         setIsEditing(true);
-        //       }}
-        //     >
-        //       Add Experience <IoMdAddCircleOutline className="size-5 ml-1 mt-1"/>
-        //     </button> */}
-        //   </div>
         // </div>
-        <div className="relative overflow-x-auto shadow sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-              <tr>
-                <th scope="col" className="px-6 py-3">
-                  Institution
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Job Role
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Start Date
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  End Date
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Achievements
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Description
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  <span className="sr-only">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {experienceData &&
-                experienceData.map((experience, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b hover:bg-gray-50 "
-                  >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        <div className="flex flex-col gap-4 border bg-slate-50 rounded-md px-4 py-4">
+          {experienceData &&
+            experienceData.map((experience, index) => (
+              <div
+                key={index}
+                className="transition-shadow  px-4"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {experience.institution || "N/A"}
+                  </h2>
+                  <div className="flex space-x-4 items-center">
+                    <button
+                      onClick={() => {
+                        handleEdit(index);
+                        setIsFormVisible(true);
+                        setIsEditing(true);
+                        setEditingRowIndex(index);
+                      }}
+                      className="text-blue-500 hover:text-blue-600"
                     >
-                      {experience.institution || "N/A"}
-                    </th>
-                    <td className="px-6 py-4">
-                      {experience.role.jobrole_name || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {experience.start_date || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {experience.start_date || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 ">
-                      {experience.achievements || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {experience.description || "N/A"}
-                    </td>
-                    <td className="pr-6 py-4 text-right flex justify-center items-center">
-                      <button
-                        onClick={() => {
-                          handleEdit(index);
-                          setIsFormVisible(true);
-                          setIsEditing(true); // Reset editing state
-                          setEditingRowIndex(index);
-                        }}
-                        className="font-medium text-[#3E98C7] dark:text-blue-500"
-                      >
-                        <HiPencil className="size-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(index)}
-                        className="font-medium text-red-600 dark:text-red-600 ml-2"
-                      >
-                        <HiOutlineTrash className="size-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                      <HiPencil className="h-6 w-6 text-gray-500" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <HiOutlineTrash className="h-6 w-6" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-1">
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold mr-2">Job Role:</span>{" "}
+                    {experience.role.jobrole_name || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold mr-2">Start Date:</span>{" "}
+                    {experience.start_date || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold mr-2">End Date:</span>{" "}
+                    {experience.end_date || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold mr-2">Achievements:</span>{" "}
+                    {experience.achievements || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold mr-2">Description:</span>{" "}
+                    {experience.description || "N/A"}
+                  </p>
+                </div>
+                <hr className="mt-4"/>
+              </div>
+            ))}
+            
         </div>
       ) : (
         <form

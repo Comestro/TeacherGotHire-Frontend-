@@ -108,58 +108,66 @@ const Education = () => {
       </div>
 
       {!isEditing ? (
-        // <div className="overflow-x-auto">
-        //   <table className="table-auto w-full border-collapse border border-gray-300">
-        //     <thead>
-        //       <tr className="bg-teal-600 text-white">
-        //         <th className="px-4 py-2 border border-gray-300">
+        // <div className="relative overflow-x-auto shadow sm:rounded-lg">
+        //   <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+        //     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+        //       <tr>
+        //         <th scope="col" className="px-6 py-3">
         //           Institution
         //         </th>
-        //         <th className="px-4 py-2 border border-gray-300">
-        //           qaulification
+        //         <th scope="col" className="px-6 py-3">
+        //           Qualification
         //         </th>
-        //         <th className="px-4 py-2 border border-gray-300">
+        //         <th scope="col" className="px-6 py-3">
         //           Year of Passing
         //         </th>
-        //         <th className="px-4 py-2 border border-gray-300">Grade</th>
-        //         <th className="px-4 py-2 border border-gray-300">Actions</th>
+        //         <th scope="col" className="px-6 py-3">
+        //           Grade
+        //         </th>
+        //         <th scope="col" className="px-6 py-3">
+        //           <span className="sr-only">Edit</span>
+        //         </th>
         //       </tr>
         //     </thead>
         //     <tbody>
         //       {educationData &&
         //         educationData.map((experience, index) => (
-        //           <tr key={index} className="bg-white text-gray-700">
-        //             <td className="px-4 py-2 border border-gray-300">
+        //           <tr
+        //             key={index}
+        //             className="bg-white border-b hover:bg-gray-50 "
+        //           >
+        //             <th
+        //               scope="row"
+        //               className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        //             >
         //               {experience.institution || "N/A"}
-        //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             </th>
+        //             <td className="px-6 py-4">
         //               {experience.qualification.name || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             <td className="px-6 py-4">
         //               {experience.year_of_passing || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
+        //             <td className="px-6 py-4">
         //               {experience.grade_or_percentage || "N/A"}
         //             </td>
-        //             <td className="px-4 py-2 border border-gray-300">
-        //               {
-        //                 <button
-        //                   onClick={() => {
-        //                     handleEdit(index);
-        //                     setIsFormVisible(true);
-        //                     setIsEditing(true); // Reset editing state
-        //                     setEditingRowIndex(index);
-        //                   }}
-        //                   className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-        //                 >
-        //                   Edit
-        //                 </button>
-        //               }
+        //             <td className="pr-6 py-4 text-right flex justify-center items-center">
         //               <button
-        //                 className="bg-red-500 text-white px-2 py-1 rounded"
-        //                 onClick={() => handleDelete(index)}
+        //                 onClick={() => {
+        //                   handleEdit(index);
+        //                   setIsFormVisible(true);
+        //                   setIsEditing(true); // Reset editing state
+        //                   setEditingRowIndex(index);
+        //                 }}
+        //                 className="font-medium text-[#3E98C7] dark:text-blue-500"
         //               >
-        //                 Delete
+        //                 <HiPencil className="size-5" />
+        //               </button>
+        //               <button
+        //                 onClick={() => handleDelete(index)}
+        //                 className="font-medium text-red-600 dark:text-red-600 ml-2"
+        //               >
+        //                 <HiOutlineTrash className="size-5" />
         //               </button>
         //             </td>
         //           </tr>
@@ -167,72 +175,53 @@ const Education = () => {
         //     </tbody>
         //   </table>
         // </div>
-        <div className="relative overflow-x-auto shadow sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-              <tr>
-                <th scope="col" className="px-6 py-3">
-                  Institution
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Qualification
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Year of Passing
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Grade
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  <span className="sr-only">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {educationData &&
-                educationData.map((experience, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b hover:bg-gray-50 "
-                  >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+        <div className="grid grid-cols-1 border rounded-md bg-slate-50 px-4 gap-4">
+          {educationData &&
+            educationData.map((experience, index) => (
+              <div
+                key={index}
+                className="p-4 "
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    {experience.institution || "Institution"}
+                  </h2>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => {
+                        handleEdit(index);
+                        setIsFormVisible(true);
+                        setIsEditing(true);
+                        setEditingRowIndex(index);
+                      }}
+                      className="text-gray-500 hover:text-gray-600"
                     >
-                      {experience.institution || "N/A"}
-                    </th>
-                    <td className="px-6 py-4">
-                      {experience.qualification.name || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {experience.year_of_passing || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {experience.grade_or_percentage || "N/A"}
-                    </td>
-                    <td className="pr-6 py-4 text-right flex justify-center items-center">
-                      <button
-                        onClick={() => {
-                          handleEdit(index);
-                          setIsFormVisible(true);
-                          setIsEditing(true); // Reset editing state
-                          setEditingRowIndex(index);
-                        }}
-                        className="font-medium text-[#3E98C7] dark:text-blue-500"
-                      >
-                        <HiPencil className="size-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(index)}
-                        className="font-medium text-red-600 dark:text-red-600 ml-2"
-                      >
-                        <HiOutlineTrash className="size-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                      <HiPencil className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <HiOutlineTrash className="h-6 w-6" />
+                    </button>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-700 space-y-1">
+                  <p>
+                    <strong className="mr-2">Qualification:</strong>{" "}
+                    {experience.qualification.name || "N/A"}
+                  </p>
+                  <p>
+                    <strong className="mr-2">Year of Passing:</strong>{" "}
+                    {experience.year_of_passing || "N/A"}
+                  </p>
+                  <p>
+                    <strong className="mr-2">Grade:</strong>{" "}
+                    {experience.grade_or_percentage || "N/A"}
+                  </p>
+                </div>
+              </div>
+            ))}
         </div>
       ) : (
         <form

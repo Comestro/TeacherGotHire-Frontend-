@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -31,106 +31,16 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
+import {
+  getQuestions,
+  getQuestionById,
+  updateQuestion,
+  deleteQuestion,
+  deleteAllQuestions,
+} from "../../services/adminManageQuestion";
 
 const ManageQuestion = () => {
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      text: "What is the capital of India?",
-      category: "Geography",
-      type: "Multiple Choice",
-      difficulty: "Easy",
-      dateAdded: "2023-01-01",
-    },
-    {
-      id: 2,
-      text: "Solve the equation: 2x + 3 = 7",
-      category: "Math",
-      type: "Descriptive",
-      difficulty: "Medium",
-      dateAdded: "2023-01-02",
-    },
-    {
-      id: 3,
-      text: "The Earth is flat. True or False?",
-      category: "Science",
-      type: "True/False",
-      difficulty: "Easy",
-      dateAdded: "2023-01-03",
-    },
-    {
-      id: 4,
-      text: "Explain the theory of relativity.",
-      category: "Physics",
-      type: "Descriptive",
-      difficulty: "Hard",
-      dateAdded: "2023-01-04",
-    },
-    {
-      id: 5,
-      text: "What is the chemical symbol for water?",
-      category: "Chemistry",
-      type: "Multiple Choice",
-      difficulty: "Easy",
-      dateAdded: "2023-01-05",
-    },
-    {
-      id: 6,
-      text: "Who wrote 'Hamlet'?",
-      category: "Literature",
-      type: "Multiple Choice",
-      difficulty: "Medium",
-      dateAdded: "2023-01-06",
-    },
-    {
-      id: 7,
-      text: "What is the speed of light?",
-      category: "Physics",
-      type: "Descriptive",
-      difficulty: "Hard",
-      dateAdded: "2023-01-07",
-    },
-    {
-      id: 8,
-      text: "What is the largest planet in our solar system?",
-      category: "Astronomy",
-      type: "Multiple Choice",
-      difficulty: "Easy",
-      dateAdded: "2023-01-08",
-    },
-    {
-      id: 9,
-      text: "Describe the process of photosynthesis.",
-      category: "Biology",
-      type: "Descriptive",
-      difficulty: "Medium",
-      dateAdded: "2023-01-09",
-    },
-    {
-      id: 10,
-      text: "What is the square root of 144?",
-      category: "Math",
-      type: "Multiple Choice",
-      difficulty: "Easy",
-      dateAdded: "2023-01-10",
-    },
-    {
-      id: 11,
-      text: "The sun rises in the west. True or False?",
-      category: "Geography",
-      type: "True/False",
-      difficulty: "Easy",
-      dateAdded: "2023-01-11",
-    },
-    {
-      id: 12,
-      text: "What is the formula for calculating the area of a circle?",
-      category: "Math",
-      type: "Descriptive",
-      difficulty: "Medium",
-      dateAdded: "2023-01-12",
-    },
-  ]);
+  const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -146,8 +56,33 @@ const ManageQuestion = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await getQuestions();
+        setQuestions(data);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
   const handleAddQuestion = () => {
-    setCurrentQuestion(null);
+    setCurrentQuestion({
+      id: null,
+      text: "",
+      subject: { id: "", subject_name: "" },
+      level: { name: "", description: "" },
+      classCategory: { id: "", name: "" },
+      options: [],
+      time: "",
+      language: "",
+      solution: "",
+      correct_option: "",
+      created_at: new Date().toISOString(),
+    });
     setIsEditModalOpen(true);
   };
 
@@ -178,7 +113,15 @@ const ManageQuestion = () => {
   };
 
   const handleSaveQuestion = () => {
-    // Add save logic here
+    if (currentQuestion.id) {
+      setQuestions(
+        questions.map((question) =>
+          question.id === currentQuestion.id ? currentQuestion : question
+        )
+      );
+    } else {
+      setQuestions([...questions, { ...currentQuestion, id: questions.length + 1 }]);
+    }
     setIsEditModalOpen(false);
     setNotification({
       open: true,
@@ -291,8 +234,8 @@ const ManageQuestion = () => {
                 <Checkbox />
               </TableCell>
               <TableCell>Question Text</TableCell>
-              <TableCell>Category/Topic</TableCell>
-              <TableCell>Question Type</TableCell>
+              <TableCell>Class Category</TableCell>
+              <TableCell>Subject</TableCell>
               <TableCell>Difficulty Level</TableCell>
               <TableCell>Date Added</TableCell>
               <TableCell>Actions</TableCell>
@@ -321,10 +264,10 @@ const ManageQuestion = () => {
                     />
                   </TableCell>
                   <TableCell>{question.text}</TableCell>
-                  <TableCell>{question.category}</TableCell>
-                  <TableCell>{question.type}</TableCell>
-                  <TableCell>{question.difficulty}</TableCell>
-                  <TableCell>{question.dateAdded}</TableCell>
+                  <TableCell>{question.classCategory.name}</TableCell>
+                  <TableCell>{question.subject.subject_name}</TableCell>
+                  <TableCell>{question.level.name}</TableCell>
+                  <TableCell>{question.created_at}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleEditQuestion(question)}>
                       <EditIcon />
@@ -360,7 +303,7 @@ const ManageQuestion = () => {
           onClose={() => setIsEditModalOpen(false)}
         >
           <DialogTitle>
-            {currentQuestion ? "Edit Question" : "Add Question"}
+            {currentQuestion && currentQuestion.id ? "Edit Question" : "Add Question"}
           </DialogTitle>
           <DialogContent>
             <TextField
@@ -368,41 +311,111 @@ const ManageQuestion = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              defaultValue={currentQuestion ? currentQuestion.text : ""}
+              value={currentQuestion ? currentQuestion.text : ""}
+              onChange={(e) =>
+                setCurrentQuestion({ ...currentQuestion, text: e.target.value })
+              }
             />
             <FormControl variant="outlined" fullWidth margin="normal">
               <InputLabel>Category/Topic</InputLabel>
               <Select
                 label="Category/Topic"
-                defaultValue={currentQuestion ? currentQuestion.category : ""}
+                value={currentQuestion ? currentQuestion.classCategory.id : ""}
+                onChange={(e) =>
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    classCategory: { ...currentQuestion.classCategory, id: e.target.value },
+                  })
+                }
               >
-                <MenuItem value="math">Math</MenuItem>
-                <MenuItem value="science">Science</MenuItem>
-                <MenuItem value="english">English</MenuItem>
+                <MenuItem value="1">10 to 12</MenuItem>
+                <MenuItem value="2">9 to 10</MenuItem>
               </Select>
             </FormControl>
             <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Question Type</InputLabel>
+              <InputLabel>Subject</InputLabel>
               <Select
-                label="Question Type"
-                defaultValue={currentQuestion ? currentQuestion.type : ""}
+                label="Subject"
+                value={currentQuestion ? currentQuestion.subject.id : ""}
+                onChange={(e) =>
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    subject: { ...currentQuestion.subject, id: e.target.value },
+                  })
+                }
               >
-                <MenuItem value="multiple choice">Multiple Choice</MenuItem>
-                <MenuItem value="true/false">True/False</MenuItem>
-                <MenuItem value="descriptive">Descriptive</MenuItem>
+                <MenuItem value="1">Economics</MenuItem>
+                <MenuItem value="2">Computer Science</MenuItem>
               </Select>
             </FormControl>
             <FormControl variant="outlined" fullWidth margin="normal">
               <InputLabel>Difficulty Level</InputLabel>
               <Select
                 label="Difficulty Level"
-                defaultValue={currentQuestion ? currentQuestion.difficulty : ""}
+                value={currentQuestion ? currentQuestion.level.name : ""}
+                onChange={(e) =>
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    level: { ...currentQuestion.level, name: e.target.value },
+                  })
+                }
               >
-                <MenuItem value="easy">Easy</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="hard">Hard</MenuItem>
+                <MenuItem value="Beginner">Beginner</MenuItem>
+                <MenuItem value="Expert">Expert</MenuItem>
               </Select>
             </FormControl>
+            <TextField
+              label="Options (comma separated)"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentQuestion ? currentQuestion.options.join(", ") : ""}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  options: e.target.value.split(","),
+                })
+              }
+            />
+            <TextField
+              label="Correct Option Index"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentQuestion ? currentQuestion.correct_option : ""}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  correct_option: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Time (in minutes)"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentQuestion ? currentQuestion.time : ""}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  time: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Language"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentQuestion ? currentQuestion.language : ""}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  language: e.target.value,
+                })
+              }
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsEditModalOpen(false)} color="primary">

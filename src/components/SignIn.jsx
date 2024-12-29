@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { getPostData } from "../features/authSlice"; // Redux action to store the user login state
-import { login as loginService } from "../services/authServices"; // Service to authenticate the user
+import { login as loginService, resendOtp, verifyOtp } from "../services/authServices"; // Service to authenticate the user
 import Input from "./Input";
 import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
@@ -14,24 +14,81 @@ function Login() {
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [email, setEmail] = useState("");
+
+
+
 
   const login = async ({ email, password }) => {
     setError(""); // Clear any previous errors
     setLoading(true); // Set loading to true
-
+  
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
+  
       if (userData) {
         dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
         navigate("/teacher"); // Redirect to teacher dashboard after login
       }
     } catch (error) {
-      setError(error.message); // Set error message if login fails
+      if (error.status === 403) {
+        // Handle specific case for unverified account
+        setError("Your account is not verified. Please verify your account to log in.");
+        setOtpSent(true); // Optional: Trigger OTP resend logic
+        setEmail(email); // Store the email for OTP resend later
+  
+        try {
+          const otpResponse = await resendOtp(email);
+          if (otpResponse.status === 200) {
+            setSuccessMessage("An OTP has been sent to your email.");
+          } else {
+            setError("Failed to send verification email. Please try again later.");
+          }
+        } catch (otpError) {
+          setError(otpError.message || "Failed to resend OTP. Please try again later.");
+        }
+      } else if (error.status === 401) {
+        setError("Invalid email or password. Please try again.");
+      } else if (error.status === 400) {
+        setError("Bad request. Please check your input.");
+      } else if (error.status === 500) {
+        setError("Server error. Please try again later.");
+      } else {
+        setError(error.message || "An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false); // Set loading to false
     }
+  };
+  
+  const verifyOtpHandler = async () => {
+    setError("");
+    setLoading(true); // Set loading to true
+    setSuccessMessage("");
+    alert("testing");
+    try {
+      const response = await verifyOtp({ email, otp });
+      if (response) {
+        dispatch(getPostData(response.data));
+        navigate("/teacher");
+      } else {
+        setError(response.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      setError(error.name || "Failed to verify OTP. Please try again.");
+    } 
     finally {
       setLoading(false); // Set loading to false
     }
   };
+  
+  // Helper function to resend OTP
+  
+  
+  
 
   return (
     <>
@@ -43,6 +100,10 @@ function Login() {
         {/* Form Container */}
         <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
           <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
+          {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
+          {!otpSent ? (
+            <>
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Teachers</span>
             </h2>
@@ -53,9 +114,7 @@ function Login() {
               </span>
             </h2>
 
-            {/* Error Message */}
 
-            {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
             <form onSubmit={handleSubmit(login)} className="space-y-5">
               {/* Email */}
@@ -178,6 +237,38 @@ function Login() {
                 </span>
               </p>
             </div>
+            </>
+          ) : (
+             <>
+             {successMessage && (
+                <p className="bg-green-200 text-green-900 px-3 py-2 rounded border border-green-700 text-center mb-4">{successMessage}</p>
+              )}
+              <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+                Verify OTP
+              </h2>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Enter OTP
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter the OTP sent to your email"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full border-2 text-sm rounded-xl px-3 py-3 border-gray-300 focus:border-green-500"
+                />
+              </div>
+              <Button
+                onClick={verifyOtpHandler}
+                disabled={!otp || loading} // Disable button when loading or OTP is empty
+                className={`w-full py-2 rounded-xl transition ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
+                }`}                >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </Button>
+            </>
+          )}
           </div>
         </div>
 
