@@ -25,17 +25,39 @@ apiClient.interceptors.request.use((config) => {
 export const createaccount = async ({ Fname, Lname, email, password }) => {
   try {
     const response = await apiClient.post('/api/register/', { Fname, Lname, email, password });
-    if (response.status === 200){  
+
+    if (response.status === 200) {  
       const { token } = response.data;
       localStorage.setItem('access_token', token);
     }
+
     return response.data;
-  }
-  catch(err) {
-    console.error('Registration error:', err.response?.data || err);
-    throw err;
+  } catch (err) {
+    if (err.response) {
+      // Handle specific status codes
+      const { status, data } = err.response;
+      switch (status) {
+        case 400:
+          throw new Error(data.message || 'Bad Request. Please check your input.');
+        case 409:
+          throw new Error('Conflict. The email is already registered.');
+        case 422:
+          throw new Error('Unprocessable Entity. Invalid data provided.');
+        case 500:
+          throw new Error('Internal Server Error. Please try again later.');
+        default:
+          throw new Error(data.message || `An error occurred. Status code: ${status}`);
+      }
+    } else if (err.request) {
+      // No response received from the server
+      throw new Error('No response from the server. Please check your network connection.');
+    } else {
+      // Error in setting up the request
+      throw new Error(err.message || 'An unexpected error occurred.');
+    }
   }
 };
+
 
 export const fetchUserData = async()=>{
   try{
@@ -54,32 +76,83 @@ export const verifyOtp = async ({ email, otp }) => {
     // Send the OTP verification request
     const response = await apiClient.post('/api/verify/', { email, otp });
     return response.data;
-
-
   } catch (err) {
-    console.error('OTP verification error:', err.response?.data || err);
-    throw err;
+    if (err.response) {
+      const { status, data } = err.response;
+
+      throw {
+        status,
+        message: data.message || 'An error occurred.',
+      };
+    } else if (err.request) {
+      // No response received from the server
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      };
+    } else {
+      // Error in setting up the request
+      throw {
+        status: null,
+        message: err.message || 'An unexpected error occurred.',
+      };
+    }
   }
 };
+
 
 // Login User
 export const login = async ({ email, password }) => {
   try {
-    // If the backend expects JSON payload
+    // Send the login request to the backend
     const response = await apiClient.post('/api/login/', { email, password });
 
+    // Extract and store the access token
+    const { access_token } = response.data;
+    localStorage.setItem('access_token', access_token);
+    console.log('User logged in:', access_token);
 
-      // Parse the token from the response
-      const { access_token } = response.data;
-      //console.log('Login archana:', access_token);
-
-      // Store token in localStorage
-      localStorage.setItem('access_token', access_token);
-      console.log('User logged in:', access_token);
-
-      return response.data;
+    return response.data;
   } catch (err) {
-    throw err;
+    // Pass the error response to the form handler for specific error message handling
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred.',
+        data: err.response.data,
+      };
+    } else if (err.request) {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      };
+    } else {
+      throw {
+        status: null,
+        message: err.message || 'An unexpected error occurred.',
+      };
+    }
+  }
+};
+
+export const resendOtp = async (email) => {
+  try {
+    const response = await apiClient.post('/api/resend-otp/', { email });
+    console.log("OTP sent successfully:", response.data);
+    return response; // Ensure the response is returned to the caller
+  } catch (err) {
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred.',
+        data: err.response.data,
+      };
+    } else {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      };
+    }
   }
 };
 
