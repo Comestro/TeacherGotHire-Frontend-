@@ -56,7 +56,7 @@ function SignUpPage() {
       const response = await verifyOtp({ email, otp });
       if (response) {
         dispatch(getPostData(response.data));
-        navigate("/teacher");
+        navigate("/signin");
       } else {
         setError(response.message || "Invalid OTP. Please try again.");
       }

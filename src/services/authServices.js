@@ -26,10 +26,10 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
   try {
     const response = await apiClient.post('/api/register/', { Fname, Lname, email, password });
 
-    if (response.status === 200) {  
-      const { token } = response.data;
-      localStorage.setItem('access_token', token);
-    }
+    // if (response.status === 200) {  
+    //   const { token } = response.data;
+    //   localStorage.setItem('access_token', token);
+    // }
 
     return response.data;
   } catch (err) {
