@@ -9,6 +9,7 @@ import PrefrenceLocation from "./PrefrenceLocation";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
+import SubjectAndLevelSelector from "./components/SubjectAndLevelSelector";
 
 function TeacherDashboard() {
   const subjects = useSelector((state) => state.dashboard.subjects.data || []);
@@ -80,6 +81,9 @@ function TeacherDashboard() {
               <HorizontalLinearAlternativeLabelStepper />
               </div>
             </div>
+          </div>
+          <div className="examSubjectAndLevels px-4">
+            <SubjectAndLevelSelector />
           </div>
         </div>
       </div>
