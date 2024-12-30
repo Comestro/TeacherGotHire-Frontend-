@@ -42,6 +42,7 @@ const PrefrenceProfile = () => {
   const teacherjobRole = useSelector(
     (state) => state.jobProfile?.teacherjobRole
   );
+  console.log("teacherjobRole", teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
   // console.log("teacherprefrence", teacherprefrence);
