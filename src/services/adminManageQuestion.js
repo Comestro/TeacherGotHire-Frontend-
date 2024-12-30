@@ -1,4 +1,3 @@
-// manage questions service
 import axios from "axios";
 const API_URL = "http://127.0.0.1:8000";
 
@@ -26,7 +25,6 @@ axiosInstance.interceptors.request.use(
 // manage questions
 
 // get all questions method(GET)
-
 const getQuestions = async () => {
   try {
     const response = await axiosInstance.get("/api/admin/question/");
@@ -38,7 +36,6 @@ const getQuestions = async () => {
 };
 
 // get question by id method(GET)
-
 const getQuestionById = async (id) => {
   try {
     const response = await axiosInstance.get(`/api/admin/question/${id}/`);
@@ -50,13 +47,9 @@ const getQuestionById = async (id) => {
 };
 
 // update question method(PUT)
-
 const updateQuestion = async (id, data) => {
   try {
-    const response = await axiosInstance.put(
-      `/api/admin/question/${id}/`,
-      data
-    );
+    const response = await axiosInstance.put(`/api/admin/question/${id}/`, data);
     return response.data;
   } catch (error) {
     console.error("Error updating question:", error);
@@ -65,7 +58,6 @@ const updateQuestion = async (id, data) => {
 };
 
 // delete question method(DELETE)
-
 const deleteQuestion = async (id) => {
   try {
     const response = await axiosInstance.delete(`/api/admin/question/${id}/`);
@@ -76,8 +68,19 @@ const deleteQuestion = async (id) => {
   }
 };
 
-// delete all questions method(DELETE)
+// create question method(POST)
 
+const createQuestion = async (data) => {
+  try {
+    const response = await axiosInstance.post("/api/admin/question/", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating question:", error);
+    throw error;
+  }
+};
+
+// delete all questions method(DELETE)
 const deleteAllQuestions = async () => {
   try {
     const response = await axiosInstance.delete("/api/admin/question/");
@@ -88,10 +91,13 @@ const deleteAllQuestions = async () => {
   }
 };
 
+
+
 export {
   getQuestions,
   getQuestionById,
   updateQuestion,
   deleteQuestion,
   deleteAllQuestions,
+  createQuestion,
 };
