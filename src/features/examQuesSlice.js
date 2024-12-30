@@ -3,15 +3,17 @@ import { fetchQuestion } from "../services/examQuesServices";
 
 const initialState = {
    allQuestion : [],
+   subject:"",
    status: "idle", 
    error: null, 
 };
 
 export const getAllQues= createAsyncThunk(
     "getAllQues",
-    async (_, { rejectWithValue }) => {
+    async ({ level_id, class_category_id, subject_id, language }, { rejectWithValue }) => {
+      console.log("jsbfkdnvkjd",{ level_id, class_category_id, subject_id, language })
       try {
-        const data = await fetchQuestion();
+        const data = await fetchQuestion({ level_id, class_category_id, subject_id, language });
          return data; 
       } catch (error) {
         return rejectWithValue({
@@ -26,9 +28,13 @@ export const getAllQues= createAsyncThunk(
 const examQuesSlice = createSlice({
     name : "examQues",
     initialState,
-    reducers:{},
+    reducers:{
+      setSubject(state,action){
+       state.subject = action.payload
+       console.log("action",action.payload)
+      }
+    },
     extraReducers:(builder)=>{
-         
         builder
         // for get data handeling
           .addCase(getAllQues.pending, (state) => {
@@ -45,5 +51,5 @@ const examQuesSlice = createSlice({
           });
     }
 })
-
+export const {setSubject} = examQuesSlice.actions;
 export default examQuesSlice.reducer;

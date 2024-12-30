@@ -1,23 +1,39 @@
-import React from 'react';
-import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { getAllQues } from '../../features/examQuesSlice';
 
 const MCQGuidelinePage = () => {
-
   const dispatch = useDispatch();
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [isLanguageSelected, setIsLanguageSelected] = useState(false);
 
+  // Get subject and level from Redux state
+  const subject = useSelector((state) => state.examQues.subject);
+  const level = '1'; // Adjust as per your logic, could be dynamic
+  //const questions = useSelector((state) => state.examQues.allQuestion);
+  const category = useSelector((state)=>state.jobProfile.prefrence.class_category.id)
 
-  const questions = useSelector((state)=>state.examQues.allQuestion)
-  console.log("allqyes",questions)
+  console.log("category",subject)
 
+  // Handle language change
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
-    dispatch(getAllQues(selectedLanguage));
+    setIsLanguageSelected(true);
+    // Dispatch API call with dynamic parameters
+    //dispatch(getAllQues({ subject, level, language: event.target.value }));
+    dispatch(
+      getAllQues({
+        level_id: level,
+        class_category_id:category, 
+        subject_id: subject, 
+        language: selectedLanguage,
+      }));
     console.log("Selected Language:", event.target.value);
   };
+
+  // Only show proceed button when language is selected
+  const showProceedButton = isLanguageSelected;
 
   return (
     <div className="min-h-screen text-gray-800">
@@ -27,7 +43,7 @@ const MCQGuidelinePage = () => {
           <h1 className="text-2xl font-bold text-center underline">Exam Guidelines</h1>
         </div>
       </header>
-      const [loading, setLoading] = useState(false);
+
       {/* Main Content */}
       <main className="container mx-auto px-4 mt-2">
         <div className="bg-white p-6">
@@ -47,7 +63,8 @@ const MCQGuidelinePage = () => {
           </ul>
 
           <div className="mt-6">
-          <div className="flex flex-col items-start space-y-2">
+            {/* Language Selector */}
+            <div className="flex flex-col items-start space-y-2">
               <label htmlFor="language" className="text-gray-700 font-medium">
                 Choose the language:
               </label>
@@ -61,18 +78,22 @@ const MCQGuidelinePage = () => {
                 <option value="English">English</option>
               </select>
             </div>
-            <label className="flex items-center space-x-2">
+
+            {/* Checkbox for Agreement */}
+            <div className="flex items-center space-x-2 mt-4">
               <input type="checkbox" className="form-checkbox h-5 w-5 text-teal-600" />
               <span>I have read and agree to the guidelines</span>
-            </label>
+            </div>
           </div>
 
-
-          <div className="mt-4 text-center">
-            <Link to="/exam" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-              Proceed to Exam
-            </Link>
-          </div>
+          {/* Show Proceed Button after Language is Selected */}
+          {showProceedButton && (
+            <div className="mt-4 text-center">
+              <Link to="/exam" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
+                Proceed to Exam
+              </Link>
+            </div>
+          )}
         </div>
       </main>
 
@@ -83,7 +104,6 @@ const MCQGuidelinePage = () => {
         </div>
       </footer>
     </div>
-
   );
 };
 

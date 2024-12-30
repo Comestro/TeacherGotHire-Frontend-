@@ -12,9 +12,8 @@ import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
 import SubjectAndLevelSelector from "./components/SubjectAndLevelSelector";
 
 function TeacherDashboard() {
-  const subjects = useSelector((state) => state.dashboard.subjects.data || []);
-  // console.log("sub", subjects);
-  // console.log("subject", subjects);
+  
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

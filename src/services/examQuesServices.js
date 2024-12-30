@@ -35,9 +35,18 @@ export const fetchExamLang = async()=>{
   }
 };
 
-export const fetchQuestion = async(selectedLanguage)=>{
+export const fetchQuestion = async({ level_id, class_category_id, subject_id, language })=>{
   try{
-     const response = await apiClient.get(`/api/admin/question/${selectedLanguage}`);
+    console.log("jsbfkdnvkjd",{ level_id, class_category_id, subject_id, language })
+     const response = await apiClient.get(`http://127.0.0.1:8000/api/self/question/questions/`, {
+          params: {
+            level_id,
+            class_category_id,
+            subject_id,
+            language,
+          },
+        });
+        console.log("newres",response)
      return response.data;
   }
      catch (err) {

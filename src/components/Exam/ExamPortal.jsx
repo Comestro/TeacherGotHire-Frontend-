@@ -23,8 +23,8 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const questions = useSelector((state)=>state.examQues.allQuestion)
-  console.log("allqyes",questions)
+  const questions = useSelector((state)=>state.examQues.allQuestion);
+  console.log("allqyes",questions);
 
   
   //const questions = useSelector((state)= state?.examQues);
