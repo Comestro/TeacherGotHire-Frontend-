@@ -24,6 +24,7 @@ import {
   TablePagination,
   Paper,
   Grid,
+  Chip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -33,14 +34,31 @@ import {
 import Layout from "../Admin/Layout";
 import {
   getQuestions,
-  getQuestionById,
   updateQuestion,
   deleteQuestion,
-  deleteAllQuestions,
+  createQuestion,
 } from "../../services/adminManageQuestion";
+import {
+  getClassCategory,
+  createClassCategory,
+  updateClassCategory,
+} from "../../services/adminClassCategoryApi";
+import {
+  getSubjects,
+  createSubject,
+  updateSubject,
+} from "../../services/adminSubujectApi";
+import {
+  getLevel,
+  createLevel,
+  updateLevel,
+} from "../../services/adminManageLevel";
 
 const ManageQuestion = () => {
   const [questions, setQuestions] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [classCategories, setClassCategories] = useState([]);
+  const [difficultyLevels, setDifficultyLevels] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -57,16 +75,25 @@ const ManageQuestion = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getQuestions();
-        setQuestions(data);
+        const questionsData = await getQuestions();
+        setQuestions(questionsData);
+
+        const subjectsData = await getSubjects();
+        setSubjects(subjectsData);
+
+        const classCategoriesData = await getClassCategory();
+        setClassCategories(classCategoriesData);
+
+        const difficultyLevelsData = await getLevel();
+        setDifficultyLevels(difficultyLevelsData);
       } catch (error) {
-        console.error("Error fetching questions:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchQuestions();
+    fetchData();
   }, []);
 
   const handleAddQuestion = () => {
@@ -74,7 +101,7 @@ const ManageQuestion = () => {
       id: null,
       text: "",
       subject: { id: "", subject_name: "" },
-      level: { name: "", description: "" },
+      level: { id: "", name: "", description: "" },
       classCategory: { id: "", name: "" },
       options: [],
       time: "",
@@ -91,43 +118,81 @@ const ManageQuestion = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteQuestion = (questionId) => {
-    setQuestions(questions.filter((question) => question.id !== questionId));
-    setNotification({
-      open: true,
-      message: "Question deleted successfully.",
-      type: "success",
-    });
-  };
-
-  const handleBulkDelete = () => {
-    setQuestions(
-      questions.filter((question) => !selectedQuestions.includes(question.id))
-    );
-    setSelectedQuestions([]);
-    setNotification({
-      open: true,
-      message: "Selected questions deleted successfully.",
-      type: "success",
-    });
-  };
-
-  const handleSaveQuestion = () => {
-    if (currentQuestion.id) {
-      setQuestions(
-        questions.map((question) =>
-          question.id === currentQuestion.id ? currentQuestion : question
-        )
-      );
-    } else {
-      setQuestions([...questions, { ...currentQuestion, id: questions.length + 1 }]);
+  const handleDeleteQuestion = async (questionId) => {
+    try {
+      await deleteQuestion(questionId);
+      setQuestions(questions.filter((question) => question.id !== questionId));
+      setNotification({
+        open: true,
+        message: "Question deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      setNotification({
+        open: true,
+        message: "Error deleting question.",
+        type: "error",
+      });
     }
-    setIsEditModalOpen(false);
-    setNotification({
-      open: true,
-      message: "Question saved successfully.",
-      type: "success",
-    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selectedQuestions.map((id) => deleteQuestion(id)));
+      setQuestions(
+        questions.filter((question) => !selectedQuestions.includes(question.id))
+      );
+      setSelectedQuestions([]);
+      setNotification({
+        open: true,
+        message: "Selected questions deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting selected questions:", error);
+      setNotification({
+        open: true,
+        message: "Error deleting selected questions.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleSaveQuestion = async () => {
+    try {
+      const questionData = {
+        ...currentQuestion,
+        subject: currentQuestion.subject.id,
+        level: currentQuestion.level.id,
+        classCategory: currentQuestion.classCategory.id,
+      };
+
+      if (currentQuestion.id) {
+        await updateQuestion(currentQuestion.id, questionData);
+        setQuestions(
+          questions.map((question) =>
+            question.id === currentQuestion.id ? currentQuestion : question
+          )
+        );
+      } else {
+        const newQuestion = await createQuestion(questionData);
+        setQuestions([...questions, newQuestion]);
+      }
+      setIsEditModalOpen(false);
+      setNotification({
+        open: true,
+        message: "Question saved successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error saving question:", error);
+      setNotification({
+        open: true,
+        message: "Error saving question.",
+        type: "error",
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -143,17 +208,97 @@ const ManageQuestion = () => {
     return (
       (question.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
         question.id.toString().includes(searchQuery)) &&
-      (selectedType
-        ? question.type.toLowerCase() === selectedType.toLowerCase()
-        : true) &&
+      (selectedType ? question.subject.id === selectedType : true) &&
       (selectedCategory
-        ? question.category.toLowerCase() === selectedCategory.toLowerCase()
+        ? question.classCategory.id === selectedCategory
         : true) &&
-      (selectedDifficulty
-        ? question.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-        : true)
+      (selectedDifficulty ? question.level.id === selectedDifficulty : true)
     );
   });
+
+  const handleAddSubject = async () => {
+    const newSubject = prompt("Enter new subject name:");
+    if (newSubject) {
+      try {
+        const createdSubject = await createSubject({ subject_name: newSubject });
+        setSubjects([...subjects, createdSubject]);
+        setNotification({
+          open: true,
+          message: "Subject added successfully.",
+          type: "success",
+        });
+      } catch (error) {
+        console.error("Error adding subject:", error);
+        setNotification({
+          open: true,
+          message: "Error adding subject.",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const handleAddClassCategory = async () => {
+    const newClassCategory = prompt("Enter new class category name:");
+    if (newClassCategory) {
+      try {
+        const createdClassCategory = await createClassCategory({ name: newClassCategory });
+        setClassCategories([...classCategories, createdClassCategory]);
+        setNotification({
+          open: true,
+          message: "Class category added successfully.",
+          type: "success",
+        });
+      } catch (error) {
+        console.error("Error adding class category:", error);
+        setNotification({
+          open: true,
+          message: "Error adding class category.",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const handleAddLevel = async () => {
+    const newLevelName = prompt("Enter new level name:");
+    const newLevelDescription = prompt("Enter new level description:");
+    if (newLevelName && newLevelDescription) {
+      try {
+        const createdLevel = await createLevel({ name: newLevelName, description: newLevelDescription });
+        setDifficultyLevels([...difficultyLevels, createdLevel]);
+        setNotification({
+          open: true,
+          message: "Level added successfully.",
+          type: "success",
+        });
+      } catch (error) {
+        console.error("Error adding level:", error);
+        setNotification({
+          open: true,
+          message: "Error adding level.",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const handleOptionDelete = (optionToDelete) => {
+    setCurrentQuestion({
+      ...currentQuestion,
+      options: currentQuestion.options.filter((option) => option !== optionToDelete),
+    });
+  };
+
+  const handleOptionAdd = (event) => {
+    if (event.key === "Enter" && event.target.value.trim() !== "") {
+      setCurrentQuestion({
+        ...currentQuestion,
+        options: [...currentQuestion.options, event.target.value.trim()],
+      });
+      event.target.value = "";
+    }
+  };
 
   return (
     <Layout>
@@ -182,33 +327,37 @@ const ManageQuestion = () => {
         </Box>
         <Box display="flex" justifyContent="space-between" mb={2}>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
-            <InputLabel>Question Type</InputLabel>
+            <InputLabel>Subject</InputLabel>
             <Select
-              label="Question Type"
+              label="Subject"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="multiple choice">Multiple Choice</MenuItem>
-              <MenuItem value="true/false">True/False</MenuItem>
-              <MenuItem value="descriptive">Descriptive</MenuItem>
+              {subjects.map((subject) => (
+                <MenuItem key={subject.id} value={subject.id}>
+                  {subject.subject_name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
-            <InputLabel>Category/Topic</InputLabel>
+            <InputLabel>Class Category</InputLabel>
             <Select
-              label="Category/Topic"
+              label="Class Category"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="math">Math</MenuItem>
-              <MenuItem value="science">Science</MenuItem>
-              <MenuItem value="english">English</MenuItem>
+              {classCategories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -221,9 +370,11 @@ const ManageQuestion = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="easy">Easy</MenuItem>
-              <MenuItem value="medium">Medium</MenuItem>
-              <MenuItem value="hard">Hard</MenuItem>
+              {difficultyLevels.map((level) => (
+                <MenuItem key={level.id} value={level.id}>
+                  {level.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Box>
@@ -303,7 +454,9 @@ const ManageQuestion = () => {
           onClose={() => setIsEditModalOpen(false)}
         >
           <DialogTitle>
-            {currentQuestion && currentQuestion.id ? "Edit Question" : "Add Question"}
+            {currentQuestion && currentQuestion.id
+              ? "Edit Question"
+              : "Add Question"}
           </DialogTitle>
           <DialogContent>
             <TextField
@@ -324,14 +477,28 @@ const ManageQuestion = () => {
                 onChange={(e) =>
                   setCurrentQuestion({
                     ...currentQuestion,
-                    classCategory: { ...currentQuestion.classCategory, id: e.target.value },
+                    classCategory: {
+                      ...currentQuestion.classCategory,
+                      id: e.target.value,
+                    },
                   })
                 }
               >
-                <MenuItem value="1">10 to 12</MenuItem>
-                <MenuItem value="2">9 to 10</MenuItem>
+                {classCategories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddClassCategory}
+              style={{ marginTop: "10px" }}
+            >
+              Add Class Category
+            </Button>
             <FormControl variant="outlined" fullWidth margin="normal">
               <InputLabel>Subject</InputLabel>
               <Select
@@ -344,38 +511,64 @@ const ManageQuestion = () => {
                   })
                 }
               >
-                <MenuItem value="1">Economics</MenuItem>
-                <MenuItem value="2">Computer Science</MenuItem>
+                {subjects.map((subject) => (
+                  <MenuItem key={subject.id} value={subject.id}>
+                    {subject.subject_name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddSubject}
+              style={{ marginTop: "10px" }}
+            >
+              Add Subject
+            </Button>
             <FormControl variant="outlined" fullWidth margin="normal">
               <InputLabel>Difficulty Level</InputLabel>
               <Select
                 label="Difficulty Level"
-                value={currentQuestion ? currentQuestion.level.name : ""}
+                value={currentQuestion ? currentQuestion.level.id : ""}
                 onChange={(e) =>
                   setCurrentQuestion({
                     ...currentQuestion,
-                    level: { ...currentQuestion.level, name: e.target.value },
+                    level: { ...currentQuestion.level, id: e.target.value },
                   })
                 }
               >
-                <MenuItem value="Beginner">Beginner</MenuItem>
-                <MenuItem value="Expert">Expert</MenuItem>
+                {difficultyLevels.map((level) => (
+                  <MenuItem key={level.id} value={level.id}>
+                    {level.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddLevel}
+              style={{ marginTop: "10px" }}
+            >
+              Add Level
+            </Button>
+            <Box display="flex" flexWrap="wrap" gap={1} mt={2}>
+              {currentQuestion?.options.map((option, index) => (
+                <Chip
+                  key={index}
+                  label={option}
+                  onDelete={() => handleOptionDelete(option)}
+                  color="primary"
+                />
+              ))}
+            </Box>
             <TextField
-              label="Options (comma separated)"
+              label="Add Option"
               variant="outlined"
               fullWidth
               margin="normal"
-              value={currentQuestion ? currentQuestion.options.join(", ") : ""}
-              onChange={(e) =>
-                setCurrentQuestion({
-                  ...currentQuestion,
-                  options: e.target.value.split(","),
-                })
-              }
+              onKeyDown={handleOptionAdd}
             />
             <TextField
               label="Correct Option Index"
