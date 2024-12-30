@@ -34,10 +34,23 @@ const Experience = () => {
     formState: { errors },
   } = useForm();
 
+  const [loadingPincode, setLoadingPincode] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     dispatch(getJob());
     dispatch(getExprienceProfile());
   }, []);
+
+  const Loader = () => (
+    <div className="flex justify-center items-center py-4">
+      <div className="loader border-t-[#3E98C7] border-4 w-8 h-8 rounded-full animate-spin"></div>
+    </div>
+  );
+
+  const fetchProfile =()=>{
+    dispatch(getExprienceProfile());
+  }
 
   const onSubmit = async (data) => {
     try {
@@ -57,8 +70,10 @@ const Experience = () => {
         console.log("payload", payload, id);
 
         await dispatch(putExprienceProfile({ payload, id })).unwrap();
+        fetchProfile();
       } else {
         await dispatch(postExprienceProfile(data)).unwrap(); // Dispatch with new data
+        fetchProfile();
       }
 
       setEditingIndex(null);
@@ -82,7 +97,7 @@ const Experience = () => {
     try {
       const id = experienceData[index].id;
       await dispatch(delExprienceProfile({ id: id })).unwrap();
-      //dispatch(putExprienceProfile({id:id})).unwrap();
+      fetchProfile();
     } catch (err) {
       setError(err.message);
     }
@@ -92,6 +107,7 @@ const Experience = () => {
     <div className="px-5 mt-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-600">Teacher Experience</h2>
+        {loading && <Loader />}
         {!isEditing && (
           <button
             className="text-white flex items-center bg-[#3E98C7] transition-colors px-4 py-2 rounded-md text-sm font-medium"
@@ -106,85 +122,6 @@ const Experience = () => {
       </div>
 
       {!isEditing ? (
-        // <div className="relative overflow-x-auto shadow sm:rounded-lg">
-        //   <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-        //     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-        //       <tr>
-        //         <th scope="col" className="px-6 py-3">
-        //           Institution
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Job Role
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Start Date
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           End Date
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Achievements
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           Description
-        //         </th>
-        //         <th scope="col" className="px-6 py-3">
-        //           <span className="sr-only">Edit</span>
-        //         </th>
-        //       </tr>
-        //     </thead>
-        //     <tbody>
-        //       {experienceData &&
-        //         experienceData.map((experience, index) => (
-        //           <tr
-        //             key={index}
-        //             className="bg-white border-b hover:bg-gray-50 "
-        //           >
-        //             <th
-        //               scope="row"
-        //               className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
-        //             >
-        //               {experience.institution || "N/A"}
-        //             </th>
-        //             <td className="px-6 py-4">
-        //               {experience.role.jobrole_name || "N/A"}
-        //             </td>
-        //             <td className="px-6 py-4">
-        //               {experience.start_date || "N/A"}
-        //             </td>
-        //             <td className="px-6 py-4">
-        //               {experience.start_date || "N/A"}
-        //             </td>
-        //             <td className="px-6 py-4 ">
-        //               {experience.achievements || "N/A"}
-        //             </td>
-        //             <td className="px-6 py-4">
-        //               {experience.description || "N/A"}
-        //             </td>
-        //             <td className="pr-6 py-4 text-right flex justify-center items-center">
-        //               <button
-        //                 onClick={() => {
-        //                   handleEdit(index);
-        //                   setIsFormVisible(true);
-        //                   setIsEditing(true); // Reset editing state
-        //                   setEditingRowIndex(index);
-        //                 }}
-        //                 className="font-medium text-[#3E98C7] dark:text-blue-500"
-        //               >
-        //                 <HiPencil className="size-5" />
-        //               </button>
-        //               <button
-        //                 onClick={() => handleDelete(index)}
-        //                 className="font-medium text-red-600 dark:text-red-600 ml-2"
-        //               >
-        //                 <HiOutlineTrash className="size-5" />
-        //               </button>
-        //             </td>
-        //           </tr>
-        //         ))}
-        //     </tbody>
-        //   </table>
-        // </div>
         <div className="flex flex-col gap-4 border bg-slate-50 rounded-md px-4 py-4">
           {experienceData &&
             experienceData.map((experience, index) => (

@@ -43,6 +43,10 @@ const Education = () => {
     dispatch(getEducationProfile());
   }, []);
 
+  const fetchProfile =()=>{
+    dispatch(getEducationProfile());
+  }
+
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
@@ -60,8 +64,10 @@ const Education = () => {
         console.log("payload", payload, id);
 
         await dispatch(putEducationProfile({ payload, id })).unwrap();
+        fetchProfile();
       } else {
         await dispatch(postEducationProfile(data)).unwrap(); // Dispatch with new data
+        fetchProfile();
       }
 
       setIsEditing(false);
@@ -87,6 +93,7 @@ const Education = () => {
       const id = educationData[index].id;
       console.log(id);
       await dispatch(delEducationProfile({ id: id })).unwrap();
+      fetchProfile();
     } catch (err) {
       setError(err.message);
     }

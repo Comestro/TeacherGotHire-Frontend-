@@ -33,8 +33,6 @@ function TeacherDashboard() {
     navigate("/exam");
   };
 
-  const sub = ["Mathematics", "Physics", "Programming"];
-  const location = ["Madhubani", "Pratap Nagar"];
 
   return (
     <div className="min-h-screen bg-white ">
@@ -85,7 +83,6 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
-      
     </div>
   );
 }

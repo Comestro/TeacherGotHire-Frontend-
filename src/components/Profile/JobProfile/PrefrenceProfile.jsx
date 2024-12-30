@@ -39,9 +39,11 @@ const PrefrenceProfile = () => {
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
   console.log("jobrole", jobRole);
   const subject = useSelector((state) => state?.jobProfile?.subject);
+  console.log("subject", subject);
   const teacherjobRole = useSelector(
     (state) => state.jobProfile?.teacherjobRole
   );
+  console.log("teacherjobrole", teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
   // console.log("teacherprefrence", teacherprefrence);
@@ -85,7 +87,7 @@ const PrefrenceProfile = () => {
             onClick={() => setIsEditingPrefrence(true)}
           >
             Edit Preferences
-            <HiPencil  className="size-5 "/>
+            <HiPencil className="size-5 " />
           </button>
         )}
       </div>
@@ -174,7 +176,7 @@ const PrefrenceProfile = () => {
                 >
                   <option value="">Select a category</option>
                   {category?.map((cat) => (
-                    <option key={cat.id} value={cat.name}>
+                    <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}
@@ -194,10 +196,11 @@ const PrefrenceProfile = () => {
                 <select
                   {...register("job_role", { required: true })}
                   className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  multiple
                 >
                   <option value="">Select a job role</option>
                   {jobRole?.map((role) => (
-                    <option key={role.id} value={role.jobrole_name}>
+                    <option key={role.id} value={role.id}>
                       {role.jobrole_name}
                     </option>
                   ))}
@@ -252,7 +255,7 @@ const PrefrenceProfile = () => {
                         type="checkbox"
                         {...register("teacher_job_type", { required: true })}
                         value={role.id}
-                        id={`teacherjobRole-${role.id}`}
+                        id={role.id}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
                       />
                       <label

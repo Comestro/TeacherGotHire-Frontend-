@@ -186,10 +186,8 @@ const AddressProfileCard = () => {
     setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
-        //await updateAddressProfile(payload);
         await dispatch(putAddress(payload)).unwrap();
       } else {
-        //await addAddressProfile(payload);
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");

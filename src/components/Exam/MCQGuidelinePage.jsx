@@ -1,17 +1,21 @@
 import React from 'react';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { getAllQues } from '../../features/examQuesSlice';
 
 const MCQGuidelinePage = () => {
 
+  const dispatch = useDispatch();
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+
 
   const questions = useSelector((state)=>state.examQues.allQuestion)
   console.log("allqyes",questions)
 
   const handleLanguageChange = (event) => {
     setSelectedLanguage(event.target.value);
+    dispatch(getAllQues(selectedLanguage));
     console.log("Selected Language:", event.target.value);
   };
 
@@ -23,7 +27,7 @@ const MCQGuidelinePage = () => {
           <h1 className="text-2xl font-bold text-center underline">Exam Guidelines</h1>
         </div>
       </header>
-
+      const [loading, setLoading] = useState(false);
       {/* Main Content */}
       <main className="container mx-auto px-4 mt-2">
         <div className="bg-white p-6">

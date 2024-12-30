@@ -35,9 +35,9 @@ export const fetchExamLang = async()=>{
   }
 };
 
-export const fetchQuestion = async()=>{
+export const fetchQuestion = async(selectedLanguage)=>{
   try{
-     const response = await apiClient.get('/api/admin/question/');
+     const response = await apiClient.get(`/api/admin/question/${selectedLanguage}`);
      return response.data;
   }
      catch (err) {
