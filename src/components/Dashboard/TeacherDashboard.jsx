@@ -10,6 +10,7 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
 import SubjectAndLevelSelector from "./components/SubjectAndLevelSelector";
+import { getProfilCompletion } from "../../features/personalProfileSlice";
 
 function TeacherDashboard() {
   
@@ -18,10 +19,12 @@ function TeacherDashboard() {
   const dispatch = useDispatch();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const percentage = 60;
+  const percentage = useSelector((state)=>state.personalProfile.completionData.profile_completed);
+  console.log("prec",percentage)
 
   useEffect(() => {
     dispatch(getSubjects());
+    dispatch(getProfilCompletion());
   }, [dispatch]);
 
   const handleSubjectSelect = (subjects) => {

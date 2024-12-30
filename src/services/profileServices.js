@@ -87,5 +87,16 @@ export const fetchAddressProfile = async()=>{
          throw err;
   }
 }
+export const fetchCompleteProfile = async()=>{
+  try{
+    const response = await apiClient.get('/api/profile/completed/');
+     
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+}
 
 export default apiClient;

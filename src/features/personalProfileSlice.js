@@ -1,7 +1,7 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import {fetchAddressProfile,updateAddressProfile }from "../services/profileServices";
-import {updateBasicProfile,fetchBasicProfile} from "../services/profileServices"
+import {updateBasicProfile,fetchBasicProfile,fetchCompleteProfile} from "../services/profileServices"
 
 
 
@@ -10,10 +10,27 @@ const initialState = {
   basicData:{},
   personalData:{},
   address:[],
+  completionData :'',
   showForm: false,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
+
+export const getProfilCompletion = createAsyncThunk(
+  "getProfilCompletion",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await fetchCompleteProfile();
+      return data; 
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, // Only include the error message
+        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+      });
+    }
+  }
+);
+
 export const getBasic = createAsyncThunk(
   "getBasic",
   async (_, { rejectWithValue }) => {
@@ -241,7 +258,26 @@ const personalProfileSlice = createSlice({
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
+
+        builder
+      
+        .addCase(getProfilCompletion.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        
+        .addCase(getProfilCompletion.fulfilled, (state, action) => {
+          state.status = "succeeded";
+          state.completionData = action.payload; // Update profile data
+        })
+        
+        .addCase(getProfilCompletion.rejected, (state, action) => {
+          state.status = "failed";
+          state.error = action.payload; // Set error from rejected payload
+        });
       }    
+
+      
 });
 
 // Export reducer
