@@ -312,13 +312,15 @@ const Education = () => {
                   reset();
                 }}
                 type="button"
-                className="bg-red-500 text-white py-2 px-4 rounded-md"
+                textColor = 'text-[#3E98C7]'
+                className="bg-white text-[#3E98C7] py-1.5 px-4 rounded-md border border-[#3E98C7]"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-[#3E98C7] text-white py-2 px-4 rounded-md"
+                bgcolor="bg-[#3E98C7]"
+                className="text-white py-1.5 px-4 rounded-md"
               >
                 Save
               </Button>
