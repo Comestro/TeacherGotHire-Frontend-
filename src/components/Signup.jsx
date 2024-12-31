@@ -76,7 +76,7 @@ function SignUpPage() {
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center ">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-10">
           <div className="max-w-md w-full mt-5">
           {!otpSent ? (
            <>
@@ -314,7 +314,7 @@ function SignUpPage() {
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 flex flex-col pl-36 justify-center h-screen p-10 ">
+        <div className="w-full md:w-1/2 hidden md:flex flex-col pl-36 justify-center h-screen p-10 ">
           {/* Step 1 */}
           <div className="flex items-start space-x-4 mb-4">
             <div className="flex flex-col items-center">

@@ -67,8 +67,8 @@ const TeacherProfiles = () => {
   };
 
   return (
-    <section className="bg-slate-100 py-12">
-      <div className="container mx-auto px-4 text-center">
+    <section className="bg-slate-100 py-12 w-full">
+      <div className=" mx-auto px-4 text-center">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Our Teachers <span className="text-orange-400"  style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>Who Got Placed</span>
         </h2>

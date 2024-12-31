@@ -3,7 +3,7 @@ import React from "react";
 const TeacherSection = ({ onSelectRole }) => {
   return (
     <div
-      className="relative bg-teal-600 overflow-hidden"
+      className="relative bg-teal-600 overflow-hidden md:px-5 p-5"
       style={{
         backgroundImage: `url('')`,
       }}
@@ -21,11 +21,11 @@ const TeacherSection = ({ onSelectRole }) => {
       {/* Content */}
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center px-6 sm:px-12 ">
         {/* Left Section */}
-        <div className="text-white ml-16">
-          <div className="flex flex-1 items-center">
-            <h1 className="text-4xl font-hindi sm:text-3xl font-bold mb-6 sm:leading-hindi truncate flex items-center">
+        <div className="text-white md:ml-16">
+          <div className="flex flex-1 items-center">  
+            <h1 className="text-xl font-hindi sm:text-3xl font-bold mb-6 sm:leading-hindi truncate flex items-center">
               क्या आप
-              <span className="text-5xl font-bold text-orange-300 mx-2"  style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>Teacher </span>
+              <span className="md:text-5xl font-bold text-orange-300 mx-2"  style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>Teacher </span>
               
               बनना चाहते हैं?
             </h1>
@@ -45,7 +45,7 @@ const TeacherSection = ({ onSelectRole }) => {
         </div>
 
         {/* Right Section */}
-        <div className="relative mt-10 text-center flex items-center justify-center">
+        <div className="relative hidden mt-10 text-center md:flex items-center justify-center">
           <div className="w-64 h-64 lg:w-96 lg:h-96 mx-auto lg:mx-0">
             <img
               src="https://pngimg.com/d/teacher_PNG84.png"
