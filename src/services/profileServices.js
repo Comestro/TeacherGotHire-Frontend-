@@ -30,6 +30,22 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Response Interceptor to Handle 401 Unauthorized
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('Unauthorized: Logging out the user');
+      localStorage.removeItem('access_token'); // Clear the token
+      window.location.href = '/signin'; // Redirect to login page
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const updateBasicProfile = async(personaldata)=>{
   try{
     console.log("personaldata",personaldata)
