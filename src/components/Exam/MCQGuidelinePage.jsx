@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { getAllQues } from '../../features/examQuesSlice';
+import { getAllQues, setLanguage } from '../../features/examQuesSlice';
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
-  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
   const [isLanguageSelected, setIsLanguageSelected] = useState(false);
 
-  // Get subject and level from Redux state
-  const subject = useSelector((state) => state.examQues.subject);
-  const level = '1'; // Adjust as per your logic, could be dynamic
+
   //const questions = useSelector((state) => state.examQues.allQuestion);
-  const category = useSelector((state)=>state.jobProfile.prefrence.class_category.id)
+  
 
-  console.log("category",subject)
-
+ console.log('dfghjk',exam)
   // Handle language change
   const handleLanguageChange = (event) => {
-    setSelectedLanguage(event.target.value);
+    const language = event.target.value;
+    // setSelectedLanguage(language);
+    // console.log("Selected Language:", language);
+    // console.log("Selected Language:", selectedLanguage);
     setIsLanguageSelected(true);
-    // Dispatch API call with dynamic parameters
-    //dispatch(getAllQues({ subject, level, language: event.target.value }));
-    dispatch(
-      getAllQues({
-        level_id: level,
-        class_category_id:category, 
-        subject_id: subject, 
-        language: selectedLanguage,
-      }));
-    console.log("Selected Language:", event.target.value);
+    dispatch(setLanguage(language))
+    
   };
 
   // Only show proceed button when language is selected
