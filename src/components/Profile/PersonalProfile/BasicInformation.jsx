@@ -174,6 +174,7 @@ const BasicInformation = () => {
       {fields.map(({ label, field, value, inputType, options }) => (
         <React.Fragment key={field}>
           <EditableField
+          
             label={label}
             field={field}
             value={value}

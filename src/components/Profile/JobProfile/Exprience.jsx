@@ -48,9 +48,9 @@ const Experience = () => {
     </div>
   );
 
-  const fetchProfile =()=>{
+  const fetchProfile = () => {
     dispatch(getExprienceProfile());
-  }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -122,63 +122,53 @@ const Experience = () => {
       </div>
 
       {!isEditing ? (
-        <div className="flex flex-col gap-4 border bg-slate-50 rounded-md px-4 py-4">
-          {experienceData &&
-            experienceData.map((experience, index) => (
-              <div
-                key={index}
-                className="transition-shadow  px-4"
-              >
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {experience.institution || "N/A"}
-                  </h2>
-                  <div className="flex space-x-4 items-center">
-                    <button
-                      onClick={() => {
-                        handleEdit(index);
-                        setIsFormVisible(true);
-                        setIsEditing(true);
-                        setEditingRowIndex(index);
-                      }}
-                      className="text-blue-500 hover:text-blue-600"
-                    >
-                      <HiPencil className="h-6 w-6 text-gray-500" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <HiOutlineTrash className="h-6 w-6" />
-                    </button>
+        <div className="">
+          <div className="flex flex-col gap-4 rounded-md px-2 py-4">
+            {experienceData &&
+              experienceData.map((experience, index) => (
+                <div key={index} className="transition-shadow px-4">
+                  <div className="relative ">
+                    {/* <h2 className="text-lg font-semibold text-gray-900">
+                      {experience.institution || "N/A"}
+                    </h2> */}
+                    <div className="absolute top-2 right-2 flex space-x-4 items-center">
+                      <button
+                        onClick={() => {
+                          handleEdit(index);
+                          setIsFormVisible(true);
+                          setIsEditing(true);
+                          setEditingRowIndex(index);
+                        }}
+                        className="text-blue-500 hover:text-blue-600"
+                      >
+                        <HiPencil className="h-6 w-6 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <HiOutlineTrash className="h-6 w-6" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <p className="text-sm text-gray-500">
+                      <strong className="text-lg">{experience.institution || "N/A"}</strong> served
+                      as a{" "}
+                      <strong>{experience.role.jobrole_name || "N/A"}</strong>{" "}
+                      from <strong>{experience.start_date || "N/A"}</strong> to{" "}
+                      <strong>{experience.end_date || "N/A"}</strong>.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Achievements: {experience.achievements || "N/A"}.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Description: {experience.description || "N/A"}.
+                    </p>
                   </div>
                 </div>
-                <div className="mt-1">
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold mr-2">Job Role:</span>{" "}
-                    {experience.role.jobrole_name || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold mr-2">Start Date:</span>{" "}
-                    {experience.start_date || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold mr-2">End Date:</span>{" "}
-                    {experience.end_date || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold mr-2">Achievements:</span>{" "}
-                    {experience.achievements || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    <span className="font-semibold mr-2">Description:</span>{" "}
-                    {experience.description || "N/A"}
-                  </p>
-                </div>
-                <hr className="mt-4"/>
-              </div>
-            ))}
-            
+              ))}
+          </div>
         </div>
       ) : (
         <form
