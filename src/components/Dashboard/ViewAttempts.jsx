@@ -1,12 +1,17 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Attempts } from "../../services/examQuesServices";
+import { attemptsExam } from "../../features/examQuesSlice";
 
 const ViewAttempts = () => {
-    const examAttempts = useSelector((state) => state.examQues?.attenpts);
+    const examAttempts = useSelector((state) => state.examQues?.attempts);
     console.log("examAttempts", examAttempts);
     const dispatch = useDispatch();
-    useEffect(() => { dispatch(Attempts()); }, [dispatch]);
+    
+
+ useEffect(() => {
+     dispatch(attemptsExam());
+     
+   }, []);
  
    return (
     <div className="p-5">

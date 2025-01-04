@@ -9,7 +9,7 @@ const initialState = {
   allQuestion: [],
   examSet: [],
   exam: "",
-  attenpts: [],
+  attempts: {},
   subject: "",
   language: "",
   status: "idle",
@@ -49,7 +49,7 @@ export const getExamSet = createAsyncThunk(
 );
 export const attemptsExam = createAsyncThunk(
   "attemptExam",
-  async (__, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const data = await Attempts();
       return data;
@@ -103,7 +103,8 @@ const examQuesSlice = createSlice({
       })
       .addCase(attemptsExam.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.attenpts = action.payload;
+        state.attempts = action.payload;
+        console.log("action.payload", action.payload);
       })
       .addCase(attemptsExam.rejected, (state, action) => {
         state.status = "failed";
