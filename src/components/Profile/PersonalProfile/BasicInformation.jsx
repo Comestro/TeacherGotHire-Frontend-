@@ -164,6 +164,12 @@ const BasicInformation = () => {
         { label: "Other", value: "Other" },
       ],
     },
+    {
+      label: "Profile Image",
+      field: "profile_image",
+      inputType: "file",
+      value: basicData.profile_image || "",
+    },
   ];
 
   return (

@@ -54,7 +54,7 @@ const SubjectAndLevelSelector = () => {
             </label>
           ))}
         </div>
-      </div> */}
+      </div> 
       <div className="px-4 py-2 rounded-md">
         <h2 className="text-xl font-semibold text-gray-600 mb-3">
           Choose a Subject for exam

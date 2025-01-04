@@ -32,6 +32,7 @@ import RecruiterLayout from "./components/Recruiter/RecruiterLayout";
 import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
 import ManageLevel from "./admin/Manage-level/ManageLevel";
+import ViewAttempts from "./components/Dashboard/ViewAttempts";
 
 // import Logout from "./components/Logout";
 
@@ -156,6 +157,10 @@ function App() {
             <Route
               path="job-profile"
               element={<PrivateRoute element={<JobProfileEdit />} />}
+            />
+            <Route
+              path="view-attempts"
+              element={<PrivateRoute element={<ViewAttempts />} />}
             />
           </Route>
         </Routes>

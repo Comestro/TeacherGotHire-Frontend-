@@ -12,7 +12,6 @@ const MCQGuidelinePage = () => {
   //const questions = useSelector((state) => state.examQues.allQuestion);
   
 
- console.log('dfghjk',exam)
   // Handle language change
   const handleLanguageChange = (event) => {
     const language = event.target.value;

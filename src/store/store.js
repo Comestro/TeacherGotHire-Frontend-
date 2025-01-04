@@ -14,6 +14,7 @@ const rootReducer = combineReducers({
   jobProfile: jobProfileSlice,
   dashboard: dashboardSlice,
   examQues: examQuesSlice,
+  
 });
 
 // Step 2: Configure persist 
