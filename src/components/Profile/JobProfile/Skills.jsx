@@ -10,19 +10,13 @@ import {
 
 const Skills = () => {
   const [suggestions, setSuggestions] = useState([]);
+  const [showForm, setShowForm] = useState(false); // State to toggle form visibility
   const dispatch = useDispatch();
 
   const skillsData = useSelector((state) => state.jobProfile.allSkill || []);
+  const teacherSkill = useSelector((state) => state.jobProfile.teacherSkill || []);
 
-  const teacherSkill = useSelector(
-    (state) => state.jobProfile.teacherSkill || []
-  );
-  console.log("teacherSkill",teacherSkill)
-  console.log("teacherSkill",skillsData)
-
-  const [teacherSkills, setTeacherSkills] = useState(teacherSkill || []);
   const { handleSubmit, register, watch, setValue } = useForm();
-
   const inputValue = watch("skillInput", "");
 
   // Fetch skills on component mount
@@ -31,30 +25,27 @@ const Skills = () => {
     dispatch(getSkillsProfile());
   }, [dispatch]);
 
-  const fetchSkills=()=>{
-    dispatch(getSkillsProfile());
-  }
-
-  // Update suggestions when input value changes
+  // Filter suggestions to exclude already selected skills
   useEffect(() => {
     if (inputValue) {
-      const filteredSuggestions = skillsData.filter((skill) =>
-        skill.name.toLowerCase().includes(inputValue.toLowerCase())
+      const filteredSuggestions = skillsData.filter(
+        (skill) =>
+          skill.name.toLowerCase().includes(inputValue.toLowerCase()) &&
+          !teacherSkill.some((item) => item.skill.id === skill.id)
       );
       setSuggestions(filteredSuggestions);
     } else {
       setSuggestions([]);
     }
-  }, [inputValue, skillsData]);
+  }, [inputValue, skillsData, teacherSkill]);
 
   const handleSuggestionClick = async (skill) => {
     try {
-      if (teacherSkills.find((item) => item.skill.id === skill.id)) {
+      if (teacherSkill.find((item) => item.skill.id === skill.id)) {
         return; // Skill already added
       }
       await dispatch(postSkillsProfile({ skill: skill.id })).unwrap();
-      fetchSkills();
-      setTeacherSkills([...teacherSkills, { skill }]);
+      dispatch(getSkillsProfile());
       setValue("skillInput", "");
       setSuggestions([]);
     } catch (error) {
@@ -64,15 +55,8 @@ const Skills = () => {
 
   const handleRemoveSelectedSkill = async (skillToRemove) => {
     try {
-      console.log("skilldata",skillToRemove)
       await dispatch(delSkillProfile(skillToRemove)).unwrap();
-      fetchSkills();
-      setTeacherSkills(
-        teacherSkill.filter(
-          (skill) => skill.skill.id !== skillToRemove.skill.id
-        )
-      );
-     
+      dispatch(getSkillsProfile());
     } catch (error) {
       console.error("Error removing skill:", error);
     }
@@ -80,60 +64,79 @@ const Skills = () => {
 
   const handleInputFocus = () => {
     if (inputValue === "") {
-      setSuggestions(skillsData);
+      const filteredSuggestions = skillsData.filter(
+        (skill) => !teacherSkill.some((item) => item.skill.id === skill.id)
+      );
+      setSuggestions(filteredSuggestions);
     }
   };
 
   const onSubmit = async () => {
     setValue("skillInput", "");
     setSuggestions([]);
+    setShowForm(false); // Hide form after submission
   };
 
   return (
-    <div className="container mx-auto p-4 mt-4">
-      <h1 className="text-xl font-bold mb-4 text-gray-600">Add Your Skills</h1>
-
-      <div className="px-4">
-        <form onSubmit={handleSubmit(onSubmit)} className="mb-2">
-          <input
-            type="text"
-            onFocus={handleInputFocus}
-            {...register("skillInput")}
-            placeholder="Type a skill..."
-            className="border-b border-gray-300 w-full p-2 mb-2 focus:outline-none"
-          />
-          {suggestions.length > 0 && (
-            <ul className="border border-gray-300 rounded max-h-40 mb-1 absolute z-10 bg-white md:w-96">
-              {suggestions.map((skill, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSuggestionClick(skill)}
-                  className="cursor-pointer px-2 py-1.5"
-                >
-                  {skill.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </form>
+    <div className=" mx-auto p-4 mt-4 border rounded-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold text-gray-600">Manage Your Skills</h1>
+        <button
+          className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition flex items-center gap-1"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancel" : "Add Skill"}
+        </button>
       </div>
 
-      <div className="mb-4 px-4">
-        <h3 className="font-semibold mb-2 text-gray-600">Selected Skills:</h3>
+      {showForm && (
+        <div className="bg-gray-50 p-4 rounded-lg shadow mb-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="relative flex">
+            <input
+              type="text"
+              {...register("skillInput")}
+              placeholder="Type a skill..."
+              className="w-full border border-gray-300 rounded-s-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onFocus={handleInputFocus}
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow max-h-40 overflow-y-auto z-10">
+                {suggestions.map((skill, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(skill)}
+                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                  >
+                    {skill.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              type="submit"
+              className=" bg-green-600 text-white px-4 py-2 rounded-e-lg hover:bg-green-700 transition"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div>
+        <h2 className="text-lg font-medium text-gray-700 mb-2">Your Skills</h2>
         {teacherSkill.length === 0 ? (
-          <p className="text-gray-500">No skills added yet</p>
+          <p className="text-gray-500">No skills added yet.</p>
         ) : (
-          <div className="flex flex-wrap">
+          <div className="flex flex-wrap gap-2">
             {teacherSkill.map((skill, index) => (
               <div
                 key={index}
-                className="bg-[#E5F1F9] text-[#3E98C7] flex items-center px-3 py-1 rounded-full mr-2 mb-2"
+                className="flex items-center bg-blue-50 text-blue-700 px-4 py-2 rounded-full shadow"
               >
                 <span className="mr-2">{skill.skill.name}</span>
                 <button
-                  type="button"
                   onClick={() => handleRemoveSelectedSkill(skill)}
-                  className="text-red-600 font-semibold hover:text-red-700 focus:outline-none"
+                  className="text-red-500 hover:text-red-600 focus:outline-none"
                 >
                   &times;
                 </button>
@@ -144,6 +147,6 @@ const Skills = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Skills;

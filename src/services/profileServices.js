@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { getApiUrl,getPincodeUrl } from '../store/configue';
 
@@ -115,4 +114,4 @@ export const fetchCompleteProfile = async()=>{
   }
 }
 
-export default apiClient;
+export default apiClient;

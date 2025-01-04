@@ -23,12 +23,12 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const questions = useSelector((state)=>state.examQues.allQuestion);
+  const exam = useSelector((state)=>state.examQues.exam);
+  const questions = exam.questions;
+
   console.log("allqyes",questions);
 
-  
-  //const questions = useSelector((state)= state?.examQues);
-  //console.log("allquestion",questions)
+
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -115,7 +115,7 @@ const ExamPortal = () => {
       <div className="w-[80%] p-8">
         <Subheader
           totalQuestion={questions?.length || 0}
-          subject={currentQuestion}
+          questions={questions}
         />
         {errorMessage && (
           <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
