@@ -171,6 +171,11 @@ const JobPrefrenceLocation = () => {
           </button>
         )}
       </div>
+      {jobLocations.length == 0 && !isFormVisible && (
+        <div className="px-4 border-b">
+          <h1 className="text-gray-500 pb-2">No data available</h1>
+        </div>
+      )}
       {jobLocations.length > 0 && !isFormVisible && (
         <div className="grid grid-cols-1 border rounded-md px-5 gap-4 bg-slate-50">
           {jobLocations.map((location, index) => (

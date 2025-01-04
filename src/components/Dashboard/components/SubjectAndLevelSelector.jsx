@@ -54,6 +54,29 @@ const SubjectAndLevelSelector = () => {
             </label>
           ))}
         </div>
+      </div> 
+      <div className="px-4 py-2 rounded-md">
+        <h2 className="text-xl font-semibold text-gray-600 mb-3">
+          Choose a Subject for exam
+        </h2>
+
+        {/* Subject Select Menu */}
+        <div className="relative mb-2">
+          <select
+            className="w-full px-4 py-1.5 border rounded-md text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-[#3E98C7] transition duration-200"
+            onChange={(e) => handleAddSubject(e.target.value)}
+            value={selectedSubject || ""}
+          >
+            <option value="" disabled>
+              Select a subject
+            </option>
+            {subjects.map((subject, index) => (
+              <option className="bg-white text-gray-700 hover:bg-slate-50" key={index} value={subject.id}>
+                {subject.subject_name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Level Selector */}
@@ -70,7 +93,7 @@ const SubjectAndLevelSelector = () => {
                   ${
                     selectedLevel === level
                       ? "bg-[#3E98C7] text-white"
-                      : "bg-white text-gray-800 border-gray-300"
+                      : "bg-white text-[#3E98C7] border-gray-300"
                   } transition duration-200 ease-in-out transform`}
               >
                 <input

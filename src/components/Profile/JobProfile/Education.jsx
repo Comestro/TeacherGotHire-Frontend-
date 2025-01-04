@@ -100,7 +100,7 @@ const Education = () => {
   };
 
   return (
-    <div className="px-5 mt-5">
+    <div className="px-5 py-3 mt-5 border rounded-lg">
       <div className="flex mb-4 justify-between items-center">
         <h2 className="text-xl font-bold  text-gray-600">Teacher Education</h2>
         <button

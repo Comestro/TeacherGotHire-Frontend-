@@ -8,6 +8,7 @@ import {
   HiBriefcase,
   HiOutlineLogin,
 } from "react-icons/hi";
+import { HiMiniEye } from "react-icons/hi2";
 import { getUserData } from "../../features/authSlice";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
@@ -107,13 +108,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 <HiBriefcase className="size-5" />
                 Job Details
               </NavLink>
-              {/* <button
-              onClick={logout}
-              className="inline-flex  items-center py-1 px-5 mt-4 rounded-md border-2 border-teal-600 hover:bg-teal-600 text-gray-600 hover:text-white font-semibold transition"
-            >
-              <HiOutlineLogin className="mr-2" />
-              Logout
-            </button> */}
+              <NavLink
+                to="view-attempts"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiMiniEye className="size-5 mt-1"/>
+                View Attempts
+              </NavLink>
+              
             </nav>
             <div className="flex flex-col">
               <div className="border-t border-gray-200">
