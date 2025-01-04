@@ -36,9 +36,12 @@ apiClient.interceptors.response.use(
 );
 
 
-export const fetchExam = async({ level_id, subject_id })=>{
-  try{
-    const response = await apiClient.get(`/api/self/exam/exams/`,{
+export const fetchExam = async ({
+  level_id,
+  subject_id,
+}) => {
+  try {
+    const response = await apiClient.get(`/api/self/exam/exams/`, {
       params: {
         level_id,
         subject_id,
@@ -51,20 +54,29 @@ export const fetchExam = async({ level_id, subject_id })=>{
   }
 };
 
-export const fetchQuestion = async({ exam_id,language })=>{
-  try{
-    console.log("jsbfkdnvkjd",{ exam_id,language })
-     const response = await apiClient.get(`/api/self/exam/exams/${exam_id}`, {
-          params: {
-            language,
-          },
-        });
-        console.log("newres",response)
-     return response.data;
+export const fetchQuestion = async ({ exam_id, language }) => {
+  try {
+    console.log("jsbfkdnvkjd", { exam_id, language });
+    const response = await apiClient.get(`/api/self/exam/exams/${exam_id}`, {
+      params: {
+        language,
+      },
+    });
+    console.log("newres", response);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
   }
-     catch (err) {
-         console.error('error:', err.response?.data || err);
-         throw err;
+};
+
+export const Attempts = async () => {
+  try {
+    const response = await apiClient.get(`/api/self/teacherexamresult/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
   }
 };
 
