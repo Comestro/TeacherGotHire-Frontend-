@@ -1,9 +1,10 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult} from "../services/examQuesServices";
 
 const initialState = {
    allQuestion : [],
    examSet:[],
+   result: {},
    exam:"",
    subject:"",
    language:"",
@@ -13,10 +14,10 @@ const initialState = {
 
 export const getAllQues= createAsyncThunk(
     "getAllQues",
-    async ({  exam_id, language }, { rejectWithValue }) => {
-      console.log("jsbfkdnvkjd",{exam_id, language })
+    async ({  examID, language }, { rejectWithValue }) => {
+      console.log("jsbfkdnvkjd",{examID, language })
       try {
-        const data = await fetchQuestion({ exam_id, language });
+        const data = await fetchQuestion({ examID, language });
          return data; 
       } catch (error) {
         return rejectWithValue({
@@ -29,10 +30,32 @@ export const getAllQues= createAsyncThunk(
 
   export const getExamSet= createAsyncThunk(
     "getExamSet",
-    async ({ level_id, class_category_id, subject_id }, { rejectWithValue }) => {
+    async ({ level_id, subject_id }, { rejectWithValue }) => {
       console.log("jsbfkdnvkjd",{ level_id, class_category_id, subject_id })
       try {
-        const data = await fetchExam({ level_id, class_category_id, subject_id });
+        const data = await fetchExam({ level_id, subject_id });
+         return data; 
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, 
+          code: error.code || "UNKNOWN_ERROR", 
+        });
+      }
+    }
+  );
+
+  export const postResult= createAsyncThunk(
+    "postResult",
+    async ({ exam,correct_answer,
+      incorrect_answer,
+      is_unanswered}, { rejectWithValue }) => {
+      console.log("jsbfkdnvkjd",{ correct_answer,
+        incorrect_answer,
+        is_unanswered,})
+      try {
+        const data = await addResult({ exam,correct_answer,
+          incorrect_answer,
+          is_unanswered,});
          return data; 
       } catch (error) {
         return rejectWithValue({

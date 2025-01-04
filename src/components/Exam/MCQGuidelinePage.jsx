@@ -1,31 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { getAllQues, setLanguage } from '../../features/examQuesSlice';
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
-  const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [isLanguageSelected, setIsLanguageSelected] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(""); // No language selected by default
+  const exam = useSelector((state) => state.examQues);
+  const examID = exam.exam?.id; // Handle case where exam might be undefined
 
-
-  //const questions = useSelector((state) => state.examQues.allQuestion);
-  
-
- console.log('dfghjk',exam)
   // Handle language change
   const handleLanguageChange = (event) => {
     const language = event.target.value;
-    // setSelectedLanguage(language);
-    // console.log("Selected Language:", language);
-    // console.log("Selected Language:", selectedLanguage);
-    setIsLanguageSelected(true);
-    dispatch(setLanguage(language))
-    
+    setSelectedLanguage(language); // Update selected language in state
+    console.log("Selected Language:", language);
   };
 
-  // Only show proceed button when language is selected
-  const showProceedButton = isLanguageSelected;
+  // Handle proceed button click
+  const handleProceedClick = () => {
+    if (selectedLanguage) {
+      dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
+      dispatch(getAllQues({ examID, language: selectedLanguage })); // Dispatch getAllQues action
+      console.log("Proceeding with:", selectedLanguage, examID);
+    }
+  };
 
   return (
     <div className="min-h-screen text-gray-800">
@@ -66,6 +64,9 @@ const MCQGuidelinePage = () => {
                 onChange={handleLanguageChange}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="" disabled>
+                  Select Language
+                </option>
                 <option value="Hindi">Hindi</option>
                 <option value="English">English</option>
               </select>
@@ -78,14 +79,20 @@ const MCQGuidelinePage = () => {
             </div>
           </div>
 
-          {/* Show Proceed Button after Language is Selected */}
-          {showProceedButton && (
-            <div className="mt-4 text-center">
-              <Link to="/exam" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-                Proceed to Exam
-              </Link>
-            </div>
-          )}
+          {/* Proceed Button */}
+          <div className="mt-4 text-center">
+            <Link
+              to={selectedLanguage ? "/exam" : "#"}
+              className={`${
+                selectedLanguage
+                  ? "bg-teal-600 hover:bg-teal-700"
+                  : "bg-gray-400 cursor-not-allowed"
+              } text-white px-4 py-2 rounded`}
+              onClick={handleProceedClick}
+            >
+              Proceed to Exam
+            </Link>
+          </div>
         </div>
       </main>
 

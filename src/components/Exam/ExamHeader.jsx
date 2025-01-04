@@ -8,8 +8,6 @@ export default function Subheader({ totalQuestion }) {
   const Language = useSelector((state)=>state.examQues);
   const language = useSelector((state)=>state.examQues.language);
 
-  
-
 
   useEffect(() => {
     const timer = setInterval(() => {

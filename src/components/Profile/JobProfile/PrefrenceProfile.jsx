@@ -15,16 +15,7 @@ import { HiPencil } from "react-icons/hi";
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
-
-  // State Management
-  const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
-  const [error, setError] = useState("");
+  
 
   // Fetch Data on Component Mount
   useEffect(() => {
@@ -41,14 +32,39 @@ const PrefrenceProfile = () => {
   const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
-  useEffect(() => {
-    if (teacherprefrence) {
-      Object.entries(teacherprefrence).forEach(([key, value]) =>
-        setValue(key, value)
-      );
-    }
-  }, [teacherprefrence, setValue]);
+  const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
+  const [error, setError] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
+
+  useEffect(() => {
+    if (isEditingPrefrence && teacherprefrence) {
+      Object.entries(teacherprefrence).forEach(([key, value]) => {
+        if (key === "job_role" || key === "prefered_subject" || key === "teacher_job_type") {
+          // Set array values for multi-select or checkboxes
+          setValue(
+            key,
+            value.map((item) => item.id)
+          );
+        } else if (key === "class_category") {
+          // Set single value for dropdown
+          setValue(key, value?.id || "");
+        } else {
+          // Handle other fields
+          setValue(key, value || "");
+        }
+      });
+    }
+  }, [isEditingPrefrence, teacherprefrence, setValue]);
+
+ 
+  
+  
   // Fetch Preferences again after update
   const fetchPreferences = () => {
     dispatch(getPrefrence());
@@ -203,7 +219,7 @@ const PrefrenceProfile = () => {
                   Preferred Subject
                 </label>
                 <div className="space-y-3">
-                  {subject?.map((sub) => (
+                {subject?.map((sub) => (
                     <div key={sub.id} className="flex items-center">
                       <input
                         type="checkbox"
@@ -211,6 +227,9 @@ const PrefrenceProfile = () => {
                         value={sub.id}
                         id={`subject-${sub.id}`}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.prefered_subject?.some(
+                          (item) => item.id === sub.id
+                        )}
                       />
                       <label
                         htmlFor={`subject-${sub.id}`}
@@ -220,6 +239,7 @@ const PrefrenceProfile = () => {
                       </label>
                     </div>
                   ))}
+
                 </div>
                 {errors.prefered_subject && (
                   <span className="text-red-500 text-sm">
@@ -240,13 +260,13 @@ const PrefrenceProfile = () => {
                         type="checkbox"
                         {...register("teacher_job_type", { required: true })}
                         value={role.id}
-                        id={role.id}
+                        id={`teacherjobRole-${role.id}`}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.teacher_job_type?.some(
+                          (item) => item.id === role.id
+                        )} // Check if this role is in the pre-selected list
                       />
-                      <label
-                        htmlFor={`teacherjobRole-${role.id}`}
-                        className="ml-2 text-sm text-gray-700"
-                      >
+                      <label htmlFor={`teacherjobRole-${role.id}`} className="ml-2 text-sm text-gray-700">
                         {role.teacher_job_name}
                       </label>
                     </div>
