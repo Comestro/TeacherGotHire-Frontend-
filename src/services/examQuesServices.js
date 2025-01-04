@@ -24,9 +24,32 @@ apiClient.interceptors.request.use(
   }
 );
 
-export const fetchExamLang = async()=>{
+
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('Unauthorized: Logging out the user');
+      localStorage.removeItem('access_token'); // Clear the token
+      window.location.href = '/signin'; // Redirect to login page
+    }
+    return Promise.reject(error);
+  }
+);
+
+
+export const fetchExam = async({ level_id, class_category_id, subject_id })=>{
   try{
-     const response = await apiClient.get('/api/admin//');
+    const response = await apiClient.get(`/api/self/exam/exams/`,{
+      params: {
+        level_id,
+        class_category_id,
+        subject_id,
+      },
+    }
+  );
      return response.data;
   }
      catch (err) {
@@ -35,14 +58,11 @@ export const fetchExamLang = async()=>{
   }
 };
 
-export const fetchQuestion = async({ level_id, class_category_id, subject_id, language })=>{
+export const fetchQuestion = async({ exam_id,language })=>{
   try{
-    console.log("jsbfkdnvkjd",{ level_id, class_category_id, subject_id, language })
-     const response = await apiClient.get(`http://127.0.0.1:8000/api/self/question/questions/`, {
+    console.log("jsbfkdnvkjd",{ exam_id,language })
+     const response = await apiClient.get(`/api/self/exam/exams/${exam_id}`, {
           params: {
-            level_id,
-            class_category_id,
-            subject_id,
             language,
           },
         });

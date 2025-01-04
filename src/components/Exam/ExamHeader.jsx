@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
-export default function Subheader({ totalQuestion, subject }) {
-  const [timeLeft, setTimeLeft] = useState(totalQuestion*2 * 60); // 30 minutes in seconds
+export default function Subheader({ totalQuestion }) {
+  const [timeLeft, setTimeLeft] = useState(totalQuestion*2 * 60); // 30 minutes in 
+  
+  const subject = useSelector((state)=>state.examQues.exam);
+  const Language = useSelector((state)=>state.examQues);
+  const language = useSelector((state)=>state.examQues.language);
+
+  
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,7 +39,7 @@ export default function Subheader({ totalQuestion, subject }) {
   return (
     <div className="bg-white rounded-md py-4 px-6 shadow-md flex justify-between items-center border-b border-gray-300">
       <div className="flex flex-col">
-      <h1 className="text-xl font-bold text-teal-700">Subject : {subject?.subject.subject_name } | Level : {subject?.level.name }</h1>
+      <h1 className="text-xl font-bold text-teal-700">Subject : {subject?.subject.subject_name } | Level : {subject?.level.name }| Language: {language}</h1>
       </div>
       <div className="relative w-24 h-24 flex items-center justify-center rounded-full shadow-lg">
         {/* Clock Base */}

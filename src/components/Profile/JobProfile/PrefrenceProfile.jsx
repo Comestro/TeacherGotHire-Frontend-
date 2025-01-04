@@ -37,17 +37,9 @@ const PrefrenceProfile = () => {
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("jobrole", jobRole);
   const subject = useSelector((state) => state?.jobProfile?.subject);
-  console.log("subject", subject);
-  const teacherjobRole = useSelector(
-    (state) => state.jobProfile?.teacherjobRole
-  );
-  console.log("teacherjobrole", teacherjobRole);
+  const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
-
-  // console.log("teacherprefrence", teacherprefrence);
-  // console.log("Role:", teacherprefrence.teacher_job_type);
 
   useEffect(() => {
     if (teacherprefrence) {
@@ -65,7 +57,6 @@ const PrefrenceProfile = () => {
   // Form Submission Handler
   const onSubmit = async (data) => {
     try {
-      console.log("Form Data", data);
       await updateTeacherPrefrence(data);
       dispatch(postPrefrence(data));
       fetchPreferences();
@@ -105,7 +96,11 @@ const PrefrenceProfile = () => {
                 {
                   title: "Job Role",
                   value:
-                    teacherprefrence?.job_role?.jobrole_name || "Not Provided",
+                    teacherprefrence?.job_role?.length > 0
+                      ? teacherprefrence.job_role
+                          .map((jobrole) => jobrole.jobrole_name)
+                          .join(", ")
+                      : "Not Provided",
                 },
                 {
                   title: "Subject",
@@ -148,16 +143,6 @@ const PrefrenceProfile = () => {
                 </div>
               ))}
             </div>
-
-            {/* Edit Button */}
-            {/* <div className="mt-6 flex justify-end">
-              <button
-                className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition"
-                onClick={() => setIsEditingPrefrence(true)}
-              >
-                Edit Preferences
-              </button>
-            </div> */}
           </div>
         ) : (
           <form

@@ -25,6 +25,20 @@ apiClient.interceptors.request.use(
   }
 );
 
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('Unauthorized: Logging out the user');
+      localStorage.removeItem('access_token'); // Clear the token
+      window.location.href = '/signin'; // Redirect to login page
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const fetchClassCategory = async()=>{
   try{
      const response = await apiClient.get('/api/admin/classcategory/');
