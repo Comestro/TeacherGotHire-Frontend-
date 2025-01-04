@@ -33,6 +33,7 @@ import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
 import ManageLevel from "./admin/Manage-level/ManageLevel";
 import ViewAttempts from "./components/Dashboard/ViewAttempts";
+import RecruiterSignUpPage from "./components/RecruiterSignup";
 
 // import Logout from "./components/Logout";
 
@@ -57,6 +58,7 @@ function App() {
             <Route path="/exam" element={<ExamPortal />} />
             <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
+            <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-guide" element={<MCQGuidelinePage />} />
           </Route>

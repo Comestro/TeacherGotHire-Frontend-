@@ -60,7 +60,20 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
   }
 };
 
-
+export const createRecruiteraccount = async ({ Fname, Lname, email, password }) => {
+  try {
+    const response = await apiClient.post('/api/recruiter/register/', { Fname, Lname, email, password });
+    // if (response.status === 200){  
+    //   const { token } = response.data;
+    //   localStorage.setItem('access_token', token);
+    // }
+    return response.data;
+  }
+  catch(err) {
+    console.error('Registration error:', err.response?.data || err);
+    throw err;
+  }
+};
 export const fetchUserData = async()=>{
   try{
      const response = await apiClient.get('/api/self/customuser/');
@@ -110,8 +123,9 @@ export const login = async ({ email, password }) => {
     const response = await apiClient.post('/api/login/', { email, password });
 
     // Extract and store the access token
-    const { access_token } = response.data;
+    const { access_token ,role} = response.data;
     localStorage.setItem('access_token', access_token);
+    localStorage.setItem('role',role)
     console.log('User logged in:', access_token);
 
     return response.data;
