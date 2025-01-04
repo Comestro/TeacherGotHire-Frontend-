@@ -32,7 +32,7 @@ function Login() {
       if (userData) {
         dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
         dispatch(recruiterPostData(userData))
-        if (userData.role === 'recruiter') {
+        if (userData?.role === 'recruiter') {
           navigate("/recruiter")
         }
         else {
@@ -79,7 +79,7 @@ function Login() {
       const response = await verifyOtp({ email, otp });
       if (response) {
         dispatch(recruiterPostData(response.data));
-        if (response.data.role === 'recruiter') {
+        if (response.data?.role === 'recruiter') {
           navigate("/recruiter");
         } else {
           navigate("/teacher");
