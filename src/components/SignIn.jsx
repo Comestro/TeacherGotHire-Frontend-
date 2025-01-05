@@ -82,7 +82,7 @@ function Login() {
       const response = await verifyOtp({ email, otp });
       if (response) {
         if (response.data?.role === 'recruiter') {
-          dispatch(recruiterPostData(response.data)); // Store recruiter data in Redux
+          // dispatch(recruiterPostData(response.data)); // Store recruiter data in Redux
           navigate("/recruiter"); // Redirect to recruiter dashboard
         } else if (response.data?.role === 'user') {
           dispatch(getPostData(response.data)); // Store teacher data in Redux
