@@ -25,46 +25,42 @@ const RecruiterSignUpPage = () => {
 
     const password = watch("password");
 
-    const recruitersign = async(Fname,Lname,email,password)=>{
-        setError("");
-        setLoading(true)
-
-        try{
-            const userData = await createRecruiteraccount(Fname,Lname,email,password);
-            if(userData){
-                setOtpSent(true)
-                setEmail(email)
-                setSuccessMessage('OTP Send Sent to This Email successfully')
-            }
-            
+    const recruitersign = async ({ Fname, Lname, email, password }) => {
+      setError("");
+      setLoading(true); // Set loading to true
+    
+      try {
+        const userData = await createRecruiteraccount({ Fname, Lname, email, password });
+        if (userData) {
+          setOtpSent(true);
+          setEmail(email); // Set the email state here
+          setSuccessMessage("OTP has been sent to your email.");
         }
-        catch (error) {
-            setError(error.message || "Failed to create account. Please try again.");
-          }
-          finally {
-            setLoading(false); // Set loading to false
-          }
+      } catch (error) {
+        setError(error.message || "Failed to create account. Please try again.");
+      } finally {
+        setLoading(false); // Set loading to false
+      }
     };
     const verifyOtpHandler = async () => {
-        setError("");
-        setLoading(true); // Set loading to true
-        setSuccessMessage("");
+      setError("");
+      setLoading(true); // Set loading to true
+      setSuccessMessage("");
     
-        try {
-          const response = await verifyOtp({ email, otp });
-          if (response) {
-            dispatch(recruiterPostData(response.data));
-            navigate("/signin");
-          } else {
-            setError(response.message || "Invalid OTP. Please try again.");
-          }
-        } catch (error) {
-          setError(error.name || "Failed to verify OTP. Please try again.");
-        } 
-        finally {
-          setLoading(false); // Set loading to false
+      try {
+        const response = await verifyOtp({ email, otp }); // Ensure email is included in the payload
+        if (response) {
+          dispatch(recruiterPostData(response.data));
+          navigate("/signin");
+        } else {
+          setError(response.message || "Invalid OTP. Please try again.");
         }
-      };
+      } catch (error) {
+        setError(error.name || "Failed to verify OTP. Please try again.");
+      } finally {
+        setLoading(false); // Set loading to false
+      }
+    };
     return (
         <>
       {/* <Navbar /> */}
@@ -154,7 +150,7 @@ const RecruiterSignUpPage = () => {
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
-                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                      value: /^\w+([.-]?\w+)@\w+([.-]?\w+)(\.\w{2,3})+$/,
                       message: "Invalid email format",
                     },
                   })}
