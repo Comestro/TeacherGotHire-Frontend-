@@ -63,26 +63,41 @@ export const createaccount = async ({ Fname, Lname, email, password }) => {
 export const createRecruiteraccount = async ({ Fname, Lname, email, password }) => {
   try {
     const response = await apiClient.post('/api/recruiter/register/', { Fname, Lname, email, password });
-    // if (response.status === 200){  
-    //   const { token } = response.data;
-    //   localStorage.setItem('access_token', token);
-    // }
     return response.data;
-  }
-  catch(err) {
-    console.error('Registration error:', err.response?.data || err);
-    throw err;
+  } catch (err) {
+    if (err.response) {
+      // Handle specific status codes
+      const { status, data } = err.response;
+      switch (status) {
+        case 400:
+          throw new Error(data.message || 'Bad Request. Please check your input.');
+        case 409:
+          throw new Error('Conflict. The email is already registered.');
+        case 422:
+          throw new Error('Unprocessable Entity. Invalid data provided.');
+        case 500:
+          throw new Error('Internal Server Error. Please try again later.');
+        default:
+          throw new Error(data.message || `An error occurred. Status code: ${status}`);
+      }
+    } else if (err.request) {
+      // No response received from the server
+      throw new Error('No response from the server. Please check your network connection.');
+    } else {
+      // Error in setting up the request
+      throw new Error(err.message || 'An unexpected error occurred.');
+    }
   }
 };
-export const fetchUserData = async()=>{
-  try{
-     const response = await apiClient.get('/api/self/customuser/');
-     //console.log("get newdata:",response.data);
-     return response.data;
+export const fetchUserData = async () => {
+  try {
+    const response = await apiClient.get('/api/self/customuser/');
+    //console.log("get newdata:",response.data);
+    return response.data;
   }
-     catch (err) {
-         console.error('error:', err.response?.data || err);
-         throw err;
+  catch (err) {
+    console.error('error:', err.response?.data || err);
+    throw err;
   }
 }
 //verify otp service
@@ -119,15 +134,10 @@ export const verifyOtp = async ({ email, otp }) => {
 // Login User
 export const login = async ({ email, password }) => {
   try {
-    // Send the login request to the backend
     const response = await apiClient.post('/api/login/', { email, password });
-
-    // Extract and store the access token
-    const { access_token ,role} = response.data;
+    const { access_token, role } = response.data;
     localStorage.setItem('access_token', access_token);
-    localStorage.setItem('role',role)
-    console.log('User logged in:', access_token);
-
+    localStorage.setItem('role', role); // Store the role
     return response.data;
   } catch (err) {
     // Pass the error response to the form handler for specific error message handling
@@ -176,7 +186,8 @@ export const resendOtp = async (email) => {
 export const logout = () => {
   try {
     localStorage.removeItem('access_token'); // Remove token from local storage
-   // console.log('User logged out');
+    localStorage.removeItem('role'); // Remove token from local storage
+    // console.log('User logged out');
   } catch (err) {
     console.error('Logout error:', err);
     throw err;

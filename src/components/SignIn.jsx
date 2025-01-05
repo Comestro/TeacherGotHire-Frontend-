@@ -30,14 +30,17 @@ function Login() {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
 
       if (userData) {
-        dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
-        dispatch(recruiterPostData(userData))
+        // dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
+        // dispatch(recruiterPostData(userData))
         if (userData?.role === 'recruiter') {
-          navigate("/recruiter")
+          dispatch(recruiterPostData(userData));  // Save recruiter data in redux
+          navigate("/recruiter"); // Redirect to recruiter dashboard
+        } else if (userData?.role === 'user') {
+          dispatch(getPostData(userData)); // Save teacher data in redux
+          navigate("/teacher"); // Redirect to teacher dashboard
         }
-        else {
-          navigate("/teacher"); // Redirect to teacher dashboard after login
-        }
+
+
       }
     } catch (error) {
       if (error.status === 403) {
@@ -78,11 +81,12 @@ function Login() {
     try {
       const response = await verifyOtp({ email, otp });
       if (response) {
-        dispatch(recruiterPostData(response.data));
         if (response.data?.role === 'recruiter') {
-          navigate("/recruiter");
-        } else {
-          navigate("/teacher");
+          dispatch(recruiterPostData(response.data)); // Store recruiter data in Redux
+          navigate("/recruiter"); // Redirect to recruiter dashboard
+        } else if (response.data?.role === 'user') {
+          dispatch(getPostData(response.data)); // Store teacher data in Redux
+          navigate("/teacher"); // Redirect to teacher dashboard
         }
       } else {
         setError(response.message || "Invalid OTP. Please try again.");
