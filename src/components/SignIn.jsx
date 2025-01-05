@@ -33,11 +33,11 @@ function Login() {
         // dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
         // dispatch(recruiterPostData(userData))
         if (userData?.role === 'recruiter') {
-          dispatch(recruiterPostData(userData));  // Save recruiter data in redux
-          navigate("/recruiter"); // Redirect to recruiter dashboard
+          dispatch(recruiterPostData(userData));  
+          navigate("/recruiter");
         } else if (userData?.role === 'user') {
-          dispatch(getPostData(userData)); // Save teacher data in redux
-          navigate("/teacher"); // Redirect to teacher dashboard
+          dispatch(getPostData(userData));
+          navigate("/teacher");
         }
 
 
@@ -82,11 +82,11 @@ function Login() {
       const response = await verifyOtp({ email, otp });
       if (response) {
         if (response.data?.role === 'recruiter') {
-          // dispatch(recruiterPostData(response.data)); // Store recruiter data in Redux
-          navigate("/recruiter"); // Redirect to recruiter dashboard
+          dispatch(recruiterPostData(response.data)); 
+          navigate("/recruiter");
         } else if (response.data?.role === 'user') {
-          dispatch(getPostData(response.data)); // Store teacher data in Redux
-          navigate("/teacher"); // Redirect to teacher dashboard
+          dispatch(getPostData(response.data));
+          navigate("/teacher");
         }
       } else {
         setError(response.message || "Invalid OTP. Please try again.");

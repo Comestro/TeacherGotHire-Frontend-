@@ -219,7 +219,7 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<ViewAttempts />}
-                  allowedRoles={['teacher']} // Only allow teachers
+                  allowedRoles={['user']}
                 />
               }
             />
