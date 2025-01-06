@@ -21,7 +21,6 @@ function TeacherDashboard() {
   const percentage = useSelector(
     (state) => state.personalProfile.completionData.profile_completed
   );
-  console.log("prec", percentage);
 
   useEffect(() => {
     dispatch(getSubjects());

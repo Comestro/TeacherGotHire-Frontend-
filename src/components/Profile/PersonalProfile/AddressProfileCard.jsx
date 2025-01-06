@@ -167,16 +167,16 @@ const AddressCard = ({ title, data, onEdit }) => (
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
   const personalProfile = useSelector(
-    (state) => state.personalProfile || {}
+    (state) => state.personalProfile.address || {}
   );
-  console.log("personalProfile",)
+  console.log("personalProfile",personalProfile)
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
 
   useEffect(() => {
     dispatch(getAddress());
-  }, [dispatch]);
+  }, []);
 
   const handleSave = async (data) => {
     console.log("archana",data)
@@ -185,7 +185,7 @@ const AddressProfileCard = () => {
     //console.log("adreestype",address_type)
     setLoading(true);
     try {
-      if (personalProfile?.[`${isEditingType}_address`]) {
+      if (personalProfile?.[`${isEditingType}_address`]) { 
         await dispatch(putAddress(payload)).unwrap();
       } else {
         console.log("arcPayload",payload);
