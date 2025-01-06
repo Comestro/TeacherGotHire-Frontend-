@@ -70,7 +70,7 @@ export const fetchBasicProfile = async()=>{
 export const updateAddressProfile = async(addressdata)=>{
   try{
   console.log("adress",addressdata)
-    const response = await apiClient.put('/api/self/teacherAddress/',addressdata);
+    const response = await apiClient.put(`/api/self/teacherAddress/`,addressdata);
     console.log("adressresponse",response )
     return JSON.parse(JSON.stringify(response));
   }

@@ -15,7 +15,7 @@ const initialState = {
 export const getAllQues = createAsyncThunk(
   "getAllQues",
   async ({ exam_id, language }, { rejectWithValue }) => {
-    console.log("jsbfkdnvkjd", { exam_id, language });
+    
     try {
       const data = await fetchQuestion({ exam_id, language });
       return data;
@@ -95,7 +95,6 @@ const examQuesSlice = createSlice({
     },
     setLanguage(state, action) {
       state.language = action.payload;
-      console.log("ghjkl;", action.payload);
     },
   },
   extraReducers: (builder) => {
