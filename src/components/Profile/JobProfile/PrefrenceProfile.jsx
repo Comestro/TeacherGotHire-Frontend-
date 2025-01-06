@@ -74,7 +74,7 @@ const PrefrenceProfile = () => {
   };
 
   return (
-    <div className="px-2 py-2 border rounded-lg">
+    <div className="px-2 py-2 ">
       <div className="flex  mb-4 items-center justify-between">
         <h2 className="text-xl font-bold text-gray-600">
           Preference Information

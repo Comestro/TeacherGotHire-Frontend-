@@ -120,10 +120,14 @@ const Experience = () => {
           </button>
         )}
       </div>
-
+      {experienceData.length < 1 && !isEditing  && (
+        <div className="px-4 ">
+          <h1 className="text-gray-500 pb-2">No data available</h1>
+        </div>
+      )}
       {!isEditing ? (
-        <div className="">
-          <div className="flex flex-col gap-4 rounded-md px-2 py-4">
+        <div className="border-b border-gray-300 px-2 pb-2  mb-4">
+          <div className="flex flex-col gap-4  ">
             {experienceData &&
               experienceData.map((experience, index) => (
                 <div key={index} className="transition-shadow px-4">
@@ -151,10 +155,12 @@ const Experience = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="mt-1">
+                  <div className="mt-1 pb-3">
                     <p className="text-sm text-gray-500">
-                      <strong className="text-lg">{experience.institution || "N/A"}</strong> served
-                      as a{" "}
+                      <strong className="text-lg">
+                        {experience.institution || "N/A"}
+                      </strong>{" "}
+                      served as a{" "}
                       <strong>{experience.role.jobrole_name || "N/A"}</strong>{" "}
                       from <strong>{experience.start_date || "N/A"}</strong> to{" "}
                       <strong>{experience.end_date || "N/A"}</strong>.
@@ -173,7 +179,7 @@ const Experience = () => {
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-6 rounded-lg space-y-4 border"
+          className="bg-white p-6 rounded-lg space-y-4 border mb-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
