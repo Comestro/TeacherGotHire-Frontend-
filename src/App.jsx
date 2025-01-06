@@ -35,6 +35,7 @@ import ManageLevel from "./admin/Manage-level/ManageLevel";
 import ViewAttempts from "./components/Dashboard/ViewAttempts";
 import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
+import ExamLayout from "./components/Exam/ExamLayout";
 
 // import Logout from "./components/Logout";
 
@@ -49,7 +50,9 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
@@ -62,6 +65,12 @@ function App() {
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+          </Route>
+
+          <Route path="/exam-portal" element={<ExamLayout />} >
+            <Route index element={<ExamPortal />} />
+            <Route path="guideline" element={<MCQGuidelinePage/>} />
+            <Route path="result" element={<ResultPage />} />
           </Route>
 
           {/* Recruiter Routes */}
@@ -142,15 +151,11 @@ function App() {
           />
           <Route
             path="/admin/manage/level"
-            element={
-              token ? <ManageLevel /> : <Navigate to="/signin" />
-            }
+            element={token ? <ManageLevel /> : <Navigate to="/signin" />}
           />
           <Route
             path="/admin/manage/exam"
-            element={
-              token ? <ExamManagement /> : <Navigate to="/signin" />
-            }
+            element={token ? <ExamManagement /> : <Navigate to="/signin" />}
           />
 
           {/* Teacher Routes */}
