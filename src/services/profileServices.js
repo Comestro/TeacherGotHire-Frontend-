@@ -94,7 +94,7 @@ console.log("adress",addressdata)
 export const fetchAddressProfile = async()=>{
   try{
     const response = await apiClient.get('/api/self/teacherAddress/');
-     
+     console.log("res",response)
      return response.data;
   }
      catch (err) {

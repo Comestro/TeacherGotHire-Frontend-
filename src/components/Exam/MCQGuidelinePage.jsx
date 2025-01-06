@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { getAllQues, setLanguage } from '../../features/examQuesSlice';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { getAllQues, setLanguage } from "../../features/examQuesSlice";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
@@ -20,7 +20,7 @@ const MCQGuidelinePage = () => {
   const handleProceedClick = () => {
     if (selectedLanguage) {
       dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
-      dispatch(getAllQues({ examID, language: selectedLanguage })); // Dispatch getAllQues action
+      dispatch(getAllQues({ exam_id: examID, language: selectedLanguage })); // Dispatch getAllQues action
       console.log("Proceeding with:", selectedLanguage, examID);
     }
   };
@@ -30,7 +30,9 @@ const MCQGuidelinePage = () => {
       {/* Header */}
       <header className="py-2">
         <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-bold text-center underline">Exam Guidelines</h1>
+          <h1 className="text-2xl font-bold text-center underline">
+            Exam Guidelines
+          </h1>
         </div>
       </header>
 
@@ -40,16 +42,32 @@ const MCQGuidelinePage = () => {
           <h2 className="text-xl font-semibold mb-4">Guidelines</h2>
           <ul className="list-disc list-inside space-y-2">
             <li>Ensure you have a stable internet connection.</li>
-            <li>Use the latest version of Google Chrome or Mozilla Firefox for the best experience.</li>
-            <li>Make sure your device is fully charged or connected to a power source.</li>
+            <li>
+              Use the latest version of Google Chrome or Mozilla Firefox for the
+              best experience.
+            </li>
+            <li>
+              Make sure your device is fully charged or connected to a power
+              source.
+            </li>
             <li>Read each question carefully before answering.</li>
-            <li>You cannot go back to previous questions once you move to the next one.</li>
+            <li>
+              You cannot go back to previous questions once you move to the next
+              one.
+            </li>
             <li>Manage your time wisely; each question has a time limit.</li>
-            <li>Do not refresh the page or press the back button on your browser.</li>
+            <li>
+              Do not refresh the page or press the back button on your browser.
+            </li>
             <li>Review your answers if allowed before submitting.</li>
             <li>Click the "Submit" button to finish the test.</li>
-            <li>If you encounter technical issues, contact support immediately.</li>
-            <li>Ensure no external assistance is used; tests are monitored for fairness.</li>
+            <li>
+              If you encounter technical issues, contact support immediately.
+            </li>
+            <li>
+              Ensure no external assistance is used; tests are monitored for
+              fairness.
+            </li>
           </ul>
 
           <div className="mt-6">
@@ -74,7 +92,10 @@ const MCQGuidelinePage = () => {
 
             {/* Checkbox for Agreement */}
             <div className="flex items-center space-x-2 mt-4">
-              <input type="checkbox" className="form-checkbox h-5 w-5 text-teal-600" />
+              <input
+                type="checkbox"
+                className="form-checkbox h-5 w-5 text-teal-600"
+              />
               <span>I have read and agree to the guidelines</span>
             </div>
           </div>

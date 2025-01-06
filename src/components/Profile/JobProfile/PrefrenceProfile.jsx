@@ -219,9 +219,9 @@ const PrefrenceProfile = () => {
                         {...register("prefered_subject", { required: true })}
                         value={sub.id}
                         id={`subject-${sub.id}`}
-                        defaultChecked={teacherprefrence?.prefered_subject?.some(
-                          (selectedSub) => selectedSub.id === sub.id
-                        )}
+                        // defaultChecked={teacherprefrence?.prefered_subject?.some(
+                        //   (selectedSub) => selectedSub.id === sub.id
+                        // )}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
                         defaultChecked={teacherprefrence?.prefered_subject?.some(
                           (item) => item.id === sub.id

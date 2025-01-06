@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -31,7 +31,7 @@ export const getAllQues = createAsyncThunk(
   export const getExamSet= createAsyncThunk(
     "getExamSet",
     async ({ level_id, subject_id }, { rejectWithValue }) => {
-      console.log("jsbfkdnvkjd",{ level_id, class_category_id, subject_id })
+      console.log("jsbfkdnvkjd",{ level_id, subject_id })
       try {
         const data = await fetchExam({ level_id, subject_id });
          return data; 
@@ -145,6 +145,7 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
   },
+  resetState: () => initialState,
 });
 
 export const { setSubject, setExam, setLanguage } = examQuesSlice.actions;

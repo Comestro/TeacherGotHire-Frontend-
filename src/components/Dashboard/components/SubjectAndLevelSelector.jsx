@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getExamSet, setSubject } from "../../../features/examQuesSlice";
 import ExamSetCard from "./ExamCard";
@@ -12,6 +12,10 @@ const SubjectAndLevelSelector = () => {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const dispatch = useDispatch();
 
+  useEffect(()=>{
+    dispatch(getExamSet());
+  },[])
+
   const handleAddSubject = (subjectName) => {
     setSelectedSubject(subjectName);
     dispatch(setSubject(subjectName)); 
@@ -24,6 +28,7 @@ const SubjectAndLevelSelector = () => {
       subject_id: subject,
     });
     dispatch(
+      
       getExamSet({
         level_id: level,
         subject_id: subject,
