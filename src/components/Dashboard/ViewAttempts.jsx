@@ -42,30 +42,11 @@ const ViewAttempts = () => {
                 scope="row"
                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
               >
-                Apple MacBook Pro 17"
+                Testing
               </th>
-              <td className="px-6 py-4">Silver</td>
-              <td className="px-6 py-4">Laptop</td>
-              <td className="px-6 py-4">$2999</td>
-              <td className="px-6 py-4 text-right">
-                <a
-                  href="#"
-                  className="font-medium text-[#3E98C7] hover:underline"
-                >
-                  view results
-                </a>
-              </td>
-            </tr>
-            <tr className="bg-[#E5F1F9] border-b hover:bg-gray-50">
-              <th
-                scope="row"
-                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-              >
-                Microsoft Surface Pro
-              </th>
-              <td className="px-6 py-4">White</td>
-              <td className="px-6 py-4">Laptop PC</td>
-              <td className="px-6 py-4">$1999</td>
+              <td className="px-6 py-4">English</td>
+              <td className="px-6 py-4">pass</td>
+              <td className="px-6 py-4">43</td>
               <td className="px-6 py-4 text-right">
                 <a
                   href="#"

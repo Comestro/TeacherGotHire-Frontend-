@@ -171,20 +171,17 @@ const JobPrefrenceLocation = () => {
           </button>
         )}
       </div>
-      {jobLocations.length == 0 && !isFormVisible && (
+      {/* {jobLocations.length == 0 && !isFormVisible && (
         <div className="px-4 border-b">
           <h1 className="text-gray-500 pb-2">No data available</h1>
         </div>
-      )}
+      )} */}
       {jobLocations.length > 0 && !isFormVisible && (
-        <div className="grid grid-cols-1 border rounded-md px-5 gap-4 bg-slate-50">
+        <div className="px-5 gap-4 ">
           {jobLocations.map((location, index) => (
-            <div
-              key={index}
-              className=" rounded-lg p-4 transition-shadow"
-            >
+            <div key={index} className=" p-4 transition-shadow border-b">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="text-lg font-medium text-gray-700">
                   {location.area}
                 </h2>
                 <div className="flex space-x-4">
@@ -209,27 +206,14 @@ const JobPrefrenceLocation = () => {
               </div>
               <div className="text-sm text-gray-700">
                 <p>
-                  <strong className="mr-2">District:</strong> {location.city}
-                </p>
-                <p>
-                  <strong className="mr-2">State:</strong> {location.state}
-                </p>
-                <p>
-                  <strong className="mr-2">Block:</strong> {location.block}
-                </p>
-                <p>
-                  <strong className="mr-2">Pincode:</strong> {location.pincode}
-                </p>
-                <p>
-                  <strong className="mr-2">Postoffice:</strong> {location.post_office}
+                  {`${location.block}, ${location.city}, ${location.state},  ${location.pincode}, Postoffice: ${location.post_office}`}
                 </p>
               </div>
-              <hr className="mt-4"/>
             </div>
           ))}
         </div>
       )}
-      {!isFormVisible && jobLocations.length < 0 && (
+      {jobLocations.length == 0 && !isFormVisible && (
         <div className="text-center py-8 border bg-slate-50 border-gray-200 rounded-md mt-2">
           <p className="text-gray-600 text-xl font-semibold">
             You haven't added any job preference locations yet!
