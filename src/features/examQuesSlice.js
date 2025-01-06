@@ -1,9 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  fetchQuestion,
-  fetchExam,
-  Attempts,
-} from "../services/examQuesServices";
+import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
+import { fetchQuestion,fetchExam,addResult,Attempts} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -32,21 +28,44 @@ export const getAllQues = createAsyncThunk(
   }
 );
 
-export const getExamSet = createAsyncThunk(
-  "getExamSet",
-  async ({ level_id, class_category_id, subject_id }, { rejectWithValue }) => {
-    console.log("jsbfkdnvkjd", { level_id, class_category_id, subject_id });
-    try {
-      const data = await fetchExam({ level_id, class_category_id, subject_id });
-      return data;
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
+  export const getExamSet= createAsyncThunk(
+    "getExamSet",
+    async ({ level_id, subject_id }, { rejectWithValue }) => {
+      console.log("jsbfkdnvkjd",{ level_id, subject_id })
+      try {
+        const data = await fetchExam({ level_id, subject_id });
+         return data; 
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, 
+          code: error.code || "UNKNOWN_ERROR", 
+        });
+      }
     }
-  }
-);
+  );
+
+  export const postResult= createAsyncThunk(
+    "postResult",
+    async ({ exam,correct_answer,
+      incorrect_answer,
+      is_unanswered}, { rejectWithValue }) => {
+      console.log("jsbfkdnvkjd",{ correct_answer,
+        incorrect_answer,
+        is_unanswered,})
+      try {
+        const data = await addResult({ exam,correct_answer,
+          incorrect_answer,
+          is_unanswered,});
+         return data; 
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, 
+          code: error.code || "UNKNOWN_ERROR", 
+        });
+      }
+    }
+    );
+
 export const attemptsExam = createAsyncThunk(
   "attemptExam",
   async (_, { rejectWithValue }) => {
@@ -126,6 +145,7 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
   },
+  resetState: () => initialState,
 });
 
 export const { setSubject, setExam, setLanguage } = examQuesSlice.actions;

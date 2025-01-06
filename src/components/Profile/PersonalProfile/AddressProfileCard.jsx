@@ -6,10 +6,6 @@ import {
   postAddress,
   putAddress,
 } from "../../../features/personalProfileSlice";
-import {
-  updateAddressProfile,
-  addAddressProfile,
-} from "../../../services/profileServices";
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { toast } from "react-toastify";
@@ -20,7 +16,7 @@ const Loader = () => (
   </div>
 );
 
-const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
+const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
   const {
     register,
     handleSubmit,
@@ -59,6 +55,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
       }
     }
   };
+ 
+  
+
 
   return (
     <div className="px-5 py-4 rounded-md border">
@@ -168,8 +167,9 @@ const AddressCard = ({ title, data, onEdit }) => (
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
   const personalProfile = useSelector(
-    (state) => state.personalProfile.address || {}
+    (state) => state.personalProfile || {}
   );
+  console.log("personalProfile",)
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
@@ -188,6 +188,7 @@ const AddressProfileCard = () => {
       if (personalProfile?.[`${isEditingType}_address`]) {
         await dispatch(putAddress(payload)).unwrap();
       } else {
+        console.log("arcPayload",payload);
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");
@@ -199,7 +200,7 @@ const AddressProfileCard = () => {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     if (isEditingType && formRef.current) {
       formRef.current.scrollIntoView({ behavior: "smooth" });

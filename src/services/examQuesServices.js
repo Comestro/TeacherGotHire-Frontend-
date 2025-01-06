@@ -35,16 +35,15 @@ apiClient.interceptors.response.use(
   }
 );
 
+
 export const fetchExam = async ({
   level_id,
-  class_category_id,
   subject_id,
 }) => {
   try {
     const response = await apiClient.get(`/api/self/exam/exams/`, {
       params: {
         level_id,
-        class_category_id,
         subject_id,
       },
     });
@@ -58,7 +57,7 @@ export const fetchExam = async ({
 export const fetchQuestion = async ({ exam_id, language }) => {
   try {
     console.log("jsbfkdnvkjd", { exam_id, language });
-    const response = await apiClient.get(`/api/self/exam/exams/${exam_id}`, {
+    const response = await apiClient.get(`/api/self/exam/${exam_id}`, {
       params: {
         language,
       },
@@ -78,5 +77,32 @@ export const Attempts = async () => {
   } catch (err) {
     console.error("error:", err.response?.data || err);
     throw err;
+  }
+};
+
+export const addResult = async({
+  exam,
+  correct_answer,
+  incorrect_answer,
+  is_unanswered,
+})=>{
+  try{
+    console.log("jsbfkdnvkjd",{
+      correct_answer,
+      incorrect_answer,
+      is_unanswered,
+    })
+     const response = await apiClient.post(`/api/self/teacherexamresult/`,{
+      exam,
+      correct_answer,
+      incorrect_answer,
+      is_unanswered,
+    })
+          
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
   }
 };

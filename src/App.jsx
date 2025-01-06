@@ -33,6 +33,8 @@ import TeacherRecruiter from "./components/Recruiter/TeacherRecruiter";
 import ManageTeacherJobType from "./admin/Manage-teacher-job-type/ManageTeacherJobType";
 import ManageLevel from "./admin/Manage-level/ManageLevel";
 import ViewAttempts from "./components/Dashboard/ViewAttempts";
+import RecruiterSignUpPage from "./components/RecruiterSignup";
+import ExamManagement from "./admin/Manage-exam/ManageExam";
 
 // import Logout from "./components/Logout";
 
@@ -57,6 +59,7 @@ function App() {
             <Route path="/exam" element={<ExamPortal />} />
             <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
+            <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-guide" element={<MCQGuidelinePage />} />
           </Route>
@@ -141,6 +144,12 @@ function App() {
             path="/admin/manage/level"
             element={
               token ? <ManageLevel /> : <Navigate to="/signin" />
+            }
+          />
+          <Route
+            path="/admin/manage/exam"
+            element={
+              token ? <ExamManagement /> : <Navigate to="/signin" />
             }
           />
 

@@ -1,6 +1,6 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import {fetchAddressProfile,updateAddressProfile }from "../services/profileServices";
+import {fetchAddressProfile,updateAddressProfile ,addAddressProfile}from "../services/profileServices";
 import {updateBasicProfile,fetchBasicProfile,fetchCompleteProfile} from "../services/profileServices"
 
 

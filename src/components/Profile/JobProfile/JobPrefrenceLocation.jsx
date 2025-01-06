@@ -101,8 +101,7 @@ const JobPrefrenceLocation = () => {
         const editData = {
           ...data,
         };
-        console.log("edit data", editData);
-        console.log("locatikmlmonedit", locationForEdit);
+      
         await dispatch(
           editJobPrefrence({ editData, id: locationForEdit })
         ).unwrap();

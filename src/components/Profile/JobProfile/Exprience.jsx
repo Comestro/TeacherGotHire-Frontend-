@@ -18,9 +18,9 @@ const Experience = () => {
   const experienceData = useSelector(
     (state) => state?.jobProfile?.exprienceData || []
   );
-  console.log("experienceData", experienceData);
+
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("newJOb", jobRole);
+  console.log("job",jobRole)
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -199,29 +199,28 @@ const Experience = () => {
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                Job Role
-              </label>
-              <select
-                className="w-full border-b border-gray-300  p-2 focus:outline-none focus:ring-blue-400"
-                {...register("job_role", { required: true })}
-              >
-                <option value="" disabled>
-                  Select a role
-                </option>
-                {jobRole.map((role) => (
-                  <option key={role.id} value={role.job_role}>
-                    {role.jobrole_name}
-                  </option>
-                ))}
-              </select>
-              {errors.job_role && (
-                <span className="text-sm text-red-500">
-                  This field is required
-                </span>
-              )}
-            </div>
+            {/* <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">
+                  Job Role
+                </label>
+                <select
+                  {...register("job_role", { required: true })}
+                  className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  multiple
+                >
+                  <option value="">Select a job role</option>
+                  {jobRole?.map((role) => (
+                    <option key={role.id} value={role.id.id}>
+                      {role.jobrole_name}
+                    </option>
+                  ))}
+                </select>
+                {errors.jobRole && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div> */}
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">

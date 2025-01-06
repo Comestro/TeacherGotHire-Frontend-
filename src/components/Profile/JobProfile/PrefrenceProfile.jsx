@@ -15,16 +15,7 @@ import { HiPencil } from "react-icons/hi";
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
-
-  // State Management
-  const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
-  const [error, setError] = useState("");
+  
 
   // Fetch Data on Component Mount
   useEffect(() => {
@@ -40,6 +31,16 @@ const PrefrenceProfile = () => {
   const subject = useSelector((state) => state?.jobProfile?.subject);
   const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
+
+  const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
+  const [error, setError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
 
   useEffect(() => {
     if (teacherprefrence) {
@@ -211,17 +212,20 @@ const PrefrenceProfile = () => {
                   Preferred Subject
                 </label>
                 <div className="space-y-3">
-                  {subject?.map((sub) => (
+                {subject?.map((sub) => (
                     <div key={sub.id} className="flex items-center">
                       <input
                         type="checkbox"
                         {...register("prefered_subject", { required: true })}
                         value={sub.id}
                         id={`subject-${sub.id}`}
-                        defaultChecked={teacherprefrence?.prefered_subject?.some(
-                          (selectedSub) => selectedSub.id === sub.id
-                        )}
+                        // defaultChecked={teacherprefrence?.prefered_subject?.some(
+                        //   (selectedSub) => selectedSub.id === sub.id
+                        // )}
                         className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.prefered_subject?.some(
+                          (item) => item.id === sub.id
+                        )}
                       />
                       <label
                         htmlFor={`subject-${sub.id}`}
@@ -242,36 +246,34 @@ const PrefrenceProfile = () => {
 
               {/* Teacher Job Type */}
               <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Teacher Job Type
-  </label>
-  <div className="space-y-3">
-    {teacherjobRole?.map((role) => (
-      <div key={role.id} className="flex items-center">
-        <input
-          type="checkbox"
-          {...register("teacher_job_type", { required: true })}
-          value={role.id}
-          id={`teacher_job_type-${role.id}`}
-          defaultChecked={teacherprefrence?.teacher_job_type?.some(
-            (job) => job.id === role.id
-          )}
-          className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
-        />
-        <label
-          htmlFor={`teacher_job_type-${role.id}`}
-          className="ml-2 text-sm text-gray-700"
-        >
-          {role.teacher_job_name}
-        </label>
-      </div>
-    ))}
-  </div>
-  {errors.teacher_job_type && (
-    <span className="text-red-500 text-sm">This field is required</span>
-  )}
-</div>
-
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teacher Job Type
+                </label>
+                <div className="space-y-3">
+                  {teacherjobRole?.map((role) => (
+                    <div key={role.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        {...register("teacher_job_type", { required: true })}
+                        value={role.id}
+                        id={role.id}
+                        className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                      />
+                      <label
+                        htmlFor={`teacherjobRole-${role.id}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
+                        {role.teacher_job_name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {errors.teacher_job_type && (
+                  <span className="text-red-500 text-sm">
+                    This field is required
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Action Buttons */}
