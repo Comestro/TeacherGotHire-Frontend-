@@ -4,10 +4,12 @@ import { Outlet } from 'react-router-dom'
 
 const ExamLayout = () => {
   return (
-    <div>
+    <div className='w-full'>
         {/* <ExamPortal /> */}
-        <h1>This is Exam layout.</h1>
-        <Outlet />
+        {/* <h1>This is Exam layout.</h1> */}
+        <div className="w-full bg-green-300">
+            <Outlet />
+        </div>
     </div>
   )
 }

@@ -37,7 +37,7 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white">
       {/* main section */}
       <div className="px-2">
         <div className="w-full flex flex-col mx-auto rounded-md">
