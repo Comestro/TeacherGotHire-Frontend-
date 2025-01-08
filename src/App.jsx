@@ -35,6 +35,10 @@ import ManageLevel from "./admin/Manage-level/ManageLevel";
 import ViewAttempts from "./components/Dashboard/ViewAttempts";
 import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
+import RecruiterDashboard from "./components/Recruiter/RecruiterDashboard";
+import RecruiterProfile from "./components/Recruiter/RecruiterProfile";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 // Private Route Component
 // const PrivateRoute = ({ element }) => {
@@ -70,6 +74,8 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword/>} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/exam" element={<ExamPortal />} />
             <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
@@ -80,8 +86,18 @@ function App() {
 
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
-            <Route
+
+          <Route
               index
+              element={
+                <RoleBasedRoute
+                  element={<RecruiterDashboard/>}
+                  allowedRoles={['recruiter']}
+                />
+              }
+            />
+            <Route
+              path="teacher-recruiter"
               element={
                 <RoleBasedRoute
                   element={<TeacherRecruiter />}
@@ -93,7 +109,7 @@ function App() {
               path="personal-profile"
               element={
                 <RoleBasedRoute
-                  element={<EditPersonalProfile />}
+                  element={<RecruiterProfile />}
                   allowedRoles={['recruiter']}
                 />
               }

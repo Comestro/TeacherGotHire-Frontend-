@@ -1,44 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../../services/authServices";
 import { getUserData } from "../../../features/authSlice";
-import { HiViewGrid, HiUser, HiBriefcase, HiOutlineLogin } from "react-icons/hi";
+import { HiViewGrid, HiUser, HiBriefcase, HiOutlineLogin, HiEye } from "react-icons/hi";
 import { IoMdSettings } from "react-icons/io";
- 
+
 const RecruiterSidebar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const profile = useSelector((state) => state.auth.userData || {});
- 
-  // Define the isOpen state to control sidebar visibility
-  const [isOpen, setIsOpen] = useState(true);
-  const [dropdownStates, setDropdownStates] = useState({
-    dropdown1: false,
-    dropdown2: false,
-  });
- 
-  const toggleDropdown = (dropdown) => {
-    setDropdownStates((prevState) => ({
-      ...prevState,
-      [dropdown]: !prevState[dropdown],
-    }));
-  };
- 
+
+  const [isOpen, setIsOpen] = useState(true); // Added state for sidebar toggle
+
   useEffect(() => {
     dispatch(getUserData());
   }, [dispatch]);
- 
+
   const handleLogout = () => {
     logout();
     navigate("/signin");
   };
- 
+
   // Toggle the sidebar visibility
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
- 
+
   return (
     <>
       <div
@@ -53,124 +41,102 @@ const RecruiterSidebar = () => {
           </div>
           <div className="flex flex-col flex-1 justify-between">
             <nav className="w-full mt-1">
-              {/* Dropdown 1 */}
-              <div
-                className="mt-5 p-3 w-full cursor-pointer bg-white border-t  hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown1")}
+              <NavLink
+                to="/recruiter/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
               >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    School
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown1 ? "rotate-180" : "rotate-0"}`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
- 
-              {dropdownStates.dropdown1 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
- 
-              <div
-                className="p-3 w-full cursor-pointer bg-white border-t border-b hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown2")}
+                <HiViewGrid className="size-5" />
+                Dashboard
+              </NavLink>             
+              <NavLink
+                to="/recruiter/personal-profile/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
               >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    Teacher
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown2 ? "rotate-180" : "rotate-0"}`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
- 
-              {dropdownStates.dropdown2 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
+                <HiUser className="size-5" />
+                Profile
+              </NavLink>
+              <NavLink
+                to="/recruiter/teacher-recruiter/"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4  ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              >
+                <HiViewGrid className="size-5" />
+                FindTeacher
+              </NavLink>
+              {/* <NavLink
+                to="/teacher/personal-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-1`
+                }
+              > */}
+                {/* <HiUser className="size-5" />
+                Personal Details
+              </NavLink>
+              <NavLink
+                to="/teacher/job-profile"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiBriefcase className="size-5" />
+                Job Details
+              </NavLink>
+              <NavLink
+                to="view-attempts"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${isActive
+                    ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                    : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiEye className="size-5 mt-1" />
+                View Attempts
+              </NavLink> */}
             </nav>
- 
             <div className="flex flex-col">
               <div className="border-t border-gray-200">
                 <button className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
-                  <IoMdSettings className="size-5" />
-                  Settings
+                  <IoMdSettings className="size-5" /> Setting
                 </button>
               </div>
- 
+              <div className="border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4"
+                >
+                  <HiOutlineLogin className="size-5" />
+                  Logout
+                </button>
+              </div>
               <div className="copyright flex justify-center w-full border-t border-gray-200">
-                <p className="text-gray-500 text-center p-1 text-sm font-semibold">
+                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">
                   Designed by Comestro
                 </p>
               </div>
@@ -181,5 +147,5 @@ const RecruiterSidebar = () => {
     </>
   );
 };
- 
+
 export default RecruiterSidebar;

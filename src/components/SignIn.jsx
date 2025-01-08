@@ -23,8 +23,8 @@ function Login() {
 
 
   const login = async ({ email, password }) => {
-    setError(""); // Clear any previous errors
-    setLoading(true); // Set loading to true
+    setError("");
+    setLoading(true); 
 
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
@@ -33,10 +33,10 @@ function Login() {
         // dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
         // dispatch(recruiterPostData(userData))
         if (userData?.role === 'recruiter') {
-          dispatch(recruiterPostData(userData));  
+          // dispatch(recruiterPostData(userData));  
           navigate("/recruiter");
         } else if (userData?.role === 'user') {
-          dispatch(getPostData(userData));
+          // dispatch(getPostData(userData));
           navigate("/teacher");
         }
 
@@ -82,10 +82,10 @@ function Login() {
       const response = await verifyOtp({ email, otp });
       if (response) {
         if (response.data?.role === 'recruiter') {
-          dispatch(recruiterPostData(response.data)); 
+          // dispatch(recruiterPostData(response.data)); 
           navigate("/recruiter");
         } else if (response.data?.role === 'user') {
-          dispatch(getPostData(response.data));
+          // dispatch(getPostData(response.data));
           navigate("/teacher");
         }
       } else {
@@ -247,6 +247,15 @@ function Login() {
                       className="text-teal-600 hover:underline font-semibold"
                     >
                       Sign Up
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-600 mt-6">
+                    
+                    <span
+                      onClick={() => navigate("/forgot-password")}
+                      className="text-teal-600 hover:underline font-semibold"
+                    >
+                     Forgot-Password
                     </span>
                   </p>
                 </div>

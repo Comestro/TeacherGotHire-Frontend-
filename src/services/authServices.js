@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getApiUrl } from '../store/configue';
+import { data } from 'jquery';
 
 // Axios instance
 const apiClient = axios.create({
@@ -182,15 +183,61 @@ export const resendOtp = async (email) => {
   }
 };
 
-
-export const logout = () => {
+export const forgetPassword = async (email) => {
   try {
-    localStorage.removeItem('access_token'); // Remove token from local storage
-    localStorage.removeItem('role'); // Remove token from local storage
-    // console.log('User logged out');
+    const response = await apiClient.post('/api/forget-password/', { email });
+    return response
   } catch (err) {
-    console.error('Logout error:', err);
-    throw err;
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred while sending the reset email.',
+        data: err.response.data,
+      }
+    } else {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      }
+    }
   }
 }
-export default apiClient;
+
+export const resetPassword = async (uidb64, token, newPassword) => {
+  try {
+    const response = await apiClient.post(
+      `/api/reset-password/${uidb64}/${token}/`,
+      {
+        new_password: newPassword,  // Correct field name
+        confirm_password: newPassword // Correct field name
+      }
+    );
+    return response; // Return response from backend
+  } catch (err) {
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred while resetting the password',
+        data: err.response.data,
+      };
+    } else {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      };
+    }
+  }
+};
+
+
+  export const logout = () => {
+    try {
+      localStorage.removeItem('access_token'); // Remove token from local storage
+      localStorage.removeItem('role'); // Remove token from local storage
+      // console.log('User logged out');
+    } catch (err) {
+      console.error('Logout error:', err);
+      throw err;
+    }
+  }
+  export default apiClient;

@@ -69,7 +69,7 @@ const TeacherRecruiter = () => {
   }, [filters]);
 
   return (
-    <div className="flex w-full">
+    <div className="flex w-full p-6">
       {/* Sidebar with Dropdowns */}
       <div className="w-full lg:w-4/12 p-6 rounded-xl ">
         <h3 className="text-2xl font-semibold mb-6 text-gray-800">Teachers</h3>
