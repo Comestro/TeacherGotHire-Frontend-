@@ -25,10 +25,14 @@ const ExamPortal = () => {
   const navigate = useNavigate();
 
   const exam = useSelector((state) => state.examQues.exam.id);
-
+  
   const questions = useSelector(
     (state) => state.examQues?.allQuestion?.questions
   );
+
+  const examName = useSelector((state) => (state.examQues.allQuestion.name))
+  console.log("Exam data", examName)
+
 
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -110,7 +114,7 @@ const ExamPortal = () => {
   return (
     <div className="flex h-screen bg-gray-100 w-full">
       {/* Sidebar */}
-      <div className="hidden md:block w-full sm:w-[30%] md:w-[20%] bg-white shadow-md border-r border-gray-200 p-2">
+      <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-md border-r border-gray-200 p-2">
         <h3 className="text-xl font-bold text-center text-gray-700 py-4 border-b border-gray-300">
           Level-1 <span className="text-gray-600">Questions</span>
         </h3>
@@ -134,12 +138,12 @@ const ExamPortal = () => {
       </div>
 
       {/* Main Content */}
-      <div className="w-full md:min-w-[80%] md:px-4">
+      <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
         <Subheader
           totalQuestion={questions?.length || 0}
           questions={questions}
         />
-        <div className="bg-white">
+        <div className="bg-white md:hidden">
           <ul className="p-2 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto">
             {questions.map((q, index) => (
               <li key={q.id} className="flex">
@@ -159,7 +163,7 @@ const ExamPortal = () => {
           <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
         )}
         {currentQuestion ? (
-          <div className="relative bg-white p-6 w-full mt-1 min-h-[600px]">
+          <div className="relative bg-white p-6 w-full mt-1 h-full">
             <div className="flex justify-between">
               {" "}
               <h2 className="text-xl font-semibold mb-4">
@@ -226,14 +230,14 @@ const ExamPortal = () => {
             </div>
 
             {/* Navigation Buttons */}
-            <div className="absolute bottom-4 right-4 flex justify-self-end gap-4">
+            <div className="absolute bottom-5 right-4 flex justify-self-end gap-4">
               <button
                 onClick={handlePrevious}
                 disabled={currentQuestionIndex === 0}
                 className={`flex items-center px-2 py-2 rounded ${
                   currentQuestionIndex === 0
                     ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
+                    : "bg-gray-500 text-white hover:bg-blue-600"
                 }`}
               >
                 <BsArrowLeftShort className="size-6" />
