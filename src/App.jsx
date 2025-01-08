@@ -59,17 +59,15 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
-            <Route path="/exam" element={<ExamPortal />} />
-            <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/exam-guide" element={<MCQGuidelinePage />} />
           </Route>
 
-          <Route path="/exam-portal" element={<ExamLayout />} >
-            <Route index element={<ExamPortal />} />
-            <Route path="guideline" element={<MCQGuidelinePage/>} />
+          {/* exam routes */}
+          <Route path="/exam" element={<ExamLayout />} >
+            <Route index element={<MCQGuidelinePage />} />
+            <Route path="portal" element={<ExamPortal/>} />
             <Route path="result" element={<ResultPage />} />
           </Route>
 

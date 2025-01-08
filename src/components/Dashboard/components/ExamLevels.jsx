@@ -52,7 +52,7 @@ const ExamLevels = () => {
   };
 
   const guideline = (exam) => {
-    navigate('/exam-guide');
+    navigate('/exam');
     dispatch(setExam(exam));
   };
 

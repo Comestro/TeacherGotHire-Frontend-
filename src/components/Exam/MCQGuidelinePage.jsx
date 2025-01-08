@@ -95,6 +95,7 @@ const MCQGuidelinePage = () => {
               <input
                 type="checkbox"
                 className="form-checkbox h-5 w-5 text-teal-600"
+                required
               />
               <span>I have read and agree to the guidelines</span>
             </div>
@@ -103,7 +104,7 @@ const MCQGuidelinePage = () => {
           {/* Proceed Button */}
           <div className="mt-4 text-center">
             <Link
-              to={selectedLanguage ? "/exam" : "#"}
+              to={selectedLanguage ? "/exam/portal" : "#"}
               className={`${
                 selectedLanguage
                   ? "bg-teal-600 hover:bg-teal-700"

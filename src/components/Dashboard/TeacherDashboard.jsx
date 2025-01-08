@@ -19,6 +19,10 @@ function TeacherDashboard() {
     (state) => state.personalProfile.completionData.profile_completed
   );
 
+  const value = percentage[0] || 0;
+
+  console.log("percentage value", value)
+
   useEffect(() => {
     dispatch(getSubjects());
     dispatch(getProfilCompletion());
@@ -78,8 +82,8 @@ function TeacherDashboard() {
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={percentage[0]}
-                    text={`${percentage[0]}%`}
+                    value={value}
+                    text={`${value}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },
@@ -94,7 +98,7 @@ function TeacherDashboard() {
               </div>
               <div className="mt-1">
                 <p className="text-gray-500 font-semibold">
-                  {percentage[0]}% profile completed.
+                  {value}% profile completed.
                 </p>
               </div>
               {/* Button Section */}
