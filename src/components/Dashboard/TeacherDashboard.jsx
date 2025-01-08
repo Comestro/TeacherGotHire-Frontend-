@@ -41,9 +41,9 @@ function TeacherDashboard() {
       {/* main section */}
       <div className="px-2">
         <div className="w-full flex flex-col mx-auto rounded-md">
-          <div className="px-4 grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+          <div className="px-4 flex gap-4 py-4 w-full">
             {/* Welcome */}
-            <div className="col-span-2 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
+            <div className="w-9/12 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                 {/* Background circles */}
                 <div className="absolute top-20 -left-20 w-56 h-56 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full opacity-70"></div>
@@ -84,13 +84,13 @@ function TeacherDashboard() {
               </div>
             </div>
             {/* Profile Section */}
-            <div className="rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
+            <div className="w-1/4 rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
               <div className="">
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={percentage}
-                    text={`${percentage}%`}
+                    value={percentage[0]}
+                    text={`${percentage[0]}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },
@@ -105,7 +105,7 @@ function TeacherDashboard() {
               </div>
               <div className="mt-1">
                 <p className="text-gray-500 font-semibold">
-                  {percentage}% profile completed.
+                  {percentage[0]}% profile completed.
                 </p>
               </div>
               {/* Button Section */}
@@ -120,6 +120,7 @@ function TeacherDashboard() {
           <div className="px-4 mt-4 mb-2">
             <ExamLevels />
           </div>
+          
         </div>
       </div>
     </div>

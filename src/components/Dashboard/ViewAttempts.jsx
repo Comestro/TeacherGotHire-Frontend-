@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { attemptsExam } from "../../features/examQuesSlice";
 
 const ViewAttempts = () => {
+    const examSet = useSelector((state) => state.examQues.examSet || []);
+    console.log("Exam set", examSet)
     const examAttempts = useSelector((state) => state.examQues?.attempts);
     console.log("examAttempts", examAttempts);
     const dispatch = useDispatch();
