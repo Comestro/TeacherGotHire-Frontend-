@@ -35,6 +35,16 @@ apiClient.interceptors.response.use(
   }
 );
 
+export const fetchLevel = async () => {
+  try {
+    const response = await apiClient.get('/api/checklevel/');
+    console.log("level", response);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
 
 export const fetchExam = async ({
   level_id,
@@ -87,7 +97,7 @@ export const addResult = async({
   is_unanswered,
 })=>{
   try{
-    console.log("jsbfkdnvkjd",{
+    console.log("result",{
       correct_answer,
       incorrect_answer,
       is_unanswered,

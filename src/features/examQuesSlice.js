@@ -1,17 +1,40 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
   examSet: [],
   exam: "",
   attempts: {},
+  levels:{},
   subject: "",
   language: "",
   status: "idle",
+  loading: false,
   error: null,
 };
 
+export const getLevels = createAsyncThunk(
+  "getLevels",
+  async (_, { rejectWithValue }) => {
+    
+    try {
+      const data = await fetchLevel();
+      return data;
+    } catch (error) {
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 export const getAllQues = createAsyncThunk(
   "getAllQues",
   async ({ exam_id, language }, { rejectWithValue }) => {
@@ -31,9 +54,10 @@ export const getAllQues = createAsyncThunk(
   export const getExamSet= createAsyncThunk(
     "getExamSet",
     async ({ level_id, subject_id }, { rejectWithValue }) => {
-      console.log("jsbfkdnvkjd",{ level_id, subject_id })
+      console.log("exa",{ level_id, subject_id })
       try {
         const data = await fetchExam({ level_id, subject_id });
+        console.log("examSet",data)
          return data; 
       } catch (error) {
         return rejectWithValue({
@@ -49,7 +73,7 @@ export const getAllQues = createAsyncThunk(
     async ({ exam,correct_answer,
       incorrect_answer,
       is_unanswered}, { rejectWithValue }) => {
-      console.log("jsbfkdnvkjd",{ correct_answer,
+      console.log("result",{ correct_answer,
         incorrect_answer,
         is_unanswered,})
       try {
@@ -98,6 +122,21 @@ const examQuesSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    builder
+    // for get data handeling
+    .addCase(getLevels.pending, (state) => {
+      state.status = "loading";
+      state.error = null;
+    })
+    .addCase(getLevels.fulfilled, (state, action) => {
+      state.status = "succeeded";
+      state.levels = action.payload;
+      console.log("lev",action.payload)
+    })
+    .addCase(getLevels.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.payload;
+    });
     builder
       // for get data handeling
       .addCase(getAllQues.pending, (state) => {

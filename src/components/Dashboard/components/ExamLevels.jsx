@@ -1,147 +1,194 @@
-import React, { useState } from "react";
 
-const ExamLevelsStepper = () => {
-  const [profileComplete, setProfileComplete] = useState(true); // Mock profile completion
-  const [level1Passed, setLevel1Passed] = useState(false);
-  const [level2Passed, setLevel2Passed] = useState(false);
-  const [level3Passed, setLevel3Passed] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [completionMessage, setCompletionMessage] = useState("");
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { getLevels, getExamSet, setExam } from "../../../features/examQuesSlice";
+import { useNavigate } from 'react-router-dom'; 
 
-  const handleStartExam = () => {
-    if (currentLevel === 0) {
-      setCurrentLevel(1); // Start Level 1
-      alert("Starting Level 1 exam...");
-      setTimeout(() => {
-        // Simulating exam pass
-        setLevel1Passed(true);
-        setCompletionMessage("Level 1 Completed Successfully!");
-      }, 2000);
-    } else if (currentLevel === 1 && level1Passed) {
-      setCurrentLevel(2); // Start Level 2
-      alert("Starting Level 2 exam...");
-      setTimeout(() => {
-        // Simulating exam pass
-        setLevel2Passed(true);
-        setCompletionMessage("Level 2 Completed Successfully!");
-      }, 2000);
-    } else if (currentLevel === 2 && level2Passed) {
-      setCurrentLevel(3); // Start Level 3
-      alert("Starting Level 3 exam...");
-      setTimeout(() => {
-        // Simulating exam pass
-        setLevel3Passed(true);
-        setCompletionMessage("");
-      }, 2000);
+const ExamLevels = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); 
+  
+
+  const [selectedLevel, setSelectedLevel] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [message, setMessage] = useState(''); // For user feedback
+
+  
+  const { levels, examSet, loading, error } = useSelector((state) => state.examQues);
+
+  console.log("error",error);
+  console.log("examSet",examSet);
+  
+  useEffect(() => {
+    dispatch(getLevels());
+  }, [dispatch]);
+
+  // Function to determine if a level is unlocked
+  const isLevelUnlocked = (levelId) => {
+    if (!levels || levels.length === 0) return false;
+    // Assuming Level 1 is always unlocked
+    if (levelId === 1) return true;
+
+    // A level is unlocked if the previous level is selected or completed
+    return selectedLevel >= levelId - 1;
+  };
+
+  const handleLevelClick = (level) => {
+    if (isLevelUnlocked(level.level_id)) {
+      setSelectedLevel(level.level_id);
+      setSelectedSubject(null); // Reset subject selection
+      setMessage(''); // Clear any messages
+    } else {
+      setMessage('This level is locked.');
     }
   };
 
+  const handleSubjectClick = (subjectId) => {
+    setSelectedSubject(subjectId);
+    dispatch(getExamSet({
+      level_id: selectedLevel,
+      subject_id: subjectId,
+    }));
+  };
+
+  const guideline = (exam) => {
+    navigate('/exam-guide');
+    dispatch(setExam(exam));
+  };
+
+  // Get subjects for the selected level
+  const filteredSubjects = selectedLevel
+    ? levels.find((level) => level.level_id === selectedLevel)?.subjects || []
+    : [];
+
   return (
-    <div className="flex flex-col items-center bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 rounded-lg">
-      <h1 className="text-2xl font-bold text-gray-700 mb-4">
-        Teacher Exam Levels
-      </h1>
+    <div className="flex flex-col items-center p-4">
+      {/* Loading and Error States */}
+      {loading && <div className="text-blue-500">Loading levels...</div>}
+      {/* {error && <div className="text-red-500"> {error}</div>} */}
 
-      {/* Stepper and Button */}
-      {!level3Passed ? (
-        <>
-          {/* Stepper Container */}
-          <div className="flex items-center justify-center space-x-8 w-full max-w-3xl">
-            {/* Step 1 */}
+      {/* Level Selection Message */}
+      {message && <div className="text-red-500 mt-2">{message}</div>}
+
+    
+      {/* Levels Stepper */}
+      {!error ? (<>
+        <div className="flex items-center justify-center space-x-8 w-full max-w-3xl my-6">
+        {levels && levels.length > 0 && levels.map((level, index) => (
+          <React.Fragment key={level.level_id}>
             <div className="flex flex-col items-center">
               <div
                 className={`w-16 h-16 flex items-center justify-center rounded-full shadow-lg ${
-                  profileComplete ? "bg-white" : "bg-gray-400"
+                  isLevelUnlocked(level.level_id)
+                    ? selectedLevel === level.level_id
+                      ? 'bg-blue-500'
+                      : 'bg-green-500'
+                    : 'bg-red-500'
                 } text-white text-2xl`}
+                onClick={() => handleLevelClick(level)}
+                style={{ cursor: isLevelUnlocked(level.level_id) ? 'pointer' : 'not-allowed' }}
+                role="button"
+                aria-label={isLevelUnlocked(level.level_id) ? `Select ${level.level_name}` : `${level.level_name} is locked`}
+                tabIndex={0}
+                title={isLevelUnlocked(level.level_id) ? 'Click to select this level' : 'This level is locked'}
               >
-                {profileComplete ? "🔓" : "🔒"}
+                {isLevelUnlocked(level.level_id) ?  "🔓" : "🔒"}
               </div>
-              <p className="text-gray-700 mt-2 font-medium">Level 1</p>
+              <p className="text-gray-700 mt-2 font-medium">{level.level_name}</p>
             </div>
-
-            {/* Line Connector */}
-            <div
-              className={`h-1 w-16 ${
-                level1Passed ? "bg-green-500" : "bg-gray-400"
-              }`}
-            ></div>
-
-            {/* Step 2 */}
-            <div className="flex flex-col items-center">
+            {/* Connector Line */}
+            {index < levels.length - 1 && (
               <div
-                className={`w-16 h-16 flex items-center justify-center rounded-full shadow-lg ${
-                  level1Passed ? "bg-green-500" : "bg-gray-400"
-                } text-white text-2xl`}
-              >
-                {level1Passed ? "🔓" : "🔒"}
-              </div>
-              <p className="text-gray-700 mt-2 font-medium">Level 2</p>
-            </div>
+                className={`h-1 w-16 ${
+                  isLevelUnlocked(levels[index + 1].level_id) ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+              ></div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
 
-            {/* Line Connector */}
-            <div
-              className={`h-1 w-16 ${
-                level2Passed ? "bg-green-500" : "bg-gray-400"
-              }`}
-            ></div>
-
-            {/* Step 3 */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-16 h-16 flex items-center justify-center rounded-full shadow-lg ${
-                  level2Passed ? "bg-green-500" : "bg-gray-400"
-                } text-white text-2xl`}
-              >
-                {level2Passed ? "🔓" : "🔒"}
-              </div>
-              <p className="text-gray-700 mt-2 font-medium">Level 3</p>
-            </div>
-          </div>
-
-          {/* Completion Message */}
-          {completionMessage && (
-            <p className="mt-2 text-green-600 font-medium">
-              {completionMessage}
-            </p>
-          )}
-          {/* Dynamic Start Exam Button */}
-          <div className="">
-            <button
-              onClick={handleStartExam}
-              className={`mt-8 px-4 py-2 bg-[#3E98C7] text-white text-md font-semibold rounded-md shadow transition ${
-                !profileComplete ||
-                (currentLevel === 1 && !level1Passed) ||
-                (currentLevel === 2 && !level2Passed)
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              disabled={
-                !profileComplete ||
-                (currentLevel === 1 && !level1Passed) ||
-                (currentLevel === 2 && !level2Passed)
-              }
-            >
-              {currentLevel === 0
-                ? "Start Level 1 Exam"
-                : currentLevel === 1
-                ? "Start Level 2 Exam"
-                : "Start Level 3 Exam"}
-            </button>
-          </div>
-        </>
-      ) : (
-        /* Congratulatory Message */
-        <div className="bg-white p-8 rounded shadow text-center">
-          <h2 className="text-4xl font-bold text-green-600">
-            🎉 Congratulations! 🎉
+      
+      {selectedLevel ? (
+        <div className="w-full max-w-3xl">
+          <h2 className="text-xl font-semibold mb-4">
+            Subjects for {levels.find((lvl) => lvl.level_id === selectedLevel)?.level_name}
           </h2>
-          <p className="text-gray-700 text-lg mt-4">
-            You have successfully completed all the exams. Great job!
+          <div className="grid grid-cols-2 gap-4">
+            {filteredSubjects.length > 0 ? (
+              filteredSubjects.map((subject) => (
+                <button
+                  key={subject.subject_id}
+                  onClick={() => handleSubjectClick(subject.subject_id)}
+                  className={`cursor-pointer px-4 py-2 rounded-md border 
+                    ${
+                      selectedSubject === subject.subject_id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-800 border-gray-300'
+                    } transition duration-200 ease-in-out transform hover:scale-105`}
+                >
+                  <div className="text-center font-semibold">{subject.subject_name}</div>
+                </button>
+              ))
+            ) : (
+              <div>No subjects available for this level.</div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 text-gray-500">Please select an unlocked level to view subjects.</div>
+      )}</>):(
+      
+         <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 text-center">
+          <h2 className="text-2xl font-semibold text-red-600 mb-4">
+            Level 1 is Locked
+          </h2>
+          <p className="text-gray-700 mb-6">
+            To unlock Level 1, please fill out your Basic Information, Prefrence Informaion and education in your profile.
           </p>
+
+          {/* Button to navigate to Profile page */}
+          <button
+            // onClick={goToProfile}
+            className="w-full bg-blue-500 text-white py-2 rounded shadow hover:bg-blue-600 transition duration-200"
+          >
+            Personal Details
+          </button>
+          <button
+            // onClick={goToProfile}
+            className="w-full bg-blue-500 text-white py-2 rounded shadow hover:bg-blue-600 transition duration-200"
+          >
+            Job Details
+          </button>
+        </div>
+      )}
+        
+
+      {/* Exam Card Rendering */}
+      {selectedSubject && (
+        <div className="w-full max-w-3xl mt-6">
+          {examSet && examSet ? (
+            <div className="grid grid-cols-1 gap-4">
+              <div
+                className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
+                onClick={() => guideline(examSet)}
+              >
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{examSet.name}</h3>
+                <p className="text-gray-600">
+                  <span className="font-semibold">Subject:</span> {examSet.subject.subject_name}
+                </p>
+                <p className="text-gray-600">
+                   <span className="font-semibold">Level:</span> {examSet.level.name}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-600 text-center">No exams available</p>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default ExamLevelsStepper;
+export default ExamLevels;

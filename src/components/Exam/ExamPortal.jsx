@@ -27,7 +27,7 @@ const ExamPortal = () => {
   const exam = useSelector((state)=>state.examQues.exam.id);
 
   const questions = useSelector(
-    (state) => state.examQues.allQuestion.questions
+    (state) => state.examQues?.allQuestion?.questions
   );
 
   const [results, setResults] = useState(null);

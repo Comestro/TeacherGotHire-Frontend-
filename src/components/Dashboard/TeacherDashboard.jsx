@@ -8,8 +8,6 @@ import JobProfileCard from "./JobProfileCard";
 import PrefrenceLocation from "./PrefrenceLocation";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
-import SubjectAndLevelSelector from "./components/SubjectAndLevelSelector";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
 import ExamLevels from "./components/ExamLevels";
 
@@ -17,7 +15,6 @@ function TeacherDashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [selectedSubject, setSelectedSubject] = useState(null);
   const percentage = useSelector(
     (state) => state.personalProfile.completionData.profile_completed
   );
@@ -27,14 +24,6 @@ function TeacherDashboard() {
     dispatch(getProfilCompletion());
   }, [dispatch]);
 
-  const handleSubjectSelect = (subjects) => {
-    setSelectedSubject(subjects);
-  };
-
-  const handleProceedToExam = () => {
-    alert(`Proceeding to exam for ${selectedSubject.name}`);
-    navigate("/exam");
-  };
 
   return (
     <div className="min-h-screen bg-white ">
@@ -113,9 +102,6 @@ function TeacherDashboard() {
                 Complete Profile
               </button>
             </div>
-          </div>
-          <div className="examSubjectAndLevels px-4 ">
-            <SubjectAndLevelSelector />
           </div>
           <div className="px-4 mt-4 mb-2">
             <ExamLevels />
