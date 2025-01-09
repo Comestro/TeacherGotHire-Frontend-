@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { resetPassword } from '../services/authServices';
 import Button from './Button';
 
 const ResetPassword = () => {
   const { uid, token } = useParams();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -21,7 +22,11 @@ const ResetPassword = () => {
     try {
       await resetPassword(uid, token, password);
       setMessage('Password reset successfully!');
-      navigate('/login');
+      
+      setTimeout(() => {
+        navigate('/signin');
+      }, 2000);
+
     } catch (error) {
       setMessage('Something went wrong, please try again.');
     }
