@@ -28,19 +28,18 @@ const MCQGuidelinePage = () => {
   return (
     <div className="min-h-screen text-gray-800">
       {/* Header */}
-      <header className="py-2">
+      <header className="mt-8 md:mt-4">
         <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-bold text-center underline">
+          <h1 className="text-2xl font-bold text-center">
             Exam Guidelines
           </h1>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 mt-2">
+      <main className="container mx-auto px-4 md:px-8 ">
         <div className="bg-white p-6">
-          <h2 className="text-xl font-semibold mb-4">Guidelines</h2>
-          <ul className="list-disc list-inside space-y-2">
+          <ul className="list-disc list-outside space-y-2">
             <li>Ensure you have a stable internet connection.</li>
             <li>
               Use the latest version of Google Chrome or Mozilla Firefox for the
@@ -73,7 +72,7 @@ const MCQGuidelinePage = () => {
           <div className="mt-6">
             {/* Language Selector */}
             <div className="flex flex-col items-start space-y-2">
-              <label htmlFor="language" className="text-gray-700 font-medium">
+              <label htmlFor="language" className="text-blue-700 font-medium">
                 Choose the language:
               </label>
               <select
@@ -102,7 +101,7 @@ const MCQGuidelinePage = () => {
           </div>
 
           {/* Proceed Button */}
-          <div className="mt-4 text-center">
+          <div className="mt-5 text-center mb-4 md:md-0">
             <Link
               to={selectedLanguage ? "/exam/portal" : "#"}
               className={`${
@@ -119,9 +118,9 @@ const MCQGuidelinePage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-2 border-gray-300 py-4 mt-8">
+      <footer className="border-t border-gray-300 py-3 mt-5">
         <div className="container mx-auto text-center">
-          <p className="text-sm">&copy; 2024 Comestro. All rights reserved.</p>
+          <p className="text-sm text-gray-500">&copy; 2024 Comestro. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -173,12 +173,12 @@ const ExamLevels = () => {
                 className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
                 onClick={() => guideline(examSet)}
               >
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{examSet.name}</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{examSet?.name}</h3>
                 <p className="text-gray-600">
-                  <span className="font-semibold">Subject:</span> {examSet.subject.subject_name}
+                  <span className="font-semibold">Subject:</span> {examSet?.subject?.subject_name}
                 </p>
                 <p className="text-gray-600">
-                   <span className="font-semibold">Level:</span> {examSet.level.name}
+                   <span className="font-semibold">Level:</span> {examSet?.level?.name}
                 </p>
               </div>
             </div>

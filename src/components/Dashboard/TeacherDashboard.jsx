@@ -16,7 +16,7 @@ function TeacherDashboard() {
   const dispatch = useDispatch();
 
   const percentage = useSelector(
-    (state) => state.personalProfile.completionData.profile_completed
+    (state) => state.personalProfile?.completionData?.profile_completed
   );
 
   const value = percentage[0] || 0;
