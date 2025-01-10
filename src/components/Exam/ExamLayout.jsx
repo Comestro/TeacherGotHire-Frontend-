@@ -7,7 +7,7 @@ const ExamLayout = () => {
     <div className='w-full'>
         {/* <ExamPortal /> */}
         {/* <h1>This is Exam layout.</h1> */}
-        <div className="w-full bg-green-300">
+        <div className="w-full">
             <Outlet />
         </div>
     </div>

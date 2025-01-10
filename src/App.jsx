@@ -56,12 +56,10 @@ function App() {
       >
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />}>
+          <Route path="/" element={<PublicLayout />} errorElement={<ErrorBoundary/>}>
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
-            <Route path="/exam" element={<ExamPortal />} />
-            <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
@@ -69,9 +67,10 @@ function App() {
             <Route path="/exam-mode" element={<ExamMode />} />
           </Route>
 
-          <Route path="/exam-portal" element={<ExamLayout />} >
-            <Route index element={<ExamPortal />} />
-            <Route path="guideline" element={<MCQGuidelinePage/>} />
+          {/* exam routes */}
+          <Route path="/exam" element={<ExamLayout />} >
+            <Route index element={<MCQGuidelinePage />} />
+            <Route path="portal" element={<ExamPortal/>} />
             <Route path="result" element={<ResultPage />} />
           </Route>
 
