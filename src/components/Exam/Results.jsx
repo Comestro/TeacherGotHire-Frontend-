@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const ResultPage = () => {
   const location = useLocation();
@@ -61,19 +61,19 @@ const ResultPage = () => {
           Congratulations
         </h2>
         <p className="text-md text-gray-600 mb-40 md:mb-10 font-semibold">Great job, Rahul! You did it.</p>
-        <div className="mt-6 space-y-3 px-5">
-          <button
-            onClick={() => alert("Share button clicked!")}
-            className="w-full px-4 py-2 bg-[#2a4494] text-white rounded-md shadow hover:bg-blue-700 transition"
+        <div className="mt-6 space-y-3 px-5 flex flex-col">
+          <Link
+            to="/teacher/view-attempts"
+            className="w-full px-4 py-2 bg-[#2a4494] text-white rounded-md shadow transition"
           >
             View Attempts
-          </button>
-          <button
-            onClick={() => alert("Back to Home button clicked!")}
-            className="w-full px-4 py-2 bg-[#2a4494] text-white rounded-md shadow hover:bg-blue-700 transition"
+          </Link>
+          <Link
+            to="/teacher"
+            className="w-full px-4 py-2 bg-[#2a4494] text-white rounded-md shadow transition"
           >
             Back to Dashboard
-          </button>
+          </Link>
         </div>
       </div>
     </div>
