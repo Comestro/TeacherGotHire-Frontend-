@@ -5,7 +5,7 @@ const initialState = {
   allQuestion: [],
   examSet: [],
   exam: "",
-  attempts: {},
+  attempts: [],
   levels:{},
   subject: "",
   language: "",

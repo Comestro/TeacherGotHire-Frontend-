@@ -60,7 +60,7 @@ const ResultPage = () => {
         <h2 className="text-2xl font-semibold text-[#2a4494] mb-2">
           Congratulations
         </h2>
-        <p className="text-md text-gray-600 mb-40 font-semibold">Great job, Rahul! You did it.</p>
+        <p className="text-md text-gray-600 mb-40 md:mb-10 font-semibold">Great job, Rahul! You did it.</p>
         <div className="mt-6 space-y-3 px-5">
           <button
             onClick={() => alert("Share button clicked!")}

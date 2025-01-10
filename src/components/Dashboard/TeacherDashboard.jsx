@@ -19,9 +19,19 @@ function TeacherDashboard() {
     (state) => state.personalProfile?.completionData?.profile_completed
   );
 
-  const value = percentage[0] || 0;
+  console.log("Percentage", percentage)
 
-  console.log("percentage value", value)
+  // useEffect(()=>(
+  //   setTimeout(() => {
+  //     const percentage = useSelector(
+  //       (state) => state.personalProfile?.completionData?.profile_completed
+  //     );
+  //   }, 1000)
+  // ))
+
+  // const value = percentage[0] || 0;
+
+  // console.log("percentage value", value)
 
   useEffect(() => {
     dispatch(getSubjects());
@@ -82,8 +92,8 @@ function TeacherDashboard() {
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={value}
-                    text={`${value}%`}
+                    value={percentage && percentage[0]}
+                    text={`${percentage && percentage[0]}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },
@@ -98,7 +108,7 @@ function TeacherDashboard() {
               </div>
               <div className="mt-1">
                 <p className="text-gray-500 font-semibold">
-                  {value}% profile completed.
+                  {percentage && percentage[0]}% profile completed.
                 </p>
               </div>
               {/* Button Section */}

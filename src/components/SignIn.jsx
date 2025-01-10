@@ -23,21 +23,24 @@ function Login() {
 
 
   const login = async ({ email, password }) => {
-    setError(""); // Clear any previous errors
-    setLoading(true); // Set loading to true
+    setError("");
+    setLoading(true); 
 
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
 
       if (userData) {
-        dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
-        dispatch(recruiterPostData(userData))
+        // dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
+        // dispatch(recruiterPostData(userData))
         if (userData?.role === 'recruiter') {
-          navigate("/recruiter")
+          // dispatch(recruiterPostData(userData));  
+          navigate("/recruiter");
+        } else if (userData?.role === 'user') {
+          // dispatch(getPostData(userData));
+          navigate("/teacher");
         }
-        else {
-          navigate("/teacher"); // Redirect to teacher dashboard after login
-        }
+
+
       }
     } catch (error) {
       if (error.status === 403) {
@@ -78,10 +81,11 @@ function Login() {
     try {
       const response = await verifyOtp({ email, otp });
       if (response) {
-        dispatch(recruiterPostData(response.data));
         if (response.data?.role === 'recruiter') {
+          // dispatch(recruiterPostData(response.data)); 
           navigate("/recruiter");
-        } else {
+        } else if (response.data?.role === 'user') {
+          // dispatch(getPostData(response.data));
           navigate("/teacher");
         }
       } else {
@@ -243,6 +247,15 @@ function Login() {
                       className="text-teal-600 hover:underline font-semibold"
                     >
                       Sign Up
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-600 mt-6">
+                    
+                    <span
+                      onClick={() => navigate("/forgot-password")}
+                      className="text-teal-600 hover:underline font-semibold"
+                    >
+                     Forgot-Password
                     </span>
                   </p>
                 </div>

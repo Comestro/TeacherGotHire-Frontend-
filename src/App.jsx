@@ -36,6 +36,7 @@ import ViewAttempts from "./components/Dashboard/ViewAttempts";
 import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
+import ErrorBoundary from "./components/Pages/ErrorPage";
 
 // import Logout from "./components/Logout";
 
@@ -55,7 +56,7 @@ function App() {
       >
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />}>
+          <Route path="/" element={<PublicLayout />} errorElement={<ErrorBoundary/>}>
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
