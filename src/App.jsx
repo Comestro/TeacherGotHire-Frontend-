@@ -36,7 +36,7 @@ import ViewAttempts from "./components/Dashboard/ViewAttempts";
 import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
-import ErrorBoundary from "./components/Pages/ErrorPage";
+import ExamMode from "./components/Exam/ExamMode";
 
 // import Logout from "./components/Logout";
 
@@ -63,6 +63,8 @@ function App() {
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
+            <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+            <Route path="/exam-mode" element={<ExamMode />} />
           </Route>
 
           {/* exam routes */}

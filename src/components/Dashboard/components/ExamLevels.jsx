@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getLevels, getExamSet, setExam } from "../../../features/examQuesSlice";
+import { getLevels, getExamSet, setExam,attemptsExam } from "../../../features/examQuesSlice";
 import { useNavigate } from 'react-router-dom'; 
 
 const ExamLevels = () => {
@@ -14,14 +14,14 @@ const ExamLevels = () => {
   const [message, setMessage] = useState(''); // For user feedback
 
   
-  const { levels, examSet, loading, error } = useSelector((state) => state.examQues);
+  const { levels, loading, error } = useSelector((state) => state.examQues);
 
   console.log("error",error);
-  console.log("examSet",examSet);
+  
   
   useEffect(() => {
     dispatch(getLevels());
-  }, [dispatch]);
+  }, []);
 
   // Function to determine if a level is unlocked
   const isLevelUnlocked = (levelId) => {
@@ -45,21 +45,47 @@ const ExamLevels = () => {
 
   const handleSubjectClick = (subjectId) => {
     setSelectedSubject(subjectId);
+    console.log("subjectId",subjectId)
     dispatch(getExamSet({
       level_id: selectedLevel,
       subject_id: subjectId,
     }));
+    
   };
+  useEffect(() => {
+    dispatch(getExamSet());
+    dispatch(attemptsExam());
+  }, []);
+  
+
+  const { examSet } = useSelector((state) => state.examQues);
+  const examAttempts = useSelector((state) => state.examQues?.attempts);
+
+  console.log("examSet",examAttempts);
 
   const guideline = (exam) => {
     navigate('/exam');
     dispatch(setExam(exam));
+  
+    const hasQualifiedAttempt = examAttempts?.some(({ exam, isqulified }) => 
+      exam?.level?.level?.id === 2 && isqulified
+    );
+
+    console.log("hasQualified",hasQualifiedAttempt)
+  
+    if (hasQualifiedAttempt) {
+      navigate('/exam-mode');
+    } else {
+      navigate('/exam-guide');
+    }
   };
 
   // Get subjects for the selected level
   const filteredSubjects = selectedLevel
     ? levels.find((level) => level.level_id === selectedLevel)?.subjects || []
     : [];
+
+    console.log("filter",filteredSubjects)
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -173,12 +199,12 @@ const ExamLevels = () => {
                 className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
                 onClick={() => guideline(examSet)}
               >
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{examSet?.name}</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{examSet.name}</h3>
                 <p className="text-gray-600">
-                  <span className="font-semibold">Subject:</span> {examSet?.subject?.subject_name}
+                  <span className="font-semibold">Subject:</span> {examSet.subject.subject_name}
                 </p>
                 <p className="text-gray-600">
-                   <span className="font-semibold">Level:</span> {examSet?.level?.name}
+                   <span className="font-semibold">Level:</span> {examSet.level.name}
                 </p>
               </div>
             </div>

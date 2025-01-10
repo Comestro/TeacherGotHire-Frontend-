@@ -92,8 +92,8 @@ function TeacherDashboard() {
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={percentage && percentage[0]}
-                    text={`${percentage && percentage[0]}%`}
+                    value={percentage[0]}
+                    text={`${percentage[0]}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },

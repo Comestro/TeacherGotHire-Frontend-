@@ -5,9 +5,9 @@ import { getAllQues, setLanguage } from "../../features/examQuesSlice";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
-  const [selectedLanguage, setSelectedLanguage] = useState(""); // No language selected by default
+  const [selectedLanguage, setSelectedLanguage] = useState(""); 
   const exam = useSelector((state) => state.examQues);
-  const examID = exam.exam?.id; // Handle case where exam might be undefined
+  const examID = exam.exam?.id; 
 
   // Handle language change
   const handleLanguageChange = (event) => {
