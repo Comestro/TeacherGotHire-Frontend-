@@ -1,11 +1,11 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
   examSet: [],
   exam: "",
-  attempts: {},
+  attempts: [],
   levels:{},
   subject: "",
   language: "",
@@ -104,6 +104,37 @@ export const attemptsExam = createAsyncThunk(
     }
   }
 );
+export const generatePasskey= createAsyncThunk(
+  "generatePasskey",
+  async ({ user_id,exam_id}, { rejectWithValue }) => {
+    console.log("generate password",{ user_id,exam_id})
+    try {
+      const data = await GeneratePasskey({ user_id,exam_id});
+       return data; 
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message, 
+        code: error.code || "UNKNOWN_ERROR", 
+      });
+    }
+  }
+  );
+
+  export const verifyPasscode= createAsyncThunk(
+    "verifyPasscode",
+    async ({ user_id,exam_id,passcode}, { rejectWithValue }) => {
+      console.log("verifyPasscode",{ user_id,exam_id})
+      try {
+        const data = await VerifyPasscode({ user_id,exam_id,passcode});
+         return data; 
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, 
+          code: error.code || "UNKNOWN_ERROR", 
+        });
+      }
+    }
+    );
 
 const examQuesSlice = createSlice({
   name: "examQues",

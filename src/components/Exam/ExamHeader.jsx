@@ -39,9 +39,9 @@ export default function Subheader({ totalQuestion }) {
       <div className="flex flex-col w-full md:w-auto mb-4 md:mb-0">
         <h1 className="text-lg md:text-xl font-bold text-teal-700">
           <span className="hidden md:inline">Subject: </span>
-          {subject?.subject.subject_name} |
+          {subject?.subject?.subject_name} |
           <span className="hidden md:inline"> Level: </span>
-          {subject?.level.name} |
+          {subject?.level?.name} |
           <span className="hidden md:inline"> Language: </span>
           {language}
         </h1>

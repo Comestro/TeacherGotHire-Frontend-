@@ -24,31 +24,24 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const exam = useSelector((state) => state.examQues.exam.id);
-  
-  const questions = useSelector(
-    (state) => state.examQues?.allQuestion?.questions
-  );
+  useEffect(() => {
+    dispatch(getAllQues());
+  }, []);
 
-  const examName = useSelector((state) => (state.examQues.allQuestion.name))
-  console.log("Exam data", examName)
+  const {  allQuestion } = useSelector((state) => state.examQues);
+  const questions = allQuestion.questions || [];
+  const exam = allQuestion.id;
 
 
+  console.log("exam",exam)
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    dispatch(getAllQues());
-  }, [dispatch]);
-
-  // Debug loaded questions
-  useEffect(() => {
-    if (questions && questions.length > 0) {
-      console.log("Loaded Questions:", questions);
-    }
-  }, [questions]);
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  
 
   const handleAnswerSelect = (questionId, answer) => {
     setSelectedAnswers((prev) => ({
@@ -103,13 +96,13 @@ const ExamPortal = () => {
         is_unanswered,
       })
     );
-    navigate("/result", { state: { selectedAnswers, questions } });
+    navigate("/teacher/view-attempts", { state: { selectedAnswers, questions } });
   };
 
   // if (loading) return <div>Loading...</div>;
   // if (error) return <div>Error: {error}</div>;
-
-  const currentQuestion = questions[currentQuestionIndex];
+ 
+  
 
   return (
     <div className="flex h-screen bg-gray-100 w-full">

@@ -66,7 +66,7 @@ export const fetchExam = async ({
 
 export const fetchQuestion = async ({ exam_id, language }) => {
   try {
-    console.log("jsbfkdnvkjd", { exam_id, language });
+    console.log("ExamId and Language", { exam_id, language });
     const response = await apiClient.get(`/api/self/exam/${exam_id}`, {
       params: {
         language,
@@ -114,5 +114,25 @@ export const addResult = async({
      catch (err) {
          console.error('error:', err.response?.data || err);
          throw err;
+  }
+};
+
+export const GeneratePasskey = async ({user_id,exam_id}) => {
+  try {
+    const response = await apiClient.post(`/api/generate-passkey/`,{user_id,exam_id});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
+  try {
+    const response = await apiClient.post(`/api/verify-passcode/`,{user_id,exam_id,passcode});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
   }
 };
