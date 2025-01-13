@@ -15,7 +15,7 @@ function SignUpPage() {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    formState: { errors, isValid }
   } = useForm();
   const [error, setError] = useState("");
   const [otpSent, setOtpSent] = useState(false);

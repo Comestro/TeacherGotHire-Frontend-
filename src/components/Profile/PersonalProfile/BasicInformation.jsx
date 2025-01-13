@@ -31,7 +31,15 @@ const EditableField = ({
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         <p className="text-gray-700 font-medium w-32">{label}:</p>
         {!isEditing ? (
-          <p className="text-gray-600">{value || "N/A"}</p>
+          inputType === "file" ? (
+            <img
+              src={value || "/images/profile.jpg"}
+              alt="Profile"
+              className="w-16 h-16 rounded-full object-cover"
+            />
+          ) : (
+            <p className="text-gray-600">{value || "N/A"}</p>
+          )
         ) : inputType === "select" ? (
           <select
             value={tempValue}
@@ -44,6 +52,13 @@ const EditableField = ({
               </option>
             ))}
           </select>
+        ) : inputType === "file" ? (
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setTempValue(e.target.files[0])}
+            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
         ) : (
           <input
             type={inputType}
@@ -54,7 +69,7 @@ const EditableField = ({
           />
         )}
       </div>
-      {field != "email" && field != "Fname" && (
+      {field !== "email" && field !== "Fname" && (
         <div className="flex items-center space-x-2">
           {isEditing ? (
             <>
@@ -74,7 +89,7 @@ const EditableField = ({
           ) : (
             <button
               onClick={() => onToggleEdit(true)}
-              className="text-gray-500 p-2   hover:bg-[#E5F1F9] rounded-full"
+              className="text-gray-500 p-2 hover:bg-[#E5F1F9] rounded-full"
             >
               <HiPencil className="size-5 text-[#3E98C7]" />
             </button>
@@ -91,6 +106,8 @@ const BasicInformation = () => {
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
+  console.log("dp", basicData.profile_picture)
+
   const [error, setError] = useState("");
   const [editingFields, setEditingFields] = useState({});
 
@@ -104,7 +121,14 @@ const BasicInformation = () => {
 
   const handleSave = async (field, value) => {
     try {
-      await updateBasicProfile({ [field]: value });
+      const data = new FormData();
+      if (field === "profile_image" && value instanceof File) {
+        data.append(field, value);
+      } else {
+        data.append(field, value);
+      }
+
+      await updateBasicProfile(data);
       dispatch(postBasic({ [field]: value }));
       dispatch(getBasic());
     } catch (error) {
@@ -113,6 +137,12 @@ const BasicInformation = () => {
   };
 
   const fields = [
+    {
+      label: "Profile Picture",
+      field: "profile_image",
+      inputType: "file",
+      value: basicData.profile_image,
+    },
     {
       label: "Name",
       field: "Fname",
@@ -160,15 +190,9 @@ const BasicInformation = () => {
         { label: "Hindu", value: "Hindu" },
         { label: "Muslim", value: "Muslim" },
         { label: "Sikh", value: "Sikh" },
-        { label: "Cristian", value: "Cristian" },
+        { label: "Christian", value: "Christian" },
         { label: "Other", value: "Other" },
       ],
-    },
-    {
-      label: "Profile Image",
-      field: "profile_image",
-      inputType: "file",
-      value: basicData.profile_image || "",
     },
   ];
 
@@ -180,7 +204,6 @@ const BasicInformation = () => {
       {fields.map(({ label, field, value, inputType, options }) => (
         <React.Fragment key={field}>
           <EditableField
-          
             label={label}
             field={field}
             value={value}

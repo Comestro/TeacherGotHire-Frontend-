@@ -24,6 +24,7 @@ const ExamLevels = () => {
   const { levels, loading, error, examSet, attempts } = useSelector(
     (state) => state.examQues
   );
+  console.log("Level name for exam", levels)
 
   const {userData} = useSelector((state)=>state?.auth)
 
@@ -95,7 +96,7 @@ const ExamLevels = () => {
       dispatch(generatePasskey({ user_id, exam_id }));
       navigate('/exam-mode');
     } else {
-      navigate('/exam-guide');
+      navigate('/exam');
     }
   };
   // Available levels based on data

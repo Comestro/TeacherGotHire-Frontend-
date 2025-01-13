@@ -36,7 +36,7 @@ export const getBasic = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchBasicProfile();
-      console.log("gedata",data)
+      console.log("Basic Information Data",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
