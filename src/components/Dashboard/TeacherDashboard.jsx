@@ -108,7 +108,7 @@ function TeacherDashboard() {
               </div>
               <div className="mt-1">
                 <p className="text-gray-500 font-semibold">
-                  {percentage && percentage[0]}% profile completed.
+                  {/* {percentage && percentage[0]}% profile completed. */}
                 </p>
               </div>
               {/* Button Section */}

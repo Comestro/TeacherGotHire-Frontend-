@@ -49,12 +49,14 @@ export const fetchLevel = async () => {
 export const fetchExam = async ({
   level_id,
   subject_id,
+  type
 }) => {
   try {
     const response = await apiClient.get(`/api/self/exam/exams/`, {
       params: {
         level_id,
         subject_id,
+        type
       },
     });
     return response.data;
@@ -72,7 +74,7 @@ export const fetchQuestion = async ({ exam_id, language }) => {
         language,
       },
     });
-    console.log("newres", response);
+    console.log("ques", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
