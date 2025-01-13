@@ -160,7 +160,7 @@ const ExamLevels = () => {
           {/* Level Unlock Messages */}
           {availableLevels.find((lvl) => lvl.level_id === 1) && (
             <div className="text-green-600 text-xl mb-4">
-              Your First Level Is Unlocked!
+             
             </div>
           )}
           {availableLevels.find((lvl) => lvl.level_id === 2) && (

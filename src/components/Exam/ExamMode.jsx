@@ -20,8 +20,8 @@ const ExamMode = () => {
   const user_id = userData.id
   console.log("attempts",attempts);
   const exam_id = attempts
-?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
-?.exam?.id;
+    ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
+    ?.exam?.id;
 
   // Handle verification form submission
   const handleVerificationSubmit = async(event) => {
