@@ -56,14 +56,13 @@ function App() {
       >
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />} errorElement={<ErrorBoundary/>}>
+          <Route path="/" element={<PublicLayout />}>
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/exam-guide" element={<MCQGuidelinePage />} />
             <Route path="/exam-mode" element={<ExamMode />} />
           </Route>
 

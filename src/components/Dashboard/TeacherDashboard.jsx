@@ -46,7 +46,7 @@ function TeacherDashboard() {
         <div className="w-full flex flex-col mx-auto rounded-md">
           <div className="px-4 flex gap-4 py-4 w-full">
             {/* Welcome */}
-            <div className="w-9/12 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
+            <div className="w-full md:w-9/12 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                 {/* Background circles */}
                 <div className="absolute top-20 -left-20 w-56 h-56 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full opacity-70"></div>
@@ -92,8 +92,8 @@ function TeacherDashboard() {
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={percentage[0]}
-                    text={`${percentage[0]}%`}
+                    value={percentage && percentage[0]}
+                    text={`${percentage && percentage[0]}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },
