@@ -38,6 +38,7 @@ import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
 
+
 // import Logout from "./components/Logout";
 
 // Private Route Component
@@ -56,7 +57,7 @@ function App() {
       >
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />} errorElement={<ErrorBoundary/>}>
+          <Route path="/" element={<PublicLayout />} >
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />

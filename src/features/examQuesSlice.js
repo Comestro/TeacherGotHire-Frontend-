@@ -6,7 +6,7 @@ const initialState = {
   examSet: [],
   exam: "",
   attempts: [],
-  levels:{},
+  levels:[],
   subject: "",
   language: "",
   status: "idle",
@@ -38,7 +38,7 @@ export const getLevels = createAsyncThunk(
 export const getAllQues = createAsyncThunk(
   "getAllQues",
   async ({ exam_id, language }, { rejectWithValue }) => {
-    
+    console.log("exam_id, language ",exam_id, language )
     try {
       const data = await fetchQuestion({ exam_id, language });
       return data;
@@ -53,10 +53,10 @@ export const getAllQues = createAsyncThunk(
 
   export const getExamSet= createAsyncThunk(
     "getExamSet",
-    async ({ level_id, subject_id }, { rejectWithValue }) => {
+    async ({ level_id, subject_id,type }, { rejectWithValue }) => {
       console.log("exa",{ level_id, subject_id })
       try {
-        const data = await fetchExam({ level_id, subject_id });
+        const data = await fetchExam({ level_id, subject_id,type });
         console.log("examSet",data)
          return data; 
       } catch (error) {

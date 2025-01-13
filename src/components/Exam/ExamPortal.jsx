@@ -24,16 +24,12 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    dispatch(getAllQues());
-  }, []);
-
   const {  allQuestion } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
 
 
-  console.log("exam",exam)
+  console.log("all",allQuestion)
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
