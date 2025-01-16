@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 const AttemptCard = ({ subjectAttempt }) => {
   console.log("subAttempt", subjectAttempt)
-  const { levels } = useSelector((state) => state.examQues);
+  const levels = useSelector((state) => state.examQues?.levels || []);
   console.log("level one sub", levels)
 
   const [remainingAttempts, setRemainingAttempts] = useState("5");
