@@ -11,17 +11,18 @@ const ViewAttempts = () => {
   const dispatch = useDispatch();
 
 
-  const subjectAttempt = examAttempts.reduce((acc, item) => {
+  const subjectAttempt = (examAttempts || []).reduce((acc, item) => {
     const subjectName = item.exam.subject.subject_name;
-
-    if(!acc[subjectName]){
+  
+    if (!acc[subjectName]) {
       acc[subjectName] = 0;
     }
-
-    acc[subjectName] = (acc[subjectName] || 0) + 1;
-
-    return acc
-  }, {})
+  
+    acc[subjectName] += 1;
+  
+    return acc;
+  }, {});
+  
 
   console.log("subject Attempt", subjectAttempt);
 
