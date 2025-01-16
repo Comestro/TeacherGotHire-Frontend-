@@ -37,6 +37,7 @@ import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
+import ExamLevels from "./components/Dashboard/components/ExamLevels";
 
 
 // import Logout from "./components/Logout";
@@ -172,6 +173,10 @@ function App() {
             <Route
               path="job-profile"
               element={<PrivateRoute element={<JobProfileEdit />} />}
+            />
+             <Route
+              path="start-exam"
+              element={<PrivateRoute element={<ExamLevels/>} />}
             />
             <Route
               path="view-attempts"

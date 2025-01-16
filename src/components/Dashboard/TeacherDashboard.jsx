@@ -3,13 +3,9 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { getSubjects } from "../../features/dashboardSlice";
-import ExamLevelCard from "./ExamLevelCard";
-import JobProfileCard from "./JobProfileCard";
-import PrefrenceLocation from "./PrefrenceLocation";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
-import ExamLevels from "./components/ExamLevels";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -20,18 +16,6 @@ function TeacherDashboard() {
   );
 
   console.log("Percentage", percentage)
-
-  // useEffect(()=>(
-  //   setTimeout(() => {
-  //     const percentage = useSelector(
-  //       (state) => state.personalProfile?.completionData?.profile_completed
-  //     );
-  //   }, 1000)
-  // ))
-
-  // const value = percentage[0] || 0;
-
-  // console.log("percentage value", value)
 
   useEffect(() => {
     dispatch(getSubjects());
@@ -117,10 +101,6 @@ function TeacherDashboard() {
               </button>
             </div>
           </div>
-          <div className="px-4 mt-4 mb-2">
-            <ExamLevels />
-          </div>
-          
         </div>
       </div>
     </div>

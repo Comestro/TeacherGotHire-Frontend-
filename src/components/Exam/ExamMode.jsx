@@ -29,7 +29,7 @@ const ExamMode = () => {
     console.log('Verification Code Submitted:', passcode);
     await dispatch(verifyPasscode({user_id,exam_id,passcode})).unwrap();
     console.log('Verification Code Submitted:', passcode);
-    navigate('/exam-guide');
+    navigate('/exam');
   };
 
   return (

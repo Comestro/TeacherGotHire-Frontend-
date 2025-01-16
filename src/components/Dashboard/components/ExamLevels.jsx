@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -16,49 +15,53 @@ const ExamLevels = () => {
 
   // State variables
   const [profileComplete, setProfileComplete] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState(null);
-  const [selectedOption, setSelectedOption] = useState(null); // 'online' or 'offline' for Level 2
-  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [selectedOption, setSelectedOption] = useState(''); // 'online' or 'offline' for Level 2
+  const [selectedSubject, setSelectedSubject] = useState('');
   const [message, setMessage] = useState('');
 
   const { levels, loading, error, examSet, attempts } = useSelector(
     (state) => state.examQues
   );
-  console.log("Level name for exam", levels)
 
-  const {userData} = useSelector((state)=>state?.auth)
+  
+  const {userData} =useSelector((state)=>state?.auth)
+  const { basicData} = useSelector((state) => state?.personalProfile);
+  const { prefrence,educationData} = useSelector((state) => state?.personalProfile);
 
   useEffect(() => {
     dispatch(getLevels());
     dispatch(attemptsExam());
-    // Assuming there's an action or method to check if profile is complete
-    // Replace this with your actual implementation
-     setProfileComplete(checkIfProfileComplete());
+    // Implement your logic to check if profile is complete
+    setProfileComplete(checkIfProfileComplete());
   }, [dispatch]);
 
   // Function to check if the user's profile is complete
   const checkIfProfileComplete = () => {
-    // Implement your logic to check profile completeness
-    // For demonstration, let's assume the profile is complete
+   if(basicData !== null && prefrence !== null && educationData !== null){
     return true;
+   }else{
+    return false;
+   }
   };
 
-
-  const handleLevelClick = (levelId) => {
+  const handleLevelChange = (e) => {
+    const levelId = e.target.value;
     setSelectedLevel(levelId);
-    setSelectedOption(null);
-    setSelectedSubject(null);
+    setSelectedOption('');
+    setSelectedSubject('');
     setMessage('');
   };
 
-  const handleOptionClick = (option) => {
-    console.log("option",option)
+  const handleOptionChange = (e) => {
+    const option = e.target.value;
     setSelectedOption(option);
-    setSelectedSubject(null);
+    setSelectedSubject('');
     setMessage('');
   };
 
-  const handleSubjectClick = (subjectId) => {
+  const handleSubjectChange = (e) => {
+    const subjectId = e.target.value;
     setSelectedSubject(subjectId);
 
     // Fetch exam set based on level, option, and subject
@@ -70,28 +73,21 @@ const ExamLevels = () => {
       })
     );
   };
-  console.log("attempts",attempts)
 
   const guideline = (exam) => {
     dispatch(setExam(exam));
-  
+
     // Corrected property name
-    const hasQualifiedAttempt = attempts?.some(({ exam, isqualified }) =>
-      exam?.level?.id === 2 && isqualified
+    const hasQualifiedAttempt = attempts?.some(
+      ({ exam, isqualified }) => exam?.level?.id === 2 && isqualified
     );
 
-    
-    console.log("hasQualifiedAttempt", hasQualifiedAttempt);
-
-    if (selectedOption === 'offline' && hasQualifiedAttempt ) {
+    if (selectedOption === 'offline' && hasQualifiedAttempt) {
       // Get the user_id from state or props
-      const user_id = userData.id
-      console.log("attempts",attempts);
-      const exam_id = attempts
-    ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
-    ?.exam?.id;
-    
-    console.log("exam_ids", exam_id);
+      const user_id = userData.id;
+      const exam_id = attempts?.find(
+        ({ exam, isqualified }) => exam?.level?.id === 2 && isqualified
+      )?.exam?.id;
 
       dispatch(generatePasskey({ user_id, exam_id }));
       navigate('/exam-mode');
@@ -99,30 +95,29 @@ const ExamLevels = () => {
       navigate('/exam');
     }
   };
+
+  // Find the passed Offline Exam attempt for Level 2
+  const passedOfflineAttempt = attempts?.find(
+    (attempt) =>
+      attempt.isqualified &&
+      attempt.exam?.type === 'offline' &&
+      attempt.exam?.level?.id === 2
+  );
+
+  // Check if the user has passed the Offline Exam
+  const passedOfflineExam = !!passedOfflineAttempt;
+
   // Available levels based on data
-  const availableLevels =  levels ||  [];
-
-
-  // Level IDs for levels that are not yet unlocked (for displaying locks)
-  const lockedLevelIds = [];
-  if (!profileComplete) {
-    lockedLevelIds.push(1);
-  } else {
-    // If Level 1 is available but Level 2 is not in levels data, consider it locked
-    const levelIdsInData = availableLevels.map((level) => level.level_id);
-    if (!levelIdsInData.includes(2)) {
-      lockedLevelIds.push(2);
-    }
-  }
+  const availableLevels = levels || [];
 
   // Get subjects based on selected level and option
   let filteredSubjects = [];
   if (selectedLevel && levels) {
     const selectedLevelData = levels.find(
-      (level) => level.level_id === selectedLevel
+      (level) => level.level_id === parseInt(selectedLevel)
     );
     if (selectedLevelData) {
-      if (selectedLevel === 2 && selectedOption) {
+      if (selectedLevelData.level_id === 2 && selectedOption) {
         // For Level 2, use 'subjects_by_type'
         filteredSubjects =
           selectedLevelData.subjects_by_type?.[selectedOption] || [];
@@ -139,6 +134,36 @@ const ExamLevels = () => {
       {loading && <div className="text-blue-500">Loading levels...</div>}
       {/* {error && <div className="text-red-500">{error}</div>} */}
 
+      {/* If user has passed Offline Exam, show congratulatory card */}
+      {passedOfflineAttempt && (
+        <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 text-center mb-4">
+          <h2 className="text-2xl font-semibold text-green-600 mb-4">
+            Congratulations!
+          </h2>
+          <p className="text-gray-700 mb-6">
+            Now you are eligible to be a{' '}
+            <strong>
+              {passedOfflineAttempt.exam?.subject?.subject_name} Teacher.
+            </strong>
+          </p>
+          {/* Display the exam result */}
+          <div className="text-gray-700">
+            <p>
+              <strong>Exam Name:</strong> {passedOfflineAttempt.exam.name}
+            </p>
+            <p>
+              <strong>Score:</strong> {passedOfflineAttempt.correct_answer}
+            </p>
+            <p>
+              <strong>Total Marks:</strong>{' '}
+              {passedOfflineAttempt.correct_answer +
+                passedOfflineAttempt.is_unanswered}
+            </p>
+            {/* Add any other exam result data you want to display */}
+          </div>
+        </div>
+      )}
+
       {!profileComplete ? (
         // Profile Incomplete Message
         <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 text-center">
@@ -147,221 +172,106 @@ const ExamLevels = () => {
           </h2>
           <p className="text-gray-700 mb-6">
             To unlock Level 1, please fill out your profile information.
+            1.Basic Imformation
+            2.Education Information
+            3.Job Prefrence
           </p>
           {/* Button to navigate to Profile page */}
+          <div className='flex space-x-3'>
           <button
-            // onClick={goToProfile}
+            navigate='/teacher/job-profile'
             className="w-full bg-blue-500 text-white py-2 rounded shadow hover:bg-blue-600 transition duration-200"
           >
-            Go to Profile
+            Go Job Profile
           </button>
+          <button
+            navigate='/teacher/personal-profile'
+            className="w-full bg-blue-500 text-white py-2 rounded shadow hover:bg-blue-600 transition duration-200"
+          >
+            Go to Personal Profile
+          </button>
+          </div>
+          
         </div>
       ) : (
         <>
-          {/* Level Unlock Messages */}
-          {availableLevels.find((lvl) => lvl.level_id === 1) && (
-            <div className="text-green-600 text-xl mb-4">
-             
-            </div>
-          )}
-          {availableLevels.find((lvl) => lvl.level_id === 2) && (
-            <div className="text-green-600 text-xl mb-4">
-              Both Levels Are Unlocked!
-            </div>
-          )}
-
-          {/* Level Cards */}
-          <div className="flex items-center justify-center space-x-8 w-full max-w-3xl my-6">
-            {/* Level 1 Card */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-16 h-16 flex items-center justify-center rounded-full shadow-lg ${
-                  availableLevels.find((lvl) => lvl.level_id === 1)
-                    ? 'bg-green-500'
-                    : 'bg-red-500'
-                } text-white text-2xl cursor-pointer`}
-                onClick={() => handleLevelClick(1)}
-                title={`Select Level 1`}
+          {/* Column-wise Layout */}
+          <div className="flex flex-row justify-center items-start space-x-8 w-full max-w-4xl">
+            {/* Level Selection */}
+            <div className="flex flex-col w-1/3">
+              <label className="block text-gray-700 font-semibold mb-2">
+                Select Level
+              </label>
+              <select
+                value={selectedLevel}
+                onChange={handleLevelChange}
+                className="w-full px-4 py-2 border rounded-lg"
               >
-                {availableLevels.find((lvl) => lvl.level_id === 1)
-                  ? '🔓'
-                  : '🔒'}
-              </div>
-              <p className="text-gray-700 mt-2 font-medium">Level 1</p>
+                <option value="">-- Select Level --</option>
+                {availableLevels.map((level) => (
+                  <option key={level.level_id} value={level.level_id}>
+                    Level {level.level_id}
+                  </option>
+                ))}
+              </select>
             </div>
-            {/* Level 2 Card */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-16 h-16 flex items-center justify-center rounded-full shadow-lg ${
-                  availableLevels.find((lvl) => lvl.level_id === 2)
-                    ? 'bg-green-500'
-                    : 'bg-red-500'
-                } text-white text-2xl ${
-                  availableLevels.find((lvl) => lvl.level_id === 2)
-                    ? 'cursor-pointer'
-                    : 'cursor-not-allowed'
-                }`}
-                onClick={() =>
-                  availableLevels.find((lvl) => lvl.level_id === 2)
-                    ? handleLevelClick(2)
-                    : null
-                }
-                title={`Select Level 2`}
-              >
-                {availableLevels.find((lvl) => lvl.level_id === 2)
-                  ? '🔓'
-                  : '🔒'}
-              </div>
-              <p className="text-gray-700 mt-2 font-medium">Level 2</p>
-            </div>
-          </div>
 
-          {/* Display Messages */}
-          {message && <div className="text-red-500 mt-2">{message}</div>}
-
-          {/* Subjects for Level 1 */}
-          {selectedLevel === 1 && (
-            <div className="w-full max-w-3xl">
-              <h2 className="text-xl font-semibold mb-4">
-                Subjects for Level 1
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {filteredSubjects.length > 0 ? (
-                  filteredSubjects.map((subject) => (
-                    <button
-                      key={subject.subject_id}
-                      onClick={() => handleSubjectClick(subject.subject_id)}
-                      className={`cursor-pointer px-4 py-2 rounded-md border
-                  ${
-                    selectedSubject === subject.subject_id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-800 border-gray-300'
-                  } transition duration-200 ease-in-out transform hover:scale-105`}
-                    >
-                      <div className="text-center font-semibold">
-                        {subject.subject_name}
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div>No subjects available for this level.</div>
-                )}
-              </div>
-            </div>
-          )}
-
-
-            {selectedLevel === 2 && (
-              <div className="w-full max-w-3xl">
-                <h2 className="text-xl font-semibold mb-4">
-                  Select an Option for Level 2
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Determine availability of options */}
-                  {(() => {
-                    const level2Data = availableLevels.find(
-                      (level) => level.level_id === 2
-                    );
-
-                    const isOnlineAvailable =
-                      level2Data &&
-                      level2Data.subjects_by_type &&
-                      level2Data.subjects_by_type.online &&
-                      level2Data.subjects_by_type.online.length > 0;
-
-                    const isOfflineAvailable =
-                      level2Data &&
-                      level2Data.subjects_by_type &&
-                      level2Data.subjects_by_type.offline &&
-                      level2Data.subjects_by_type.offline.length > 0;
-
-                    return (
-                      <>
-                        {/* Online Option */}
-                        {isOnlineAvailable ? (
-                          <button
-                            onClick={() => handleOptionClick('online')}
-                            className={`cursor-pointer px-4 py-2 rounded-md border
-                              ${
-                                selectedOption === 'online'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white text-gray-800 border-gray-300'
-                              } transition duration-200 ease-in-out transform hover:scale-105`}
-                          >
-                            <div className="text-center font-semibold">Online</div>
-                          </button>
-                        ) : (
-                          <div className="opacity-50 cursor-not-allowed px-4 py-2 rounded-md border bg-gray-200 text-gray-500">
-                            <div className="text-center font-semibold">Online</div>
-                          </div>
-                        )}
-
-                        {/* Offline Option */}
-                        {isOfflineAvailable ? (
-                          <button
-                            onClick={() => handleOptionClick('offline')}
-                            className={`cursor-pointer px-4 py-2 rounded-md border
-                              ${
-                                selectedOption === 'offline'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white text-gray-800 border-gray-300'
-                              } transition duration-200 ease-in-out transform hover:scale-105`}
-                          >
-                            <div className="text-center font-semibold">Offline</div>
-                          </button>
-                        ) : (
-                          <div className="opacity-50 cursor-not-allowed px-4 py-2 rounded-md border bg-gray-200 text-gray-500">
-                            <div className="text-center font-semibold">Offline</div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
+            {/* Exam Mode Selection (for Level 2) */}
+            {selectedLevel === '2' && (
+              <div className="flex flex-col w-1/3">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Select Exam Mode
+                </label>
+                <select
+                  value={selectedOption}
+                  onChange={handleOptionChange}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  <option value="">-- Select Exam Mode --</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
               </div>
             )}
-          {/* Subjects List for Level 2 Option */}
-          {selectedLevel === 2 && selectedOption && (
-            <div className="w-full max-w-3xl">
-              <h2 className="text-xl font-semibold mb-4">
-                Subjects for Level 2 -{' '}
-                {selectedOption.charAt(0).toUpperCase() +
-                  selectedOption.slice(1)}
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
+
+            {/* Subject Selection */}
+            {((selectedLevel === '1') ||
+              (selectedLevel === '2' && selectedOption)) && (
+              <div className="flex flex-col w-1/3">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Select Subject
+                </label>
                 {filteredSubjects.length > 0 ? (
-                  filteredSubjects.map((subject) => (
-                    <button
-                      key={subject.subject_id}
-                      onClick={() => handleSubjectClick(subject.subject_id)}
-                      className={`cursor-pointer px-4 py-2 rounded-md border
-                  ${
-                    selectedSubject === subject.subject_id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-800 border-gray-300'
-                  } transition duration-200 ease-in-out transform hover:scale-105`}
-                    >
-                      <div className="text-center font-semibold">
+                  <select
+                    value={selectedSubject}
+                    onChange={handleSubjectChange}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  >
+                    <option value="">-- Select Subject --</option>
+                    {filteredSubjects.map((subject) => (
+                      <option
+                        key={subject.subject_id}
+                        value={subject.subject_id}
+                      >
                         {subject.subject_name}
-                      </div>
-                    </button>
-                  ))
+                      </option>
+                    ))}
+                  </select>
                 ) : (
-                  <div className="text-red-500">
-                    {selectedOption === 'offline'
-                      ? 'No subjects available. Pass the Level 2 Online Exam to unlock.'
-                      : 'No subjects available for this option.'}
-                  </div>
+                  <p className="text-red-500">
+                    No subjects available for this selection.
+                  </p>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-           {/* Exam Card for Level 1*/}
-           {selectedLevel === 1 && selectedSubject && (
+          {/* Display Exam Card */}
+          {selectedSubject && examSet && (
             <div className="w-full max-w-3xl mt-6">
-              {examSet ? (
-                <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4">
+                {/* For Level 1 */}
+                {selectedLevel === '1' && (
                   <div
                     className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
                     onClick={() => guideline(examSet)}
@@ -381,105 +291,82 @@ const ExamLevels = () => {
                       <span className="font-semibold">Type:</span>{' '}
                       {examSet?.type}
                     </p>
-                    {selectedOption && (
-                      <p className="text-gray-600">
-                        <span className="font-semibold">Option:</span>{' '}
-                        {selectedOption.charAt(0).toUpperCase() +
-                          selectedOption.slice(1)}
+                  </div>
+                )}
+
+                {/* For Level 2 */}
+                {selectedLevel === '2' && (
+                  <>
+                    {/* Online Exam */}
+                    {selectedOption === 'online' && examSet?.online_exam ? (
+                      <div
+                        className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
+                        onClick={() => guideline(examSet.online_exam)}
+                      >
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          {examSet.online_exam.name}
+                        </h3>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Subject:</span>{' '}
+                          {examSet.online_exam.subject?.subject_name}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Level:</span>{' '}
+                          {examSet.online_exam.level?.id}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Type:</span>{' '}
+                          {examSet.online_exam.type}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    {/* Offline Exam */}
+                    {selectedOption === 'offline' && examSet?.offline_exam ? (
+                      <div
+                        className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
+                        onClick={() => guideline(examSet.offline_exam)}
+                      >
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          {examSet.offline_exam.name}
+                        </h3>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Subject:</span>{' '}
+                          {examSet.offline_exam.subject?.subject_name}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Level:</span>{' '}
+                          {examSet.offline_exam.level?.id}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Type:</span>{' '}
+                          {examSet.offline_exam.type}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    {/* No Exam Available Message */}
+                    {selectedOption && !examSet?.online_exam && !examSet?.offline_exam && (
+                      <p className="text-red-500 text-center">
+                        No exam available for this selection.
                       </p>
                     )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-600 text-center">No exams available</p>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Exam Card Rendering for level 1*/}
-          {selectedLevel === 2 && selectedSubject && (
-            <div className="w-full max-w-3xl mt-6">
-              {examSet ? (
-                <div className="grid grid-cols-1 gap-4">
-                  <div
-                    className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
-                    onClick={() => guideline(examSet.online_exam)}
-                  >
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      {examSet?.online_exam?.name}
-                    </h3>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Subject:</span>{' '}
-                      {examSet?.online_exam?.subject?.subject_name}
-                    </p>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Level:</span>{' '}
-                      {examSet?.online_exam?.level?.id}
-                    </p>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Type:</span>{' '}
-                      {examSet?.online_exam?.type}
-                    </p>
-                    {selectedOption && (
-                      <p className="text-gray-600">
-                        <span className="font-semibold">Option:</span>{' '}
-                        {selectedOption.charAt(0).toUpperCase() +
-                          selectedOption.slice(1)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-600 text-center">No exams available</p>
-              )}
-            </div>
+          {/* No Exam Available Message */}
+          {selectedSubject && !examSet && !loading && (
+            <p className="text-gray-600 text-center mt-6">
+              No exams available for this selection.
+            </p>
           )}
-          {selectedLevel === 2 && selectedSubject   &&   (
-            <div className="w-full max-w-3xl mt-6">
-              {examSet ? (
-                <div className="grid grid-cols-1 gap-4">
-                  <div
-                    className="border border-gray-300 rounded-lg shadow-lg p-5 bg-white cursor-pointer hover:shadow-xl transition"
-                    onClick={() => guideline(examSet.offline_exam)}
-                  >
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      {examSet?.offline_exam?.name}
-                    </h3>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Subject:</span>{' '}
-                      {examSet?.offline_exam?.subject?.subject_name}
-                    </p>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Level:</span>{' '}
-                      {examSet?.offline_exam?.level?.id}
-                    </p>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Type:</span>{' '}
-                      {examSet?.offline_exam?.type}
-                    </p>
-                    {selectedOption && (
-                      <p className="text-gray-600">
-                        <span className="font-semibold">Option:</span>{' '}
-                        {selectedOption.charAt(0).toUpperCase() +
-                          selectedOption.slice(1)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-600 text-center">No exams available</p>
-              )}
-            </div>
-          )}
-
-         
         </>
       )}
-
-      
     </div>
   );
 };
 
 export default ExamLevels;
-
