@@ -109,6 +109,20 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 Job Details
               </NavLink>
               <NavLink
+                to="start-exam"
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                      : "text-gray-500 font-semibold"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiMiniEye className="size-5 mt-1"/>
+                Start Exam
+              </NavLink>
+              <NavLink
                 to="view-attempts"
                 end
                 className={({ isActive }) =>

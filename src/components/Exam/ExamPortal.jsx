@@ -92,7 +92,7 @@ const ExamPortal = () => {
         is_unanswered,
       })
     );
-    navigate("/teacher/view-attempts", { state: { selectedAnswers, questions } });
+    navigate("/exam/result", { state: { selectedAnswers, questions } });
   };
 
   // if (loading) return <div>Loading...</div>;

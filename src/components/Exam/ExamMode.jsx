@@ -20,8 +20,8 @@ const ExamMode = () => {
   const user_id = userData.id
   console.log("attempts",attempts);
   const exam_id = attempts
-?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
-?.exam?.id;
+    ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
+    ?.exam?.id;
 
   // Handle verification form submission
   const handleVerificationSubmit = async(event) => {
@@ -29,7 +29,7 @@ const ExamMode = () => {
     console.log('Verification Code Submitted:', passcode);
     await dispatch(verifyPasscode({user_id,exam_id,passcode})).unwrap();
     console.log('Verification Code Submitted:', passcode);
-    navigate('/exam-guide');
+    navigate('/exam');
   };
 
   return (
