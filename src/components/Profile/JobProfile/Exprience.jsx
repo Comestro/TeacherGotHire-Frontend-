@@ -20,7 +20,7 @@ const Experience = () => {
   );
 
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("job",jobRole)
+  console.log("job", jobRole);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -116,11 +116,11 @@ const Experience = () => {
               setIsEditing(true);
             }}
           >
-            Add Experience <IoMdAddCircleOutline className="size-4 ml-1 mt-1" />
+            Add <IoMdAddCircleOutline className="size-4 ml-1 mt-1" />
           </button>
         )}
       </div>
-      {experienceData.length < 1 && !isEditing  && (
+      {experienceData.length < 1 && !isEditing && (
         <div className="px-4 ">
           <h1 className="text-gray-500 pb-2">No data available</h1>
         </div>
@@ -130,12 +130,12 @@ const Experience = () => {
           <div className="flex flex-col gap-4  ">
             {experienceData &&
               experienceData.map((experience, index) => (
-                <div key={index} className="transition-shadow px-4">
+                <div key={index} className="transition-shadow md:px-4 pr-4">
                   <div className="relative ">
                     {/* <h2 className="text-lg font-semibold text-gray-900">
                       {experience.institution || "N/A"}
                     </h2> */}
-                    <div className="absolute top-2 right-2 flex space-x-4 items-center">
+                    <div className="absolute top-2 md:right-2 -right-4 flex md:space-x-4 space-x-1 items-center">
                       <button
                         onClick={() => {
                           handleEdit(index);
@@ -159,7 +159,7 @@ const Experience = () => {
                     <p className="text-sm text-gray-500">
                       <strong className="text-lg">
                         {experience.institution || "N/A"}
-                      </strong>{" "}
+                      </strong>{" "} <br />
                       served as a{" "}
                       <strong>{experience.role.jobrole_name || "N/A"}</strong>{" "}
                       from <strong>{experience.start_date || "N/A"}</strong> to{" "}

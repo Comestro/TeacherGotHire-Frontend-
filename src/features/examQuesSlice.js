@@ -1,11 +1,12 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AttemptCount} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
   examSet: [],
   exam: "",
   attempts: [],
+  attemptCount: [],
   levels:[],
   subject: "",
   language: "",
@@ -104,6 +105,22 @@ export const attemptsExam = createAsyncThunk(
     }
   }
 );
+
+export const attemptsCount = createAsyncThunk(
+  "attemptCount",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await AttemptCount();
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message,
+        code: error.code || "UNKNOWN_ERROR",
+      });
+    }
+  }
+);
+
 export const generatePasskey= createAsyncThunk(
   "generatePasskey",
   async ({ user_id,exam_id}, { rejectWithValue }) => {
@@ -195,6 +212,23 @@ const examQuesSlice = createSlice({
         console.log("action.payload", action.payload);
       })
       .addCase(attemptsExam.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+    
+    
+    builder
+      // for get data handeling
+      .addCase(attemptsCount.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(attemptsCount.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.attemptCount = action.payload;
+        console.log("action", action.payload);
+      })
+      .addCase(attemptsCount.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

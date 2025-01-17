@@ -5,7 +5,7 @@ import { getApiUrl,getPincodeUrl } from '../store/configue';
 const apiClient = axios.create({
   baseURL: getApiUrl(), // Use the API URL from config service
   headers: {
-    'Content-Type': 'application/json',
+    // 'Content-Type': 'application/json',
     //'Authorization': Token ${localStorage.getItem('access_token')}, // Use API key from config service
   },
 }); 
@@ -30,6 +30,15 @@ apiClient.interceptors.request.use(
   }
 );
 
+apiClient.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    config.headers['Content-Type'] = 'multipart/form-data';
+  } else {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  return config;
+});
+
 // Response Interceptor to Handle 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => {
@@ -47,7 +56,7 @@ apiClient.interceptors.response.use(
 
 export const updateBasicProfile = async(personaldata)=>{
   try{
-    console.log("personaldata",personaldata)
+    console.log("profile image services", personaldata)
      const response = await apiClient.put('/api/self/basicProfile/',personaldata);
      return JSON.parse(JSON.stringify(response)); 
   }
@@ -59,7 +68,7 @@ export const updateBasicProfile = async(personaldata)=>{
 export const fetchBasicProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/basicProfile/');
-    console.log("get profile image:",response.data.profile_picture);
+    // console.log("get profile image:",response.data.profile_picture);
      return response.data;
   }
      catch (err) {
@@ -71,7 +80,7 @@ export const updateAddressProfile = async(addressdata)=>{
   try{
   console.log("adress",addressdata)
     const response = await apiClient.put(`/api/self/teacherAddress/`,addressdata);
-    console.log("adressresponse",response )
+    // console.log("adressresponse",response )
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){

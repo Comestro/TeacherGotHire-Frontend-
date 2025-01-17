@@ -166,7 +166,7 @@ const JobPrefrenceLocation = () => {
             }}
             className="px-4 py-2 text-sm font-semibold text-white bg-[#3E98C7] rounded flex items-center gap-1"
           >
-            Add Preferred Locations
+            Add
             <IoLocationSharp className="size-4 mt-1" />
           </button>
         )}
