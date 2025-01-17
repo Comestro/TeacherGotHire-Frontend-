@@ -76,7 +76,7 @@ function SignUpPage() {
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-10">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8 ">
           <div className="max-w-md w-full mt-5">
           {!otpSent ? (
            <>
@@ -96,7 +96,7 @@ function SignUpPage() {
             <form onSubmit={handleSubmit(signup)} className="space-y-5">
               {/* Full Name */}
               <div className="flex gap-2">
-                <div className="flex-1">
+                <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
                   </label>
@@ -118,7 +118,7 @@ function SignUpPage() {
                     </span>
                   )}
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Last Name
                   </label>
