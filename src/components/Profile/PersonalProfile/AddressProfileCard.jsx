@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { toast } from "react-toastify";
+import { FaLocationDot } from "react-icons/fa6";
 
 const Loader = () => (
   <div className="flex justify-center items-center py-4">
@@ -209,9 +210,9 @@ const AddressProfileCard = () => {
 
   return (
     <div className="md:p-5 space-y-4 mt-4">
-      <h2 className="text-xl font-bold text-gray-700 mb-3">
-        Address Information
-      </h2>
+      <h3 className="text-[20px] font-bold text-[#3E98C7] mb-3 flex items-center gap-1">
+      <FaLocationDot /> Address Information
+      </h3>
       <div className="grid grid-cols-1 gap-6">
         {loading && <Loader />}
         {isEditingType === "current" ? (
