@@ -1,9 +1,10 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
   examSet: [],
+  interview:{},
   exam: "",
   attempts: [],
   levels:[],
@@ -16,10 +17,10 @@ const initialState = {
 
 export const getLevels = createAsyncThunk(
   "getLevels",
-  async (_, { rejectWithValue }) => {
-    
+  async ({class_category_id}, { rejectWithValue }) => {
+    console.log("classCategory",class_category_id)
     try {
-      const data = await fetchLevel();
+      const data = await fetchLevel({class_category_id});
       return data;
     } catch (error) {
       console.log('Error in getLevels:', error);
@@ -53,10 +54,10 @@ export const getAllQues = createAsyncThunk(
 
   export const getExamSet= createAsyncThunk(
     "getExamSet",
-    async ({ level_id, subject_id,type }, { rejectWithValue }) => {
-      console.log("exa",{ level_id, subject_id })
+    async ({ level_id, subject_id,type,class_category_id }, { rejectWithValue }) => {
+      console.log("exa",{ level_id, subject_id,class_category_id })
       try {
-        const data = await fetchExam({ level_id, subject_id,type });
+        const data = await fetchExam({ level_id, subject_id,type,class_category_id });
         console.log("examSet",data)
          return data; 
       } catch (error) {
@@ -89,6 +90,39 @@ export const getAllQues = createAsyncThunk(
       }
     }
     );
+
+    export const postInterview= createAsyncThunk(
+      "postInterview",
+      async ({ subject,time,class_category}, { rejectWithValue }) => {
+        console.log("interview",{ subject,time,class_category})
+        try {
+          const data = await AddInterview({ subject,time,class_category});
+           return data; 
+        } catch (error) {
+          return rejectWithValue({
+            message: error.message, 
+            code: error.code || "UNKNOWN_ERROR", 
+          });
+        }
+      }
+      );
+      export const getInterview= createAsyncThunk(
+        "getInterview",
+        async (__, { rejectWithValue }) => {
+          
+          try {
+            const data = await Interview();
+             return data; 
+          } catch (error) {
+            return rejectWithValue({
+              message: error.message, 
+              code: error.code || "UNKNOWN_ERROR", 
+            });
+          }
+        }
+        );
+      
+    
 
 export const attemptsExam = createAsyncThunk(
   "attemptExam",
@@ -208,8 +242,24 @@ const examQuesSlice = createSlice({
       .addCase(getExamSet.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.examSet = action.payload;
+        console.log("examset",action.payload)
       })
       .addCase(getExamSet.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(getInterview.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getInterview.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.interview = action.payload;
+      })
+      .addCase(getInterview.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

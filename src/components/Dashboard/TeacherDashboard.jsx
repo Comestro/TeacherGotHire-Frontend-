@@ -6,6 +6,7 @@ import { getSubjects } from "../../features/dashboardSlice";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
+import { getInterview } from "../../features/examQuesSlice";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -15,9 +16,12 @@ function TeacherDashboard() {
     (state) => state.personalProfile?.completionData?.profile_completed
   );
 
-  console.log("Percentage", percentage)
+  const {interview} = useSelector((state)=>state.examQues)
+
+  console.log("interview", interview)
 
   useEffect(() => {
+    dispatch(getInterview());
     dispatch(getSubjects());
     dispatch(getProfilCompletion());
   }, [dispatch]);
@@ -103,6 +107,16 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {interview && interview.length > 0 && interview.map((item) => (
+          <div key={item.id}>
+            {item.status === false ? (
+              <p>Pending</p>
+            ) : (
+              <p>Approved{item.time}</p>
+            )}
+          </div>
+        ))}
     </div>
   );
 }

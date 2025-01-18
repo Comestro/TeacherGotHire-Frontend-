@@ -99,7 +99,11 @@ const PrefrenceProfile = () => {
                 {
                   title: "Class Category",
                   value:
-                    teacherprefrence?.class_category?.name || "Not Provided",
+                    teacherprefrence?.class_category?.length >0
+                    ? teacherprefrence.class_category
+                      .map((class_category) => class_category.name)
+                      .join(", ")
+                    :"Not Provided",
                 },
                 {
                   title: "Job Role",
@@ -166,7 +170,8 @@ const PrefrenceProfile = () => {
                 <select
                   {...register("class_category", { required: true })}
                   className="border border-gray-300 rounded-md px-2 py-2 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
-                  defaultValue={teacherprefrence?.class_category?.id || ""}
+                   multiple
+                  defaultValue={teacherprefrence?.class_category?.map((cat)=>cat.id) || []}
                 >
                   <option value="">Select a category</option>
                   {category?.map((cat) => (
