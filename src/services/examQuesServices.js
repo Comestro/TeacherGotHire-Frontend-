@@ -98,6 +98,16 @@ export const Attempts = async () => {
   }
 };
 
+export const AttemptCount = async () => {
+  try {
+    const response = await apiClient.get(`/api/self/teacherexamresult/count/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
 export const addResult = async({
   exam,
   correct_answer,

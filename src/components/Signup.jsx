@@ -76,27 +76,39 @@ function SignUpPage() {
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-10">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8 ">
           <div className="max-w-md w-full mt-5">
           {!otpSent ? (
            <>
            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Teachers </span>
             </h2>
-            <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+            <h2 className="mb-2 font-bold text-gray-500 text-xl md:text-4xl leading-none">
               Signup To{" "}
               <span className="font-bold text-xl md:text-4xl text-teal-600">
                 PTPI{" "}
               </span>
             </h2>
 
+            <div className="mb-5">
+              <p className="text-sm font-medium text-gray-600">
+                Have an account?{" "}
+                <span
+                  onClick={() => navigate("/signin")}
+                  className="text-teal-600 hover:underline font-semibold"
+                >
+                  Sign In
+                </span>
+              </p>
+            </div>
+
             {/* Error Message */}
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
            
-            <form onSubmit={handleSubmit(signup)} className="space-y-5">
+            <form onSubmit={handleSubmit(signup)} className="space-y-4 mb-5">
               {/* Full Name */}
               <div className="flex gap-2">
-                <div className="flex-1">
+                <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
                   </label>
@@ -118,7 +130,7 @@ function SignUpPage() {
                     </span>
                   )}
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Last Name
                   </label>
@@ -224,7 +236,7 @@ function SignUpPage() {
               {/* Submit Button */}
               <Button
                 type="submit" disabled={!isValid || loading} 
-                className={`w-full py-2 rounded-xl transition ${
+                className={`w-full py-2 rounded-xl transition  ${
                   loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
                 }`}
               >
@@ -236,38 +248,8 @@ function SignUpPage() {
               <p className="text-red-500 text-sm mt-4">Error: {error}</p>
             )}
 
-            <div className="text-center my-2">
-              <div className="flex items-center">
-                <hr className="flex-grow border-gray-300" />
-                <span className="px-4 text-sm text-gray-600">Or</span>
-                <hr className="flex-grow border-gray-300" />
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-center sm:space-x-4 space-y-4 sm:space-y-0 mt-2">
-                <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                  <img
-                    src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000"
-                    alt="Google"
-                    className="w-5 h-5 mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-600">
-                    Sign in with Google
-                  </span>
-                </button>
-
-                <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                  <img
-                    src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
-                    alt="Facebook"
-                    className="w-5 h-5 mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-600">
-                    Sign in with Facebook
-                  </span>
-                </button>
-              </div>
-
-              <p className="text-sm font-medium text-gray-600 mt-6">
+            {/* <div className="px-2">
+              <p className="text-sm font-medium text-gray-600 mt-3 mb-4">
                 Have an account?{" "}
                 <span
                   onClick={() => navigate("/signin")}
@@ -276,7 +258,7 @@ function SignUpPage() {
                   Sign In
                 </span>
               </p>
-            </div>
+            </div> */}
             </>) : (
               <>
                <>

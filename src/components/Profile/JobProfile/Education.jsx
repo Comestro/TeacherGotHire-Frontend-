@@ -110,7 +110,7 @@ const Education = () => {
             setIsEditing(true);
           }}
         >
-          Add Education
+          Add
         </button>
       </div>
       {educationData.length < 1 && !isEditing && (

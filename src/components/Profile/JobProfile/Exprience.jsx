@@ -142,7 +142,7 @@ const Experience = () => {
               setEditingIndex(null); // Reset editingIndex when adding
             }}
           >
-            Add Experience <IoMdAddCircleOutline className="size-4 ml-1 mt-1" />
+            Add <IoMdAddCircleOutline className="size-4 ml-1 mt-1" />
           </button>
         )}
       </div>
@@ -160,7 +160,7 @@ const Experience = () => {
           <div className="flex flex-col gap-4  ">
             {experienceData &&
               experienceData.map((experience, index) => (
-                <div key={index} className="transition-shadow px-4">
+                <div key={index} className="transition-shadow md:px-4 pr-4">
                   <div className="relative ">
                     {/* Edit and Delete Buttons */}
                     <div className="absolute top-2 right-2 flex space-x-4 items-center">
@@ -182,7 +182,7 @@ const Experience = () => {
                     <p className="text-sm text-gray-500">
                       <strong className="text-lg">
                         {experience.institution || "N/A"}
-                      </strong>{" "}
+                      </strong>{" "} <br />
                       served as a{" "}
                       <strong>{experience.role?.jobrole_name || "N/A"}</strong>{" "}
                       from <strong>{experience.start_date || "N/A"}</strong> to{" "}

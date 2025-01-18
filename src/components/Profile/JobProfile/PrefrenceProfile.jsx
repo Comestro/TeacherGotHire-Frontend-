@@ -85,7 +85,7 @@ const PrefrenceProfile = () => {
             className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition flex items-center gap-1"
             onClick={() => setIsEditingPrefrence(true)}
           >
-            Edit Preferences
+            Edit
             <HiPencil className="size-5 " />
           </button>
         )}
