@@ -84,6 +84,7 @@ const ExamPortal = () => {
       incorrect_answer,
       is_unanswered,
     });
+    console.log("Checking results", results);
     dispatch(
       postResult({
         exam,
@@ -92,7 +93,10 @@ const ExamPortal = () => {
         is_unanswered,
       })
     );
-    navigate("/teacher", { state: { selectedAnswers, questions } });
+    navigate("/exam/result", { state: {exam,
+      correct_answer,
+      incorrect_answer,
+      is_unanswered,  } });
   };
 
   // if (loading) return <div>Loading...</div>;
