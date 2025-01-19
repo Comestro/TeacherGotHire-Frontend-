@@ -6,6 +6,7 @@ import { getSubjects } from "../../features/dashboardSlice";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
+import { getInterview } from "../../features/examQuesSlice";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -15,13 +16,15 @@ function TeacherDashboard() {
     (state) => state.personalProfile?.completionData?.profile_completed
   );
 
-  console.log("Percentage", percentage)
+  const { interview } = useSelector((state) => state.examQues);
+
+  console.log("interview", interview);
 
   useEffect(() => {
+    dispatch(getInterview());
     dispatch(getSubjects());
     dispatch(getProfilCompletion());
   }, [dispatch]);
-
 
   return (
     <div className="min-h-screen bg-white">
@@ -103,6 +106,43 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+     
+      {interview &&
+        interview.length > 0 &&
+        interview.map((item) => (
+          <div className="flex flex-col items-center mt-10">
+          <div
+            key={item.id}
+            className="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden mb-4 "
+          >
+            <div className="px-6 py-4">
+              <div className="font-bold text-xl mb-2">
+                {item.status === false ? (
+                  <span className="text-yellow-600">Pending</span>
+                ) : (
+                  <span className="text-green-600">Approved</span>
+                )}
+              </div>
+              <p className="text-gray-700 text-base">
+                <strong>Subject:</strong> {item.subject_name || "N/A"}
+              </p>
+              <p className="text-gray-700 text-base">
+                <strong>Time:</strong> {new Date(item.time).toLocaleString()}
+              </p>
+              {/* Additional details can go here */}
+            </div>
+            {item.status !== false && item.link && (
+              <div className="px-6 py-4 bg-gray-100">
+                <p className="text-blue-600 font-semibold">
+                  <a href={item.link} target="_blank" rel="noopener noreferrer">
+                    Join Interview
+                  </a>
+                </p>
+              </div>
+            )}
+          </div>
+          </div>
+        ))}
     </div>
   );
 }
