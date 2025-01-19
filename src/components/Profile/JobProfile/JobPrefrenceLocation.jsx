@@ -19,8 +19,18 @@ const JobPrefrenceLocation = () => {
   console.log("teacherprefrence", teacherprefrence);
   const jobLocations = useSelector(
     (state) => state.jobProfile.prefrenceLocation || []
-  ); // Redux state
+  );
+  const { attempts, interview } = useSelector((state) => state.examQues);
 
+  console.log("attempt", interview);
+
+  const passedOfflineExam = attempts.some(
+    (attempt) => attempt.isqualified === true && attempt.exam.type === "offline"
+  );
+
+  const gradeCheck = interview.some((item) => item.grade > 5);
+
+  const bothConditonCheck = passedOfflineExam || gradeCheck;
   // const jobLocationsId = useSelector(
   //   (state) => state.jobProfile.prefrenceLocation[0].id || []
   // );
@@ -101,7 +111,7 @@ const JobPrefrenceLocation = () => {
         const editData = {
           ...data,
         };
-      
+
         await dispatch(
           editJobPrefrence({ editData, id: locationForEdit })
         ).unwrap();
@@ -153,208 +163,214 @@ const JobPrefrenceLocation = () => {
   };
 
   return (
-    <div className="px-5 mt-5 ">
-      <div className="flex justify-between items-center mb-5">
-        <h2 className="text-xl font-bold  text-gray-600">
-          Job Preference Locations
-        </h2>
-        {!isFormVisible && (
-          <button
-            onClick={() => {
-              setIsFormVisible(true);
-              setIsEditing(false); // Reset editing state
-            }}
-            className="px-4 py-2 text-sm font-semibold text-white bg-[#3E98C7] rounded flex items-center gap-1"
-          >
-            Add
-            <IoLocationSharp className="size-4 mt-1" />
-          </button>
-        )}
-      </div>
-      {/* {jobLocations.length == 0 && !isFormVisible && (
+    <>
+      {bothConditonCheck ? (
+        <div className="px-5 mt-5 ">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-xl font-bold  text-gray-600">
+              Job Preference Locations
+            </h2>
+            {!isFormVisible && (
+              <button
+                onClick={() => {
+                  setIsFormVisible(true);
+                  setIsEditing(false); // Reset editing state
+                }}
+                className="px-4 py-2 text-sm font-semibold text-white bg-[#3E98C7] rounded flex items-center gap-1"
+              >
+                Add
+                <IoLocationSharp className="size-4 mt-1" />
+              </button>
+            )}
+          </div>
+          {/* {jobLocations.length == 0 && !isFormVisible && (
         <div className="px-4 border-b">
           <h1 className="text-gray-500 pb-2">No data available</h1>
         </div>
       )} */}
-      {jobLocations.length > 0 && !isFormVisible && (
-        <div className="px-5 gap-4 ">
-          {jobLocations.map((location, index) => (
-            <div key={index} className=" p-4 transition-shadow border-b">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-medium text-gray-700">
-                  {location.area}
-                </h2>
-                <div className="flex space-x-4">
+          {jobLocations.length > 0 && !isFormVisible && (
+            <div className="px-5 gap-4 ">
+              {jobLocations.map((location, index) => (
+                <div key={index} className=" p-4 transition-shadow border-b">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-medium text-gray-700">
+                      {location.area}
+                    </h2>
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={() => {
+                          handleEdit(index);
+                          setIsFormVisible(true);
+                          setIsEditing(true);
+                          setEditingRowIndex(index);
+                        }}
+                        className="text-gray-500 hover:text-gray-600"
+                      >
+                        <HiPencil className="h-6 w-6" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <HiOutlineTrash className="h-6 w-6" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    <p>
+                      {`${location.block}, ${location.city}, ${location.state},  ${location.pincode}, Postoffice: ${location.post_office}`}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {jobLocations.length == 0 && !isFormVisible && (
+            <div className="text-center py-8 border bg-slate-50 border-gray-200 rounded-md mt-2">
+              <p className="text-gray-600 text-xl font-semibold">
+                You haven't added any job preference locations yet!
+              </p>
+              <p className="text-gray-500 mt-2">
+                Choose up to{" "}
+                <span className="font-bold text-[#3E98C7]">
+                  5 preferred locations
+                </span>{" "}
+                to find jobs tailored to your choices.
+              </p>
+            </div>
+          )}
+
+          {/* Form section */}
+          {isFormVisible && (
+            <div className="bg-white border border-gray-200 p-6 rounded-md">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
+                  {/* Pincode */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Pincode <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      {...register("pincode", { required: true })}
+                      onChange={handlePincodeChange}
+                      className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                      placeholder="Enter pincode"
+                    />
+                    {errors.pincode && (
+                      <p className="text-red-500 text-xs mt-2">
+                        Pincode is required.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* State */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      {...register("state")}
+                      readOnly
+                      placeholder="Auto Filled"
+                      className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                    />
+                  </div>
+
+                  {/* District */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      District
+                    </label>
+                    <input
+                      type="text"
+                      {...register("city")}
+                      readOnly
+                      placeholder="Auto Filled"
+                      className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                    />
+                  </div>
+
+                  {/* Block */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Block
+                    </label>
+                    <input
+                      type="text"
+                      {...register("block")}
+                      className="w-full px-4 py-2 border-b focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="Enter block"
+                    />
+                  </div>
+
+                  {/* Post Office */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Post Office <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      {...register("post_office", { required: true })}
+                      className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                      placeholder="Select post office"
+                    >
+                      <option value="" disabled>
+                        Select a Post Office
+                      </option>
+                      {postOffices.map((office, index) => (
+                        <option key={index} value={office.Name}>
+                          {office.Name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.post_office && (
+                      <p className="text-red-500 text-xs mt-2">
+                        Post office selection is required.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Area */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Area
+                    </label>
+                    <input
+                      type="text"
+                      {...register("area")}
+                      className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                      placeholder="Enter area"
+                    />
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end items-center space-x-4">
                   <button
-                    onClick={() => {
-                      handleEdit(index);
-                      setIsFormVisible(true);
-                      setIsEditing(true);
-                      setEditingRowIndex(index);
-                    }}
-                    className="text-gray-500 hover:text-gray-600"
+                    type="button"
+                    onClick={() => setIsFormVisible(false)}
+                    className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
                   >
-                    <HiPencil className="h-6 w-6" />
+                    Cancel
                   </button>
                   <button
-                    onClick={() => handleDelete(index)}
-                    className="text-red-500 hover:text-red-600"
+                    type="submit"
+                    className="px-6 py-2 text-sm font-medium text-white bg-[#3E98C7] rounded-lg shadow focus:ring-4 focus:ring-teal-300"
                   >
-                    <HiOutlineTrash className="h-6 w-6" />
+                    {isEditing ? "Update Location" : "Add Location"}
                   </button>
                 </div>
-              </div>
-              <div className="text-sm text-gray-700">
-                <p>
-                  {`${location.block}, ${location.city}, ${location.state},  ${location.pincode}, Postoffice: ${location.post_office}`}
-                </p>
-              </div>
+              </form>
             </div>
-          ))}
+          )}
+
+          {apiError && <p className="text-red-500 mt-4">{apiError}</p>}
         </div>
+      ) : (
+        <></>
       )}
-      {jobLocations.length == 0 && !isFormVisible && (
-        <div className="text-center py-8 border bg-slate-50 border-gray-200 rounded-md mt-2">
-          <p className="text-gray-600 text-xl font-semibold">
-            You haven't added any job preference locations yet!
-          </p>
-          <p className="text-gray-500 mt-2">
-            Choose up to{" "}
-            <span className="font-bold text-[#3E98C7]">
-              5 preferred locations
-            </span>{" "}
-            to find jobs tailored to your choices.
-          </p>
-        </div>
-      )}
-
-      {/* Form section */}
-      {isFormVisible && (
-        <div className="bg-white border border-gray-200 p-6 rounded-md">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
-              {/* Pincode */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Pincode <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  {...register("pincode", { required: true })}
-                  onChange={handlePincodeChange}
-                  className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                  placeholder="Enter pincode"
-                />
-                {errors.pincode && (
-                  <p className="text-red-500 text-xs mt-2">
-                    Pincode is required.
-                  </p>
-                )}
-              </div>
-
-              {/* State */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  State
-                </label>
-                <input
-                  type="text"
-                  {...register("state")}
-                  readOnly
-                  placeholder="Auto Filled"
-                  className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                />
-              </div>
-
-              {/* District */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  District
-                </label>
-                <input
-                  type="text"
-                  {...register("city")}
-                  readOnly
-                  placeholder="Auto Filled"
-                  className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                />
-              </div>
-
-              {/* Block */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Block
-                </label>
-                <input
-                  type="text"
-                  {...register("block")}
-                  className="w-full px-4 py-2 border-b focus:outline-none focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="Enter block"
-                />
-              </div>
-
-              {/* Post Office */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Post Office <span className="text-red-500">*</span>
-                </label>
-                <select
-                  {...register("post_office", { required: true })}
-                  className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                  placeholder="Select post office"
-                >
-                  <option value="" disabled>
-                    Select a Post Office
-                  </option>
-                  {postOffices.map((office, index) => (
-                    <option key={index} value={office.Name}>
-                      {office.Name}
-                    </option>
-                  ))}
-                </select>
-                {errors.post_office && (
-                  <p className="text-red-500 text-xs mt-2">
-                    Post office selection is required.
-                  </p>
-                )}
-              </div>
-
-              {/* Area */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Area
-                </label>
-                <input
-                  type="text"
-                  {...register("area")}
-                  className="w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                  placeholder="Enter area"
-                />
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end items-center space-x-4">
-              <button
-                type="button"
-                onClick={() => setIsFormVisible(false)}
-                className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 text-sm font-medium text-white bg-[#3E98C7] rounded-lg shadow focus:ring-4 focus:ring-teal-300"
-              >
-                {isEditing ? "Update Location" : "Add Location"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {apiError && <p className="text-red-500 mt-4">{apiError}</p>}
-    </div>
+    </>
   );
 };
 
