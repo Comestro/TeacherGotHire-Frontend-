@@ -46,7 +46,7 @@ const ResultPage = () => {
             </Link>
           ) : (
             <Link
-              to=""
+              to="/start-exam"
               className="w-full px-4 py-2 bg-red-700 text-white rounded-md shadow transition"
             >
               Try Again
