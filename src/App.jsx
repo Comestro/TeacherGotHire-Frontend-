@@ -38,6 +38,7 @@ import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
 import ExamLevels from "./components/Dashboard/components/ExamLevels";
+import TeacherLayout from "./teacherPanel/TeacherLayout";
 
 
 // import Logout from "./components/Logout";
@@ -56,7 +57,12 @@ function App() {
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
+        
+          {/* new Teacher Layout work */}
+
+
         <Routes>
+          <Route index path="/new-teacher" element={<TeacherLayout/>}/>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<Home />} />
@@ -159,6 +165,7 @@ function App() {
             path="/admin/manage/exam"
             element={token ? <ExamManagement /> : <Navigate to="/signin" />}
           />
+
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>

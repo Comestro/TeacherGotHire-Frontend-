@@ -121,92 +121,62 @@ const Education = () => {
       
 
       {!isEditing ? (
-        // <div className="grid grid-cols-1 rounded-md bg-slate-50 px-4 gap-4">
-        //   {educationData &&
-        //     educationData.map((experience, index) => (
-        //       <div
-        //         key={index}
-        //         className="p-4 "
-        //       >
-        //         <div className="flex justify-between items-center mb-2">
-        //           <h2 className="text-lg font-semibold text-gray-800">
-        //             {experience.institution || "Institution"}
-        //           </h2>
-        //           <div className="flex space-x-4">
-        //             <button
-        //               onClick={() => {
-        //                 handleEdit(index);
-        //                 setIsFormVisible(true);
-        //                 setIsEditing(true);
-        //                 setEditingRowIndex(index);
-        //               }}
-        //               className="text-gray-500 hover:text-gray-600"
-        //             >
-        //               <HiPencil className="h-6 w-6" />
-        //             </button>
-        //             <button
-        //               onClick={() => handleDelete(index)}
-        //               className="text-red-500 hover:text-red-600"
-        //             >
-        //               <HiOutlineTrash className="h-6 w-6" />
-        //             </button>
-        //           </div>
-        //         </div>
-        //         <div className="text-sm text-gray-700 space-y-1">
-        //           <p>
-        //             <strong className="mr-2">Qualification:</strong>{" "}
-        //             {experience.qualification.name || "N/A"}
-        //           </p>
-        //           <p>
-        //             <strong className="mr-2">Year of Passing:</strong>{" "}
-        //             {experience.year_of_passing || "N/A"}
-        //           </p>
-        //           <p>
-        //             <strong className="mr-2">Grade:</strong>{" "}
-        //             {experience.grade_or_percentage || "N/A"}
-        //           </p>
-        //         </div>
-        //       </div>
-        //     ))}
-        // </div>
-        <div className="border-b px-4 gap-4">
-          {educationData &&
-            educationData.map((experience, index) => (
-              <div key={index} className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {experience.qualification.name || "Institution"}
-                  </h2>
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={() => {
-                        handleEdit(index);
-                        setIsFormVisible(true);
-                        setIsEditing(true);
-                        setEditingRowIndex(index);
-                      }}
-                      className="text-gray-500 hover:text-gray-600"
-                    >
-                      <HiPencil className="h-6 w-6" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <HiOutlineTrash className="h-6 w-6" />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-500">
-                  <p className="text-[16px] font-medium">
-                    {`${experience.institution || "N/A"}, Year of Passing: ${
-                      experience.year_of_passing || "N/A"
-                    }, Grade: ${experience.grade_or_percentage || "N/A"}`}
-                  </p>
+        
+        <div className="bg-white rounded-lg p-6 space-y-4">
+        {educationData &&
+          educationData.map((experience, index) => (
+            <div
+              key={index}
+              className="p-4 bg-gray-50 border border-gray-200 rounded-lg transition-shadow duration-300"
+            >
+              {/* Header Section */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {experience.qualification?.name || "Institution"}
+                </h2>
+                <div className="flex space-x-3">
+                  {/* Edit Button */}
+                  <button
+                    onClick={() => {
+                      handleEdit(index);
+                      setIsFormVisible(true);
+                      setIsEditing(true);
+                      setEditingRowIndex(index);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                    title="Edit"
+                  >
+                    <HiPencil className="h-5 w-5" />
+                  </button>
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => handleDelete(index)}
+                    className="text-red-500 hover:text-red-700 focus:outline-none"
+                    title="Delete"
+                  >
+                    <HiOutlineTrash className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
-            ))}
-        </div>
+      
+              {/* Details Section */}
+              <div className="text-sm text-gray-600">
+                <p className="text-base font-medium">
+                  {experience.institution || "N/A"}
+                </p>
+                <p>
+                  <span className="font-semibold">Year of Passing:</span>{" "}
+                  {experience.year_of_passing || "N/A"}
+                </p>
+                <p>
+                  <span className="font-semibold">Grade:</span>{" "}
+                  {experience.grade_or_percentage || "N/A"}
+                </p>
+              </div>
+            </div>
+          ))}
+      </div>
+      
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}

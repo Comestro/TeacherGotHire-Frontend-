@@ -5,13 +5,13 @@ import { IoSearchOutline } from "react-icons/io5";
 import Footer from "../Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
-import TeacherProfiles from "../HomePage.jsx/Review/TeacherProfile";
-import TeacherSection from "../HomePage.jsx/TeacherSection";
-import SchoolSection from "../HomePage.jsx/SchoolSection";
-import FeaturesSection from "../HomePage.jsx/FeaturesSection";
-import ExamSection from "../HomePage.jsx/ExamSection";
-import DetailSection from "../HomePage.jsx/DetailSection";
-import TutorCategoriesSection from "../HomePage.jsx/TutorCategoriesSection";
+import TeacherProfiles from "../HomePage/Review/TeacherProfile";
+import TeacherSection from "../HomePage/TeacherSection";
+import SchoolSection from "../HomePage/SchoolSection";
+import FeaturesSection from "../HomePage/FeaturesSection";
+import ExamSection from "../HomePage/ExamSection";
+import DetailSection from "../HomePage/DetailSection";
+import TutorCategoriesSection from "../HomePage/TutorCategoriesSection";
 
 function Home() {
   const navigate = useNavigate();
