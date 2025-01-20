@@ -2,14 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function Subheader({ totalQuestion }) {
-  const [timeLeft, setTimeLeft] = useState(totalQuestion*2 * 60); // 30 minutes in 
-  
-  const subject = useSelector((state)=>state.examQues.exam);
-  const Language = useSelector((state)=>state.examQues);
-  const language = useSelector((state)=>state.examQues.language);
+  const [timeLeft, setTimeLeft] = useState(totalQuestion * 2 * 60); // 30 minutes in
 
-  
-
+  const subject = useSelector((state) => state.examQues.exam);
+  const Language = useSelector((state) => state.examQues);
+  const language = useSelector((state) => state.examQues.language);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -37,24 +34,27 @@ export default function Subheader({ totalQuestion }) {
   };
 
   return (
-    <div className="bg-white rounded-md py-4 px-6 shadow-md flex justify-between items-center border-b border-gray-300">
-      <div className="flex flex-col">
-      <h1 className="text-xl font-bold text-teal-700">Subject : {subject?.subject.subject_name } | Level : {subject?.level.name }| Language: {language}</h1>
+    <div className="w-full bg-white py-4 px-4 sm:px-6 flex flex-wrap md:flex-nowrap justify-between items-center">
+      {/* Subject Details */}
+      <div className="flex flex-col w-full md:w-auto mb-4 md:mb-0">
+        <h1 className="text-lg md:text-xl font-bold text-teal-700">
+          <span className="hidden md:inline">Subject: </span>
+          {subject?.subject?.subject_name} |
+          <span className="hidden md:inline"> Level: </span>
+          {subject?.level?.name} |
+          <span className="hidden md:inline"> Language: </span>
+          {language}
+        </h1>
       </div>
-      <div className="relative w-24 h-24 flex items-center justify-center rounded-full shadow-lg">
-        {/* Clock Base */}
-        <div className="absolute inset-0 bg-white rounded-full flex items-center justify-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center shadow-inner">
-          </div>
-        </div>
 
-        {/* Time Remaining */}
-        <div className="absolute flex flex-col items-center justify-center">
-          <span className="text-sm font-medium text-gray-500">Time Left</span>
-          <span className="text-lg font-bold text-gray-700">
-            {formatTime(timeLeft)}
-          </span>
-        </div>
+      {/* Time Remaining */}
+      <div className="flex items-center justify-between w-full md:w-auto">
+        <span className="text-sm md:text-md font-medium text-gray-500 mr-2">
+          Time Left:
+        </span>
+        <span className="text-base md:text-lg font-bold text-gray-700">
+          {formatTime(timeLeft)} min
+        </span>
       </div>
     </div>
   );

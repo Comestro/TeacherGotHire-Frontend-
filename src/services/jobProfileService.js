@@ -214,8 +214,7 @@ export const addExprienceProfile = async(expriencedata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
-            throw err;
+            throw err.response.data;
   }
 }
 export const fetchExprienceProfile = async()=>{

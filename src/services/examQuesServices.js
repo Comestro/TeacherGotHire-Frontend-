@@ -35,17 +35,34 @@ apiClient.interceptors.response.use(
   }
 );
 
+export const fetchLevel = async ({class_category_id}) => {
+  try {
+    const response = await apiClient.get(`/api/checklevel/`,{
+      params:{
+        class_category_id
+      }
+    });
+    console.log("level", response);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
 export const fetchExam = async ({
   level_id,
-  class_category_id,
   subject_id,
+  type,
+  class_category_id
 }) => {
   try {
     const response = await apiClient.get(`/api/self/exam/exams/`, {
       params: {
         level_id,
-        class_category_id,
         subject_id,
+        type,
+        class_category_id,
       },
     });
     return response.data;
@@ -57,13 +74,13 @@ export const fetchExam = async ({
 
 export const fetchQuestion = async ({ exam_id, language }) => {
   try {
-    console.log("jsbfkdnvkjd", { exam_id, language });
-    const response = await apiClient.get(`/api/self/exam/exams/${exam_id}`, {
+    console.log("ExamId and Language", { exam_id, language });
+    const response = await apiClient.get(`/api/self/exam/${exam_id}`, {
       params: {
         language,
       },
     });
-    console.log("newres", response);
+    console.log("ques", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
@@ -74,6 +91,82 @@ export const fetchQuestion = async ({ exam_id, language }) => {
 export const Attempts = async () => {
   try {
     const response = await apiClient.get(`/api/self/teacherexamresult/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const AttemptCount = async () => {
+  try {
+    const response = await apiClient.get(`/api/self/teacherexamresult/count/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const addResult = async({
+  exam,
+  correct_answer,
+  incorrect_answer,
+  is_unanswered,
+})=>{
+  try{
+    console.log("result",{
+      correct_answer,
+      incorrect_answer,
+      is_unanswered,
+    })
+     const response = await apiClient.post(`/api/self/teacherexamresult/`,{
+      exam,
+      correct_answer,
+      incorrect_answer,
+      is_unanswered,
+    })
+          
+     return response.data;
+  }
+     catch (err) {
+         console.error('error:', err.response?.data || err);
+         throw err;
+  }
+};
+
+export const GeneratePasskey = async ({user_id,exam_id}) => {
+  try {
+    const response = await apiClient.post(`/api/generate-passkey/`,{user_id,exam_id});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
+  try {
+    const response = await apiClient.post(`/api/verify-passcode/`,{user_id,exam_id,passcode});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+export const AddInterview = async ({subject,time,class_category}) => {
+  try {
+    const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const Interview = async () => {
+  try {
+    const response = await apiClient.get(`/api/self/interview/`);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

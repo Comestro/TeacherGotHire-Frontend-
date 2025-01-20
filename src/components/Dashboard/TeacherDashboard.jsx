@@ -3,48 +3,37 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { getSubjects } from "../../features/dashboardSlice";
-import ExamLevelCard from "./ExamLevelCard";
-import JobProfileCard from "./JobProfileCard";
-import PrefrenceLocation from "./PrefrenceLocation";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import HorizontalLinearAlternativeLabelStepper from "./components/Stepper";
-import SubjectAndLevelSelector from "./components/SubjectAndLevelSelector";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
-import ExamLevels from "./components/ExamLevels";
+import { getInterview } from "../../features/examQuesSlice";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [selectedSubject, setSelectedSubject] = useState(null);
   const percentage = useSelector(
-    (state) => state.personalProfile.completionData.profile_completed
+    (state) => state.personalProfile?.completionData?.profile_completed
   );
-  console.log("prec", percentage);
+
+  const { interview } = useSelector((state) => state.examQues);
+
+  console.log("interview", interview);
 
   useEffect(() => {
+    dispatch(getInterview());
     dispatch(getSubjects());
     dispatch(getProfilCompletion());
   }, [dispatch]);
 
-  const handleSubjectSelect = (subjects) => {
-    setSelectedSubject(subjects);
-  };
-
-  const handleProceedToExam = () => {
-    alert(`Proceeding to exam for ${selectedSubject.name}`);
-    navigate("/exam");
-  };
-
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white">
       {/* main section */}
       <div className="px-2">
         <div className="w-full flex flex-col mx-auto rounded-md">
-          <div className="px-4 grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+          <div className="px-4 flex gap-4 py-4 w-full">
             {/* Welcome */}
-            <div className="col-span-2 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
+            <div className="w-full md:w-9/12 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-blue-300 rounded-lg  flex flex-col gap-5 overflow-hidden">
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                 {/* Background circles */}
                 <div className="absolute top-20 -left-20 w-56 h-56 bg-gradient-to-r from-blue-200 to-blue-300 rounded-full opacity-70"></div>
@@ -85,13 +74,13 @@ function TeacherDashboard() {
               </div>
             </div>
             {/* Profile Section */}
-            <div className="rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
+            <div className="w-1/4 rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
               <div className="">
                 {/* Progress Bar Section */}
                 <div className="flex w-20">
                   <CircularProgressbar
-                    value={percentage}
-                    text={`${percentage}%`}
+                    value={percentage && percentage[0]}
+                    text={`${percentage && percentage[0]}%`}
                     styles={{
                       path: { stroke: "#3E98C7" },
                       trail: { stroke: "#D6EAF8" },
@@ -106,7 +95,7 @@ function TeacherDashboard() {
               </div>
               <div className="mt-1">
                 <p className="text-gray-500 font-semibold">
-                  {percentage}% profile completed.
+                  {/* {percentage && percentage[0]}% profile completed. */}
                 </p>
               </div>
               {/* Button Section */}
@@ -115,14 +104,58 @@ function TeacherDashboard() {
               </button>
             </div>
           </div>
-          <div className="examSubjectAndLevels px-4 ">
-            <SubjectAndLevelSelector />
-          </div>
-          <div className="px-4 mt-4 mb-2">
-            <ExamLevels />
-          </div>
         </div>
       </div>
+
+      {interview &&
+        interview.length > 0 &&
+        interview.map((item) => (
+          <div className="flex flex-col items-center mt-10">
+            <div
+              key={item.id}
+              className="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden mb-4 "
+            >
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">
+                  {item.status === false ? (
+                    <>
+                    <span className="text-yellow-600">Pending</span>
+                    <p className="text-gray-600 mt-2">
+                     Soon your interview will be approved, and you will get your meeting link.
+                    </p>
+                  </>
+                  ) : (
+                    <>
+                      <span className="text-green-600">Approved</span>
+                      <p className="text-gray-700 text-base">
+                        <strong>Subject:</strong> {item.subject_name || "N/A"}
+                      </p>
+                      <p className="text-gray-700 text-base">
+                        <strong>Time:</strong>{" "}
+                        {new Date(item.time).toLocaleString()}
+                      </p>
+                      {item.status !== false && item.link && (
+                        <div className="px-6 py-4 bg-gray-100">
+                          <p className="text-blue-600 font-semibold">
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Join Interview
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Additional details can go here */}
+              </div>
+            </div>
+          </div>
+        ))}
     </div>
   );
 }

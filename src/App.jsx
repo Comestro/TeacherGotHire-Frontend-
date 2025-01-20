@@ -39,6 +39,10 @@ import RecruiterDashboard from "./components/Recruiter/RecruiterDashboard";
 import RecruiterProfile from "./components/Recruiter/RecruiterProfile";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
+import ExamLayout from "./components/Exam/ExamLayout";
+import ExamMode from "./components/Exam/ExamMode";
+import ExamLevels from "./components/Dashboard/components/ExamLevels";
+import TeacherLayout from "./teacherPanel/TeacherLayout";
 
 // Private Route Component
 // const PrivateRoute = ({ element }) => {
@@ -67,8 +71,15 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        
+          {/* new Teacher Layout work */}
+
+
         <Routes>
+          <Route index path="/new-teacher" element={<TeacherLayout/>}/>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<Home />} />
@@ -81,7 +92,14 @@ function App() {
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/exam-guide" element={<MCQGuidelinePage />} />
+            <Route path="/exam-mode" element={<ExamMode />} />
+          </Route>
+
+          {/* exam routes */}
+          <Route path="/exam" element={<ExamLayout />} >
+            <Route index element={<MCQGuidelinePage />} />
+            <Route path="portal" element={<ExamPortal/>} />
+            <Route path="result" element={<ResultPage />} />
           </Route>
 
           {/* Recruiter Routes */}
@@ -190,16 +208,13 @@ function App() {
           />
           <Route
             path="/admin/manage/level"
-            element={
-              token ? <ManageLevel /> : <Navigate to="/signin" />
-            }
+            element={token ? <ManageLevel /> : <Navigate to="/signin" />}
           />
           <Route
             path="/admin/manage/exam"
-            element={
-              token ? <ExamManagement /> : <Navigate to="/signin" />
-            }
+            element={token ? <ExamManagement /> : <Navigate to="/signin" />}
           />
+
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
@@ -229,6 +244,10 @@ function App() {
                   allowedRoles={['user']}
                 />
               }
+            />
+             <Route
+              path="start-exam"
+              element={<PrivateRoute element={<ExamLevels/>} />}
             />
             <Route
               path="view-attempts"

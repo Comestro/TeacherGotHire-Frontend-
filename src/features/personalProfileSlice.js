@@ -1,6 +1,6 @@
 
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import {fetchAddressProfile,updateAddressProfile }from "../services/profileServices";
+import {fetchAddressProfile,updateAddressProfile ,addAddressProfile}from "../services/profileServices";
 import {updateBasicProfile,fetchBasicProfile,fetchCompleteProfile} from "../services/profileServices"
 
 
@@ -36,7 +36,7 @@ export const getBasic = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchBasicProfile();
-      console.log("gedata",data)
+      console.log("Basic Information Data",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {

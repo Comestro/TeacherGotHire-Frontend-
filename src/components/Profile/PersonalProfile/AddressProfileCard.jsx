@@ -6,13 +6,10 @@ import {
   postAddress,
   putAddress,
 } from "../../../features/personalProfileSlice";
-import {
-  updateAddressProfile,
-  addAddressProfile,
-} from "../../../services/profileServices";
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { toast } from "react-toastify";
+import { FaLocationDot } from "react-icons/fa6";
 
 const Loader = () => (
   <div className="flex justify-center items-center py-4">
@@ -20,7 +17,7 @@ const Loader = () => (
   </div>
 );
 
-const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
+const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
   const {
     register,
     handleSubmit,
@@ -59,6 +56,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
       }
     }
   };
+ 
+  
+
 
   return (
     <div className="px-5 py-4 rounded-md border">
@@ -170,13 +170,14 @@ const AddressProfileCard = () => {
   const personalProfile = useSelector(
     (state) => state.personalProfile.address || {}
   );
+  console.log("personalProfile",personalProfile)
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
 
   useEffect(() => {
     dispatch(getAddress());
-  }, [dispatch]);
+  }, []);
 
   const handleSave = async (data) => {
     console.log("archana",data)
@@ -185,9 +186,10 @@ const AddressProfileCard = () => {
     //console.log("adreestype",address_type)
     setLoading(true);
     try {
-      if (personalProfile?.[`${isEditingType}_address`]) {
+      if (personalProfile?.[`${isEditingType}_address`]) { 
         await dispatch(putAddress(payload)).unwrap();
       } else {
+        console.log("arcPayload",payload);
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");
@@ -199,7 +201,7 @@ const AddressProfileCard = () => {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     if (isEditingType && formRef.current) {
       formRef.current.scrollIntoView({ behavior: "smooth" });
@@ -208,9 +210,9 @@ const AddressProfileCard = () => {
 
   return (
     <div className="md:p-5 space-y-4 mt-4">
-      <h2 className="text-xl font-bold text-gray-700 mb-3">
-        Address Information
-      </h2>
+      <h3 className="text-[20px] font-bold text-[#3E98C7] mb-3 flex items-center gap-1">
+      <FaLocationDot /> Address Information
+      </h3>
       <div className="grid grid-cols-1 gap-6">
         {loading && <Loader />}
         {isEditingType === "current" ? (
