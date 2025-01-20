@@ -1,5 +1,6 @@
-import axios from "axios";
-import { getApiUrl } from "../store/configue";
+import axios from 'axios';
+import { getApiUrl } from '../store/configue';
+import { data } from 'jquery';
 
 // Axios instance
 const apiClient = axios.create({
@@ -79,6 +80,7 @@ export const createRecruiteraccount = async ({
   password,
 }) => {
   try {
+
     const response = await apiClient.post("/api/recruiter/register/", {
       Fname,
       Lname,
@@ -92,41 +94,37 @@ export const createRecruiteraccount = async ({
       const { status, data } = err.response;
       switch (status) {
         case 400:
-          throw new Error(
-            data.message || "Bad Request. Please check your input."
-          );
+          throw new Error(data.message || 'Bad Request. Please check your input.');
         case 409:
-          throw new Error("Conflict. The email is already registered.");
+          throw new Error('Conflict. The email is already registered.');
         case 422:
-          throw new Error("Unprocessable Entity. Invalid data provided.");
+          throw new Error('Unprocessable Entity. Invalid data provided.');
         case 500:
-          throw new Error("Internal Server Error. Please try again later.");
+          throw new Error('Internal Server Error. Please try again later.');
         default:
-          throw new Error(
-            data.message || `An error occurred. Status code: ${status}`
-          );
+          throw new Error(data.message || `An error occurred. Status code: ${status}`);
       }
     } else if (err.request) {
       // No response received from the server
-      throw new Error(
-        "No response from the server. Please check your network connection."
-      );
+      throw new Error('No response from the server. Please check your network connection.');
     } else {
       // Error in setting up the request
-      throw new Error(err.message || "An unexpected error occurred.");
+      throw new Error(err.message || 'An unexpected error occurred.');
     }
   }
 };
 export const fetchUserData = async () => {
   try {
-    const response = await apiClient.get("/api/self/customuser/");
+    const response = await apiClient.get('/api/self/customuser/');
     //console.log("get newdata:",response.data);
     return response.data;
-  } catch (err) {
-    console.error("error:", err.response?.data || err);
+  }
+  catch (err) {
+    console.error('error:', err.response?.data || err);
     throw err;
   }
-};
+}
+
 //verify otp service
 export const verifyOtp = async ({ email, otp }) => {
   try {
@@ -161,14 +159,10 @@ export const verifyOtp = async ({ email, otp }) => {
 // Login User
 export const login = async ({ email, password }) => {
   try {
-    // Send the login request to the backend
-    const response = await apiClient.post("/api/login/", { email, password });
-
-    // Extract and store the access token
+    const response = await apiClient.post('/api/login/', { email, password });
     const { access_token, role } = response.data;
-    localStorage.setItem("access_token", access_token);
-    localStorage.setItem("role", role);
-    console.log("User logged in:", access_token);
+    localStorage.setItem('access_token', access_token);
+    localStorage.setItem('role', role); // Store the role
 
     return response.data;
   } catch (err) {
@@ -215,14 +209,61 @@ export const resendOtp = async (email) => {
     }
   }
 };
-
-export const logout = () => {
+export const forgetPassword = async (email) => {
   try {
-    localStorage.removeItem("access_token"); // Remove token from local storage
-    // console.log('User logged out');
+    const response = await apiClient.post('/api/forget-password/', { email });
+    return response
   } catch (err) {
-    console.error("Logout error:", err);
-    throw err;
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred while sending the reset email.',
+        data: err.response.data,
+      }
+    } else {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      }
+    }
+  }
+}
+
+export const resetPassword = async (uidb64, token, newPassword) => {
+  try {
+    const response = await apiClient.post(
+      `/api/reset-password/${uidb64}/${token}/`,
+      {
+        new_password: newPassword,  // Correct field name
+        confirm_password: newPassword // Correct field name
+      }
+    );
+    return response; // Return response from backend
+  } catch (err) {
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || 'An error occurred while resetting the password',
+        data: err.response.data,
+      };
+    } else {
+      throw {
+        status: null,
+        message: 'No response from the server. Please check your network connection.',
+      };
+    }
   }
 };
-export default apiClient;
+
+
+  export const logout = () => {
+    try {
+      localStorage.removeItem('access_token'); // Remove token from local storage
+      localStorage.removeItem('role'); // Remove token from local storage
+      // console.log('User logged out');
+    } catch (err) {
+      console.error('Logout error:', err);
+      throw err;
+    }
+  }
+  export default apiClient;

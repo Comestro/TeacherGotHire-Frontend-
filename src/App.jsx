@@ -35,22 +35,39 @@ import ManageLevel from "./admin/Manage-level/ManageLevel";
 import ViewAttempts from "./components/Dashboard/ViewAttempts";
 import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
+import RecruiterDashboard from "./components/Recruiter/RecruiterDashboard";
+import RecruiterProfile from "./components/Recruiter/RecruiterProfile";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
 import ExamLevels from "./components/Dashboard/components/ExamLevels";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
 
-
-// import Logout from "./components/Logout";
-
 // Private Route Component
-const PrivateRoute = ({ element }) => {
+// const PrivateRoute = ({ element }) => {
+//   const token = localStorage.getItem("access_token");
+//   return token ? element : <Navigate to="/signin" />;
+// };
+
+const RoleBasedRoute = ({ element, allowedRoles }) => {
   const token = localStorage.getItem("access_token");
-  return token ? element : <Navigate to="/signin" />;
+  const userRole = localStorage.getItem("role");
+
+  if (!token) {
+    return <Navigate to="/signin" />;
+  }
+
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/signin" />;
+  }
+
+  return element;
 };
 
 function App() {
   const token = localStorage.getItem("access_token");
+  const userData = localStorage.getItem("role");
 
   return (
     <Provider store={store}>
@@ -68,6 +85,10 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword/>} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
+            <Route path="/exam" element={<ExamPortal />} />
+            <Route path="/result" element={<ResultPage />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
@@ -83,14 +104,42 @@ function App() {
 
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
-            <Route index element={<TeacherRecruiter />} />
+
+          <Route
+              index
+              element={
+                <RoleBasedRoute
+                  element={<RecruiterDashboard/>}
+                  allowedRoles={['recruiter']}
+                />
+              }
+            />
+            <Route
+              path="teacher-recruiter"
+              element={
+                <RoleBasedRoute
+                  element={<TeacherRecruiter />}
+                  allowedRoles={['recruiter']}
+                />
+              }
+            />
             <Route
               path="personal-profile"
-              element={<PrivateRoute element={<EditPersonalProfile />} />}
+              element={
+                <RoleBasedRoute
+                  element={<RecruiterProfile />}
+                  allowedRoles={['recruiter']}
+                />
+              }
             />
             <Route
               path="job-profile"
-              element={<PrivateRoute element={<JobProfileEdit />} />}
+              element={
+                <RoleBasedRoute
+                  element={<JobProfileEdit />}
+                  allowedRoles={['recruiter']} 
+                />
+              }
             />
           </Route>
 
@@ -171,15 +220,30 @@ function App() {
           <Route path="/teacher" element={<Layout />}>
             <Route
               index
-              element={<PrivateRoute element={<TeacherDashboard />} />}
+              element={
+                <RoleBasedRoute
+                  element={<TeacherDashboard />}
+                  allowedRoles={['user']} 
+                />
+              }
             />
             <Route
               path="personal-profile"
-              element={<PrivateRoute element={<EditPersonalProfile />} />}
+              element={
+                <RoleBasedRoute
+                  element={<EditPersonalProfile />}
+                  allowedRoles={['user']} 
+                />
+              }
             />
             <Route
               path="job-profile"
-              element={<PrivateRoute element={<JobProfileEdit />} />}
+              element={
+                <RoleBasedRoute
+                  element={<JobProfileEdit />}
+                  allowedRoles={['user']}
+                />
+              }
             />
              <Route
               path="start-exam"
@@ -187,7 +251,12 @@ function App() {
             />
             <Route
               path="view-attempts"
-              element={<PrivateRoute element={<ViewAttempts />} />}
+              element={
+                <RoleBasedRoute
+                  element={<ViewAttempts />}
+                  allowedRoles={['user']}
+                />
+              }
             />
           </Route>
         </Routes>
