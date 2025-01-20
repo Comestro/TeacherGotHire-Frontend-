@@ -5,10 +5,7 @@ import AttemptCard from "./components/AttemptCard";
 
 const ViewAttempts = () => {
   const examSet = useSelector((state) => state.examQues.examSet || []);
-  console.log("Exam set", examSet);
   const examAttempts = useSelector((state) => state.examQues?.attempts);
-  //  const attemptCount = useSelector((state) => state)
-  console.log("Exam Attempt", examAttempts);
   const dispatch = useDispatch();
 
   const subjectAttempt = examAttempts.reduce((acc, item) => {

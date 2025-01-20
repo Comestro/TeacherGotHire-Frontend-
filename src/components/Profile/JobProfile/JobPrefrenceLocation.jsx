@@ -25,10 +25,10 @@ const JobPrefrenceLocation = () => {
   console.log("attempt", interview);
 
   const passedOfflineExam = attempts.some(
-    (attempt) => attempt.isqualified === true && attempt.exam.type === "offline"
+    (attempt) => attempt?.isqualified === true && attempt.exam.type === "offline"
   );
 
-  const gradeCheck = interview.some((item) => item.grade > 5);
+  const gradeCheck = interview?.grade > 5;
 
   const bothConditonCheck = passedOfflineExam || gradeCheck;
   // const jobLocationsId = useSelector(

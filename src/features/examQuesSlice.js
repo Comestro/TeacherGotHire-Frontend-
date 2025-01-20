@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview, AttemptCount} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
