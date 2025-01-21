@@ -4,7 +4,7 @@ import DropDown from "./DropDown";
 
 const DashboardHeader = ({ isOpen, setIsOpen }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-[#3E98C7] text-white shadow-md">
+    <div className="flex items-center justify-between px-4 py-2 bg-[#3E98C7] text-white shadow-md -z-10 md:z-0">
       {/* Drawer Toggle Button */}
       <div className="flex items-center gap-4">
         <button

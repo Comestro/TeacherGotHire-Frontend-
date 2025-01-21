@@ -31,8 +31,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <>
       {/* Sidebar Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-72 z-50  bg-slate-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 h-full w-72   bg-slate-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0 z-50" : "-translate-x-full"
         } md:translate-x-0 md:fixed`}
       >
         {/* Profile Section */}
@@ -68,6 +68,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <nav className="w-full mt-1">
               <NavLink
                 to="/teacher/"
+                onClick={() => setIsOpen(false)}
                 end
                 className={({ isActive }) =>
                   `block py-3 px-4  ${
@@ -82,6 +83,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
               <NavLink
                 to="/teacher/personal-profile"
+                onClick={() => setIsOpen(false)}
                 end
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
@@ -96,6 +98,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
               <NavLink
                 to="/teacher/job-profile"
+                onClick={() => setIsOpen(false)}
                 end
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
@@ -110,6 +113,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
               <NavLink
                 to="start-exam"
+                onClick={() => setIsOpen(false)}
                 end
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
@@ -124,6 +128,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
               <NavLink
                 to="view-attempts"
+                onClick={() => setIsOpen(false)}
                 end
                 className={({ isActive }) =>
                   `block py-3 px-4 ${
@@ -140,7 +145,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </nav>
             <div className="flex flex-col">
               <div className="border-t border-gray-200">
-                <button className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
+                <button onClick={() => setIsOpen(false)} className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
                   <IoMdSettings className="size-5" /> Setting
                 </button>
               </div>
