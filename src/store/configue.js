@@ -1,6 +1,6 @@
 const config = {
-    apiUrl : import.meta.env.VITE_API_URL || 'teacher-hire-frontend/.env',
-    pinCodeUrl : import.meta.env.VITE_POSTAL_API_URL || 'teacher-hire-frontend/.env',
+    apiUrl : process.env.VITE_API_URL || 'teacher-hire-frontend/.env',
+    pinCodeUrl : process.env.VITE_POSTAL_API_URL || 'teacher-hire-frontend/.env',
     };
   
    

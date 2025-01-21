@@ -8,6 +8,7 @@ export default defineConfig({
       '/api': 'http://127.0.0.1:8000', // Proxy API requests to Django server
     },
   },
+  base: '/', // Set the base path to '/teacher-hire-frontend/'
   build: {
     rollupOptions: {
       output: {
