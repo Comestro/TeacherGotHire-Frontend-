@@ -18,7 +18,12 @@ export default defineConfig({
           }
         }
       }
-    },
-    chunkSizeWarningLimit: 1000, // Adjust the chunk size warning limit if needed
+    }
   },
-})
+  resolve: {
+    alias: {
+      'react': 'react',
+      'react-dom': 'react-dom'
+    }
+  }
+});
