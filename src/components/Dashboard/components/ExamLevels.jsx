@@ -29,7 +29,6 @@ const ExamLevels = () => {
     (state) => state.examQues
   );
 
-  console.log("examset", examSet);
 
   const { userData } = useSelector((state) => state?.auth);
   const { basicData } = useSelector((state) => state?.personalProfile);
@@ -37,7 +36,6 @@ const ExamLevels = () => {
     (state) => state?.jobProfile
   );
   const category = prefrence?.class_category;
-
 
   useEffect(() => {
     if(selectedCategory){
@@ -224,7 +222,7 @@ const ExamLevels = () => {
             className="border border-gray-300 rounded-md px-2 py-2 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
           >
             <option value="">Select a category</option>
-            {category?.map((cat) => (
+            {category && category?.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>

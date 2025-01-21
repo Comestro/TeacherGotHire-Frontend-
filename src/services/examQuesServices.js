@@ -173,3 +173,24 @@ export const Interview = async () => {
     throw err;
   }
 };
+
+export const ReportReason = async () => {
+  try {
+    const response = await apiClient.get(`/api/admin/reason/`);
+    console.log("reason",response)
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const AddReport = async ({id,question,issue_type}) => {
+  try {
+    const response = await apiClient.post(`/api/self/report/`,{id,question,issue_type});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};

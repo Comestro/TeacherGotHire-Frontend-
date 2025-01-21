@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -9,6 +9,7 @@ const initialState = {
   attempts: [],
   attemptCount: [],
   levels:[],
+  reportReason:[],
   subject: "",
   language: "",
   status: "idle",
@@ -155,6 +156,21 @@ export const attemptsCount = createAsyncThunk(
   }
 );
 
+
+export const getReport = createAsyncThunk(
+  "getReport",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await ReportReason();
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: error.message,
+        code: error.code || "UNKNOWN_ERROR",
+      });
+    }
+  }
+);
 export const generatePasskey= createAsyncThunk(
   "generatePasskey",
   async ({ user_id,exam_id}, { rejectWithValue }) => {
@@ -294,6 +310,21 @@ const examQuesSlice = createSlice({
         state.interview = action.payload;
       })
       .addCase(getInterview.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(getReport.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getReport.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.reportReason = action.payload;
+      })
+      .addCase(getReport.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

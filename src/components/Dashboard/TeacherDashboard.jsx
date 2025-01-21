@@ -18,8 +18,6 @@ function TeacherDashboard() {
 
   const { interview } = useSelector((state) => state.examQues);
 
-  console.log("interview", interview);
-
   useEffect(() => {
     dispatch(getInterview());
     dispatch(getSubjects());

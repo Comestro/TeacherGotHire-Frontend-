@@ -1,26 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllQues, postResult } from "../../features/examQuesSlice";
+import { getAllQues, getReport, postResult } from "../../features/examQuesSlice";
 import { useNavigate } from "react-router-dom";
 import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
+import { AddReport } from "../../services/examQuesServices";
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleModal = () => {
-    setIsOpen(!isOpen);
+    setIsOpen(true);
   };
-  const reportOptions = [
-    "Wrong Translation",
-    "Scroll Not Working",
-    "Wrong Question",
-    "Out of Syllabus",
-    "No Solution",
-    "Question and Options not visible",
-  ];
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -29,7 +23,7 @@ const ExamPortal = () => {
   const exam = allQuestion.id;
 
 
-  console.log("all",allQuestion)
+  // console.log("all",allQuestion)
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -38,6 +32,31 @@ const ExamPortal = () => {
   
   const currentQuestion = questions[currentQuestionIndex];
   
+  useEffect (()=>{
+    dispatch(getReport());
+   },[currentQuestion])
+
+   const reportOptions = useSelector((state)=>state.examQues?.reportReason);
+
+   console.log("reoprt",reportOptions);
+
+   const [selectedOption, setSelectedOption] = useState([]);
+   const [confirmationMessage, setConfirmationMessage] = useState('');
+
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+  };
+
+  const handleSubmits = () => {
+    // Process the selected option
+    const  question = currentQuestion.id;
+    const issue_type = selectedOption.id;
+    dispatch(AddReport({question:String(question),issue_type:String(issue_type)}));
+    // setConfirmationMessage('Your report has been submitted to Admin.');
+    
+    // Close the popup
+    setIsOpen(false);
+  };
 
   const handleAnswerSelect = (questionId, answer) => {
     setSelectedAnswers((prev) => ({
@@ -179,18 +198,27 @@ const ExamPortal = () => {
                         </button>
                       </div>
                       <ul className="space-y-3">
-                        {reportOptions.map((option, index) => (
+                        {reportOptions && reportOptions.map((option, index) => (
                           <li
                             key={index}
                             className="flex items-center justify-between px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
+                            onClick={() => handleOptionSelect(option)}
+                            multiple
                           >
-                            <span>{option}</span>
+                            <span>{option.issue_type}</span>
                             <span className="">
                               <IoWarningOutline className=" text-gray-500" />
                             </span>
                           </li>
                         ))}
                       </ul>
+                      <button
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+                        onClick={handleSubmits}
+                        disabled={!selectedOption}
+                      >
+                        Submit
+                      </button>
                     </div>
                   </div>
                 )}

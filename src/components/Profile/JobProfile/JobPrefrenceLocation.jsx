@@ -22,13 +22,13 @@ const JobPrefrenceLocation = () => {
   );
   const { attempts, interview } = useSelector((state) => state.examQues);
 
-  console.log("attempt", interview);
+  console.log("interview", interview);
 
-  const passedOfflineExam = attempts.some(
-    (attempt) => attempt.isqualified === true && attempt.exam.type === "offline"
+  const passedOfflineExam = attempts?.some(
+    (attempt) => attempt?.isqualified === true && attempt?.exam?.type === "offline"
   );
 
-  const gradeCheck = interview.some((item) => item.grade > 5);
+  const gradeCheck = interview?.grade > 5;
 
   const bothConditonCheck = passedOfflineExam || gradeCheck;
   // const jobLocationsId = useSelector(

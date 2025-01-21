@@ -35,6 +35,8 @@ const PrefrenceProfile = () => {
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
   const [error, setError] = useState("");
 
+  console.log("category",category);
+
   const {
     register,
     handleSubmit,
