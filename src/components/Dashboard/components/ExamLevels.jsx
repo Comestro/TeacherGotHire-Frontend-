@@ -36,6 +36,7 @@ const ExamLevels = () => {
     (state) => state?.jobProfile
   );
   const category = prefrence?.class_category;
+  console.log("category checking", category)
 
   useEffect(() => {
     if(selectedCategory){

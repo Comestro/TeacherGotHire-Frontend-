@@ -375,10 +375,7 @@ export const getSkillsProfile = createAsyncThunk(
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
-        return rejectWithValue({
-          message: error.message, // Only include the error message
-          code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-        });
+        return rejectWithValue(error);
       }
     }
   );
