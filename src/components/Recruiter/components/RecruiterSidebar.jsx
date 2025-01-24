@@ -1,185 +1,224 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../../services/authServices";
-import { getUserData } from "../../../features/authSlice";
-import { HiViewGrid, HiUser, HiBriefcase, HiOutlineLogin } from "react-icons/hi";
-import { IoMdSettings } from "react-icons/io";
- 
+import React, { useState } from "react";
+import {
+  BsGeoAlt,
+  BsPersonWorkspace,
+  BsBriefcase,
+  BsCode,
+} from "react-icons/bs";
+import { IoMdClose } from "react-icons/io";
+import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
+import { fetchFilteredTeachers } from "../../../features/teacherSlice";
+import { useDispatch } from "react-redux";
+
 const RecruiterSidebar = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const profile = useSelector((state) => state.auth.userData || {});
- 
-  // Define the isOpen state to control sidebar visibility
-  const [isOpen, setIsOpen] = useState(true);
-  const [dropdownStates, setDropdownStates] = useState({
-    dropdown1: false,
-    dropdown2: false,
+  const [filters, setFilters] = useState({
+    district: "",
+    pincode: "",
+    block: "",
+    village: "",
   });
- 
-  const toggleDropdown = (dropdown) => {
-    setDropdownStates((prevState) => ({
-      ...prevState,
-      [dropdown]: !prevState[dropdown],
+
+  const dispatch = useDispatch();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => {
+      const updatedFilters = { ...prev, [name]: value };
+      dispatch(fetchFilteredTeachers(updatedFilters));
+      return updatedFilters;
+    });
+  };
+
+  const [expandedSections, setExpandedSections] = useState({
+    location: true,
+    education: true,
+    experience: true,
+    skills: true,
+  });
+
+  const [searchSkill, setSearchSkill] = useState("");
+
+  const skillsList = [
+    "React",
+    "JavaScript",
+    "Python",
+    "Java",
+    "Node.js",
+    "SQL",
+    "AWS",
+  ];
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
     }));
   };
- 
-  useEffect(() => {
-    dispatch(getUserData());
-  }, [dispatch]);
- 
-  const handleLogout = () => {
-    logout();
-    navigate("/signin");
+
+  const handleClear = () => {
+    setFilters({
+      district: "",
+      pincode: "",
+      block: "",
+      village: "",
+    });
+    dispatch(fetchFilteredTeachers({})); // Fetch all teachers
   };
- 
-  // Toggle the sidebar visibility
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+
+  const handleExperienceChange = (type, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [`experience_${type}`]: value,
+    }));
+    // Dispatch updated filters if needed
   };
- 
+
+  const filteredSkills = skillsList.filter((skill) =>
+    skill.toLowerCase().includes(searchSkill.toLowerCase())
+  );
+
   return (
-    <>
-      <div
-        className={`fixed top-15 left-0 w-72 z-50 p-1 sticky border h-screen bg-white shadow-md ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex flex-col justify-center py-2 border-b-2 border-white">
-            <h1 className="font-bold text-2xl text-gray-700 text-center">PTPI</h1>
-            <p className="text-sm text-center text-teal-500 font-semibold mb-2">
-              Private Teacher Provider Institute.
-            </p>
+    <div className="fixed left-0 top-16 h-screen w-72 bg-white shadow-lg overflow-y-auto p-4 hidden md:block">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
+        <button
+          onClick={handleClear}
+          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          aria-label="Clear all filters"
+        >
+          <IoMdClose className="w-4 h-4" />
+          Clear All
+        </button>
+      </div>
+
+      {/* Location Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("location")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.location}
+        >
+          <div className="flex items-center gap-2">
+            <BsGeoAlt className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Location</span>
           </div>
-          <div className="flex flex-col flex-1 justify-between">
-            <nav className="w-full mt-1">
-              {/* Dropdown 1 */}
-              <div
-                className="mt-5 p-3 w-full cursor-pointer bg-white border-t  hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown1")}
-              >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    School
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown1 ? "rotate-180" : "rotate-0"}`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </div>
+          {expandedSections.location ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.location && (
+          <div className="space-y-2 pl-4">
+            {["pincode", "district", "block", "village"].map((field) => (
+              <div className="flex flex-col" key={field}>
+                <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                <input
+                  id={field}
+                  name={field}
+                  type="text"
+                  value={filters[field]}
+                  onChange={handleInputChange}
+                  placeholder={`Search by ${field}`}
+                  className="border-b pb-2 pl-2 outline-none focus:outline-none"
+                />
               </div>
- 
-              {dropdownStates.dropdown1 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
- 
-              <div
-                className="p-3 w-full cursor-pointer bg-white border-t border-b hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown2")}
-              >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    Teacher
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown2 ? "rotate-180" : "rotate-0"}`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Education Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("education")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.education}
+        >
+          <div className="flex items-center gap-2">
+            <MdSchool className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Education</span>
+          </div>
+          {expandedSections.education ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.education && (
+          <div className="space-y-2 px-4">
+            <p>Filter by degree, institution, etc.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Experience Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("experience")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.experience}
+        >
+          <div className="flex items-center gap-2">
+            <BsBriefcase className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Experience</span>
+          </div>
+          {expandedSections.experience ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.experience && (
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-600 mb-1">Min</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="15"
+                  onChange={(e) => handleExperienceChange("min", e.target.value)}
+                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
- 
-              {dropdownStates.dropdown2 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
-            </nav>
- 
-            <div className="flex flex-col">
-              <div className="border-t border-gray-200">
-                <button className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
-                  <IoMdSettings className="size-5" />
-                  Settings
-                </button>
-              </div>
- 
-              <div className="copyright flex justify-center w-full border-t border-gray-200">
-                <p className="text-gray-500 text-center p-1 text-sm font-semibold">
-                  Designed by Comestro
-                </p>
+              <div className="flex-1">
+                <label className="block text-sm text-gray-600 mb-1">Max</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="15"
+                  onChange={(e) => handleExperienceChange("max", e.target.value)}
+                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    </>
+
+      {/* Skills Section */}
+      <div className="mb-6">
+        <button
+          onClick={() => toggleSection("skills")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.skills}
+        >
+          <div className="flex items-center gap-2">
+            <BsCode className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Skills</span>
+          </div>
+          {expandedSections.skills ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.skills && (
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Search skills..."
+              value={searchSkill}
+              onChange={(e) => setSearchSkill(e.target.value)}
+              className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {filteredSkills.map((skill) => (
+                <div key={skill} className="text-sm text-gray-700">
+                  {skill}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
- 
+
 export default RecruiterSidebar;
