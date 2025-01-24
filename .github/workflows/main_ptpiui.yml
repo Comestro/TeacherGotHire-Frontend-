@@ -1,6 +1,8 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
+#we are going to push
+
 name: Build and deploy Node.js app to Azure Web App - ptpiui
 
 on:
@@ -25,6 +27,29 @@ jobs:
         run: |
           yarn install
           yarn run build
+
+      - name: Create web.config file
+        shell: pwsh
+        run: |
+          $content = @"
+          <configuration>
+            <system.webServer>
+              <rewrite>
+                <rules>
+                  <rule name="SPA fallback" stopProcessing="true">
+                    <match url=".*" />
+                    <conditions logicalGrouping="MatchAll">
+                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+                      <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+                    </conditions>
+                    <action type="Rewrite" url="/" />
+                  </rule>
+                </rules>
+              </rewrite>
+            </system.webServer>
+          </configuration>
+          "@
+          $content | Out-File -FilePath ./dist/web.config -Encoding utf8
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
