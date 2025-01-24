@@ -85,18 +85,7 @@ function App() {
 
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
-
-            <Route path="/recruiter" element={<RecruiterLayout />}>
-              <Route index element={<TeacherRecruiter />} />
-              <Route
-                path="personal-profile"
-                element={<RoleBasedRoute element={<EditPersonalProfile />} allowedRoles={['recruiter']} />}
-              />
-              <Route
-                path="job-profile"
-                element={<RoleBasedRoute element={<JobProfileEdit />} allowedRoles={['recruiter']} />}
-              />
-            </Route>
+            <Route index element={<TeacherRecruiter />} />
           </Route>
 
           {/* Admin Routes */}
