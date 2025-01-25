@@ -1,39 +1,33 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchFilteredTeachers } from "../../features/teacherSlice";
+import React, { useEffect, useState } from "react";
+import { fetchTeachers } from "../../services/teacherFilterService";
 
 const TeacherFilter = () => {
-  const [filters, setFilters] = useState({
-    district: "",
-    pincode: "",
-    block: "",
-    village: "",
-    qualification: "",
-    experience: "",
-    skill: "",
-  });
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const dispatch = useDispatch();
-  const { teachers, loading, error } = useSelector((state) => state.teachers);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchTeachers({}); 
+        setTeachers(data); // Update the state with fetched data
+      } catch (err) {
+        setError(err.message); // Handle error
+      } finally {
+        setLoading(false); // Set loading to false
+      }
+    };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
-    dispatch(fetchFilteredTeachers({ ...filters, [name]: value }));
-  };
+    fetchData();
+  }, []); 
 
-  const handleClear = () => {
-    setFilters({
-      district: "",
-      pincode: "",
-      block: "",
-      village: "",
-      qualification: "",
-      experience: "",
-      skill: "",
-    });
-    dispatch(fetchFilteredTeachers({})); // Fetch all teachers
-  };
+  
+  if(teachers.length > 0) {
+    console.log("Teachers data ", teachers);
+  }
+
+  if (loading) return <p>Loading...</p>; // Show loading state
+  if (error) return <p>Error: {error}</p>; // Show error message
 
   return (
     <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow-md mt-16">

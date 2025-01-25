@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BsGeoAlt,
   BsPersonWorkspace,
@@ -7,8 +7,8 @@ import {
 } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
-import { fetchFilteredTeachers } from "../../../features/teacherSlice";
-import { useDispatch } from "react-redux";
+import { fetchTeachers } from "../../../services/teacherFilterService";
+import { useSelector } from "react-redux";
 
 const RecruiterSidebar = () => {
   const [filters, setFilters] = useState({
@@ -18,13 +18,25 @@ const RecruiterSidebar = () => {
     village: "",
   });
 
-  const dispatch = useDispatch();
+  const [quealificationData, setQuealificationData] = useState([]);
+  const [selectedQualification, setSelectedQualification] = useState(null);
+
+  const { qualification } = useSelector((state) => state.jobProfile);
+
+  useEffect(() => {
+    setQuealificationData(qualification);
+    console.log("qualification", qualification);
+  });
+
+  const handleSelection = (id) => {
+    setSelectedQualification(id);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => {
       const updatedFilters = { ...prev, [name]: value };
-      dispatch(fetchFilteredTeachers(updatedFilters));
+      fetchTeachers(updatedFilters);
       return updatedFilters;
     });
   };
@@ -62,7 +74,7 @@ const RecruiterSidebar = () => {
       block: "",
       village: "",
     });
-    dispatch(fetchFilteredTeachers({})); // Fetch all teachers
+    fetchFilteredTeachers({}); // Fetch all teachers
   };
 
   const handleExperienceChange = (type, value) => {
@@ -108,7 +120,9 @@ const RecruiterSidebar = () => {
           <div className="space-y-2 pl-4">
             {["pincode", "district", "block", "village"].map((field) => (
               <div className="flex flex-col" key={field}>
-                <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                <label htmlFor={field}>
+                  {field.charAt(0).toUpperCase() + field.slice(1)}:
+                </label>
                 <input
                   id={field}
                   name={field}
@@ -139,7 +153,23 @@ const RecruiterSidebar = () => {
         </button>
         {expandedSections.education && (
           <div className="space-y-2 px-4">
-            <p>Filter by degree, institution, etc.</p>
+            <form>
+              {quealificationData.map((qualification) => (
+                <div key={qualification.id}>
+                  <input
+                    type="radio"
+                    id={`qualification-${qualification.id}`}
+                    name="qualification"
+                    value={qualification.id}
+                    checked={selectedQualification === qualification.id}
+                    onChange={() => handleSelection(qualification.id)}
+                  />
+                  <label htmlFor={`qualification-${qualification.id}`}>
+                    {qualification.name}
+                  </label>
+                </div>
+              ))}
+            </form>
           </div>
         )}
       </div>
@@ -166,7 +196,9 @@ const RecruiterSidebar = () => {
                   type="number"
                   min="0"
                   max="15"
-                  onChange={(e) => handleExperienceChange("min", e.target.value)}
+                  onChange={(e) =>
+                    handleExperienceChange("min", e.target.value)
+                  }
                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -176,7 +208,9 @@ const RecruiterSidebar = () => {
                   type="number"
                   min="0"
                   max="15"
-                  onChange={(e) => handleExperienceChange("max", e.target.value)}
+                  onChange={(e) =>
+                    handleExperienceChange("max", e.target.value)
+                  }
                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>

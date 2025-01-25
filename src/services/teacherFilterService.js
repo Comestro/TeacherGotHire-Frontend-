@@ -1,8 +1,8 @@
 import axios from "axios";
-import { getPincodeUrl } from "../store/configue";
+import { getApiUrl } from "../store/configue";
 
 const axiosInstance = axios.create({
-  baseURL: getPincodeUrl(),
+  baseURL: getApiUrl(),
   headers: {},
 });
 
@@ -25,7 +25,7 @@ export const fetchTeachers = async (filters) => {
     const response = await axiosInstance.get("/api/admin/teacher/", {
       params: filters,
     });
-    console.log("teacher filter data in service", response.data);
+    // console.log("teacher filter data in service", response.data);
     return response.data;
   } catch (error) {
     // Handle and return the error response
