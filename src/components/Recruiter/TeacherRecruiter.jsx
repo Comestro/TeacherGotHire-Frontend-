@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchTeachers } from "../../services/teacherFilterService";
+import Loader from "./components/Loader";
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
@@ -9,61 +10,39 @@ const TeacherFilter = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchTeachers({}); 
-        setTeachers(data); // Update the state with fetched data
+        setLoading(true);
+        const data = await fetchTeachers({});
+
+        setTimeout(() => {
+          setTeachers(data);
+          setLoading(false);
+        }, 2000);
       } catch (err) {
-        setError(err.message); // Handle error
-      } finally {
-        setLoading(false); // Set loading to false
+        setError(err.message);
       }
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
-  
-  if(teachers.length > 0) {
+  if (teachers.length > 0) {
     console.log("Teachers data ", teachers);
   }
 
-  if (loading) return <p>Loading...</p>; // Show loading state
-  if (error) return <p>Error: {error}</p>; // Show error message
+  if (loading)
+    return (
+      <div className="w-full min-h-[500px] flex items-center justify-center mt-16">
+        <Loader />
+      </div>
+    );
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow-md mt-16">
-      {/* <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Teacher Filtration
-      </h2>
-      <button
-        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 mb-4"
-        onClick={handleClear}
-      >
-        Clear Filter
-      </button>
-
-      <div className="space-y-4">
-        {Object.keys(filters).map((field) => (
-          <div key={field}>
-            <label className="block text-gray-600 text-sm capitalize">
-              {field}:
-            </label>
-            <input
-              type="text"
-              name={field}
-              value={filters[field]}
-              onChange={handleInputChange}
-              placeholder={`Enter ${field}`}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-            />
-          </div>
-        ))}
-      </div> */}
-
       <div className="">
-        {loading && <p>Loading...</p>}
         {error && <p className="text-white bg-red-600 p-2">{error}</p>}
         {teachers?.length > 0 ? (
-          <ul className="space-y-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {teachers.map((teacher) => (
               <li
                 key={teacher.id}
@@ -102,7 +81,9 @@ const TeacherFilter = () => {
                   <h4 className="font-semibold">Skills:</h4>
                   {teacher.teacherskill.length > 0 ? (
                     <p className="text-sm text-gray-600">
-                      {teacher.teacherskill.map((skill) => skill.name).join(", ")}
+                      {teacher.teacherskill
+                        .map((skill) => skill.name)
+                        .join(", ")}
                     </p>
                   ) : (
                     <p className="text-sm text-gray-400">No skills listed</p>
