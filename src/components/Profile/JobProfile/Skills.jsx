@@ -78,7 +78,7 @@ const Skills = () => {
   };
 
   return (
-    <div className=" mx-auto px-5 py-4 mt-4">
+    <div className="bg-slate-50 rounded-lg mx-auto px-5 py-4 mt-4 shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-600">Manage Your Skills</h2>
         <button

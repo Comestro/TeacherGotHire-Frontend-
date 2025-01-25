@@ -12,9 +12,11 @@ const JobProfileEdit = () => {
       <div className="min-h-screen bg-white py-5 px-2 md:px-4 lg:px-6">
           <PrefrenceProfile/>
           <JobPrefrenceLocation/>
-          <Experience/>
-          <Education/>
-          <Skills/>
+          <div className="px-4">
+            <Experience/>
+            <Education/>
+            <Skills/>
+          </div>
         </div>
       </div>
   );

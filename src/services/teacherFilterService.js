@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const API_BASE_URL = "http://127.0.0.1:8000/api/admin/teacher";
+import { getPincodeUrl } from "../store/configue";
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getPincodeUrl(),
   headers: {},
 });
 
@@ -23,7 +22,7 @@ axiosInstance.interceptors.request.use(
 // Service to fetch filtered teachers
 export const fetchTeachers = async (filters) => {
   try {
-    const response = await axiosInstance.get("/", {
+    const response = await axiosInstance.get("/api/admin/teacher/", {
       params: filters,
     });
     console.log("teacher filter data in service", response.data);

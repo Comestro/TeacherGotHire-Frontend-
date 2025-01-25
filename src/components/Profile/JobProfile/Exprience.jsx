@@ -138,7 +138,7 @@ const Experience = () => {
   };
 
   return (
-    <div className="px-5 mt-8">
+    <div className="px-5 mt-8 py-4 rounded-lg bg-gray-50 shadow">
       {/* Header with Add Button */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-600">Teacher Experience</h2>
