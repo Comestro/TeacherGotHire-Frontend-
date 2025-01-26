@@ -12,53 +12,93 @@ import { useSelector } from "react-redux";
 
 const RecruiterSidebar = () => {
   const [filters, setFilters] = useState({
-    district: "",
-    pincode: "",
-    block: "",
+    district: [],
+    pincode: [],
+    block: [],
     village: "",
+    qualification: [],
+    experience: "",
+    skill: [],
   });
 
   const [quealificationData, setQuealificationData] = useState([]);
-  const [selectedQualification, setSelectedQualification] = useState(null);
+  const [skillData, setSkillData] = useState([]);
 
-  const { qualification } = useSelector((state) => state.jobProfile);
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [selectedQualifications, setSelectedQualifications] = useState([]);
+
+  const { qualification, allSkill } = useSelector((state) => state.jobProfile);
 
   useEffect(() => {
     setQuealificationData(qualification);
-    console.log("qualification", qualification);
-  });
+    setSkillData(allSkill);
+  }, [qualification, allSkill]); 
 
-  const handleSelection = (id) => {
-    setSelectedQualification(id);
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("Fetching teachers with filters:", filters);
+        const data = await fetchTeachers(filters); // Fetch filtered teachers whenever filters change
+        console.log("Filtered teachers data", data);
+      } catch (error) {
+        console.error("Error fetching filtered teachers:", error);
+      }
+    };
+
+    // Only fetch data when filters have changed
+    fetchData();
+  }, [filters]); // Dependency on filters state
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => {
       const updatedFilters = { ...prev, [name]: value };
-      fetchTeachers(updatedFilters);
       return updatedFilters;
     });
   };
 
+  const handleSkillToggle = (skillName) => {
+    setSelectedSkills((prev) => {
+      if (prev.includes(skillName)) {
+        // Remove the skill if already selected
+        return prev.filter((skill) => skill !== skillName);
+      } else {
+        // Add the skill if not already selected
+        return [...prev, skillName];
+      }
+    });
+  };
+
+  useEffect(() => {
+    // Update filters when skills are selected/deselected
+    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
+  }, [selectedSkills]);
+
+  const handleQualificationToggle = (qualificationName) => {
+    setSelectedQualifications((prev) => {
+      if (prev.includes(qualificationName)) {
+        // Remove the qualification name if already selected
+        return prev.filter((name) => name !== qualificationName);
+      } else {
+        // Add the qualification name if not already selected
+        return [...prev, qualificationName];
+      }
+    });
+  };
+
+  useEffect(() => {
+    // Update filters when qualifications are selected/deselected
+    setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
+  }, [selectedQualifications]);
+
   const [expandedSections, setExpandedSections] = useState({
-    location: true,
-    education: true,
-    experience: true,
-    skills: true,
+    location: false,
+    education: false,
+    experience: false,
+    skills: false,
   });
 
   const [searchSkill, setSearchSkill] = useState("");
-
-  const skillsList = [
-    "React",
-    "JavaScript",
-    "Python",
-    "Java",
-    "Node.js",
-    "SQL",
-    "AWS",
-  ];
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
@@ -70,24 +110,24 @@ const RecruiterSidebar = () => {
   const handleClear = () => {
     setFilters({
       district: "",
-      pincode: "",
+      pincode: [],
       block: "",
       village: "",
+      qualification: [],
+      experience: "",
+      skill: [],
     });
-    fetchFilteredTeachers({}); // Fetch all teachers
+    setSelectedSkills([]);
+    setSelectedQualifications([]);
+    setExpandedSections({
+      location: false,
+      education: false,
+      experience: false,
+      skills: false,
+    });
+    // Fetch all teachers with no filters
+    fetchTeachers({});
   };
-
-  const handleExperienceChange = (type, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [`experience_${type}`]: value,
-    }));
-    // Dispatch updated filters if needed
-  };
-
-  const filteredSkills = skillsList.filter((skill) =>
-    skill.toLowerCase().includes(searchSkill.toLowerCase())
-  );
 
   return (
     <div className="fixed left-0 top-16 h-screen w-72 bg-white shadow-lg overflow-y-auto p-4 hidden md:block">
@@ -117,12 +157,9 @@ const RecruiterSidebar = () => {
           {expandedSections.location ? <MdExpandLess /> : <MdExpandMore />}
         </button>
         {expandedSections.location && (
-          <div className="space-y-2 pl-4">
+          <div className="space-y-2 px-2">
             {["pincode", "district", "block", "village"].map((field) => (
-              <div className="flex flex-col" key={field}>
-                <label htmlFor={field}>
-                  {field.charAt(0).toUpperCase() + field.slice(1)}:
-                </label>
+              <div className="flex flex-col py-2" key={field}>
                 <input
                   id={field}
                   name={field}
@@ -130,7 +167,7 @@ const RecruiterSidebar = () => {
                   value={filters[field]}
                   onChange={handleInputChange}
                   placeholder={`Search by ${field}`}
-                  className="border-b pb-2 pl-2 outline-none focus:outline-none"
+                  className="border-b pb-1 px-2 outline-none focus:outline-none placeholder:text-[16px] text-gray-600"
                 />
               </div>
             ))}
@@ -151,27 +188,33 @@ const RecruiterSidebar = () => {
           </div>
           {expandedSections.education ? <MdExpandLess /> : <MdExpandMore />}
         </button>
-        {expandedSections.education && (
-          <div className="space-y-2 px-4">
-            <form>
+        <div>
+          {expandedSections.education && (
+            <div className="space-y-2 px-4">
               {quealificationData.map((qualification) => (
-                <div key={qualification.id}>
+                <div key={qualification.id} className="flex items-center">
                   <input
-                    type="radio"
+                    type="checkbox"
                     id={`qualification-${qualification.id}`}
-                    name="qualification"
-                    value={qualification.id}
-                    checked={selectedQualification === qualification.id}
-                    onChange={() => handleSelection(qualification.id)}
+                    value={qualification.name}
+                    checked={selectedQualifications.includes(
+                      qualification.name
+                    )}
+                    onChange={() =>
+                      handleQualificationToggle(qualification.name)
+                    }
                   />
-                  <label htmlFor={`qualification-${qualification.id}`}>
+                  <label
+                    htmlFor={`qualification-${qualification.id}`}
+                    className="ml-2"
+                  >
                     {qualification.name}
                   </label>
                 </div>
               ))}
-            </form>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Experience Section */}
@@ -197,7 +240,10 @@ const RecruiterSidebar = () => {
                   min="0"
                   max="15"
                   onChange={(e) =>
-                    handleExperienceChange("min", e.target.value)
+                    setFilters((prev) => ({
+                      ...prev,
+                      experience: { ...prev.experience, min: e.target.value },
+                    }))
                   }
                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -209,7 +255,10 @@ const RecruiterSidebar = () => {
                   min="0"
                   max="15"
                   onChange={(e) =>
-                    handleExperienceChange("max", e.target.value)
+                    setFilters((prev) => ({
+                      ...prev,
+                      experience: { ...prev.experience, max: e.target.value },
+                    }))
                   }
                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -239,14 +288,27 @@ const RecruiterSidebar = () => {
               placeholder="Search skills..."
               value={searchSkill}
               onChange={(e) => setSearchSkill(e.target.value)}
-              className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pb-1 border-b border-gray-300 focus:outline-none"
             />
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {filteredSkills.map((skill) => (
-                <div key={skill} className="text-sm text-gray-700">
-                  {skill}
-                </div>
-              ))}
+              {skillData
+                .filter((skill) =>
+                  skill.name.toLowerCase().includes(searchSkill.toLowerCase())
+                )
+                .map((skill) => (
+                  <div key={skill.id} className="flex items-center pl-4">
+                    <input
+                      type="checkbox"
+                      id={`skill-${skill.id}`}
+                      value={skill.name}
+                      checked={selectedSkills.includes(skill.name)}
+                      onChange={() => handleSkillToggle(skill.name)}
+                    />
+                    <label htmlFor={`skill-${skill.id}`} className="ml-2">
+                      {skill.name}
+                    </label>
+                  </div>
+                ))}
             </div>
           </div>
         )}

@@ -19,16 +19,15 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Service to fetch filtered teachers
 export const fetchTeachers = async (filters) => {
   try {
+    
+    console.log("cleanedFilters", filters);
     const response = await axiosInstance.get("/api/admin/teacher/", {
       params: filters,
     });
-    // console.log("teacher filter data in service", response.data);
     return response.data;
   } catch (error) {
-    // Handle and return the error response
     if (error.response) {
       throw new Error(error.response.data.message || "An error occurred.");
     } else {

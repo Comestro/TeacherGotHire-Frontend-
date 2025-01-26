@@ -5,13 +5,13 @@ import RecruiterSidebar from "./components/RecruiterSidebar";
 
 const RecruiterLayout = () => {
   return (
-    <div className='min:h-screen bg-gray-100 w-full"'>
+    <div className='min:h-screen w-full"'>
       <TeacherRecruiterHeader />
-      <div className="flex w-full bg-red-200">
+      <div className="flex w-full">
         <div className="hidden md:block">
           <RecruiterSidebar />
         </div>
-        <div className="w-full md:ml-72 bg-gray-100">
+        <div className="w-full md:ml-72 mt-16">
           <Outlet />
         </div>
       </div>

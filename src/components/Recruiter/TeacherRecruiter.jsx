@@ -25,26 +25,28 @@ const TeacherFilter = () => {
     fetchData();
   }, []);
 
-  if (teachers.length > 0) {
-    console.log("Teachers data ", teachers);
-  }
+  // if (teachers.length > 0) {
+  //   console.log("Teachers data ", teachers);
+  // }
 
   if (loading)
     return (
-      <div className="w-full min-h-[500px] flex items-center justify-center mt-16">
+      <div className="w-full h-full flex justify-center items-center mt-16 ">
+       <div className="h-fit mt-20">
         <Loader />
+       </div>
       </div>
     );
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow-md mt-16">
+    <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow-md">
       <div className="">
         {error && <p className="text-white bg-red-600 p-2">{error}</p>}
         {teachers?.length > 0 ? (
-          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {teachers.map((teacher) => (
-              <li
+              <div
                 key={teacher.id}
                 className="p-4 bg-white border border-gray-200 rounded shadow space-y-2"
               >
@@ -115,9 +117,9 @@ const TeacherFilter = () => {
                     <p className="text-sm text-gray-400">No address provided</p>
                   )}
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           !loading && <p>No teachers found.</p>
         )}
