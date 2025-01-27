@@ -22,7 +22,7 @@ axiosInstance.interceptors.request.use(
 export const fetchTeachers = async (filters) => {
   try {
     
-    console.log("cleanedFilters", filters);
+    console.log("filter data", filters);
     const response = await axiosInstance.get("/api/admin/teacher/", {
       params: filters,
     });

@@ -91,7 +91,7 @@ const TeacherFilter = () => {
                     <p className="text-sm text-gray-400">No skills listed</p>
                   )}
                 </div>
-                <div>
+                {/* <div>
                   <h4 className="font-semibold">Experience:</h4>
                   {teacher.teacherexperiences.length > 0 ? (
                     teacher.teacherexperiences.map((exp) => (
@@ -103,7 +103,7 @@ const TeacherFilter = () => {
                   ) : (
                     <p className="text-sm text-gray-400">No experiences</p>
                   )}
-                </div>
+                </div> */}
                 <div>
                   <h4 className="font-semibold">Address:</h4>
                   {teacher.teachersaddress.length > 0 ? (

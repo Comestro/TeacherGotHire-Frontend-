@@ -19,19 +19,26 @@ const RecruiterSidebar = () => {
     qualification: [],
     experience: "",
     skill: [],
+    classCategory: [],
   });
 
   const [quealificationData, setQuealificationData] = useState([]);
   const [skillData, setSkillData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
 
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
+  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
 
-  const { qualification, allSkill } = useSelector((state) => state.jobProfile);
+  const { qualification, allSkill, classCategories } = useSelector((state) => state.jobProfile);
+
+  console.log("category from slice", categoryData);
+  console.log("selectedClassCategories", selectedClassCategories);
 
   useEffect(() => {
     setQuealificationData(qualification);
     setSkillData(allSkill);
+    setCategoryData(classCategories);
   }, [qualification, allSkill]); 
 
   useEffect(() => {
@@ -47,7 +54,7 @@ const RecruiterSidebar = () => {
 
     // Only fetch data when filters have changed
     fetchData();
-  }, [filters]); // Dependency on filters state
+  }, [filters]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,34 +67,28 @@ const RecruiterSidebar = () => {
   const handleSkillToggle = (skillName) => {
     setSelectedSkills((prev) => {
       if (prev.includes(skillName)) {
-        // Remove the skill if already selected
         return prev.filter((skill) => skill !== skillName);
       } else {
-        // Add the skill if not already selected
         return [...prev, skillName];
       }
     });
   };
 
   useEffect(() => {
-    // Update filters when skills are selected/deselected
     setFilters((prev) => ({ ...prev, skill: selectedSkills }));
   }, [selectedSkills]);
 
   const handleQualificationToggle = (qualificationName) => {
     setSelectedQualifications((prev) => {
       if (prev.includes(qualificationName)) {
-        // Remove the qualification name if already selected
         return prev.filter((name) => name !== qualificationName);
       } else {
-        // Add the qualification name if not already selected
         return [...prev, qualificationName];
       }
     });
   };
 
   useEffect(() => {
-    // Update filters when qualifications are selected/deselected
     setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
   }, [selectedQualifications]);
 
@@ -95,6 +96,7 @@ const RecruiterSidebar = () => {
     location: false,
     education: false,
     experience: false,
+    classCategory: false,
     skills: false,
   });
 
@@ -116,6 +118,8 @@ const RecruiterSidebar = () => {
       qualification: [],
       experience: "",
       skill: [],
+      classCategory: [],
+
     });
     setSelectedSkills([]);
     setSelectedQualifications([]);
@@ -124,9 +128,19 @@ const RecruiterSidebar = () => {
       education: false,
       experience: false,
       skills: false,
+      classCategory: false,
     });
-    // Fetch all teachers with no filters
     fetchTeachers({});
+  };
+
+  const handleClassCategoryToggle = (categoryName) => {
+    setSelectedClassCategories((prev) => {
+      if (prev.includes(categoryName)) {
+        return prev.filter((name) => name !== categoryName);
+      } else {
+        return [...prev, categoryName];
+      }
+    });
   };
 
   return (
@@ -215,6 +229,41 @@ const RecruiterSidebar = () => {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("classCategory")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.classCategory}
+        >
+          <div className="flex items-center gap-2">
+            <BsPersonWorkspace className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Class Category</span>
+          </div>
+          {expandedSections.classCategory ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.classCategory && (
+          <div className="space-y-2 px-4">
+            {categoryData.map((category) => (
+              <div key={category.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`classCategory-${category.id}`}
+                  value={category.name}
+                  checked={selectedClassCategories.includes(category.name)}
+                  onChange={() => handleClassCategoryToggle(category.name)}
+                />
+                <label
+                  htmlFor={`classCategory-${category.id}`}
+                  className="ml-2"
+                >
+                  {category.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Experience Section */}
