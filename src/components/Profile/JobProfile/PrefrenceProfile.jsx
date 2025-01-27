@@ -15,8 +15,6 @@ import { HiPencil } from "react-icons/hi";
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
 
-  
-
   // Fetch Data on Component Mount
   useEffect(() => {
     dispatch(getClassCategory());
@@ -29,13 +27,16 @@ const PrefrenceProfile = () => {
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
   const subject = useSelector((state) => state?.jobProfile?.subject);
-  const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
+  const teacherjobRole = useSelector(
+    (state) => state.jobProfile.teacherjobRole
+  );
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
+  
   const [error, setError] = useState("");
 
-  console.log("category",category);
+  console.log("category", category);
 
   const {
     register,
@@ -47,7 +48,11 @@ const PrefrenceProfile = () => {
   useEffect(() => {
     if (teacherprefrence) {
       Object.entries(teacherprefrence).forEach(([key, value]) => {
-        if (key === "job_role" || key === "prefered_subject" || key === "teacher_job_type") {
+        if (
+          key === "job_role" ||
+          key === "prefered_subject" ||
+          key === "teacher_job_type"
+        ) {
           setValue(
             key,
             value.map((item) => item.id)
@@ -97,198 +102,223 @@ const PrefrenceProfile = () => {
         {!isEditingPrefrence ? (
           <div className="">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-            {[
-  {
-    title: "Class Category",
-    value: teacherprefrence?.class_category?.length > 0
-      ? teacherprefrence.class_category.map((class_category) => class_category.name)
-      : ["Not Provided"],
-  },
-  {
-    title: "Job Role",
-    value: teacherprefrence?.job_role?.length > 0
-      ? teacherprefrence.job_role.map((jobrole) => jobrole.jobrole_name)
-      : ["Not Provided"],
-  },
-  {
-    title: "Subject",
-    value: teacherprefrence?.prefered_subject?.length > 0
-      ? teacherprefrence.prefered_subject.map((subject) => subject.subject_name)
-      : ["Not Provided"],
-  },
-  {
-    title: "Preferred Job",
-    value: teacherprefrence?.teacher_job_type?.length > 0
-      ? teacherprefrence.teacher_job_type.map((jobrole) => jobrole.teacher_job_name)
-      : ["Not Provided"],
-  },
-].map((item, index) => (
-  <div
-    key={index}
-    className="bg-slate-50 rounded-lg shadow p-4 flex items-start gap-4 transition"
-  >
-    {/* Icon Placeholder */}
-    <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
-      <span className="text-[#3E98C7] font-bold text-lg">
-        {item.title.charAt(0)}
-      </span>
-    </div>
-    {/* Content */}
-    <div className="flex flex-col w-full">
-      <h3 className="text-sm font-semibold text-[#3E98C7] uppercase tracking-wide">
-        {item.title}
-      </h3>
-      <div className="flex flex-wrap gap-2 mt-1">
-        {item.value.map((val, i) => (
-          <span
-            key={i}
-            className="bg-[#E6F4FA] text-[#3E98C7] text-xs font-medium py-1 px-3 rounded-full"
-          >
-            {val}
-          </span>
-        ))}
-      </div>
-    </div>
-  </div>
-))}
-
+              {[
+                {
+                  title: "Class Category",
+                  value:
+                    teacherprefrence?.class_category?.length > 0
+                      ? teacherprefrence.class_category.map(
+                          (class_category) => class_category.name
+                        )
+                      : ["Not Provided"],
+                },
+                {
+                  title: "Job Role",
+                  value:
+                    teacherprefrence?.job_role?.length > 0
+                      ? teacherprefrence.job_role.map(
+                          (jobrole) => jobrole.jobrole_name
+                        )
+                      : ["Not Provided"],
+                },
+                {
+                  title: "Subject",
+                  value:
+                    teacherprefrence?.prefered_subject?.length > 0
+                      ? teacherprefrence.prefered_subject.map(
+                          (subject) => subject.subject_name
+                        )
+                      : ["Not Provided"],
+                },
+                {
+                  title: "Preferred Job",
+                  value:
+                    teacherprefrence?.teacher_job_type?.length > 0
+                      ? teacherprefrence.teacher_job_type.map(
+                          (jobrole) => jobrole.teacher_job_name
+                        )
+                      : ["Not Provided"],
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-slate-50 rounded-lg shadow p-4 flex items-start gap-4 transition"
+                >
+                  {/* Icon Placeholder */}
+                  <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
+                    <span className="text-[#3E98C7] font-bold text-lg">
+                      {item.title.charAt(0)}
+                    </span>
+                  </div>
+                  {/* Content */}
+                  <div className="flex flex-col w-full">
+                    <h3 className="text-sm font-semibold text-[#3E98C7] uppercase tracking-wide">
+                      {item.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {item.value.map((val, i) => (
+                        <span
+                          key={i}
+                          className="bg-[#E6F4FA] text-[#3E98C7] text-xs font-medium py-1 px-3 rounded-full"
+                        >
+                          {val}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Class Category */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Class Category
-              </label>
-              <select
-                {...register("class_category", { required: true })}
-                className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                multiple
-                defaultValue={teacherprefrence?.class_category?.map((cat) => cat.id) || []}
-              >
-                <option value="">Select a category</option>
-                {category?.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {errors.class_category && (
-                <span className="text-red-500 text-sm flex items-center mt-1">
-                  <HiPencil className="text-red-500 mr-1" />
-                  This field is required
-                </span>
-              )}
-            </div>
-        
-            {/* Job Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Job Role
-              </label>
-              <select
-                {...register("job_role", { required: true })}
-                className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                multiple
-                defaultValue={teacherprefrence?.job_role?.map((role) => role.id) || []}
-              >
-                {jobRole?.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.jobrole_name}
-                  </option>
-                ))}
-              </select>
-              {errors.job_role && (
-                <span className="text-red-500 text-sm flex items-center mt-1">
-                  <HiPencil className="text-red-500 mr-1" />
-                  This field is required
-                </span>
-              )}
-            </div>
-        
-            {/* Preferred Subjects */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preferred Subjects
-              </label>
-              <div className="space-y-3">
-                {subject?.map((sub) => (
-                  <div key={sub.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register("prefered_subject", { required: true })}
-                      value={sub.id}
-                      id={`subject-${sub.id}`}
-                      className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
-                      defaultChecked={teacherprefrence?.prefered_subject?.some((item) => item.id === sub.id)}
-                    />
-                    <label htmlFor={`subject-${sub.id}`} className="ml-2 text-sm text-gray-700">
-                      {sub.subject_name}
-                    </label>
-                  </div>
-                ))}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6 bg-white p-8 rounded-lg shadow-lg border border-gray-200"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Class Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Class Category
+                </label>
+                <select
+                  {...register("class_category", { required: true })}
+                  className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  multiple
+                  defaultValue={
+                    teacherprefrence?.class_category?.map((cat) => cat.id) || []
+                  }
+                >
+                  <option value="">Select a category</option>
+                  {category && category?.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.class_category && (
+                  <span className="text-red-500 text-sm flex items-center mt-1">
+                    <HiPencil className="text-red-500 mr-1" />
+                    This field is required
+                  </span>
+                )}
               </div>
-              {errors.prefered_subject && (
-                <span className="text-red-500 text-sm flex items-center mt-1">
-                  <HiPencil className="text-red-500 mr-1" />
-                  This field is required
-                </span>
-              )}
-            </div>
-        
-            {/* Teacher Job Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teacher Job Type
-              </label>
-              <div className="space-y-3">
-                {teacherjobRole?.map((role) => (
-                  <div key={role.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register("teacher_job_type", { required: true })}
-                      value={role.id}
-                      id={`jobtype-${role.id}`}
-                      className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
-                    />
-                    <label htmlFor={`jobtype-${role.id}`} className="ml-2 text-sm text-gray-700">
-                      {role.teacher_job_name}
-                    </label>
-                  </div>
-                ))}
+
+              {/* Job Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Job Role
+                </label>
+                <select
+                  {...register("job_role", { required: true })}
+                  className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  multiple
+                  defaultValue={
+                    teacherprefrence?.job_role?.map((role) => role.id) || []
+                  }
+                >
+                  {jobRole?.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.jobrole_name}
+                    </option>
+                  ))}
+                </select>
+                {errors.job_role && (
+                  <span className="text-red-500 text-sm flex items-center mt-1">
+                    <HiPencil className="text-red-500 mr-1" />
+                    This field is required
+                  </span>
+                )}
               </div>
-              {errors.teacher_job_type && (
-                <span className="text-red-500 text-sm flex items-center mt-1">
-                  <HiPencil className="text-red-500 mr-1" />
-                  This field is required
-                </span>
-              )}
+
+              {/* Preferred Subjects */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Subjects
+                </label>
+                <div className="space-y-3">
+                  {subject?.map((sub) => (
+                    <div key={sub.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        {...register("prefered_subject", { required: true })}
+                        value={sub.id}
+                        id={`subject-${sub.id}`}
+                        className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.prefered_subject?.some(
+                          (item) => item.id === sub.id
+                        )}
+                      />
+                      <label
+                        htmlFor={`subject-${sub.id}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
+                        {sub.subject_name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {errors.prefered_subject && (
+                  <span className="text-red-500 text-sm flex items-center mt-1">
+                    <HiPencil className="text-red-500 mr-1" />
+                    This field is required
+                  </span>
+                )}
+              </div>
+
+              {/* Teacher Job Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teacher Job Type
+                </label>
+                <div className="space-y-3">
+                  {teacherjobRole?.map((role) => (
+                    <div key={role.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        {...register("teacher_job_type", { required: true })}
+                        value={role.id}
+                        id={`jobtype-${role.id}`}
+                        className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                      />
+                      <label
+                        htmlFor={`jobtype-${role.id}`}
+                        className="ml-2 text-sm text-gray-700"
+                      >
+                        {role.teacher_job_name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {errors.teacher_job_type && (
+                  <span className="text-red-500 text-sm flex items-center mt-1">
+                    <HiPencil className="text-red-500 mr-1" />
+                    This field is required
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 mt-6">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditingPrefrence(false);
-                fetchPreferences();
-              }}
-              className="py-3 px-7 text-sm font-medium text-[#3E98C7] border border-[#3E98C7] rounded-lg hover:bg-teal-50 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="py-3 px-7 text-sm font-medium text-white bg-[#3E98C7] rounded-lg transition hover:bg-teal-600"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-        
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditingPrefrence(false);
+                  fetchPreferences();
+                }}
+                className="py-3 px-7 text-sm font-medium text-[#3E98C7] border border-[#3E98C7] rounded-lg hover:bg-teal-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="py-3 px-7 text-sm font-medium text-white bg-[#3E98C7] rounded-lg transition hover:bg-teal-600"
+              >
+                Save
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

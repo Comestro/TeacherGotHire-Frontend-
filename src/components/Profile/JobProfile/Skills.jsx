@@ -21,6 +21,7 @@ const Skills = () => {
 
   // Fetch skills on component mount
   useEffect(() => {
+    console.log("skill",skillsData)
     dispatch(getAllSkills());
     dispatch(getSkillsProfile());
   }, [dispatch]);
