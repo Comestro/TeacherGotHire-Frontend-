@@ -88,14 +88,6 @@ function App() {
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
             <Route index element={<TeacherRecruiter />} />
-            <Route
-              path="personal-profile"
-              element={<PrivateRoute element={<EditPersonalProfile />} />}
-            />
-            <Route
-              path="job-profile"
-              element={<PrivateRoute element={<JobProfileEdit />} />}
-            />
           </Route>
 
           {/* Admin Routes */}

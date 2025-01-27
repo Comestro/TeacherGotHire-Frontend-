@@ -11,6 +11,7 @@ import {
   delEducationProfile,
 } from "../../../features/jobProfileSlice";
 import { HiOutlineTrash, HiPencil } from "react-icons/hi";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const Education = () => {
   const dispatch = useDispatch();
@@ -100,17 +101,17 @@ const Education = () => {
   };
 
   return (
-    <div className="px-5 mt-2">
+    <div className="px-5 mt-5 bg-gray-50 rounded-lg py-5 shadow">
       <div className="flex mb-4 justify-between items-center">
         <h2 className="text-xl font-bold  text-gray-600">Teacher Education</h2>
         <button
-          className="text-white bg-[#3E98C7] transition-colors px-6 py-2 rounded-md text-sm font-medium"
+          className="text-white bg-[#3E98C7] flex transition-colors px-4 py-2 rounded-md text-sm font-medium"
           onClick={() => {
             reset();
             setIsEditing(true);
           }}
         >
-          Add
+          Add <IoMdAddCircleOutline className="size-4 ml-1 mt-1" />
         </button>
       </div>
       {educationData.length < 1 && !isEditing && (
@@ -122,7 +123,7 @@ const Education = () => {
 
       {!isEditing ? (
         
-        <div className="bg-white rounded-lg p-6 space-y-4">
+        <div className="rounded-lg p-2 space-y-4">
         {educationData &&
           educationData.map((experience, index) => (
             <div
@@ -180,7 +181,7 @@ const Education = () => {
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4 px-6 py-4 rounded-md border border-gray-300"
+          className="space-y-4 px-6 py-4 rounded-md border border-gray-300 bg-white"
         >
           <div className="grid grid-cols-2 gap-4">
             <div>

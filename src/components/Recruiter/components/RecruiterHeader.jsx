@@ -8,7 +8,7 @@ const TeacherRecruiterHeader = () => {
   };
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="text-2xl font-bold text-teal-500">
@@ -102,50 +102,6 @@ const TeacherRecruiterHeader = () => {
           </button>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-gray-100 shadow">
-          <nav className="flex flex-col space-y-2 px-4 py-2">
-            <a
-              href="/"
-              className="text-gray-700 hover:text-teal-500 font-medium"
-            >
-              Home
-            </a>
-            <a
-              href="/jobs"
-              className="text-gray-700 hover:text-teal-500 font-medium"
-            >
-              Jobs
-            </a>
-            <a
-              href="/about"
-              className="text-gray-700 hover:text-teal-500 font-medium"
-            >
-              About Us
-            </a>
-            <a
-              href="/contact"
-              className="text-gray-700 hover:text-teal-500 font-medium"
-            >
-              Contact
-            </a>
-            <a
-              href="/login"
-              className="block px-4 py-2 text-teal-500 border border-teal-500 rounded hover:bg-teal-500 hover:text-white transition"
-            >
-              Login
-            </a>
-            <a
-              href="/register"
-              className="block px-4 py-2 text-white bg-teal-500 rounded hover:bg-teal-600 transition"
-            >
-              Register
-            </a>
-          </nav>
-        </div>
-      )}
     </header>
   );
 };
