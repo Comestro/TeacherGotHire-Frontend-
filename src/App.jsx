@@ -41,6 +41,8 @@ import ExamLevels from "./components/Dashboard/components/ExamLevels";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
 import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
 import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 
 // import Logout from "./components/Logout";
@@ -81,6 +83,8 @@ function App() {
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/admin-signin" element={<AdminSignIn />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-mode" element={<ExamMode />} />
