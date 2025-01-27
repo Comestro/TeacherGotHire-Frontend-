@@ -84,11 +84,10 @@ function App() {
           </Route>
 
           {/* Recruiter Routes */}
-          <Route path="/recruiter" element={<RecruiterLayout />}>
+          <Route path="/recruiter" element={<RoleBasedRoute element={<RecruiterLayout />} allowedRoles={['recruiter']} />}>
             <Route index element={<TeacherRecruiter />} />
           </Route>
 
-          {/* Admin Routes */}
           <Route
             path="/admin/dashboard"
             element={<RoleBasedRoute element={<AdminDashboard />} allowedRoles={['admin']} />}
