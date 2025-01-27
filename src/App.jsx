@@ -39,6 +39,8 @@ import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
 import ExamLevels from "./components/Dashboard/components/ExamLevels";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
+import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
+import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
 
 
 // import Logout from "./components/Logout";
@@ -80,6 +82,8 @@ function App() {
             <Route path="portal" element={<ExamPortal/>} />
             <Route path="result" element={<ResultPage />} />
           </Route>
+
+          
 
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RecruiterLayout />}>
@@ -190,6 +194,21 @@ function App() {
               element={<PrivateRoute element={<ViewAttempts />} />}
             />
           </Route>
+
+          {/* Exam Center Routes */}
+          <Route path="/examcenter" element={<ExamCenterLayout />}>
+            {/* <Route index element={<ExamCenterDashboard />} /> */}
+            <Route
+              path="personal-profile"
+              element={<PrivateRoute element={<EditPersonalProfile />} />}
+            />
+            <Route
+              path="job-profile"
+              element={<PrivateRoute element={<JobProfileEdit />} />}
+            />
+          </Route>
+
+         
         </Routes>
       </BrowserRouter>
     </Provider>

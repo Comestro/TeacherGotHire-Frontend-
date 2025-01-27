@@ -135,15 +135,25 @@ export const addResult = async({
   }
 };
 
-export const GeneratePasskey = async ({user_id,exam_id}) => {
+export const GeneratePasskey = async ({user_id,exam_id,center_id}) => {
   try {
-    const response = await apiClient.post(`/api/generate-passkey/`,{user_id,exam_id});
+    const response = await apiClient.post(`/api/generate-passkey/`,{user_id,exam_id,center_id});
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
     throw err;
   }
 };
+
+// export const GetPasskey = async () => {
+//   try {
+//     const response = await apiClient.get(`/api/generate-passkey/`);
+//     return response.data;
+//   } catch (err) {
+//     console.error("error:", err.response?.data || err);
+//     throw err;
+//   }
+// };
 
 export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
   try {
@@ -154,6 +164,16 @@ export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
     throw err;
   }
 };
+
+// export const GetPasscode = async () => {
+//   try {
+//     const response = await apiClient.get(`/api/verify-passcode/`);
+//     return response.data;
+//   } catch (err) {
+//     console.error("error:", err.response?.data || err);
+//     throw err;
+//   }
+// };
 export const AddInterview = async ({subject,time,class_category}) => {
   try {
     const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category});
@@ -188,6 +208,33 @@ export const ReportReason = async () => {
 export const AddReport = async ({id,question,issue_type}) => {
   try {
     const response = await apiClient.post(`/api/self/report/`,{id,question,issue_type});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const AllCenter = async () => {
+  try {
+    const response = await apiClient.get(`/api/self/examcenter/`);
+    console.log("allcenter",response)
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const fetchCenterUser= async () => {
+  try {
+    const response = await apiClient.get(`/api/self/examcenter/teachers/`, {
+      params: {
+        user_id,
+        date,
+      },
+    });
+    
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

@@ -197,7 +197,7 @@ export const deleteSkillProfile = async(skillToRemove)=>{
 
 export const updateExprienceProfile = async({payload, id})=>{
   try{
-    console.log("exp",{payload, id})
+    console.log("expput",{payload, id})
     const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
     console.log("exp_response",response.data);
     return JSON.parse(JSON.stringify(response));

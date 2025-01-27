@@ -42,7 +42,7 @@ const RecruiterSidebar = () => {
   return (
     <>
       <div
-        className={`fixed top-15 left-0 w-72 z-50 p-1 sticky border h-screen bg-white shadow-md ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed bg-[#8b9d83] top-15 left-0 w-72 z-50 p-1 sticky border h-screen bg-white shadow-md ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div className="flex flex-col h-full">
           <div className="flex flex-col justify-center py-2 border-b-2 border-white">

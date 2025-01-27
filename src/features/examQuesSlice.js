@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -7,9 +7,13 @@ const initialState = {
   interview:{},
   exam: "",
   attempts: [],
+  allcenter:[],
   attemptCount: [],
   levels:[],
   reportReason:[],
+  passkeyresponse:{},
+  verifyresponse:{},
+  centerUser:[],
   subject: "",
   language: "",
   status: "idle",
@@ -173,10 +177,10 @@ export const getReport = createAsyncThunk(
 );
 export const generatePasskey= createAsyncThunk(
   "generatePasskey",
-  async ({ user_id,exam_id}, { rejectWithValue }) => {
-    console.log("generate password",{ user_id,exam_id})
+  async ({ user_id,exam_id,center_id}, { rejectWithValue }) => {
+    console.log("generate password",{ user_id,exam_id,center_id})
     try {
-      const data = await GeneratePasskey({ user_id,exam_id});
+      const data = await GeneratePasskey({ user_id,exam_id,center_id});
        return data; 
     } catch (error) {
       return rejectWithValue({
@@ -186,11 +190,40 @@ export const generatePasskey= createAsyncThunk(
     }
   }
   );
+  // export const getPasskeyResponse= createAsyncThunk(
+  //   "getPasskeyResponse",
+  //   async ( __, { rejectWithValue }) => {
+      
+  //     try {
+  //       const data = await GetPasskey();
+  //        return data; 
+  //     } catch (error) {
+  //       return rejectWithValue({
+  //         message: error.message, 
+  //         code: error.code || "UNKNOWN_ERROR", 
+  //       });
+  //     }
+  //   }
+  //   );
+  export const getAllCenter= createAsyncThunk(
+    "getAllCenter",
+    async (__, { rejectWithValue }) => {
+      
+      try {
+        const data = await AllCenter();
+         return data; 
+      } catch (error) {
+        return rejectWithValue({
+          message: error.message, 
+          code: error.code || "UNKNOWN_ERROR", 
+        });
+      }
+    }
+    );
 
   export const verifyPasscode= createAsyncThunk(
     "verifyPasscode",
     async ({ user_id,exam_id,passcode}, { rejectWithValue }) => {
-      console.log("verifyPasscode",{ user_id,exam_id})
       try {
         const data = await VerifyPasscode({ user_id,exam_id,passcode});
          return data; 
@@ -202,6 +235,46 @@ export const generatePasskey= createAsyncThunk(
       }
     }
     );
+
+    export const getAllCenterUser= createAsyncThunk(
+      "getAllCenterUser",
+      async ({
+        status,
+        user_id,
+        date,
+      }, { rejectWithValue }) => {
+        
+        try {
+          const data = await fetchCenterUser({
+            status,
+            user_id,
+            date,
+          });
+           return data; 
+        } catch (error) {
+          return rejectWithValue({
+            message: error.message, 
+            code: error.code || "UNKNOWN_ERROR", 
+          });
+        }
+      }
+      );
+
+    // export const getverifyResponse= createAsyncThunk(
+    //   "verifyPasscode",
+    //   async (__, { rejectWithValue }) => {
+       
+    //     try {
+    //       const data = await GetPasscode();
+    //        return data; 
+    //     } catch (error) {
+    //       return rejectWithValue({
+    //         message: error.message, 
+    //         code: error.code || "UNKNOWN_ERROR", 
+    //       });
+    //     }
+    //   }
+    //   );
 
 const examQuesSlice = createSlice({
   name: "examQues",
@@ -244,10 +317,13 @@ const examQuesSlice = createSlice({
       .addCase(getAllQues.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.allQuestion = action.payload;
+        state.verifyresponse = action.payload.verifyresponse || {};
+        state.passkeyresponse = action.payload.passkeyresponse || {};
       })
       .addCase(getAllQues.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
+
       });
 
     builder
@@ -325,6 +401,63 @@ const examQuesSlice = createSlice({
         state.reportReason = action.payload;
       })
       .addCase(getReport.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+      builder
+      // for get data handeling
+      .addCase(getAllCenter.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getAllCenter.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.allcenter = action.payload;
+      })
+      .addCase(getAllCenter.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(generatePasskey.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(generatePasskey.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.passkeyresponse = action.payload;
+      })
+      .addCase(generatePasskey.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+      builder
+      // for get data handeling
+      .addCase(verifyPasscode.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(verifyPasscode.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.verifyresponse = action.payload;
+      })
+      .addCase(verifyPasscode.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+      builder
+      // for get data handeling
+      .addCase(getAllCenterUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getAllCenterUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.centerUser = action.payload;
+      })
+      .addCase(getAllCenterUser.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

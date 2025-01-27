@@ -6,11 +6,13 @@ import { getAllQues, setLanguage } from "../../features/examQuesSlice";
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const [selectedLanguage, setSelectedLanguage] = useState(""); 
-  const {exam}= useSelector((state) => state.examQues);
+  const {exam,verifyresponse}= useSelector((state) => state.examQues);
   const examID = exam?.id; 
+  const verfyExamId = verifyresponse?.offline_exam?.id;
+  
 
-  // console.log("examSet",examSet);
-  // console.log("exam",examID)
+ 
+  console.log("exam",examID)
 
   // Handle language change
   const handleLanguageChange = (event) => {
@@ -21,10 +23,13 @@ const MCQGuidelinePage = () => {
 
   // Handle proceed button click
   const handleProceedClick = () => {
-    if (selectedLanguage) {
+    if (selectedLanguage && Object.entries(verifyresponse).length > 0) {
+      dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
+      dispatch(getAllQues({ exam_id: verfyExamId, language: selectedLanguage })); // Dispatch getAllQues action
+      console.log("Proceeding with:", selectedLanguage, examID);
+    }else{
       dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
       dispatch(getAllQues({ exam_id: examID, language: selectedLanguage })); // Dispatch getAllQues action
-      console.log("Proceeding with:", selectedLanguage, examID);
     }
   };
 
