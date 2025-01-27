@@ -228,13 +228,8 @@ export const AllCenter = async () => {
 
 export const fetchCenterUser= async () => {
   try {
-    const response = await apiClient.get(`/api/self/examcenter/teachers/`, {
-      params: {
-        user_id,
-        date,
-      },
-    });
-    
+    const response = await apiClient.get(`/api/self/examcenter/teachers/`);
+    console.log("center",response)
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

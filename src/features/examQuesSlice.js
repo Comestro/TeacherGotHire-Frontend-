@@ -238,18 +238,10 @@ export const generatePasskey= createAsyncThunk(
 
     export const getAllCenterUser= createAsyncThunk(
       "getAllCenterUser",
-      async ({
-        status,
-        user_id,
-        date,
-      }, { rejectWithValue }) => {
+      async (__, { rejectWithValue }) => {
         
         try {
-          const data = await fetchCenterUser({
-            status,
-            user_id,
-            date,
-          });
+          const data = await fetchCenterUser();
            return data; 
         } catch (error) {
           return rejectWithValue({

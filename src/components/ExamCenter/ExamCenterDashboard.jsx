@@ -16,13 +16,15 @@ const ExamCenterDashboard = () => {
 
   console.log("centerUser",centerUser);
   
-  const [users, setUsers] = useState([
-  { id: 1, code: "U123", status: true, created_at: "2025-01-20", exam_id: 101, center_id: "C001" },
-  { id: 2, code: "U124", status: false, created_at: "2025-01-22", exam_id: 102, center_id: "C002" },
-  { id: 3, code: "U125", status: true, created_at: "2025-01-23", exam_id: 103, center_id: "C003" },
-  { id: 4, code: "U126", status: false, created_at: "2025-01-24", exam_id: 104, center_id: "C004" },
-  { id: 5, code: "U127", status: true, created_at: "2025-01-25", exam_id: 105, center_id: "C005" },
-]);
+  const [users, setUsers] = useState(
+  // { id: 1, code: "U123", status: true, created_at: "2025-01-20", exam_id: 101, center_id: "C001" },
+  // { id: 2, code: "U124", status: false, created_at: "2025-01-22", exam_id: 102, center_id: "C002" },
+  // { id: 3, code: "U125", status: true, created_at: "2025-01-23", exam_id: 103, center_id: "C003" },
+  // { id: 4, code: "U126", status: false, created_at: "2025-01-24", exam_id: 104, center_id: "C004" },
+  // { id: 5, code: "U127", status: true, created_at: "2025-01-25", exam_id: 105, center_id: "C005" },
+  centerUser
+);
+console.log("users",users);
 
 // Filters
 const [statusFilter, setStatusFilter] = useState(""); // "true", "false", or ""
@@ -142,8 +144,8 @@ return (
                 <td className="border border-gray-300 px-4 py-2">{user.code}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.status ? "True" : "False"}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.created_at}</td>
-                <td className="border border-gray-300 px-4 py-2">{user.exam_id}</td>
-                <td className="border border-gray-300 px-4 py-2">{user.center_id}</td>
+                <td className="border border-gray-300 px-4 py-2">{user.exam}</td>
+                <td className="border border-gray-300 px-4 py-2">{user.center}</td>
               </tr>
             ))}
           </tbody>
