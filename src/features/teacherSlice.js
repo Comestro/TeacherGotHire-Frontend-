@@ -5,9 +5,9 @@ import { fetchTeachers } from '../services/teacherFilterService';
 // Async thunk to fetch teachers
 export const fetchFilteredTeachers = createAsyncThunk(
   'teachers/fetchFilteredTeachers',
-  async (filters, { rejectWithValue }) => {
+  async (filtersValue, { rejectWithValue }) => {
     try {
-      const response = await fetchTeachers(filters);
+      const response = await fetchTeachers(filtersValue);
       return response;
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);
@@ -19,7 +19,7 @@ const teacherSlice = createSlice({
   name: 'teachers',
   initialState: {
     teacherData: [],
-    filters: {
+    filtersValue: {
       district: [],
       pincode: [],
       block: [],
@@ -33,10 +33,10 @@ const teacherSlice = createSlice({
   },
   reducers: {
     updateFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
+      state.filtersValue = { ...state.filtersValue, ...action.payload };
     },
     resetFilters: (state) => {
-      state.filters = {
+      state.filtersValue = {
         district: [],
         pincode: [],
         block: [],
