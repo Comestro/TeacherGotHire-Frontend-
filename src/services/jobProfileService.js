@@ -90,7 +90,6 @@ export const fetchSubject = async()=>{
 export const fetchQualification = async()=>{
   try{
      const response = await apiClient.get('/api/admin/educationalQulification/');
-     console.log("getsubject:",response.data);
      return response.data;
   }
      catch (err) {
@@ -102,7 +101,6 @@ export const fetchQualification = async()=>{
 export const fetchAllSkills = async()=>{
   try{
      const response = await apiClient.get('/api/admin/skill/');
-     console.log("getallskill:",response.data);
      return response.data;
   }
      catch (err) {

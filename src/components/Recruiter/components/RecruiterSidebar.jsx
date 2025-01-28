@@ -56,8 +56,8 @@ const RecruiterSidebar = () => {
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
 
-  // function for update selected skills, qualification and class category
 
+  // function for update selected skills, qualification and class category
   // for skills
   const handleSkillToggle = (skillName) => {
     setSelectedSkills((prev) => {
@@ -91,6 +91,20 @@ const RecruiterSidebar = () => {
     });
   };
 
+
+// update the filters when selected skills, qualification and class category change
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
+  }, [selectedSkills]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
+  }, [selectedQualifications]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, class_category: selectedClassCategories }));
+  }, [selectedClassCategories]);
+
   // location work
   const [inputValues, setInputValues] = useState({
     pincode: "",
@@ -99,7 +113,6 @@ const RecruiterSidebar = () => {
     village: "",
   });
 
-  console.log("filtes value for location", filters);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -126,9 +139,8 @@ const RecruiterSidebar = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching teachers with filters:", filters);
         const data = await fetchTeachers(filters);
-        console.log("Filtered teachers:", data);
+        console.log("api response for teacher", data);
       } catch (error) {
         console.error("Error fetching filtered teachers:", error);
       }
@@ -137,13 +149,7 @@ const RecruiterSidebar = () => {
     fetchData();
   }, [filters]);
 
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
-  }, [selectedSkills]);
 
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
-  }, [selectedQualifications]);
 
   const [expandedSections, setExpandedSections] = useState({
     location: false,
@@ -173,8 +179,11 @@ const RecruiterSidebar = () => {
       skill: [],
       classCategory: [],
     });
+
     setSelectedSkills([]);
     setSelectedQualifications([]);
+    setSelectedClassCategories([]);
+
     setExpandedSections({
       location: false,
       education: false,
@@ -397,7 +406,7 @@ const RecruiterSidebar = () => {
           {expandedSections.skills ? <MdExpandLess /> : <MdExpandMore />}
         </button>
         {expandedSections.skills && (
-          <div className="space-y-3">
+          <div className="space-y-3 ">
             <input
               type="text"
               placeholder="Search skills..."
