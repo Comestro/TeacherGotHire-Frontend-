@@ -94,7 +94,6 @@ export const getQualification= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchQualification();
-      console.log("getQualification",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -111,7 +110,6 @@ export const getAllSkills= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchAllSkills();
-      console.log("getQualification",data)
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -303,7 +301,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchSkillsProfile ();
-        console.log("data",data)
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {

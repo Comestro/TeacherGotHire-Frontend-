@@ -5,65 +5,60 @@ import {
   BsBriefcase,
   BsCode,
 } from "react-icons/bs";
+import { BsCheck } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
 import { fetchTeachers } from "../../../services/teacherFilterService";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getAllSkills,
+  getQualification,
+  getClassCategory,
+} from "../../../features/jobProfileSlice";
 
 const RecruiterSidebar = () => {
+  const dispatch = useDispatch();
+
   const [filters, setFilters] = useState({
     district: [],
     pincode: [],
     block: [],
-    village: "",
+    village: [],
     qualification: [],
     experience: "",
     skill: [],
-    classCategory: [],
+    class_category: [],
   });
 
-  const [quealificationData, setQuealificationData] = useState([]);
+  const { qualification, allSkill, classCategories } = useSelector(
+    (state) => state.jobProfile
+  );
+
+  useEffect(() => {
+    dispatch(getAllSkills());
+    dispatch(getQualification());
+    dispatch(getClassCategory());
+  }, []);
+
+  const [qualificationData, setQualificationData] = useState([]);
   const [skillData, setSkillData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
 
+  // set all the slice value in my local state
+  useEffect(() => {
+    setQualificationData(qualification);
+    setSkillData(allSkill);
+    setCategoryData(classCategories);
+  }, [qualification, allSkill, classCategories]);
+
+  // this is the local state for selected skills, qualification and class category
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
 
-  const { qualification, allSkill, classCategories } = useSelector((state) => state.jobProfile);
 
-  console.log("category from slice", categoryData);
-  console.log("selectedClassCategories", selectedClassCategories);
-
-  useEffect(() => {
-    setQuealificationData(qualification);
-    setSkillData(allSkill);
-    setCategoryData(classCategories);
-  }, [qualification, allSkill]); 
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log("Fetching teachers with filters:", filters);
-        const data = await fetchTeachers(filters); // Fetch filtered teachers whenever filters change
-        console.log("Filtered teachers data", data);
-      } catch (error) {
-        console.error("Error fetching filtered teachers:", error);
-      }
-    };
-
-    // Only fetch data when filters have changed
-    fetchData();
-  }, [filters]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => {
-      const updatedFilters = { ...prev, [name]: value };
-      return updatedFilters;
-    });
-  };
-
+  // function for update selected skills, qualification and class category
+  // for skills
   const handleSkillToggle = (skillName) => {
     setSelectedSkills((prev) => {
       if (prev.includes(skillName)) {
@@ -74,10 +69,7 @@ const RecruiterSidebar = () => {
     });
   };
 
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
-  }, [selectedSkills]);
-
+  // for qualification
   const handleQualificationToggle = (qualificationName) => {
     setSelectedQualifications((prev) => {
       if (prev.includes(qualificationName)) {
@@ -88,9 +80,76 @@ const RecruiterSidebar = () => {
     });
   };
 
+  // for class category
+  const handleClassCategoryToggle = (categoryName) => {
+    setSelectedClassCategories((prev) => {
+      if (prev.includes(categoryName)) {
+        return prev.filter((name) => name !== categoryName);
+      } else {
+        return [...prev, categoryName];
+      }
+    });
+  };
+
+
+// update the filters when selected skills, qualification and class category change
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
+  }, [selectedSkills]);
+
   useEffect(() => {
     setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
   }, [selectedQualifications]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, class_category: selectedClassCategories }));
+  }, [selectedClassCategories]);
+
+  // location work
+  const [inputValues, setInputValues] = useState({
+    pincode: "",
+    district: "",
+    block: "",
+    village: "",
+  });
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setInputValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddValue = (field) => {
+    if (inputValues[field].trim()) {
+      setFilters((prev) => ({
+        ...prev,
+        [field]: [...prev[field], inputValues[field].trim()],
+      }));
+      setInputValues((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleRemoveValue = (field, index) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchTeachers(filters);
+        console.log("api response for teacher", data);
+      } catch (error) {
+        console.error("Error fetching filtered teachers:", error);
+      }
+    };
+
+    fetchData();
+  }, [filters]);
+
+
 
   const [expandedSections, setExpandedSections] = useState({
     location: false,
@@ -111,18 +170,20 @@ const RecruiterSidebar = () => {
 
   const handleClear = () => {
     setFilters({
-      district: "",
+      district: [],
       pincode: [],
-      block: "",
-      village: "",
+      block: [],
+      village: [],
       qualification: [],
       experience: "",
       skill: [],
       classCategory: [],
-
     });
+
     setSelectedSkills([]);
     setSelectedQualifications([]);
+    setSelectedClassCategories([]);
+
     setExpandedSections({
       location: false,
       education: false,
@@ -131,16 +192,6 @@ const RecruiterSidebar = () => {
       classCategory: false,
     });
     fetchTeachers({});
-  };
-
-  const handleClassCategoryToggle = (categoryName) => {
-    setSelectedClassCategories((prev) => {
-      if (prev.includes(categoryName)) {
-        return prev.filter((name) => name !== categoryName);
-      } else {
-        return [...prev, categoryName];
-      }
-    });
   };
 
   return (
@@ -171,18 +222,42 @@ const RecruiterSidebar = () => {
           {expandedSections.location ? <MdExpandLess /> : <MdExpandMore />}
         </button>
         {expandedSections.location && (
-          <div className="space-y-2 px-2">
+          <div className="space-y-4 px-2">
             {["pincode", "district", "block", "village"].map((field) => (
               <div className="flex flex-col py-2" key={field}>
-                <input
-                  id={field}
-                  name={field}
-                  type="text"
-                  value={filters[field]}
-                  onChange={handleInputChange}
-                  placeholder={`Search by ${field}`}
-                  className="border-b pb-1 px-2 outline-none focus:outline-none placeholder:text-[16px] text-gray-600"
-                />
+                <div className="flex space-x-2">
+                  <input
+                    id={field}
+                    name={field}
+                    type="text"
+                    value={inputValues[field]}
+                    onChange={handleInputChange}
+                    placeholder={`Enter ${field}`}
+                    className="border-b pb-1 px-2 outline-none focus:outline-none placeholder:text-[16px] text-gray-600 flex-1"
+                  />
+                  <button
+                    onClick={() => handleAddValue(field)}
+                    className="px-4 py-1 border rounded-md"
+                  >
+                    <BsCheck />
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {filters[field].map((value, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-gray-200 text-gray-700 px-3 py-1 rounded-full shadow-sm"
+                    >
+                      <span className="mr-2">{value}</span>
+                      <button
+                        onClick={() => handleRemoveValue(field, index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -205,7 +280,7 @@ const RecruiterSidebar = () => {
         <div>
           {expandedSections.education && (
             <div className="space-y-2 px-4">
-              {quealificationData.map((qualification) => (
+              {qualificationData.map((qualification) => (
                 <div key={qualification.id} className="flex items-center">
                   <input
                     type="checkbox"
@@ -331,7 +406,7 @@ const RecruiterSidebar = () => {
           {expandedSections.skills ? <MdExpandLess /> : <MdExpandMore />}
         </button>
         {expandedSections.skills && (
-          <div className="space-y-3">
+          <div className="space-y-3 ">
             <input
               type="text"
               placeholder="Search skills..."
