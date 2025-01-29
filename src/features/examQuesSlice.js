@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -12,6 +12,7 @@ const initialState = {
   levels:[],
   reportReason:[],
   passkeyresponse:{},
+  approvedpasskey:[],
   verifyresponse:{},
   centerUser:[],
   subject: "",
@@ -190,21 +191,6 @@ export const generatePasskey= createAsyncThunk(
     }
   }
   );
-  // export const getPasskeyResponse= createAsyncThunk(
-  //   "getPasskeyResponse",
-  //   async ( __, { rejectWithValue }) => {
-      
-  //     try {
-  //       const data = await GetPasskey();
-  //        return data; 
-  //     } catch (error) {
-  //       return rejectWithValue({
-  //         message: error.message, 
-  //         code: error.code || "UNKNOWN_ERROR", 
-  //       });
-  //     }
-  //   }
-  //   );
   export const getAllCenter= createAsyncThunk(
     "getAllCenter",
     async (__, { rejectWithValue }) => {
@@ -236,6 +222,21 @@ export const generatePasskey= createAsyncThunk(
     }
     );
 
+    export const approveCenterUser= createAsyncThunk(
+      "approveCenterUser",
+      async ({user_id,exam_id}, { rejectWithValue }) => {
+        try {
+          const data = await Approved({user_id,exam_id});
+           return data; 
+        } catch (error) {
+          return rejectWithValue({
+            message: error.message, 
+            code: error.code || "UNKNOWN_ERROR", 
+          });
+        }
+      }
+      );
+
     export const getAllCenterUser= createAsyncThunk(
       "getAllCenterUser",
       async (__, { rejectWithValue }) => {
@@ -251,22 +252,6 @@ export const generatePasskey= createAsyncThunk(
         }
       }
       );
-
-    // export const getverifyResponse= createAsyncThunk(
-    //   "verifyPasscode",
-    //   async (__, { rejectWithValue }) => {
-       
-    //     try {
-    //       const data = await GetPasscode();
-    //        return data; 
-    //     } catch (error) {
-    //       return rejectWithValue({
-    //         message: error.message, 
-    //         code: error.code || "UNKNOWN_ERROR", 
-    //       });
-    //     }
-    //   }
-    //   );
 
 const examQuesSlice = createSlice({
   name: "examQues",
@@ -450,6 +435,21 @@ const examQuesSlice = createSlice({
         state.centerUser = action.payload;
       })
       .addCase(getAllCenterUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(approveCenterUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(approveCenterUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.approvedpasskey = action.payload;
+      })
+      .addCase(approveCenterUser.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

@@ -225,10 +225,19 @@ export const AllCenter = async () => {
     throw err;
   }
 };
+export const Approved = async ({user_id,exam_id}) => {
+  try {
+    const response = await apiClient.post(`/api/approve-passkey/`,{user_id,exam_id});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
 
 export const fetchCenterUser= async () => {
   try {
-    const response = await apiClient.get(`/api/self/examcenter/teachers/`);
+    const response = await apiClient.get(`/api/examcenters/teachers/`);
     console.log("center",response)
     return response.data;
   } catch (err) {
