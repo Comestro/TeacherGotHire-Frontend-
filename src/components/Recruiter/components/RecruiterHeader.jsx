@@ -1,43 +1,47 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen(!isProfileMenuOpen);
+  };
+
   return (
     <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="text-2xl font-bold text-teal-500">
-          TeacherRecruiter
-        </a>
+        <Link to="/" className="text-2xl font-bold text-teal-500">
+          Teacher Recruiter
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6">
-          <a href="/" className="text-gray-700 hover:text-teal-500 font-medium">
-            Home
-          </a>
-          <a
-            href="/jobs"
+          <Link
+            to="/"
             className="text-gray-700 hover:text-teal-500 font-medium"
           >
-            Jobs
-          </a>
-          <a
-            href="/about"
+            Home
+          </Link>
+          <Link
+            to="/about"
             className="text-gray-700 hover:text-teal-500 font-medium"
           >
             About Us
-          </a>
-          <a
-            href="/contact"
+          </Link>
+          <Link
+            to="/contact"
             className="text-gray-700 hover:text-teal-500 font-medium"
           >
             Contact
-          </a>
+          </Link>
         </nav>
 
         {/* Search Bar */}
@@ -67,18 +71,40 @@ const TeacherRecruiterHeader = () => {
 
         {/* Buttons */}
         <div className="flex items-center space-x-4">
-          <a
-            href="/login"
-            className="hidden md:inline-block px-4 py-2 text-sm text-teal-500 border border-teal-500 rounded hover:bg-teal-500 hover:text-white transition"
-          >
-            Login
-          </a>
-          <a
-            href="/register"
-            className="hidden md:inline-block px-4 py-2 text-sm text-white bg-teal-500 rounded hover:bg-teal-600 transition"
-          >
-            Register
-          </a>
+          <div className="relative flex items-center space-x-4">
+            <button
+              className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
+              onClick={toggleProfileMenu}
+            >
+              <FaUserCircle className="w-8 h-8 text-teal-600" />
+              <div className="hidden md:flex flex-col items-start ">
+                <span className="font-medium">Rahul Kumar</span>
+                <span className="text-sm text-gray-500 -mt-1">
+                  rahulkumar@gmail.com
+                </span>
+              </div>
+            </button>
+
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 top-14 w-56 bg-white border border-gray-200 shadow-lg rounded-md py-2 animate-fade-in">
+                <Link
+                  to="/settings"
+                  className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
+                >
+                  Settings
+                </Link>
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
+                >
+                  Profile
+                </Link>
+                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button

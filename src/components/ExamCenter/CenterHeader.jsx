@@ -1,130 +1,113 @@
-
-import React, {useState}from 'react'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
 
 const CenterHeader = () => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-    const toggleMobileMenu = () => {
-      setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
-  
-    return (
-      <header className="bg-[#8b9d83]">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo */}
-          <a href="/" className="text-2xl font-bold text-white">
-            ExamCenter
-          </a>
-  
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-6">
-            <a href="/" className="text-white hover:text-teal-500 font-medium">
-              Home
-            </a>
-            <a
-              href="/jobs"
-              className=" text-white hover:text-teal-500 font-medium"
-            >
-              Jobs
-            </a>
-            <a
-              href="/about"
-              className=" text-white hover:text-teal-500 font-medium"
-            >
-              About Us
-            </a>
-            <a
-              href="/contact"
-              className=" text-white hover:text-teal-500 font-medium"
-            >
-              Contact
-            </a>
-          </nav>
-  
-          {/* Buttons */}
-          <div className="flex items-center space-x-4">
-            <a
-              href="/login"
-              className="hidden md:inline-block px-4 py-2 text-sm  text-white border border-teal-500 rounded hover:bg-teal-500 hover:text-white transition"
-            >
-              Login
-            </a>
-            <a
-              href="/register"
-              className="hidden md:inline-block px-4 py-2 text-sm text-white bg-black rounded hover:bg-teal-600 transition"
-            >
-              Register
-            </a>
-  
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-gray-700 hover:text-teal-500 focus:outline-none"
-              onClick={toggleMobileMenu}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16m-7 6h7"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-  
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-gray-100 shadow">
-            <nav className="flex flex-col space-y-2 px-4 py-2">
-              <a
-                href="/"
-                className="text-gray-700 hover:text-teal-500 font-medium"
-              >
-                Home
-              </a>
-              <a
-                href="/jobs"
-                className="text-gray-700 hover:text-teal-500 font-medium"
-              >
-                Jobs
-              </a>
-              <a
-                href="/about"
-                className="text-gray-700 hover:text-teal-500 font-medium"
-              >
-                About Us
-              </a>
-              <a
-                href="/contact"
-                className="text-gray-700 hover:text-teal-500 font-medium"
-              >
-                Contact
-              </a>
-              <a
-                href="/login"
-                className="block px-4 py-2 text-teal-500 border border-teal-500 rounded hover:bg-teal-500 hover:text-white transition"
-              >
-                Login
-              </a>
-              <a
-                href="/register"
-                className="block px-4 py-2 text-white bg-teal-500 rounded hover:bg-teal-600 transition"
-              >
-                Register
-              </a>
-            </nav>
-          </div>
-        )}
-      </header>
-    );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen(!isProfileMenuOpen);
+  };
 
-export default CenterHeader
+  return (
+    <header className="bg-white shadow-sm fixed w-full z-50">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link
+          to="#"
+          className="text-2xl font-bold text-teal-600 transition"
+        >
+          Exam Center Pannel
+        </Link>
+
+        {/* for laptop */}
+        <nav className="hidden md:flex space-x-8">
+          <Link
+            to="/"
+            className="text-gray-700 hover:text-teal-600 font-medium transition"
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="text-gray-700 hover:text-teal-600 font-medium transition"
+          >
+            About Us
+          </Link>
+          <Link
+            to="/contact"
+            className="text-gray-700 hover:text-teal-600 font-medium transition"
+          >
+            Contact
+          </Link>
+        </nav>
+
+        {/* Profile Section */}
+        <div className="relative flex items-center space-x-4">
+          <button
+            className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
+            onClick={toggleProfileMenu}
+          >
+            <FaUserCircle className="w-8 h-8 text-teal-600" />
+            <div className="hidden md:flex flex-col items-start ">
+              <span className="font-medium">Rahul Kumar</span>
+              <span className="text-sm text-gray-500 -mt-1">rahulkumar@gmail.com</span>
+            </div>
+          </button>
+
+          {isProfileMenuOpen && (
+            <div className="absolute right-0 top-14 w-56 bg-white border border-gray-200 shadow-lg rounded-md py-2 animate-fade-in">
+              <Link
+                to="/settings"
+                className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
+              >
+                Settings
+              </Link>
+              <Link
+                to="/profile"
+                className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
+              >
+                Profile
+              </Link>
+              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-md shadow-lg">
+          <nav className="flex flex-col space-y-4 px-6 py-4">
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-teal-600 font-medium transition"
+            >
+              Home
+            </Link>
+            <Link
+              to="/about"
+              className="text-gray-700 hover:text-teal-600 font-medium transition"
+            >
+              About Us
+            </Link>
+            <Link
+              to="/contact"
+              className="text-gray-700 hover:text-teal-600 font-medium transition"
+            >
+              Contact
+            </Link>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+};
+
+export default CenterHeader;
