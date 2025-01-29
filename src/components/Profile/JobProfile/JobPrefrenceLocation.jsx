@@ -22,9 +22,9 @@ const JobPrefrenceLocation = () => {
   );
   const { attempts, interview } = useSelector((state) => state.examQues);
 
-  console.log("interview", interview);
+  console.log("interview",attempts );
 
-  const passedOfflineExam = attempts?.some(
+  const passedOfflineExam =  attempts?.some(
     (attempt) => attempt?.isqualified === true && attempt?.exam?.type === "offline"
   );
 
