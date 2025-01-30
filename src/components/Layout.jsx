@@ -24,7 +24,7 @@ const Layout = () => {
               </div>
 
               {/* Outlet section */}
-              <div className="mt-[54px] md:mt-[54px]">
+              <div className="mt-[60px] md:mt-[54px]">
                 <Outlet />
               </div>
             </div>
