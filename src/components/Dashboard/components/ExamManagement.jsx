@@ -3,7 +3,8 @@ import { FaLock, FaLockOpen, FaBookOpen } from "react-icons/fa";
 import { CiLock } from "react-icons/ci";
 
 export default function ExamManagement() {
-  // Static class categories & subjects data
+  
+  
   const classCategories = [
     {
       id: 1,
