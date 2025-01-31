@@ -1,16 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
+import { useDispatch, useSelector } from "react-redux";
+import { getBasic } from "../../../features/personalProfileSlice";
 
 const TeacherDashboardCard = ({ teacher }) => {
-  const { profilePicture, completionPercentage, missingDetails } = teacher;
+  const { missingDetails } = teacher;
+
+  const dispatch = useDispatch();
+
+  const personalProfile = useSelector((state) => state?.personalProfile);
+  const basicData = personalProfile?.basicData || {};
+
+  const percentage = useSelector(
+    (state) => state.personalProfile?.completionData?.profile_completed[0]
+  );
+
+  console.log("percentage in card", percentage);
+  useEffect(() => {
+    dispatch(getBasic()).catch((error) => console.error("Error:", error));
+  }, [dispatch]);
+
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     // Animate the progress ring on mount
     setTimeout(() => {
-      setProgress(completionPercentage);
+      setProgress(percentage);
     }, 300);
-  }, [completionPercentage]);
+  }, [percentage]);
 
   // Calculate stroke values for animated progress ring
   const radius = 40;
@@ -19,7 +36,6 @@ const TeacherDashboardCard = ({ teacher }) => {
 
   return (
     <div className="relative overflow-hidden flex flex-col md:flex-row items-center justify-between w-full bg-white px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[#D6F7DE] transition-shadow duration-300 mt-2">
-      {/* Background elements with responsive adjustments */}
       <div className="absolute h-full w-[80%] md:w-[70%] bg-[#c7e4f794] left-0 top-0 z-0"></div>
       <div className="absolute md:h-96 h-full w-[45%] md:w-[35%] bg-[#a1d8f6] md:rounded-l-full right-0 z-0"></div>
 
@@ -44,15 +60,15 @@ const TeacherDashboardCard = ({ teacher }) => {
               r={radius}
               fill="transparent"
               stroke="#3E98C7"
-              strokeWidth="6 md:stroke-width-8"
+              strokeWidth="8"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
-              className="transition-all duration-1000 ease-out"
+              style={{ transition: "stroke-dashoffset 1s ease-out" }}
             />
           </svg>
           <img
-            src={"/images/profileimage.jpg"}
+            src={basicData?.profile_picture || "/images/profile.jpg"}
             alt="Profile"
             className="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-4 border-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-[2px]"
           />
@@ -78,7 +94,8 @@ const TeacherDashboardCard = ({ teacher }) => {
             <span className="mr-1 md:mr-2">2️⃣</span> Attempt the Online Exam
           </li>
           <li className="flex items-center justify-center md:justify-start">
-            <span className="mr-1 md:mr-2">3️⃣</span> Unlock Teaching Opportunities
+            <span className="mr-1 md:mr-2">3️⃣</span> Unlock Teaching
+            Opportunities
           </li>
         </ul>
       </div>

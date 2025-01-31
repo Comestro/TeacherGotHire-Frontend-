@@ -10,7 +10,9 @@ const JobProfileEdit = () => {
     <div className="">
       {/* Main Content */}
       <div className="min-h-screen bg-white py-5 px-2 md:px-4 lg:px-6">
-          <PrefrenceProfile/>
+          <div className="px-4 mt-4">
+            <PrefrenceProfile/>
+          </div>
           <JobPrefrenceLocation/>
           <div className="px-4">
             <Experience/>
