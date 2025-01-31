@@ -28,11 +28,14 @@ const RecruiterSidebar = () => {
     experience: "",
     skill: [],
     class_category: [],
+    subject: [],
   });
 
-  const { qualification, allSkill, classCategories } = useSelector(
+  const { qualification, allSkill, classCategories, subject } = useSelector(
     (state) => state.jobProfile
   );
+
+  console.log("Subject in Filter sidebar", subject);
 
   useEffect(() => {
     dispatch(getAllSkills());
@@ -246,14 +249,14 @@ const RecruiterSidebar = () => {
                   {filters[field].map((value, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-gray-200 text-gray-700 px-3 py-1 rounded-full shadow-sm"
+                      className="flex justify-center bg-teal-50 border border-teal-300 hover:border-teal-400 text-teal-700 px-3 py-1 rounded-full shadow-sm"
                     >
-                      <span className="mr-2">{value}</span>
+                      <span className="">{value}</span>
                       <button
                         onClick={() => handleRemoveValue(field, index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-600  ml-2 h-2 w-2 flex rounded-full"
                       >
-                        ✕
+                        x
                       </button>
                     </div>
                   ))}

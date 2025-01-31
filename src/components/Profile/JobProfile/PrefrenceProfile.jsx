@@ -10,7 +10,8 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
-import { HiPencil } from "react-icons/hi";
+import { HiExclamationCircle, HiPencil } from "react-icons/hi";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ const PrefrenceProfile = () => {
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
-  
+
   const [error, setError] = useState("");
 
   console.log("category", category);
@@ -82,26 +83,32 @@ const PrefrenceProfile = () => {
   };
 
   return (
-    <div className="px-2 py-2 ">
-      <div className="flex  mb-4 items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-600">
-          Preference Information
-        </h2>
+    <div className="p-4 border rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
+        <div className="mb-3 sm:mb-0">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Teaching Preferences
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage your teaching preferences including subjects, grade levels,
+            and job types
+          </p>
+        </div>
         {!isEditingPrefrence && (
           <button
-            className="text-sm font-medium px-6 py-2 bg-[#3E98C7] text-white rounded-md shadow-md transition flex items-center gap-1"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] rounded-lg shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsEditingPrefrence(true)}
           >
-            Edit
-            <HiPencil className="size-5 " />
+            <HiPencil className="size-5" />
+            Edit Preferences
           </button>
         )}
       </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <div className="mb-4 px-2">
+      <div className="mb-4 md:px-2 ">
         {!isEditingPrefrence ? (
           <div className="">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
               {[
                 {
                   title: "Class Category",
@@ -142,7 +149,7 @@ const PrefrenceProfile = () => {
               ].map((item, index) => (
                 <div
                   key={index}
-                  className="bg-slate-50 rounded-lg shadow p-4 flex items-start gap-4 transition"
+                  className="border border-gray-200 rounded-lg p-4 flex items-start gap-4 transition"
                 >
                   {/* Icon Placeholder */}
                   <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
@@ -173,149 +180,206 @@ const PrefrenceProfile = () => {
         ) : (
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6 bg-white p-8 rounded-lg shadow-lg border border-gray-200"
+            className="space-y-8 bg-white p-8 rounded-lg border border-gray-300"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Class Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Class Category
-                </label>
-                <select
-                  {...register("class_category", { required: true })}
-                  className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  multiple
-                  defaultValue={
-                    teacherprefrence?.class_category?.map((cat) => cat.id) || []
-                  }
-                >
-                  <option value="">Select a category</option>
-                  {category && category?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
+            {/* Form Header */}
+            <div className="pb-4 border-b border-gray-200">
+              <p className="mt-2 text-sm text-gray-600">
+                Please update your teaching preferences below. This information
+                helps us match you with ideal opportunities. Fields marked with{" "}
+                <span className="text-red-500">*</span> are required.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Class Category Section */}
+              <div className="space-y-4">
+                <div className="mb-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Class Category
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Select the educational levels you're comfortable teaching
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3  h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                  {category?.map((cat) => (
+                    <label
+                      key={cat.id}
+                      className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        {...register("class_category", { required: true })}
+                        value={cat.id}
+                        className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.class_category?.some(
+                          (item) => item.id === cat.id
+                        )}
+                      />
+                      <span className="text-sm text-gray-700">{cat.name}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
                 {errors.class_category && (
-                  <span className="text-red-500 text-sm flex items-center mt-1">
-                    <HiPencil className="text-red-500 mr-1" />
-                    This field is required
-                  </span>
+                  <div className="text-red-500 text-sm flex items-center mt-2">
+                    <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                    Please select at least one category
+                  </div>
                 )}
               </div>
 
-              {/* Job Role */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Job Role
-                </label>
-                <select
-                  {...register("job_role", { required: true })}
-                  className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  multiple
-                  defaultValue={
-                    teacherprefrence?.job_role?.map((role) => role.id) || []
-                  }
-                >
-                  {jobRole?.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.jobrole_name}
-                    </option>
-                  ))}
-                </select>
+              {/* Job Role Section */}
+              <div className="space-y-4">
+                <div className="mb-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Job Role
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose positions you're interested in (sorted
+                    alphabetically)
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 h-44 max-h-44 p-4 overflow-y-auto border border-gray-200 rounded-lg">
+                  {jobRole
+                    ?.slice()
+                    .sort((a, b) =>
+                      a.jobrole_name.localeCompare(b.jobrole_name)
+                    )
+                    ?.map((role) => (
+                      <label
+                        key={role.id}
+                        className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          {...register("job_role", { required: true })}
+                          value={role.id}
+                          className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
+                          defaultChecked={teacherprefrence?.job_role?.some(
+                            (item) => item.id === role.id
+                          )}
+                        />
+                        <span className="text-sm text-gray-700">
+                          {role.jobrole_name}
+                        </span>
+                      </label>
+                    ))}
+                </div>
                 {errors.job_role && (
-                  <span className="text-red-500 text-sm flex items-center mt-1">
-                    <HiPencil className="text-red-500 mr-1" />
-                    This field is required
-                  </span>
+                  <div className="text-red-500 text-sm flex items-center mt-2">
+                    <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                    Please select at least one role
+                  </div>
                 )}
               </div>
 
-              {/* Preferred Subjects */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Subjects
-                </label>
-                <div className="space-y-3">
+              {/* Preferred Subjects Section */}
+              <div className="space-y-4">
+                <div className="mb-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Preferred Subjects
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Select subjects you're qualified to teach
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
                   {subject?.map((sub) => (
-                    <div key={sub.id} className="flex items-center">
+                    <label
+                      key={sub.id}
+                      className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         {...register("prefered_subject", { required: true })}
                         value={sub.id}
-                        id={`subject-${sub.id}`}
-                        className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
                         defaultChecked={teacherprefrence?.prefered_subject?.some(
                           (item) => item.id === sub.id
                         )}
                       />
-                      <label
-                        htmlFor={`subject-${sub.id}`}
-                        className="ml-2 text-sm text-gray-700"
-                      >
+                      <span className="text-sm text-gray-700">
                         {sub.subject_name}
-                      </label>
-                    </div>
+                      </span>
+                    </label>
                   ))}
                 </div>
                 {errors.prefered_subject && (
-                  <span className="text-red-500 text-sm flex items-center mt-1">
-                    <HiPencil className="text-red-500 mr-1" />
-                    This field is required
-                  </span>
+                  <div className="text-red-500 text-sm flex items-center mt-2">
+                    <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                    Please select at least one subject
+                  </div>
                 )}
               </div>
 
-              {/* Teacher Job Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Teacher Job Type
-                </label>
-                <div className="space-y-3">
+              {/* Teacher Job Type Section */}
+              <div className="space-y-4">
+                <div className="mb-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Teacher Job Type
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose your preferred employment type(s)
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-1 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
                   {teacherjobRole?.map((role) => (
-                    <div key={role.id} className="flex items-center">
+                    <label
+                      key={role.id}
+                      className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         {...register("teacher_job_type", { required: true })}
                         value={role.id}
-                        id={`jobtype-${role.id}`}
-                        className="h-4 w-4 text-teal-500 border-gray-300 focus:ring-teal-500"
+                        className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
+                        defaultChecked={teacherprefrence?.teacher_job_type?.some(
+                          (item) => item.id === role.id
+                        )}
                       />
-                      <label
-                        htmlFor={`jobtype-${role.id}`}
-                        className="ml-2 text-sm text-gray-700"
-                      >
+                      <span className="text-sm text-gray-700">
                         {role.teacher_job_name}
-                      </label>
-                    </div>
+                      </span>
+                    </label>
                   ))}
                 </div>
                 {errors.teacher_job_type && (
-                  <span className="text-red-500 text-sm flex items-center mt-1">
-                    <HiPencil className="text-red-500 mr-1" />
-                    This field is required
-                  </span>
+                  <div className="text-red-500 text-sm flex items-center mt-2">
+                    <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                    Please select at least one job type
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-6">
+            {/* Enhanced Action Buttons Section */}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-4 mt-8 pt-6 border-t border-gray-100">
+              <div className="sm:mr-auto">
+                <p className="text-xs text-gray-500">
+                  Unsaved changes will be lost. Review all sections before
+                  submitting.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setIsEditingPrefrence(false);
                   fetchPreferences();
                 }}
-                className="py-3 px-7 text-sm font-medium text-[#3E98C7] border border-[#3E98C7] rounded-lg hover:bg-teal-50 transition"
+                className="px-6 py-2.5 text-sm font-medium text-[#3E98C7]  transition-colors rounded-lg hover:bg-gray-50"
               >
-                Cancel
+                Discard Changes
               </button>
               <button
                 type="submit"
-                className="py-3 px-7 text-sm font-medium text-white bg-[#3E98C7] rounded-lg transition hover:bg-teal-600"
+                className="px-6 py-2.5 text-sm font-medium text-white bg-[#3E98C7]  rounded-lg shadow-sm transform transition-transform duration-200"
               >
-                Save
+                Save Preferences
               </button>
             </div>
           </form>
