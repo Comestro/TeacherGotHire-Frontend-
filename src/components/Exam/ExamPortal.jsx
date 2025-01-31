@@ -18,7 +18,7 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {  allQuestion } = useSelector((state) => state.examQues);
+  const { status, allQuestion } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
 
@@ -28,6 +28,7 @@ const ExamPortal = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   
   const currentQuestion = questions[currentQuestionIndex];
@@ -118,13 +119,13 @@ const ExamPortal = () => {
       is_unanswered,  } });
   };
 
-  // if (loading) return <div>Loading...</div>;
-  // if (error) return <div>Error: {error}</div>;
+  // if (status === 'loading') return <div>Loading...</div>;
+  // // if (error) return <div>Error: {error}</div>;
  
-  
 
   return (
     <div className="flex h-screen bg-gray-100 w-full">
+      
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-md border-r border-gray-200 p-2">
         <h3 className="text-xl font-bold text-center text-gray-700 py-4 border-b border-gray-300">
@@ -150,6 +151,7 @@ const ExamPortal = () => {
       </div>
 
       {/* Main Content */}
+     
       <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
         <Subheader
           totalQuestion={questions?.length || 0}
