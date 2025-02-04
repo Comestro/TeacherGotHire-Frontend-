@@ -19,7 +19,6 @@ import ManageQualification from "./admin/Manage-qualification/ManageQualificatio
 import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
 import Contact from "./admin/Conatct/Contact";
-import AdminSignIn from "./components/AdminLogin";
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
@@ -82,7 +81,6 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
-            <Route path="/admin-signin" element={<AdminSignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
