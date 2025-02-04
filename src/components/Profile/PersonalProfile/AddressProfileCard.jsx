@@ -17,7 +17,7 @@ const Loader = () => (
   </div>
 );
 
-const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
+const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const {
     register,
     handleSubmit,
@@ -27,7 +27,6 @@ const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
   } = useForm();
 
   const [loadingPincode, setLoadingPincode] = useState(false);
-
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -50,15 +49,11 @@ const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
         }
       } catch {
         toast.error("Failed to fetch Pincode details");
-      }
-      finally {
+      } finally {
         setLoadingPincode(false);
       }
     }
   };
- 
-  
-
 
   return (
     <div className="px-5 py-4 rounded-md border">
@@ -78,7 +73,7 @@ const AddressForm = ({ type, addressData,onSubmit, onCancel }) => {
           {errors.pincode && (
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
-           {loadingPincode && (
+          {loadingPincode && (
             <div className="mt-2">
               <Loader />
             </div>
@@ -170,7 +165,7 @@ const AddressProfileCard = () => {
   const personalProfile = useSelector(
     (state) => state.personalProfile.address || {}
   );
-  console.log("personalProfile",personalProfile)
+  console.log("personalProfile", personalProfile);
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
@@ -180,16 +175,16 @@ const AddressProfileCard = () => {
   }, []);
 
   const handleSave = async (data) => {
-    console.log("archana",data)
+    console.log("archana", data);
     const payload = { ...data, address_type: isEditingType };
-    console.log("arcPayload",payload);
+    console.log("arcPayload", payload);
     //console.log("adreestype",address_type)
     setLoading(true);
     try {
-      if (personalProfile?.[`${isEditingType}_address`]) { 
+      if (personalProfile?.[`${isEditingType}_address`]) {
         await dispatch(putAddress(payload)).unwrap();
       } else {
-        console.log("arcPayload",payload);
+        console.log("arcPayload", payload);
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");
@@ -201,7 +196,7 @@ const AddressProfileCard = () => {
       setLoading(false);
     }
   };
- 
+
   useEffect(() => {
     if (isEditingType && formRef.current) {
       formRef.current.scrollIntoView({ behavior: "smooth" });
@@ -211,7 +206,7 @@ const AddressProfileCard = () => {
   return (
     <div className="md:p-5 space-y-4 mt-4">
       <h3 className="text-[20px] font-bold text-[#3E98C7] mb-3 flex items-center gap-1">
-      <FaLocationDot /> Address Information
+        <FaLocationDot /> Address Information
       </h3>
       <div className="grid grid-cols-1 gap-6">
         {loading && <Loader />}
