@@ -1,35 +1,48 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyPasscode } from '../../features/examQuesSlice';
+import { getAllCenter ,generatePasskey} from '../../features/examQuesSlice';
 import { useDispatch, useSelector } from 'react-redux';
+// import {AllCenter} from "../../Services/examQuesServices"
 
 const ExamMode = () => {
-  
-  const [passcode, setPasscode] = useState('');
 
-  const { attempts } = useSelector(
-      (state) => state.examQues
-    );
-  
-  const {userData} = useSelector((state)=>state?.auth)
+  const { attempts,allcenter } = useSelector((state) => state.examQues );
+  const {userData} = useSelector((state)=>state?.auth);
+  const [selectedCenterId, setSelectedCenterId] = useState(""); // State to store selected center ID
+  const {exam}= useSelector((state) => state.examQues);
+    const exam_id = exam?.id; 
+  console.log("allcenter",allcenter)
 
+  const handleCenterChange = (e) => {
+    setSelectedCenterId(e.target.value); // Update the selected center ID
+  };
+
+
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+   dispatch(getAllCenter());
+  }, [])
+
   const user_id = userData.id
   console.log("attempts",attempts);
-  const exam_id = attempts
+  const pass_exam_id = attempts
     ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
     ?.exam?.id;
 
   // Handle verification form submission
-  const handleVerificationSubmit = async(event) => {
+  const handleGeneratePasskey = async(event) => {
     event.preventDefault();
-    console.log('Verification Code Submitted:', passcode);
-    await dispatch(verifyPasscode({user_id,exam_id,passcode})).unwrap();
-    console.log('Verification Code Submitted:', passcode);
-    navigate('/exam');
+    if (selectedCenterId  && pass_exam_id) {
+      console.log("selectedCenterId",selectedCenterId)
+      dispatch(generatePasskey({ user_id, exam_id,center_id:selectedCenterId}));
+      navigate('/teacher');
+    } else {
+      alert("Please select a center before submitting.");
+    }
   };
 
   return (
@@ -37,22 +50,31 @@ const ExamMode = () => {
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
           <div className="mt-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-xl font-medium mb-4">Enter Your Verification Code</h3>
-              <form onSubmit={handleVerificationSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="Verification Code"
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
+              <form onSubmit={handleGeneratePasskey} className="space-y-4">
+               
+               <div className="flex flex-col mb-4 gap-6">
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Select Exam Center
+                  </label>
+                  <select
+                     value={selectedCenterId} // Controlled component bound to state
+                     onChange={handleCenterChange}
+                    className="border border-gray-300 rounded-md px-2 py-2 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
+                  >
+                    <option value="">Select Exam Center</option>
+                    {allcenter && allcenter?.map((center) => (
+                      <option key={center.id} value={center.id}>
+                        {center.center_name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
                 >
-                  Submit
-                </button>
+                  By Clicking Generate passkey for Offline Exam
+                </button> 
+                </div>
               </form>
             </div>
           </div>

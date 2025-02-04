@@ -1,185 +1,830 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../../services/authServices";
-import { getUserData } from "../../../features/authSlice";
-import { HiViewGrid, HiUser, HiBriefcase, HiOutlineLogin } from "react-icons/hi";
-import { IoMdSettings } from "react-icons/io";
- 
+import {
+  BsGeoAlt,
+  BsPersonWorkspace,
+  BsBriefcase,
+  BsCode,
+} from "react-icons/bs";
+import { BsCheck } from "react-icons/bs";
+import { IoMdClose } from "react-icons/io";
+import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
+import { fetchTeachers } from "../../../services/teacherFilterService";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getAllSkills,
+  getQualification,
+  getClassCategory,
+} from "../../../features/jobProfileSlice";
+
 const RecruiterSidebar = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const profile = useSelector((state) => state.auth.userData || {});
- 
-  // Define the isOpen state to control sidebar visibility
-  const [isOpen, setIsOpen] = useState(true);
-  const [dropdownStates, setDropdownStates] = useState({
-    dropdown1: false,
-    dropdown2: false,
+
+  const [filters, setFilters] = useState({
+    district: [],
+    pincode: [],
+    block: [],
+    village: [],
+    qualification: [],
+    experience: "",
+    skill: [],
+    class_category: [],
+    subject: [],
   });
- 
-  const toggleDropdown = (dropdown) => {
-    setDropdownStates((prevState) => ({
-      ...prevState,
-      [dropdown]: !prevState[dropdown],
+
+  const { qualification, allSkill, classCategories, subject } = useSelector(
+    (state) => state.jobProfile
+  );
+
+  console.log("Subject in Filter sidebar", subject);
+
+  useEffect(() => {
+    dispatch(getAllSkills());
+    dispatch(getQualification());
+    dispatch(getClassCategory());
+  }, []);
+
+  const [qualificationData, setQualificationData] = useState([]);
+  const [skillData, setSkillData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+
+  // set all the slice value in my local state
+  useEffect(() => {
+    setQualificationData(qualification);
+    setSkillData(allSkill);
+    setCategoryData(classCategories);
+  }, [qualification, allSkill, classCategories]);
+
+  // this is the local state for selected skills, qualification and class category
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [selectedQualifications, setSelectedQualifications] = useState([]);
+  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
+
+
+  // function for update selected skills, qualification and class category
+  // for skills
+  const handleSkillToggle = (skillName) => {
+    setSelectedSkills((prev) => {
+      if (prev.includes(skillName)) {
+        return prev.filter((skill) => skill !== skillName);
+      } else {
+        return [...prev, skillName];
+      }
+    });
+  };
+
+  // for qualification
+  const handleQualificationToggle = (qualificationName) => {
+    setSelectedQualifications((prev) => {
+      if (prev.includes(qualificationName)) {
+        return prev.filter((name) => name !== qualificationName);
+      } else {
+        return [...prev, qualificationName];
+      }
+    });
+  };
+
+  // for class category
+  const handleClassCategoryToggle = (categoryName) => {
+    setSelectedClassCategories((prev) => {
+      if (prev.includes(categoryName)) {
+        return prev.filter((name) => name !== categoryName);
+      } else {
+        return [...prev, categoryName];
+      }
+    });
+  };
+
+
+// update the filters when selected skills, qualification and class category change
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
+  }, [selectedSkills]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
+  }, [selectedQualifications]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, class_category: selectedClassCategories }));
+  }, [selectedClassCategories]);
+
+  // location work
+  const [inputValues, setInputValues] = useState({
+    pincode: "",
+    district: "",
+    block: "",
+    village: "",
+  });
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setInputValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddValue = (field) => {
+    if (inputValues[field].trim()) {
+      setFilters((prev) => ({
+        ...prev,
+        [field]: [...prev[field], inputValues[field].trim()],
+      }));
+      setInputValues((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleRemoveValue = (field, index) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
- 
+
   useEffect(() => {
-    dispatch(getUserData());
-  }, [dispatch]);
- 
-  const handleLogout = () => {
-    logout();
-    navigate("/signin");
+    const fetchData = async () => {
+      try {
+        const data = await fetchTeachers(filters);
+        console.log("api response for teacher", data);
+      } catch (error) {
+        console.error("Error fetching filtered teachers:", error);
+      }
+    };
+
+    fetchData();
+  }, [filters]);
+
+
+
+  const [expandedSections, setExpandedSections] = useState({
+    location: false,
+    education: false,
+    experience: false,
+    classCategory: false,
+    skills: false,
+  });
+
+  const [searchSkill, setSearchSkill] = useState("");
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
- 
-  // Toggle the sidebar visibility
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+
+  const handleClear = () => {
+    setFilters({
+      district: [],
+      pincode: [],
+      block: [],
+      village: [],
+      qualification: [],
+      experience: "",
+      skill: [],
+      classCategory: [],
+    });
+
+    setSelectedSkills([]);
+    setSelectedQualifications([]);
+    setSelectedClassCategories([]);
+
+    setExpandedSections({
+      location: false,
+      education: false,
+      experience: false,
+      skills: false,
+      classCategory: false,
+    });
+    fetchTeachers({});
   };
- 
+
   return (
-    <>
-      <div
-        className={`fixed top-15 left-0 w-72 z-50 p-1 sticky border h-screen bg-white shadow-md ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex flex-col justify-center py-2 border-b-2 border-white">
-            <h1 className="font-bold text-2xl text-gray-700 text-center">PTPI</h1>
-            <p className="text-sm text-center text-teal-500 font-semibold mb-2">
-              Private Teacher Provider Institute.
-            </p>
+    <div className="fixed left-0 top-16 h-screen w-72 bg-white shadow-lg overflow-y-auto p-4 hidden md:block">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
+        <button
+          onClick={handleClear}
+          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          aria-label="Clear all filters"
+        >
+          <IoMdClose className="w-4 h-4" />
+          Clear All
+        </button>
+      </div>
+
+      {/* Location Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("location")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.location}
+        >
+          <div className="flex items-center gap-2">
+            <BsGeoAlt className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Location</span>
           </div>
-          <div className="flex flex-col flex-1 justify-between">
-            <nav className="w-full mt-1">
-              {/* Dropdown 1 */}
-              <div
-                className="mt-5 p-3 w-full cursor-pointer bg-white border-t  hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown1")}
-              >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    School
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown1 ? "rotate-180" : "rotate-0"}`}
+          {expandedSections.location ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.location && (
+          <div className="space-y-4 px-2">
+            {["pincode", "district", "block", "village"].map((field) => (
+              <div className="flex flex-col py-2" key={field}>
+                <div className="flex space-x-2">
+                  <input
+                    id={field}
+                    name={field}
+                    type="text"
+                    value={inputValues[field]}
+                    onChange={handleInputChange}
+                    placeholder={`Enter ${field}`}
+                    className="border-b pb-1 px-2 outline-none focus:outline-none placeholder:text-[16px] text-gray-600 flex-1"
+                  />
+                  <button
+                    onClick={() => handleAddValue(field)}
+                    className="px-4 py-1 border rounded-md"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <BsCheck />
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {filters[field].map((value, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-center bg-teal-50 border border-teal-300 hover:border-teal-400 text-teal-700 px-3 py-1 rounded-full shadow-sm"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
+                      <span className="">{value}</span>
+                      <button
+                        onClick={() => handleRemoveValue(field, index)}
+                        className="text-red-600  ml-2 h-2 w-2 flex rounded-full"
+                      >
+                        x
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
- 
-              {dropdownStates.dropdown1 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
- 
-              <div
-                className="p-3 w-full cursor-pointer bg-white border-t border-b hover:bg-[#E5F1F9] transition-all"
-                onClick={() => toggleDropdown("dropdown2")}
-              >
-                <div className="flex justify-between items-center">
-                  <label htmlFor="basic" className="text-gray-700 font-semibold">
-                    Teacher
-                  </label>
-                  <span
-                    className={`transform transition-all ${dropdownStates.dropdown2 ? "rotate-180" : "rotate-0"}`}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Education Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("education")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.education}
+        >
+          <div className="flex items-center gap-2">
+            <MdSchool className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Education</span>
+          </div>
+          {expandedSections.education ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        <div>
+          {expandedSections.education && (
+            <div className="space-y-2 px-4">
+              {qualificationData.map((qualification) => (
+                <div key={qualification.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`qualification-${qualification.id}`}
+                    value={qualification.name}
+                    checked={selectedQualifications.includes(
+                      qualification.name
+                    )}
+                    onChange={() =>
+                      handleQualificationToggle(qualification.name)
+                    }
+                  />
+                  <label
+                    htmlFor={`qualification-${qualification.id}`}
+                    className="ml-2"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-gray-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
+                    {qualification.name}
+                  </label>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("classCategory")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.classCategory}
+        >
+          <div className="flex items-center gap-2">
+            <BsPersonWorkspace className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Class Category</span>
+          </div>
+          {expandedSections.classCategory ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.classCategory && (
+          <div className="space-y-2 px-4">
+            {categoryData.map((category) => (
+              <div key={category.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`classCategory-${category.id}`}
+                  value={category.name}
+                  checked={selectedClassCategories.includes(category.name)}
+                  onChange={() => handleClassCategoryToggle(category.name)}
+                />
+                <label
+                  htmlFor={`classCategory-${category.id}`}
+                  className="ml-2"
+                >
+                  {category.name}
+                </label>
               </div>
- 
-              {dropdownStates.dropdown2 && (
-                <div className="flex flex-col gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option1" />
-                    <label htmlFor="option1" className="text-gray-600 text-sm">
-                      Option 1
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option2" />
-                    <label htmlFor="option2" className="text-gray-600 text-sm">
-                      Option 2
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option3" />
-                    <label htmlFor="option3" className="text-gray-600 text-sm">
-                      Option 3
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" id="option4" />
-                    <label htmlFor="option4" className="text-gray-600 text-sm">
-                      Option 4
-                    </label>
-                  </div>
-                </div>
-              )}
-            </nav>
- 
-            <div className="flex flex-col">
-              <div className="border-t border-gray-200">
-                <button className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
-                  <IoMdSettings className="size-5" />
-                  Settings
-                </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Experience Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          onClick={() => toggleSection("experience")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.experience}
+        >
+          <div className="flex items-center gap-2">
+            <BsBriefcase className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Experience</span>
+          </div>
+          {expandedSections.experience ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.experience && (
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-600 mb-1">Min</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="15"
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      experience: { ...prev.experience, min: e.target.value },
+                    }))
+                  }
+                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
- 
-              <div className="copyright flex justify-center w-full border-t border-gray-200">
-                <p className="text-gray-500 text-center p-1 text-sm font-semibold">
-                  Designed by Comestro
-                </p>
+              <div className="flex-1">
+                <label className="block text-sm text-gray-600 mb-1">Max</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="15"
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      experience: { ...prev.experience, max: e.target.value },
+                    }))
+                  }
+                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    </>
+
+      {/* Skills Section */}
+      <div className="mb-6">
+        <button
+          onClick={() => toggleSection("skills")}
+          className="flex items-center justify-between w-full mb-3"
+          aria-expanded={expandedSections.skills}
+        >
+          <div className="flex items-center gap-2">
+            <BsCode className="text-teal-600" />
+            <span className="font-semibold text-gray-800">Skills</span>
+          </div>
+          {expandedSections.skills ? <MdExpandLess /> : <MdExpandMore />}
+        </button>
+        {expandedSections.skills && (
+          <div className="space-y-3 ">
+            <input
+              type="text"
+              placeholder="Search skills..."
+              value={searchSkill}
+              onChange={(e) => setSearchSkill(e.target.value)}
+              className="w-full pb-1 border-b border-gray-300 focus:outline-none"
+            />
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {skillData
+                .filter((skill) =>
+                  skill.name.toLowerCase().includes(searchSkill.toLowerCase())
+                )
+                .map((skill) => (
+                  <div key={skill.id} className="flex items-center pl-4">
+                    <input
+                      type="checkbox"
+                      id={`skill-${skill.id}`}
+                      value={skill.name}
+                      checked={selectedSkills.includes(skill.name)}
+                      onChange={() => handleSkillToggle(skill.name)}
+                    />
+                    <label htmlFor={`skill-${skill.id}`} className="ml-2">
+                      {skill.name}
+                    </label>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
- 
+
 export default RecruiterSidebar;
+// import React, { useEffect, useState, useCallback } from "react";
+// import {
+//   BsGeoAlt,
+//   BsPersonWorkspace,
+//   BsBriefcase,
+//   BsCode,
+// } from "react-icons/bs";
+// import { IoMdClose } from "react-icons/io";
+// import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
+// import { useSelector } from "react-redux";
+// import debounce from "lodash.debounce";
+
+// const RecruiterSidebar = ({ onFilterChange }) => {
+//   const [filters, setFilters] = useState({
+//     district: "",
+//     pincode: "",
+//     block: "",
+//     village: "",
+//     qualification: [],
+//     experience: { min: "", max: "" },
+//     skill: [],
+//     classCategory: [],
+//   });
+
+//   const [qualificationData, setQualificationData] = useState([]);
+//   const [skillData, setSkillData] = useState([]);
+//   const [categoryData, setCategoryData] = useState([]);
+
+//   const [selectedSkills, setSelectedSkills] = useState([]);
+//   const [selectedQualifications, setSelectedQualifications] = useState([]);
+//   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
+
+//   const {
+//     qualification,
+//     allSkill,
+//     classCategories,
+//   } = useSelector((state) => state.jobProfile);
+
+//   useEffect(() => {
+//     setQualificationData(qualification || []);
+//     setSkillData(allSkill || []);
+//     setCategoryData(classCategories || []);
+//   }, [qualification, allSkill, classCategories]);
+
+//   // Debounced filter change
+//   const debouncedFilterChange = useCallback(
+//     debounce((updatedFilters) => {
+//       onFilterChange(updatedFilters);
+//     }, 500),
+//     [onFilterChange]
+//   );
+
+//   const updateFilters = (updatedFilters) => {
+//     setFilters(updatedFilters);
+//     debouncedFilterChange(updatedFilters);
+//   };
+
+//   // Handle input changes
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     updateFilters({
+//       ...filters,
+//       [name]: value,
+//     });
+//   };
+
+//   // Handle skill toggle
+//   const handleSkillToggle = (skillName) => {
+//     const updatedSkills = selectedSkills.includes(skillName)
+//       ? selectedSkills.filter((skill) => skill !== skillName)
+//       : [...selectedSkills, skillName];
+
+//     setSelectedSkills(updatedSkills);
+//   };
+
+//   useEffect(() => {
+//     updateFilters({ ...filters, skill: selectedSkills });
+//   }, [selectedSkills]);
+
+//   // Handle qualification toggle
+//   const handleQualificationToggle = (qualificationName) => {
+//     const updatedQualifications = selectedQualifications.includes(
+//       qualificationName
+//     )
+//       ? selectedQualifications.filter((name) => name !== qualificationName)
+//       : [...selectedQualifications, qualificationName];
+
+//     setSelectedQualifications(updatedQualifications);
+//   };
+
+//   useEffect(() => {
+//     updateFilters({ ...filters, qualification: selectedQualifications });
+//   }, [selectedQualifications]);
+
+//   // Handle class category toggle
+//   const handleClassCategoryToggle = (categoryName) => {
+//     const updatedCategories = selectedClassCategories.includes(categoryName)
+//       ? selectedClassCategories.filter((name) => name !== categoryName)
+//       : [...selectedClassCategories, categoryName];
+
+//     setSelectedClassCategories(updatedCategories);
+//   };
+
+//   useEffect(() => {
+//     updateFilters({ ...filters, classCategory: selectedClassCategories });
+//   }, [selectedClassCategories]);
+
+//   // Handle experience change
+//   const handleExperienceChange = (e) => {
+//     const { name, value } = e.target;
+//     updateFilters({
+//       ...filters,
+//       experience: {
+//         ...filters.experience,
+//         [name]: value,
+//       },
+//     });
+//   };
+
+//   const [expandedSections, setExpandedSections] = useState({
+//     location: false,
+//     education: false,
+//     experience: false,
+//     classCategory: false,
+//     skills: false,
+//   });
+
+//   const [searchSkill, setSearchSkill] = useState("");
+
+//   const toggleSection = (section) => {
+//     setExpandedSections((prev) => ({
+//       ...prev,
+//       [section]: !prev[section],
+//     }));
+//   };
+
+//   const handleClear = () => {
+//     setFilters({
+//       district: "",
+//       pincode: "",
+//       block: "",
+//       village: "",
+//       qualification: [],
+//       experience: { min: "", max: "" },
+//       skill: [],
+//       classCategory: [],
+//     });
+//     setSelectedSkills([]);
+//     setSelectedQualifications([]);
+//     setSelectedClassCategories([]);
+//     setExpandedSections({
+//       location: false,
+//       education: false,
+//       experience: false,
+//       skills: false,
+//       classCategory: false,
+//     });
+//     onFilterChange({});
+//   };
+
+//   return (
+//     <div className="fixed left-0 top-16 h-screen w-72 bg-white shadow-lg overflow-y-auto p-4 hidden md:block">
+//      <div className="flex justify-between items-center mb-6">        <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
+//         <button
+//           onClick={handleClear}
+//           className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+//           aria-label="Clear all filters"
+//         >
+//           <IoMdClose className="w-4 h-4" />
+//           Clear All
+//         </button>
+//       </div>
+
+//       {/* Location Section */}
+//       <div className="mb-6 border-b border-gray-200 pb-4">
+//         <button
+//           onClick={() => toggleSection("location")}
+//           className="flex items-center justify-between w-full mb-3"
+//           aria-expanded={expandedSections.location}
+//         >
+//           <div className="flex items-center gap-2">
+//             <BsGeoAlt className="text-teal-600" />
+//             <span className="font-semibold text-gray-800">Location</span>
+//           </div>
+//           {expandedSections.location ? <MdExpandLess /> : <MdExpandMore />}
+//         </button>
+//         {expandedSections.location && (
+//           <div className="space-y-2 px-2">
+//             {["pincode", "district", "block", "village"].map((field) => (
+//               <div className="flex flex-col py-2" key={field}>
+//                 <input
+//                   id={field}
+//                   name={field}
+//                   type="text"
+//                   value={filters[field]}
+//                   onChange={handleInputChange}
+//                   placeholder={`Search by ${field}`}
+//                   className="border-b pb-1 px-2 outline-none focus:outline-none placeholder:text-[16px] text-gray-600"
+//                 />
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Education Section */}
+//       <div className="mb-6 border-b border-gray-200 pb-4">
+//         <button
+//           onClick={() => toggleSection("education")}
+//           className="flex items-center justify-between w-full mb-3"
+//           aria-expanded={expandedSections.education}
+//         >
+//           <div className="flex items-center gap-2">
+//             <MdSchool className="text-teal-600" />
+//             <span className="font-semibold text-gray-800">Education</span>
+//           </div>
+//           {expandedSections.education ? <MdExpandLess /> : <MdExpandMore />}
+//         </button>
+//         <div>
+//           {expandedSections.education && (
+//             <div className="space-y-2 px-4">
+//               {quealificationData.map((qualification) => (
+//                 <div key={qualification.id} className="flex items-center">
+//                   <input
+//                     type="checkbox"
+//                     id={`qualification-${qualification.id}`}
+//                     value={qualification.name}
+//                     checked={selectedQualifications.includes(
+//                       qualification.name
+//                     )}
+//                     onChange={() =>
+//                       handleQualificationToggle(qualification.name)
+//                     }
+//                   />
+//                   <label
+//                     htmlFor={`qualification-${qualification.id}`}
+//                     className="ml-2"
+//                   >
+//                     {qualification.name}
+//                   </label>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       <div className="mb-6 border-b border-gray-200 pb-4">
+//         <button
+//           onClick={() => toggleSection("classCategory")}
+//           className="flex items-center justify-between w-full mb-3"
+//           aria-expanded={expandedSections.classCategory}
+//         >
+//           <div className="flex items-center gap-2">
+//             <BsPersonWorkspace className="text-teal-600" />
+//             <span className="font-semibold text-gray-800">Class Category</span>
+//           </div>
+//           {expandedSections.classCategory ? <MdExpandLess /> : <MdExpandMore />}
+//         </button>
+//         {expandedSections.classCategory && (
+//           <div className="space-y-2 px-4">
+//             {categoryData.map((category) => (
+//               <div key={category.id} className="flex items-center">
+//                 <input
+//                   type="checkbox"
+//                   id={`classCategory-${category.id}`}
+//                   value={category.name}
+//                   checked={selectedClassCategories.includes(category.name)}
+//                   onChange={() => handleClassCategoryToggle(category.name)}
+//                 />
+//                 <label
+//                   htmlFor={`classCategory-${category.id}`}
+//                   className="ml-2"
+//                 >
+//                   {category.name}
+//                 </label>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Experience Section */}
+//       <div className="mb-6 border-b border-gray-200 pb-4">
+//         <button
+//           onClick={() => toggleSection("experience")}
+//           className="flex items-center justify-between w-full mb-3"
+//           aria-expanded={expandedSections.experience}
+//         >
+//           <div className="flex items-center gap-2">
+//             <BsBriefcase className="text-teal-600" />
+//             <span className="font-semibold text-gray-800">Experience</span>
+//           </div>
+//           {expandedSections.experience ? <MdExpandLess /> : <MdExpandMore />}
+//         </button>
+//         {expandedSections.experience && (
+//           <div className="space-y-4">
+//             <div className="flex gap-4">
+//               <div className="flex-1">
+//                 <label className="block text-sm text-gray-600 mb-1">Min</label>
+//                 <input
+//                   type="number"
+//                   min="0"
+//                   max="15"
+//                   onChange={(e) =>
+//                     setFilters((prev) => ({
+//                       ...prev,
+//                       experience: { ...prev.experience, min: e.target.value },
+//                     }))
+//                   }
+//                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+//                 />
+//               </div>
+//               <div className="flex-1">
+//                 <label className="block text-sm text-gray-600 mb-1">Max</label>
+//                 <input
+//                   type="number"
+//                   min="0"
+//                   max="15"
+//                   onChange={(e) =>
+//                     setFilters((prev) => ({
+//                       ...prev,
+//                       experience: { ...prev.experience, max: e.target.value },
+//                     }))
+//                   }
+//                   className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+//                 />
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Skills Section */}
+//       <div className="mb-6">
+//         <button
+//           onClick={() => toggleSection("skills")}
+//           className="flex items-center justify-between w-full mb-3"
+//           aria-expanded={expandedSections.skills}
+//         >
+//           <div className="flex items-center gap-2">
+//             <BsCode className="text-teal-600" />
+//             <span className="font-semibold text-gray-800">Skills</span>
+//           </div>
+//           {expandedSections.skills ? <MdExpandLess /> : <MdExpandMore />}
+//         </button>
+//         {expandedSections.skills && (
+//           <div className="space-y-3">
+//             <input
+//               type="text"
+//               placeholder="Search skills..."
+//               value={searchSkill}
+//               onChange={(e) => setSearchSkill(e.target.value)}
+//               className="w-full pb-1 border-b border-gray-300 focus:outline-none"
+//             />
+//             <div className="space-y-2 max-h-40 overflow-y-auto">
+//               {skillData
+//                 .filter((skill) =>
+//                   skill.name.toLowerCase().includes(searchSkill.toLowerCase())
+//                 )
+//                 .map((skill) => (
+//                   <div key={skill.id} className="flex items-center pl-4">
+//                     <input
+//                       type="checkbox"
+//                       id={`skill-${skill.id}`}
+//                       value={skill.name}
+//                       checked={selectedSkills.includes(skill.name)}
+//                       onChange={() => handleSkillToggle(skill.name)}
+//                     />
+//                     <label htmlFor={`skill-${skill.id}`} className="ml-2">
+//                       {skill.name}
+//                     </label>
+//                   </div>
+//                 ))}
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default RecruiterSidebar;

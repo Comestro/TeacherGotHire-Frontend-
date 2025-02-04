@@ -32,7 +32,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import GroupsIcon from '@mui/icons-material/Groups';
 import { Link } from "react-router-dom";
-import logInservice from '../../services/apiService';
+import { logout } from "../../services/authServices";
 
 const drawerWidth = 240;
 
@@ -91,11 +91,12 @@ export default function Sidebar({ open, handleDrawerClose }) {
     setCollapseOpen((prev) => !prev);
   };
 
-  const handleLogout = () => {
-    logInservice.logout();
-    navigate('/admin-signin'); // Redirect to sign-in page after logout
-    navigate(0); // Rrfresh the page
+  const handlelogout = () => {
+    logout();
+    navigate("/signin");
   };
+
+  // custom scroll bar style
 
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
@@ -107,9 +108,45 @@ export default function Sidebar({ open, handleDrawerClose }) {
     { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
     { text: "Manage Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
     { text: "Manage Class", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+    {
+      text: "Manage Subject",
+      icon: <SubjectIcon />,
+      link: "/admin/manage/subject",
+    },
+    {
+      text: "Manage Teacher",
+      icon: <SchoolIcon />,
+      link: "/admin/manage/teacher",
+    },
+    {
+      text: "Manage Recruiter",
+      icon: <WorkIcon />,
+      link: "/admin/manage/recruiter",
+    },
+    {
+      text: "Manage Question",
+      icon: <QuestionAnswerIcon />,
+      link: "/admin/manage/question",
+    },
+    {
+      text: "Manage Skills",
+      icon: <BuildIcon />,
+      link: "/admin/manage/skills",
+    },
+    {
+      text: "Manage Qualification",
+      icon: <AssignmentIcon />,
+      link: "/admin/manage/qualification",
+    },
+    {
+      text: "Manage Class",
+      icon: <ClassIcon />,
+      link: "/admin/manage/class/category",
+    },
     { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
     { text: "Manage Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
 ];
+  ];
 
   return (
     <Drawer variant="permanent" open={open}>
@@ -177,11 +214,28 @@ export default function Sidebar({ open, handleDrawerClose }) {
         <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {[
-              { text: "Support", icon: <SupportIcon />, link: "/admin/support" },
-              { text: "Change-Password", icon: <LockIcon />, link: "/admin/change/password" },
-              { text: "Contact", icon: <ContactMailIcon />, link: "/admin/contact" },
+              {
+                text: "Support",
+                icon: <SupportIcon />,
+                link: "/admin/support",
+              },
+              {
+                text: "Change-Password",
+                icon: <LockIcon />,
+                link: "/admin/change/password",
+              },
+              {
+                text: "Contact",
+                icon: <ContactMailIcon />,
+                link: "/admin/contact",
+              },
             ].map((item) => (
-              <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <Tooltip
+                key={item.text}
+                title={item.text}
+                placement="right"
+                arrow
+              >
                 <ListItem disablePadding>
                   <ListItemButton
                     component={Link}
@@ -217,7 +271,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
       {/* add logout button below */}
       <List className="">
         <ListItem disablePadding sx={{ mt: 2 }}>
-          <ListItemButton onClick={handleLogout}>
+          <ListItemButton onClick={handlelogout}>
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>

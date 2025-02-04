@@ -5,9 +5,11 @@ import {
   getExamSet,
   setExam,
   attemptsExam,
-  generatePasskey,
   postInterview,
 } from "../../../features/examQuesSlice";
+import {
+  getPrefrence
+} from "../../../features/jobProfileSlice";
 import { useNavigate } from "react-router-dom";
 
 const ExamLevels = () => {
@@ -22,23 +24,25 @@ const ExamLevels = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [message, setMessage] = useState("");
   const [showExamCard, setShowExamCard] = useState(true); // Controls visibility of the exam card
-  const [showInterviewCard, setShowInterviewCard] = useState(true); // Controls visibility of the intervew card
   const [interviewDateTime,setInterviewDateTime] = useState("");
+  const [isPopupInterviewOpen, setPopupInterviewOpen] = useState(false);
+  const [isPopupCenterOpen, setPopupCenterOpen] = useState(false);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+  
 
-  const { levels, loading, error, examSet, attempts } = useSelector(
-    (state) => state.examQues
-  );
-
-  console.log("examset", examSet);
-
+  const { levels, loading, error, examSet,attempts} = useSelector((state) => state.examQues);
   const { userData } = useSelector((state) => state?.auth);
   const { basicData } = useSelector((state) => state?.personalProfile);
   const { prefrence, educationData } = useSelector(
     (state) => state?.jobProfile
   );
   const category = prefrence?.class_category;
-  console.log("category checking", category)
+  console.log("category checking", category);
+  
 
+  useEffect(()=>{
+    dispatch(getPrefrence());
+  },[])
 
   useEffect(() => {
     if(selectedCategory){
@@ -46,16 +50,30 @@ const ExamLevels = () => {
       dispatch(getLevels({class_category_id}));
     }
     dispatch(attemptsExam());
-   
+    if (selectedOption === "interview" && selectedSubject) {
+      setPopupInterviewOpen(true);
+    }
+    
     // Check if the profile is complete
     setProfileComplete(checkIfProfileComplete());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, basicData, prefrence, educationData]);
+  }, [selectedCategory, basicData, prefrence, educationData,selectedOption, selectedSubject]);
 
   // Function to check if the user's profile is complete
   const checkIfProfileComplete = () => {
     return basicData !== null && prefrence !== null && educationData !== null;
   };
+
+  useEffect(() => {
+    if (!isPageLoaded && (levels || error)) {
+      setIsPageLoaded(true); // Mark page as loaded after first data fetch
+    }
+  }, [levels, error, isPageLoaded]);
+
+  // Render error message if error exists
+  if (error) {
+    return <div className="text-red-500">{error.message}</div>;
+  }
 
   
   const handleClassCategory =(e)=>{
@@ -107,11 +125,17 @@ const ExamLevels = () => {
         class_category: selectedCategory,
         time:interviewDateTime,
       }) 
-    );
+     );
+     setPopupInterviewOpen(false);
   }
 
+  const closePopup = () => {
+    setPopupInterviewOpen(false);
+  };
   const guideline = (exam) => {
     dispatch(setExam(exam));
+
+    console.log("exam",exam);
 
     // Check if the user has any qualified attempts for Level 2
     const hasQualifiedAttempt = attempts?.some(
@@ -124,29 +148,18 @@ const ExamLevels = () => {
       const exam_id = attempts?.find(
         ({ exam, isqualified }) => exam?.level?.id === 2 && isqualified
       )?.exam?.id;
-
-      dispatch(generatePasskey({ user_id, exam_id }));
+     
+      // dispatch(generatePasskey({ user_id, exam_id }));
       navigate("/exam-mode");
     } else {
       navigate("/exam");
     }
   };
 
-  // Find the passed Offline Exam attempt for Level 2
-  const passedOfflineAttempt = attempts?.find(
-    (attempt) =>
-      attempt.isqualified &&
-      attempt.exam?.type === "offline" &&
-      attempt.exam?.level?.id === 2
-  );
-
-  // Check if the user has passed the Offline Exam
-  const passedOfflineExam = !!passedOfflineAttempt;
-
   // Available levels based on data
   const availableLevels = levels || [];
 
-  // Get subjects based on selected level and option
+  //Get subjects based on selected level and option
   let filteredSubjects = [];
   if (selectedLevel && levels) {
     const selectedLevelData = levels.find(
@@ -179,38 +192,7 @@ const ExamLevels = () => {
   return (
     <div className="flex flex-col items-center p-4">
       {/* Loading and Error States */}
-      {/* {loading && <div className="text-blue-500">Loading levels...</div>} */}
-      {/* {error && <div className="text-red-500">{error}</div>}  */}
-
-      {/* If user has passed Offline Exam, show congratulatory card */}
-      {passedOfflineAttempt && (
-        <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 text-center mb-4">
-          <h2 className="text-2xl font-semibold text-green-600 mb-4">
-            Congratulations!
-          </h2>
-          <p className="text-gray-700 mb-6">
-            Now you are eligible to be a{" "}
-            <strong>
-              {passedOfflineAttempt.exam?.subject?.subject_name} Teacher.
-            </strong>
-          </p>
-          {/* Display the exam result */}
-          <div className="text-gray-700">
-            <p>
-              <strong>Exam Name:</strong> {passedOfflineAttempt.exam.name}
-            </p>
-            <p>
-              <strong>Score:</strong> {passedOfflineAttempt.correct_answer}
-            </p>
-            <p>
-              <strong>Total Marks:</strong>{" "}
-              {passedOfflineAttempt.correct_answer +
-                passedOfflineAttempt.is_unanswered}
-            </p>
-            {/* Add any other exam result data you want to display */}
-          </div>
-        </div>
-      )}
+      
 
       {/* Always show Level Selection */}
       <div className="flex flex-col w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 mb-4">
@@ -322,11 +304,7 @@ const ExamLevels = () => {
                   </option>
                 ))}
               </select>
-            ) : (
-              <p className="text-red-500">
-                No subjects available for this selection.
-              </p>
-            )}
+            ) : null}
             {/* Show message if Subject is selected but locked */}
             {selectedLevel !== "1" && isLevelDisabled(selectedLevel) && (
               <p className="text-red-500 mt-2">
@@ -469,29 +447,46 @@ const ExamLevels = () => {
         </p>
       )}
 
+
+      {/* Backdrop */}
+      {isPopupInterviewOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-10"></div>}
+
+
       {/* display interview form request card */}
-      {selectedSubject && selectedOption == "interview" && (
-        <div className="bg-slate-100 border p-4 rounded-lg">
-          <form action="" method="post">
-            <div className="mb-3">
-              <label>Select Inter Date & time</label>
-              <input
-                type="datetime-local"
-                className="w-full px-3 py-2 rounded"
-                value={interviewDateTime}
-                onChange={(e)=>setInterviewDateTime(e.target.value)}
-              />
-            </div>
-            <div className="mb-3 flex">
-              <input
-                type="submit"
-                onClick={handleInterview} 
-                className="bg-teal-500 px-3 py-2 rounded self-end"
-              />
-            </div>
-          </form>
-        </div>
-      )}
+      {selectedSubject && selectedOption === "interview" && isPopupInterviewOpen && (
+              <div className="fixed inset-0 flex items-center justify-center z-20">
+                <div className="bg-white border p-6 rounded-lg w-1/3 shadow-lg">
+                  <h2 className="text-xl font-bold mb-4">Schedule Interview</h2>
+                  <form action="" method="post">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-2">
+                        Select Date & Time
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full px-3 py-2 rounded border"
+                        value={interviewDateTime}
+                        onChange={(e) => setInterviewDateTime(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-between">
+                      <button
+                        type="button"
+                        onClick={closePopup}
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Close
+                      </button>
+                      <input
+                        type="submit"
+                        onClick={handleInterview}
+                        className="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
+                      />
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
       {/* Profile Incomplete Message for Levels >=2 */}
       {selectedLevel &&
@@ -527,7 +522,17 @@ const ExamLevels = () => {
             </div>
           </div>
         )}
-        
+        {/* Center Selection Page */}
+        {/* { isPopupInterviewOpen && (
+             <div className="popup-overlay">
+              <div className="popup-content">
+                <h2>Confirmation Required</h2>
+                <p>Are you sure you want to proceed to offline mode?</p>
+                
+                <button onClick={() => setisPopupInterviewOpen(false)}>Cancel</button>
+              </div>
+            </div> 
+        )}  */}
     </div>
   );
 };

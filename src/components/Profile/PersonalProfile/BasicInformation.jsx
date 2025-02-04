@@ -206,8 +206,9 @@ const BasicInformation = () => {
       value: basicData.marital_status,
       inputType: "select",
       options: [
+        { label: "Select Category", value: "" },
         { label: "Single", value: "single" },
-        { label: "Married", value: "Married" },
+        { label: "Married", value: "married" },
         { label: "Unmarried", value: "unmarried" },
       ],
     },
@@ -217,6 +218,7 @@ const BasicInformation = () => {
       inputType: "select",
       value: basicData.religion,
       options: [
+        { label: "Select Category", value: "" },
         { label: "Hindu", value: "Hindu" },
         { label: "Muslim", value: "Muslim" },
         { label: "Sikh", value: "Sikh" },

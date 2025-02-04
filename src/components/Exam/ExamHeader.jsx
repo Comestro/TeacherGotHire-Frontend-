@@ -13,7 +13,7 @@ export default function Subheader({ totalQuestion }) {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          alert("Time's up!");
+          // alert("Time's up!");
           // You can trigger any function here, like auto-submitting the exam.
           return 0;
         }

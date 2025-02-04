@@ -39,6 +39,9 @@ function Login() {
           // dispatch(getPostData(userData));
           navigate("/teacher");
         }
+        else{
+          navigate("/admin/dashboard");
+        }
 
 
       }

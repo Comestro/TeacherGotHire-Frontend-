@@ -90,7 +90,6 @@ export const fetchSubject = async()=>{
 export const fetchQualification = async()=>{
   try{
      const response = await apiClient.get('/api/admin/educationalQulification/');
-     console.log("getsubject:",response.data);
      return response.data;
   }
      catch (err) {
@@ -102,7 +101,6 @@ export const fetchQualification = async()=>{
 export const fetchAllSkills = async()=>{
   try{
      const response = await apiClient.get('/api/admin/skill/');
-     console.log("getallskill:",response.data);
      return response.data;
   }
      catch (err) {
@@ -197,7 +195,7 @@ export const deleteSkillProfile = async(skillToRemove)=>{
 
 export const updateExprienceProfile = async({payload, id})=>{
   try{
-    console.log("exp",{payload, id})
+    console.log("expput",{payload, id})
     const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
     console.log("exp_response",response.data);
     return JSON.parse(JSON.stringify(response));
