@@ -30,7 +30,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import { Collapse, Tooltip } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import GroupsIcon from '@mui/icons-material/Groups';
+import GroupsIcon from "@mui/icons-material/Groups";
 import { Link } from "react-router-dom";
 import { logout } from "../../services/authServices";
 
@@ -101,13 +101,41 @@ export default function Sidebar({ open, handleDrawerClose }) {
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
     { text: "Your profile", icon: <PersonIcon />, link: "/admin/profile" },
-    { text: "Manage Subject", icon: <SubjectIcon />, link: "/admin/manage/subject" },
-    { text: "Manage Teacher", icon: <GroupsIcon />, link: "/admin/manage/teacher" },
-    { text: "Manage Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
-    { text: "Manage Question", icon: <QuestionAnswerIcon />, link: "/admin/manage/question" },
-    { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
-    { text: "Manage Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
-    { text: "Manage Class", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+    {
+      text: "Manage Subject",
+      icon: <SubjectIcon />,
+      link: "/admin/manage/subject",
+    },
+    {
+      text: "Manage Teacher",
+      icon: <GroupsIcon />,
+      link: "/admin/manage/teacher",
+    },
+    {
+      text: "Manage Recruiter",
+      icon: <WorkIcon />,
+      link: "/admin/manage/recruiter",
+    },
+    {
+      text: "Manage Question",
+      icon: <QuestionAnswerIcon />,
+      link: "/admin/manage/question",
+    },
+    {
+      text: "Manage Skills",
+      icon: <BuildIcon />,
+      link: "/admin/manage/skills",
+    },
+    {
+      text: "Manage Qualification",
+      icon: <SchoolIcon />,
+      link: "/admin/manage/qualification",
+    },
+    {
+      text: "Manage Class",
+      icon: <ClassIcon />,
+      link: "/admin/manage/class/category",
+    },
     {
       text: "Manage Subject",
       icon: <SubjectIcon />,
@@ -144,8 +172,11 @@ export default function Sidebar({ open, handleDrawerClose }) {
       link: "/admin/manage/class/category",
     },
     { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
-    { text: "Manage Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
-];
+    {
+      text: "Manage Exam",
+      icon: <AssignmentIcon />,
+      link: "/admin/manage/exam",
+    },
   ];
 
   return (
