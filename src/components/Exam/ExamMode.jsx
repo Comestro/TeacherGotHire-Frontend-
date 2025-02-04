@@ -54,14 +54,14 @@ const ExamMode = () => {
                
                <div className="flex flex-col mb-4 gap-6">
                   <label className="block text-gray-700 font-semibold mb-2">
-                    Select Class Category
+                    Select Exam Center
                   </label>
                   <select
                      value={selectedCenterId} // Controlled component bound to state
                      onChange={handleCenterChange}
                     className="border border-gray-300 rounded-md px-2 py-2 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
                   >
-                    <option value="">Select a category</option>
+                    <option value="">Select Exam Center</option>
                     {allcenter && allcenter?.map((center) => (
                       <option key={center.id} value={center.id}>
                         {center.center_name}

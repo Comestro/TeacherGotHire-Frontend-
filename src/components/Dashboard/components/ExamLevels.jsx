@@ -27,6 +27,7 @@ const ExamLevels = () => {
   const [interviewDateTime,setInterviewDateTime] = useState("");
   const [isPopupInterviewOpen, setPopupInterviewOpen] = useState(false);
   const [isPopupCenterOpen, setPopupCenterOpen] = useState(false);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
   
 
   const { levels, loading, error, examSet,attempts} = useSelector((state) => state.examQues);
@@ -62,6 +63,17 @@ const ExamLevels = () => {
   const checkIfProfileComplete = () => {
     return basicData !== null && prefrence !== null && educationData !== null;
   };
+
+  useEffect(() => {
+    if (!isPageLoaded && (levels || error)) {
+      setIsPageLoaded(true); // Mark page as loaded after first data fetch
+    }
+  }, [levels, error, isPageLoaded]);
+
+  // Render error message if error exists
+  if (error) {
+    return <div className="text-red-500">{error.message}</div>;
+  }
 
   
   const handleClassCategory =(e)=>{
@@ -180,8 +192,7 @@ const ExamLevels = () => {
   return (
     <div className="flex flex-col items-center p-4">
       {/* Loading and Error States */}
-      {/* {loading && <div className="text-blue-500">Loading levels...</div>} */}
-      {/* {error && <div className="text-red-500">{error}</div>}  */}
+      
 
       {/* Always show Level Selection */}
       <div className="flex flex-col w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 mb-4">
@@ -293,11 +304,7 @@ const ExamLevels = () => {
                   </option>
                 ))}
               </select>
-            ) : (
-              <p className="text-red-500">
-               First complete your Online Exam
-              </p>
-            )}
+            ) : null}
             {/* Show message if Subject is selected but locked */}
             {selectedLevel !== "1" && isLevelDisabled(selectedLevel) && (
               <p className="text-red-500 mt-2">
@@ -417,7 +424,7 @@ const ExamLevels = () => {
                         {examSet.offline_exam.type}
                       </p>
                     </div>
-                  ) : (<div>First give an online Exam</div>)}
+                  ) : null}
 
                   {/* No Exam Available Message */}
                   {selectedOption &&

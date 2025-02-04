@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -29,6 +29,14 @@ import {
 import { FaPlus, FaEye, FaPencilAlt, FaTrash } from "react-icons/fa";
 import { styled } from "@mui/system";
 import Layout from "../Admin/Layout";
+import {
+  getExam,
+  getExamById,
+  deleteExam,
+  deleteAllExam,
+  createExam,
+  updateExam,
+} from "../../services/adminManageExam";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -47,6 +55,7 @@ const ModalContent = styled(Box)(({ theme }) => ({
 }));
 
 const ExamManagement = () => {
+  const [exams, setExams] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -62,71 +71,29 @@ const ExamManagement = () => {
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [selectedExams, setSelectedExams] = useState([]);
 
-  const dummyExams = [
-    {
-      id: 1,
-      name: "Math Midterm",
-      subject: "Mathematics",
-      level: "Intermediate",
-      classCategory: "6-8",
-      totalMarks: 100,
-      duration: 120,
-      description:
-        "Comprehensive math examination covering algebra and geometry",
-    },
-    {
-      id: 2,
-      name: "Science Final",
-      subject: "Science",
-      level: "Advanced",
-      classCategory: "9-10",
-      totalMarks: 150,
-      duration: 180,
-      description: "Final exam covering physics, chemistry, and biology",
-    },
-    {
-      id: 3,
-      name: "History Quiz",
-      subject: "History",
-      level: "Beginner",
-      classCategory: "6-8",
-      totalMarks: 50,
-      duration: 60,
-      description: "Quiz on ancient civilizations and world history",
-    },
-    {
-      id: 4,
-      name: "English Literature Test",
-      subject: "English",
-      level: "Intermediate",
-      classCategory: "9-10",
-      totalMarks: 100,
-      duration: 90,
-      description: "Test on English literature including poetry and prose",
-    },
-    {
-      id: 5,
-      name: "Geography Assessment",
-      subject: "Geography",
-      level: "Advanced",
-      classCategory: "11-12",
-      totalMarks: 120,
-      duration: 150,
-      description: "Assessment covering physical and human geography",
-    },
-    {
-      id: 6,
-      name: "Computer Science Practical",
-      subject: "Computer Science",
-      level: "Intermediate",
-      classCategory: "11-12",
-      totalMarks: 100,
-      duration: 120,
-      description: "Practical exam on programming and algorithms",
-    },
-  ];
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const response = await getExam();
+        setExams(response);
+      } catch (error) {
+        console.error("Error fetching exams:", error);
+      }
+    };
+
+    fetchExams();
+  }, []);
+
+  const filteredExams = exams.filter((exam) => {
+    return (
+      (exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exam.id.toString().includes(searchQuery)) &&
+      (selectedSubject ? exam.subject.subject_name === selectedSubject : true) &&
+      (selectedLevel ? exam.level.name === selectedLevel : true) &&
+      (selectedClassCategory ? exam.class_category.name === selectedClassCategory : true)
+    );
+  });
 
   const handleView = (exam) => {
     setSelectedExam(exam);
@@ -178,18 +145,6 @@ const ExamManagement = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const filteredExams = dummyExams.filter((exam) => {
-    return (
-      (exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        exam.id.toString().includes(searchQuery)) &&
-      (selectedSubject ? exam.subject === selectedSubject : true) &&
-      (selectedLevel ? exam.level === selectedLevel : true) &&
-      (selectedClassCategory
-        ? exam.classCategory === selectedClassCategory
-        : true)
-    );
-  });
 
   return (
     <Layout>
@@ -290,18 +245,18 @@ const ExamManagement = () => {
                   <TableCell padding="checkbox">
                     <Checkbox
                       indeterminate={
-                        selectedExams.length > 0 &&
-                        selectedExams.length < dummyExams.length
+                        selectedExam.length > 0 &&
+                        selectedExam.length < dummyExams.length
                       }
                       checked={
                         dummyExams.length > 0 &&
-                        selectedExams.length === dummyExams.length
+                        selectedExam.length === dummyExams.length
                       }
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedExams(dummyExams.map((exam) => exam.id));
+                          setSelectedExam(dummyExams.map((exam) => exam.id));
                         } else {
-                          setSelectedExams([]);
+                          setSelectedExam([]);
                         }
                       }}
                     />
@@ -311,8 +266,7 @@ const ExamManagement = () => {
                   <TableCell>Subject</TableCell>
                   <TableCell>Level</TableCell>
                   <TableCell>Class Category</TableCell>
-                  <TableCell>Total Marks</TableCell>
-                  <TableCell>Duration (mins)</TableCell>
+                  <TableCell>Type</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -341,7 +295,6 @@ const ExamManagement = () => {
                       <TableCell>{exam.level}</TableCell>
                       <TableCell>{exam.classCategory}</TableCell>
                       <TableCell>{exam.totalMarks}</TableCell>
-                      <TableCell>{exam.duration}</TableCell>
                       <TableCell>
                         <Button
                           onClick={() => handleView(exam)}

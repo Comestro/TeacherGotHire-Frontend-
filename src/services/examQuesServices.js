@@ -217,7 +217,7 @@ export const AddReport = async ({id,question,issue_type}) => {
 
 export const AllCenter = async () => {
   try {
-    const response = await apiClient.get(`/api/self/examcenter/`);
+    const response = await apiClient.get(`/api/examcenters/`);
     console.log("allcenter",response)
     return response.data;
   } catch (err) {
@@ -237,7 +237,7 @@ export const Approved = async ({user_id,exam_id}) => {
 
 export const fetchCenterUser= async () => {
   try {
-    const response = await apiClient.get(`/api/examcenters/teachers/`);
+    const response = await apiClient.get(`/api/examcenters/`);
     console.log("center",response)
     return response.data;
   } catch (err) {
