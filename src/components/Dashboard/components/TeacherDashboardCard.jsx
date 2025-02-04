@@ -11,23 +11,23 @@ const TeacherDashboardCard = ({ teacher }) => {
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
-  const percentage = useSelector(
-    (state) => state.personalProfile?.completionData?.profile_completed[0]
-  );
+  // const percentage = useSelector(
+  //   (state) => state.personalProfile?.completionData?.profile_completed[0]
+  // );
 
-  console.log("percentage in card", percentage);
+  // console.log("percentage in card", percentage);
   useEffect(() => {
     dispatch(getBasic()).catch((error) => console.error("Error:", error));
   }, [dispatch]);
 
   const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    // Animate the progress ring on mount
-    setTimeout(() => {
-      setProgress(percentage);
-    }, 300);
-  }, [percentage]);
+  // useEffect(() => {
+  //   // Animate the progress ring on mount
+  //   setTimeout(() => {
+  //     // setProgress(percentage);
+  //   }, 300);
+  // }, [percentage]);
 
   // Calculate stroke values for animated progress ring
   const radius = 40;

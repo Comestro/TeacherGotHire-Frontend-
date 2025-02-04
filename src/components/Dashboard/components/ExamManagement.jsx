@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { FaLock, FaLockOpen, FaBookOpen } from "react-icons/fa";
 import { CiLock } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
+import Steppers from "./Stepper";
 import {
   getExamSet,
   setExam,
   postInterview,
-  getAllCenterUser,
+  generatePasskey,
+  getAllCenter,
+  resetPasskeyResponse,
 } from "../../../features/examQuesSlice";
-import { useActionData, useNavigate } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
 
 export default function ExamManagement() {
   const dispatch = useDispatch();
@@ -20,9 +24,16 @@ export default function ExamManagement() {
     (state) => state.jobProfile.prefrence.prefered_subject
   );
   const { examSet } = useSelector((state) => state.examQues);
-  const { attempts,allcenter } = useSelector((state) => state.examQues );
+  const { attempts, allcenter } = useSelector((state) => state.examQues);
+  const { userData } = useSelector((state) => state?.auth);
+  const { exam , passkeyresponse, verifyresponse} = useSelector((state) => state.examQues);
+  const exams = verifyresponse?.offline_exam;
+  console.log("exams", exams);
 
-  console.log("examSet", examSet);
+  const exam_id = passkeyresponse?.exam?.id;
+
+  console.log("allcenter", allcenter);
+  console.log("passkeyresponse", passkeyresponse);
 
   const [activeTab, setActiveTab] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -31,12 +42,39 @@ export default function ExamManagement() {
   const [selectedDateTime, setSelectedDateTime] = useState("");
   const [approvedDateTime, setApprovedDateTime] = useState("");
   const [selectedCenterId, setSelectedCenterId] = useState("");
-  const [centerSelectionPopup,setCenterSelectionPopup] = useState(false);
+  const [centerSelectionPopup, setCenterSelectionPopup] = useState(false);
+  const [showReminderMessage, setShowReminderMessage] = useState(false);
+  const [showVerificationCard, setShowVerificationCard] = useState(false);
+  const [passcode, setPasscode] = useState("");
 
+  // Check localStorage on component mount to see if a reminder is needed
+  useEffect(() => {
+    const isReminderSet = localStorage.getItem("showReminder");
+    if (isReminderSet === "true") {
+      setShowReminderMessage(true);
+    }
+  }, []);
 
-  useEffect(()=>{
-    dispatch( getAllCenterUser());
-  },[])
+  console.log("selectedCenterId",selectedCenterId);
+
+  // Handle "Remind me later" button click
+  const handleRemindMeLater = () => {
+    // Set a flag in localStorage to show the reminder on refresh
+    localStorage.setItem("showReminder", "true");
+
+    // Hide the card and show the reminder message
+    setCenterSelectionPopup(false);
+    setShowReminderMessage(true);
+    
+  };
+
+  useEffect(() => {
+    dispatch(getAllCenter());
+    if(classCategories){
+      setActiveTab(classCategories[0].id)
+    }
+    
+  }, []);
 
   // Handle category switch
   const handleCategoryChange = (categoryId) => {
@@ -61,11 +99,10 @@ export default function ExamManagement() {
     navigate("/exam");
   };
 
-  const handleOfflineExam = (exam) => {
-    dispatch(setExam(exam));
-    setCenterSelectionPopup(true);
-    
-  };
+  // const handleOfflineExam = (exam) => {
+  //   dispatch(setExam(exam));
+  //   setCenterSelectionPopup(true);
+  // };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,21 +129,61 @@ export default function ExamManagement() {
 
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
+    
   };
-   const handleGeneratePasskey = async(event) => {
-      event.preventDefault();
-      if (selectedCenterId  && pass_exam_id) {
-        console.log("selectedCenterId",selectedCenterId)
-        dispatch(generatePasskey({ user_id, exam_id,center_id:selectedCenterId}));
-        navigate('/teacher');
-        setCenterSelectionPopup(false);
-      } else {
-        alert("Please select a center before submitting.");
-      }
-    };
+  const user_id = userData.id;
+  // const pass_exam_id = attempts?.find(
+  //   ({ exam, isqualified }) => exam?.level?.id === 2 && isqualified
+  // )?.exam?.id;
+
+  const handleGeneratePasskey = async (event,exam) => {
+    event.preventDefault();
+     console.log("exam",exam);
+    if (selectedCenterId) {
+      console.log("selectedCenterId", selectedCenterId);
+      dispatch(
+        generatePasskey({ user_id, exam_id:exam, center_id: selectedCenterId })
+      );
+      navigate("/teacher");
+      setCenterSelectionPopup(false);
+    } else {
+      alert("Please select a center before submitting.");
+    }
+
+    // Clear the reminder flag from localStorage
+    localStorage.removeItem("showReminder");
+    setShowVerificationCard(true);
+    // Hide the reminder message
+    setShowReminderMessage(false);
+  };
+
+
+   // Handle verification code submission
+   const handleverifyPasskey = (event) => {
+    event.preventDefault();
+    console.log("Verification code submitted:", passcode);
+    console.log()
+    dispatch(setExam(examSet[2]?.id));
+    dispatch(resetPasskeyResponse());
+    navigate('/exam')
+    // Add your verification logic here
+    alert("Verification successful! You can now proceed with the exam.");
+  };
+
+  // Simulate page refresh behavior
+  useEffect(() => {
+    const isVerificationCardShown = localStorage.getItem("showVerificationCard");
+    if (isVerificationCardShown === "true") {
+      setShowVerificationCard(true);
+    }
+  }, []);
 
   return (
     <>
+      {/* Stepper Component */}
+      <div className="col-span-3">
+        <Steppers />
+      </div>
       <div className=" mx-auto p-6 bg-white rounded-lg border">
         <div className="mb-8">
           <div className="bg-gradient-to-r from-[#3E98C7] to-black rounded-xl p-6 shadow">
@@ -132,25 +209,26 @@ export default function ExamManagement() {
         {/* Modern Tab Switching */}
         <div className="mb-6 border-b border-gray-200">
           <div className="flex gap-6 -mb-px overflow-x-auto scrollbar-hide">
-            {classCategories && classCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.id)}
-                className={`group relative min-w-fit pb-4 px-1 text-sm font-medium transition-all duration-300 ${
-                  activeTab === category.id
-                    ? "text-[#3E98C7]"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {category.name}
-                {activeTab === category.id && (
-                  <span className="absolute bottom-0 left-0 h-0.5 w-full bg-[#3E98C7] transition-all duration-300 origin-left scale-x-100" />
-                )}
-                {!activeTab === category.id && (
-                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#3E98C7] transition-all duration-300 origin-left scale-x-0 group-hover:scale-x-100 group-hover:w-full" />
-                )}
-              </button>
-            ))}
+            {classCategories &&
+              classCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.id)}
+                  className={`group relative min-w-fit pb-4 px-1 text-sm font-medium transition-all duration-300 ${
+                    activeTab === category.id
+                      ? "text-[#3E98C7]"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {category.name}
+                  {activeTab === category.id && (
+                    <span className="absolute bottom-0 left-0 h-0.5 w-full bg-[#3E98C7] transition-all duration-300 origin-left scale-x-100" />
+                  )}
+                  {!activeTab === category.id && (
+                    <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#3E98C7] transition-all duration-300 origin-left scale-x-0 group-hover:scale-x-100 group-hover:w-full" />
+                  )}
+                </button>
+              ))}
           </div>
         </div>
 
@@ -307,67 +385,172 @@ export default function ExamManagement() {
               )}
 
               {examSet[2] ? (
-                <div className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                      Level 2
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      Advanced Level
-                    </span>
-                  </div>
-                  <h4 className="text-xl font-bold text-gray-800 mb-3">
-                    {examSet[2].subject.subject_name} Advanced {examSet[2].name}
-                  </h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p>
-                      • {examSet[2].questions.length} Multiple Choice Questions
-                    </p>
-                    <p>• {examSet[2].duration} Minute Duration</p>
-                    <p>• {examSet[2].total_marks} Total Marks</p>
-                    <p>• Basic Concepts Assessment</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      handleOfflineExam(examSet[2]);
-                    }}
-                    className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors duration-300"
-                  >
-                    <FaLockOpen className="w-5 h-5" />
-                    Start Level 2 Exam
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Level 2 Locked Card */}
-                  <div className="relative min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2">
-                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                          Level 2
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          Advanced Level
-                        </span>
+                <div>
+                  {centerSelectionPopup ? (
+                    <>
+                      {/* Reminder message */}
+                      {showReminderMessage && (
+                        <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg text-yellow-700">
+                          <p className="font-medium">
+                            Your exam center selection is pending. Please select
+                            your exam center to proceed.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Card for selecting exam center */}
+                      <div className="mt-6 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-gray-800 mb-4">
+                            Select Exam Center
+                          </h3>
+                          <form
+                            onSubmit={(event) => handleGeneratePasskey(event, examSet[2].id)}
+                            className="space-y-4"
+                          >
+                            <div className="flex flex-col gap-4">
+                              <select
+                                value={selectedCenterId}
+                                onChange={handleCenterChange}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                              >
+                                <option value="">Select Exam Center</option>
+                                {allcenter &&
+                                  allcenter?.map((center) => (
+                                    <option key={center.id} value={center.id}>
+                                      {center.center_name}
+                                    </option>
+                                  ))}
+                              </select>
+                              <button
+                                type="submit"
+                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200"
+                              >
+                                Generate Passkey for Offline Exam
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+
+                        {/* Remind me later button inside the card */}
+                        <div className="bg-gray-50 p-4 border-t border-gray-100">
+                          <button
+                            onClick={handleRemindMeLater}
+                            className="w-full text-blue-600 hover:text-blue-800 font-medium focus:outline-none"
+                          >
+                            Remind me later
+                          </button>
+                        </div>
                       </div>
-                      <h4 className="text-xl font-bold text-gray-800 mb-3">
-                        {selectedSubject} Advanced
-                      </h4>
-                      <div className="space-y-2 text-sm text-gray-600 opacity-75">
-                        <p>• 75 Scenario-based Questions</p>
-                        <p>• 90 Minute Duration</p>
-                        <p>• Complex Problem Solving</p>
-                      </div>
-                      <div className="mt-6 text-center">
-                        <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">
-                          Complete Level 1 to unlock
+                    </>
+                  ) : showVerificationCard  ? (
+                    // Verification Card
+                    <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100 mt-6">
+                      <div className="px-6 py-4">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">
+                          Offline Exam Verification
+                        </h2>
+                        <p className="text-gray-600 mb-4">
+                          Your exam center is{" "}
+                          <strong>{passkeyresponse.center_name}</strong>. You
+                          will receive your passkey at the center. Please enter
+                          the verification code provided to proceed with the
+                          exam.
                         </p>
+                        <form
+                          onSubmit={handleverifyPasskey}
+                          className="space-y-4"
+                        >
+                          <input
+                            type="text"
+                            value={passcode}
+                            onChange={(e) => setPasscode(e.target.value)}
+                            placeholder="Enter Verification Code"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
+                          >
+                            Verify and Proceed to Exam
+                          </button>
+                        </form>
                       </div>
                     </div>
+                  ) : (
+                    // Start Exam Card
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
+                            Level 2
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            Advanced Level
+                          </span>
+                        </div>
+                        <h4 className="text-xl font-bold text-gray-800 mb-3">
+                          {examSet[2].subject.subject_name} Advanced{" "}
+                          {examSet[2].name}
+                        </h4>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p>
+                            • {examSet[2].questions.length} Multiple Choice
+                            Questions
+                          </p>
+                          <p>• {examSet[2].duration} Minute Duration</p>
+                          <p>• {examSet[2].total_marks} Total Marks</p>
+                          <p>• Basic Concepts Assessment</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (Object.entries(passkeyresponse).length > 0 ){
+                              setShowVerificationCard(true);
+                            }else{
+                              setCenterSelectionPopup(true); 
+                              // Show center selection popup
+                            }
+                            
+                          }}
+                          className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-300"
+                        >
+                          <FaLockOpen className="w-5 h-5" />
+                          Start Level 2 Exam
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Level 2 Locked Card
+                <div className="relative bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
+                  <div className="relative z-10 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
+                        Level 2
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        Advanced Level
+                      </span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-800 mb-3">
+                      {selectedSubject} Advanced
+                    </h4>
+                    <div className="space-y-2 text-sm text-gray-600 opacity-75">
+                      <p>• 75 Scenario-based Questions</p>
+                      <p>• 90 Minute Duration</p>
+                      <p>• Complex Problem Solving</p>
+                    </div>
+                    <div className="mt-6 text-center">
+                      <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500">
+                        Complete Level 1 to unlock
+                      </p>
+                    </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* Interviews Section */}
@@ -475,64 +658,34 @@ export default function ExamManagement() {
                     </div>
                   )}
                 </div>
-              ):(<div className="min-w-64">
-                {/* Online Interview Card */}
-                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <h5 className="font-semibold text-gray-800">
-                      Online Interview
-                    </h5>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs">
-                      Virtual
-                    </span>
-                  </div>
-                  <div className="text-center py-4">
-                    <FaLock className="mx-auto text-3xl text-gray-400 mb-3" />
-                    <p className="text-sm text-gray-500 mb-4">
-                      Available after completing both exam levels
-                    </p>
-                    <div className="space-y-1 text-sm text-gray-600 text-left">
-                      <p>• Video Conference Setup</p>
-                      <p>• Practical Assessment</p>
-                      <p>• Q&A Session</p>
+              ) : (
+                <div className="min-w-64">
+                  {/* Online Interview Card */}
+                  <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <h5 className="font-semibold text-gray-800">
+                        Online Interview
+                      </h5>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs">
+                        Virtual
+                      </span>
+                    </div>
+                    <div className="text-center py-4">
+                      <FaLock className="mx-auto text-3xl text-gray-400 mb-3" />
+                      <p className="text-sm text-gray-500 mb-4">
+                        Available after completing both exam levels
+                      </p>
+                      <div className="space-y-1 text-sm text-gray-600 text-left">
+                        <p>• Video Conference Setup</p>
+                        <p>• Practical Assessment</p>
+                        <p>• Q&A Session</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>)}
+              )}
             </>
           )}
-
-          {centerSelectionPopup && 
-            <div className="mt-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <form onSubmit={handleGeneratePasskey} className="space-y-4">
-               
-               <div className="flex flex-col mb-4 gap-6">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Select Exam Center
-                  </label>
-                  <select
-                     value={selectedCenterId} // Controlled component bound to state
-                     onChange={handleCenterChange}
-                    className="border border-gray-300 rounded-md px-2 py-2 w-full focus:outline-none focus:ring-1 focus:ring-blue-300"
-                  >
-                    <option value="">Select Exam Center</option>
-                    {allcenter && allcenter?.map((center) => (
-                      <option key={center.id} value={center.id}>
-                        {center.center_name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
-                >
-                  By Clicking Generate passkey for Offline Exam
-                </button> 
-                </div>
-              </form>
-            </div>
-          </div>}
         </div>
       </div>
     </>
