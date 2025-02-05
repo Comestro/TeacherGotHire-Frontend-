@@ -223,32 +223,35 @@ function TeacherDashboard() {
           </div>
         )}
         {passkeyresponse &&
-          Object.entries(passkeyresponse).length > 0 &&
-          !isPassedOfflineAttemptNext && (
-            <div>
-              <p>
-                {} is your center for offline Exam And you will get your Pass
-                key at center
-              </p>
-
-              <form onSubmit={handleverifyPasskey} className="space-y-4">
-                <input
-                  type="text"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="Verification Code"
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
-                >
-                  Submit
-                </button>
-              </form>
-            </div>
-          )}
+  Object.entries(passkeyresponse).length > 0 &&
+  !isPassedOfflineAttemptNext && (
+    <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100">
+      <div className="px-6 py-4">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">
+          Offline Exam Verification
+        </h2>
+        <p className="text-gray-600 mb-4">
+          Your exam center is <strong>{passkeyresponse.center_name}</strong>. You will receive your passkey at the center. Please enter the verification code provided to proceed with the exam.
+        </p>
+        <form onSubmit={handleverifyPasskey} className="space-y-4">
+          <input
+            type="text"
+            value={passcode}
+            onChange={(e) => setPasscode(e.target.value)}
+            placeholder="Enter Verification Code"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
+          >
+            Verify and Proceed to Exam
+          </button>
+        </form>
+      </div>
+    </div>
+  )}
       </div>
     </div>
   );

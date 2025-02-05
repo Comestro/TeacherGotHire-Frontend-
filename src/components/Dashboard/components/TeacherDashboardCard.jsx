@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import { getBasic } from "../../../features/personalProfileSlice";
+import { Link } from "react-router-dom";
 
 const TeacherDashboardCard = ({ teacher }) => {
   const { missingDetails } = teacher;
@@ -11,28 +12,35 @@ const TeacherDashboardCard = ({ teacher }) => {
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
-  const percentage = useSelector(
-    (state) => state.personalProfile?.completionData?.profile_completed[0]
-  );
+  // const percentage = useSelector(
+  //   (state) => state.personalProfile?.completionData?.profile_completed[0]
+  // );
 
-  console.log("percentage in card", percentage);
+  // console.log("percentage in card", percentage);
   useEffect(() => {
     dispatch(getBasic()).catch((error) => console.error("Error:", error));
   }, [dispatch]);
 
   const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    // Animate the progress ring on mount
-    setTimeout(() => {
-      setProgress(percentage);
-    }, 300);
-  }, [percentage]);
+  // useEffect(() => {
+  //   // Animate the progress ring on mount
+  //   setTimeout(() => {
+  //     // setProgress(percentage);
+  //   }, 300);
+  // }, [percentage]);
 
   // Calculate stroke values for animated progress ring
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const fileInputRef = useRef(null);
+
+  const handleEditProfileClick = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    fileInputRef.current.click();
+  };
 
   return (
     <div className="relative overflow-hidden flex flex-col md:flex-row items-center justify-between w-full bg-white px-4 md:px-6 py-3 md:py-4 rounded-lg border border-[#D6F7DE] transition-shadow duration-300 mt-2">
@@ -73,8 +81,25 @@ const TeacherDashboardCard = ({ teacher }) => {
             className="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover border-4 border-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-[2px]"
           />
         </div>
-        <div className="text-[#3c7a89] font-semibold text-xs md:text-sm mt-1 md:mt-2">
-          {progress}% Completed
+        <div className="text-[#2A6F97] font-semibold text-xs md:text-sm mt-1 md:mt-0 flex flex-col items-center">
+          <div className="">
+            <Link
+              to="#"
+              className="text-gray-600 cursor-pointer hover:text-gray-800"
+              onClick={handleEditProfileClick}
+            >
+              Edit Profile
+            </Link>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => console.log("Selected file:", e.target.files[0])}
+            />
+          </div>
+          <span>{progress}% Completed</span>
         </div>
       </div>
 

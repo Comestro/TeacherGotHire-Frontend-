@@ -35,13 +35,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const fetchLevel = async ({class_category_id}) => {
+export const fetchLevel = async () => {
   try {
-    const response = await apiClient.get(`/api/checklevel/`,{
-      params:{
-        class_category_id
-      }
-    });
+    const response = await apiClient.get(`/api/checklevel/`);
     console.log("level", response);
     return response.data;
   } catch (err) {
@@ -238,7 +234,7 @@ export const Approved = async ({user_id,exam_id}) => {
 export const fetchCenterUser= async () => {
   try {
     const response = await apiClient.get(`/api/examcenters/`);
-    console.log("center",response)
+    console.log("center",response.data)
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

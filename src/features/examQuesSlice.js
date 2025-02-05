@@ -24,10 +24,11 @@ const initialState = {
 
 export const getLevels = createAsyncThunk(
   "getLevels",
-  async ({class_category_id}, { rejectWithValue }) => {
-    console.log("classCategory",class_category_id)
+  async (__, { rejectWithValue }) => {
     try {
-      const data = await fetchLevel({class_category_id});
+     
+      const data = await fetchLevel();
+      
       return data;
     } catch (error) {
       console.log('Error in getLevels:', error);
@@ -197,6 +198,7 @@ export const generatePasskey= createAsyncThunk(
       
       try {
         const data = await AllCenter();
+        console.log("data",data);
          return data; 
       } catch (error) {
         return rejectWithValue({
@@ -268,6 +270,9 @@ const examQuesSlice = createSlice({
     setLanguage(state, action) {
       state.language = action.payload;
     },
+     resetPasskeyResponse: (state) => {
+            state.passkeyresponse = {};
+     }
   },
   extraReducers: (builder) => {
     builder
@@ -279,7 +284,7 @@ const examQuesSlice = createSlice({
     .addCase(getLevels.fulfilled, (state, action) => {
       state.status = "succeeded";
       state.levels = action.payload;
-      console.log("lev",action.payload)
+      console.log("stepper",action.payload)
     })
     .addCase(getLevels.rejected, (state, action) => {
       state.status = "failed";
@@ -294,8 +299,8 @@ const examQuesSlice = createSlice({
       .addCase(getAllQues.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.allQuestion = action.payload;
-        state.verifyresponse = action.payload.verifyresponse || {};
-        state.passkeyresponse = action.payload.passkeyresponse || {};
+        // state.verifyresponse = action.payload.verifyresponse || {};
+        // state.passkeyresponse = action.payload.passkeyresponse || {};
       })
       .addCase(getAllQues.rejected, (state, action) => {
         state.status = "failed";
@@ -390,6 +395,7 @@ const examQuesSlice = createSlice({
       .addCase(getAllCenter.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.allcenter = action.payload;
+        console.log("allcenter",action.payload)
       })
       .addCase(getAllCenter.rejected, (state, action) => {
         state.status = "failed";
@@ -457,5 +463,5 @@ const examQuesSlice = createSlice({
   resetState: () => initialState,
 });
 
-export const { setSubject, setExam, setLanguage } = examQuesSlice.actions;
+export const { setSubject, setExam, setLanguage,resetPasskeyResponse } = examQuesSlice.actions;
 export default examQuesSlice.reducer;
