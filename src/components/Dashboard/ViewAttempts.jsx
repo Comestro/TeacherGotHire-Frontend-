@@ -13,7 +13,8 @@ function ViewAttempts() {
   const apiOutput1 = useSelector((state) => state.examQues?.attemptCount);
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
 
-  console.log("apiout", apiOutput1);
+  console.log("apiout1", apiOutput1);
+  console.log("apiOutPut2", apiOutput2);
 
   const dispatch = useDispatch();
   useEffect(() => {
