@@ -3,10 +3,15 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { getPostData, recruiterPostData } from "../features/authSlice"; // Redux action to store the user login state
-import { login as loginService, resendOtp, verifyOtp } from "../services/authServices"; // Service to authenticate the user
+import {
+  login as loginService,
+  resendOtp,
+  verifyOtp,
+} from "../services/authServices"; // Service to authenticate the user
 import Input from "./Input";
 import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 
 function Login() {
   const dispatch = useDispatch();
@@ -18,37 +23,33 @@ function Login() {
   const [otp, setOtp] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
 
-
-
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const login = async ({ email, password }) => {
     setError("");
-    setLoading(true); 
+    setLoading(true);
 
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
 
       if (userData) {
-        // dispatch(getPostData(userData)); // Dispatch action to store the user data in Redux store
-        // dispatch(recruiterPostData(userData))
-        if (userData?.role === 'recruiter') {
-          // dispatch(recruiterPostData(userData));  
+        if (userData?.role === "recruiter") {
           navigate("/recruiter");
-        } else if (userData?.role === 'user') {
-          // dispatch(getPostData(userData));
+        } else if (userData?.role === "user") {
           navigate("/teacher");
-        }
-        else{
+        } else {
           navigate("/admin/dashboard");
         }
-
-
       }
     } catch (error) {
       if (error.status === 403) {
-        // Handle specific case for unverified account
-        setError("Your account is not verified. Please verify your account to log in.");
+        setError(
+          "Your account is not verified. Please verify your account to log in."
+        );
         setOtpSent(true); // Optional: Trigger OTP resend logic
         setEmail(email); // Store the email for OTP resend later
 
@@ -57,10 +58,14 @@ function Login() {
           if (otpResponse.status === 200) {
             setSuccessMessage("An OTP has been sent to your email.");
           } else {
-            setError("Failed to send verification email. Please try again later.");
+            setError(
+              "Failed to send verification email. Please try again later."
+            );
           }
         } catch (otpError) {
-          setError(otpError.message || "Failed to resend OTP. Please try again later.");
+          setError(
+            otpError.message || "Failed to resend OTP. Please try again later."
+          );
         }
       } else if (error.status === 401) {
         setError("Invalid email or password. Please try again.");
@@ -84,11 +89,9 @@ function Login() {
     try {
       const response = await verifyOtp({ email, otp });
       if (response) {
-        if (response.data?.role === 'recruiter') {
-          // dispatch(recruiterPostData(response.data)); 
+        if (response.data?.role === "recruiter") {
           navigate("/recruiter");
-        } else if (response.data?.role === 'user') {
-          // dispatch(getPostData(response.data));
+        } else if (response.data?.role === "user") {
           navigate("/teacher");
         }
       } else {
@@ -96,20 +99,13 @@ function Login() {
       }
     } catch (error) {
       setError(error.name || "Failed to verify OTP. Please try again.");
-    }
-    finally {
+    } finally {
       setLoading(false); // Set loading to false
     }
   };
 
-  // Helper function to resend OTP
-
-
-
-
   return (
     <>
-      {/* <Navbar /> */}
       <div
         className="flex bg-cover bg-no-repeat items-center justify-center mt-5"
         style={{ backgroundImage: 'url("/bg.png")' }}
@@ -122,7 +118,8 @@ function Login() {
             {!otpSent ? (
               <>
                 <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
-                  Hello, <span className="font-bold text-teal-600">Teachers</span>
+                  Hello,{" "}
+                  <span className="font-bold text-teal-600">Teachers</span>
                 </h2>
                 <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
                   Sign in to{" "}
@@ -130,8 +127,6 @@ function Login() {
                     PTPI
                   </span>
                 </h2>
-
-
 
                 <form onSubmit={handleSubmit(login)} className="space-y-5">
                   {/* Email */}
@@ -160,7 +155,7 @@ function Login() {
                   </div>
 
                   {/* Password */}
-                  <div className="mb-4">
+                  <div className="mb-4 relative">
                     <label
                       className="block text-sm font-medium  text-gray-700 mb-1"
                       htmlFor="pass"
@@ -169,20 +164,29 @@ function Login() {
                     </label>
                     <Input
                       placeholder="Enter your password"
-                      type="password"
+                      type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
                       id="pass"
-                      className="w-full border-2 border-gray-300 text-sm rounded-xl p-3"
+                      className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 pr-10" // Add padding for the eye icon
                       {...register("password", {
                         required: "Password is required",
                       })}
                     />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                      {/* Toggle eye icon based on showPassword state */}
+                    </button>
                   </div>
 
                   {/* Submit Button */}
                   <Button
                     type="submit"
-                    className={`w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition flex items-center justify-center ${loading ? "cursor-not-allowed" : ""
-                      }`}
+                    className={`w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition flex items-center justify-center ${
+                      loading ? "cursor-not-allowed" : ""
+                    }`}
                     disabled={loading}
                   >
                     {loading ? (
@@ -253,12 +257,11 @@ function Login() {
                     </span>
                   </p>
                   <p className="text-sm font-medium text-gray-600 mt-6">
-                    
                     <span
                       onClick={() => navigate("/forgot-password")}
                       className="text-teal-600 hover:underline font-semibold"
                     >
-                     Forgot-Password
+                      Forgot-Password
                     </span>
                   </p>
                 </div>
@@ -266,7 +269,9 @@ function Login() {
             ) : (
               <>
                 {successMessage && (
-                  <p className="bg-green-200 text-green-900 px-3 py-2 rounded border border-green-700 text-center mb-4">{successMessage}</p>
+                  <p className="bg-green-200 text-green-900 px-3 py-2 rounded border border-green-700 text-center mb-4">
+                    {successMessage}
+                  </p>
                 )}
                 <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
                   Verify OTP
@@ -287,8 +292,12 @@ function Login() {
                 <Button
                   onClick={verifyOtpHandler}
                   disabled={!otp || loading} // Disable button when loading or OTP is empty
-                  className={`w-full py-2 rounded-xl transition ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
-                    }`}                >
+                  className={`w-full py-2 rounded-xl transition ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-teal-600 text-white hover:bg-teal-700"
+                  }`}
+                >
                   {loading ? "Verifying..." : "Verify OTP"}
                 </Button>
               </>
