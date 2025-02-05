@@ -41,7 +41,7 @@ const Steppers = () => {
       <Stepper orientation="vertical">
         {data.map((item, index) => {
           // Calculate how far progress should go
-          const progressPercentage = ((item.levels.length / allLevels.length) * 100).toFixed(0);
+          const progressPercentage = ((item?.levels?.length / allLevels.length) * 100).toFixed(0);
 
           return (
             <Step key={index} active={true}>
