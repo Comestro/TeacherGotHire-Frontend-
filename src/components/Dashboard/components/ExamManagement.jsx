@@ -55,6 +55,8 @@ export default function ExamManagement() {
     }
   }, []);
 
+  const profile = "true"
+
   console.log("selectedCenterId",selectedCenterId);
 
   // Handle "Remind me later" button click
@@ -206,7 +208,7 @@ export default function ExamManagement() {
           </div>
         </div>
 
-        {/* Modern Tab Switching */}
+      {profile  ? (<>  {/* Modern Tab Switching */}
         <div className="mb-6 border-b border-gray-200">
           <div className="flex gap-6 -mb-px overflow-x-auto scrollbar-hide">
             {classCategories &&
@@ -686,7 +688,21 @@ export default function ExamManagement() {
               )}
             </>
           )}
+        </div></>):(<>
+          <div className="flex justify-center items-center min-h-screen bg-gray-100">
+          <div className="bg-white shadow-lg rounded-2xl p-6 max-w-md text-center border border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Complete Your Profile 🚀
+            </h2>
+            <p className="text-gray-600 mb-4">
+              First, complete your <strong>Basic Profile</strong>, <strong>Education Details</strong>, and <strong>Preferences</strong> to proceed.
+            </p>
+            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all">
+              Complete Now
+            </button>
+          </div>
         </div>
+        </>)}
       </div>
     </>
   );
