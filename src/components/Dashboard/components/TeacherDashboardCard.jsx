@@ -1,34 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
-import { getBasic } from "../../../features/personalProfileSlice";
+import { getBasic, getProfilCompletion } from "../../../features/personalProfileSlice";
 import { Link } from "react-router-dom";
 
 const TeacherDashboardCard = ({ teacher }) => {
   const { missingDetails } = teacher;
 
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getBasic()).catch((error) => console.error("Error:", error));
+    dispatch(getProfilCompletion()).catch((error) => console.error("Error:", error));
+  }, [dispatch]);
 
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
-  // const percentage = useSelector(
-  //   (state) => state.personalProfile?.completionData?.profile_completed[0]
-  // );
+  const emptydetailsValue = useSelector(
+    (state) => state.personalProfile?.completionData?.profile_completed || 0
+  );
 
-  // console.log("percentage in card", percentage);
-  useEffect(() => {
-    dispatch(getBasic()).catch((error) => console.error("Error:", error));
-  }, [dispatch]);
+  const percentage = useSelector((state) => {
+    const profileCompleted = state.personalProfile?.completionData?.profile_completed;
+    return Array.isArray(profileCompleted) && profileCompleted.length > 0 ? profileCompleted[0] : 0
+  });
+
+  console.log("Empty Details Value", emptydetailsValue);
+ 
 
   const [progress, setProgress] = useState(0);
 
-  // useEffect(() => {
-  //   // Animate the progress ring on mount
-  //   setTimeout(() => {
-  //     // setProgress(percentage);
-  //   }, 300);
-  // }, [percentage]);
+  useEffect(() => {
+    // Animate the progress ring on mount
+    setTimeout(() => {
+      setProgress(percentage);
+    }, 300);
+  }, [percentage]);
 
   // Calculate stroke values for animated progress ring
   const radius = 40;

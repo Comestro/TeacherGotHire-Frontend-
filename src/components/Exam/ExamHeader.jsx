@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function Subheader({ totalQuestion }) {
-  const [timeLeft, setTimeLeft] = useState(totalQuestion * 2 * 60); // 30 minutes in
+  const [timeLeft, setTimeLeft] = useState(totalQuestion ); // 30 minutes in
+
 
   const subject = useSelector((state) => state.examQues.exam);
   const Language = useSelector((state) => state.examQues);
   const language = useSelector((state) => state.examQues.language);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
