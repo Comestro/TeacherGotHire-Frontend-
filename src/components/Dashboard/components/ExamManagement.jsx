@@ -17,6 +17,10 @@ import { useNavigate } from "react-router-dom";
 export default function ExamManagement() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
+  const {basicData} = useSelector((state)=>state.personalProfile);
+  const {prefrence,educationData} = useSelector((state)=>state.jobProfile);
   const classCategories = useSelector(
     (state) => state.jobProfile.prefrence.class_category
   );
