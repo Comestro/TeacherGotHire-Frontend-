@@ -44,6 +44,8 @@ import {
 import { getSubjects } from "../../services/adminSubujectApi";
 import { getClassCategory } from "../../services/adminClassCategoryApi";
 import { getLevel } from "../../services/adminManageLevel";
+import Loader from "../../components/Loader";
+import ViewQuestionModal from "./QuestionModal";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -92,8 +94,9 @@ const ExamManagement = () => {
     duration: "",
     type: "",
   });
+  const [Loader, setLoader] = useState(false);
 
-  // fetch all exams
+  // fetch all exams in ascending order
   useEffect(() => {
     const fetchExams = async () => {
       try {
@@ -231,7 +234,7 @@ const ExamManagement = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await deleteAllExam(selectedExams);
+      await Promise.all(selectedExams.map((examId) => deleteExam(examId)));
       const response = await getExam();
       setExams(response);
       setSelectedExams([]);
@@ -241,6 +244,7 @@ const ExamManagement = () => {
         severity: "success",
       });
     } catch (error) {
+      console.error("Error deleting selected exams:", error);
       setSnackbar({
         open: true,
         message: "Error deleting selected exams!",
@@ -254,44 +258,6 @@ const ExamManagement = () => {
     setOpenViewModal(true);
   };
 
-  const QuestionList = () => (
-    <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-      {selectedExam?.questions?.map((question, index) => (
-        <div key={question.id}>
-          <ListItem alignItems="flex-start">
-            <ListItemText
-              primary={`${index + 1}. ${question.text}`}
-              secondary={
-                <>
-                  <Typography variant="body2" color="text.primary">
-                    Options:
-                  </Typography>
-                  {question.options.map((option, i) => (
-                    <Typography
-                      key={i}
-                      variant="body2"
-                      color={
-                        i + 1 === question.correct_option
-                          ? "success.main"
-                          : "text.secondary"
-                      }
-                    >
-                      {i + 1}. {option}
-                    </Typography>
-                  ))}
-                  <Typography variant="body2" mt={1} color="text.primary">
-                    Solution: {question.solution}
-                  </Typography>
-                </>
-              }
-            />
-          </ListItem>
-          <Divider variant="inset" component="li" />
-        </div>
-      ))}
-    </List>
-  );
-
   const handleAddNew = () => {
     setSelectedExam(null);
     setFormData({
@@ -302,6 +268,22 @@ const ExamManagement = () => {
       total_marks: "",
       duration: "",
       type: "",
+    });
+    setOpenAddModal(true);
+  };
+
+  // handle edit
+  const handleEdit = (exam) => {
+    setSelectedExam(exam);
+    setFormData({
+      name: exam.name,
+      subject: exam.subject.id,
+      class_category: exam.class_category.id,
+      level: exam.level.id,
+      total_marks: exam.total_marks,
+      duration: exam.duration,
+      // Only set type if level is 2 or above
+      type: exam.level.id >= 2 ? exam.type : "",
     });
     setOpenAddModal(true);
   };
@@ -375,8 +357,8 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {classCategories.map((classCategory) => (
-                <MenuItem key={classCategory.id} value={classCategory.name}>
+              {classCategories.map((classCategory, index) => (
+                <MenuItem key={index + 1} value={classCategory.name}>
                   {classCategory.name}
                 </MenuItem>
               ))}
@@ -392,8 +374,8 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {levels.map((level) => (
-                <MenuItem key={level.id} value={level.name}>
+              {levels.map((level, index) => (
+                <MenuItem key={index + 1} value={level.name}>
                   {level.name}
                 </MenuItem>
               ))}
@@ -634,52 +616,11 @@ const ExamManagement = () => {
           </ModalContent>
         </StyledModal>
 
-        <Dialog
+        <ViewQuestionModal
           open={openViewModal}
           onClose={() => setOpenViewModal(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>Exam Details - {selectedExam?.name}</DialogTitle>
-          <DialogContent dividers>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Basic Information
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Subject:</strong>{" "}
-                  {selectedExam?.subject?.subject_name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Level:</strong> {selectedExam?.level?.name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Class Category:</strong>{" "}
-                  {selectedExam?.class_category?.name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Total Marks:</strong> {selectedExam?.total_marks}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Duration:</strong> {selectedExam?.duration} minutes
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Type:</strong> {selectedExam?.type || "N/A"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Questions ({selectedExam?.questions?.length})
-                </Typography>
-                <QuestionList />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenViewModal(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
+          selectedExam={selectedExam}
+        />
 
         <Dialog
           open={openDeleteModal}
