@@ -12,6 +12,7 @@ import {
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { HiOutlineBriefcase, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import moment from "moment";
+import Loader from "../../Loader";
 
 const formatDate = (date) => {
   if (!date) return "N/A";
@@ -52,12 +53,6 @@ const Experience = () => {
     dispatch(getExprienceProfile());
   }, [dispatch]);
 
-  // Loader Component
-  const Loader = () => (
-    <div className="flex justify-center items-center py-4">
-      <div className="loader border-t-[#3E98C7] border-4 w-8 h-8 rounded-full animate-spin"></div>
-    </div>
-  );
 
   // Refetch profile data
   const fetchProfile = () => {
@@ -141,6 +136,7 @@ const Experience = () => {
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
       {/* Enhanced Header */}
+      {loading && (<Loader/>)}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
           <h2 className="text-2xl font-bold text-gray-900 mb-1">

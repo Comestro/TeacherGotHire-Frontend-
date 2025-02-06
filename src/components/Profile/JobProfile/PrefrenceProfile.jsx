@@ -12,9 +12,12 @@ import {
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
 import { HiExclamationCircle, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import Loader from "../../Loader";
 
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+
 
   // Fetch Data on Component Mount
   useEffect(() => {
@@ -72,18 +75,24 @@ const PrefrenceProfile = () => {
 
   // Form Submission Handler
   const onSubmit = async (data) => {
+    setIsLoading(true); // Show loader
+
     try {
       await updateTeacherPrefrence(data);
       dispatch(postPrefrence(data));
       fetchPreferences();
       setIsEditingPrefrence(false);
+      setIsLoading(false); // Hide loader
+
     } catch (err) {
+      setIsLoading(false); // Hide loader on error
       setError("Failed to update preferences. Please try again.");
     }
   };
 
   return (
     <div className="p-4 border rounded-xl">
+       {isLoading && (<Loader/>)}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
           <h2 className="text-2xl font-bold text-gray-900">
