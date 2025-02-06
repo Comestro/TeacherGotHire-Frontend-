@@ -25,19 +25,25 @@ import {
   TableRow,
   Checkbox,
   TablePagination,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from "@mui/material";
 import { FaPlus, FaEye, FaPencilAlt, FaTrash } from "react-icons/fa";
 import { styled } from "@mui/system";
 import Layout from "../Admin/Layout";
 import {
   getExam,
-  getExamById,
+  // getExamById,
   deleteExam,
   deleteAllExam,
   createExam,
   updateExam,
 } from "../../services/adminManageExam";
 import { getSubjects } from "../../services/adminSubujectApi";
+import { getClassCategory } from "../../services/adminClassCategoryApi";
+import { getLevel } from "../../services/adminManageLevel";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -71,9 +77,23 @@ const ExamManagement = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [subjects, setSubjects] = useState([]);
+  const [classCategories, setClassCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    subject: "",
+    class_category: "",
+    level: "",
+    total_marks: "",
+    duration: "",
+    type: "",
+  });
 
+  // fetch all exams
   useEffect(() => {
     const fetchExams = async () => {
       try {
@@ -81,11 +101,210 @@ const ExamManagement = () => {
         setExams(response);
       } catch (error) {
         console.error("Error fetching exams:", error);
+        setSnackbar({
+          open: true,
+          message: "Error fetching exams!",
+          severity: "error",
+        });
       }
     };
-
     fetchExams();
   }, []);
+
+  // fetch all subjects
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await getSubjects();
+        setSubjects(response);
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  // fetch all class categories
+  useEffect(() => {
+    const fetchClassCategories = async () => {
+      try {
+        const response = await getClassCategory();
+        setClassCategories(response);
+      } catch (error) {
+        console.error("Error fetching class categories:", error);
+      }
+    };
+    fetchClassCategories();
+  }, []);
+
+  // fetch all levels
+  useEffect(() => {
+    const fetchLevels = async () => {
+      try {
+        const response = await getLevel();
+        setLevels(response);
+      } catch (error) {
+        console.error("Error fetching levels:", error);
+      }
+    };
+    fetchLevels();
+  }, []);
+
+  // handle form change
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    const newFormData = { ...formData, [name]: value };
+
+    // Clear type when level changes to below 2
+    if (name === "level" && parseInt(value) < 2) {
+      newFormData.type = "";
+    }
+
+    setFormData(newFormData);
+  };
+  // handle pagination
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleSave = async () => {
+    try {
+      // Prepare payload based on level
+      const payload = { ...formData };
+      if (parseInt(payload.level) < 2) {
+        delete payload.type;
+      }
+
+      if (selectedExam) {
+        await updateExam(selectedExam.id, payload);
+      } else {
+        await createExam(payload);
+      }
+
+      const response = await getExam();
+      setExams(response);
+      setOpenAddModal(false);
+      setSnackbar({
+        open: true,
+        message: `Exam ${selectedExam ? "updated" : "created"} successfully!`,
+        severity: "success",
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Error saving exam!",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleDelete = (exam) => {
+    setSelectedExam(exam);
+    setOpenDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteExam(selectedExam.id);
+      const response = await getExam();
+      setExams(response);
+      setOpenDeleteModal(false);
+      setSnackbar({
+        open: true,
+        message: "Exam deleted successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Error deleting exam!",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteAllExam(selectedExams);
+      const response = await getExam();
+      setExams(response);
+      setSelectedExams([]);
+      setSnackbar({
+        open: true,
+        message: "Selected exams deleted successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Error deleting selected exams!",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleView = (exam) => {
+    setSelectedExam(exam);
+    setOpenViewModal(true);
+  };
+
+  const QuestionList = () => (
+    <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+      {selectedExam?.questions?.map((question, index) => (
+        <div key={question.id}>
+          <ListItem alignItems="flex-start">
+            <ListItemText
+              primary={`${index + 1}. ${question.text}`}
+              secondary={
+                <>
+                  <Typography variant="body2" color="text.primary">
+                    Options:
+                  </Typography>
+                  {question.options.map((option, i) => (
+                    <Typography
+                      key={i}
+                      variant="body2"
+                      color={
+                        i + 1 === question.correct_option
+                          ? "success.main"
+                          : "text.secondary"
+                      }
+                    >
+                      {i + 1}. {option}
+                    </Typography>
+                  ))}
+                  <Typography variant="body2" mt={1} color="text.primary">
+                    Solution: {question.solution}
+                  </Typography>
+                </>
+              }
+            />
+          </ListItem>
+          <Divider variant="inset" component="li" />
+        </div>
+      ))}
+    </List>
+  );
+
+  const handleAddNew = () => {
+    setSelectedExam(null);
+    setFormData({
+      name: "",
+      subject: "",
+      class_category: "",
+      level: "",
+      total_marks: "",
+      duration: "",
+      type: "",
+    });
+    setOpenAddModal(true);
+  };
 
   const filteredExams = exams.filter((exam) => {
     return (
@@ -97,60 +316,10 @@ const ExamManagement = () => {
       (selectedLevel ? exam.level.name === selectedLevel : true) &&
       (selectedClassCategory
         ? exam.class_category.name === selectedClassCategory
-        : true)
+        : true) &&
+      (selectedType ? exam.type === selectedType : true)
     );
   });
-
-  const handleView = (exam) => {
-    setSelectedExam(exam);
-    setOpenViewModal(true);
-  };
-
-  const handleEdit = (exam) => {
-    setSelectedExam(exam);
-    setOpenAddModal(true);
-  };
-
-  const handleDelete = (exam) => {
-    setSelectedExam(exam);
-    setOpenDeleteModal(true);
-  };
-
-  const handleSave = () => {
-    setSnackbar({
-      open: true,
-      message: "Exam saved successfully!",
-      severity: "success",
-    });
-    setOpenAddModal(false);
-  };
-
-  const handleConfirmDelete = () => {
-    setSnackbar({
-      open: true,
-      message: "Exam deleted successfully!",
-      severity: "success",
-    });
-    setOpenDeleteModal(false);
-  };
-
-  const handleBulkDelete = () => {
-    setSnackbar({
-      open: true,
-      message: "Selected exams deleted successfully!",
-      severity: "success",
-    });
-    setSelectedExams([]);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   return (
     <Layout>
@@ -162,7 +331,7 @@ const ExamManagement = () => {
           <Button
             variant="contained"
             startIcon={<FaPlus />}
-            onClick={() => setOpenAddModal(true)}
+            onClick={handleAddNew}
             sx={{ float: "right", mb: 2 }}
           >
             Add New Exam
@@ -189,12 +358,11 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="Mathematics">Mathematics</MenuItem>
-              <MenuItem value="Science">Science</MenuItem>
-              <MenuItem value="English">English</MenuItem>
-              <MenuItem value="History">History</MenuItem>
-              <MenuItem value="Geography">Geography</MenuItem>
-              <MenuItem value="Computer Science">Computer Science</MenuItem>
+              {subjects.map((subject) => (
+                <MenuItem key={subject.id} value={subject.subject_name}>
+                  {subject.subject_name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -207,9 +375,11 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="6-8">6-8</MenuItem>
-              <MenuItem value="9-10">9-10</MenuItem>
-              <MenuItem value="11-12">11-12</MenuItem>
+              {classCategories.map((classCategory) => (
+                <MenuItem key={classCategory.id} value={classCategory.name}>
+                  {classCategory.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -222,17 +392,19 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="Beginner">Beginner</MenuItem>
-              <MenuItem value="Intermediate">Intermediate</MenuItem>
-              <MenuItem value="Advanced">Advanced</MenuItem>
+              {levels.map((level) => (
+                <MenuItem key={level.id} value={level.name}>
+                  {level.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
             <InputLabel>Type</InputLabel>
             <Select
-              label="Level"
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
+              label="Type"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
             >
               <MenuItem value="">
                 <em>None</em>
@@ -357,39 +529,91 @@ const ExamManagement = () => {
                 <TextField
                   fullWidth
                   label="Exam Name"
-                  defaultValue={selectedExam?.name}
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Description"
-                  defaultValue={selectedExam?.description}
-                />
-              </Grid>
-              <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Subject</InputLabel>
                   <Select
-                    defaultValue={selectedExam?.subject.subject_name || ""}
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleFormChange}
                   >
-                    <MenuItem value="Mathematics">Mathematics</MenuItem>
-                    <MenuItem value="Science">Science</MenuItem>
-                    <MenuItem value="English">English</MenuItem>
+                    {subjects.map((subject) => (
+                      <MenuItem key={subject.id} value={subject.id}>
+                        {subject.subject_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Class Category</InputLabel>
+                  <Select
+                    name="class_category"
+                    value={formData.class_category}
+                    onChange={handleFormChange}
+                  >
+                    {classCategories.map((classCategory) => (
+                      <MenuItem key={classCategory.id} value={classCategory.id}>
+                        {classCategory.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Level</InputLabel>
-                  <Select defaultValue={selectedExam?.level.name || ""}>
-                    <MenuItem value="Beginner">Beginner</MenuItem>
-                    <MenuItem value="Intermediate">Intermediate</MenuItem>
-                    <MenuItem value="Advanced">Advanced</MenuItem>
+                  <Select
+                    name="level"
+                    value={formData.level}
+                    onChange={handleFormChange}
+                  >
+                    {levels.map((level) => (
+                      <MenuItem key={level.id} value={level.id}>
+                        {level.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
+              </Grid>
+              {formData.level >= 2 && (
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Type</InputLabel>
+                    <Select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleFormChange}
+                    >
+                      <MenuItem value="online">Online</MenuItem>
+                      <MenuItem value="offline">Offline</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Total Marks"
+                  name="total_marks"
+                  value={formData.total_marks}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Duration"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleFormChange}
+                />
               </Grid>
               <Grid item xs={12}>
                 <Box
@@ -414,25 +638,43 @@ const ExamManagement = () => {
           open={openViewModal}
           onClose={() => setOpenViewModal(false)}
           maxWidth="md"
+          fullWidth
         >
-          <DialogTitle>Exam Details</DialogTitle>
-          <DialogContent>
-            {selectedExam && (
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="subtitle2">Name</Typography>
-                  <Typography>{selectedExam.name}</Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="subtitle2">Subject</Typography>
-                  <Typography>{selectedExam.subject.subject_name}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Description</Typography>
-                  <Typography>{selectedExam.description}</Typography>
-                </Grid>
+          <DialogTitle>Exam Details - {selectedExam?.name}</DialogTitle>
+          <DialogContent dividers>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Basic Information
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Subject:</strong>{" "}
+                  {selectedExam?.subject?.subject_name}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Level:</strong> {selectedExam?.level?.name}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Class Category:</strong>{" "}
+                  {selectedExam?.class_category?.name}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Total Marks:</strong> {selectedExam?.total_marks}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Duration:</strong> {selectedExam?.duration} minutes
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Type:</strong> {selectedExam?.type || "N/A"}
+                </Typography>
               </Grid>
-            )}
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Questions ({selectedExam?.questions?.length})
+                </Typography>
+                <QuestionList />
+              </Grid>
+            </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenViewModal(false)}>Close</Button>
@@ -475,5 +717,4 @@ const ExamManagement = () => {
     </Layout>
   );
 };
-
 export default ExamManagement;

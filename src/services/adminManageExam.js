@@ -1,6 +1,6 @@
 import apiService from "./apiService";
 
-const endpoint = "/api/admin/exam";
+const endpoint = "/api/admin/exam/";
 
 export const getExam = () => apiService.getAll(endpoint);
 export const getExamById = (id) => apiService.getById(endpoint, id);
