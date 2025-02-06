@@ -21,11 +21,7 @@ const ExamPortal = () => {
   const { allQuestion } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
-    const allques = allQuestion?.questions || [];
-
-    const totalTime = allques.reduce((sum, question) => sum + (question.time || 0), 0);
-
-    console.log(totalTime);
+   
 
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -155,8 +151,6 @@ const ExamPortal = () => {
      
       <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
         <Subheader
-          totalQuestion={totalTime}
-          
         />
         <div className="bg-white md:hidden">
           <ul className="p-2 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto">

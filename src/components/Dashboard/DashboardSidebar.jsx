@@ -142,6 +142,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 View Attempts
               </NavLink>
               
+              
             </nav>
             <div className="flex flex-col">
               <div className="border-t border-gray-200">

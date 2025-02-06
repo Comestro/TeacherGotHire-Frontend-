@@ -226,16 +226,7 @@ const Experience = () => {
                         {experience.description}
                       </p>
                     )}
-                    {/* {experience.achievements && (
-                      <div className="mt-2">
-                        <span className="text-xs font-medium text-gray-500">
-                          ACHIEVEMENTS:
-                        </span>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {experience.achievements}
-                        </p>
-                      </div>
-                    )} */}
+
                   </div>
                 </div>
               </div>

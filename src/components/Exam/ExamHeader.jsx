@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
-export default function Subheader({ totalQuestion }) {
-  const [timeLeft, setTimeLeft] = useState(totalQuestion ); // 30 minutes in
+export default function Subheader() {
+  
 
+   const { allQuestion } = useSelector((state) => state.examQues);
+      
+   const allques = allQuestion?.questions || [];
+
+   // Initialize totalTime state
+   const  [timeLeft, setTimeLeft] = useState(0);
+ 
+   // Calculate totalTime whenever allQuestion changes
+   useEffect(() => {
+     const calculatedTotalTime = allques.reduce((sum, question) => sum + (question.time || 0), 0);
+     setTimeLeft(calculatedTotalTime); // Update the state with the calculated total time
+   }, [allQuestion]); // Dependency array ensures this runs when allQuestion changes
+ 
+   console.log("timeLeft",timeLeft); // Log the total time to verify
+ 
 
   const subject = useSelector((state) => state.examQues.exam);
   const Language = useSelector((state) => state.examQues);
