@@ -12,6 +12,7 @@ import Input from "./Input";
 import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
+import Loader from "./Loader";
 
 function Login() {
   const dispatch = useDispatch();
@@ -106,6 +107,8 @@ function Login() {
 
   return (
     <>
+          {loading && <Loader />} {/* Show loader while loading */}
+
       <div
         className="flex bg-cover bg-no-repeat items-center justify-center mt-5"
         style={{ backgroundImage: 'url("/bg.png")' }}

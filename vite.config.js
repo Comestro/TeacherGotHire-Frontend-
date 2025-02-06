@@ -8,7 +8,7 @@ export default defineConfig({
 
   server: {
     proxy: {
-      '/api': process.env.VITE_API_URL || 'http://127.0.0.1:8000', // Proxy API requests if needed
+      '/api': process.env.VITE_API_URL || 'https://ptpi.tech/', // Proxy API requests if needed
     },
   },
 });

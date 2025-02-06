@@ -37,6 +37,7 @@ import {
   createExam,
   updateExam,
 } from "../../services/adminManageExam";
+import { getSubjects } from "../../services/adminSubujectApi";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -56,6 +57,7 @@ const ModalContent = styled(Box)(({ theme }) => ({
 
 const ExamManagement = () => {
   const [exams, setExams] = useState([]);
+  const [selectedExams, setSelectedExams] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -89,9 +91,13 @@ const ExamManagement = () => {
     return (
       (exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         exam.id.toString().includes(searchQuery)) &&
-      (selectedSubject ? exam.subject.subject_name === selectedSubject : true) &&
+      (selectedSubject
+        ? exam.subject.subject_name === selectedSubject
+        : true) &&
       (selectedLevel ? exam.level.name === selectedLevel : true) &&
-      (selectedClassCategory ? exam.class_category.name === selectedClassCategory : true)
+      (selectedClassCategory
+        ? exam.class_category.name === selectedClassCategory
+        : true)
     );
   });
 
@@ -222,7 +228,7 @@ const ExamManagement = () => {
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
-            <InputLabel>Language</InputLabel>
+            <InputLabel>Type</InputLabel>
             <Select
               label="Level"
               value={selectedLevel}
@@ -231,8 +237,8 @@ const ExamManagement = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="Hindi">Hindi</MenuItem>
-              <MenuItem value="English">English</MenuItem>
+              <MenuItem value="online">Online</MenuItem>
+              <MenuItem value="offline">Offline</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -245,18 +251,18 @@ const ExamManagement = () => {
                   <TableCell padding="checkbox">
                     <Checkbox
                       indeterminate={
-                        selectedExam.length > 0 &&
-                        selectedExam.length < dummyExams.length
+                        selectedExams.length > 0 &&
+                        selectedExams.length < exams.length
                       }
                       checked={
-                        dummyExams.length > 0 &&
-                        selectedExam.length === dummyExams.length
+                        exams.length > 0 &&
+                        selectedExams.length === exams.length
                       }
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedExam(dummyExams.map((exam) => exam.id));
+                          setSelectedExams(exams.map((exam) => exam.id));
                         } else {
-                          setSelectedExam([]);
+                          setSelectedExams([]);
                         }
                       }}
                     />
@@ -266,6 +272,8 @@ const ExamManagement = () => {
                   <TableCell>Subject</TableCell>
                   <TableCell>Level</TableCell>
                   <TableCell>Class Category</TableCell>
+                  <TableCell>Total Marks</TableCell>
+                  <TableCell>Duration</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -273,8 +281,8 @@ const ExamManagement = () => {
               <TableBody>
                 {filteredExams
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((exam) => (
-                    <TableRow key={exam.id}>
+                  .map((exam, index) => (
+                    <TableRow key={index}>
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={selectedExams.includes(exam.id)}
@@ -291,10 +299,12 @@ const ExamManagement = () => {
                       </TableCell>
                       <TableCell>{exam.id}</TableCell>
                       <TableCell>{exam.name}</TableCell>
-                      <TableCell>{exam.subject}</TableCell>
-                      <TableCell>{exam.level}</TableCell>
-                      <TableCell>{exam.classCategory}</TableCell>
-                      <TableCell>{exam.totalMarks}</TableCell>
+                      <TableCell>{exam.subject.subject_name}</TableCell>
+                      <TableCell>{exam.level.name}</TableCell>
+                      <TableCell>{exam.class_category.name}</TableCell>
+                      <TableCell>{exam.total_marks}</TableCell>
+                      <TableCell>{exam.duration}</TableCell>
+                      <TableCell>{exam.type}</TableCell>
                       <TableCell>
                         <Button
                           onClick={() => handleView(exam)}
@@ -362,7 +372,9 @@ const ExamManagement = () => {
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Subject</InputLabel>
-                  <Select defaultValue={selectedExam?.subject || ""}>
+                  <Select
+                    defaultValue={selectedExam?.subject.subject_name || ""}
+                  >
                     <MenuItem value="Mathematics">Mathematics</MenuItem>
                     <MenuItem value="Science">Science</MenuItem>
                     <MenuItem value="English">English</MenuItem>
@@ -372,7 +384,7 @@ const ExamManagement = () => {
               <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Level</InputLabel>
-                  <Select defaultValue={selectedExam?.level || ""}>
+                  <Select defaultValue={selectedExam?.level.name || ""}>
                     <MenuItem value="Beginner">Beginner</MenuItem>
                     <MenuItem value="Intermediate">Intermediate</MenuItem>
                     <MenuItem value="Advanced">Advanced</MenuItem>
@@ -413,7 +425,7 @@ const ExamManagement = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="subtitle2">Subject</Typography>
-                  <Typography>{selectedExam.subject}</Typography>
+                  <Typography>{selectedExam.subject.subject_name}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2">Description</Typography>
