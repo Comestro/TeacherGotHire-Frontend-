@@ -12,6 +12,7 @@ import {
 } from "../../../features/jobProfileSlice";
 import { HiOutlineAcademicCap, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import Loader from "../../Loader";
 
 const Education = () => {
   const dispatch = useDispatch();
@@ -29,6 +30,7 @@ const Education = () => {
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -53,6 +55,7 @@ const Education = () => {
     try {
       console.log("edudata", data);
       console.log("editindex", editingIndex);
+      setLoading(true);
       if (editingIndex !== null) {
         const id = educationData[editingIndex].id;
         // Construct payload with only necessary fields
@@ -62,8 +65,6 @@ const Education = () => {
           year_of_passing: data.year_of_passing,
           grade_or_percentage: data.grade_or_percentage,
         };
-        console.log("payload", payload, id);
-
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
       } else {
@@ -76,6 +77,9 @@ const Education = () => {
       reset(); // Reset form
     } catch (err) {
       setError(err.message);
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -103,6 +107,7 @@ const Education = () => {
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white  border border-gray-200">
       {/* Enhanced Header */}
+      {loading && <Loader/>}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
           <h2 className="text-2xl font-bold text-gray-900 mb-1">

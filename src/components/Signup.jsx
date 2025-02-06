@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { createaccount, verifyOtp } from "../services/authServices";
 import Navbar from "./Navbar/Navbar";
 import { getPostData } from "../features/authSlice";
+import Loader from "./Loader";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -26,6 +27,11 @@ function SignUpPage() {
 
 
   const password = watch("password");
+
+  const inputClass = `w-full border-2 text-sm rounded-xl px-3 py-3 ${errors.email
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:bordser-green-500"
+                  }`
 
   const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
@@ -71,6 +77,8 @@ function SignUpPage() {
   return (
     <>
       {/* <Navbar /> */}
+      {loading && <Loader />} {/* Show loader while loading */}
+
       <div
         className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
@@ -108,16 +116,12 @@ function SignUpPage() {
             <form onSubmit={handleSubmit(signup)} className="space-y-4 mb-5">
               {/* Full Name */}
               <div className="flex gap-2">
-                <div className="flex flex-col">
+                <div className="flex flex-col flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
                   </label>
                   <Input
-                    className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${
-                      errors.Fname
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:border-green-500"
-                    }`}
+                    className={inputClass}
                     placeholder="Enter your first name"
                     {...register("Fname", {
                       required: "First name is required",
@@ -130,16 +134,12 @@ function SignUpPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Last Name
                   </label>
                   <Input
-                    className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${
-                      errors.Lname
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:bordser-green-500"
-                    }`}
+                    className={inputClass}
                     placeholder="Enter your last name"
                     {...register("Lname", {
                       required: "Last name is required",
@@ -161,11 +161,7 @@ function SignUpPage() {
                 <Input
                   placeholder="Enter your email"
                   type="email"
-                  className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${
-                    errors.email
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:bordser-green-500"
-                  }`}
+                  className={inputClass}
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
@@ -187,11 +183,7 @@ function SignUpPage() {
                 <Input
                   placeholder="Enter your password"
                   type="password"
-                  className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${
-                    errors.password
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:bordser-green-500"
-                  }`}
+                  className={inputClass}
                   {...register("password", {
                     required: "Password is required",
                     minLength: {
@@ -215,11 +207,7 @@ function SignUpPage() {
                 <Input
                   placeholder="Confirm your password"
                   type="password"
-                  className={`w-full border-2 text-sm rounded-xl px-3 py-3 ${
-                    errors.confirmPassword
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:bordser-green-500"
-                  }`}
+                  className={inputClass}
                   {...register("confirmPassword", {
                     required: "Please confirm your password",
                     validate: (value) =>
@@ -248,17 +236,7 @@ function SignUpPage() {
               <p className="text-red-500 text-sm mt-4">Error: {error}</p>
             )}
 
-            {/* <div className="px-2">
-              <p className="text-sm font-medium text-gray-600 mt-3 mb-4">
-                Have an account?{" "}
-                <span
-                  onClick={() => navigate("/signin")}
-                  className="text-teal-600 hover:underline font-semibold"
-                >
-                  Sign In
-                </span>
-              </p>
-            </div> */}
+           
             </>) : (
               <>
                <>
