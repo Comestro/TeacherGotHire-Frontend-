@@ -36,12 +36,12 @@ import RecruiterSignUpPage from "./components/RecruiterSignup";
 import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
-import ExamLevels from "./components/Dashboard/components/ExamLevels";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
 import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
 import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
+import QuestionManagement from "./components/SubjectWiseExam/QuestionManagement";
 
 
 // import Logout from "./components/Logout";
@@ -95,8 +95,8 @@ function App() {
             <Route path="result" element={<ResultPage />} />
           </Route>
 
+          <Route path="/set-subject-exam" element={<QuestionManagement/>} />
           
-
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RoleBasedRoute element={<RecruiterLayout />} allowedRoles={['recruiter']} />}>
             <Route index element={<TeacherRecruiter />} />
@@ -192,10 +192,6 @@ function App() {
             <Route
               path="job-profile"
               element={<RoleBasedRoute element={<JobProfileEdit />} allowedRoles={['user']}/>}
-            />
-             <Route
-              path="start-exam"
-              element={<RoleBasedRoute element={<ExamLevels/>}  allowedRoles={['user']}/>}
             />
             <Route
               path="view-attempts"
