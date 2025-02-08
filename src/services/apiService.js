@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/";
+const API_URL = "https://ptpi.tech/";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -70,6 +70,18 @@ const apiService = {
       return response.data;
     } catch (error) {
       console.error(`Error deleting data from ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  bulkDelete: async (endpoint, examIds) => {
+    try {
+      const response = await axiosInstance.post(`${endpoint}bulk-delete/`, {
+        ids: examIds,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error bulk deleting data from ${endpoint}:`, error);
       throw error;
     }
   },

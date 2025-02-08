@@ -162,8 +162,8 @@ const ManageSubject = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredSubjects.map((subject) => (
-              <TableRow key={subject.id}>
+            {filteredSubjects.map((subject, index) => (
+              <TableRow key={subject.id + index}>
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={selectedSubjects.includes(subject.id)}
