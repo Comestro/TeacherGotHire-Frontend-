@@ -64,6 +64,7 @@ const ModalContent = styled(Box)(({ theme }) => ({
 }));
 
 const ExamManagement = () => {
+  const [Loader, setLoader] = useState(false);
   const [exams, setExams] = useState([]);
   const [selectedExams, setSelectedExams] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -94,13 +95,14 @@ const ExamManagement = () => {
     duration: "",
     type: "",
   });
-  const [Loader, setLoader] = useState(false);
 
   // fetch all exams in ascending order
   useEffect(() => {
     const fetchExams = async () => {
       try {
         const response = await getExam();
+        // want to sort the exams in ascending order
+        response.sort((a, b) => b.id - a.id);
         setExams(response);
       } catch (error) {
         console.error("Error fetching exams:", error);
@@ -109,6 +111,8 @@ const ExamManagement = () => {
           message: "Error fetching exams!",
           severity: "error",
         });
+      } finally {
+        setLoader(false);
       }
     };
     fetchExams();
@@ -303,6 +307,10 @@ const ExamManagement = () => {
     );
   });
 
+  if (Loader) {
+    return <Loader />;
+  }
+
   return (
     <Layout>
       <Box sx={{ p: 3 }}>
@@ -451,7 +459,7 @@ const ExamManagement = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>{exam.id}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>{exam.name}</TableCell>
                       <TableCell>{exam.subject.subject_name}</TableCell>
                       <TableCell>{exam.level.name}</TableCell>

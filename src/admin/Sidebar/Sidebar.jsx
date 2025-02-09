@@ -33,6 +33,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { Link } from "react-router-dom";
 import { logout } from "../../services/authServices";
+import { Key } from "@mui/icons-material";
 
 const drawerWidth = 240;
 
@@ -171,12 +172,30 @@ export default function Sidebar({ open, handleDrawerClose }) {
       icon: <ClassIcon />,
       link: "/admin/manage/class/category",
     },
-    { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
+    { 
+      text: "Manage Level", 
+      icon: <LayersIcon />, 
+      link: "/admin/manage/level" },
     {
       text: "Manage Exam",
       icon: <AssignmentIcon />,
       link: "/admin/manage/exam",
     },
+    {
+      text: "Manage Exam Center",
+      icon: <SchoolIcon />,
+      link: "/admin/manage/exam/center",
+    },
+    {
+      text: "Manage Passkey",
+      icon: <Key />,
+      link: "/admin/manage/passkey",
+    },
+    {
+      text: "Question Manager",
+      icon: <PersonIcon />,
+      link: "/admin/manage/question/manager",
+    }
   ];
 
   return (

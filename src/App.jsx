@@ -39,10 +39,12 @@ import ExamMode from "./components/Exam/ExamMode";
 import ExamLevels from "./components/Dashboard/components/ExamLevels";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
 import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
-import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
+// import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
-
+import ManageCenter from "./admin/manage-center/ManageCenter";
+import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
+import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
 
 // import Logout from "./components/Logout";
 
@@ -70,136 +72,249 @@ function App() {
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        
-          {/* new Teacher Layout work */}
-
+        {/* new Teacher Layout work */}
 
         <Routes>
-          <Route index path="/new-teacher" element={<TeacherLayout/>}/>
+          <Route index path="/new-teacher" element={<TeacherLayout />} />
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<Home />} />
             <Route path="/signup/teacher" element={<SignUpPage />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
+            <Route
+              path="/reset-password/:uid/:token"
+              element={<ResetPassword />}
+            />
             <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/exam-mode" element={<ExamMode />} />
           </Route>
 
           {/* exam routes */}
-          <Route path="/exam" element={<ExamLayout />} >
+          <Route path="/exam" element={<ExamLayout />}>
             <Route index element={<MCQGuidelinePage />} />
-            <Route path="portal" element={<ExamPortal/>} />
+            <Route path="portal" element={<ExamPortal />} />
             <Route path="result" element={<ResultPage />} />
           </Route>
 
-          
-
           {/* Recruiter Routes */}
-          <Route path="/recruiter" element={<RoleBasedRoute element={<RecruiterLayout />} allowedRoles={['recruiter']} />}>
+          <Route
+            path="/recruiter"
+            element={
+              <RoleBasedRoute
+                element={<RecruiterLayout />}
+                allowedRoles={["recruiter"]}
+              />
+            }
+          >
             <Route index element={<TeacherRecruiter />} />
           </Route>
 
           {/* Admin Routes */}
           <Route
             path="/admin/dashboard"
-            element={<RoleBasedRoute element={<AdminDashboard />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<AdminDashboard />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/profile"
-            element={<RoleBasedRoute element={<AdminProfile />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<AdminProfile />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/subject"
-            element={<RoleBasedRoute element={<ManageSubject />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ManageSubject />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/teacher"
-            element={<RoleBasedRoute element={<ManageTeacher />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ManageTeacher />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/recruiter"
-            element={<RoleBasedRoute element={<ManageRecruiter />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ManageRecruiter />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/question"
-            element={<RoleBasedRoute element={<ManageQuestion />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ManageQuestion />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/skills"
-            element={<RoleBasedRoute element={<ManageSkills />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ManageSkills />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/qualification"
             element={
-              <RoleBasedRoute element={<ManageQualification />} allowedRoles={['admin']} />
+              <RoleBasedRoute
+                element={<ManageQualification />}
+                allowedRoles={["admin"]}
+              />
             }
           />
           <Route
             path="/admin/support"
-            element={<RoleBasedRoute elements={<Support />} allowedRoles={['amin']} />}
+            element={
+              <RoleBasedRoute elements={<Support />} allowedRoles={["amin"]} />
+            }
           />
           <Route
             path="/admin/change/password"
-            element={<RoleBasedRoute element={<ChangePassword />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute
+                element={<ChangePassword />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/contact"
-            element={<RoleBasedRoute element={<Contact />} allowedRoles={['admin']} />}
+            element={
+              <RoleBasedRoute element={<Contact />} allowedRoles={["admin"]} />
+            }
           />
           <Route
-            path="/admin/view/teacher"
-            element={<RoleBasedRoute element={<ViewTeacher_Admin />} allowedRoles={['admin']} />}
+            path="/admin/view/teacher/:id"
+            element={
+              <RoleBasedRoute
+                element={<ViewTeacher_Admin />}
+                allowedRoles={["admin"]}
+              />
+            }
           />
           <Route
             path="/admin/manage/class/category"
             element={
-              <RoleBasedRoute element={<ManageClassCategory />} allowedRoles={['admin']} />
+              <RoleBasedRoute
+                element={<ManageClassCategory />}
+                allowedRoles={["admin"]}
+              />
             }
           />
           <Route
             path="/admin/manage/teacher/jobtype"
             element={
-              <RoleBasedRoute element={<ManageTeacherJobType />} allowedRoles={['admin']} />
+              <RoleBasedRoute
+                element={<ManageTeacherJobType />}
+                allowedRoles={["admin"]}
+              />
             }
           />
           <Route
             path="/admin/manage/level"
             element={
-              <RoleBasedRoute element={<ManageLevel />} allowedRoles={['admin']} />
+              <RoleBasedRoute
+                element={<ManageLevel />}
+                allowedRoles={["admin"]}
+              />
             }
           />
           <Route
             path="/admin/manage/exam"
             element={
-              <RoleBasedRoute element={<ExamManagement />} allowedRoles={['admin']} />
+              <RoleBasedRoute
+                element={<ExamManagement />}
+                allowedRoles={["admin"]}
+              />
             }
           />
 
+          <Route
+            path="/admin/manage/exam/center"
+            element={<ManageCenter />}
+            allowedRoles={["admin"]}
+          />
+
+          <Route
+            path="/admin/manage/passkey"
+            element={<PasskeyManagement />}
+            allowedRoles={["admin"]}
+          />
+
+          <Route
+            path="/admin/manage/question/manager"
+            element={<ManageQuestionManager />}
+            allowedRoles={["admin"]}
+          />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<Layout />}>
             <Route
               index
-              element={<RoleBasedRoute element={<TeacherDashboard />} allowedRoles={['user']} />}
+              element={
+                <RoleBasedRoute
+                  element={<TeacherDashboard />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
             <Route
               path="personal-profile"
-              element={<RoleBasedRoute element={<EditPersonalProfile />} allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<EditPersonalProfile />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
             <Route
               path="job-profile"
-              element={<RoleBasedRoute element={<JobProfileEdit />} allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<JobProfileEdit />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
-             <Route
+            <Route
               path="start-exam"
-              element={<RoleBasedRoute element={<ExamLevels/>}  allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<ExamLevels />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
             <Route
               path="view-attempts"
-              element={<RoleBasedRoute element={<ViewAttempts />} allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<ViewAttempts />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
           </Route>
 
@@ -208,15 +323,23 @@ function App() {
             {/* <Route index element={<ExamCenterDashboard />} /> */}
             <Route
               path="personal-profile"
-              element={<RoleBasedRoute element={<EditPersonalProfile />} allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<EditPersonalProfile />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
             <Route
               path="job-profile"
-              element={<RoleBasedRoute element={<JobProfileEdit />} allowedRoles={['user']}/>}
+              element={
+                <RoleBasedRoute
+                  element={<JobProfileEdit />}
+                  allowedRoles={["user"]}
+                />
+              }
             />
           </Route>
-
-         
         </Routes>
       </BrowserRouter>
     </Provider>

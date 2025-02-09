@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -34,130 +34,17 @@ import {
   GetApp as ExportIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
+import {
+  getTeacher,
+  createTeacher,
+  updateTeacher,
+  deleteTeacher,
+} from "../../services/adminTeacherApi";
+import Loader from "../../components/Loader";
+import { Link } from "react-router-dom";
 
 const ManageTeacher = () => {
-  const [teachers, setTeachers] = useState([
-    {
-      id: 1,
-      name: "Amit Sharma",
-      email: "amit.sharma@example.com",
-      qualification: "PhD",
-      subjects: ["Math", "Science"],
-      location: "Delhi",
-      status: "Approved",
-      score: 95,
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      email: "priya.singh@example.com",
-      qualification: "Masters",
-      subjects: ["English"],
-      location: "Mumbai",
-      status: "Pending",
-      score: 88,
-    },
-    {
-      id: 3,
-      name: "Rajesh Kumar",
-      email: "rajesh.kumar@example.com",
-      qualification: "Bachelors",
-      subjects: ["History"],
-      location: "Bangalore",
-      status: "Rejected",
-      score: 72,
-    },
-    {
-      id: 4,
-      name: "Anjali Verma",
-      email: "anjali.verma@example.com",
-      qualification: "PhD",
-      subjects: ["Physics"],
-      location: "Chennai",
-      status: "Approved",
-      score: 90,
-    },
-    {
-      id: 5,
-      name: "Vikram Patel",
-      email: "vikram.patel@example.com",
-      qualification: "Masters",
-      subjects: ["Chemistry"],
-      location: "Hyderabad",
-      status: "Pending",
-      score: 85,
-    },
-    {
-      id: 6,
-      name: "Sneha Gupta",
-      email: "sneha.gupta@example.com",
-      qualification: "Bachelors",
-      subjects: ["Biology", "Math"],
-      location: "Pune",
-      status: "Rejected",
-      score: 70,
-    },
-    {
-      id: 7,
-      name: "Arjun Reddy",
-      email: "arjun.reddy@example.com",
-      qualification: "PhD",
-      subjects: ["Math"],
-      location: "Kolkata",
-      status: "Approved",
-      score: 92,
-    },
-    {
-      id: 8,
-      name: "Meera Nair",
-      email: "meera.nair@example.com",
-      qualification: "Masters",
-      subjects: ["English", "History"],
-      location: "Kochi",
-      status: "Pending",
-      score: 87,
-    },
-    {
-      id: 9,
-      name: "Ravi Shankar",
-      email: "ravi.shankar@example.com",
-      qualification: "Bachelors",
-      subjects: ["Geography"],
-      location: "Jaipur",
-      status: "Rejected",
-      score: 68,
-    },
-    {
-      id: 10,
-      name: "Kiran Desai",
-      email: "kiran.desai@example.com",
-      qualification: "PhD",
-      subjects: ["Economics"],
-      location: "Ahmedabad",
-      status: "Approved",
-      score: 94,
-    },
-    {
-      id: 11,
-      name: "Lakshmi Iyer",
-      email: "lakshmi.iyer@example.com",
-      qualification: "Masters",
-      subjects: ["Political Science"],
-      location: "Thiruvananthapuram",
-      status: "Pending",
-      score: 86,
-    },
-    {
-      id: 12,
-      name: "Suresh Menon",
-      email: "suresh.menon@example.com",
-      qualification: "Bachelors",
-      subjects: ["Sociology"],
-      location: "Bhopal",
-      status: "Rejected",
-      score: 75,
-    },
-  ]);
+  const [teachers, setTeachers] = useState([]);
   const [selectedTeachers, setSelectedTeachers] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -174,6 +61,25 @@ const ManageTeacher = () => {
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const response = await getTeacher();
+        if (Array.isArray(response)) {
+          setTeachers(response);
+        } else {
+          console.error("Unexpected response structure:", response);
+        }
+      } catch (error) {
+        console.error("Failed to fetch teachers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   const handleAddTeacher = () => {
     setCurrentTeacher(null);
@@ -187,38 +93,86 @@ const ManageTeacher = () => {
 
   const handleViewTeacher = (teacher) => {
     setCurrentTeacher(teacher);
-    setIsViewModalOpen(true);
   };
 
-  const handleDeleteTeacher = (teacherId) => {
-    setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
-    setNotification({
-      open: true,
-      message: "Teacher deleted successfully.",
-      type: "success",
-    });
+  const handleDeleteTeacher = async (teacherId) => {
+    try {
+      await deleteTeacher(teacherId);
+      setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
+      setNotification({
+        open: true,
+        message: "Teacher deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to delete teacher:", error);
+      setNotification({
+        open: true,
+        message: "Failed to delete teacher.",
+        type: "error",
+      });
+    }
   };
 
-  const handleBulkDelete = () => {
-    setTeachers(
-      teachers.filter((teacher) => !selectedTeachers.includes(teacher.id))
-    );
-    setSelectedTeachers([]);
-    setNotification({
-      open: true,
-      message: "Selected teachers deleted successfully.",
-      type: "success",
-    });
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selectedTeachers.map((id) => deleteTeacher(id)));
+      setTeachers(
+        teachers.filter((teacher) => !selectedTeachers.includes(teacher.id))
+      );
+      setSelectedTeachers([]);
+      setNotification({
+        open: true,
+        message: "Selected teachers deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to delete selected teachers:", error);
+      setNotification({
+        open: true,
+        message: "Failed to delete selected teachers.",
+        type: "error",
+      });
+    }
   };
 
-  const handleSaveTeacher = () => {
-    // Add save logic here
-    setIsEditModalOpen(false);
-    setNotification({
-      open: true,
-      message: "Teacher saved successfully.",
-      type: "success",
-    });
+  const handleSaveTeacher = async () => {
+    const teacherData = {
+      Fname: currentTeacher.Fname,
+      Lname: currentTeacher.Lname,
+      email: currentTeacher.email,
+      qualification: currentTeacher.teacherqualifications.map(
+        (q) => q.qualification.name
+      ),
+      subjects: currentTeacher.teacherskill.map((s) => s.skill.name),
+      location: currentTeacher.teachersaddress[0]?.state || "N/A",
+      status: "Approved", // Default status
+    };
+
+    try {
+      if (currentTeacher.id) {
+        const response = await updateTeacher(currentTeacher.id, teacherData);
+        setTeachers(
+          teachers.map((t) => (t.id === currentTeacher.id ? response.data : t))
+        );
+      } else {
+        const response = await createTeacher(teacherData);
+        setTeachers([...teachers, response.data]);
+      }
+      setIsEditModalOpen(false);
+      setNotification({
+        open: true,
+        message: "Teacher saved successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to save teacher:", error);
+      setNotification({
+        open: true,
+        message: "Failed to save teacher.",
+        type: "error",
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -244,13 +198,15 @@ const ManageTeacher = () => {
       ],
       ...teachers.map((teacher) => [
         teacher.id,
-        teacher.name,
+        `${teacher.Fname} ${teacher.Lname}`,
         teacher.email,
-        teacher.qualification,
-        teacher.subjects.join(", "),
-        teacher.location,
-        teacher.status,
-        teacher.score,
+        teacher.teacherqualifications
+          .map((q) => q.qualification.name)
+          .join(", "),
+        teacher.teacherskill.map((s) => s.skill.name).join(", "),
+        teacher.teachersaddress[0]?.state || "N/A",
+        "Approved", // Default status
+        teacher.total_marks,
       ]),
     ]
       .map((e) => e.join(","))
@@ -267,24 +223,37 @@ const ManageTeacher = () => {
     document.body.removeChild(link);
   };
 
-  const filteredTeachers = teachers.filter((teacher) => {
+  const filteredTeachers = (teachers || []).filter((teacher) => {
+    const fullName = `${teacher.Fname} ${teacher.Lname}`.toLowerCase();
     return (
-      (teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (fullName.includes(searchQuery.toLowerCase()) ||
         teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.id.toString().includes(searchQuery)) &&
       (selectedQualification
-        ? teacher.qualification.toLowerCase() ===
-          selectedQualification.toLowerCase()
+        ? teacher.teacherqualifications.some(
+            (q) =>
+              q.qualification.name.toLowerCase() ===
+              selectedQualification.toLowerCase()
+          )
         : true) &&
-      (selectedSubject ? teacher.subjects.includes(selectedSubject) : true) &&
+      (selectedSubject
+        ? teacher.teacherskill.some(
+            (s) => s.skill.name.toLowerCase() === selectedSubject.toLowerCase()
+          )
+        : true) &&
       (selectedLocation
-        ? teacher.location.toLowerCase() === selectedLocation.toLowerCase()
+        ? teacher.teachersaddress[0]?.state.toLowerCase() ===
+          selectedLocation.toLowerCase()
         : true) &&
       (selectedStatus
-        ? teacher.status.toLowerCase() === selectedStatus.toLowerCase()
+        ? "Approved".toLowerCase() === selectedStatus.toLowerCase()
         : true)
     );
   });
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <Layout>
@@ -330,9 +299,9 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="phd">PhD</MenuItem>
-              <MenuItem value="masters">Masters</MenuItem>
-              <MenuItem value="bachelors">Bachelors</MenuItem>
+              <MenuItem value="B.Ed">B.Ed</MenuItem>
+              <MenuItem value="M.Ed">M.Ed</MenuItem>
+              <MenuItem value="PhD">PhD</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -345,10 +314,11 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="math">Math</MenuItem>
-              <MenuItem value="science">Science</MenuItem>
-              <MenuItem value="english">English</MenuItem>
-              <MenuItem value="history">History</MenuItem>
+              <MenuItem value="Python">Python</MenuItem>
+              <MenuItem value="Java">Java</MenuItem>
+              <MenuItem value="Mathematics">Mathematics</MenuItem>
+              <MenuItem value="Physics">Physics</MenuItem>
+              <MenuItem value="History">History</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -361,18 +331,9 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="delhi">Delhi</MenuItem>
-              <MenuItem value="mumbai">Mumbai</MenuItem>
-              <MenuItem value="bangalore">Bangalore</MenuItem>
-              <MenuItem value="chennai">Chennai</MenuItem>
-              <MenuItem value="hyderabad">Hyderabad</MenuItem>
-              <MenuItem value="pune">Pune</MenuItem>
-              <MenuItem value="kolkata">Kolkata</MenuItem>
-              <MenuItem value="kochi">Kochi</MenuItem>
-              <MenuItem value="jaipur">Jaipur</MenuItem>
-              <MenuItem value="ahmedabad">Ahmedabad</MenuItem>
-              <MenuItem value="thiruvananthapuram">Thiruvananthapuram</MenuItem>
-              <MenuItem value="bhopal">Bhopal</MenuItem>
+              <MenuItem value="Bihar">Bihar</MenuItem>
+              <MenuItem value="Delhi">Delhi</MenuItem>
+              <MenuItem value="Mumbai">Mumbai</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -410,7 +371,7 @@ const ManageTeacher = () => {
           <TableBody>
             {filteredTeachers
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((teacher) => (
+              .map((teacher, index) => (
                 <TableRow key={teacher.id}>
                   <TableCell padding="checkbox">
                     <Checkbox
@@ -429,34 +390,39 @@ const ManageTeacher = () => {
                       }}
                     />
                   </TableCell>
-                  <TableCell>{teacher.name}</TableCell>
+                  <TableCell>{`${teacher.Fname} ${teacher.Lname}`}</TableCell>
                   <TableCell>{teacher.email}</TableCell>
-                  <TableCell>{teacher.qualification}</TableCell>
-                  <TableCell>{teacher.subjects.join(", ")}</TableCell>
-                  <TableCell>{teacher.location}</TableCell>
+                  <TableCell>
+                    {teacher.teacherqualifications
+                      .slice(0, 2)
+                      .map((q) => q.qualification.name)
+                      .join(", ")}
+                  </TableCell>
+                  <TableCell>
+                    {teacher.teacherskill
+                      .slice(0, 2)
+                      .map((s) => s.skill.name)
+                      .join(", ")}
+                  </TableCell>
+                  <TableCell>
+                    {teacher.teachersaddress[0]?.state || "N/A"}
+                  </TableCell>
                   <TableCell>
                     <Switch
-                      checked={teacher.status === "Approved"}
-                      onChange={() => {
-                        const newStatus =
-                          teacher.status === "Approved"
-                            ? "Rejected"
-                            : "Approved";
-                        setTeachers(
-                          teachers.map((t) =>
-                            t.id === teacher.id
-                              ? { ...t, status: newStatus }
-                              : t
-                          )
-                        );
-                      }}
+                      checked={true} // Default status
+                      onChange={() => {}}
                       color="primary"
                     />
                   </TableCell>
-                  <TableCell>{teacher.score}</TableCell>
+                  <TableCell>{teacher.total_marks}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleViewTeacher(teacher)}>
-                      <ViewIcon />
+                      <Link
+                        to={`/admin/view/teacher/${teacher.id}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <ViewIcon />
+                      </Link>
                     </IconButton>
                     <IconButton onClick={() => handleEditTeacher(teacher)}>
                       <EditIcon />
@@ -485,6 +451,7 @@ const ManageTeacher = () => {
         >
           Delete Selected
         </Button>
+        {/* add/edit modal */}
         <Dialog
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
@@ -498,7 +465,15 @@ const ManageTeacher = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              defaultValue={currentTeacher ? currentTeacher.name : ""}
+              defaultValue={
+                currentTeacher
+                  ? `${currentTeacher.Fname} ${currentTeacher.Lname}`
+                  : ""
+              }
+              onChange={(e) => {
+                const [Fname, Lname] = e.target.value.split(" ");
+                setCurrentTeacher({ ...currentTeacher, Fname, Lname });
+              }}
             />
             <TextField
               label="Email Address"
@@ -506,26 +481,30 @@ const ManageTeacher = () => {
               fullWidth
               margin="normal"
               defaultValue={currentTeacher ? currentTeacher.email : ""}
+              onChange={(e) =>
+                setCurrentTeacher({ ...currentTeacher, email: e.target.value })
+              }
             />
             <FormControl variant="outlined" fullWidth margin="normal">
               <InputLabel>Qualification</InputLabel>
               <Select
                 label="Qualification"
-                defaultValue={
-                  currentTeacher ? currentTeacher.qualification : ""
-                }
-              >
-                <MenuItem value="phd">PhD</MenuItem>
-                <MenuItem value="masters">Masters</MenuItem>
-                <MenuItem value="bachelors">Bachelors</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Subjects Taught</InputLabel>
-              <Select
-                label="Subjects Taught"
                 multiple
-                defaultValue={currentTeacher ? currentTeacher.subjects : []}
+                defaultValue={
+                  currentTeacher
+                    ? currentTeacher.teacherqualifications.map(
+                        (q) => q.qualification.name
+                      )
+                    : []
+                }
+                onChange={(e) =>
+                  setCurrentTeacher({
+                    ...currentTeacher,
+                    teacherqualifications: e.target.value.map((name) => ({
+                      qualification: { name },
+                    })),
+                  })
+                }
                 renderValue={(selected) => (
                   <Box display="flex" flexWrap="wrap">
                     {selected.map((value) => (
@@ -534,10 +513,42 @@ const ManageTeacher = () => {
                   </Box>
                 )}
               >
-                <MenuItem value="math">Math</MenuItem>
-                <MenuItem value="science">Science</MenuItem>
-                <MenuItem value="english">English</MenuItem>
-                <MenuItem value="history">History</MenuItem>
+                <MenuItem value="B.Ed">B.Ed</MenuItem>
+                <MenuItem value="M.Ed">M.Ed</MenuItem>
+                <MenuItem value="PhD">PhD</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel>Subjects Taught</InputLabel>
+              <Select
+                label="Subjects Taught"
+                multiple
+                defaultValue={
+                  currentTeacher
+                    ? currentTeacher.teacherskill.map((s) => s.skill.name)
+                    : []
+                }
+                onChange={(e) =>
+                  setCurrentTeacher({
+                    ...currentTeacher,
+                    teacherskill: e.target.value.map((name) => ({
+                      skill: { name },
+                    })),
+                  })
+                }
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap">
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} />
+                    ))}
+                  </Box>
+                )}
+              >
+                <MenuItem value="Python">Python</MenuItem>
+                <MenuItem value="Java">Java</MenuItem>
+                <MenuItem value="Mathematics">Mathematics</MenuItem>
+                <MenuItem value="Physics">Physics</MenuItem>
+                <MenuItem value="History">History</MenuItem>
               </Select>
             </FormControl>
             <TextField
@@ -545,19 +556,16 @@ const ManageTeacher = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              defaultValue={currentTeacher ? currentTeacher.location : ""}
+              defaultValue={
+                currentTeacher ? currentTeacher.teachersaddress[0]?.state : ""
+              }
+              onChange={(e) =>
+                setCurrentTeacher({
+                  ...currentTeacher,
+                  teachersaddress: [{ state: e.target.value }],
+                })
+              }
             />
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                defaultValue={currentTeacher ? currentTeacher.status : ""}
-              >
-                <MenuItem value="approved">Approved</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsEditModalOpen(false)} color="primary">
@@ -568,6 +576,7 @@ const ManageTeacher = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        {/* view modal */}
         <Dialog
           open={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
@@ -575,25 +584,29 @@ const ManageTeacher = () => {
           <DialogTitle>View Teacher</DialogTitle>
           <DialogContent>
             <Typography variant="h6">
-              Full Name: {currentTeacher?.name}
+              Full Name: {`${currentTeacher?.Fname} ${currentTeacher?.Lname}`}
             </Typography>
             <Typography variant="h6">
               Email Address: {currentTeacher?.email}
             </Typography>
             <Typography variant="h6">
-              Qualification: {currentTeacher?.qualification}
+              Qualification:{" "}
+              {currentTeacher?.teacherqualifications
+                .map((q) => q.qualification.name)
+                .join(", ")}
             </Typography>
             <Typography variant="h6">
-              Subjects Taught: {currentTeacher?.subjects.join(", ")}
+              Subjects Taught:{" "}
+              {currentTeacher?.teacherskill.map((s) => s.skill.name).join(", ")}
             </Typography>
             <Typography variant="h6">
-              Location: {currentTeacher?.location}
+              Location: {currentTeacher?.teachersaddress[0]?.state || "N/A"}
             </Typography>
             <Typography variant="h6">
-              Status: {currentTeacher?.status}
+              Status: Approved {/* Default status */}
             </Typography>
             <Typography variant="h6">
-              Skill Test Score: {currentTeacher?.score}
+              Skill Test Score: {currentTeacher?.total_marks}
             </Typography>
           </DialogContent>
           <DialogActions>
@@ -607,7 +620,7 @@ const ManageTeacher = () => {
           autoHideDuration={6000}
           onClose={() => setNotification({ ...notification, open: false })}
           message={notification.message}
-          severity={notification.type}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         />
       </Container>
     </Layout>

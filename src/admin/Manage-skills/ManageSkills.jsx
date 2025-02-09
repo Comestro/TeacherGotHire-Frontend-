@@ -138,8 +138,8 @@ const ManageSkills = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredSkills.map((skill) => (
-              <TableRow key={skill.id}>
+            {filteredSkills.map((skill, index) => (
+              <TableRow key={index}>
                 <TableCell padding="checkbox">
                   <Checkbox 
                     checked={selectedSkills.includes(skill.id)}
