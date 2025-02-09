@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 
-const CenterHeader = () => {
+const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -19,9 +19,9 @@ const CenterHeader = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link
           to="#"
-          className="text-2xl font-bold text-teal-600 transition"
+          className="text-2xl text-teal-600 transition pl-4"
         >
-          Exam Center Pannel
+          {name}
         </Link>
 
         {/* for laptop */}

@@ -2,6 +2,8 @@ import React from "react";
 import { IoMdSettings, IoIosNotifications, IoMdMenu } from "react-icons/io";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { IoMdHome } from "react-icons/io";
 
 const DashboardHeader = ({ isOpen, setIsOpen }) => {
 
@@ -24,12 +26,13 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-6">
-        <button
+        <Link
+        to="/"
           className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition"
           aria-label="Settings"
         >
-          <IoMdSettings className="text-xl" />
-        </button>
+          <IoMdHome className="text-xl" />
+        </Link>
         <button
           className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition"
           aria-label="Notifications"
