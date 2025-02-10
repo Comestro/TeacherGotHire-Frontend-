@@ -13,6 +13,7 @@ import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 import Loader from "./Loader";
+import { Helmet } from "react-helmet-async";
 
 function Login() {
   const dispatch = useDispatch();
@@ -107,6 +108,9 @@ function Login() {
 
   return (
     <>
+    <Helmet>
+      <title>PTPI | Login Page</title>
+    </Helmet>
           {loading && <Loader />} {/* Show loader while loading */}
 
       <div
@@ -224,30 +228,6 @@ function Login() {
                     <hr className="flex-grow border-gray-300" />
                     <span className="px-4 text-sm text-gray-600">Or</span>
                     <hr className="flex-grow border-gray-300" />
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-center sm:space-x-4 space-y-4 sm:space-y-0 mt-2">
-                    <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                      <img
-                        src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000"
-                        alt="Google"
-                        className="w-5 h-5 mr-2"
-                      />
-                      <span className="text-sm font-medium text-gray-600">
-                        Sign in with Google
-                      </span>
-                    </button>
-
-                    <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                      <img
-                        src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
-                        alt="Facebook"
-                        className="w-5 h-5 mr-2"
-                      />
-                      <span className="text-sm font-medium text-gray-600">
-                        Sign in with Facebook
-                      </span>
-                    </button>
                   </div>
 
                   <p className="text-sm font-medium text-gray-600 mt-6">

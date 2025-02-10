@@ -42,9 +42,12 @@ import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 import QuestionManagement from "./components/SubjectWiseExam/QuestionManagement";
+import SettingsPage from "./components/Pages/SettingsPage";
 import ManageCenter from "./admin/manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
+import { HelmetProvider } from "react-helmet-async";
+import Error404 from "./components/Pages/ErrorPage"
 
 // import Logout from "./components/Logout";
 
@@ -69,10 +72,10 @@ function App() {
 
   return (
     <Provider store={store}>
+      <HelmetProvider>
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        {/* new Teacher Layout work */}
 
         <Routes>
           <Route index path="/new-teacher" element={<TeacherLayout />} />
@@ -98,8 +101,8 @@ function App() {
             <Route path="result" element={<ResultPage />} />
           </Route>
 
-          <Route path="/set-subject-exam" element={<QuestionManagement />} />
-
+          <Route path="/subject-expert" element={<QuestionManagement/>} />
+          
           {/* Recruiter Routes */}
           <Route
             path="/recruiter"
@@ -302,12 +305,11 @@ function App() {
             />
             <Route
               path="view-attempts"
-              element={
-                <RoleBasedRoute
-                  element={<ViewAttempts />}
-                  allowedRoles={["user"]}
-                />
-              }
+              element={<RoleBasedRoute element={<ViewAttempts />} allowedRoles={['user']}/>}
+            />
+            <Route
+              path="setting"
+              element={<RoleBasedRoute element={<SettingsPage />} allowedRoles={['user']}/>}
             />
           </Route>
 
@@ -333,8 +335,10 @@ function App() {
               }
             />
           </Route>
+          <Route path="*" element={<Error404 />} />
         </Routes>
       </BrowserRouter>
+      </HelmetProvider>
     </Provider>
   );
 }

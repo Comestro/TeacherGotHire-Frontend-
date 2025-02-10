@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CenterHeader from "../ExamCenter/CenterHeader";
+import { Helmet } from "react-helmet-async";
 
 const QuestionManagement = () => {
   const [examSets, setExamSets] = useState([]);
@@ -80,6 +81,9 @@ const QuestionManagement = () => {
 
   return (
     <>
+    <Helmet>
+      <title>PTPI | Subject Expert</title>
+    </Helmet>
       <div className="min-h-screen">
         <div className="top-0 fixed w-full">
           <CenterHeader name="Subject Expert" />

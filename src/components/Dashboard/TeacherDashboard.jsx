@@ -13,6 +13,7 @@ import {
 } from "../../features/examQuesSlice";
 import TeacherDashboardCard from "./components/TeacherDashboardCard";
 import ExamManagement from "./components/ExamManagement";
+import { Helmet } from "react-helmet-async";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -99,39 +100,11 @@ function TeacherDashboard() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>PTPI | Teacher Dashboard</title>
+    </Helmet>
     <div className="min-h-screen bg-white">
-      {/* main section */}
-      {/* <div className="px-2">
-        <div className="w-full flex flex-col mx-auto rounded-md">
-          <div className="px-4 flex gap-4 py-4 w-full">
-            
-            <div className="w-1/4 rounded-xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 p-4 flex flex-col items-center">
-              <div className="">
-                <div className="flex w-20">
-                  <CircularProgressbar
-                    value={percentage && percentage[0]}
-                    text={`${percentage && percentage[0]}%`}
-                    styles={{
-                      path: { stroke: "#3E98C7" },
-                      trail: { stroke: "#D6EAF8" },
-                      text: {
-                        fill: "#3E98C7",
-                        fontSize: "20px",
-                        fontWeight: "bold",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="mt-1">
-                <p className="text-gray-500 font-semibold">
-                  {percentage && percentage[0]}% profile completed.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       <div className="md:px-6 py-5">
         <div className="">
@@ -254,6 +227,7 @@ function TeacherDashboard() {
   )}
       </div>
     </div>
+    </>
   );
 }
 

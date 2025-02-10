@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"; // or from 'next/link' if using Next.js
 
 const Footer = () => {
   return (
@@ -9,34 +10,34 @@ const Footer = () => {
           <h3 className="font-bold text-lg mb-4 text-gray-800">Tutors</h3>
           <ul className="space-y-2 text-gray-600">
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/" className="hover:underline block">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/login" className="hover:underline block">
                 Log in
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/about" className="hover:underline block">
                 About
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
-                Press
-              </a>
+              <Link to="/teacher" className="hover:underline block">
+                Teacher Dashboard
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
-                Contact us
-              </a>
+              <Link to="/examcenter" className="hover:underline block">
+                Exam Center
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
-                Help
-              </a>
+              <Link to="/subject-expert" className="hover:underline block">
+                Subject Expert
+              </Link>
             </li>
           </ul>
         </div>
@@ -46,40 +47,36 @@ const Footer = () => {
           <h3 className="font-bold text-lg mb-4 text-gray-800">Top Services</h3>
           <ul className="space-y-2 text-gray-600">
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/math-tutors" className="hover:underline block">
                 Math Tutors
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/reading-tutors" className="hover:underline block">
                 Reading Tutors
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/english-tutors" className="hover:underline block">
                 English Tutors
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/sat-tutoring" className="hover:underline block">
                 SAT Tutoring
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/chemistry-tutors" className="hover:underline block">
                 Chemistry Tutors
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/spanish-tutors" className="hover:underline block">
                 Spanish Tutors
-              </a>
+              </Link>
             </li>
-            <li>
-              <a href="#" className="hover:underline block">
-                Writing Tutors
-              </a>
-            </li>
+            
           </ul>
         </div>
 
@@ -88,29 +85,29 @@ const Footer = () => {
           <h3 className="font-bold text-lg mb-4 text-gray-800">Students</h3>
           <ul className="space-y-2 text-gray-600">
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/hiring-tips" className="hover:underline block">
                 Tips for hiring
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/pricing" className="hover:underline block">
                 Tutoring prices
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/free-courses" className="hover:underline block">
                 Free online courses
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/online-tutoring" className="hover:underline block">
                 Online tutoring
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/local-services" className="hover:underline block">
                 Services near me
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -120,29 +117,29 @@ const Footer = () => {
           <h3 className="font-bold text-lg mb-4 text-gray-800">Tutors Jobs</h3>
           <ul className="space-y-2 text-gray-600">
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/tutoring-jobs" className="hover:underline block">
                 Tutoring jobs
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/online-jobs" className="hover:underline block">
                 Online tutoring jobs
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/become-tutor" className="hover:underline block">
                 How to become a tutor
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/whiteboard" className="hover:underline block">
                 Online whiteboard for teaching
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:underline block">
+              <Link to="/reviews" className="hover:underline block">
                 PTPI.com reviews
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -152,21 +149,21 @@ const Footer = () => {
       <div className="text-center text-gray-500 mt-8 text-sm border-t pt-4 px-4">
         <p>
           © 2024 copyright ·
-          <a href="#" className="hover:underline mx-2">
+          <Link to="/terms" className="hover:underline mx-2">
             Terms of Use
-          </a>{" "}
+          </Link>{" "}
           ·
-          <a href="#" className="hover:underline mx-2">
+          <Link to="/privacy" className="hover:underline mx-2">
             Privacy Policy
-          </a>{" "}
+          </Link>{" "}
           ·
-          <a href="#" className="hover:underline mx-2">
+          <Link to="/accessibility" className="hover:underline mx-2">
             Accessibility
-          </a>{" "}
+          </Link>{" "}
           ·
-          <a href="#" className="hover:underline mx-2">
+          <Link to="/services" className="hover:underline mx-2">
             Services
-          </a>
+          </Link>
         </p>
       </div>
     </footer>

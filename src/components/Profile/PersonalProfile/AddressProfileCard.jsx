@@ -143,10 +143,10 @@ const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
         : "border-transparent bg-gray-50 opacity-75"
     }`}
   >
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between gap-4 mb-4">
       <div className="flex items-center space-x-1">
         <FiMapPin className="w-6 h-6 text-[#3E98C7]" />
-        <h3 className="text-xl font-semibold text-gray-600">{title}</h3>
+        <h3 className="text-lg  font-semibold text-gray-600">{title}</h3>
       </div>
       <button
         onClick={onEdit}
@@ -251,14 +251,14 @@ const AddressProfileCard = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-white">
         <div className="flex-1">
-          <h2 className="text-2xl flex items-center gap-1 font-semibold text-[#2A6F97] leading-tight">
-          <FaLocationDot className="text-[#2A6F97] text-2xl" /> Manage Your Addresses
+          <h2 className="text-2xl flex items-center gap-1  text-[#2A6F97] leading-tight">
+          <FaLocationDot className="text-[#2A6F97] text-xl" /> Manage Your Addresses
           </h2>
           <div className="mt-3 p-4 bg-[#F8FAFC] rounded-lg border border-[#3E98C7]/20 flex items-start gap-3">
             <FaInfoCircle className="text-[#3E98C7] text-sm mt-1 flex-shrink-0" />
-            <p className="text-gray-600 text-sm md:text-base">
+            <p className="text-gray-600 text-xs ">
               Add or update your current and permanent addresses.
-              <span className="block mt-1 text-[#3E98C7] font-medium">
+              <span className="block mt-1 text-[#3E98C7]">
                 Both addresses are required for verification purposes.
               </span>
             </p>
