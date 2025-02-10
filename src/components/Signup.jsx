@@ -8,6 +8,7 @@ import { createaccount, verifyOtp } from "../services/authServices";
 import Navbar from "./Navbar/Navbar";
 import { getPostData } from "../features/authSlice";
 import Loader from "./Loader";
+import { Helmet } from "react-helmet-async";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -76,6 +77,9 @@ function SignUpPage() {
 
   return (
     <>
+    <Helmet>
+      <title>PTPI | Signup Page</title>
+    </Helmet>
       {/* <Navbar /> */}
       {loading && <Loader />} {/* Show loader while loading */}
 

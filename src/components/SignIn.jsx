@@ -13,6 +13,7 @@ import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 import Loader from "./Loader";
+import { Helmet } from "react-helmet-async";
 
 function Login() {
   const dispatch = useDispatch();
@@ -107,6 +108,9 @@ function Login() {
 
   return (
     <>
+    <Helmet>
+      <title>PTPI | Login Page</title>
+    </Helmet>
           {loading && <Loader />} {/* Show loader while loading */}
 
       <div

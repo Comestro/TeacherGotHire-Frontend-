@@ -46,6 +46,7 @@ import SettingsPage from "./components/Pages/SettingsPage";
 import ManageCenter from "./admin/manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
+import { HelmetProvider } from "react-helmet-async";
 
 // import Logout from "./components/Logout";
 
@@ -70,10 +71,10 @@ function App() {
 
   return (
     <Provider store={store}>
+      <HelmetProvider>
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        {/* new Teacher Layout work */}
 
         <Routes>
           <Route index path="/new-teacher" element={<TeacherLayout />} />
@@ -335,6 +336,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </HelmetProvider>
     </Provider>
   );
 }
