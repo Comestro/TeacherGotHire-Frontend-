@@ -1,8 +1,6 @@
-import { Link, useRouteError } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const ErrorBoundary = () => {
-  const error = useRouteError(); // React Router hook to access error details
-  console.error(error); // Log the error for debugging
+const Error404 = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -27,4 +25,4 @@ const ErrorBoundary = () => {
   );
 };
 
-export default ErrorBoundary;
+export default Error404;

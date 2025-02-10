@@ -47,6 +47,7 @@ import ManageCenter from "./admin/manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
 import { HelmetProvider } from "react-helmet-async";
+import Error404 from "./components/Pages/ErrorPage"
 
 // import Logout from "./components/Logout";
 
@@ -334,6 +335,7 @@ function App() {
               }
             />
           </Route>
+          <Route path="*" element={<Error404 />} />
         </Routes>
       </BrowserRouter>
       </HelmetProvider>
