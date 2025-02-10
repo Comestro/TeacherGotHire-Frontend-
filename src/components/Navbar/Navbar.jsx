@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { IoMdClose, IoMdMenu, IoMdArrowDropdown } from "react-icons/io";
 import { useSelector } from "react-redux";
 import { FaUserCircle } from "react-icons/fa";
+import { logout } from "../../services/authServices";
 
 const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   const location = useLocation();
@@ -31,7 +32,7 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   }, []);
 
   const handleLogout = () => {
-    // Add your logout logic here
+    logout();
     setIsDropdownOpen(false);
   };
 
