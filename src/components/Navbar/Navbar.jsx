@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { IoMdClose, IoMdMenu, IoMdArrowDropdown } from "react-icons/io";
 import { useSelector } from "react-redux";
+import { FaUserCircle } from "react-icons/fa";
 
 const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   const location = useLocation();
@@ -9,12 +10,14 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("profile", profile)
+  console.log("profile", profile);
 
   const hideLinksPaths = ["/signin", "/signup/teacher"];
   const showSpecialLinksPaths = ["/signin", "/signup/teacher"];
   const shouldHideLinks = hideLinksPaths.includes(location.pathname);
-  const shouldShowSpecialLinks = showSpecialLinksPaths.includes(location.pathname);
+  const shouldShowSpecialLinks = showSpecialLinksPaths.includes(
+    location.pathname
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -59,7 +62,7 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
           >
             Home
           </Link>
-          
+
           {!shouldHideLinks &&
             links.map((link) => (
               <Link
@@ -73,17 +76,21 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
 
           {profile?.email ? (
             <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 p-3 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                <div className="text-left">
-                  <p className="text-teal-900">{profile.Fname} {profile.Lname}</p>
-                  <p className="text-sm text-gray-600">{profile.email}</p>
-                </div>
-                <IoMdArrowDropdown className={`transform transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-              </button>
-              
+              <div className="mr-2">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 text-teal-600 hover:text-teal-700 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
+                >
+                  <FaUserCircle className="w-8 h-8 " />
+                  <div className="hidden md:flex flex-col items-start ">
+                    <span className="font-medium ">
+                      {profile.Fname} {profile.Lname}
+                    </span>
+                    <span className="text-sm  -mt-1">{profile.email}</span>
+                  </div>
+                </button>
+              </div>
+
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <Link
