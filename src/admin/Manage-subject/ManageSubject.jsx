@@ -38,10 +38,12 @@ const ManageSubject = () => {
   const [currentSubject, setCurrentSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Fetch subjects on component mount
   useEffect(() => {
     fetchSubjects();
   }, []);
 
+  // Fetch subjects from the API
   const fetchSubjects = async () => {
     try {
       const data = await getSubjects();
@@ -52,16 +54,19 @@ const ManageSubject = () => {
     }
   };
 
+  // Handle adding a new subject
   const handleAddSubject = () => {
     setCurrentSubject({ subject_name: "", subject_description: "" });
     setIsEditModalOpen(true);
   };
 
+  // Handle editing a subject
   const handleEditSubject = (subject) => {
     setCurrentSubject(subject);
     setIsEditModalOpen(true);
   };
 
+  // Handle deleting a subject
   const handleDeleteSubject = async (subjectId) => {
     try {
       await deleteSubject(subjectId);
@@ -71,6 +76,7 @@ const ManageSubject = () => {
     }
   };
 
+  // Handle bulk deletion of selected subjects
   const handleBulkDelete = async () => {
     try {
       await Promise.all(
@@ -83,6 +89,7 @@ const ManageSubject = () => {
     }
   };
 
+  // Handle saving a subject (create or update)
   const handleSaveSubject = async () => {
     try {
       if (currentSubject.id) {
@@ -97,6 +104,7 @@ const ManageSubject = () => {
     }
   };
 
+  // Handle search functionality
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
@@ -162,8 +170,8 @@ const ManageSubject = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredSubjects.map((subject, index) => (
-              <TableRow key={subject.id + index}>
+            {filteredSubjects.map((subject) => (
+              <TableRow key={`subject-${subject.id}`}>
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={selectedSubjects.includes(subject.id)}
@@ -181,10 +189,16 @@ const ManageSubject = () => {
                 <TableCell>{subject.subject_name}</TableCell>
                 <TableCell>{subject.subject_description}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleEditSubject(subject)}>
+                  <IconButton
+                    key={`edit-${subject.id}`}
+                    onClick={() => handleEditSubject(subject)}
+                  >
                     <EditIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleDeleteSubject(subject.id)}>
+                  <IconButton
+                    key={`delete-${subject.id}`}
+                    onClick={() => handleDeleteSubject(subject.id)}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
