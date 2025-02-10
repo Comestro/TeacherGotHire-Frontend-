@@ -142,7 +142,7 @@ function Home() {
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
       <DetailSection />
-      <TeacherProfiles className="w-full" />
+      {/* <TeacherProfiles /> */}
     </div>
   );
 }

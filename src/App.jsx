@@ -42,6 +42,7 @@ import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 import QuestionManagement from "./components/SubjectWiseExam/QuestionManagement";
+import SettingsPage from "./components/Pages/SettingsPage";
 
 
 // import Logout from "./components/Logout";
@@ -95,7 +96,7 @@ function App() {
             <Route path="result" element={<ResultPage />} />
           </Route>
 
-          <Route path="/set-subject-exam" element={<QuestionManagement/>} />
+          <Route path="/subject-expert" element={<QuestionManagement/>} />
           
           {/* Recruiter Routes */}
           <Route path="/recruiter" element={<RoleBasedRoute element={<RecruiterLayout />} allowedRoles={['recruiter']} />}>
@@ -196,6 +197,10 @@ function App() {
             <Route
               path="view-attempts"
               element={<RoleBasedRoute element={<ViewAttempts />} allowedRoles={['user']}/>}
+            />
+            <Route
+              path="setting"
+              element={<RoleBasedRoute element={<SettingsPage />} allowedRoles={['user']}/>}
             />
           </Route>
 

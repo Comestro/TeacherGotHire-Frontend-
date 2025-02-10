@@ -8,15 +8,6 @@ const TeacherSection = ({ onSelectRole }) => {
         backgroundImage: `url('')`,
       }}
     >
-      {/* Header */}
-      {/* <div className="flex justify-between items-center px-6 py-4 bg-white shadow-md">
-        <button className="text-xl">
-          <span className="font-bold">☰</span>
-        </button>
-        <button className="text-sm font-medium text-blue-600 bg-blue-100 px-4 py-2 rounded-full shadow-md">
-          📞 Call Now (800) 803-4058
-        </button>
-      </div> */}
 
       {/* Content */}
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center px-6 sm:px-12 ">
