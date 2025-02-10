@@ -98,8 +98,8 @@ function App() {
             <Route path="result" element={<ResultPage />} />
           </Route>
 
-          <Route path="/set-subject-exam" element={<QuestionManagement/>} />
-          
+          <Route path="/set-subject-exam" element={<QuestionManagement />} />
+
           {/* Recruiter Routes */}
           <Route
             path="/recruiter"

@@ -34,14 +34,7 @@ import {
   GetApp as ExportIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-import {
-  getTeacher,
-  createTeacher,
-  updateTeacher,
-  deleteTeacher,
-} from "../../services/adminTeacherApi";
-import Loader from "../../components/Loader";
-import { Link } from "react-router-dom";
+import { getTeacher } from "../../services/adminTeacherApi";
 
 const ManageTeacher = () => {
   const [teachers, setTeachers] = useState([]);
@@ -61,118 +54,59 @@ const ManageTeacher = () => {
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
+
+  // fetching teacher data
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchTeacherData = async () => {
       try {
         const response = await getTeacher();
         if (Array.isArray(response)) {
           setTeachers(response);
         } else {
-          console.error("Unexpected response structure:", response);
+          console.error("Error fetching teacher data: ", response);
         }
       } catch (error) {
-        console.error("Failed to fetch teachers:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching teacher data: ", error);
       }
     };
-    fetchTeachers();
+    fetchTeacherData();
   }, []);
-
-  const handleAddTeacher = () => {
-    setCurrentTeacher(null);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditTeacher = (teacher) => {
-    setCurrentTeacher(teacher);
-    setIsEditModalOpen(true);
-  };
 
   const handleViewTeacher = (teacher) => {
     setCurrentTeacher(teacher);
+    setIsViewModalOpen(true);
   };
 
-  const handleDeleteTeacher = async (teacherId) => {
-    try {
-      await deleteTeacher(teacherId);
-      setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
-      setNotification({
-        open: true,
-        message: "Teacher deleted successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Failed to delete teacher:", error);
-      setNotification({
-        open: true,
-        message: "Failed to delete teacher.",
-        type: "error",
-      });
-    }
+  const handleDeleteTeacher = (teacherId) => {
+    setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
+    setNotification({
+      open: true,
+      message: "Teacher deleted successfully.",
+      type: "success",
+    });
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selectedTeachers.map((id) => deleteTeacher(id)));
-      setTeachers(
-        teachers.filter((teacher) => !selectedTeachers.includes(teacher.id))
-      );
-      setSelectedTeachers([]);
-      setNotification({
-        open: true,
-        message: "Selected teachers deleted successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Failed to delete selected teachers:", error);
-      setNotification({
-        open: true,
-        message: "Failed to delete selected teachers.",
-        type: "error",
-      });
-    }
+  const handleBulkDelete = () => {
+    setTeachers(
+      teachers.filter((teacher) => !selectedTeachers.includes(teacher.id))
+    );
+    setSelectedTeachers([]);
+    setNotification({
+      open: true,
+      message: "Selected teachers deleted successfully.",
+      type: "success",
+    });
   };
 
-  const handleSaveTeacher = async () => {
-    const teacherData = {
-      Fname: currentTeacher.Fname,
-      Lname: currentTeacher.Lname,
-      email: currentTeacher.email,
-      qualification: currentTeacher.teacherqualifications.map(
-        (q) => q.qualification.name
-      ),
-      subjects: currentTeacher.teacherskill.map((s) => s.skill.name),
-      location: currentTeacher.teachersaddress[0]?.state || "N/A",
-      status: "Approved", // Default status
-    };
-
-    try {
-      if (currentTeacher.id) {
-        const response = await updateTeacher(currentTeacher.id, teacherData);
-        setTeachers(
-          teachers.map((t) => (t.id === currentTeacher.id ? response.data : t))
-        );
-      } else {
-        const response = await createTeacher(teacherData);
-        setTeachers([...teachers, response.data]);
-      }
-      setIsEditModalOpen(false);
-      setNotification({
-        open: true,
-        message: "Teacher saved successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Failed to save teacher:", error);
-      setNotification({
-        open: true,
-        message: "Failed to save teacher.",
-        type: "error",
-      });
-    }
+  const handleSaveTeacher = () => {
+    // Add save logic here
+    setIsEditModalOpen(false);
+    setNotification({
+      open: true,
+      message: "Teacher saved successfully.",
+      type: "success",
+    });
   };
 
   const handleChangePage = (event, newPage) => {
@@ -188,24 +122,22 @@ const ManageTeacher = () => {
     const csvContent = [
       [
         "ID",
-        "Name",
+        "First Name",
+        "Last Name",
         "Email",
-        "Qualification",
         "Subjects",
-        "Location",
-        "Status",
-        "Score",
+        "Address",
+        "Qualifications",
+        "Total Marks",
       ],
       ...teachers.map((teacher) => [
         teacher.id,
-        `${teacher.Fname} ${teacher.Lname}`,
+        teacher.Fname,
+        teacher.Lname,
         teacher.email,
-        teacher.teacherqualifications
-          .map((q) => q.qualification.name)
-          .join(", "),
-        teacher.teacherskill.map((s) => s.skill.name).join(", "),
-        teacher.teachersaddress[0]?.state || "N/A",
-        "Approved", // Default status
+        teacher.teachersubjects.join(", "),
+        teacher.teachersaddress.join(", "),
+        teacher.teacherqualifications.join(", "),
         teacher.total_marks,
       ]),
     ]
@@ -223,37 +155,30 @@ const ManageTeacher = () => {
     document.body.removeChild(link);
   };
 
-  const filteredTeachers = (teachers || []).filter((teacher) => {
-    const fullName = `${teacher.Fname} ${teacher.Lname}`.toLowerCase();
+  const filteredTeachers = teachers.filter((teacher) => {
     return (
-      (fullName.includes(searchQuery.toLowerCase()) ||
+      (teacher.Fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        teacher.Lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.id.toString().includes(searchQuery)) &&
       (selectedQualification
-        ? teacher.teacherqualifications.some(
-            (q) =>
-              q.qualification.name.toLowerCase() ===
-              selectedQualification.toLowerCase()
-          )
+        ? teacher.teacherqualifications
+            .map((q) => q.toLowerCase())
+            .includes(selectedQualification.toLowerCase())
         : true) &&
       (selectedSubject
-        ? teacher.teacherskill.some(
-            (s) => s.skill.name.toLowerCase() === selectedSubject.toLowerCase()
-          )
+        ? teacher.teachersubjects.includes(selectedSubject)
         : true) &&
       (selectedLocation
-        ? teacher.teachersaddress[0]?.state.toLowerCase() ===
-          selectedLocation.toLowerCase()
+        ? teacher.teachersaddress
+            .map((a) => a.toLowerCase())
+            .includes(selectedLocation.toLowerCase())
         : true) &&
       (selectedStatus
-        ? "Approved".toLowerCase() === selectedStatus.toLowerCase()
+        ? teacher.status.toLowerCase() === selectedStatus.toLowerCase()
         : true)
     );
   });
-
-  if (loading) {
-    return <Loader />;
-  }
 
   return (
     <Layout>
@@ -262,14 +187,14 @@ const ManageTeacher = () => {
           Manage Teachers
         </Typography>
         <Box display="flex" justifyContent="space-between" mb={2}>
-          <Button
+          {/* <Button
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
             onClick={handleAddTeacher}
           >
             Add Teacher
-          </Button>
+          </Button> */}
           <Button
             variant="contained"
             color="secondary"
@@ -299,9 +224,9 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="B.Ed">B.Ed</MenuItem>
-              <MenuItem value="M.Ed">M.Ed</MenuItem>
-              <MenuItem value="PhD">PhD</MenuItem>
+              <MenuItem value="phd">PhD</MenuItem>
+              <MenuItem value="masters">Masters</MenuItem>
+              <MenuItem value="bachelors">Bachelors</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -314,11 +239,10 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="Python">Python</MenuItem>
-              <MenuItem value="Java">Java</MenuItem>
-              <MenuItem value="Mathematics">Mathematics</MenuItem>
-              <MenuItem value="Physics">Physics</MenuItem>
-              <MenuItem value="History">History</MenuItem>
+              <MenuItem value="math">Math</MenuItem>
+              <MenuItem value="science">Science</MenuItem>
+              <MenuItem value="english">English</MenuItem>
+              <MenuItem value="history">History</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -331,9 +255,18 @@ const ManageTeacher = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="Bihar">Bihar</MenuItem>
-              <MenuItem value="Delhi">Delhi</MenuItem>
-              <MenuItem value="Mumbai">Mumbai</MenuItem>
+              <MenuItem value="delhi">Delhi</MenuItem>
+              <MenuItem value="mumbai">Mumbai</MenuItem>
+              <MenuItem value="bangalore">Bangalore</MenuItem>
+              <MenuItem value="chennai">Chennai</MenuItem>
+              <MenuItem value="hyderabad">Hyderabad</MenuItem>
+              <MenuItem value="pune">Pune</MenuItem>
+              <MenuItem value="kolkata">Kolkata</MenuItem>
+              <MenuItem value="kochi">Kochi</MenuItem>
+              <MenuItem value="jaipur">Jaipur</MenuItem>
+              <MenuItem value="ahmedabad">Ahmedabad</MenuItem>
+              <MenuItem value="thiruvananthapuram">Thiruvananthapuram</MenuItem>
+              <MenuItem value="bhopal">Bhopal</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
@@ -364,14 +297,13 @@ const ManageTeacher = () => {
               <TableCell>Subjects Taught</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Skill Test Score</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredTeachers
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((teacher, index) => (
+              .map((teacher) => (
                 <TableRow key={teacher.id}>
                   <TableCell padding="checkbox">
                     <Checkbox
@@ -393,42 +325,32 @@ const ManageTeacher = () => {
                   <TableCell>{`${teacher.Fname} ${teacher.Lname}`}</TableCell>
                   <TableCell>{teacher.email}</TableCell>
                   <TableCell>
-                    {teacher.teacherqualifications
-                      .slice(0, 2)
-                      .map((q) => q.qualification.name)
-                      .join(", ")}
+                    {teacher.teacherqualifications.join(", ")}
                   </TableCell>
-                  <TableCell>
-                    {teacher.teacherskill
-                      .slice(0, 2)
-                      .map((s) => s.skill.name)
-                      .join(", ")}
-                  </TableCell>
-                  <TableCell>
-                    {teacher.teachersaddress[0]?.state || "N/A"}
-                  </TableCell>
+                  <TableCell>{teacher.teachersubjects.join(", ")}</TableCell>
+                  <TableCell>{teacher.teachersaddress.join(", ")}</TableCell>
                   <TableCell>
                     <Switch
-                      checked={true} // Default status
-                      onChange={() => {}}
+                      checked={teacher.status === "Approved"}
+                      onChange={() => {
+                        const newStatus =
+                          teacher.status === "Approved"
+                            ? "Rejected"
+                            : "Approved";
+                        setTeachers(
+                          teachers.map((t) =>
+                            t.id === teacher.id
+                              ? { ...t, status: newStatus }
+                              : t
+                          )
+                        );
+                      }}
                       color="primary"
                     />
                   </TableCell>
-                  <TableCell>{teacher.total_marks}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleViewTeacher(teacher)}>
-                      <Link
-                        to={`/admin/view/teacher/${teacher.id}`}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <ViewIcon />
-                      </Link>
-                    </IconButton>
-                    <IconButton onClick={() => handleEditTeacher(teacher)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteTeacher(teacher.id)}>
-                      <DeleteIcon />
+                      <ViewIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -451,176 +373,12 @@ const ManageTeacher = () => {
         >
           Delete Selected
         </Button>
-        {/* add/edit modal */}
-        <Dialog
-          open={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-        >
-          <DialogTitle>
-            {currentTeacher ? "Edit Teacher" : "Add Teacher"}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Full Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              defaultValue={
-                currentTeacher
-                  ? `${currentTeacher.Fname} ${currentTeacher.Lname}`
-                  : ""
-              }
-              onChange={(e) => {
-                const [Fname, Lname] = e.target.value.split(" ");
-                setCurrentTeacher({ ...currentTeacher, Fname, Lname });
-              }}
-            />
-            <TextField
-              label="Email Address"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              defaultValue={currentTeacher ? currentTeacher.email : ""}
-              onChange={(e) =>
-                setCurrentTeacher({ ...currentTeacher, email: e.target.value })
-              }
-            />
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Qualification</InputLabel>
-              <Select
-                label="Qualification"
-                multiple
-                defaultValue={
-                  currentTeacher
-                    ? currentTeacher.teacherqualifications.map(
-                        (q) => q.qualification.name
-                      )
-                    : []
-                }
-                onChange={(e) =>
-                  setCurrentTeacher({
-                    ...currentTeacher,
-                    teacherqualifications: e.target.value.map((name) => ({
-                      qualification: { name },
-                    })),
-                  })
-                }
-                renderValue={(selected) => (
-                  <Box display="flex" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} />
-                    ))}
-                  </Box>
-                )}
-              >
-                <MenuItem value="B.Ed">B.Ed</MenuItem>
-                <MenuItem value="M.Ed">M.Ed</MenuItem>
-                <MenuItem value="PhD">PhD</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Subjects Taught</InputLabel>
-              <Select
-                label="Subjects Taught"
-                multiple
-                defaultValue={
-                  currentTeacher
-                    ? currentTeacher.teacherskill.map((s) => s.skill.name)
-                    : []
-                }
-                onChange={(e) =>
-                  setCurrentTeacher({
-                    ...currentTeacher,
-                    teacherskill: e.target.value.map((name) => ({
-                      skill: { name },
-                    })),
-                  })
-                }
-                renderValue={(selected) => (
-                  <Box display="flex" flexWrap="wrap">
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} />
-                    ))}
-                  </Box>
-                )}
-              >
-                <MenuItem value="Python">Python</MenuItem>
-                <MenuItem value="Java">Java</MenuItem>
-                <MenuItem value="Mathematics">Mathematics</MenuItem>
-                <MenuItem value="Physics">Physics</MenuItem>
-                <MenuItem value="History">History</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Location"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              defaultValue={
-                currentTeacher ? currentTeacher.teachersaddress[0]?.state : ""
-              }
-              onChange={(e) =>
-                setCurrentTeacher({
-                  ...currentTeacher,
-                  teachersaddress: [{ state: e.target.value }],
-                })
-              }
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsEditModalOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleSaveTeacher} color="primary">
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
-        {/* view modal */}
-        <Dialog
-          open={isViewModalOpen}
-          onClose={() => setIsViewModalOpen(false)}
-        >
-          <DialogTitle>View Teacher</DialogTitle>
-          <DialogContent>
-            <Typography variant="h6">
-              Full Name: {`${currentTeacher?.Fname} ${currentTeacher?.Lname}`}
-            </Typography>
-            <Typography variant="h6">
-              Email Address: {currentTeacher?.email}
-            </Typography>
-            <Typography variant="h6">
-              Qualification:{" "}
-              {currentTeacher?.teacherqualifications
-                .map((q) => q.qualification.name)
-                .join(", ")}
-            </Typography>
-            <Typography variant="h6">
-              Subjects Taught:{" "}
-              {currentTeacher?.teacherskill.map((s) => s.skill.name).join(", ")}
-            </Typography>
-            <Typography variant="h6">
-              Location: {currentTeacher?.teachersaddress[0]?.state || "N/A"}
-            </Typography>
-            <Typography variant="h6">
-              Status: Approved {/* Default status */}
-            </Typography>
-            <Typography variant="h6">
-              Skill Test Score: {currentTeacher?.total_marks}
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsViewModalOpen(false)} color="primary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
         <Snackbar
           open={notification.open}
           autoHideDuration={6000}
           onClose={() => setNotification({ ...notification, open: false })}
           message={notification.message}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          severity={notification.type}
         />
       </Container>
     </Layout>
