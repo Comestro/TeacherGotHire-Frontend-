@@ -46,6 +46,7 @@ import SettingsPage from "./components/Pages/SettingsPage";
 import ManageCenter from "./admin/manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
+import Error404 from "./components/Pages/ErrorPage"
 
 // import Logout from "./components/Logout";
 
@@ -70,8 +71,7 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         {/* new Teacher Layout work */}
 
@@ -333,6 +333,7 @@ function App() {
               }
             />
           </Route>
+          <Route path="*" element={<Error404 />} />
         </Routes>
       </BrowserRouter>
     </Provider>
