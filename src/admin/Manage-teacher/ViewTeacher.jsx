@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Typography, Modal, Snackbar } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Modal,
+  Snackbar,
+  Tabs,
+  Tab,
+} from "@mui/material";
 import {
   GetApp as ExportIcon,
   Delete as DeleteIcon,
@@ -22,6 +30,7 @@ const ViewTeacherAdmin = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openDownloadModal, setOpenDownloadModal] = useState(false);
   const [teacherData, setTeacherData] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     const fetchTeacherData = async () => {
@@ -30,7 +39,6 @@ const ViewTeacherAdmin = () => {
 
         console.log("API Raw Response:", response);
 
-        // Remove the `.data` since response itself is the data
         const data = response;
 
         if (!data || !data.id) {
@@ -43,7 +51,7 @@ const ViewTeacherAdmin = () => {
 
         const formattedData = {
           id: data.id,
-          name: `${data.Fname || ""} ${data.Lname || ""}`.trim(),
+          name: `${data.Fname || ""} ${data.Lname || " NA"}`.trim(),
           email: data.email || "N/A",
           phone: data.phone || "N/A",
           address: data.teachersaddress?.length
@@ -105,6 +113,10 @@ const ViewTeacherAdmin = () => {
     console.log("Account deactivated");
   };
 
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
   return (
     <Layout>
       <Box p={3}>
@@ -135,14 +147,31 @@ const ViewTeacherAdmin = () => {
             Deactivate Account
           </Button>
         </Box>
-
+        <TeacherCard teacherData={teacherData} />
         {teacherData && (
           <>
-            <TeacherCard teacherData={teacherData} />
-            <SkillsCard skills={teacherData.skills} />
-            <QualificationsCard qualifications={teacherData.qualifications} />
-            <ExperienceCard experience={teacherData.experiences} />
-            <TeacherTestScorePage teacherData={teacherData} />
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="scrollable auto tabs example"
+            >
+              <Tab label="Skills" />
+              <Tab label="Qualifications" />
+              <Tab label="Experience" />
+              <Tab label="Test Scores" />
+            </Tabs>
+            {tabValue === 0 && <SkillsCard skills={teacherData.skills} />}
+            {tabValue === 1 && (
+              <QualificationsCard qualifications={teacherData.qualifications} />
+            )}
+            {tabValue === 2 && (
+              <ExperienceCard experience={teacherData.experiences} />
+            )}
+            {tabValue === 3 && (
+              <TeacherTestScorePage teacherData={teacherData} />
+            )}
           </>
         )}
 
