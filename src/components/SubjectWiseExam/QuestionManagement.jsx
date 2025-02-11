@@ -522,6 +522,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import CenterHeader from "../ExamCenter/CenterHeader";
+import { Helmet } from "react-helmet-async";
 import {
   getExamSets,
   postExamSet,
@@ -649,6 +650,9 @@ const QuestionManagement = () => {
 
 
   return (
+    <Helmet>
+      <title>PTPI | Subject Expert</title>
+    </Helmet>
     <div className="min-h-screen">
       <div className="top-0 fixed w-full">
         <CenterHeader name="Exam Management" />

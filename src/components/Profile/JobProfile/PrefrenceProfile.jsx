@@ -18,7 +18,6 @@ const PrefrenceProfile = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
-
   // Fetch Data on Component Mount
   useEffect(() => {
     dispatch(getClassCategory());
@@ -83,7 +82,6 @@ const PrefrenceProfile = () => {
       fetchPreferences();
       setIsEditingPrefrence(false);
       setIsLoading(false); // Hide loader
-
     } catch (err) {
       setIsLoading(false); // Hide loader on error
       setError("Failed to update preferences. Please try again.");
@@ -92,10 +90,10 @@ const PrefrenceProfile = () => {
 
   return (
     <div className="p-4 border rounded-xl">
-       {isLoading && (<Loader/>)}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
+      {isLoading && <Loader />}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between md:gap-10 mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl text-gray-900">
             Teaching Preferences
           </h2>
           <p className="text-sm text-gray-500 mt-1">
@@ -103,13 +101,22 @@ const PrefrenceProfile = () => {
             and job types
           </p>
         </div>
-        {!isEditingPrefrence && (
+        {!isEditingPrefrence ? (
           <button
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] rounded-lg shadow-sm hover:shadow-md transition-all"
+            className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] rounded-lg shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsEditingPrefrence(true)}
           >
             <HiPencil className="size-5" />
             Edit Preferences
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setIsEditingPrefrence(false);
+            }}
+            className="text-md px-4 py-2 border border-gray-300 rounded-lg"
+          >
+            close
           </button>
         )}
       </div>

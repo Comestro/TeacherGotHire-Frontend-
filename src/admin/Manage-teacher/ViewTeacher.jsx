@@ -1,26 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
   Typography,
-  Avatar,
-  Badge,
   Modal,
   Snackbar,
-  Grid,
-  CardContent,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   GetApp as ExportIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import Layout from "../Admin/Layout";
@@ -28,82 +19,76 @@ import TeacherCard from "./TeacherCard";
 import SkillsCard from "./SkillCard";
 import QualificationsCard from "./QualificationsCard";
 import ExperienceCard from "./ExperienceCard";
-import AnalyticsCard from "./AnalyticsCard";
 import TeacherModal from "../TeacherInfoModal/TeacherModal";
 import TeacherTestScorePage from "./TeacherTestScore";
+import { getTeacherById } from "../../services/adminTeacherApi";
+import { useParams } from "react-router-dom";
 
 const ViewTeacherAdmin = () => {
+  const { id } = useParams();
   const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openDownloadModal, setOpenDownloadModal] = useState(false);
-  const [teacherData] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh.kumar@example.com",
-    phone: "+91 9876543210",
-    address: "123 MG Road, Bengaluru, Karnataka, India",
-    registrationDate: "March 15, 2018",
-    status: "Active",
-    profilePic:
-      "https://images.unsplash.com/photo-1542190891-2093d38760f2?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    skills: ["Mathematics", "Physics", "Communication Skills"],
-    qualifications: [
-      {
-        degree: "B.Ed.",
-        institution: "Bangalore University",
-        year: 2015,
-        certification: "Certified Teacher",
-      },
-      {
-        degree: "M.Sc.",
-        institution: "Delhi University",
-        year: 2013,
-        certification: "Certified Teacher",
-      },
-    ],
-    experience: [
-      {
-        title: "Science Teacher",
-        institution: "XYZ High School",
-        duration: "2016-2020",
-        description: "Taught science subjects to high school students.",
-      },
-      {
-        title: "Math Teacher",
-        institution: "ABC School",
-        duration: "2013-2016",
-        description: "Taught mathematics to middle school students.",
-      },
-    ],
-    analytics: {
-      profileViews: [
-        { date: "2023-01-01", views: 10 },
-        { date: "2023-01-02", views: 15 },
-        { date: "2023-01-03", views: 20 },
-        { date: "2023-01-04", views: 25 },
-        { date: "2023-01-05", views: 30 },
-      ],
-      jobMatches: [
-        { job: "Math Teacher", matches: 5 },
-        { job: "Science Teacher", matches: 8 },
-        { job: "Physics Teacher", matches: 3 },
-      ],
-      feedbackRatings: [
-        { rating: 5, count: 10 },
-        { rating: 4, count: 5 },
-        { rating: 3, count: 2 },
-        { rating: 2, count: 1 },
-        { rating: 1, count: 0 },
-      ],
-    },
-    testimonials: "Great teacher with excellent skills.",
-    portfolio:
-      "https://images.unsplash.com/photo-1542190891-2093d38760f2?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  });
+  const [teacherData, setTeacherData] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      try {
+        const response = await getTeacherById(id);
+
+        console.log("API Raw Response:", response);
+
+        const data = response;
+
+        if (!data || !data.id) {
+          console.error("No response or invalid format", data);
+          setTeacherData(null);
+          return;
+        }
+
+        console.log("API Parsed Data:", data);
+
+        const formattedData = {
+          id: data.id,
+          name: `${data.Fname || ""} ${data.Lname || " NA"}`.trim(),
+          email: data.email || "N/A",
+          phone: data.phone || "N/A",
+          address: data.teachersaddress?.length
+            ? data.teachersaddress[0]
+            : null,
+          registrationDate: data.registrationDate || "N/A",
+          status: data.status || "N/A",
+          skills: data.teacherskill?.map((s) => s?.skill?.name || "N/A") || [],
+          experiences: data.teacherexperiences || [],
+          qualifications:
+            data.teacherqualifications?.map(
+              (q) => q?.qualification?.name || "N/A"
+            ) || [],
+          preferences: data.preferences?.[0] || {},
+          totalMarks: data.total_marks || 0,
+        };
+
+        console.log("Formatted Data:", formattedData);
+        setTeacherData(formattedData);
+      } catch (error) {
+        console.error("Error fetching teacher data:", error);
+        setTeacherData(null);
+      }
+    };
+
+    fetchTeacherData();
+  }, [id]);
 
   const handleDownloadProfile = () => {
     setOpenDownloadModal(true);
     setTimeout(() => {
       const content = document.querySelector("#pdf-content");
+      if (!content) {
+        console.error("PDF content not found");
+        setOpenDownloadModal(false);
+        return;
+      }
 
       html2canvas(content, { scale: 2, useCORS: true })
         .then((canvas) => {
@@ -111,10 +96,9 @@ const ViewTeacherAdmin = () => {
           const pdf = new jsPDF("p", "mm", "a4");
           const pdfWidth = pdf.internal.pageSize.getWidth();
           const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
           pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
           pdf.save("teacher-profile.pdf");
-          setOpenDownloadModal(false); // Close the modal immediately after initiating the download
+          setOpenDownloadModal(false);
         })
         .catch((error) => {
           console.error("Error generating PDF:", error);
@@ -126,8 +110,11 @@ const ViewTeacherAdmin = () => {
   const handleDeactivate = () => {
     setOpenDeactivateModal(false);
     setOpenSnackbar(true);
-    // Add logic to handle account deactivation
     console.log("Account deactivated");
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   return (
@@ -160,12 +147,34 @@ const ViewTeacherAdmin = () => {
             Deactivate Account
           </Button>
         </Box>
-        <AnalyticsCard analytics={teacherData.analytics}  />
         <TeacherCard teacherData={teacherData} />
-        <SkillsCard skills={teacherData.skills} />
-        <QualificationsCard qualifications={teacherData.qualifications} />
-        <ExperienceCard experience={teacherData.experience} />
-        <TeacherTestScorePage teacherData={teacherData} />
+        {teacherData && (
+          <>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="scrollable auto tabs example"
+            >
+              <Tab label="Skills" />
+              <Tab label="Qualifications" />
+              <Tab label="Experience" />
+              <Tab label="Test Scores" />
+            </Tabs>
+            {tabValue === 0 && <SkillsCard skills={teacherData.skills} />}
+            {tabValue === 1 && (
+              <QualificationsCard qualifications={teacherData.qualifications} />
+            )}
+            {tabValue === 2 && (
+              <ExperienceCard experience={teacherData.experiences} />
+            )}
+            {tabValue === 3 && (
+              <TeacherTestScorePage teacherData={teacherData} />
+            )}
+          </>
+        )}
+
         <Modal
           open={openDeactivateModal}
           onClose={() => setOpenDeactivateModal(false)}
@@ -209,8 +218,14 @@ const ViewTeacherAdmin = () => {
           onClose={() => setOpenSnackbar(false)}
           message="Account deactivated successfully"
         />
-        {/* download pdf generation */}
-        <TeacherModal open={openDownloadModal} onClose={() => {}} teacherData={teacherData} />
+
+        {teacherData && (
+          <TeacherModal
+            open={openDownloadModal}
+            onClose={() => {}}
+            teacherData={teacherData}
+          />
+        )}
       </Box>
     </Layout>
   );

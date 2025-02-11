@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../services/authServices";
 import {
@@ -131,9 +131,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </nav>
             <div className="flex flex-col">
               <div className="border-t border-gray-200">
-                <button onClick={() => setIsOpen(false)} className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
+                <Link onClick={() => setIsOpen(false)} to='/teacher/setting' className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
                   <IoMdSettings className="size-5" /> Setting
-                </button>
+                </Link>
               </div>
               <div className="border-t border-gray-200">
                 <button
