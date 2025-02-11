@@ -185,9 +185,9 @@ export const ReportReason = async () => {
   }
 };
 
-export const AddReport = async ({id,question,issue_type}) => {
+export const AddReport = async ({question,issue_type}) => {
   try {
-    const response = await apiClient.post(`/api/self/report/`,{id,question,issue_type});
+    const response = await apiClient.post(`/api/self/report/`,{question,issue_type});
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
