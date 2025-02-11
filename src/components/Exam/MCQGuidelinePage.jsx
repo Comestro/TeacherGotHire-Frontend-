@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { getAllQues, setLanguage } from "../../features/examQuesSlice";
+import { getAllQues, setLanguage,resetVerifyResponse } from "../../features/examQuesSlice";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
@@ -29,6 +29,7 @@ const MCQGuidelinePage = () => {
       dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
       dispatch(getAllQues({ exam_id: verfyExamId, language: selectedLanguage })); // Dispatch getAllQues action
       console.log("Proceeding with:", selectedLanguage, examID);
+      dispatch(resetVerifyResponse());
     }else{
       dispatch(setLanguage(selectedLanguage)); // Dispatch setLanguage action
       dispatch(getAllQues({ exam_id: examID, language: selectedLanguage })); // Dispatch getAllQues action

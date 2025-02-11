@@ -340,8 +340,11 @@ const examQuesSlice = createSlice({
       state.language = action.payload;
     },
      resetPasskeyResponse: (state) => {
-            state.passkeyresponse = {};
-     }
+      state.passkeyresponse = {};
+     },
+     resetVerifyResponse: (state) => {
+      state.verifyresponse = {};
+}
   },
   extraReducers: (builder) => {
     builder
@@ -535,5 +538,5 @@ const examQuesSlice = createSlice({
   resetState: () => initialState,
 });
 
-export const { setSubject, setExam, setLanguage,resetPasskeyResponse } = examQuesSlice.actions;
+export const { setSubject, setExam, setLanguage,resetPasskeyResponse,resetVerifyResponse } = examQuesSlice.actions;
 export default examQuesSlice.reducer;

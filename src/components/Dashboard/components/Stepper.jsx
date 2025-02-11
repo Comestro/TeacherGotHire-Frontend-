@@ -123,7 +123,7 @@ const Steppers = () => {
 
   console.log("groupedAttempts", groupedAttempts);
 
-  const allLevels = ["1st Level", "2nd Level", "2nd Level offlineSet", "Interview"];
+  const allLevels = ["1st Level", "2nd Level Online", "2nd Level Offline", "Interview"];
 
   return (
     <div style={{ maxWidth: 800, margin: "auto", padding: 16 }}>
