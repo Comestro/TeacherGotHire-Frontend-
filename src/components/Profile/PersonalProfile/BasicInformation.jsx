@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 import { BsFillPersonFill } from "react-icons/bs";
+import Loader from "../../Loader";
 
 const EditableField = ({
   label,
@@ -139,6 +140,7 @@ const BasicInformation = () => {
 
   const [error, setError] = useState("");
   const [editingFields, setEditingFields] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     dispatch(getBasic()).catch((error) => console.error("Error:", error));
@@ -149,6 +151,7 @@ const BasicInformation = () => {
   };
 
   const handleSave = async (field, value) => {
+    setLoading(true);
     try {
       const data = new FormData();
       if (field === "profile_image" && value instanceof File) {
@@ -163,6 +166,9 @@ const BasicInformation = () => {
       dispatch(getBasic());
     } catch (error) {
       setError(error.message);
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -230,6 +236,7 @@ const BasicInformation = () => {
 
   return (
     <div className="md:px-5 mt-2 flex flex-col gap-1">
+      {loading && <Loader/>}
       <h2 className="text-[20px] font-bold mb-4 text-[#3E98C7] flex items-center gap-1">
         <BsFillPersonFill /> Basic Information
       </h2>
