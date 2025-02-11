@@ -141,15 +141,7 @@ export const GeneratePasskey = async ({user_id,exam_id,center_id}) => {
   }
 };
 
-// export const GetPasskey = async () => {
-//   try {
-//     const response = await apiClient.get(`/api/generate-passkey/`);
-//     return response.data;
-//   } catch (err) {
-//     console.error("error:", err.response?.data || err);
-//     throw err;
-//   }
-// };
+
 
 export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
   try {
@@ -161,15 +153,7 @@ export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
   }
 };
 
-// export const GetPasscode = async () => {
-//   try {
-//     const response = await apiClient.get(`/api/verify-passcode/`);
-//     return response.data;
-//   } catch (err) {
-//     console.error("error:", err.response?.data || err);
-//     throw err;
-//   }
-// };
+
 export const AddInterview = async ({subject,time,class_category}) => {
   try {
     const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category});
@@ -236,6 +220,28 @@ export const fetchCenterUser= async () => {
     const response = await apiClient.get(`/api/examcenters/`);
     console.log("center",response.data)
     return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const createExamSet= async (payload) => {
+  try {
+    const response = await apiClient.post(`/api/examsetter/`,payload);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const setterExamSet= async () => {
+  try {
+    const response = await apiClient.get(`/api/examsetter/exams/`);
+    console.log("ExamSetter",response)
+    return response.data;
+    
   } catch (err) {
     console.error("error:", err.response?.data || err);
     throw err;

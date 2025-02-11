@@ -213,6 +213,7 @@ const BasicInformation = () => {
       ],
     },
     {
+      
       label: "Religion",
       field: "religion",
       inputType: "select",

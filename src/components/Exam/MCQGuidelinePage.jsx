@@ -9,6 +9,8 @@ const MCQGuidelinePage = () => {
   const {exam,verifyresponse}= useSelector((state) => state.examQues);
   const examID = exam?.id; 
   const verfyExamId = verifyresponse?.offline_exam?.id;
+
+  console.log("verfied",verifyresponse)
   
 
  

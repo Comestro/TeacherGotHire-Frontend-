@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllQues, getReport, postResult } from "../../features/examQuesSlice";
+import { getAllQues, getReport, postResult ,attemptsExam} from "../../features/examQuesSlice";
 import { useNavigate } from "react-router-dom";
 import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
@@ -110,6 +110,7 @@ const ExamPortal = () => {
         is_unanswered,
       })
     );
+    dispatch(attemptsExam());
     navigate("/exam/result", { state: {exam,
       correct_answer,
       incorrect_answer,
@@ -287,7 +288,7 @@ const ExamPortal = () => {
             </div>
           </div>
         ) : (
-          <p className="text-red-500">No questions available.</p>
+          null
         )}
       </div>
     </div>

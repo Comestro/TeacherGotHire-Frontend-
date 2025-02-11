@@ -44,6 +44,20 @@ function ViewAttempts() {
     }
   }, [selectedCategory]);
 
+
+  const attemptedCategories = apiOutput2 && apiOutput2.length > 0
+  ? [...new Set(apiOutput2
+      .filter(result => result.isqualified !== undefined) // Check if `is_qualified` exists
+      .map(result => result.exam.class_category?.name)
+    )]
+  : [];
+
+console.log(attemptedCategories);
+
+  
+  console.log("attemptedCategories",attemptedCategories);
+  
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl text-[#3E98C7] font-bold mb-4 flex items-center gap-1">
@@ -67,7 +81,7 @@ function ViewAttempts() {
           <option value="" disabled>
             Choose Class Category
           </option>
-          {categories.map((category) => (
+          {attemptedCategories.map((category) => (
             <option key={category} value={category}>
               {category}
             </option>

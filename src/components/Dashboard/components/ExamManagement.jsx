@@ -10,6 +10,7 @@ import {
   generatePasskey,
   getAllCenter,
   resetPasskeyResponse,
+  verifyPasscode,
 } from "../../../features/examQuesSlice";
 
 import { useNavigate } from "react-router-dom";
@@ -26,17 +27,16 @@ function ExamManagement() {
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
-  const { examSet } = useSelector((state) => state.examQues);
-  const { allcenter } = useSelector((state) => state.examQues);
+  const { examSet,allcenter,attempts } = useSelector((state) => state.examQues);
+
+  console.log("attempts", attempts);
+  
   const { userData } = useSelector((state) => state?.auth);
   const { exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
   const exams = verifyresponse?.offline_exam;
-  console.log("exams", exams);
-  console.log("basicData:", basicData);
-console.log("prefrence:", prefrence);
-console.log("educationData:", educationData);
+  
 
   const isProfileComplete =
     ( basicData && Object.keys(basicData).length > 0 &&
@@ -46,9 +46,6 @@ console.log("educationData:", educationData);
     console.log("isProfileComplete",isProfileComplete); 
 
   const exam_id = passkeyresponse?.exam?.id;
-
-  console.log("allcenter", allcenter);
-  console.log("passkeyresponse", passkeyresponse);
 
   const [activeTab, setActiveTab] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -61,6 +58,7 @@ console.log("educationData:", educationData);
   const [showReminderMessage, setShowReminderMessage] = useState(false);
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [passcode, setPasscode] = useState("");
+  const [offlineSet,SetOfflineSet] = useState("");
 
   // Check localStorage on component mount to see if a reminder is needed
   useEffect(() => {
@@ -70,8 +68,7 @@ console.log("educationData:", educationData);
     }
   }, []);
 
-  console.log("selectedCenterId", selectedCenterId);
-
+  console.log("offlineSet",offlineSet)
   // Handle "Remind me later" button click
   const handleRemindMeLater = () => {
     // Set a flag in localStorage to show the reminder on refresh
@@ -147,6 +144,7 @@ console.log("educationData:", educationData);
   const handleGeneratePasskey = async (event, exam) => {
     event.preventDefault();
     console.log("exam", exam);
+    SetOfflineSet(exam);
     if (selectedCenterId) {
       console.log("selectedCenterId", selectedCenterId);
       dispatch(
@@ -169,8 +167,8 @@ console.log("educationData:", educationData);
   const handleverifyPasskey = (event) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
-    console.log();
     dispatch(setExam(examSet[2]?.id));
+    dispatch(verifyPasscode({user_id,exam_id:offlineSet,passcode}))
     dispatch(resetPasskeyResponse());
     navigate("/exam");
     // Add your verification logic here
@@ -213,9 +211,12 @@ console.log("educationData:", educationData);
         </div>
 
          {/* Stepper Component */}
-      <div className="col-span-3">
-        <Steppers />
-      </div>
+         {
+          attempts && (<div className="col-span-3">
+          <Steppers />
+          </div>
+        ) }
+      
 
         {isProfileComplete ? (
           <>
