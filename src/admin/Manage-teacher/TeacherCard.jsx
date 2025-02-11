@@ -35,8 +35,8 @@ const TeacherCard = ({ teacherData }) => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={4} display="flex" justifyContent="center">
               <Avatar
-                alt={teacherData.name}
-                src={teacherData.profilePic}
+                alt={teacherData?.name || "N/A"}
+                src={teacherData?.profilePic}
                 sx={{ width: "40%", height: 130 }}
               />
             </Grid>
@@ -47,7 +47,7 @@ const TeacherCard = ({ teacherData }) => {
                 alignItems="center"
               >
                 <Typography variant="h5" gutterBottom>
-                  {teacherData.name}
+                  {teacherData?.name || "N/A"}
                 </Typography>
                 <IconButton onClick={handleOpen}>
                   <EditIcon />
