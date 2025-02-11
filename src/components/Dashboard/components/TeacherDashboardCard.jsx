@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
+import { CiCircleCheck, CiCirclePlus } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getBasic,
@@ -45,7 +45,7 @@ const TeacherDashboardCard = () => {
   });
 
   // calling missing details
-  const errorMessages = useSelector((state) => {
+  const missingDetails = useSelector((state) => {
     const profileCompleted =
       state.personalProfile?.completionData?.profile_completed;
     return Array.isArray(profileCompleted) && profileCompleted.length >= 2
@@ -53,7 +53,7 @@ const TeacherDashboardCard = () => {
       : [];
   });
 
-  console.log("errorMessages", errorMessages);
+  console.log("missingDetails", missingDetails);
 
   // Determine which form to show based on the error message
   const getFormComponent = () => {
@@ -73,8 +73,8 @@ const TeacherDashboardCard = () => {
 
   // Handle modal open for first missing detail
   const handleAddMissingDetails = () => {
-    if (errorMessages.length > 0) {
-      setSelectedDetail(errorMessages[0]);
+    if (missingDetails.length > 0) {
+      setSelectedDetail(missingDetails[0]);
       setShowModal(true);
     }
   };
@@ -169,8 +169,56 @@ const TeacherDashboardCard = () => {
         </div>
       </div>
 
+      {/* profile for mobile */}
+      <div className="md:hidden flex items-center w-full mb-4 z-10">
+        <div className="relative w-16 h-16 mr-4">
+          <svg
+            className="absolute inset-0 w-16 h-16 transform -rotate-90"
+            viewBox="0 0 100 100"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#e2e8f0"
+              strokeWidth="6"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#3E98C7"
+              strokeWidth="8"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              style={{ transition: "stroke-dashoffset 1s ease-out" }}
+            />
+          </svg>
+          <img
+            src={basicData?.profile_picture || "/images/profile.jpg"}
+            alt="Profile"
+            className="w-12 h-12 rounded-full object-cover border-4 border-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-[2px]"
+          />
+        </div>
+        <div className="flex flex-col ml-2">
+          <Link
+            to="#"
+            className="text-gray-600 cursor-pointer hover:text-gray-800 text-sm"
+            onClick={handleEditProfileClick}
+          >
+            Edit Profile
+          </Link>
+          <span className="text-xs text-[#2A6F97] font-semibold">
+            {progress}% Completed
+          </span>
+        </div>
+      </div>
+
       {/* Welcome Message */}
-      <div className="flex-1 px-2 md:px-6 md:pl-10 text-left z-10 mt-3 md:mt-0">
+      <div className="flex-1 px-2 md:px-6 md:pl-10 text-left z-10 mt-3 md:mt-0 hidden md:block">
         <h2 className="text-lg md:text-xl font-bold text-gray-800">
           Welcome to Your Teacher Dashboard!
         </h2>
@@ -192,26 +240,42 @@ const TeacherDashboardCard = () => {
       </div>
 
       {/* Missing Details Section */}
-      <div className="w-full md:w-auto mt-4 md:mt-0 p-3 md:p-4 border border-gray-200 rounded-lg bg-gray-50 z-10 md:mr-5">
-        <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
-          Add Missing Details:
-        </h3>
-        <ul className="text-xs md:text-sm text-gray-600 space-y-1">
-          {errorMessages.map((message, index) => (
-            <li key={index} className="flex items-center">
-              <span className="mr-1 md:mr-2">
-                <CiCirclePlus className="w-4 h-4 md:w-5 md:h-5" />
-              </span>
-              <span className="truncate">{message}</span>
-            </li>
-          ))}
-        </ul>
-        <button
-          onClick={handleAddMissingDetails}
-          className="mt-2 md:mt-3 w-full md:w-auto px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold text-white bg-[#3E98C7] rounded-md transition-colors duration-200"
-        >
-          Add Missing Details
-        </button>
+      <div className="w-full md:w-auto mt-2 md:mt-0 p-3 border border-gray-200 rounded-lg bg-gray-50 z-10">
+        {missingDetails.length > 0 ? (
+          <>
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              Add Missing Details:
+            </h3>
+            <ul className="text-sm text-gray-600 space-y-2">
+              {missingDetails.map((message, index) => (
+                <li key={index} className="flex items-center">
+                  <CiCirclePlus className="w-5 h-5 mr-2 text-[#3E98C7]" />
+                  <span className="truncate">{message}</span>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={handleAddMissingDetails}
+              className="mt-3 w-full px-4 py-2 text-sm font-semibold text-white bg-[#3E98C7] rounded-md"
+            >
+              Add Missing Details
+            </button>
+          </>
+        ) : (
+          <div className="w-full">
+            <div className="flex flex-col items-center text-center p-2">
+              <div className="mb-2 p-2 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] rounded-full">
+                <CiCircleCheck className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-800 mb-1">
+                Ready to Shine! 🌟
+              </h3>
+              <p className="text-xs text-gray-600">
+                All requirements completed! Ready for exam.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal for missing details */}

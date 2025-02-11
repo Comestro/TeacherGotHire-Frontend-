@@ -192,7 +192,7 @@ console.log("educationData:", educationData);
      
       <div className=" mx-auto p-6 bg-white rounded-lg border">
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-[#3E98C7] to-black rounded-xl p-6 shadow">
+          <div className="bg-gradient-to-r from-[#3E98C7] to-gray-800 rounded-xl p-6 shadow">
             <div className="flex items-center justify-center space-x-4">
               <FaBookOpen className="text-4xl text-white/90" />
               <div>
