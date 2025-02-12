@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
 export const fetchClassCategory = async()=>{
   try{
      const response = await apiClient.get('/api/admin/classcategory/');
-     //console.log("getclass:",response.data);
+     console.log("getclass:",response.data);
      return response.data;
   }
      catch (err) {
@@ -114,14 +114,21 @@ export const updateEducationProfile = async({payload, id })=>{
         console.log("payload",payload,id)
         const response = await apiClient.put(`api/self/teacherqualification/${id}/`,payload);
         console.log("eduresponse",response);
-        console.log("hello");
         return JSON.parse(JSON.stringify(response)); 
      }
         catch (err) {
-            console.error(' error:', err.response?.data || err);
-            throw err;
+  
+            console.error("API Error:", err.response?.data || err.message);
+        
+            // Extract validation errors
+            const errorMessage = err.response?.data && typeof err.response.data === "object"
+                ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
+                : err.message || "Failed to update education profile";
+        
+            throw new Error(errorMessage);
+          }
      }
-}
+
 
 export const addEducationProfile = async(expriencedata)=>{
   try{
@@ -129,9 +136,16 @@ export const addEducationProfile = async(expriencedata)=>{
     console.log(response.data);
     return JSON.parse(JSON.stringify(response));
   }
-  catch(err){
-            console.error('Registration error:', err.response?.data || err);
-            throw err;
+  catch (err) {
+  
+    console.error("API Error:", err.response?.data || err.message);
+
+    // Extract validation errors
+    const errorMessage = err.response?.data && typeof err.response.data === "object"
+        ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
+        : err.message || "Failed to update education profile";
+
+    throw new Error(errorMessage);
   }
 }
 export const fetchEducationProfile = async()=>{

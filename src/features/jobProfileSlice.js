@@ -269,10 +269,7 @@ export const putEducationProfile = createAsyncThunk(
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
-      return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-      });
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -417,7 +414,11 @@ export const getSkillsProfile = createAsyncThunk(
 const jobProfileSlice = createSlice({
   name: "jobProfile",
   initialState,
-  reducers: {}, // Add reducers if needed
+  reducers: {
+    resetError: (state) => {
+      state.error = null; // Reset error state
+    },
+  }, // Add reducers if needed
   extraReducers: (builder) => {
     // for handeling  class category
     builder
@@ -429,7 +430,7 @@ const jobProfileSlice = createSlice({
       .addCase(getClassCategory.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.classCategories = action.payload; // Update profile data
-        //console.log("class",action.payload)
+        console.log("class",action.payload)
       })
       .addCase(getClassCategory.rejected, (state, action) => {
         state.status = "failed";
@@ -502,7 +503,9 @@ const jobProfileSlice = createSlice({
       .addCase(getQualification.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; 
+        console.log("Error:",action.payload)
       });
+
 
     // for handeling  All Skills
     
@@ -621,24 +624,32 @@ const jobProfileSlice = createSlice({
       .addCase(getEducationProfile.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
+        console.log("Error:Slice:",action.payload)
       });
       
 
      //for post data handel
      
-      // builder
-      // .addCase(postEducationProfile.pending, (state) => {
-      //   state.status = "loading";
-      //   state.error = null;
-      // })
-      // .addCase(postEducationProfile.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   state.educationData = action.payload; // Update profile data
-      // })
-      // .addCase(postEducationProfile.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   state.error = action.payload; // Set error from rejected payload
-      // });
+      builder
+      .addCase(postEducationProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postEducationProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+      });
+
+      builder
+      .addCase(putEducationProfile.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(putEducationProfile.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload; // Set error from rejected payload
+        console.log("Error:Slice:",action.payload)
+      });
       
 
       // hadle skills profile
@@ -717,4 +728,5 @@ const jobProfileSlice = createSlice({
   },
 });
 
+export const {resetError} = jobProfileSlice.actions;
 export default jobProfileSlice.reducer;

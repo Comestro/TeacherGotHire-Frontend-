@@ -5,6 +5,7 @@ import {
   getAddress,
   postAddress,
   putAddress,
+  resetError,
 } from "../../../features/personalProfileSlice";
 import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
@@ -20,6 +21,9 @@ const Loader = () => (
 );
 
 const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
+
+  const dispatch = useDispatch();
+
   const {
     register,
     handleSubmit,
@@ -28,7 +32,15 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
     formState: { errors },
   } = useForm();
 
+
+  const handleCancel = () => {
+    dispatch(resetError()); // Reset Redux error state
+    reset(); // Reset the form fields
+    if (onCancel) onCancel(); // Call the original onCancel function
+  };
+
   const [loadingPincode, setLoadingPincode] = useState(false);
+  const {error} = useSelector((state)=>state.personalProfile)
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -36,7 +48,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
 
   const handlePincodeChange = async (e) => {
     const pincode = e.target.value;
-    if (pincode.length === 6) {
+    if (/^\d{6}$/.test(pincode)) {
       setLoadingPincode(true);
       try {
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
@@ -75,6 +87,13 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           {errors.pincode && (
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
+          {
+                error && (
+                  <span className="text-red-500 text-sm">
+                  {error}
+                </span>
+                )
+              }
           {loadingPincode && (
             <div className="mt-2">
               <Loader />
@@ -116,9 +135,9 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
-          <button
+            <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel} // Use handleCancel instead of onCancel
             className="px-6 py-1.5 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all"
           >
             Cancel
@@ -233,6 +252,7 @@ const AddressProfileCard = () => {
       toast.success("Address saved successfully");
       setIsEditingType(null);
       dispatch(getAddress());
+      dispatch(resetError());
     } catch {
       toast.error("Failed to save address");
     } finally {

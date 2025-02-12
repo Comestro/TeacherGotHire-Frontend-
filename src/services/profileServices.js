@@ -83,9 +83,16 @@ export const updateAddressProfile = async(addressdata)=>{
     // console.log("adressresponse",response )
     return JSON.parse(JSON.stringify(response));
   }
-  catch(err){
-            console.error('Registration error:', err.response?.data || err);
-            throw err;
+  catch (err) {
+  
+    console.error("API Error:", err.response?.data || err.message);
+
+    // Extract validation errors
+    const errorMessage = err.response?.data && typeof err.response.data === "object"
+        ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
+        : err.message || "Failed to update Address profile";
+
+    throw new Error(errorMessage);
   }
 }
 export const addAddressProfile = async(addressdata)=>{
@@ -95,9 +102,17 @@ console.log("adress",addressdata)
     
     return JSON.parse(JSON.stringify(response));
   }
-  catch(err){
-            console.error('Registration error:', err.response?.data || err);
-            throw err;
+  catch (err) {
+  
+    console.error("API Error:", err.response?.data || err.message);
+
+    // Extract validation errors
+    const errorMessage = err.response?.data && typeof err.response.data === "object"
+        ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
+        : err.message || "Failed to update Adress profile";
+
+    console.log("errorMessage",errorMessage)
+    throw new Error(errorMessage);
   }
 }
 export const fetchAddressProfile = async()=>{
@@ -123,4 +138,5 @@ export const fetchCompleteProfile = async()=>{
   }
 }
 
-export default apiClient;
+
+export default apiClient;

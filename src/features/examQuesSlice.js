@@ -1,9 +1,10 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
   examSet: [],
+  setterExamSet:[],
   interview:{},
   exam: "",
   attempts: [],
@@ -76,6 +77,8 @@ export const getAllQues = createAsyncThunk(
       }
     }
   );
+
+  
 
   export const postResult= createAsyncThunk(
     "postResult",
@@ -255,6 +258,89 @@ export const generatePasskey= createAsyncThunk(
       }
       );
 
+      export const postExamSet= createAsyncThunk(
+        "postExamSet",
+        
+        async (payload, { rejectWithValue }) => {
+         console.log("setter",payload) 
+          try {
+            const data = await createExamSet(payload);
+             return data; 
+          } catch (error) {
+            return rejectWithValue({
+              message: error.message, 
+              code: error.code || "UNKNOWN_ERROR", 
+            });
+          }
+        }
+        );
+
+
+        export const getExamSets= createAsyncThunk(
+          "getExamSets",
+          async (__, { rejectWithValue }) => {
+            
+            try {
+              const data = await setterExamSet();
+               return data; 
+            } catch (error) {
+              return rejectWithValue({
+                message: error.message, 
+                code: error.code || "UNKNOWN_ERROR", 
+              });
+            }
+          }
+          );
+
+          export const putExamSet= createAsyncThunk(
+            "putExamSet",
+            async (__, { rejectWithValue }) => {
+              
+              try {
+                const data = await createExamSet();
+                 return data; 
+              } catch (error) {
+                return rejectWithValue({
+                  message: error.message, 
+                  code: error.code || "UNKNOWN_ERROR", 
+                });
+              }
+            }
+            );
+
+
+            export const deleteExamSet= createAsyncThunk(
+              "deleteExamSet",
+              async (__, { rejectWithValue }) => {
+                
+                try {
+                  const data = await createExamSet();
+                   return data; 
+                } catch (error) {
+                  return rejectWithValue({
+                    message: error.message, 
+                    code: error.code || "UNKNOWN_ERROR", 
+                  });
+                }
+              }
+              );
+
+              export const postReport= createAsyncThunk(
+                "postReport",
+                
+                async ({question,issue_type}, { rejectWithValue }) => {
+                 
+                  try {
+                    const data = await AddReport({question,issue_type});
+                     return data; 
+                  } catch (error) {
+                    return rejectWithValue({
+                      message: error.message, 
+                      code: error.code || "UNKNOWN_ERROR", 
+                    });
+                  }
+                }
+                );
 const examQuesSlice = createSlice({
   name: "examQues",
   initialState,
@@ -271,8 +357,11 @@ const examQuesSlice = createSlice({
       state.language = action.payload;
     },
      resetPasskeyResponse: (state) => {
-            state.passkeyresponse = {};
-     }
+      state.passkeyresponse = {};
+     },
+     resetVerifyResponse: (state) => {
+      state.verifyresponse = {};
+}
   },
   extraReducers: (builder) => {
     builder
@@ -359,6 +448,22 @@ const examQuesSlice = createSlice({
 
       builder
       // for get data handeling
+      .addCase(getExamSets.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getExamSets.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.setterExamSet = action.payload;
+        console.log("examset",action.payload)
+      })
+      .addCase(getExamSets.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
       .addCase(getInterview.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -430,20 +535,7 @@ const examQuesSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       });
-      builder
-      // for get data handeling
-      .addCase(getAllCenterUser.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(getAllCenterUser.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.centerUser = action.payload;
-      })
-      .addCase(getAllCenterUser.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+     
 
       builder
       // for get data handeling
@@ -463,5 +555,5 @@ const examQuesSlice = createSlice({
   resetState: () => initialState,
 });
 
-export const { setSubject, setExam, setLanguage,resetPasskeyResponse } = examQuesSlice.actions;
+export const { setSubject, setExam, setLanguage,resetPasskeyResponse,resetVerifyResponse } = examQuesSlice.actions;
 export default examQuesSlice.reducer;

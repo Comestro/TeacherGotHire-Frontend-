@@ -9,6 +9,7 @@ import {
   postEducationProfile,
   putEducationProfile,
   delEducationProfile,
+  resetError,
 } from "../../../features/jobProfileSlice";
 import { HiOutlineAcademicCap, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
@@ -19,18 +20,19 @@ const Education = () => {
   const qualification = useSelector(
     (state) => state?.jobProfile?.qualification
   );
-  console.log("qualification", qualification);
-  const educationData = useSelector(
-    (state) => state.jobProfile?.educationData || []
-  );
+  
+
+  const {error, educationData} = useSelector(
+    (state) => state.jobProfile|| []);
   console.log("Education Data", educationData);
+  console.log("Error:", error);
 
   const [editingIndex, setEditingIndex] = useState(null);
-  //const [isEditingExprience, setIsEditingExprience] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+
 
   const {
     register,
@@ -223,6 +225,7 @@ const Education = () => {
                   {errors.institution.message}
                 </span>
               )}
+              
             </div>
 
             <div>
@@ -249,6 +252,7 @@ const Education = () => {
                   {errors.qualification.message}
                 </span>
               )}
+             
             </div>
 
             <div>
@@ -268,6 +272,14 @@ const Education = () => {
                   {errors.year_of_passing.message}
                 </span>
               )}
+               {
+                error && (
+                  <span className="text-red-500 text-sm">
+                  {error}
+                </span>
+                )
+              }
+             
             </div>
 
             <div>
@@ -285,6 +297,7 @@ const Education = () => {
                   {errors.grade_or_percentage.message}
                 </span>
               )}
+             
             </div>
           </div>
 
@@ -301,6 +314,7 @@ const Education = () => {
               onClick={() => {
                 setIsEditing(false);
                 reset();
+                dispatch(resetError());
               }}
               className="border border-[#3E98C7] text-[#3E98C7] py-1.5 px-5 rounded-lg"
             >

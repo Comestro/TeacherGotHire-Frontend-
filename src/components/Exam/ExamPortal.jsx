@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllQues, getReport, postResult } from "../../features/examQuesSlice";
+import {
+  getAllQues,
+  getReport,
+  postResult,
+  attemptsExam,
+} from "../../features/examQuesSlice";
 import { useNavigate } from "react-router-dom";
 import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
-import { AddReport } from "../../services/examQuesServices";
+import { postReport } from "../../features/examQuesSlice";
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,44 +19,47 @@ const ExamPortal = () => {
   const toggleModal = () => {
     setIsOpen(true);
   };
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { allQuestion } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
-   
 
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   const currentQuestion = questions[currentQuestionIndex];
-  
-  useEffect (()=>{
+
+  useEffect(() => {
     dispatch(getReport());
-   },[currentQuestion])
+  }, [currentQuestion]);
+  const reportOptions = useSelector((state) => state.examQues?.reportReason);
+  const [selectedOption, setSelectedOption] = useState([]);
+  const [confirmationMessage, setConfirmationMessage] = useState("");
 
-   const reportOptions = useSelector((state)=>state.examQues?.reportReason);
-
-   console.log("reoprt",reportOptions);
-
-   const [selectedOption, setSelectedOption] = useState([]);
-   const [confirmationMessage, setConfirmationMessage] = useState('');
-
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option);
+  const handleOptionSelect = (optionId) => {
+    setSelectedOption(
+      (prevSelected) =>
+        prevSelected.includes(optionId)
+          ? prevSelected.filter((id) => id !== optionId) // Remove if already selected
+          : [...prevSelected, optionId] // Add if not selected
+    );
   };
+  console.log("selectedOption", selectedOption);
 
   const handleSubmits = () => {
     // Process the selected option
-    const  question = currentQuestion.id;
-    const issue_type = selectedOption.id;
-    dispatch(AddReport({question:String(question),issue_type:String(issue_type)}));
-    // setConfirmationMessage('Your report has been submitted to Admin.');
-    
+    const question = currentQuestion.id;
+    const issue_type = selectedOption;
+    dispatch(
+      postReport({ question: String(question), issue_type: issue_type })
+    );
+    setConfirmationMessage("Your report has been submitted to Admin.");
+    setSelectedOption([]);
     // Close the popup
     setIsOpen(false);
   };
@@ -82,8 +90,6 @@ const ExamPortal = () => {
 
     questions.forEach((question) => {
       const userAnswer = selectedAnswers[question.id];
-
-      console.log("question.correct_option", question.correct_option);
       if (userAnswer === undefined) {
         // Unanswered
         is_unanswered++;
@@ -110,19 +116,17 @@ const ExamPortal = () => {
         is_unanswered,
       })
     );
-    navigate("/exam/result", { state: {exam,
-      correct_answer,
-      incorrect_answer,
-      is_unanswered,  } });
+    dispatch(attemptsExam());
+    navigate("/exam/result", {
+      state: { exam, correct_answer, incorrect_answer, is_unanswered },
+    });
   };
 
   // if (status === 'loading') return <div>Loading...</div>;
   // // if (error) return <div>Error: {error}</div>;
- 
 
   return (
     <div className="flex h-screen bg-gray-100 w-full">
-      
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-md border-r border-gray-200 p-2">
         <h3 className="text-xl font-bold text-center text-gray-700 py-4 border-b border-gray-300">
@@ -148,10 +152,9 @@ const ExamPortal = () => {
       </div>
 
       {/* Main Content */}
-     
+
       <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
-        <Subheader
-        />
+        <Subheader />
         <div className="bg-white md:hidden">
           <ul className="p-2 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto">
             {questions.map((q, index) => (
@@ -195,19 +198,28 @@ const ExamPortal = () => {
                         </button>
                       </div>
                       <ul className="space-y-3">
-                        {reportOptions && reportOptions.map((option, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center justify-between px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
-                            onClick={() => handleOptionSelect(option)}
-                            multiple
-                          >
-                            <span>{option.issue_type}</span>
-                            <span className="">
-                              <IoWarningOutline className=" text-gray-500" />
-                            </span>
-                          </li>
-                        ))}
+                        {reportOptions &&
+                          reportOptions.map((option, index) => (
+                            <li
+                              key={index}
+                              className={`flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors 
+                          ${
+                            selectedOption.includes(option.id)
+                              ? "bg-blue-200" // Highlight selected options
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                              onClick={() => handleOptionSelect(option.id)}
+                            >
+                              <span>{option.issue_type}</span>
+                              <IoWarningOutline
+                                className={`text-gray-500 ${
+                                  selectedOption.includes(option.id)
+                                    ? "text-blue-700"
+                                    : ""
+                                }`}
+                              />
+                            </li>
+                          ))}
                       </ul>
                       <button
                         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
@@ -286,9 +298,7 @@ const ExamPortal = () => {
               )}
             </div>
           </div>
-        ) : (
-          <p className="text-red-500">No questions available.</p>
-        )}
+        ) : null}
       </div>
     </div>
   );

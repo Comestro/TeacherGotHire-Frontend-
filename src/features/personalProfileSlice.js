@@ -91,10 +91,7 @@ export const postAddress = createAsyncThunk(
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
-      return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-      });
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -106,11 +103,8 @@ export const putAddress = createAsyncThunk(
       console.log("data",data)
        // Call the service
       return data; // Return the updated profile data
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
-      });
+    }catch (error) {
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -157,6 +151,9 @@ const personalProfileSlice = createSlice({
   reducers: {
     setShowForm(state, action) {
       state.showForm = action.payload;
+    },
+    resetError: (state) => {
+      state.error = null; // Reset error state
     },
   }, // Add reducers if needed
     extraReducers: (builder) => {
@@ -282,5 +279,5 @@ const personalProfileSlice = createSlice({
 
 // Export reducer
 
-export const { setShowForm } = personalProfileSlice.actions;
+export const { setShowForm ,resetError} = personalProfileSlice.actions;
 export default personalProfileSlice.reducer;
