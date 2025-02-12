@@ -6,6 +6,7 @@ import Layout from "../Admin/Layout";
 
 export default function AdminDashboard() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // mera man hai push karne ka
 
   const stats = {
     teachers: 1250,
