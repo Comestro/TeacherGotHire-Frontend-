@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { FaLocationDot } from "react-icons/fa6";
 import { FaInfoCircle } from "react-icons/fa";
 import { FiEdit, FiMapPin, FiAlertCircle } from "react-icons/fi";
+import Heading from "../../commons/Heading";
 
 const Loader = () => (
   <div className="flex justify-center items-center py-4">
@@ -40,7 +41,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   };
 
   const [loadingPincode, setLoadingPincode] = useState(false);
-  const {error} = useSelector((state)=>state.personalProfile)
+  const { error } = useSelector((state) => state.personalProfile)
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -88,12 +89,12 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
           {
-                error && (
-                  <span className="text-red-500 text-sm">
-                  {error}
-                </span>
-                )
-              }
+            error && (
+              <span className="text-red-500 text-sm">
+                {error}
+              </span>
+            )
+          }
           {loadingPincode && (
             <div className="mt-2">
               <Loader />
@@ -135,7 +136,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
-            <button
+          <button
             type="button"
             onClick={handleCancel} // Use handleCancel instead of onCancel
             className="px-6 py-1.5 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all"
@@ -156,11 +157,10 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
 
 const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
   <div
-    className={`p-4 border rounded-xl transition-all ${
-      variant === "active"
+    className={`p-4 border rounded-xl transition-all ${variant === "active"
         ? "border-gray-200 bg-white hover:border-[#3E98C7]"
         : "border-transparent bg-gray-50 opacity-75"
-    }`}
+      }`}
   >
     <div className="flex items-center justify-between gap-4 mb-4">
       <div className="flex items-center space-x-1">
@@ -216,7 +216,7 @@ const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
         </p>
       </div>
     )}
-      
+
   </div>
 );
 
@@ -267,22 +267,13 @@ const AddressProfileCard = () => {
   }, [isEditingType]);
 
   return (
-    <div className="md:p-8 space-y-4 mt-5 ">
+    <div className="space-y-4 mt-5  border border-[#3E98C7]/20 p-5 rounded-lg">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-white">
+      <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-white ">
         <div className="flex-1">
-          <h2 className="text-2xl flex items-center gap-1  text-[#2A6F97] leading-tight">
-          <FaLocationDot className="text-[#2A6F97] text-xl" /> Manage Your Addresses
-          </h2>
-          <div className="mt-3 p-4 bg-[#F8FAFC] rounded-lg border border-[#3E98C7]/20 flex items-start gap-3">
-            <FaInfoCircle className="text-[#3E98C7] text-sm mt-1 flex-shrink-0" />
-            <p className="text-gray-600 text-xs ">
-              Add or update your current and permanent addresses.
-              <span className="block mt-1 text-[#3E98C7]">
-                Both addresses are required for verification purposes.
-              </span>
-            </p>
-          </div>
+          <p className="flex items-start gap-2 text-xs">
+            <strong>Note:</strong> Both addresses are required for verification purposes.
+          </p>
         </div>
       </div>
 

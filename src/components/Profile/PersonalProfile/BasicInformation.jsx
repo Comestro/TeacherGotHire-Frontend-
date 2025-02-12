@@ -4,6 +4,7 @@ import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 import { BsFillPersonFill } from "react-icons/bs";
 import Loader from "../../Loader";
+import Heading from "../../commons/Heading";
 
 const EditableField = ({
   label,
@@ -236,11 +237,9 @@ const BasicInformation = () => {
   ];
 
   return (
-    <div className="md:px-5 mt-2 flex flex-col gap-1">
+    <div className="p-5 mt-2 flex flex-col gap-1 border rounded-lg">
       {loading && <Loader/>}
-      <h2 className="text-[20px] font-bold mb-4 text-[#3E98C7] flex items-center gap-1">
-        <BsFillPersonFill /> Basic Information
-      </h2>
+      <Heading icons={<BsFillPersonFill/>} title="Basic Informations"/>
       {fields.map(({ label, field, value, inputType, options }) => (
         <React.Fragment key={field}>
           <EditableField
