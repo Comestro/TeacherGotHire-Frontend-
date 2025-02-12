@@ -49,7 +49,7 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
 
   // If there's no token, redirect to the login page.
   if (!token) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/signin" />;
   }
 
   // If the user's role (from the backend) is not among allowedRoles, redirect to unauthorized page.
