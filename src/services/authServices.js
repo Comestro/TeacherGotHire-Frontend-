@@ -1,162 +1,163 @@
-import axios from 'axios';
-import { getApiUrl } from '../store/configue';
-import { data } from 'jquery';
+import axios from "axios";
+import { getApiUrl } from "../store/configue";
 
-// Axios instance
 const apiClient = axios.create({
-  baseURL: getApiUrl(), // Use the API URL from config service
-  headers: {
-    'Content-Type': 'application/json',
-    //'Authorization': `Token ${localStorage.getItem('access_token')}`,
+  baseURL: getApiUrl(),
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true, // Use this if you store your token in httpOnly cookies; otherwise, omit if you use Authorization header.
+});
+
+// Interceptor to add token to every request
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Token ${token}`;
+    }
+    return config;
   },
-});
+  (error) => Promise.reject(error)
+);
 
-// Interceptor to dynamically add the token after login
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
-
-
-// Register User
 export const createaccount = async ({ Fname, Lname, email, password }) => {
   try {
-    const response = await apiClient.post('/api/register/', { Fname, Lname, email, password });
-
-    // if (response.status === 200) {  
-    //   const { token } = response.data;
-    //   localStorage.setItem('access_token', token);
-    // }
-
+    const response = await apiClient.post("/api/register/", {
+      Fname,
+      Lname,
+      email,
+      password,
+    });
     return response.data;
   } catch (err) {
     if (err.response) {
-      // Handle specific status codes
       const { status, data } = err.response;
       switch (status) {
         case 400:
-          throw new Error(data.message || 'Bad Request. Please check your input.');
+          throw new Error(
+            data.message || "Bad Request. Please check your input."
+          );
         case 409:
-          throw new Error('Conflict. The email is already registered.');
+          throw new Error("Conflict. The email is already registered.");
         case 422:
-          throw new Error('Unprocessable Entity. Invalid data provided.');
+          throw new Error("Unprocessable Entity. Invalid data provided.");
         case 500:
-          throw new Error('Internal Server Error. Please try again later.');
+          throw new Error("Internal Server Error. Please try again later.");
         default:
-          throw new Error(data.message || `An error occurred. Status code: ${status}`);
+          throw new Error(
+            data.message || `An error occurred. Status code: ${status}`
+          );
       }
     } else if (err.request) {
-      // No response received from the server
-      throw new Error('No response from the server. Please check your network connection.');
+      throw new Error(
+        "No response from the server. Please check your network connection."
+      );
     } else {
-      // Error in setting up the request
-      throw new Error(err.message || 'An unexpected error occurred.');
+      throw new Error(err.message || "An unexpected error occurred.");
     }
   }
 };
 
-export const createRecruiteraccount = async ({ Fname, Lname, email, password }) => {
+export const createRecruiteraccount = async ({
+  Fname,
+  Lname,
+  email,
+  password,
+}) => {
   try {
-    const response = await apiClient.post('/api/recruiter/register/', { Fname, Lname, email, password });
+    const response = await apiClient.post("/api/recruiter/register/", {
+      Fname,
+      Lname,
+      email,
+      password,
+    });
     return response.data;
   } catch (err) {
+    // Similar error handling as above...
     if (err.response) {
-      // Handle specific status codes
       const { status, data } = err.response;
       switch (status) {
         case 400:
-          throw new Error(data.message || 'Bad Request. Please check your input.');
+          throw new Error(
+            data.message || "Bad Request. Please check your input."
+          );
         case 409:
-          throw new Error('Conflict. The email is already registered.');
+          throw new Error("Conflict. The email is already registered.");
         case 422:
-          throw new Error('Unprocessable Entity. Invalid data provided.');
+          throw new Error("Unprocessable Entity. Invalid data provided.");
         case 500:
-          throw new Error('Internal Server Error. Please try again later.');
+          throw new Error("Internal Server Error. Please try again later.");
         default:
-          throw new Error(data.message || `An error occurred. Status code: ${status}`);
+          throw new Error(
+            data.message || `An error occurred. Status code: ${status}`
+          );
       }
     } else if (err.request) {
-      // No response received from the server
-      throw new Error('No response from the server. Please check your network connection.');
+      throw new Error(
+        "No response from the server. Please check your network connection."
+      );
     } else {
-      // Error in setting up the request
-      throw new Error(err.message || 'An unexpected error occurred.');
+      throw new Error(err.message || "An unexpected error occurred.");
     }
   }
 };
+
 export const fetchUserData = async () => {
   try {
-    const response = await apiClient.get('/api/self/customuser/');
-    //console.log("get newdata:",response.data);
+    const response = await apiClient.get("/api/self/customuser/");
     return response.data;
-  }
-  catch (err) {
-    console.error('error:', err.response?.data || err);
+  } catch (err) {
+    console.error("Error fetching user data:", err.response?.data || err);
     throw err;
   }
-}
-//verify otp service
+};
+
 export const verifyOtp = async ({ email, otp }) => {
   try {
-    // Send the OTP verification request
-    const response = await apiClient.post('/api/verify/', { email, otp });
+    const response = await apiClient.post("/api/verify/", { email, otp });
     return response.data;
   } catch (err) {
     if (err.response) {
       const { status, data } = err.response;
-
-      throw {
-        status,
-        message: data.message || 'An error occurred.',
-      };
+      throw { status, message: data.message || "An error occurred." };
     } else if (err.request) {
-      // No response received from the server
       throw {
         status: null,
-        message: 'No response from the server. Please check your network connection.',
+        message:
+          "No response from the server. Please check your network connection.",
       };
     } else {
-      // Error in setting up the request
       throw {
         status: null,
-        message: err.message || 'An unexpected error occurred.',
+        message: err.message || "An unexpected error occurred.",
       };
     }
   }
 };
 
-
-// Login User
 export const login = async ({ email, password }) => {
   try {
-    const response = await apiClient.post('/api/login/', { email, password });
+    const response = await apiClient.post("/api/login/", { email, password });
     const { access_token, role } = response.data;
-    localStorage.setItem('access_token', access_token);
-    localStorage.setItem('role', role); // Store the role
+    localStorage.setItem("access_token", access_token);
+    localStorage.setItem("role", role); // Note: We will override this on each protected route fetch.
     return response.data;
   } catch (err) {
-    // Pass the error response to the form handler for specific error message handling
     if (err.response) {
       throw {
         status: err.response.status,
-        message: err.response.data.message || 'An error occurred.',
+        message: err.response.data.message || "An error occurred.",
         data: err.response.data,
       };
     } else if (err.request) {
       throw {
         status: null,
-        message: 'No response from the server. Please check your network connection.',
+        message:
+          "No response from the server. Please check your network connection.",
       };
     } else {
       throw {
         status: null,
-        message: err.message || 'An unexpected error occurred.',
+        message: err.message || "An unexpected error occurred.",
       };
     }
   }
@@ -164,20 +165,21 @@ export const login = async ({ email, password }) => {
 
 export const resendOtp = async (email) => {
   try {
-    const response = await apiClient.post('/api/resend-otp/', { email });
+    const response = await apiClient.post("/api/resend-otp/", { email });
     console.log("OTP sent successfully:", response.data);
-    return response; // Ensure the response is returned to the caller
+    return response;
   } catch (err) {
     if (err.response) {
       throw {
         status: err.response.status,
-        message: err.response.data.message || 'An error occurred.',
+        message: err.response.data.message || "An error occurred.",
         data: err.response.data,
       };
     } else {
       throw {
         status: null,
-        message: 'No response from the server. Please check your network connection.',
+        message:
+          "No response from the server. Please check your network connection.",
       };
     }
   }
@@ -185,59 +187,64 @@ export const resendOtp = async (email) => {
 
 export const forgetPassword = async (email) => {
   try {
-    const response = await apiClient.post('/api/forget-password/', { email });
-    return response
+    const response = await apiClient.post("/api/forget-password/", { email });
+    return response;
   } catch (err) {
     if (err.response) {
       throw {
         status: err.response.status,
-        message: err.response.data.message || 'An error occurred while sending the reset email.',
+        message:
+          err.response.data.message ||
+          "An error occurred while sending the reset email.",
         data: err.response.data,
-      }
+      };
     } else {
       throw {
         status: null,
-        message: 'No response from the server. Please check your network connection.',
-      }
+        message:
+          "No response from the server. Please check your network connection.",
+      };
     }
   }
-}
+};
 
 export const resetPassword = async (uidb64, token, newPassword) => {
   try {
     const response = await apiClient.post(
       `/api/reset-password/${uidb64}/${token}/`,
       {
-        new_password: newPassword,  // Correct field name
-        confirm_password: newPassword // Correct field name
+        new_password: newPassword,
+        confirm_password: newPassword,
       }
     );
-    return response; // Return response from backend
+    return response;
   } catch (err) {
     if (err.response) {
       throw {
         status: err.response.status,
-        message: err.response.data.message || 'An error occurred while resetting the password',
+        message:
+          err.response.data.message ||
+          "An error occurred while resetting the password",
         data: err.response.data,
       };
     } else {
       throw {
         status: null,
-        message: 'No response from the server. Please check your network connection.',
+        message:
+          "No response from the server. Please check your network connection.",
       };
     }
   }
 };
 
-
-  export const logout = () => {
-    try {
-      localStorage.removeItem('access_token'); // Remove token from local storage
-      localStorage.removeItem('role'); // Remove token from local storage
-      // console.log('User logged out');
-    } catch (err) {
-      console.error('Logout error:', err);
-      throw err;
-    }
+export const logout = () => {
+  try {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("role");
+  } catch (err) {
+    console.error("Logout error:", err);
+    throw err;
   }
-  export default apiClient;
+};
+
+export default apiClient;

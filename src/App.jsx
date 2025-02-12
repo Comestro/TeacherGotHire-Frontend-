@@ -47,297 +47,306 @@ import ManageCenter from "./admin/manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
 import { HelmetProvider } from "react-helmet-async";
-import Error404 from "./components/Pages/ErrorPage"
-
-// import Logout from "./components/Logout";
-
-const RoleBasedRoute = ({ element, allowedRoles }) => {
-  const token = localStorage.getItem("access_token");
-  const userRole = localStorage.getItem("role");
-
-  if (!token) {
-    return <Navigate to="/signin" />;
-  }
-
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/signin" />;
-  }
-
-  return element;
-};
+import Error404 from "./components/Pages/ErrorPage";
+import Unauthorized from "./components/Unauthorized";
+import RoleBasedRoute from "./components/RoleBasedRoute";
 
 function App() {
-  const token = localStorage.getItem("access_token");
-  const user_role = localStorage.getItem("role");
-
   return (
     <Provider store={store}>
       <HelmetProvider>
-      <BrowserRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<Home />} />
+              <Route path="signup/teacher" element={<SignUpPage />} />
+              <Route path="signin" element={<Login />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route
+                path="reset-password/:uid/:token"
+                element={<ResetPassword />}
+              />
+              <Route
+                path="signup/recruiter"
+                element={<RecruiterSignUpPage />}
+              />
+              <Route path="contact" element={<ContactUs />} />
+              <Route path="exam-mode" element={<ExamMode />} />
+            </Route>
 
-        <Routes>
-          <Route index path="/new-teacher" element={<TeacherLayout />} />
-          {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />}>
-            <Route index element={<Home />} />
-            <Route path="/signup/teacher" element={<SignUpPage />} />
-            <Route path="/signin" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Unauthorized Page */}
+            <Route path="/unauthorized" element={<Unauthorized />} />
+
+            {/* Exam Routes */}
+            <Route path="exam" element={<ExamLayout />}>
+              <Route index element={<MCQGuidelinePage />} />
+              <Route path="portal" element={<ExamPortal />} />
+              <Route path="result" element={<ResultPage />} />
+            </Route>
+            <Route path="subject-expert" element={<QuestionManagement />} />
+
+            {/* Recruiter Routes */}
             <Route
-              path="/reset-password/:uid/:token"
-              element={<ResetPassword />}
-            />
-            <Route path="/signup/recruiter" element={<RecruiterSignUpPage />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/exam-mode" element={<ExamMode />} />
-          </Route>
-
-          {/* exam routes */}
-          <Route path="/exam" element={<ExamLayout />}>
-            <Route index element={<MCQGuidelinePage />} />
-            <Route path="portal" element={<ExamPortal />} />
-            <Route path="result" element={<ResultPage />} />
-          </Route>
-
-          <Route path="/subject-expert" element={<QuestionManagement/>} />
-          
-          {/* Recruiter Routes */}
-          <Route
-            path="/recruiter"
-            element={
-              <RoleBasedRoute
-                element={<RecruiterLayout />}
-                allowedRoles={["recruiter"]}
-              />
-            }
-          >
-            <Route index element={<TeacherRecruiter />} />
-          </Route>
-
-          {/* Admin Routes */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <RoleBasedRoute
-                element={<AdminDashboard />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/profile"
-            element={
-              <RoleBasedRoute
-                element={<AdminProfile />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/subject"
-            element={
-              <RoleBasedRoute
-                element={<ManageSubject />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/teacher"
-            element={
-              <RoleBasedRoute
-                element={<ManageTeacher />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/recruiter"
-            element={
-              <RoleBasedRoute
-                element={<ManageRecruiter />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/question"
-            element={
-              <RoleBasedRoute
-                element={<ManageQuestion />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/skills"
-            element={
-              <RoleBasedRoute
-                element={<ManageSkills />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/qualification"
-            element={
-              <RoleBasedRoute
-                element={<ManageQualification />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/support"
-            element={
-              <RoleBasedRoute elements={<Support />} allowedRoles={["amin"]} />
-            }
-          />
-          <Route
-            path="/admin/change/password"
-            element={
-              <RoleBasedRoute
-                element={<ChangePassword />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/contact"
-            element={
-              <RoleBasedRoute element={<Contact />} allowedRoles={["admin"]} />
-            }
-          />
-          <Route
-            path="/admin/view/teacher/:id"
-            element={
-              <RoleBasedRoute
-                element={<ViewTeacher_Admin />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/class/category"
-            element={
-              <RoleBasedRoute
-                element={<ManageClassCategory />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/teacher/jobtype"
-            element={
-              <RoleBasedRoute
-                element={<ManageTeacherJobType />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/level"
-            element={
-              <RoleBasedRoute
-                element={<ManageLevel />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
-            path="/admin/manage/exam"
-            element={
-              <RoleBasedRoute
-                element={<ExamManagement />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-
-          <Route
-            path="/admin/manage/exam/center"
-            element={<ManageCenter />}
-            allowedRoles={["admin"]}
-          />
-
-          <Route
-            path="/admin/manage/passkey"
-            element={<PasskeyManagement />}
-            allowedRoles={["admin"]}
-          />
-
-          <Route
-            path="/admin/manage/question/manager"
-            element={<ManageQuestionManager />}
-            allowedRoles={["admin"]}
-          />
-
-          {/* Teacher Routes */}
-          <Route path="/teacher" element={<Layout />}>
-            <Route
-              index
+              path="recruiter"
               element={
                 <RoleBasedRoute
-                  element={<TeacherDashboard />}
-                  allowedRoles={["user"]}
+                  element={<RecruiterLayout />}
+                  allowedRoles={["recruiter"]}
+                />
+              }
+            >
+              <Route index element={<TeacherRecruiter />} />
+            </Route>
+
+            {/* Admin Routes */}
+            <Route
+              path="admin/dashboard"
+              element={
+                <RoleBasedRoute
+                  element={<AdminDashboard />}
+                  allowedRoles={["admin"]}
                 />
               }
             />
             <Route
-              path="personal-profile"
+              path="admin/profile"
               element={
                 <RoleBasedRoute
-                  element={<EditPersonalProfile />}
-                  allowedRoles={["user"]}
+                  element={<AdminProfile />}
+                  allowedRoles={["admin"]}
                 />
               }
             />
             <Route
-              path="job-profile"
+              path="admin/manage/subject"
               element={
                 <RoleBasedRoute
-                  element={<JobProfileEdit />}
-                  allowedRoles={["user"]}
+                  element={<ManageSubject />}
+                  allowedRoles={["admin"]}
                 />
               }
             />
             <Route
-              path="view-attempts"
-              element={<RoleBasedRoute element={<ViewAttempts />} allowedRoles={['user']}/>}
+              path="admin/manage/teacher"
+              element={
+                <RoleBasedRoute
+                  element={<ManageTeacher />}
+                  allowedRoles={["admin"]}
+                />
+              }
             />
             <Route
-              path="setting"
-              element={<RoleBasedRoute element={<SettingsPage />} allowedRoles={['user']}/>}
+              path="admin/manage/recruiter"
+              element={
+                <RoleBasedRoute
+                  element={<ManageRecruiter />}
+                  allowedRoles={["admin"]}
+                />
+              }
             />
-          </Route>
+            <Route
+              path="admin/manage/question"
+              element={
+                <RoleBasedRoute
+                  element={<ManageQuestion />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/skills"
+              element={
+                <RoleBasedRoute
+                  element={<ManageSkills />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/qualification"
+              element={
+                <RoleBasedRoute
+                  element={<ManageQualification />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/support"
+              element={
+                <RoleBasedRoute
+                  element={<Support />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/change/password"
+              element={
+                <RoleBasedRoute
+                  element={<ChangePassword />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/contact"
+              element={
+                <RoleBasedRoute
+                  element={<Contact />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/view/teacher/:id"
+              element={
+                <RoleBasedRoute
+                  element={<ViewTeacher_Admin />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/class/category"
+              element={
+                <RoleBasedRoute
+                  element={<ManageClassCategory />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/teacher/jobtype"
+              element={
+                <RoleBasedRoute
+                  element={<ManageTeacherJobType />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/level"
+              element={
+                <RoleBasedRoute
+                  element={<ManageLevel />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/exam"
+              element={
+                <RoleBasedRoute
+                  element={<ExamManagement />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/exam/center"
+              element={
+                <RoleBasedRoute
+                  element={<ManageCenter />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/passkey"
+              element={
+                <RoleBasedRoute
+                  element={<PasskeyManagement />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/question/manager"
+              element={
+                <RoleBasedRoute
+                  element={<ManageQuestionManager />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
 
-          {/* Exam Center Routes */}
-          <Route path="/examcenter" element={<ExamCenterLayout />}>
-            {/* <Route index element={<ExamCenterDashboard />} /> */}
-            <Route
-              path="personal-profile"
-              element={
-                <RoleBasedRoute
-                  element={<EditPersonalProfile />}
-                  allowedRoles={["user"]}
-                />
-              }
-            />
-            <Route
-              path="job-profile"
-              element={
-                <RoleBasedRoute
-                  element={<JobProfileEdit />}
-                  allowedRoles={["user"]}
-                />
-              }
-            />
-          </Route>
-          <Route path="*" element={<Error404 />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Teacher Routes */}
+            <Route path="teacher" element={<Layout />}>
+              <Route
+                index
+                element={
+                  <RoleBasedRoute
+                    element={<TeacherDashboard />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+              <Route
+                path="personal-profile"
+                element={
+                  <RoleBasedRoute
+                    element={<EditPersonalProfile />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+              <Route
+                path="job-profile"
+                element={
+                  <RoleBasedRoute
+                    element={<JobProfileEdit />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+              <Route
+                path="view-attempts"
+                element={
+                  <RoleBasedRoute
+                    element={<ViewAttempts />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+              <Route
+                path="setting"
+                element={
+                  <RoleBasedRoute
+                    element={<SettingsPage />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+            </Route>
+
+            {/* Exam Center Routes */}
+            <Route path="examcenter" element={<ExamCenterLayout />}>
+              <Route
+                path="personal-profile"
+                element={
+                  <RoleBasedRoute
+                    element={<EditPersonalProfile />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+              <Route
+                path="job-profile"
+                element={
+                  <RoleBasedRoute
+                    element={<JobProfileEdit />}
+                    allowedRoles={["user"]}
+                  />
+                }
+              />
+            </Route>
+
+            {/* 404 */}
+            <Route path="*" element={<Error404 />} />
+          </Routes>
+        </BrowserRouter>
       </HelmetProvider>
     </Provider>
   );
