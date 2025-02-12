@@ -6,7 +6,7 @@ import { getApiUrl } from "../store/configue";
 const secureApiClient = axios.create({
   baseURL: getApiUrl(),
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, // if using HTTP-only cookies; otherwise, it's optional
+  withCredentials: true, 
 });
 
 // Add interceptor to attach the token to every request
