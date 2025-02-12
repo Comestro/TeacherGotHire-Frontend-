@@ -5,12 +5,10 @@ import AddressProfileCard from "./AddressProfileCard";
 const EditPersonalProfile = () => {
   return (
     <div className="flex h-screen bg-white">
-      <div className="flex-1 w-full">
-        <div className="flex flex-col w-full py-4 px-3 md:px-5">
+        <div className="flex flex-col md:p-6 w-full py-4 px-3 md:px-5">
           <BasicInformation />
           <AddressProfileCard />
         </div>
-      </div>
     </div>
   );
 };

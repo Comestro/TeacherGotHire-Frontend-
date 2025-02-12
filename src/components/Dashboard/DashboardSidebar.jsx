@@ -74,7 +74,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   `block py-3 px-4  ${
                     isActive
                       ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
-                      : "text-gray-500 font-semibold"
+                      : "text-gray-500"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-1`
                 }
               >
@@ -89,7 +89,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   `block py-3 px-4 ${
                     isActive
                       ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
-                      : "text-gray-500 font-semibold"
+                      : "text-gray-500"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-1`
                 }
               >
@@ -104,7 +104,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   `block py-3 px-4 ${
                     isActive
                       ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
-                      : "text-gray-500 font-semibold"
+                      : "text-gray-500"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-2`
                 }
               >
@@ -119,7 +119,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   `block py-3 px-4 ${
                     isActive
                       ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
-                      : "text-gray-500 font-semibold"
+                      : "text-gray-500"
                   } hover:bg-[#F5F8FA] transition flex items-center gap-2`
                 }
               >
@@ -131,23 +131,18 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </nav>
             <div className="flex flex-col">
               <div className="border-t border-gray-200">
-                <Link onClick={() => setIsOpen(false)} to='/teacher/setting' className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4">
+                <Link onClick={() => setIsOpen(false)} to='/teacher/setting' className="flex items-center gap-1 text-md text-gray-500 py-2 px-4">
                   <IoMdSettings className="size-5" /> Setting
                 </Link>
               </div>
               <div className="border-t border-gray-200">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1 text-md font-semibold text-gray-500 py-2 px-4"
+                  className="flex items-center gap-1 text-md text-red-500 py-2 px-4"
                 >
                   <HiOutlineLogin className="size-5" />
                   Logout
                 </button>
-              </div>
-              <div className="copyright flex justify-center w-full border-t border-gray-200">
-                <p className="text-gray-500 text-center p-1 text-sm font-semibold ">
-                  Designed by Comestro
-                </p>
               </div>
             </div>
           </div>
