@@ -21,7 +21,7 @@ apiClient.interceptors.request.use(
 
 export const createaccount = async ({ Fname, Lname, email, password }) => {
   try {
-    const response = await apiClient.post("/api/register/", {
+    const response = await apiClient.post("/api/register/teacher/", {
       Fname,
       Lname,
       email,
@@ -64,7 +64,7 @@ export const createRecruiteraccount = async ({
   password,
 }) => {
   try {
-    const response = await apiClient.post("/api/recruiter/register/", {
+    const response = await apiClient.post("/api/register/recruiter/", {
       Fname,
       Lname,
       email,
@@ -113,7 +113,7 @@ export const fetchUserData = async () => {
 
 export const verifyOtp = async ({ email, otp }) => {
   try {
-    const response = await apiClient.post("/api/verify/", { email, otp });
+    const response = await apiClient.post("/api/verify_otp/", { email, otp });
     return response.data;
   } catch (err) {
     if (err.response) {
@@ -165,7 +165,7 @@ export const login = async ({ email, password }) => {
 
 export const resendOtp = async (email) => {
   try {
-    const response = await apiClient.post("/api/resend-otp/", { email });
+    const response = await apiClient.post("/api/resend_otp/", { email });
     console.log("OTP sent successfully:", response.data);
     return response;
   } catch (err) {
@@ -211,7 +211,7 @@ export const forgetPassword = async (email) => {
 export const resetPassword = async (uidb64, token, newPassword) => {
   try {
     const response = await apiClient.post(
-      `/api/reset-password/${uidb64}/${token}/`,
+      `/api/reset_password/${uidb64}/${token}/`,
       {
         new_password: newPassword,
         confirm_password: newPassword,

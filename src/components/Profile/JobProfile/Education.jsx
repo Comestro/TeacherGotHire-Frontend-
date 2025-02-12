@@ -194,7 +194,7 @@ const Education = () => {
                   <div className="">
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Grade:</span>{" "}
-                      {experience.grade_or_percentage || "N/A"} %
+                      {experience.grade_or_percentage || "N/A"}
                     </p>
                   </div>
                 </div>

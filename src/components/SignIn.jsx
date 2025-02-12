@@ -41,9 +41,14 @@ function Login() {
       if (userData) {
         if (userData?.role === "recruiter") {
           navigate("/recruiter");
-        } else if (userData?.role === "user") {
+        } else if (userData?.role === "teacher") {
           navigate("/teacher");
-        } else {
+        }else if (userData?.role === "centeruser") {
+          navigate("/examcenter"); 
+        }else if (userData?.role === "questionuser") {
+          navigate("/subject-expert"); 
+        }
+        else {
           navigate("/admin/dashboard");
         }
       }

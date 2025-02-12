@@ -279,7 +279,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<TeacherDashboard />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -288,7 +288,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<EditPersonalProfile />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -297,7 +297,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<JobProfileEdit />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -306,7 +306,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<ViewAttempts />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -315,7 +315,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<SettingsPage />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -328,7 +328,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<EditPersonalProfile />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />
@@ -337,7 +337,7 @@ function App() {
                 element={
                   <RoleBasedRoute
                     element={<JobProfileEdit />}
-                    allowedRoles={["user"]}
+                    allowedRoles={["teacher"]}
                   />
                 }
               />

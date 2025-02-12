@@ -4,6 +4,7 @@ import { getApiUrl } from "../store/configue";
 const axiosInstance = axios.create({
   baseURL: getApiUrl(),
   headers: {},
+  withCredentials: true, 
 });
 
 axiosInstance.interceptors.request.use(
