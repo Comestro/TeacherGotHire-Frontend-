@@ -1,33 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { fetchTeachers } from "../../services/teacherFilterService";
+// import { fetchTeachers } from "../../services/teacherFilterService";
 import Loader from "./components/Loader";
+import { useSelector } from "react-redux";
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  const {data, status, error} = useSelector((state) => state.teachers)
+  console.log("filter data in main pannel", data)
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchTeachers({});
-
-        setTimeout(() => {
-          setTeachers(data);
-          setLoading(false);
-        }, 2000);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // if (teachers.length > 0) {
-  //   console.log("Teachers data ", teachers);
-  // }
+    setTeachers(data)
+    setLoading(false)
+  }, [data])
 
   if (loading)
     return (
