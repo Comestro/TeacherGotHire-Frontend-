@@ -16,12 +16,9 @@ const TeacherDashboardCard = () => {
   // Add state for modal and selected detail
   const [showModal, setShowModal] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState(null);
+  const [modalKey, setModalKey] = useState(0); // Add a key for modal re-render
 
-  // New state for image upload
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
+  
 
   const dispatch = useDispatch();
 
@@ -30,7 +27,7 @@ const TeacherDashboardCard = () => {
     dispatch(getProfilCompletion()).catch((error) =>
       console.error("Error:", error)
     );
-  }, [dispatch]);
+  }, [dispatch,showModal]);
 
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
@@ -79,7 +76,7 @@ const TeacherDashboardCard = () => {
     }
   };
 
-  // Refresh data after successful form submission
+  // Refresh data after successful form submission``
   const handleFormSuccess = () => {
     setShowModal(false);
     dispatch(getProfilCompletion()); // Refresh completion data
@@ -281,6 +278,7 @@ const TeacherDashboardCard = () => {
 
       {/* Modal for missing details */}
       <Modal
+      key={modalKey}
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={selectedDetail}
@@ -292,3 +290,4 @@ const TeacherDashboardCard = () => {
 };
 
 export default TeacherDashboardCard;
+

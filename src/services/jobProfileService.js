@@ -6,7 +6,7 @@ const apiClient = axios.create({
   baseURL: getApiUrl(), // Use the API URL from config service
   headers: {
     'Content-Type': 'application/json',
-    //'Authorization': `Token ${localStorage.getItem('access_token')}`, // Use API key from config service
+    
   },
   withCredentials: true, 
 }); 

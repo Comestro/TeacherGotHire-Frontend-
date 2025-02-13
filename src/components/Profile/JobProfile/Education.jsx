@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import Input from "../../Input";
-import Button from "../../Button";
 import {
   getEducationProfile,
   getQualification,
@@ -20,10 +18,10 @@ const Education = () => {
   const qualification = useSelector(
     (state) => state?.jobProfile?.qualification
   );
-  
 
-  const {error, educationData} = useSelector(
-    (state) => state.jobProfile|| []);
+  const { error, educationData } = useSelector(
+    (state) => state.jobProfile || []
+  );
   console.log("Education Data", educationData);
   console.log("Error:", error);
 
@@ -31,8 +29,6 @@ const Education = () => {
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
-
 
   const {
     register,
@@ -78,9 +74,8 @@ const Education = () => {
       setEditingIndex(null); // Exit editing mode
       reset(); // Reset form
     } catch (err) {
-      setError(err.message);
-    }
-    finally{
+      console.error("Error:", err);
+    } finally {
       setLoading(false);
     }
   };
@@ -102,14 +97,14 @@ const Education = () => {
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
     } catch (err) {
-      setError(err.message);
+      console.error("Error:", err);
     }
   };
 
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white  border border-gray-200">
       {/* Enhanced Header */}
-      {loading && <Loader/>}
+      {loading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
           <h2 className="text-2xl font-bold text-gray-900 mb-1">
@@ -193,7 +188,11 @@ const Education = () => {
 
                   <div className="">
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Grade:</span>{" "}
+                      <span className="font-medium">
+                        {/^[A-Da-d]$/.test(experience.grade_or_percentage)
+                          ? "Grade:"
+                          : "Percentage:"}
+                      </span>{" "}
                       {experience.grade_or_percentage || "N/A"}
                     </p>
                   </div>
@@ -225,7 +224,6 @@ const Education = () => {
                   {errors.institution.message}
                 </span>
               )}
-              
             </div>
 
             <div>
@@ -252,7 +250,6 @@ const Education = () => {
                   {errors.qualification.message}
                 </span>
               )}
-             
             </div>
 
             <div>
@@ -263,23 +260,28 @@ const Education = () => {
                 type="text"
                 placeholder="YYYY"
                 className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
+                maxLength={4}
                 {...register("year_of_passing", {
                   required: "Year is required",
+                  pattern: {
+                    value: /^\d{4}$/,
+                    message: "Please enter a valid 4-digit year (e.g., 2023)",
+                  },
+                  validate: (value) => {
+                    const currentYear = new Date().getFullYear();
+                    if (value < 1900 || value > currentYear) {
+                      return `Year must be between 1900 and ${currentYear}`;
+                    }
+                    return true;
+                  },
                 })}
               />
               {errors.year_of_passing && (
-                <span className="text-red-500 text-sm">
+                <p className="text-red-500 text-sm mt-1">
                   {errors.year_of_passing.message}
-                </span>
+                </p>
               )}
-               {
-                error && (
-                  <span className="text-red-500 text-sm">
-                  {error}
-                </span>
-                )
-              }
-             
+              {error && <span className="text-red-500 text-sm">{error}</span>}
             </div>
 
             <div>
@@ -290,14 +292,30 @@ const Education = () => {
                 type="text"
                 placeholder="Enter grade or percentage"
                 className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                {...register("grade_or_percentage")}
+                {...register("grade_or_percentage", {
+                  required: "Grade or percentage is required",
+                  validate: (value) => {
+                    const isGrade = /^[A-Da-d]$/.test(value);
+                    const isPercentage = /^\d{1,3}%?$/.test(value);
+
+                    if (isGrade) {
+                      return true;
+                    } else if (isPercentage) {
+                      const numericValue = parseFloat(value.replace("%", ""));
+                      if (numericValue >= 0 && numericValue <= 100) {
+                        return true;
+                      }
+                      return "Percentage must be between 0% and 100%";
+                    }
+                    return "Please enter a valid grade (A, B, C, D) or a percentage (0-100%)";
+                  },
+                })}
               />
               {errors.grade_or_percentage && (
-                <span className="text-red-500 text-sm">
+                <p className="text-red-500 text-sm mt-1">
                   {errors.grade_or_percentage.message}
-                </span>
+                </p>
               )}
-             
             </div>
           </div>
 
