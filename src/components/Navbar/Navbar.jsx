@@ -1,24 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { IoMdClose, IoMdMenu, IoMdArrowDropdown } from "react-icons/io";
+import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { useSelector } from "react-redux";
 import { FaUserCircle } from "react-icons/fa";
 import { logout } from "../../services/authServices";
+import { FiSearch } from "react-icons/fi";
 
-const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
+const Navbar = ({ links }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("profile", profile);
 
   const hideLinksPaths = ["/signin", "/signup/teacher"];
-  const showSpecialLinksPaths = ["/signin", "/signup/teacher"];
   const shouldHideLinks = hideLinksPaths.includes(location.pathname);
-  const shouldShowSpecialLinks = showSpecialLinksPaths.includes(
-    location.pathname
-  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,80 +33,123 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
   };
 
   return (
-    <nav
-      className={`flex items-center justify-between shadow py-2 px-6 md:px-10 ${
-        variant === "light" ? "bg-white" : "bg-white-500"
-      }`}
-    >
-      <div className="text-3xl font-bold text-gray-800">PTPI.COM</div>
-
+    <nav className="flex items-center justify-between shadow py-2 px-6 md:px-10 bg-white">
+      {/* Logo */}
       <button
-        className="block md:hidden text-2xl focus:outline-none"
+        className="block md:hidden text-2xl focus:outline-none mr-2"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
-        {isMenuOpen ? <IoMdClose /> : <IoMdMenu />}
+        {isMenuOpen ? (
+          <IoMdClose className="size-6 text-gray-700" />
+        ) : (
+          <IoMdMenu className="size-6 text-gray-700" />
+        )}
       </button>
+      <h1 className="text-2xl md:text-2xl font-bold text-gray-800 w-full">
+        PTP INSTITUTE
+      </h1>
 
+      {/* Mobile Menu Button */}
+      {profile.email && (
+        <div className="relative md:hidden" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center space-x-2 text-teal-600 hover:text-teal-700 px-3 py-1 rounded-full"
+          >
+            <FaUserCircle className="w-7 h-7 md:w-8 md:h-8" />
+            <div className="hidden md:flex flex-col items-start">
+              <span>
+                {profile.Fname} {profile.Lname}
+              </span>
+              <span className="text-xs text-gray-500 -mt-1">
+                {profile.email}
+              </span>
+            </div>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <Link
+                to="/teacher"
+                className="block px-4 py-3 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/settings"
+                className="block px-4 py-3 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                Settings
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-b-lg"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Navigation Links */}
       <div
-        className={`absolute top-16 left-0 w-full bg-white md:bg-transparent md:static md:flex md:items-center md:gap-6 ${
+        className={`absolute top-16 left-0 w-full h-screen md:h-auto bg-white/90 md:bg-transparent md:static md:flex md:items-center md:gap-6 ${
           isMenuOpen ? "block" : "hidden"
         } md:block transition-all`}
       >
-        <div className="flex flex-col md:flex-row items-center md:gap-6 w-full justify-end">
-          <Link
-            to="/"
-            className="items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-medium text-teal-900"
-          >
-            Home
-          </Link>
+        <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4 md:gap-2 w-full py-4 md:py-0">
+          {/* Find Tutor Link (Always visible except on auth pages) */}
+          {!shouldHideLinks && (
+            <Link
+              to="/signup/recruiter"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-4 py-2 rounded-lg text-gray-600 font-semibold hover:bg-gray-100"
+            >
+              <FiSearch className="mr-2 text-gray-600 text-lg" />
+              Find Tutor
+            </Link>
+          )}
 
-          {!shouldHideLinks &&
-            links.map((link) => (
-              <Link
-                key={link.id}
-                to={link.to}
-                className="items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-medium text-teal-900"
-              >
-                {link.label}
-              </Link>
-            ))}
-
+          {/* Conditional Auth Links / User Dropdown */}
           {profile?.email ? (
-            <div className="relative" ref={dropdownRef}>
-              <div className="mr-2">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 text-teal-600 hover:text-teal-700 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
-                >
-                  <FaUserCircle className="w-8 h-8 " />
-                  <div className="hidden md:flex flex-col items-start ">
-                    <span className="font-medium ">
-                      {profile.Fname} {profile.Lname}
-                    </span>
-                    <span className="text-sm  -mt-1">{profile.email}</span>
-                  </div>
-                </button>
-              </div>
+            <div className="relative hidden md:block" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-2 text-teal-600 hover:text-teal-700 px-3 py-1 rounded-full"
+              >
+                <FaUserCircle className="w-7 h-7 md:w-8 md:h-8" />
+                <div className="hidden md:flex flex-col items-start">
+                  <span>
+                    {profile.Fname} {profile.Lname}
+                  </span>
+                  <span className="text-xs text-gray-500 -mt-1">
+                    {profile.email}
+                  </span>
+                </div>
+              </button>
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <Link
-                    to="/profile"
-                    className="block px-4 py-3 hover:bg-gray-100 text-gray-700 transition-colors"
+                    to="/teacher"
+                    className="block px-4 py-3 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Profile
+                    Dashboard
                   </Link>
                   <Link
                     to="/settings"
-                    className="block px-4 py-3 hover:bg-gray-100 text-gray-700 transition-colors"
+                    className="block px-4 py-3 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Settings
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-700 transition-colors rounded-b-lg"
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-b-lg"
                   >
                     Logout
                   </button>
@@ -118,30 +157,17 @@ const Navbar = ({ links, variant, externalComponent: ExternalComponent }) => {
               )}
             </div>
           ) : (
-            shouldShowSpecialLinks && (
-              <>
-                <Link
-                  to="/signin"
-                  className="items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-medium text-teal-900"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup/teacher"
-                  className="items-center gap-4 p-3 rounded-md hover:bg-gray-100 transition font-medium text-teal-900"
-                >
-                  Become a Teacher
-                </Link>
-              </>
+            !shouldHideLinks && (
+              <Link
+                to="/signin"
+                onClick={() => setIsMenuOpen(false)}
+                className="px-4 py-2 rounded-md bg-gray-100 hover:shadow-md font-medium text-gray-600"
+              >
+                Login/Signup
+              </Link>
             )
           )}
         </div>
-
-        {ExternalComponent && (
-          <div className="mt-4 md:mt-0 md:ml-4">
-            <ExternalComponent />
-          </div>
-        )}
       </div>
     </nav>
   );
