@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from "react";
-// import { fetchTeachers } from "../../services/teacherFilterService";
 import Loader from "./components/Loader";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom"; 
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const {data, status, error} = useSelector((state) => state.teachers)
-  console.log("filter data in main pannel", data)
+  const { data, status, error } = useSelector((state) => state.teachers);
 
   useEffect(() => {
-    setTeachers(data)
-    setLoading(false)
-  }, [data])
+    if (data) {
+      setTeachers(data);
+      setLoading(false);
+    }
+  }, [data]);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="w-full h-full flex justify-center items-center mt-16 ">
         <div className="h-fit mt-20">
@@ -23,11 +24,14 @@ const TeacherFilter = () => {
         </div>
       </div>
     );
-  if (error) return <p>Error: {error}</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow-md">
-      {error && <p className="text-white bg-red-600 p-2">{error}</p>}
       {teachers?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teachers.map((teacher) => (
@@ -182,17 +186,26 @@ const TeacherFilter = () => {
                   <p className="text-sm text-gray-400">No preferences</p>
                 )}
               </div>
+
+              {/* Link to View Teacher Details */}
+              <Link
+                to={`/recruiter/${teacher.id}`}
+                className="w-full text-center mt-4 inline-block bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition duration-300"
+              >
+                View Details
+              </Link>
             </div>
           ))}
         </div>
       ) : (
-        !loading && <p className="text-gray-600">No teachers found.</p>
+        <p className="text-gray-600">No teachers found.</p>
       )}
     </div>
   );
 };
 
 export default TeacherFilter;
+
 // import React, { useEffect, useState } from "react";
 // import { fetchTeachers } from "../../services/teacherFilterService";
 // import Loader from "./components/Loader";

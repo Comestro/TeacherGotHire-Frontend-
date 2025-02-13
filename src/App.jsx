@@ -50,6 +50,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
+import TeacherDetails from "./components/Recruiter/TeacherDetails";
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
               }
             >
               <Route index element={<TeacherRecruiter />} />
+              <Route path="/recruiter/:id" element={<TeacherDetails />} />
             </Route>
 
             {/* Admin Routes */}
