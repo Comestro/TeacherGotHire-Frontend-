@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount, verifyOtp } from "../services/authServices";
 import Navbar from "./Navbar/Navbar";
-import { getPostData,getResendOtp } from "../features/authSlice";
+import { getPostData, getResendOtp } from "../features/authSlice";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 
@@ -19,12 +19,15 @@ function SignUpPage() {
     watch,
     formState: { errors, isValid },
   } = useForm();
+
+  const inputRefs = useRef([]); // Refs for each input field
   const [error, setError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(Array(5).fill(""));
+  const [otp, setOtp] = useState(Array(6).fill(""));
   const [isOTPValid, setIsOTPValid] = useState(false);
   const [correctOTP, setcorrectOTP] = useState("");
+
   const [showResendButton, setShowResendButton] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -40,11 +43,14 @@ function SignUpPage() {
 
   // Handle OTP input change
   const handleOtpChange = (index, value) => {
-    if (!/^\d?$/.test(value)) return; // Only allow numbers (0-9)
-
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+
+    // Automatically focus on the next input if a digit is entered
+    if (value && index < otp.length - 1) {
+      inputRefs.current[index + 1].focus();
+    }
   };
 
   // Auto-submit when OTP length is 6
@@ -52,18 +58,22 @@ function SignUpPage() {
     console.log("otp", otp);
     console.log("correctotp", correctOTP);
     const enteredOTP = otp.join("");
-    if (enteredOTP.length === 5) {
+    console.log("enterotp",enteredOTP.length)
+    
+    if (enteredOTP.length === 6) {
       if (enteredOTP === correctOTP) {
-        setIsOTPValid(true);
+        console.log("enterotp",enteredOTP)
+         setIsOTPValid(true);
         // Simulate form submission (e.g., API call)
         verifyOtpHandler();
         setOtp(Array(5).fill(""));
       } else {
+        console.log("invalid otp");
         setIsOTPValid(false);
         setShowResendButton(true);
       }
     }
-  }, [otp]);
+  }, [otp,correctOTP]);
 
   const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
@@ -88,20 +98,32 @@ function SignUpPage() {
     }
   };
 
-  const handleResendOTP = async() => {
-    console.log("Initial otp:", otp);
-    await dispatch(getResendOtp(email)).unwrap();
-    //setcorrectOTP(resOtp);// I have to add resend otp resonse
-    
-    console.log("Reset otp:", otp);
-    setShowResendButton(false);
+
+  const handleResendOTP = async () => {
+
+    try{
+      console.log("Initial otp:", otp);
+      // setLoading(true);
+     const resendotp =  await dispatch(getResendOtp(email)).unwrap();
+     
+      console.log("Reset otp:", resendotp);
+      setOtp(Array(6).fill("")); // Reset OTP fields
+      const resOtp = resendotp?.data?.otp;
+      console.log("resOtp", resOtp);
+      setcorrectOTP(resOtp);
+      setShowResendButton(false); // Hide resend button
+      setIsOTPValid(null); // Reset validation status
+    } catch (error) {
+        setError(error.message || " Please try again.");
+    }
+   
   };
 
   const verifyOtpHandler = async () => {
     setError("");
     setLoading(true); // Set loading to true
     setSuccessMessage("");
-
+    console.log("helloooooo")
     try {
       const response = await verifyOtp({ email, otp: otp.join("") });
       if (response) {
@@ -321,6 +343,7 @@ function SignUpPage() {
                           onChange={(e) =>
                             handleOtpChange(index, e.target.value)
                           }
+                          ref={(el) => (inputRefs.current[index] = el)}
                         />
                       ))}
                     </div>
@@ -333,6 +356,7 @@ function SignUpPage() {
                     {showResendButton && (
                       <button
                         onClick={handleResendOTP}
+                        
                         className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
                       >
                         Resend OTP

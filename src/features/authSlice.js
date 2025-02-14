@@ -4,6 +4,7 @@ import {createaccount,createRecruiteraccount,fetchUserData,resendOtp} from "../s
 
 const initialState = {
   userData: {},
+  resendotp:{},
   recruiterData: {},
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null, // Stores user data after login
@@ -137,6 +138,10 @@ const authSlice = createSlice({
       .addCase(getResendOtp.pending, (state) => {
         state.status = "loading";
         state.error = null;
+      })
+      .addCase(getResendOtp.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.resendotp = action.payload;
       })
 
       // Handle rejected state

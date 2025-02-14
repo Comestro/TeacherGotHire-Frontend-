@@ -185,6 +185,8 @@ export const resendOtp = async (email) => {
   }
 };
 
+
+
 export const forgetPassword = async (email) => {
   try {
     const response = await apiClient.post("/api/forget-password/", { email });
