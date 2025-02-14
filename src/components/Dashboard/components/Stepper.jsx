@@ -80,7 +80,7 @@ import StepLabel from "@mui/material/StepLabel";
 import StepContent from "@mui/material/StepContent";
 import Typography from "@mui/material/Typography";
 import { useDispatch, useSelector } from "react-redux";
-import { getLevels, attemptsExam } from "../../../features/examQuesSlice";
+import { attemptsExam } from "../../../features/examQuesSlice";
 
 const ProgressBar = ({ progress }) => (
   <div style={{ width: "100%", backgroundColor: "#e0e0e0", borderRadius: 8, height: 12, marginTop: 8 }}>
@@ -96,15 +96,15 @@ const ProgressBar = ({ progress }) => (
 );
 
 const Steppers = () => {
-  const { attempts,levels } = useSelector((state) => state.examQues);
+  const { attempts } = useSelector((state) => state.examQues);
   const dispatch = useDispatch();
-
-  console.log("levels",levels)
-
   useEffect(() => {
-    dispatch(getLevels());
-    dispatch(attemptsExam());
-  }, [dispatch]);
+    try{
+      dispatch(attemptsExam());
+    }catch(err){
+       throw err;
+    }
+   }, [dispatch]);
 
   // Filter data to include only attempts where isqualified is true
   const qualifiedAttempts = attempts?.filter((item) => item.isqualified === true);
