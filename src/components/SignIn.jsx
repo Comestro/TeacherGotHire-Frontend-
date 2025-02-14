@@ -14,7 +14,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from rea
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
-
+ 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,18 +26,18 @@ function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
-
+ 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
+ 
   const login = async ({ email, password }) => {
     setError("");
     setLoading(true);
-
+ 
     try {
       const userData = await loginService({ email, password }); // Call the service function to authenticate the user
-
+ 
       if (userData) {
         if (userData?.role === "recruiter") {
           navigate("/recruiter");
@@ -58,7 +58,7 @@ function Login() {
         );
         setOtpSent(true); // Optional: Trigger OTP resend logic
         setEmail(email); // Store the email for OTP resend later
-
+ 
         try {
           const otpResponse = await getResendOtp(email).unwrap();
           if (otpResponse.status === 200) {
@@ -86,7 +86,7 @@ function Login() {
       setLoading(false); // Set loading to false
     }
   };
-
+ 
   const verifyOtpHandler = async () => {
     setError("");
     setLoading(true); // Set loading to true
@@ -109,7 +109,7 @@ function Login() {
       setLoading(false); // Set loading to false
     }
   };
-
+ 
   return (
     <>
       <Helmet>
@@ -125,7 +125,7 @@ function Login() {
         <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
           <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-
+ 
             {!otpSent ? (
               <>
                 <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
@@ -147,7 +147,7 @@ function Login() {
                     Sign Up
                   </span>
                 </p>
-
+ 
                 <form onSubmit={handleSubmit(login)} className="space-y-5">
                   {/* Email */}
                   <div className="mb-4">
@@ -173,7 +173,7 @@ function Login() {
                       })}
                     />
                   </div>
-
+ 
                   {/* Password */}
                   <div className="mb-4 relative">
                     <label
@@ -200,7 +200,7 @@ function Login() {
                       {/* Toggle eye icon based on showPassword state */}
                     </button>
                   </div>
-
+ 
                   {/* Submit Button */}
                   <Button
                     type="submit"
@@ -235,14 +235,14 @@ function Login() {
                     )}
                   </Button>
                 </form>
-
+ 
                 <div className="text-center my-4">
                   <div className="flex items-center">
                     <hr className="flex-grow border-gray-300" />
                     <span className="px-4 text-sm text-gray-600">Or</span>
                     <hr className="flex-grow border-gray-300" />
                   </div>
-
+ 
                   {/* <p className="text-sm font-medium text-gray-600 mt-6">
                     Don't have an account?{" "}
                     <span
@@ -272,7 +272,7 @@ function Login() {
                 <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
                   Verify OTP
                 </h2>
-
+ 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Enter OTP
@@ -301,7 +301,7 @@ function Login() {
             )}
           </div>
         </div>
-
+ 
         {/* Step Progress */}
         <div className="hidden md:flex w-full md:w-1/2 flex-col pl-36 justify-center h-screen p-10">
           {/* Step 1 */}
@@ -318,7 +318,7 @@ function Login() {
               </div>
             </div>
           </div>
-
+ 
           {/* Step 2 */}
           <div className="flex items-start space-x-4 mb-4">
             <div className="flex flex-col items-center">
@@ -333,7 +333,7 @@ function Login() {
               </div>
             </div>
           </div>
-
+ 
           {/* Step 3 */}
           <div className="flex items-start space-x-4 mb-4">
             <div className="flex flex-col items-center">
@@ -352,5 +352,5 @@ function Login() {
     </>
   );
 }
-
+ 
 export default Login;
