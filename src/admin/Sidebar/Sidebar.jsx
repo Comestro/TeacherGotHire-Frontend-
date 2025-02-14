@@ -34,6 +34,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import { Link } from "react-router-dom";
 import { logout } from "../../services/authServices";
 import { Key } from "@mui/icons-material";
+import { BiBriefcase } from "react-icons/bi";
 
 const drawerWidth = 240;
 
@@ -185,6 +186,11 @@ export default function Sidebar({ open, handleDrawerClose }) {
       text: "Manage Exam Center",
       icon: <SchoolIcon />,
       link: "/admin/manage/exam/center",
+    },
+    {
+      text: "Manage Hiring",
+      icon: <BiBriefcase />,
+      link: "/admin/manage/hiring",
     },
     {
       text: "Manage Passkey",
