@@ -72,7 +72,7 @@ export const fetchExam = async ({
 export const fetchQuestion = async ({ exam_id, language }) => {
   try {
     console.log("ExamId and Language", { exam_id, language });
-    const response = await apiClient.get(`/api/self/exam/${exam_id}`, {
+    const response = await apiClient.get(`/api/self/exam/${exam_id}/`, {
       params: {
         language,
       },

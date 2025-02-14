@@ -86,7 +86,7 @@ function ExamManagement() {
   useEffect(() => {
     dispatch(getAllCenter());
     if (classCategories[0]) {
-      setActiveTab(classCategories[0].id);
+      setActiveTab(classCategories[0]?.id);
     }
   }, []);
 

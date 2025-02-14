@@ -239,25 +239,21 @@ export const resetPassword = async (uidb64, token, newPassword) => {
   }
 };
 
-// export const logout = () => {
-//   try {
-//     localStorage.removeItem("access_token");
-//     localStorage.removeItem("role");
-//   } catch (err) {
-//     console.error("Logout error:", err);
-//     throw err;
-//   }
-// };
 
-// export default apiClient;
 
 export const logout = async () => {
   try {
     const response = await apiClient.post("/api/logout/");
     
+
+    persistor.purge().then(() => {
+      console.log('Persisted store cleared.');
+    });
+    
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
     
+
     console.log("logout hua bhai", response.data)
     return response.data;
   } catch (err) {
