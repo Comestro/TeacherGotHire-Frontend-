@@ -8,13 +8,14 @@ import {
 import { BsCheck } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
-import { fetchTeachers } from "../../../services/teacherFilterService";
+// import { fetchTeachers } from "../../../services/teacherFilterService";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllSkills,
   getQualification,
   getClassCategory,
 } from "../../../features/jobProfileSlice";
+import { fetchTeachers } from "../../../features/teacherFilterSlice";
 
 const RecruiterSidebar = () => {
   const dispatch = useDispatch();
@@ -139,18 +140,22 @@ const RecruiterSidebar = () => {
     }));
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchTeachers(filters);
-        console.log("api response for teacher", data);
-      } catch (error) {
-        console.error("Error fetching filtered teachers:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const data = await fetchTeachers(filters);
+  //       console.log("api response for teacher", data);
+  //     } catch (error) {
+  //       console.error("Error fetching filtered teachers:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [filters]);
+  //   fetchData();
+  // }, [filters]);
+
+  useEffect(() => {
+    dispatch(fetchTeachers(filters)); // Fetch teachers with applied filters
+  }, [dispatch, filters]);
 
 
 

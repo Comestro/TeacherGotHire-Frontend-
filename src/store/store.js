@@ -7,7 +7,7 @@ import personalProfileSlice from "../features/personalProfileSlice";
 import jobProfileSlice from "../features/jobProfileSlice";
 import dashboardSlice from "../features/dashboardSlice";
 import examQuesSlice from "../features/examQuesSlice";
-import teacherSlice from "../features/teacherSlice";
+import teacherSlice from "../features/teacherFilterSlice";
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -16,7 +16,6 @@ const rootReducer = combineReducers({
   dashboard: dashboardSlice,
   examQues: examQuesSlice,
   teachers: teacherSlice,
-  
 });
 
 // Step 2: Configure persist 
