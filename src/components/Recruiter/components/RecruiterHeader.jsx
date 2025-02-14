@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { logout } from "../../../services/authServices";
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profile = useSelector((state) => state?.auth?.userData || {});
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -13,6 +16,12 @@ const TeacherRecruiterHeader = () => {
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
+
+ const handleLogout = () => {
+     logout();
+     setIsProfileMenuOpen(false);
+   };
+ 
 
   return (
     <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
@@ -78,9 +87,9 @@ const TeacherRecruiterHeader = () => {
             >
               <FaUserCircle className="w-8 h-8 text-teal-600" />
               <div className="hidden md:flex flex-col items-start ">
-                <span className="font-medium">Rahul Kumar</span>
+                <span className="font-medium">{profile?.Fname} {profile?.Lname}</span>
                 <span className="text-sm text-gray-500 -mt-1">
-                  rahulkumar@gmail.com
+                 {profile?.email}
                 </span>
               </div>
             </button>
@@ -99,7 +108,7 @@ const TeacherRecruiterHeader = () => {
                 >
                   Profile
                 </Link>
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+                <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
                   Logout
                 </button>
               </div>
