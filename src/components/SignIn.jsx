@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { getPostData, recruiterPostData } from "../features/authSlice"; // Redux action to store the user login state
+import { getResendOtp } from "../features/authSlice"; // Redux action to store the user login state
 import {
   login as loginService,
-  resendOtp,
   verifyOtp,
 } from "../services/authServices"; // Service to authenticate the user
 import Input from "./Input";
@@ -61,7 +60,7 @@ function Login() {
         setEmail(email); // Store the email for OTP resend later
 
         try {
-          const otpResponse = await resendOtp(email);
+          const otpResponse = await getResendOtp(email).unwrap();
           if (otpResponse.status === 200) {
             setSuccessMessage("An OTP has been sent to your email.");
           } else {
@@ -273,6 +272,7 @@ function Login() {
                     type="text"
                     placeholder="Enter the OTP sent to your email"
                     value={otp}
+                    maxlength={6}
                     onChange={(e) => setOtp(e.target.value)}
                     className="w-full border-2 text-sm rounded-xl px-3 py-3 border-gray-300 focus:border-green-500"
                   />

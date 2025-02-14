@@ -12,6 +12,7 @@ import {
   resetPasskeyResponse,
   verifyPasscode,
 } from "../../../features/examQuesSlice";
+import {getPrefrence,getEducationProfile} from "../../../features/jobProfileSlice"
 
 import { useNavigate } from "react-router-dom";
 
@@ -29,21 +30,24 @@ function ExamManagement() {
   );
   const { examSet,allcenter,attempts } = useSelector((state) => state.examQues);
 
-  console.log("attempts", attempts);
+  console.log("educationData", educationData);
   
   const { userData } = useSelector((state) => state?.auth);
   const { exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
   const exams = verifyresponse?.offline_exam;
-  
-
   const isProfileComplete =
     ( basicData && Object.keys(basicData).length > 0 &&
     prefrence && Object.keys(prefrence).length > 0 &&
     educationData && educationData.length > 0);
 
-    console.log("isProfileComplete",isProfileComplete); 
+  console.log("isProfileComplete",isProfileComplete); 
+
+  useEffect(()=>{
+    dispatch(getPrefrence());
+    dispatch(getEducationProfile());
+  },[])
 
   const exam_id = passkeyresponse?.exam?.id;
 
@@ -726,7 +730,7 @@ function ExamManagement() {
         <>      
         {/* Access Level 1 Message */}
         <div className="mt-6 p-5 bg-yellow-50 rounded-lg border border-yellow-200 text-yellow-700 text-sm">
-          <p>Please complete your profile, choose a class category, and select a subject to access Level 1.</p>
+          <p>Please complete your profile, and complete your missing details then select a subject to access Level 1.</p>
         </div>
       
         {/* Cards Section */}
