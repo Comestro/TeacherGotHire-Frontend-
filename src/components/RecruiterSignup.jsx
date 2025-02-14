@@ -7,6 +7,7 @@ import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { recruiterPostData } from "../features/authSlice";
+import CustomHeader from './commons/CustomHeader';
 const RecruiterSignUpPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -63,7 +64,7 @@ const RecruiterSignUpPage = () => {
     };
     return (
         <>
-      {/* <Navbar /> */}
+        <CustomHeader />
       <div
         className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
@@ -76,12 +77,22 @@ const RecruiterSignUpPage = () => {
            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Recruiters </span>
             </h2>
-            <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+            <h2 className=" font-bold text-gray-500 text-xl md:text-4xl leading-none">
               Signup To{" "}
               <span className="font-bold text-xl md:text-4xl text-teal-600">
                 PTPI{" "}
               </span>
             </h2>
+
+            <p className="text-sm font-medium text-gray-600 mt-2 mb-4">
+                 I have an account? {" "}
+                <span
+                  onClick={() => navigate("/signin")}
+                  className="text-teal-600 hover:underline font-semibold cursor-pointer"
+                >
+                  Sign In
+                </span>
+              </p>
 
             {/* Error Message */}
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
@@ -229,35 +240,11 @@ const RecruiterSignUpPage = () => {
               <p className="text-red-500 text-sm mt-4">Error: {error}</p>
             )}
 
-            <div className="text-center my-2">
+            {/* <div className="text-center my-2">
               <div className="flex items-center">
                 <hr className="flex-grow border-gray-300" />
                 <span className="px-4 text-sm text-gray-600">Or</span>
                 <hr className="flex-grow border-gray-300" />
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-center sm:space-x-4 space-y-4 sm:space-y-0 mt-2">
-                <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                  <img
-                    src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000"
-                    alt="Google"
-                    className="w-5 h-5 mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-600">
-                    Sign in with Google
-                  </span>
-                </button>
-
-                <button className="flex items-center border border-gray-300 rounded-full px-4 py-2 shadow-sm hover:bg-gray-100 transition">
-                  <img
-                    src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
-                    alt="Facebook"
-                    className="w-5 h-5 mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-600">
-                    Sign in with Facebook
-                  </span>
-                </button>
               </div>
 
               <p className="text-sm font-medium text-gray-600 mt-6">
@@ -269,7 +256,7 @@ const RecruiterSignUpPage = () => {
                   Sign In
                 </span>
               </p>
-            </div>
+            </div> */}
             </>) : (
               <>
                <>

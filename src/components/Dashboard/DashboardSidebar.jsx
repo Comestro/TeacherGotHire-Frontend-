@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../services/authServices";
 import {
   HiViewGrid,
   HiUser,
@@ -9,7 +8,7 @@ import {
   HiOutlineLogin,
 } from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
-import { getUserData } from "../../features/authSlice";
+import { getUserData, userLogout } from "../../features/authSlice";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
 
@@ -22,10 +21,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     dispatch(getUserData());
   }, [dispatch]);
 
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate("/signin");
+  // };
+
   const handleLogout = () => {
-    logout();
-    navigate("/signin");
-  };
+      dispatch(userLogout())
+        .unwrap()
+        .then(() => {
+          console.log("Logout successful!");
+        })
+        .catch((error) => {
+          console.error("Logout failed:", error);
+        });
+        navigate("/signin");
+    };
 
   return (
     <>

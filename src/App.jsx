@@ -61,20 +61,18 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
-              <Route path="signup/teacher" element={<SignUpPage />} />
-              <Route path="signin" element={<Login />} />
-              <Route path="forgot-password" element={<ForgotPassword />} />
-              <Route
-                path="reset-password/:uid/:token"
-                element={<ResetPassword />}
-              />
-              <Route
-                path="signup/recruiter"
-                element={<RecruiterSignUpPage />}
-              />
+
               <Route path="contact" element={<ContactUs />} />
               <Route path="exam-mode" element={<ExamMode />} />
             </Route>
+            <Route path="signup/teacher" element={<SignUpPage />} />
+            <Route path="signin" element={<Login />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="reset-password/:uid/:token"
+              element={<ResetPassword />}
+            />
+            <Route path="signup/recruiter" element={<RecruiterSignUpPage />} />
 
             {/* Unauthorized Page */}
             <Route path="/unauthorized" element={<Unauthorized />} />
