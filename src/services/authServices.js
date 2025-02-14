@@ -237,14 +237,40 @@ export const resetPassword = async (uidb64, token, newPassword) => {
   }
 };
 
-export const logout = () => {
+// export const logout = () => {
+//   try {
+//     localStorage.removeItem("access_token");
+//     localStorage.removeItem("role");
+//   } catch (err) {
+//     console.error("Logout error:", err);
+//     throw err;
+//   }
+// };
+
+// export default apiClient;
+
+export const logout = async () => {
   try {
+    const response = await apiClient.post("/api/logout/");
+    
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
+    
+    console.log("logout hua bhai", response.data)
+    return response.data;
   } catch (err) {
-    console.error("Logout error:", err);
-    throw err;
+    if (err.response) {
+      throw {
+        status: err.response.status,
+        message: err.response.data.message || "Logout failed.",
+        data: err.response.data,
+      };
+    } else {
+      throw {
+        status: null,
+        message:
+          "No response from the server. Please check your network connection.",
+      };
+    }
   }
 };
-
-export default apiClient;

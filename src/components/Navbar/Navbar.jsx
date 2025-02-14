@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { IoMdClose, IoMdMenu } from "react-icons/io";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { FaUserCircle } from "react-icons/fa";
 import { logout } from "../../services/authServices";
 import { FiSearch } from "react-icons/fi";
+import { userLogout } from "../../features/authSlice";
 
 const Navbar = ({ links }) => {
+  const dispatch = useDispatch();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,8 +29,17 @@ const Navbar = ({ links }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+ 
+
   const handleLogout = () => {
-    logout();
+    dispatch(userLogout())
+      .unwrap()
+      .then(() => {
+        console.log("Logout successful!");
+      })
+      .catch((error) => {
+        console.error("Logout failed:", error);
+      });
     setIsDropdownOpen(false);
   };
 
