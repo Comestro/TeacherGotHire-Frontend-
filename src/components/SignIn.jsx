@@ -14,6 +14,7 @@ import Navbar from "./Navbar/Navbar";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
+import CustomHeader from "./commons/CustomHeader";
 
 function Login() {
   const dispatch = useDispatch();
@@ -43,12 +44,11 @@ function Login() {
           navigate("/recruiter");
         } else if (userData?.role === "teacher") {
           navigate("/teacher");
-        }else if (userData?.role === "centeruser") {
-          navigate("/examcenter"); 
-        }else if (userData?.role === "questionuser") {
-          navigate("/subject-expert"); 
-        }
-        else {
+        } else if (userData?.role === "centeruser") {
+          navigate("/examcenter");
+        } else if (userData?.role === "questionuser") {
+          navigate("/subject-expert");
+        } else {
           navigate("/admin/dashboard");
         }
       }
@@ -113,11 +113,11 @@ function Login() {
 
   return (
     <>
-    <Helmet>
-      <title>PTPI | Login Page</title>
-    </Helmet>
-          {loading && <Loader />} {/* Show loader while loading */}
-
+      <Helmet>
+        <title>PTPI | Login Page</title>
+      </Helmet>
+      <CustomHeader />
+      {loading && <Loader />}
       <div
         className="flex bg-cover bg-no-repeat items-center justify-center mt-5"
         style={{ backgroundImage: 'url("/bg.png")' }}
@@ -133,12 +133,21 @@ function Login() {
                   Hello,{" "}
                   <span className="font-bold text-teal-600">Teachers</span>
                 </h2>
-                <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
+                <h2 className=" font-bold text-gray-500 text-xl md:text-4xl leading-none">
                   Sign in to{" "}
                   <span className="font-bold text-xl md:text-4xl text-teal-600">
                     PTPI
                   </span>
                 </h2>
+                <p className="text-sm font-medium text-gray-600 mt-2 mb-4">
+                  Don't have an account?{" "}
+                  <span
+                    onClick={() => navigate("/signup/teacher")}
+                    className="text-teal-600 hover:underline font-semibold cursor-pointer"
+                  >
+                    Sign Up
+                  </span>
+                </p>
 
                 <form onSubmit={handleSubmit(login)} className="space-y-5">
                   {/* Email */}
@@ -235,7 +244,7 @@ function Login() {
                     <hr className="flex-grow border-gray-300" />
                   </div>
 
-                  <p className="text-sm font-medium text-gray-600 mt-6">
+                  {/* <p className="text-sm font-medium text-gray-600 mt-6">
                     Don't have an account?{" "}
                     <span
                       onClick={() => navigate("/signup/teacher")}
@@ -243,11 +252,11 @@ function Login() {
                     >
                       Sign Up
                     </span>
-                  </p>
+                  </p> */}
                   <p className="text-sm font-medium text-gray-600 mt-6">
                     <span
                       onClick={() => navigate("/forgot-password")}
-                      className="text-teal-600 hover:underline font-semibold"
+                      className="text-teal-600 hover:underline font-semibold cursor-pointer"
                     >
                       Forgot-Password
                     </span>

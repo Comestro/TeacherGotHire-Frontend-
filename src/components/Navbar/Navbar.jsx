@@ -109,7 +109,7 @@ const Navbar = ({ links }) => {
               className="flex items-center px-4 py-2 rounded-lg text-gray-600 font-semibold hover:bg-gray-100"
             >
               <FiSearch className="mr-2 text-gray-600 text-lg" />
-              Find Tutor
+              Hire Teacher
             </Link>
           )}
 

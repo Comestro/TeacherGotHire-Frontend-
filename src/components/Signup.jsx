@@ -9,6 +9,7 @@ import Navbar from "./Navbar/Navbar";
 import { getPostData } from "../features/authSlice";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
+import CustomHeader from "./commons/CustomHeader";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ function SignUpPage() {
 
   return (
     <>
+    <CustomHeader />
     <Helmet>
       <title>PTPI | Signup Page</title>
     </Helmet>
