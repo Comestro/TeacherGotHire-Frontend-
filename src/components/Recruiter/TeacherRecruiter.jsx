@@ -159,9 +159,11 @@ const TeacherFilter = () => {
           ))}
         </div>
       ) : (
-        <p className="text-gray-600">
-          No teachers found matching your criteria
-        </p>
+        <div className="w-full h-full flex justify-center items-center mt-16 ">
+        <div className="h-fit mt-20">
+          <Loader />
+        </div>
+      </div>
       )}
     </div>
   );

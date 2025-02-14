@@ -51,6 +51,7 @@ import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
+import ManageHiringRequests from "./admin/Manage-hiring/ManageHiring";
 
 function App() {
   return (
@@ -270,6 +271,11 @@ function App() {
                   allowedRoles={["admin"]}
                 />
               }
+            />
+            <Route
+              path="admin/manage/hiring"
+              element={<ManageHiringRequests />}
+              allowedRoles={["admin"]}
             />
 
             {/* Teacher Routes */}

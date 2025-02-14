@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://ptpi.tech/";
+const API_URL = "http://127.0.0.1:8000/";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -26,9 +26,9 @@ axiosInstance.interceptors.request.use(
 
 export const fetchTeacherById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/teachers/${id}`);
+    const response = await axiosInstance.get(`api/admin/teacher/${id}`);
+    return response.data;
     if (!response.ok) throw new Error("Teacher not found");
-    return await response.json();
   } catch (error) {
     throw new Error(error.message);
   }

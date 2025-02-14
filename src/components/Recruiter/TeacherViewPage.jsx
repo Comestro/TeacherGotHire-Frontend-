@@ -5,14 +5,16 @@ import { fetchTeacherById } from '../../services/teacherService';
 
 const TeacherViewPage = () => {
   const { id } = useParams();
-  const [teacher, setTeacher] = useState(null);
+  const [teacher, setTeacher] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadTeacher = async () => {
       try {
+        console.log("teacher id", id)
         const data = await fetchTeacherById(id);
+        console.log("single teacher data ....", data)
         setTeacher(data);
         setLoading(false);
       } catch (err) {
@@ -57,7 +59,7 @@ const TeacherViewPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <Link
-        to="/teachers"
+        to="/recruiter"
         className="mb-6 inline-block text-blue-600 hover:text-blue-800"
       >
         ← Back to Teachers List
