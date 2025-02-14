@@ -29,8 +29,6 @@ const Navbar = ({ links }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- 
-
   const handleLogout = () => {
     dispatch(userLogout())
       .unwrap()
@@ -114,13 +112,16 @@ const Navbar = ({ links }) => {
         <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4 md:gap-2 w-full py-4 md:py-0">
           {/* Find Tutor Link (Always visible except on auth pages) */}
           {!shouldHideLinks && (
+           
             <Link
               to="/signup/recruiter"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-4 py-2 rounded-lg text-gray-600 font-semibold hover:bg-gray-100"
+              className="group relative flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-400 hover:to-teal-300 transition-all duration-300 hover:shadow-lg hover:shadow-teal-100/50 active:scale-95"
             >
-              <FiSearch className="mr-2 text-gray-600 text-lg" />
+              <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-teal-400 to-teal-300 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+              <FiSearch className="mr-2 text-teal-100 text-lg transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
               Hire Teacher
+              <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-teal-200/50 transition-all duration-300"></span>
             </Link>
           )}
 
