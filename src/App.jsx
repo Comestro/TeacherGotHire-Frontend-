@@ -50,6 +50,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
+import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
 import ManageHiringRequests from "./admin/Manage-hiring/ManageHiring";
 
 function App() {
@@ -61,20 +62,18 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
-              <Route path="signup/teacher" element={<SignUpPage />} />
-              <Route path="signin" element={<Login />} />
-              <Route path="forgot-password" element={<ForgotPassword />} />
-              <Route
-                path="reset-password/:uid/:token"
-                element={<ResetPassword />}
-              />
-              <Route
-                path="signup/recruiter"
-                element={<RecruiterSignUpPage />}
-              />
+
               <Route path="contact" element={<ContactUs />} />
               <Route path="exam-mode" element={<ExamMode />} />
             </Route>
+            <Route path="signup/teacher" element={<SignUpPage />} />
+            <Route path="signin" element={<Login />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="reset-password/:uid/:token"
+              element={<ResetPassword />}
+            />
+            <Route path="signup/recruiter" element={<RecruiterSignUpPage />} />
 
             {/* Unauthorized Page */}
             <Route path="/unauthorized" element={<Unauthorized />} />
@@ -98,6 +97,7 @@ function App() {
               }
             >
               <Route index element={<TeacherRecruiter />} />
+              <Route path="teacher/:id" element={<TeacherViewPage />} />
             </Route>
 
             {/* Admin Routes */}

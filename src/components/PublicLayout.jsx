@@ -9,13 +9,10 @@ const PublicLayout = () => {
         <nav>
             <Navbar
                 links={[
-                { id: "1", label: "Register", to: "/signup/teacher" },
-                { id: "2", label: "Login", to: "/signin" },
-                { id: "3", label: "Contact Us", to: "/contact" },
-                { id: "4", label: "About Us", to: "/about" },
-                { id: "6", label: "Rec SignUp", to: "/signup/recruiter" },
+                // { id: "1", label: "Login/Signup", to: "/signup/teacher" },
+                { id: "1", label: "Find Tutor", to: "/signup/recruiter" },
+                { id: "2", label: "Login/Signup", to: "/signin" },
                 ]}
-                variant="dark"
             />
         </nav>
         <Outlet />
