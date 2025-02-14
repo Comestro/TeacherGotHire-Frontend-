@@ -59,12 +59,12 @@ function SignUpPage() {
     console.log("otp", otp);
     console.log("correctotp", correctOTP);
     const enteredOTP = otp.join("");
-    console.log("enterotp",enteredOTP.length)
-    
+    console.log("enterotp", enteredOTP);
+
     if (enteredOTP.length === 6) {
-      if (enteredOTP === correctOTP) {
-        console.log("enterotp",enteredOTP)
-         setIsOTPValid(true);
+      if (enteredOTP == correctOTP) {
+        console.log("enterotp", enteredOTP);
+        setIsOTPValid(true);
         // Simulate form submission (e.g., API call)
         verifyOtpHandler();
         setOtp(Array(5).fill(""));
@@ -74,7 +74,7 @@ function SignUpPage() {
         setShowResendButton(true);
       }
     }
-  }, [otp,correctOTP]);
+  }, [otp, correctOTP]);
 
   const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
@@ -99,14 +99,12 @@ function SignUpPage() {
     }
   };
 
-
   const handleResendOTP = async () => {
-
-    try{
+    try {
       console.log("Initial otp:", otp);
       // setLoading(true);
-     const resendotp =  await dispatch(getResendOtp(email)).unwrap();
-     
+      const resendotp = await dispatch(getResendOtp(email)).unwrap();
+
       console.log("Reset otp:", resendotp);
       setOtp(Array(6).fill("")); // Reset OTP fields
       const resOtp = resendotp?.data?.otp;
@@ -115,16 +113,15 @@ function SignUpPage() {
       setShowResendButton(false); // Hide resend button
       setIsOTPValid(null); // Reset validation status
     } catch (error) {
-        setError(error.message || " Please try again.");
+      setError(error.message || " Please try again.");
     }
-   
   };
 
   const verifyOtpHandler = async () => {
     setError("");
     setLoading(true); // Set loading to true
     setSuccessMessage("");
-    console.log("helloooooo")
+    console.log("helloooooo");
     try {
       const response = await verifyOtp({ email, otp: otp.join("") });
       if (response) {
@@ -142,10 +139,10 @@ function SignUpPage() {
 
   return (
     <>
-    <CustomHeader />
-    <Helmet>
-      <title>PTPI | Signup Page</title>
-    </Helmet>
+      <CustomHeader />
+      <Helmet>
+        <title>PTPI | Signup Page</title>
+      </Helmet>
       {/* <Navbar /> */}
       {loading && <Loader />} {/* Show loader while loading */}
       <div
@@ -358,7 +355,6 @@ function SignUpPage() {
                     {showResendButton && (
                       <button
                         onClick={handleResendOTP}
-                        
                         className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
                       >
                         Resend OTP
