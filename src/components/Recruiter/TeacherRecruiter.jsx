@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Loader from "./components/Loader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { BsBriefcase, BsGeoAlt } from "react-icons/bs";
 import { MdSchool } from "react-icons/md";
 import { FiArrowRight } from "react-icons/fi";
+import { fetchTeachers } from "../../features/teacherFilterSlice";
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
 
   const { data, status, error } = useSelector((state) => state.teachers);
+
 
   useEffect(() => {
     if (data) {

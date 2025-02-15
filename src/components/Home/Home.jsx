@@ -33,26 +33,30 @@ function Home() {
           backgroundImage: `url('Home3.png')`,
         }}
       >
-        {/* <nav>
-        <Navbar
-          links={[
-            { id: "1", label: "Register", to: "/signup/teacher" },
-            { id: "2", label: "Login", to: "/signin" },
-            { id: "5", label: "Admin", to: "/admin-signin" },
-            { id: "3", label: "Contact Us", to: "/contact" },
-            { id: "4", label: "About Us", to: "/about" },
-          ]}
-          variant="dark"
-        />
-      </nav> */}
         <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
           <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
             <div className="flex">
-              <p className="mb-4 font-bold text-2xl md:text-5xl leading-none text-center">
-                <span className="font-bold text-2xl pb-10 md:text-6xl text-teal-600 me-1">
-                  PTPI
-                </span>
-                – Connect with top teachers and great teaching jobs.
+              <p className="mb-4 font-bold text-2xl md:text-5xl leading-none text-center text-gray-600">
+                <div className="relative inline-block">
+                  <span className="font-bold text-xl pb-10 md:text-5xl text-teal-600 me-1">
+                    PTP INSTITUTE
+                    <svg
+                      className="absolute left-1/2 -translate-x-1/2 -bottom-4 w-[180px] md:w-[220px] text-teal-600"
+                      viewBox="0 0 180 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2 2C36.5 10.5 143.5 -3.5 178 2"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </div>
+                - पढ़ने, पढ़ाने
+                <span className="block mt-4">और पढ़वाने का बेहतरीन मंच</span>
               </p>
             </div>
           </div>
