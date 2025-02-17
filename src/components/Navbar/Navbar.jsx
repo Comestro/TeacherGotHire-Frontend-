@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
-import { FaUserCircle } from "react-icons/fa";
+import { FaChalkboardTeacher, FaUserCircle } from "react-icons/fa";
 import { logout } from "../../services/authServices";
-import { FiSearch } from "react-icons/fi";
+import { FiBriefcase, FiSearch, FiUserPlus } from "react-icons/fi";
 import { userLogout } from "../../features/authSlice";
 
 const Navbar = ({ links }) => {
@@ -110,18 +110,15 @@ const Navbar = ({ links }) => {
         } md:block transition-all`}
       >
         <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4 md:gap-2 w-full py-4 md:py-0">
-          {/* Find Tutor Link (Always visible except on auth pages) */}
           {!shouldHideLinks && (
-           
             <Link
               to="/signup/recruiter"
               onClick={() => setIsMenuOpen(false)}
-              className="group relative flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-400 hover:to-teal-300 transition-all duration-300 hover:shadow-lg hover:shadow-teal-100/50 active:scale-95"
+              className="group relative flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-600 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100/50 active:scale-95"
             >
-              <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-teal-400 to-teal-300 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-              <FiSearch className="mr-2 text-teal-100 text-lg transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
+              <FiBriefcase className="mr-2 text-blue-100 text-lg transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
               Hire Teacher
-              <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-teal-200/50 transition-all duration-300"></span>
+              <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-200/50 transition-all duration-300"></span>
             </Link>
           )}
 
@@ -173,9 +170,10 @@ const Navbar = ({ links }) => {
               <Link
                 to="/signin"
                 onClick={() => setIsMenuOpen(false)}
-                className="px-4 py-2 rounded-md bg-gray-100 hover:shadow-md font-medium text-gray-600"
+                className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
               >
-                Login/Signup
+                <FiUserPlus className="w-5 h-5" />
+                <span>Become a Teacher</span>
               </Link>
             )
           )}
