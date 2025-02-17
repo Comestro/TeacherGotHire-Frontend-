@@ -93,8 +93,8 @@ export default function Sidebar({ open, handleDrawerClose }) {
     setCollapseOpen((prev) => !prev);
   };
 
-  const handlelogout = () => {
-    logout();
+  const handlelogout = async () => {
+    await logout();
     navigate("/signin");
   };
 
