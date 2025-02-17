@@ -6,6 +6,8 @@ import {
   logout,
   resendOtp,
 } from "../services/authServices";
+import {persistor} from "../store/store"
+// import { persistor } from "../store"; // Import persistor
 
 const initialState = {
   userData: {},
@@ -20,7 +22,6 @@ export const getUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchUserData();
-      //console.log("gedata",data)
       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -89,15 +90,23 @@ export const getResendOtp = createAsyncThunk(
 
 export const userLogout = createAsyncThunk(
   "user/logout",
-  async (_, thunkAPI) => {
+  async (_, { rejectWithValue }) => {
     try {
-      await logout();
-      return null; // Returning null to reset user state
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.message || "Logout failed.");
+      localStorage.removeItem("access_token"); 
+      localStorage.removeItem("role"); 
+      localStorage.removeItem("persist:root"); 
+      
+      await logout(); // API call to backend logout
+
+      persistor.purge(); // 🔥 Clears persisted Redux state
+
+      return {}; // Reset Redux state
+    } catch (error) {
+      return rejectWithValue(error.message || "Logout failed.");
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -175,12 +184,10 @@ const authSlice = createSlice({
         state.status = "loading";
         state.error = null; 
       })
-      .addCase(userLogout.fulfilled, (state) => {
-        state.userData = {}; 
-        state.recruiterData = {}; 
-        state.status = "idle"; 
-        state.error = null; 
-      })
+      .addCase(userLogout.fulfilled, () =>   {
+        return { ...initialState }; // 🛑 Completely reset state to initial
+      }
+    )      
       .addCase(userLogout.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; 

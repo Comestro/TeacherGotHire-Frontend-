@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER  } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage
 import { combineReducers } from "redux";
 import authSlice from "../features/authSlice";
@@ -8,6 +8,7 @@ import jobProfileSlice from "../features/jobProfileSlice";
 import dashboardSlice from "../features/dashboardSlice";
 import examQuesSlice from "../features/examQuesSlice";
 import teacherSlice from "../features/teacherFilterSlice";
+
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage,
+  whitelist: ["auth"], // Only persist auth state
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -32,7 +34,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
 });

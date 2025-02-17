@@ -1,5 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../store/configue";
+import { userLogout as logoutAction } from "../features/authSlice"; 
+import store, {persistor} from "../store/store"
 
 const apiClient = axios.create({
   baseURL: getApiUrl(),
@@ -243,18 +245,18 @@ export const resetPassword = async (uidb64, token, newPassword) => {
 
 export const logout = async () => {
   try {
-    const response = await apiClient.post("/api/logout/");
-    
-
-    persistor.purge().then(() => {
-      console.log('Persisted store cleared.');
-    });
-    
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
-    
 
-    console.log("logout hua bhai", response.data)
+    store.dispatch(logoutAction()); // Dispatch logout action to reset auth state
+
+    
+    await persistor.purge(); 
+    await persistor.flush(); 
+
+    const response = await apiClient.post("/api/logout/");
+    console.log("Logged out successfully:", response.data);
+
     return response.data;
   } catch (err) {
     if (err.response) {
