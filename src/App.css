@@ -59,3 +59,16 @@
 .animate-pulse {
   animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+.Toastify__toast {
+  @apply rounded-lg shadow-sm font-medium;
+}
+.Toastify__toast--success {
+  @apply bg-teal-100 text-teal-700;
+}
+.Toastify__toast--error {
+  @apply bg-red-100 text-red-700;
+}
+.Toastify__toast--warning {
+  @apply bg-amber-100 text-amber-700;
+}
