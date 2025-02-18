@@ -6,6 +6,7 @@ import { FaChalkboardTeacher, FaUserCircle } from "react-icons/fa";
 import { logout } from "../../services/authServices";
 import { FiBriefcase, FiSearch, FiUserPlus } from "react-icons/fi";
 import { userLogout } from "../../features/authSlice";
+import { TeacherEnquiry } from "../enquiry/TeacherEnquiry";
 
 const Navbar = ({ links }) => {
   const dispatch = useDispatch();
@@ -14,6 +15,8 @@ const Navbar = ({ links }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profile = useSelector((state) => state.auth.userData || {});
+
+  const [showModal, setShowModal] = useState(false);
 
   const hideLinksPaths = ["/signin", "/signup/teacher"];
   const shouldHideLinks = hideLinksPaths.includes(location.pathname);
@@ -112,8 +115,8 @@ const Navbar = ({ links }) => {
         <div className="flex flex-col md:flex-row items-center justify-center md:justify-end gap-4 md:gap-2 w-full py-4 md:py-0">
           {!shouldHideLinks && (
             <Link
-              to="/signup/recruiter"
-              onClick={() => setIsMenuOpen(false)}
+              // to="/signup/recruiter"
+              onClick={() => setShowModal(true)}
               className="group relative flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-600 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100/50 active:scale-95"
             >
               <FiBriefcase className="mr-2 text-blue-100 text-lg transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
@@ -121,6 +124,8 @@ const Navbar = ({ links }) => {
               <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-200/50 transition-all duration-300"></span>
             </Link>
           )}
+
+          <TeacherEnquiry showModal={showModal} setShowModal={setShowModal} />
 
           {/* Conditional Auth Links / User Dropdown */}
           {profile?.email ? (

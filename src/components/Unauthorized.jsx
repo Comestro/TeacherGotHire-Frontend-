@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BiLock } from "react-icons/bi";
 import { FaHome, FaHeadset } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { logout } from "../services/authServices";
 
 const UnauthorizedAccess = () => {
   const handleHomeClick = () => {
     console.log("Navigating to home");
   };
+
+  useEffect(() => {
+      const logoutWork = async () => {
+        await logout();
+      }
+      logoutWork()
+  }, []);
 
   const handleSupportClick = () => {
     console.log("Contacting support");
