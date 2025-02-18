@@ -33,7 +33,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { Link } from "react-router-dom";
 import { logout } from "../../services/authServices";
-import { Key } from "@mui/icons-material";
+import { Key, VideoCall } from "@mui/icons-material";
 import { BiBriefcase } from "react-icons/bi";
 
 const drawerWidth = 240;
@@ -201,6 +201,11 @@ export default function Sidebar({ open, handleDrawerClose }) {
       text: "Question Manager",
       icon: <PersonIcon />,
       link: "/admin/manage/question/manager",
+    },
+    {
+      text: "Manage Interview",
+      icon: <VideoCall />,
+      link: "/admin/manage/interview",
     }
   ];
 
