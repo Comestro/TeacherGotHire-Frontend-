@@ -8,19 +8,10 @@ import {
   FiArrowLeft,
   FiMail,
 } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-const subjectsList = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "English",
-  "History",
-  "Computer Science",
-  "Economics",
-];
+import { getSubject } from "../../features/jobProfileSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -29,6 +20,14 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const [pincode, setPincode] = useState("");
   const [email, setEmail] = useState("");
   const modalRef = useRef(null);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getSubject())
+  }, [])
+
+  const subject = useSelector((state) => state?.jobProfile?.subject);
 
   // for pincode
   const [loadingPincode, setLoadingPincode] = useState(false);
@@ -127,24 +126,65 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     );
   };
 
-  const handleSubmit = () => {
+  // const handleSubmit = () => {
+  //   if (!isValidEmail(email)) {
+  //     toast.error("Please enter a valid email address");
+  //     return;
+  //   }
+  //   console.log({
+  //     teacherType,
+  //     selectedSubjects,
+  //     pincode,
+  //     email,
+  //     state: pincodeDetails.state,
+  //     city: pincodeDetails.city,
+  //     area: selectedArea,
+  //   });
+  //   toast.success("Application submitted successfully!");
+    
+  //   resetForm();
+  //   setShowModal(false);
+  // };
+
+  const handleSubmit = async () => {
     if (!isValidEmail(email)) {
       toast.error("Please enter a valid email address");
       return;
     }
-    console.log({
-      teacherType,
-      selectedSubjects,
-      pincode,
-      email,
+  
+    const formData = {
+      email: email,
+      subject: selectedSubjects,
+      teachertype: teacherType,
+      pincode: pincode,
       state: pincodeDetails.state,
       city: pincodeDetails.city,
       area: selectedArea,
-    });
-    toast.success("Application submitted successfully!");
-    
-    resetForm();
-    setShowModal(false);
+      name: "Rahul"
+    };
+
+  
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/self/recruiterenquiryform/",
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      console.log("form submit ho gya bhai", response.data)
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Application submitted successfully!");
+        resetForm();
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast.error(error.response?.data?.message || "Submission failed. Please try again.");
+    }
   };
 
 
@@ -237,18 +277,18 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                     Select Subjects You Teach
                   </h3>
                   <div className="grid grid-cols-2 gap-3 mb-8 px-2">
-                    {subjectsList.map((subject) => (
+                    {subject.map((subject) => (
                       <button
-                        key={subject}
-                        onClick={() => handleSubjectToggle(subject)}
+                        key={subject.id}
+                        onClick={() => handleSubjectToggle(subject.id)}
                         className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                          selectedSubjects.includes(subject)
+                          selectedSubjects.includes(subject.subject_name)
                             ? "border-teal-500 bg-teal-50"
                             : "border-gray-200 hover:border-teal-300"
                         }`}
                       >
-                        <span className="text-sm">{subject}</span>
-                        {selectedSubjects.includes(subject) && (
+                        <span className="text-sm">{subject.subject_name}</span>
+                        {selectedSubjects.includes(subject.id) && (
                           <FiCheck className="text-teal-500" />
                         )}
                       </button>
