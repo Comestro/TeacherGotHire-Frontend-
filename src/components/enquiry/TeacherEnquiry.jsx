@@ -257,7 +257,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                   <h3 className="text-lg font-medium mb-6">
                     Select Subjects You Teach
                   </h3>
-                  <div className="grid grid-cols-2 gap-3 mb-8 px-2">
+                  <div className="grid grid-cols-2 gap-3 mb-8 px-2 max-h-72 overflow-y-scroll">
                     {subject.map((subject) => (
                       <button
                         key={subject.id}
