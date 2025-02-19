@@ -14,6 +14,10 @@ import "react-toastify/dist/ReactToastify.css";
 import { getSubject } from "../../features/jobProfileSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
+  const dispatch = useDispatch();
+  const subject = useSelector((state) => state?.jobProfile?.subject);
+
+
   const [currentStep, setCurrentStep] = useState(0);
   const [teacherType, setTeacherType] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -21,13 +25,11 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const [email, setEmail] = useState("");
   const modalRef = useRef(null);
 
-  const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(getSubject())
   }, [])
 
-  const subject = useSelector((state) => state?.jobProfile?.subject);
 
   // for pincode
   const [loadingPincode, setLoadingPincode] = useState(false);
@@ -48,7 +50,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
         const response = await axios.get(
           `https://api.postalpincode.in/pincode/${enteredPincode}`
         );
-        console.log("api value", response.data);
         if (response.data[0].Status === "Success") {
           const postOffices = response.data[0].PostOffice;
           if (postOffices.length > 0) {
@@ -125,26 +126,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
         : [...prev, subject]
     );
   };
-
-  // const handleSubmit = () => {
-  //   if (!isValidEmail(email)) {
-  //     toast.error("Please enter a valid email address");
-  //     return;
-  //   }
-  //   console.log({
-  //     teacherType,
-  //     selectedSubjects,
-  //     pincode,
-  //     email,
-  //     state: pincodeDetails.state,
-  //     city: pincodeDetails.city,
-  //     area: selectedArea,
-  //   });
-  //   toast.success("Application submitted successfully!");
-    
-  //   resetForm();
-  //   setShowModal(false);
-  // };
 
   const handleSubmit = async () => {
     if (!isValidEmail(email)) {

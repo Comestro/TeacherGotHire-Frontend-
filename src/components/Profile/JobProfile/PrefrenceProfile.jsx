@@ -22,18 +22,19 @@ const PrefrenceProfile = () => {
   useEffect(() => {
     dispatch(getClassCategory());
     dispatch(getJob());
-    dispatch(getSubject());
+    // dispatch(getSubject());
     dispatch(getTeacherjobType());
     dispatch(getPrefrence());
   }, [dispatch]);
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  const subject = useSelector((state) => state?.jobProfile?.subject);
+  // const subject = useSelector((state) => state?.jobProfile?.subject);
   const teacherjobRole = useSelector(
     (state) => state.jobProfile.teacherjobRole
   );
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
+  console.log("teacher preference value", teacherprefrence);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
 
@@ -41,24 +42,58 @@ const PrefrenceProfile = () => {
 
   console.log("category", category);
 
+  category.map((cat) => {
+    console.log("subject of each category", cat.name);
+  });
+
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
+    getValues,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      class_category: [],
+      job_role: [],
+      prefered_subject: [],
+      teacher_job_type: [],
+    }
+  });
+
+  const selectedClassCategories = watch("class_category") || [];
+  const filteredSubjects = selectedClassCategories.flatMap((catId) => {
+    const categoryObj = category?.find((cat) => cat.id === Number(catId));
+    return categoryObj ? categoryObj.subjects : [];
+  });
+
+  useEffect(() => {
+    const currentSubjects = getValues("prefered_subject");
+    const safeSubjects = Array.isArray(currentSubjects) ? currentSubjects : [];
+    
+    const validSubjects = safeSubjects.filter(subId =>
+      filteredSubjects.some(sub => sub.id === Number(subId))
+    );
+    
+    setValue("prefered_subject", validSubjects);
+  }, [filteredSubjects, getValues, setValue]);
 
   useEffect(() => {
     if (teacherprefrence) {
-      Object.entries(teacherprefrence).forEach(([key, value]) => {
-        if (
-          key === "job_role" ||
-          key === "prefered_subject" ||
-          key === "teacher_job_type"
-        ) {
+      const initialValues = {
+        class_category: [],
+        job_role: [],
+        prefered_subject: [],
+        teacher_job_type: [],
+        ...teacherprefrence
+      };
+  
+      Object.entries(initialValues).forEach(([key, value]) => {
+        if (["job_role", "prefered_subject", "teacher_job_type", "class_category"].includes(key)) {
           setValue(
             key,
-            value.map((item) => item.id)
+            (value || []).map(item => item?.id || item)
           );
         } else {
           setValue(key, value?.id || value);
@@ -67,12 +102,10 @@ const PrefrenceProfile = () => {
     }
   }, [teacherprefrence, setValue]);
 
-  // Fetch Preferences again after update
   const fetchPreferences = () => {
     dispatch(getPrefrence());
   };
 
-  // Form Submission Handler
   const onSubmit = async (data) => {
     setIsLoading(true); // Show loader
 
@@ -93,9 +126,7 @@ const PrefrenceProfile = () => {
       {isLoading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between md:gap-10 mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
-          <h2 className="text-2xl text-gray-900">
-            Teaching Preferences
-          </h2>
+          <h2 className="text-2xl text-gray-900">Teaching Preferences</h2>
           <p className="text-sm text-gray-500 mt-1">
             Manage your teaching preferences including subjects, grade levels,
             and job types
@@ -249,7 +280,6 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Job Role Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
@@ -295,7 +325,6 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Preferred Subjects Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
@@ -308,7 +337,14 @@ const PrefrenceProfile = () => {
                     </p>
                   </div>
                   <div className="grid grid-cols-1 gap-3 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
-                    {subject?.map((sub) => (
+                    {filteredSubjects.length === 0 && (
+                       <div className="text-sm text-gray-500 p-2">
+                       {category?.length === 0 
+                         ? "Loading subjects..." 
+                         : "Select class categories to view available subjects"}
+                     </div>
+                    ) }
+                    {filteredSubjects?.map((sub) => (
                       <label
                         key={sub.id}
                         className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
@@ -327,6 +363,11 @@ const PrefrenceProfile = () => {
                         </span>
                       </label>
                     ))}
+                    {filteredSubjects.length === 0 && (
+                      <div className="text-sm text-gray-500 p-2">
+                        Select class categories to view available subjects
+                      </div>
+                    )}
                   </div>
                   {errors.prefered_subject && (
                     <div className="text-red-500 text-sm flex items-center mt-2">
@@ -335,7 +376,6 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Teacher Job Type Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
