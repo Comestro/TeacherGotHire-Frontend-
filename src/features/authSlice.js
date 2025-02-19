@@ -92,20 +92,37 @@ export const userLogout = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
     try {
-      localStorage.removeItem("access_token"); 
-      localStorage.removeItem("role"); 
-      localStorage.removeItem("persist:root"); 
-      
-      await logout(); // API call to backend logout
+      const token = localStorage.getItem("access_token");
 
-      persistor.purge(); // 🔥 Clears persisted Redux state
+      if (!token) {
+        throw new Error("No token found. Already logged out?");
+      }
 
-      return {}; // Reset Redux state
+      const response = await fetch("http://127.0.0.1:8000/api/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Ensure token is sent
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed. Server response: " + response.statusText);
+      }
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("persist:root");
+
+      persistor.purge(); // Clears Redux state
+
+      return {};
     } catch (error) {
       return rejectWithValue(error.message || "Logout failed.");
     }
   }
 );
+
 
 
 const authSlice = createSlice({
