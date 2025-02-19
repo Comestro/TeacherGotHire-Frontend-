@@ -21,8 +21,9 @@ import QualificationsCard from "./QualificationsCard";
 import ExperienceCard from "./ExperienceCard";
 import TeacherModal from "../TeacherInfoModal/TeacherModal";
 import TeacherTestScorePage from "./TeacherTestScore";
-import { getTeacherById } from "../../services/adminTeacherApi";
 import { useParams } from "react-router-dom";
+import { getTeacherProfile, getTeacherSkills } from "../../services/adminTeacherApi";
+
 
 const ViewTeacherAdmin = () => {
   const { id } = useParams();
@@ -35,42 +36,9 @@ const ViewTeacherAdmin = () => {
   useEffect(() => {
     const fetchTeacherData = async () => {
       try {
-        const response = await getTeacherById(id);
-
-        console.log("API Raw Response:", response);
-
-        const data = response;
-
-        if (!data || !data.id) {
-          console.error("No response or invalid format", data);
-          setTeacherData(null);
-          return;
-        }
-
-        console.log("API Parsed Data:", data);
-
-        const formattedData = {
-          id: data.id,
-          name: `${data.Fname || ""} ${data.Lname || " NA"}`.trim(),
-          email: data.email || "N/A",
-          phone: data.phone || "N/A",
-          address: data.teachersaddress?.length
-            ? data.teachersaddress[0]
-            : null,
-          registrationDate: data.registrationDate || "N/A",
-          status: data.status || "N/A",
-          skills: data.teacherskill?.map((s) => s?.skill?.name || "N/A") || [],
-          experiences: data.teacherexperiences || [],
-          qualifications:
-            data.teacherqualifications?.map(
-              (q) => q?.qualification?.name || "N/A"
-            ) || [],
-          preferences: data.preferences?.[0] || {},
-          totalMarks: data.total_marks || 0,
-        };
-
-        console.log("Formatted Data:", formattedData);
-        setTeacherData(formattedData);
+        const response = await getTeacherProfile(id);
+        setTeacherData(response);
+        console.log("Teacher data:", teacherData);
       } catch (error) {
         console.error("Error fetching teacher data:", error);
         setTeacherData(null);
@@ -79,6 +47,7 @@ const ViewTeacherAdmin = () => {
 
     fetchTeacherData();
   }, [id]);
+  
 
   const handleDownloadProfile = () => {
     setOpenDownloadModal(true);
@@ -148,32 +117,30 @@ const ViewTeacherAdmin = () => {
           </Button>
         </Box>
         <TeacherCard teacherData={teacherData} />
-        {teacherData && (
-          <>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              aria-label="scrollable auto tabs example"
-            >
-              <Tab label="Skills" />
-              <Tab label="Qualifications" />
-              <Tab label="Experience" />
-              <Tab label="Test Scores" />
-            </Tabs>
-            {tabValue === 0 && <SkillsCard skills={teacherData.skills} />}
-            {tabValue === 1 && (
-              <QualificationsCard qualifications={teacherData.qualifications} />
-            )}
-            {tabValue === 2 && (
-              <ExperienceCard experience={teacherData.experiences} />
-            )}
-            {tabValue === 3 && (
-              <TeacherTestScorePage teacherData={teacherData} />
-            )}
-          </>
-        )}
+
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="scrollable auto tabs example"
+          style={{ marginTop: 20 }}
+        >
+          <Tab label="Skills" />
+          <Tab label="Qualifications" />
+          <Tab label="Experience" />
+          <Tab label="Test Scores" />
+        </Tabs>
+        {tabValue === 0 && <SkillsCard userId={teacherData?.id || 3} />}
+        {/* {tabValue === 1 && (
+          <QualificationsCard qualifications={teacherData.qualifications} />
+        )} */}
+        {/* {tabValue === 2 && (
+          <ExperienceCard experience={teacherData.experiences} />
+        )} */}
+        {/* {tabValue === 3 && (
+          <TeacherTestScorePage teacherData={teacherData} />
+        )} */}
 
         <Modal
           open={openDeactivateModal}
@@ -222,7 +189,7 @@ const ViewTeacherAdmin = () => {
         {teacherData && (
           <TeacherModal
             open={openDownloadModal}
-            onClose={() => {}}
+            onClose={() => { }}
             teacherData={teacherData}
           />
         )}

@@ -35,6 +35,7 @@ import {
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import { getTeacher } from "../../services/adminTeacherApi";
+import { Link } from "react-router-dom";
 
 const ManageTeacher = () => {
   const [teachers, setTeachers] = useState([]);
@@ -136,8 +137,10 @@ const ManageTeacher = () => {
         teacher.Lname,
         teacher.email,
         teacher.teachersubjects.join(", "),
-        teacher.teachersaddress.join(", "),
-        teacher.teacherqualifications.join(", "),
+        teacher.teachersaddress.map((address) => address.state).join(", "),
+        teacher.teacherqualifications
+          .map((q) => q.qualification.name)
+          .join(", "),
         teacher.total_marks,
       ]),
     ]
@@ -163,16 +166,16 @@ const ManageTeacher = () => {
         teacher.id.toString().includes(searchQuery)) &&
       (selectedQualification
         ? teacher.teacherqualifications
-            .map((q) => q.toLowerCase())
-            .includes(selectedQualification.toLowerCase())
+          .map((q) => q.qualification.name.toLowerCase())
+          .includes(selectedQualification.toLowerCase())
         : true) &&
       (selectedSubject
         ? teacher.teachersubjects.includes(selectedSubject)
         : true) &&
       (selectedLocation
         ? teacher.teachersaddress
-            .map((a) => a.toLowerCase())
-            .includes(selectedLocation.toLowerCase())
+          .map((a) => a.state.toLowerCase())
+          .includes(selectedLocation.toLowerCase())
         : true) &&
       (selectedStatus
         ? teacher.status.toLowerCase() === selectedStatus.toLowerCase()
@@ -187,14 +190,6 @@ const ManageTeacher = () => {
           Manage Teachers
         </Typography>
         <Box display="flex" justifyContent="space-between" mb={2}>
-          {/* <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleAddTeacher}
-          >
-            Add Teacher
-          </Button> */}
           <Button
             variant="contained"
             color="secondary"
@@ -325,10 +320,14 @@ const ManageTeacher = () => {
                   <TableCell>{`${teacher.Fname} ${teacher.Lname}`}</TableCell>
                   <TableCell>{teacher.email}</TableCell>
                   <TableCell>
-                    {teacher.teacherqualifications.join(", ")}
+                    {teacher.teacherqualifications
+                      .map((q) => q.qualification.name)
+                      .join(", ")}
                   </TableCell>
                   <TableCell>{teacher.teachersubjects.join(", ")}</TableCell>
-                  <TableCell>{teacher.teachersaddress.join(", ")}</TableCell>
+                  <TableCell>
+                    {teacher.teachersaddress.map((address) => address.state).join(", ")}
+                  </TableCell>
                   <TableCell>
                     <Switch
                       checked={teacher.status === "Approved"}
@@ -350,7 +349,9 @@ const ManageTeacher = () => {
                   </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleViewTeacher(teacher)}>
-                      <ViewIcon />
+                      <Link to={`/admin/view/teacher/${teacher.id}`}>
+                        <ViewIcon />
+                      </Link>
                     </IconButton>
                   </TableCell>
                 </TableRow>

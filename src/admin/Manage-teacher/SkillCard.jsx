@@ -1,22 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Box, Chip, IconButton, Modal, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { getTeacherSkills } from '../../services/adminTeacherApi';
+import axios from 'axios';
 
-const SkillsCard = ({ skills }) => {
+const SkillsCard = ({ userId }) => {
+  console.log('userId:', userId);
+
   const [open, setOpen] = useState(false);
-  const [editedSkills, setEditedSkills] = useState(skills);
+  const [skills, setSkills] = useState([]);
+  const [editedSkills, setEditedSkills] = useState([]);
+
+  useEffect(() => {
+    // Fetch skills data from the Api
+    if (!userId) return;
+    getTeacherSkills(userId)
+      .then(response => {
+        if (response && Array.isArray(response)) {
+          const skillsData = response.map(skill => skill.skill);
+          const uniqueSkills = Array.from(new Set(skillsData.map(skill => skill.id)))
+            .map(id => skillsData.find(skill => skill.id === id));
+          setSkills(uniqueSkills);
+          setEditedSkills(uniqueSkills);
+        } else {
+          console.error('Unexpected response structure:', response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching skills:', error);
+      });
+  }, [userId]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleSave = () => {
-    // Save the edited skills (you can add your save logic here)
-    setOpen(false);
+    // Save the edited skills
+    axios.put(`/api/users/${userId}/skills`, { skills: editedSkills })
+      .then(response => {
+        setSkills(editedSkills);
+        setOpen(false);
+      })
+      .catch(error => {
+        console.error('Error saving skills:', error);
+      });
   };
 
   const handleSkillChange = (index, event) => {
     const newSkills = [...editedSkills];
-    newSkills[index] = event.target.value;
+    newSkills[index].name = event.target.value;
     setEditedSkills(newSkills);
   };
 
@@ -36,7 +68,7 @@ const SkillsCard = ({ skills }) => {
             {skills.map((skill, index) => (
               <Chip
                 key={index}
-                label={skill}
+                label={skill.name}
                 color="primary"
                 style={{ marginRight: 8 }}
               />
@@ -67,7 +99,7 @@ const SkillsCard = ({ skills }) => {
               fullWidth
               margin="normal"
               label={`Skill ${index + 1}`}
-              value={skill}
+              value={skill.name}
               onChange={(event) => handleSkillChange(index, event)}
             />
           ))}

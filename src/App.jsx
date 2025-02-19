@@ -50,8 +50,9 @@ import { HelmetProvider } from "react-helmet-async";
 import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
-import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
 import ManageHiringRequests from "./admin/Manage-hiring/ManageHiring";
+import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
+import InterviewManagement from "./admin/Manage-interview/ManageInterview";
 
 function App() {
   return (
@@ -275,6 +276,11 @@ function App() {
             <Route
               path="admin/manage/hiring"
               element={<ManageHiringRequests />}
+              allowedRoles={["admin"]}
+            />
+            <Route
+              path="admin/manage/interview"
+              element={<InterviewManagement />}
               allowedRoles={["admin"]}
             />
 
