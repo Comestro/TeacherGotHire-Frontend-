@@ -59,23 +59,23 @@ const PrefrenceProfile = () => {
       job_role: [],
       prefered_subject: [],
       teacher_job_type: [],
-    }
+    },
   });
 
   const selectedClassCategories = watch("class_category") || [];
   const filteredSubjects = selectedClassCategories.flatMap((catId) => {
-    const categoryObj = category?.find((cat) => cat.id === Number(catId));
+    const categoryObj = category?.find((cat) => cat?.id === Number(catId));
     return categoryObj ? categoryObj.subjects : [];
   });
 
   useEffect(() => {
     const currentSubjects = getValues("prefered_subject");
     const safeSubjects = Array.isArray(currentSubjects) ? currentSubjects : [];
-    
-    const validSubjects = safeSubjects.filter(subId =>
-      filteredSubjects.some(sub => sub.id === Number(subId))
+
+    const validSubjects = safeSubjects.filter((subId) =>
+      filteredSubjects.some((sub) => sub?.id === Number(subId))
     );
-    
+
     setValue("prefered_subject", validSubjects);
   }, [filteredSubjects, getValues, setValue]);
 
@@ -86,14 +86,21 @@ const PrefrenceProfile = () => {
         job_role: [],
         prefered_subject: [],
         teacher_job_type: [],
-        ...teacherprefrence
+        ...teacherprefrence,
       };
-  
+
       Object.entries(initialValues).forEach(([key, value]) => {
-        if (["job_role", "prefered_subject", "teacher_job_type", "class_category"].includes(key)) {
+        if (
+          [
+            "job_role",
+            "prefered_subject",
+            "teacher_job_type",
+            "class_category",
+          ].includes(key)
+        ) {
           setValue(
             key,
-            (value || []).map(item => item?.id || item)
+            (value || []).map((item) => item?.id || item)
           );
         } else {
           setValue(key, value?.id || value);
@@ -326,7 +333,7 @@ const PrefrenceProfile = () => {
                   )}
                 </div>
                 {/* Preferred Subjects Section */}
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                   <div className="mb-2">
                     <label className="block text-sm font-semibold text-gray-800">
                       Preferred Subjects
@@ -367,6 +374,69 @@ const PrefrenceProfile = () => {
                       <div className="text-sm text-gray-500 p-2">
                         Select class categories to view available subjects
                       </div>
+                    )}
+                  </div>
+                  {errors.prefered_subject && (
+                    <div className="text-red-500 text-sm flex items-center mt-2">
+                      <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                      Please select at least one subject
+                    </div>
+                  )}
+                </div> */}
+                {/* Preferred Subjects Section */}
+                <div className="space-y-4">
+                  <div className="mb-2">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Preferred Subjects
+                      <span className="text-red-500 ml-1">*</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select subjects you're qualified to teach
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                    {selectedClassCategories.length === 0 ? (
+                      <div className="text-sm text-gray-500 p-2">
+                        {category?.length === 0
+                          ? "Loading subjects..."
+                          : "Select class categories to view available subjects"}
+                      </div>
+                    ) : (
+                      selectedClassCategories.map((catId) => {
+                        const categoryObj = category?.find(
+                          (c) => c.id === Number(catId)
+                        );
+                        if (!categoryObj) return null;
+
+                        return (
+                          <div key={categoryObj.id} className="space-y-2">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-1">
+                              {categoryObj.name} Subjects
+                            </h4>
+                            {categoryObj.subjects?.map((sub) => (
+                              <label
+                                key={sub.id}
+                                className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  {...register("prefered_subject", {
+                                    required: true,
+                                  })}
+                                  value={sub.id}
+                                  className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
+                                  defaultChecked={teacherprefrence?.prefered_subject?.some(
+                                    (item) => item.id === sub.id
+                                  )}
+                                />
+                                <span className="text-sm text-gray-700">
+                                  {sub.subject_name}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                   {errors.prefered_subject && (
