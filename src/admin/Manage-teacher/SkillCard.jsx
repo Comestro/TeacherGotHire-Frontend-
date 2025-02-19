@@ -54,7 +54,7 @@ const SkillsCard = ({ userId }) => {
 
   return (
     <Box mt={3}>
-      <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
+      <Card sx={{ boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h6" gutterBottom>

@@ -16,6 +16,10 @@ import {
   DialogContent,
   DialogTitle,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -28,6 +32,7 @@ import {
   updateSubject,
   deleteSubject,
   createSubject,
+  getClasses,
 } from "../../services/adminSubujectApi";
 
 const ManageSubject = () => {
@@ -37,10 +42,12 @@ const ManageSubject = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentSubject, setCurrentSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [classes, setClasses] = useState([]);
 
-  // Fetch subjects on component mount
+  // Fetch subjects and classes on component mount
   useEffect(() => {
     fetchSubjects();
+    fetchClasses();
   }, []);
 
   // Fetch subjects from the API
@@ -54,9 +61,19 @@ const ManageSubject = () => {
     }
   };
 
+  // Fetch classes from the API
+  const fetchClasses = async () => {
+    try {
+      const data = await getClasses();
+      setClasses(data);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+    }
+  };
+
   // Handle adding a new subject
   const handleAddSubject = () => {
-    setCurrentSubject({ subject_name: "", subject_description: "" });
+    setCurrentSubject({ class_category: "", subject_name: "" });
     setIsEditModalOpen(true);
   };
 
@@ -93,9 +110,15 @@ const ManageSubject = () => {
   const handleSaveSubject = async () => {
     try {
       if (currentSubject.id) {
-        await updateSubject(currentSubject.id, currentSubject);
+        await updateSubject(currentSubject.id, {
+          ...currentSubject,
+          class_category: currentSubject.class_category,
+        });
       } else {
-        await createSubject(currentSubject);
+        await createSubject({
+          ...currentSubject,
+          class_category: currentSubject.class_category,
+        });
       }
       fetchSubjects();
       setIsEditModalOpen(false);
@@ -108,12 +131,8 @@ const ManageSubject = () => {
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
-      const filtered = subjects.filter(
-        (subject) =>
-          subject.subject_name.toLowerCase().includes(query.toLowerCase()) ||
-          subject.subject_description
-            .toLowerCase()
-            .includes(query.toLowerCase())
+      const filtered = subjects.filter((subject) =>
+        subject.subject_name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredSubjects(filtered);
     } else {
@@ -165,7 +184,7 @@ const ManageSubject = () => {
                 />
               </TableCell>
               <TableCell>Subject Name</TableCell>
-              <TableCell>Subject Description</TableCell>
+              <TableCell>Class Category</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -187,7 +206,12 @@ const ManageSubject = () => {
                   />
                 </TableCell>
                 <TableCell>{subject.subject_name}</TableCell>
-                <TableCell>{subject.subject_description}</TableCell>
+                <TableCell>
+                  {
+                    classes.find((cls) => cls.id === subject.class_category)
+                      ?.name
+                  }
+                </TableCell>
                 <TableCell>
                   <IconButton
                     key={`edit-${subject.id}`}
@@ -223,6 +247,25 @@ const ManageSubject = () => {
               : "Add Subject"}
           </DialogTitle>
           <DialogContent>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel>Class Category</InputLabel>
+              <Select
+                value={currentSubject ? currentSubject.class_category : ""}
+                onChange={(e) =>
+                  setCurrentSubject({
+                    ...currentSubject,
+                    class_category: e.target.value,
+                  })
+                }
+                label="Class Category"
+              >
+                {classes.map((cls) => (
+                  <MenuItem key={cls.id} value={cls.id}>
+                    {cls.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               label="Subject Name"
               variant="outlined"
@@ -233,21 +276,6 @@ const ManageSubject = () => {
                 setCurrentSubject({
                   ...currentSubject,
                   subject_name: e.target.value,
-                })
-              }
-            />
-            <TextField
-              label="Description"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              value={currentSubject ? currentSubject.subject_description : ""}
-              onChange={(e) =>
-                setCurrentSubject({
-                  ...currentSubject,
-                  subject_description: e.target.value,
                 })
               }
             />

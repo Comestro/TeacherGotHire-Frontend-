@@ -1,16 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Card, CardContent, Typography, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Modal, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { getTeacherExperience } from '../../services/adminTeacherApi';
 
-const ExperienceCard = ({ experience }) => {
+const ExperienceCard = ({ userId }) => {
   const [open, setOpen] = useState(false);
-  const [editedExperience, setEditedExperience] = useState(experience);
+  const [experience, setExperience] = useState([]);
+  const [editedExperience, setEditedExperience] = useState([]);
 
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setEditedExperience(experience);
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchExperience = async () => {
+      try {
+        const response = await getTeacherExperience(userId);
+        if (response && response.id) {
+          const formattedExperience = {
+            id: response.id,
+            institution: response.institution,
+            role: response.role?.jobrole_name || 'N/A',
+            start_date: response.start_date,
+            end_date: response.end_date,
+            achievements: response.achievements || 'N/A',
+          };
+          setExperience([formattedExperience]);
+        } else {
+          console.error('Unexpected response structure:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching experience:', error);
+        setExperience([]);
+      }
+    };
+
+    fetchExperience();
+  }, [userId]);
 
   const handleSave = () => {
     // Save the edited experience (you can add your save logic here)
+    setExperience(editedExperience);
     setOpen(false);
   };
 
@@ -38,17 +71,19 @@ const ExperienceCard = ({ experience }) => {
                 <TableRow>
                   <TableCell>Job Title</TableCell>
                   <TableCell>Institution</TableCell>
-                  <TableCell>Duration</TableCell>
-                  <TableCell>Description</TableCell>
+                  <TableCell>Start Date</TableCell>
+                  <TableCell>End Date</TableCell>
+                  <TableCell>Achievements</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {experience.map((exp, index) => (
                   <TableRow key={index}>
-                    <TableCell>{exp.title}</TableCell>
+                    <TableCell>{exp.role}</TableCell>
                     <TableCell>{exp.institution}</TableCell>
-                    <TableCell>{exp.duration}</TableCell>
-                    <TableCell>{exp.description}</TableCell>
+                    <TableCell>{exp.start_date}</TableCell>
+                    <TableCell>{exp.end_date}</TableCell>
+                    <TableCell>{exp.achievements}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -81,8 +116,8 @@ const ExperienceCard = ({ experience }) => {
                 fullWidth
                 margin="normal"
                 label="Job Title"
-                value={exp.title}
-                onChange={(event) => handleExperienceChange(index, 'title', event)}
+                value={exp.role}
+                onChange={(event) => handleExperienceChange(index, 'role', event)}
               />
               <TextField
                 fullWidth
@@ -94,16 +129,23 @@ const ExperienceCard = ({ experience }) => {
               <TextField
                 fullWidth
                 margin="normal"
-                label="Duration"
-                value={exp.duration}
-                onChange={(event) => handleExperienceChange(index, 'duration', event)}
+                label="Start Date"
+                value={exp.start_date}
+                onChange={(event) => handleExperienceChange(index, 'start_date', event)}
               />
               <TextField
                 fullWidth
                 margin="normal"
-                label="Description"
-                value={exp.description}
-                onChange={(event) => handleExperienceChange(index, 'description', event)}
+                label="End Date"
+                value={exp.end_date}
+                onChange={(event) => handleExperienceChange(index, 'end_date', event)}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Achievements"
+                value={exp.achievements}
+                onChange={(event) => handleExperienceChange(index, 'achievements', event)}
               />
             </Box>
           ))}

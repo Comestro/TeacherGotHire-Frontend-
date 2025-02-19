@@ -8,33 +8,38 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import LogoutIcon from "@mui/icons-material/Logout";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PersonIcon from "@mui/icons-material/Person";
-import SubjectIcon from "@mui/icons-material/Subject";
-import SchoolIcon from "@mui/icons-material/School";
-import WorkIcon from "@mui/icons-material/Work";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import BuildIcon from "@mui/icons-material/Build";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import SettingsIcon from "@mui/icons-material/Settings";
-import SupportIcon from "@mui/icons-material/Support";
-import LockIcon from "@mui/icons-material/Lock";
-import ContactMailIcon from "@mui/icons-material/ContactMail";
-import ClassIcon from "@mui/icons-material/Class";
-import LayersIcon from "@mui/icons-material/Layers";
 import { Collapse, Tooltip } from "@mui/material";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import GroupsIcon from "@mui/icons-material/Groups";
 import { Link } from "react-router-dom";
 import { logout } from "../../services/authServices";
-import { Key, VideoCall } from "@mui/icons-material";
-import { BiBriefcase } from "react-icons/bi";
+import {
+  Logout as LogoutIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Dashboard as DashboardIcon,
+  Person as PersonIcon,
+  Subject as SubjectIcon,
+  School as SchoolIcon,
+  Work as WorkIcon,
+  QuestionAnswer as QuestionAnswerIcon,
+  Build as BuildIcon,
+  Assignment as AssignmentIcon,
+  Class as ClassIcon,
+  Layers as LayersIcon,
+  Settings as SettingsIcon,
+  Support as SupportIcon,
+  Lock as LockIcon,
+  ContactMail as ContactMailIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  Groups as GroupsIcon,
+  Key,
+  VideoCall,
+  BusinessCenter,
+  Quiz,
+  LibraryBooks,
+} from "@mui/icons-material";
 
 const drawerWidth = 240;
 
@@ -98,115 +103,23 @@ export default function Sidebar({ open, handleDrawerClose }) {
     navigate("/signin");
   };
 
-  // custom scroll bar style
-
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
     { text: "Your profile", icon: <PersonIcon />, link: "/admin/profile" },
-    {
-      text: "Manage Subject",
-      icon: <SubjectIcon />,
-      link: "/admin/manage/subject",
-    },
-    {
-      text: "Manage Teacher",
-      icon: <GroupsIcon />,
-      link: "/admin/manage/teacher",
-    },
-    {
-      text: "Manage Recruiter",
-      icon: <WorkIcon />,
-      link: "/admin/manage/recruiter",
-    },
-    {
-      text: "Manage Question",
-      icon: <QuestionAnswerIcon />,
-      link: "/admin/manage/question",
-    },
-    {
-      text: "Manage Skills",
-      icon: <BuildIcon />,
-      link: "/admin/manage/skills",
-    },
-    {
-      text: "Manage Qualification",
-      icon: <SchoolIcon />,
-      link: "/admin/manage/qualification",
-    },
-    {
-      text: "Manage Class",
-      icon: <ClassIcon />,
-      link: "/admin/manage/class/category",
-    },
-    {
-      text: "Manage Subject",
-      icon: <SubjectIcon />,
-      link: "/admin/manage/subject",
-    },
-    {
-      text: "Manage Teacher",
-      icon: <SchoolIcon />,
-      link: "/admin/manage/teacher",
-    },
-    {
-      text: "Manage Recruiter",
-      icon: <WorkIcon />,
-      link: "/admin/manage/recruiter",
-    },
-    {
-      text: "Manage Question",
-      icon: <QuestionAnswerIcon />,
-      link: "/admin/manage/question",
-    },
-    {
-      text: "Manage Skills",
-      icon: <BuildIcon />,
-      link: "/admin/manage/skills",
-    },
-    {
-      text: "Manage Qualification",
-      icon: <AssignmentIcon />,
-      link: "/admin/manage/qualification",
-    },
-    {
-      text: "Manage Class",
-      icon: <ClassIcon />,
-      link: "/admin/manage/class/category",
-    },
-    { 
-      text: "Manage Level", 
-      icon: <LayersIcon />, 
-      link: "/admin/manage/level" },
-    {
-      text: "Manage Exam",
-      icon: <AssignmentIcon />,
-      link: "/admin/manage/exam",
-    },
-    {
-      text: "Manage Exam Center",
-      icon: <SchoolIcon />,
-      link: "/admin/manage/exam/center",
-    },
-    {
-      text: "Manage Hiring",
-      icon: <BiBriefcase />,
-      link: "/admin/manage/hiring",
-    },
-    {
-      text: "Manage Passkey",
-      icon: <Key />,
-      link: "/admin/manage/passkey",
-    },
-    {
-      text: "Question Manager",
-      icon: <PersonIcon />,
-      link: "/admin/manage/question/manager",
-    },
-    {
-      text: "Manage Interview",
-      icon: <VideoCall />,
-      link: "/admin/manage/interview",
-    }
+    { text: "Manage Subject", icon: <SubjectIcon />, link: "/admin/manage/subject" },
+    { text: "Manage Teacher", icon: <GroupsIcon />, link: "/admin/manage/teacher" },
+    { text: "Manage Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
+    { text: "Manage Question", icon: <Quiz />, link: "/admin/manage/question" },
+    { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
+    { text: "Manage Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
+    { text: "Manage Class", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+    { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
+    { text: "Manage Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
+    { text: "Manage Exam Center", icon: <LibraryBooks />, link: "/admin/manage/exam/center" },
+    { text: "Manage Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
+    { text: "Manage Passkey", icon: <Key />, link: "/admin/manage/passkey" },
+    { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
+    { text: "Manage Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
   ];
 
   return (
@@ -291,12 +204,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
                 link: "/admin/contact",
               },
             ].map((item) => (
-              <Tooltip
-                key={item.text}
-                title={item.text}
-                placement="right"
-                arrow
-              >
+              <Tooltip key={item.text} title={item.text} placement="right" arrow>
                 <ListItem disablePadding>
                   <ListItemButton
                     component={Link}
@@ -329,8 +237,8 @@ export default function Sidebar({ open, handleDrawerClose }) {
         </Collapse>
       </List>
       <Divider />
-      {/* add logout button below */}
-      <List className="">
+      {/* Logout Button */}
+      <List>
         <ListItem disablePadding sx={{ mt: 2 }}>
           <ListItemButton onClick={handlelogout}>
             <ListItemIcon>
