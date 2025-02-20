@@ -26,6 +26,7 @@ function ExamManagement() {
     (state) => state.jobProfile.prefrence.class_category
   );
   console.log("classCategories",classCategories)
+  
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
@@ -43,17 +44,39 @@ function ExamManagement() {
     prefrence && Object.keys(prefrence).length > 0 &&
     educationData && educationData.length > 0);
 
-  console.log("isProfileComplete",isProfileComplete); 
+  
+  const [activeTab, setActiveTab] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(()=>{
-    dispatch(getPrefrence());
-    dispatch(getEducationProfile());
-  },[])
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      await dispatch(getPrefrence()).unwrap();
+      await dispatch(getEducationProfile()).unwrap();
+      setIsLoading(false); // Data fetching is complete
+    };
+    fetchData();
+    const subject = prefrence?.prefered_subject;
+  
+  }, [dispatch]);
+
+  // Set activeTab after prefrence is fetched
+  useEffect(() => {
+    if (!isLoading && prefrence?.class_category?.length > 0) {
+      setActiveTab(prefrence.class_category[0].id);
+    }
+  }, [isLoading, prefrence]);
+
+  // if (isLoading) {
+  //   return <div>Loading...</div>; // Show a loading spinner or message
+  // }
+
+  
 
   const exam_id = passkeyresponse?.exam?.id;
 
-  const [activeTab, setActiveTab] = useState("");
-  const[selectedClassCategories,setSelectedClassCategories]= useState("");
+  
+  const[filteredSubjects,setFilteredSubjects]= useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
@@ -66,6 +89,8 @@ function ExamManagement() {
   const [passcode, setPasscode] = useState("");
   const [offlineSet,SetOfflineSet] = useState("");
 
+  
+
   // Check localStorage on component mount to see if a reminder is needed
   useEffect(() => {
     const isReminderSet = localStorage.getItem("showReminder");
@@ -73,10 +98,7 @@ function ExamManagement() {
       setShowReminderMessage(true);
     }
   }, []);
-
-  console.log("offlineSet",offlineSet)
-  console.log("activeTab",activeTab)
-  console.log("SelectedClassCategories",selectedClassCategories)
+  
   // Handle "Remind me later" button click
   const handleRemindMeLater = () => {
     // Set a flag in localStorage to show the reminder on refresh
@@ -95,12 +117,29 @@ function ExamManagement() {
     }
   }, []);
 
-  // Handle category switch
-  const handleCategoryChange = (category) => {
-    setActiveTab(category?.id);
-    setSelectedSubject(""); // Reset subject on category change
-    setSelectedClassCategories(category);
-  };
+// Handle category switch
+const handleCategoryChange = (category) => {
+  console.log("category", category);
+  setActiveTab(category?.id); // Update activeTab
+  setSelectedSubject(""); // Reset subject on category change
+};
+
+  useEffect(() => {
+    if (activeTab !== null) {
+      const subject = prefrence?.prefered_subject || [];
+      console.log("prefrence", subject);
+  
+      const filteredSubjects = subject.filter(
+        (subject) => subject.class_category === activeTab
+      );
+  
+      setFilteredSubjects(filteredSubjects);
+      console.log("filteredSubjects", filteredSubjects);
+    }
+  }, [activeTab]); // Runs on mount and when activeTab changes
+
+
+  
 
   const handleSubjectChange = (e) => {
     const subjectId = e.target.value;
@@ -286,7 +325,7 @@ function ExamManagement() {
                         <option value="" className="text-gray-400">
                           Select a subject
                         </option>
-                        {selectedClassCategories?.subjects?.map((subject, index) => (
+                        {filteredSubjects?.map((subject, index) => (
                           <option key={index} value={subject.id}>
                             {subject.subject_name}
                           </option>
