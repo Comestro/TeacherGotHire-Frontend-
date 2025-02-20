@@ -12,7 +12,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { Collapse, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
-import { logout } from "../../services/authServices";
+// import { logout } from "../../services/authServices";
 import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,

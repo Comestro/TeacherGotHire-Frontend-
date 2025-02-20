@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../store/configue";
-import { userLogout as logoutAction } from "../features/authSlice"; 
-import store, {persistor} from "../store/store"
+//import { userLogout as logoutAction } from "../features/authSlice"; 
+//import store, {persistor} from "../store/store"
 
 const apiClient = axios.create({
   baseURL: getApiUrl(),
@@ -101,22 +101,22 @@ export const resetPassword = async (uidb64, token, newPassword) =>
     confirm_password: newPassword,
   });
 
-export const logout = async () => {
-  try {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("role");
+// export const logout = async () => {
+//   try {
+//     localStorage.removeItem("access_token");
+//     localStorage.removeItem("role");
 
-    store.dispatch(logoutAction()); // Dispatch logout action to reset auth state
+//     store.dispatch(logoutAction()); // Dispatch logout action to reset auth state
 
     
-    await persistor.purge(); 
-    await persistor.flush(); 
+//     await persistor.purge(); 
+//     await persistor.flush(); 
 
-    const response = await apiClient.post("/api/logout/");
-    console.log("Logged out successfully:", response.data);
+//     const response = await apiClient.post("/api/logout/");
+//     console.log("Logged out successfully:", response.data);
 
-    return response.data;
-  } catch (err) {
-    handleApiError(err);
-  }
-};
+//     return response.data;
+//   } catch (err) {
+//     handleApiError(err);
+//   }
+// };
