@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector } from "react-redux";
-// import { logout } from "../../../services/authServices";
+import { userLogout } from "../../../features/authSlice";
+
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,10 +18,10 @@ const TeacherRecruiterHeader = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
 
-//  const handleLogout = () => {
-//      logout();
-//      setIsProfileMenuOpen(false);
-//    };
+ const handleLogout = () => {
+     userLogout();
+     setIsProfileMenuOpen(false);
+   };
  
 
   return (

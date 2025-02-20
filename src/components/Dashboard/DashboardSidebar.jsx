@@ -35,7 +35,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         .catch((error) => {
           console.error("Logout failed:", error);
         });
-        // navigate("/signin");
+        navigate("/signin");
     };
 
   return (

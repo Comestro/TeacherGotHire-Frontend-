@@ -12,7 +12,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { Collapse, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
-// import { logout } from "../../services/authServices";
+import { userLogout } from "../../features/authSlice";
 import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -99,7 +99,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
   };
 
   const handlelogout = async () => {
-    await logout();
+    await userLogout().unwrap();
     navigate("/signin");
   };
 
