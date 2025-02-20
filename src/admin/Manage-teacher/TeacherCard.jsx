@@ -11,6 +11,8 @@ import {
   TextField,
   Button,
   Box,
+  Divider,
+  Paper,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -41,51 +43,49 @@ const TeacherCard = ({ teacherData }) => {
 
   return (
     <>
-      <Card sx={{ boxShadow: 3 }}>
+      <Card sx={{ boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} sm={4} display="flex" justifyContent="center">
               <Avatar
                 alt={teacherData?.Fname || "N/A"}
                 src={teacherData?.profiles?.profile_picture || ""}
-                sx={{ width: "40%", height: 130 }}
+                sx={{ width: 130, height: 130, borderRadius: 1 }}
               />
             </Grid>
             <Grid item xs={12} sm={8}>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="h5" gutterBottom>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h5" fontWeight="bold">
                   {teacherData?.Fname || "N/A"} {teacherData?.Lname || "N/A"}
                 </Typography>
-                <IconButton onClick={handleOpen}>
+                <IconButton onClick={handleOpen} color="primary">
                   <EditIcon />
                 </IconButton>
               </Box>
-              <Typography variant="body1">
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body1" color="textSecondary">
                 <strong>Email:</strong> {teacherData?.email || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Phone:</strong> {teacherData?.profiles?.phone_number || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Bio:</strong> {teacherData?.profiles?.bio || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Religion:</strong> {teacherData?.profiles?.religion || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Date of Birth:</strong> {teacherData?.profiles?.date_of_birth || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Marital Status:</strong> {teacherData?.profiles?.marital_status || "N/A"}
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" color="textSecondary">
                 <strong>Gender:</strong> {teacherData?.profiles?.gender || "N/A"}
               </Typography>
               <Badge
+                sx={{ marginLeft: 3 }}
                 badgeContent={teacherData?.is_verified ? "Verified" : "Not Verified"}
                 color={teacherData?.is_verified ? "primary" : "error"}
               />
@@ -94,13 +94,14 @@ const TeacherCard = ({ teacherData }) => {
         </CardContent>
       </Card>
 
+      {/* Edit Modal */}
       <Modal open={open} onClose={handleClose}>
         <Box
           p={4}
           bgcolor="background.paper"
           sx={{
             width: "90%",
-            maxWidth: 400,
+            maxWidth: 500,
             margin: "auto",
             mt: "10%",
             boxShadow: 3,
@@ -109,7 +110,7 @@ const TeacherCard = ({ teacherData }) => {
             overflowY: "auto",
           }}
         >
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom fontWeight="bold">
             Edit Teacher Information
           </Typography>
           <TextField
@@ -118,6 +119,7 @@ const TeacherCard = ({ teacherData }) => {
             label="First Name"
             value={editedData?.Fname || ""}
             onChange={(event) => handleChange("Fname", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -125,6 +127,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Last Name"
             value={editedData?.Lname || ""}
             onChange={(event) => handleChange("Lname", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -132,6 +135,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Email"
             value={editedData?.email || ""}
             onChange={(event) => handleChange("email", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -139,6 +143,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Phone"
             value={editedData?.profiles?.phone_number || ""}
             onChange={(event) => handleChange("profiles.phone_number", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -146,6 +151,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Bio"
             value={editedData?.profiles?.bio || ""}
             onChange={(event) => handleChange("profiles.bio", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -153,6 +159,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Religion"
             value={editedData?.profiles?.religion || ""}
             onChange={(event) => handleChange("profiles.religion", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -160,6 +167,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Date of Birth"
             value={editedData?.profiles?.date_of_birth || ""}
             onChange={(event) => handleChange("profiles.date_of_birth", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -167,6 +175,7 @@ const TeacherCard = ({ teacherData }) => {
             label="Marital Status"
             value={editedData?.profiles?.marital_status || ""}
             onChange={(event) => handleChange("profiles.marital_status", event)}
+            variant="outlined"
           />
           <TextField
             fullWidth
@@ -174,12 +183,13 @@ const TeacherCard = ({ teacherData }) => {
             label="Gender"
             value={editedData?.profiles?.gender || ""}
             onChange={(event) => handleChange("profiles.gender", event)}
+            variant="outlined"
           />
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="secondary" onClick={handleClose}>
+          <Box mt={3} display="flex" justifyContent="space-between">
+            <Button variant="outlined" color="secondary" onClick={handleClose} sx={{ width: "45%" }}>
               Cancel
             </Button>
-            <Button variant="contained" color="primary" onClick={handleSave}>
+            <Button variant="contained" color="primary" onClick={handleSave} sx={{ width: "45%" }}>
               Save
             </Button>
           </Box>

@@ -1,16 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Card, CardContent, Typography, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Modal, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { getTeacherQualification } from '../../services/adminTeacherApi';
 
-const QualificationsCard = ({ qualifications }) => {
+const QualificationsCard = ({ userId }) => {
   const [open, setOpen] = useState(false);
-  const [editedQualifications, setEditedQualifications] = useState(qualifications);
+  const [qualifications, setQualifications] = useState([]);
+  const [editedQualifications, setEditedQualifications] = useState([]);
+
+  // fetch qualifications data from the API
+  useEffect(() => {
+    if (!userId) return;
+    getTeacherQualification(userId)
+      .then(response => {
+        if (response && Array.isArray(response)) {
+          const formattedQualifications = response.map(item => ({
+            id: item.id,
+            degree: item.qualification?.name || 'N/A',
+            institution: item.institution || 'N/A',
+            year_of_passing: item.year_of_passing || 'N/A',
+            grade_or_percentage: item.grade_or_percentage || 'N/A',
+          }));
+          setQualifications(formattedQualifications);
+          setEditedQualifications(formattedQualifications);
+        } else if (response && response.id) {
+          const formattedQualification = {
+            id: response.id,
+            degree: response.qualification?.name || 'N/A',
+            institution: response.institution || 'N/A',
+            year_of_passing: response.year_of_passing || 'N/A',
+            grade_or_percentage: response.grade_or_percentage || 'N/A',
+          };
+          setQualifications([formattedQualification]);
+          setEditedQualifications([formattedQualification]);
+        } else {
+          console.error('Unexpected response structure:', response);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching qualifications:', error);
+      });
+  }, [userId]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleSave = () => {
-    // Save the edited qualifications (you can add your save logic here)
     setOpen(false);
   };
 
@@ -38,8 +73,8 @@ const QualificationsCard = ({ qualifications }) => {
                 <TableRow>
                   <TableCell>Degree</TableCell>
                   <TableCell>Institution</TableCell>
-                  <TableCell>Year of Completion</TableCell>
-                  <TableCell>Certification Details</TableCell>
+                  <TableCell>Year of Passing</TableCell>
+                  <TableCell>Grade/Percentage</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -47,8 +82,8 @@ const QualificationsCard = ({ qualifications }) => {
                   <TableRow key={index}>
                     <TableCell>{qualification.degree}</TableCell>
                     <TableCell>{qualification.institution}</TableCell>
-                    <TableCell>{qualification.year}</TableCell>
-                    <TableCell>{qualification.certification}</TableCell>
+                    <TableCell>{qualification.year_of_passing}</TableCell>
+                    <TableCell>{qualification.grade_or_percentage}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -94,16 +129,16 @@ const QualificationsCard = ({ qualifications }) => {
               <TextField
                 fullWidth
                 margin="normal"
-                label="Year of Completion"
-                value={qualification.year}
-                onChange={(event) => handleQualificationChange(index, 'year', event)}
+                label="Year of Passing"
+                value={qualification.year_of_passing}
+                onChange={(event) => handleQualificationChange(index, 'year_of_passing', event)}
               />
               <TextField
                 fullWidth
                 margin="normal"
-                label="Certification Details"
-                value={qualification.certification}
-                onChange={(event) => handleQualificationChange(index, 'certification', event)}
+                label="Grade/Percentage"
+                value={qualification.grade_or_percentage}
+                onChange={(event) => handleQualificationChange(index, 'grade_or_percentage', event)}
               />
             </Box>
           ))}

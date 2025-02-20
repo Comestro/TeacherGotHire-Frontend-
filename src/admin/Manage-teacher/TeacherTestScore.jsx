@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -19,35 +19,36 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoIcon from "@mui/icons-material/Info";
+import { getTeacherScorecard } from "../../services/adminTeacherApi";
 
-const TeacherTestScorePage = ({ teacherData }) => {
+const TeacherTestScorePage = ({ userId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTest, setSelectedTest] = useState(null);
   const [open, setOpen] = useState(false);
+  const [testScores, setTestScores] = useState([]);
 
-  const testScores = [
-    {
-      testName: "Math Test",
-      level: "Intermediate",
-      score: 85,
-      dateTaken: "2023-01-15",
-      remarks: "Good performance",
-    },
-    {
-      testName: "Science Test",
-      level: "Advanced",
-      score: 90,
-      dateTaken: "2023-02-20",
-      remarks: "Excellent understanding",
-    },
-    {
-      testName: "English Test",
-      level: "Beginner",
-      score: 78,
-      dateTaken: "2023-03-10",
-      remarks: "Needs improvement in grammar",
-    },
-  ];
+  useEffect(() => {
+    if (!userId) return;
+    const fetchTestScores = async () => {
+      try {
+        const response = await getTeacherScorecard(userId);
+        const scores = response.map((test) => ({
+          testName: test.exam.name,
+          level: "N/A", // Assuming level is not provided in the response
+          score: ((test.correct_answer / test.total_question) * 100).toFixed(2),
+          dateTaken: "N/A", // Assuming dateTaken is not provided in the response
+          remarks: "N/A", // Assuming remarks is not provided in the response
+          ...test,
+        }));
+        setTestScores(scores);
+      } catch (error) {
+        console.error("Error fetching test scores:", error);
+        setTestScores([]);
+      }
+    };
+
+    fetchTestScores();
+  }, [userId]);
 
   const handleOpen = (test) => {
     setSelectedTest(test);
@@ -62,45 +63,6 @@ const TeacherTestScorePage = ({ teacherData }) => {
 
   return (
     <Box mt={3}>
-      {/* <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
-        <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid
-              item
-              xs={12}
-              sm={4}
-              container
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Avatar
-                alt={teacherData.name}
-                src={teacherData.profilePic}
-                sx={{ width: "40%", height: "130px" }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={8}>
-              <Typography variant="h5" gutterBottom>
-                {teacherData.name}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Email:</strong> {teacherData.email}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Phone:</strong> {teacherData.phone}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Address:</strong> {teacherData.address}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Registration Date:</strong>{" "}
-                {teacherData.registrationDate}
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card> */}
-
       <Box mt={3}>
         <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
           <CardContent>
@@ -145,7 +107,7 @@ const TeacherTestScorePage = ({ teacherData }) => {
                     <TableRow key={index}>
                       <TableCell>{test.testName}</TableCell>
                       <TableCell>{test.level}</TableCell>
-                      <TableCell>{test.score}</TableCell>
+                      <TableCell>{test.score}%</TableCell>
                       <TableCell>{test.dateTaken}</TableCell>
                       <TableCell>
                         <IconButton onClick={() => handleOpen(test)}>
@@ -187,7 +149,7 @@ const TeacherTestScorePage = ({ teacherData }) => {
               <strong>Level:</strong> {selectedTest.level}
             </Typography>
             <Typography variant="body1">
-              <strong>Score:</strong> {selectedTest.score}
+              <strong>Score:</strong> {selectedTest.score}%
             </Typography>
             <Typography variant="body1">
               <strong>Date Taken:</strong> {selectedTest.dateTaken}

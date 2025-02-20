@@ -29,13 +29,15 @@ function ViewAttempts() {
     if (selectedCategory) {
       // Filter exam results based on the selected category
       const results = apiOutput2.filter(
-        (result) => result.exam.class_category.name === selectedCategory
+        (result) => result.exam.class_category_name === selectedCategory
       );
       setFilteredExamResults(results);
 
+      console.log("result",results)
+
       // Extract subjects
       const subjectNames = [
-        ...new Set(results.map((result) => result.exam.subject.subject_name)),
+        ...new Set(results.map((result) => result?.exam?.subjet_name)),
       ];
       setSubjects(subjectNames);
     } else {
@@ -48,7 +50,7 @@ function ViewAttempts() {
   const attemptedCategories = apiOutput2 && apiOutput2.length > 0
   ? [...new Set(apiOutput2
       .filter(result => result.isqualified !== undefined) // Check if `is_qualified` exists
-      .map(result => result.exam.class_category?.name)
+      .map(result => result.exam.class_category_name)
     )]
   : [];
 
@@ -116,22 +118,24 @@ console.log(attemptedCategories);
 function SubjectResults({ subject, examResults }) {
   // Filter results for the subject
   const subjectResults = examResults.filter(
-    (result) => result.exam.subject.subject_name === subject
+    (result) => result.exam.subjet_name === subject
   );
+
+  console.log("subjectResults",subjectResults)
 
   // Map data to include required fields
   const attemptData = subjectResults.map((result, index) => {
-    const totalQuestions = result.exam.questions.length;
+    // const totalQuestions = result.exam.questions.length;
     const correctAnswers = result.correct_answer;
     const totalMarks = result.exam.total_marks;
-    const score = (correctAnswers / totalQuestions) * totalMarks;
-    const percentage = (score / totalMarks) * 100;
+    // const score = (correctAnswers / totalQuestions) * totalMarks;
+    // const percentage = (score / totalMarks) * 100;
 
     return {
       attempt: index + 1,
-      level: result.exam.level.name,
+       level: result.exam.level_name,
       result: result.isqualified ? "Passed" : "Failed",
-      percentage: percentage.toFixed(2),
+      // percentage: percentage.toFixed(2),
       date: new Date(result.created_at),
     };
   });

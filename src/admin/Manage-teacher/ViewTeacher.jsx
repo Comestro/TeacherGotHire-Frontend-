@@ -124,7 +124,7 @@ const ViewTeacherAdmin = () => {
           variant="scrollable"
           scrollButtons="auto"
           aria-label="scrollable auto tabs example"
-          style={{ marginTop: 20 }}
+          sx={{ boxShadow: 3, borderRadius: 2, overflow: "hidden", marginTop: 2 }}
         >
           <Tab label="Skills" />
           <Tab label="Qualifications" />
@@ -132,15 +132,15 @@ const ViewTeacherAdmin = () => {
           <Tab label="Test Scores" />
         </Tabs>
         {tabValue === 0 && <SkillsCard userId={teacherData?.id || 3} />}
-        {/* {tabValue === 1 && (
-          <QualificationsCard qualifications={teacherData.qualifications} />
-        )} */}
-        {/* {tabValue === 2 && (
-          <ExperienceCard experience={teacherData.experiences} />
-        )} */}
-        {/* {tabValue === 3 && (
-          <TeacherTestScorePage teacherData={teacherData} />
-        )} */}
+        {tabValue === 1 && (
+          <QualificationsCard userId={teacherData?.id || 3} />
+        )}
+        {tabValue === 2 && (
+          <ExperienceCard userId={teacherData?.id || 3} />
+        )}
+        {tabValue === 3 && (
+          <TeacherTestScorePage userId={teacherData?.id || 3} />
+        )}
 
         <Modal
           open={openDeactivateModal}

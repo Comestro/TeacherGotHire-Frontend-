@@ -3,7 +3,7 @@ import {
   createaccount,
   createRecruiteraccount,
   fetchUserData,
-  logout,
+ logout,
   resendOtp,
 } from "../services/authServices";
 import {persistor} from "../store/store"
@@ -88,41 +88,58 @@ export const getResendOtp = createAsyncThunk(
   }
 );
 
-export const userLogout = createAsyncThunk(
-  "user/logout",
-  async (_, { rejectWithValue }) => {
+// export const userLogout = createAsyncThunk(
+//   "userLogout",
+//   async (_, { rejectWithValue }) => {
+//     try {
+      
+//       const token = localStorage.getItem("access_token");
+//       console.log("heloo")
+//       console.log("token",token);
+
+//       if (!token) {
+//         throw new Error("No token found. Already logged out?");
+//       }
+
+//       const response = await fetch("http://127.0.0.1:8000/api/logout/", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`, // Ensure token is sent
+//         },
+//       });
+
+//       if (!response.ok) {
+//         throw new Error("Logout failed. Server response: " + response.statusText);
+//       }
+
+//       // localStorage.removeItem("access_token");
+//       // localStorage.removeItem("role");
+//       // localStorage.removeItem("persist:root");
+
+//       //persistor.purge(); // Clears Redux state
+
+//       // await persistor.purge(); 
+//       // await persistor.flush(); 
+
+//       return {};
+//     } catch (error) {
+//       return rejectWithValue(error.message || "Logout failed.");
+//     }
+//   }
+// );
+
+
+export  const  userLogout = createAsyncThunk(
+  "userLogout", async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        throw new Error("No token found. Already logged out?");
-      }
-
-      const response = await fetch("http://127.0.0.1:8000/api/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Ensure token is sent
-        },
+      const response = await logout("/api/logout/", { 
       });
-
-      if (!response.ok) {
-        throw new Error("Logout failed. Server response: " + response.statusText);
-      }
-
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("persist:root");
-
-      persistor.purge(); // Clears Redux state
-
       return {};
     } catch (error) {
-      return rejectWithValue(error.message || "Logout failed.");
-    }
-  }
-);
-
+      console.error("Error in userLogout:", error);
+    }}
+)
 
 
 const authSlice = createSlice({

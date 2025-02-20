@@ -39,7 +39,7 @@ const Steppers = () => {
 
   // Group attempts by class category and subject
   const groupedAttempts = qualifiedAttempts?.reduce((acc, item) => {
-    const key = `${item.exam.class_category.name}-${item.exam.subject.subject_name}`;
+    const key = `${item?.exam?.class_category?.name}-${item?.exam?.subject?.subject_name}`;
     if (!acc[key]) {
       acc[key] = [];
     }
@@ -59,7 +59,7 @@ const Steppers = () => {
             // Find the highest level achieved in this group
             const highestLevelIndex = Math.max(
               ...attempts.map((item) =>
-                allLevels.findIndex((level) => level === item.exam.level.name)
+                allLevels.findIndex((level) => level === item?.exam?.level_name)
               )
             );
 
@@ -72,7 +72,7 @@ const Steppers = () => {
               <Step key={index} active={true}>
                 <StepLabel>
                   <Typography variant="h6">
-                    {attempts[0].exam.class_category.name} - {attempts[0].exam.subject.subject_name}
+                    {attempts[0]?.exam?.class_category_name} - {attempts[0]?.exam?.subjet_name}
                   </Typography>
                 </StepLabel>
                 <StepContent>

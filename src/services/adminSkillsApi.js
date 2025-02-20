@@ -1,6 +1,6 @@
 import apiService from "./apiService";
 
-const endpoint = "/api/admin/skills";
+const endpoint = "/api/admin/skill";
 
 export const getSkills = () => apiService.getAll(endpoint);
 export const getSkillsById = (id) => apiService.getById(endpoint, id);

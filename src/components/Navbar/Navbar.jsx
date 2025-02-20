@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { FaChalkboardTeacher, FaUserCircle } from "react-icons/fa";
-import { logout } from "../../services/authServices";
+//import { logout } from "../../services/authServices";
 import { FiBriefcase, FiSearch, FiUserPlus } from "react-icons/fi";
 import { userLogout } from "../../features/authSlice";
 import { TeacherEnquiry } from "../enquiry/TeacherEnquiry";

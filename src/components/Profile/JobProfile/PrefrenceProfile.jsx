@@ -68,6 +68,8 @@ const PrefrenceProfile = () => {
     return categoryObj ? categoryObj.subjects : [];
   });
 
+  console.log("selectedClassCategories",selectedClassCategories)
+
   useEffect(() => {
     const currentSubjects = getValues("prefered_subject");
     const safeSubjects = Array.isArray(currentSubjects) ? currentSubjects : [];

@@ -167,6 +167,11 @@ const ExamManagement = () => {
       newFormData.type = "";
     }
 
+    // Clear subject when class_category changes
+    if (name === "class_category") {
+      newFormData.subject = "";
+    }
+
     setFormData(newFormData);
   };
   // handle pagination
@@ -187,6 +192,9 @@ const ExamManagement = () => {
       if (parseInt(payload.level) < 2) {
         delete payload.type;
       }
+
+      // Remove the name field from the payload
+      delete payload.name;
 
       if (selectedExam) {
         await updateExam(selectedExam.id, payload);
@@ -460,7 +468,7 @@ const ExamManagement = () => {
                         />
                       </TableCell>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{exam.name}</TableCell>
+                      <TableCell>{exam.name.slice(0, 15)}</TableCell>
                       <TableCell>{exam.subject.subject_name}</TableCell>
                       <TableCell>{exam.level.name}</TableCell>
                       <TableCell>{exam.class_category.name}</TableCell>
@@ -516,31 +524,6 @@ const ExamManagement = () => {
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Exam Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Subject</InputLabel>
-                  <Select
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleFormChange}
-                  >
-                    {subjects.map((subject) => (
-                      <MenuItem key={subject.id} value={subject.id}>
-                        {subject.subject_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
                 <FormControl fullWidth>
                   <InputLabel>Class Category</InputLabel>
                   <Select
@@ -553,6 +536,24 @@ const ExamManagement = () => {
                         {classCategory.name}
                       </MenuItem>
                     ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Subject</InputLabel>
+                  <Select
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleFormChange}
+                  >
+                    {subjects
+                      .filter((subject) => subject.class_category === formData.class_category)
+                      .map((subject) => (
+                        <MenuItem key={subject.id} value={subject.id}>
+                          {subject.subject_name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>

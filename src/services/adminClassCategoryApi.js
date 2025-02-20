@@ -1,6 +1,6 @@
 import apiService from "./apiService";
 
-const endpoint = "/api/admin/classcategory/";
+const endpoint = "/api/admin/classcategory";
 
 export const getClassCategory = () => apiService.getAll(endpoint);
 export const getClassCategoryById = (id) => apiService.getById(endpoint, id);
