@@ -41,7 +41,10 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   };
 
   const [loadingPincode, setLoadingPincode] = useState(false);
+  const [postOffice, setPostOffice] = useState([]);
   const { error } = useSelector((state) => state.personalProfile)
+
+  console.log("postOffice data from state", postOffice);
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -53,6 +56,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
       setLoadingPincode(true);
       try {
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
+        setPostOffice(response.data[0].PostOffice);
         if (response.data[0].Status === "Success") {
           const postOffice = response.data[0].PostOffice[0];
           setValue("state", postOffice.State);
