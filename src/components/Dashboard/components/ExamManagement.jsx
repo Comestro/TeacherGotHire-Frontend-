@@ -25,6 +25,7 @@ function ExamManagement() {
   const classCategories = useSelector(
     (state) => state.jobProfile.prefrence.class_category
   );
+  console.log("classCategories",classCategories)
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
@@ -52,6 +53,7 @@ function ExamManagement() {
   const exam_id = passkeyresponse?.exam?.id;
 
   const [activeTab, setActiveTab] = useState("");
+  const[selectedClassCategories,setSelectedClassCategories]= useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
@@ -73,6 +75,8 @@ function ExamManagement() {
   }, []);
 
   console.log("offlineSet",offlineSet)
+  console.log("activeTab",activeTab)
+  console.log("SelectedClassCategories",selectedClassCategories)
   // Handle "Remind me later" button click
   const handleRemindMeLater = () => {
     // Set a flag in localStorage to show the reminder on refresh
@@ -80,20 +84,22 @@ function ExamManagement() {
 
     // Hide the card and show the reminder message
     setCenterSelectionPopup(false);
-    setShowReminderMessage(true);
+    setShowReminderMessage(true)
   };
 
   useEffect(() => {
     dispatch(getAllCenter());
     if (classCategories) {
       setActiveTab(classCategories[0]?.id);
+     
     }
   }, []);
 
   // Handle category switch
-  const handleCategoryChange = (categoryId) => {
-    setActiveTab(categoryId);
+  const handleCategoryChange = (category) => {
+    setActiveTab(category?.id);
     setSelectedSubject(""); // Reset subject on category change
+    setSelectedClassCategories(category);
   };
 
   const handleSubjectChange = (e) => {
@@ -128,6 +134,7 @@ function ExamManagement() {
     );
     setIsSubmitted(true);
   };
+  
 
   const simulateAdminApproval = () => {
     // Simulate admin approval after 3 seconds
@@ -232,7 +239,7 @@ function ExamManagement() {
                   classCategories.map((category) => (
                     <button
                       key={category.id}
-                      onClick={() => handleCategoryChange(category.id)}
+                      onClick={() => handleCategoryChange(category)}
                       className={`group relative min-w-fit pb-4 px-1 text-sm font-medium transition-all duration-300 ${
                         activeTab === category.id
                           ? "text-[#3E98C7]"
@@ -251,7 +258,7 @@ function ExamManagement() {
               </div>
             </div>
             {/* Subject Selection */}
-            {subjects && subjects.length > 0 && (
+            {classCategories && classCategories.length > 0 && (
               <div className="space-y-4 p-5 bg-white rounded-lg border border-gray-100 shadow-sm">
                 <div className="space-y-3">
                   <h3 className="text-base font-medium text-gray-700">
@@ -279,7 +286,7 @@ function ExamManagement() {
                         <option value="" className="text-gray-400">
                           Select a subject
                         </option>
-                        {subjects.map((subject, index) => (
+                        {selectedClassCategories?.subjects?.map((subject, index) => (
                           <option key={index} value={subject.id}>
                             {subject.subject_name}
                           </option>
