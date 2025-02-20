@@ -3,7 +3,7 @@ import {
   createaccount,
   createRecruiteraccount,
   fetchUserData,
- 
+ logout,
   resendOtp,
 } from "../services/authServices";
 import {persistor} from "../store/store"
@@ -89,11 +89,11 @@ export const getResendOtp = createAsyncThunk(
 );
 
 // export const userLogout = createAsyncThunk(
-//   "user/logout",
+//   "userLogout",
 //   async (_, { rejectWithValue }) => {
 //     try {
-//       
-
+      
+//       const token = localStorage.getItem("access_token");
 //       console.log("heloo")
 //       console.log("token",token);
 
@@ -106,7 +106,6 @@ export const getResendOtp = createAsyncThunk(
 //         headers: {
 //           "Content-Type": "application/json",
 //           Authorization: `Bearer ${token}`, // Ensure token is sent
-
 //         },
 //       });
 
@@ -120,8 +119,8 @@ export const getResendOtp = createAsyncThunk(
 
 //       //persistor.purge(); // Clears Redux state
 
-//       await persistor.purge(); 
-//       await persistor.flush(); 
+//       // await persistor.purge(); 
+//       // await persistor.flush(); 
 
 //       return {};
 //     } catch (error) {
@@ -134,21 +133,9 @@ export const getResendOtp = createAsyncThunk(
 export  const  userLogout = createAsyncThunk(
   "userLogout", async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("access_token");
-      console.log("Token:", token); // Ensure this runs
-    
-      if (!token) {
-        throw new Error("No token found.");
-      }
-    
-      const response = await fetch("http://127.0.0.1:8000/api/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await logout("/api/logout/", { 
       });
-    
+      return {};
     } catch (error) {
       console.error("Error in userLogout:", error);
     }}
