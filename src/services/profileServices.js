@@ -67,6 +67,7 @@ export const updateBasicProfile = async(personaldata)=>{
          throw err;
   }
 }
+
 export const fetchBasicProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/basicProfile/');
