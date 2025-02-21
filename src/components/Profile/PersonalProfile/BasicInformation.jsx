@@ -208,7 +208,7 @@ const BasicInformation = () => {
       ],
     },
     {
-      label: "Status",
+      label: "Marital Status",
       field: "marital_status",
       value: basicData.marital_status,
       inputType: "select",
