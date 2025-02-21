@@ -41,7 +41,10 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   };
 
   const [loadingPincode, setLoadingPincode] = useState(false);
+  const [postOffice, setPostOffice] = useState([]);
   const { error } = useSelector((state) => state.personalProfile)
+
+  console.log("postOffice data from state", postOffice);
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -53,6 +56,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
       setLoadingPincode(true);
       try {
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
+        setPostOffice(response.data[0].PostOffice);
         if (response.data[0].Status === "Success") {
           const postOffice = response.data[0].PostOffice[0];
           setValue("state", postOffice.State);
@@ -124,6 +128,24 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           </div>
         </div>
 
+        <div className="flex flex-col gap-2">
+          <label className="text-md text-gray-400">Post Office*</label>
+          <select
+            {...register("postoffice")}
+            className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+          >
+            <option value="">Select Post Office</option>
+            {postOffice.map((office, index) => (
+              <option key={index} value={office.Name}>
+                {office.Name}
+              </option>
+            ))}
+          </select>
+          {errors.post_office && (
+            <p className="text-red-500 text-sm">{errors.post_office.message}</p>
+          )}
+        </div>
+
         {/* Area Field */}
         <div className="flex flex-col gap-2">
           <label className="text-md text-gray-400">Area*</label>
@@ -155,7 +177,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   );
 };
 
-const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
+const AddressCard = ({ title, data, onEdit, onCopy, variant = "active" }) => (
   <div
     className={`p-4 border rounded-xl transition-all ${variant === "active"
         ? "border-gray-200 bg-white hover:border-[#3E98C7]"
@@ -167,20 +189,31 @@ const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
         <FiMapPin className="w-6 h-6 text-[#3E98C7]" />
         <h3 className="text-lg  font-semibold text-gray-600">{title}</h3>
       </div>
-      <button
-        onClick={onEdit}
-        className="flex items-center space-x-2 px-4 py-2 bg-[#3E98C7]/10 text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/20 transition-all"
-      >
-        <FiEdit className="w-4 h-4" />
-        <span>Edit</span>
-      </button>
+      <div className="flex items-center gap-2">
+        {onCopy && (
+          <button
+            onClick={onCopy}
+            className="flex items-center space-x-1 px-2 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all"
+          >
+            <FiMapPin className="w-4 h-4" />
+            <span className="text-xs">Same as Current</span>
+          </button>
+        )}
+        <button
+          onClick={onEdit}
+          className="flex items-center space-x-2 px-4 py-2 bg-[#3E98C7]/10 text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/20 transition-all"
+        >
+          <FiEdit className="w-4 h-4" />
+          <span>Edit</span>
+        </button>
+      </div>
     </div>
     {data.area || data.district || data.state || data.pincode ? (
       <div className="grid grid-cols-2 gap-4 text-gray-600 px-3">
         <div className="space-y-1">
-          <label className="text-sm text-gray-500">Area</label>
+          <label className="text-sm text-gray-500">Post Office</label>
           <p className="font-medium">
-            {data.area || <span className="text-gray-400">Not provided</span>}
+            {data.postoffice || <span className="text-gray-400">Not provided</span>}
           </p>
         </div>
         <div className="space-y-1">
@@ -203,6 +236,12 @@ const AddressCard = ({ title, data, onEdit, variant = "active" }) => (
             {data.pincode || (
               <span className="text-gray-400">Not provided</span>
             )}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm text-gray-500">Area</label>
+          <p className="font-medium">
+            {data.area || <span className="text-gray-400">Not provided</span>}
           </p>
         </div>
       </div>
@@ -259,6 +298,36 @@ const AddressProfileCard = () => {
       setLoading(false);
     }
   };
+
+  const handleCopyCurrentAddress = async () => {
+    const currentAddress = personalProfile.current_address;
+    if (!currentAddress) {
+      toast.error("No current address to copy");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        ...currentAddress,
+        address_type: "permanent"
+      };
+
+      if (personalProfile?.permanent_address) {
+        await dispatch(putAddress(payload)).unwrap();
+      } else {
+        await dispatch(postAddress(payload)).unwrap();
+      }
+      
+      toast.success("Permanent address updated successfully");
+      dispatch(getAddress());
+    } catch (error) {
+      toast.error("Failed to copy address");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     if (isEditingType && formRef.current) {
@@ -322,6 +391,7 @@ const AddressProfileCard = () => {
                 title="Permanent Address"
                 data={personalProfile.permanent_address || {}}
                 onEdit={() => setIsEditingType("permanent")}
+                onCopy={handleCopyCurrentAddress}
                 variant={isEditingType === "current" ? "inactive" : "active"}
               />
             )}
