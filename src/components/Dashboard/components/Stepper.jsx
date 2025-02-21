@@ -39,7 +39,7 @@ const Steppers = () => {
 
   // Group attempts by class category and subject
   const groupedAttempts = qualifiedAttempts?.reduce((acc, item) => {
-    const key = `${item?.exam?.class_category?.name}-${item?.exam?.subject?.subject_name}`;
+    const key = `${item?.exam?.class_category_name}-${item?.exam?.subjet_name}`;
     if (!acc[key]) {
       acc[key] = [];
     }
