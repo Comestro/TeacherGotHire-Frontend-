@@ -22,7 +22,6 @@ const Loader = () => (
 );
 
 const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
-
   const dispatch = useDispatch();
 
   const {
@@ -33,7 +32,6 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
     formState: { errors },
   } = useForm();
 
-
   const handleCancel = () => {
     dispatch(resetError()); // Reset Redux error state
     reset(); // Reset the form fields
@@ -42,7 +40,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
 
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [postOffice, setPostOffice] = useState([]);
-  const { error } = useSelector((state) => state.personalProfile)
+  const { error } = useSelector((state) => state.personalProfile);
 
   console.log("postOffice data from state", postOffice);
 
@@ -92,13 +90,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           {errors.pincode && (
             <p className="text-red-500 text-sm">{errors.pincode.message}</p>
           )}
-          {
-            error && (
-              <span className="text-red-500 text-sm">
-                {error}
-              </span>
-            )
-          }
+          {error && <span className="text-red-500 text-sm">{error}</span>}
           {loadingPincode && (
             <div className="mt-2">
               <Loader />
@@ -128,23 +120,27 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-md text-gray-400">Post Office*</label>
-          <select
-            {...register("postoffice")}
-            className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
-          >
-            <option value="">Select Post Office</option>
-            {postOffice.map((office, index) => (
-              <option key={index} value={office.Name}>
-                {office.Name}
-              </option>
-            ))}
-          </select>
-          {errors.post_office && (
-            <p className="text-red-500 text-sm">{errors.post_office.message}</p>
-          )}
-        </div>
+        {postOffice.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <label className="text-md text-gray-400">Post Office*</label>
+            <select
+              {...register("postoffice")}
+              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+            >
+              <option value="">Select Post Office</option>
+              {postOffice.map((office, index) => (
+                <option key={index} value={office.Name}>
+                  {office.Name}
+                </option>
+              ))}
+            </select>
+            {errors.post_office && (
+              <p className="text-red-500 text-sm">
+                {errors.post_office.message}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Area Field */}
         <div className="flex flex-col gap-2">
@@ -177,13 +173,20 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   );
 };
 
-const AddressCard = ({ title, data, onEdit, onCopy, hasCurrentAddress, variant = "active" }) => (
-
+const AddressCard = ({
+  title,
+  data,
+  onEdit,
+  onCopy,
+  hasCurrentAddress,
+  variant = "active",
+}) => (
   <div
-    className={`p-4 border rounded-xl transition-all ${variant === "active"
+    className={`p-4 border rounded-xl transition-all ${
+      variant === "active"
         ? "border-gray-200 bg-white hover:border-[#3E98C7]"
         : "border-transparent bg-gray-50 opacity-75"
-      }`}
+    }`}
   >
     <div className="flex items-center justify-between gap-4 mb-4">
       <div className="flex items-center space-x-1">
@@ -214,7 +217,9 @@ const AddressCard = ({ title, data, onEdit, onCopy, hasCurrentAddress, variant =
         <div className="space-y-1">
           <label className="text-sm text-gray-500">Post Office</label>
           <p className="font-medium">
-            {data.postoffice || <span className="text-gray-400">Not provided</span>}
+            {data.postoffice || (
+              <span className="text-gray-400">Not provided</span>
+            )}
           </p>
         </div>
         <div className="space-y-1">
@@ -256,11 +261,8 @@ const AddressCard = ({ title, data, onEdit, onCopy, hasCurrentAddress, variant =
         </p>
       </div>
     )}
-
   </div>
 );
-
-
 
 const AddressProfileCard = () => {
   const dispatch = useDispatch();
@@ -312,7 +314,7 @@ const AddressProfileCard = () => {
     try {
       const payload = {
         ...currentAddress,
-        address_type: "permanent"
+        address_type: "permanent",
       };
 
       if (personalProfile?.permanent_address) {
@@ -320,7 +322,7 @@ const AddressProfileCard = () => {
       } else {
         await dispatch(postAddress(payload)).unwrap();
       }
-      
+
       toast.success("Permanent address updated successfully");
       dispatch(getAddress());
     } catch (error) {
@@ -329,7 +331,6 @@ const AddressProfileCard = () => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     if (isEditingType && formRef.current) {
@@ -343,7 +344,8 @@ const AddressProfileCard = () => {
       <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-white ">
         <div className="flex-1">
           <p className="flex items-start gap-2 text-xs">
-            <strong>Note:</strong> Both addresses are required for verification purposes.
+            <strong>Note:</strong> Both addresses are required for verification
+            purposes.
           </p>
         </div>
       </div>
