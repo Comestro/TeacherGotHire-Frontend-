@@ -168,7 +168,7 @@ function SubjectResults({ subject, examResults }) {
                   {data.result}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {data.percentage}%
+                  {data.calculate_percentage}%
                 </td>
               </tr>
             ))}

@@ -335,57 +335,6 @@ const PrefrenceProfile = () => {
                   )}
                 </div>
                 {/* Preferred Subjects Section */}
-                {/* <div className="space-y-4">
-                  <div className="mb-2">
-                    <label className="block text-sm font-semibold text-gray-800">
-                      Preferred Subjects
-                      <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select subjects you're qualified to teach
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-3 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
-                    {filteredSubjects.length === 0 && (
-                       <div className="text-sm text-gray-500 p-2">
-                       {category?.length === 0 
-                         ? "Loading subjects..." 
-                         : "Select class categories to view available subjects"}
-                     </div>
-                    ) }
-                    {filteredSubjects?.map((sub) => (
-                      <label
-                        key={sub.id}
-                        className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          {...register("prefered_subject", { required: true })}
-                          value={sub.id}
-                          className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
-                          defaultChecked={teacherprefrence?.prefered_subject?.some(
-                            (item) => item.id === sub.id
-                          )}
-                        />
-                        <span className="text-sm text-gray-700">
-                          {sub.subject_name}
-                        </span>
-                      </label>
-                    ))}
-                    {filteredSubjects.length === 0 && (
-                      <div className="text-sm text-gray-500 p-2">
-                        Select class categories to view available subjects
-                      </div>
-                    )}
-                  </div>
-                  {errors.prefered_subject && (
-                    <div className="text-red-500 text-sm flex items-center mt-2">
-                      <HiExclamationCircle className="mr-1.5 h-4 w-4" />
-                      Please select at least one subject
-                    </div>
-                  )}
-                </div> */}
-                {/* Preferred Subjects Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
                     <label className="block text-sm font-semibold text-gray-800">
