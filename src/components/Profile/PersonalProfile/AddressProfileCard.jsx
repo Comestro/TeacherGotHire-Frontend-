@@ -177,7 +177,8 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   );
 };
 
-const AddressCard = ({ title, data, onEdit, onCopy, variant = "active" }) => (
+const AddressCard = ({ title, data, onEdit, onCopy, hasCurrentAddress, variant = "active" }) => (
+
   <div
     className={`p-4 border rounded-xl transition-all ${variant === "active"
         ? "border-gray-200 bg-white hover:border-[#3E98C7]"
@@ -190,7 +191,7 @@ const AddressCard = ({ title, data, onEdit, onCopy, variant = "active" }) => (
         <h3 className="text-lg  font-semibold text-gray-600">{title}</h3>
       </div>
       <div className="flex items-center gap-2">
-        {onCopy && (
+        {onCopy && !hasCurrentAddress && (
           <button
             onClick={onCopy}
             className="flex items-center space-x-1 px-2 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all"
@@ -266,7 +267,9 @@ const AddressProfileCard = () => {
   const personalProfile = useSelector(
     (state) => state.personalProfile.address || {}
   );
-  console.log("personalProfile", personalProfile);
+
+  const hasCurrentAddress = !!personalProfile.permanent_address;
+  console.log("current address has or not", hasCurrentAddress);
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
@@ -279,7 +282,6 @@ const AddressProfileCard = () => {
     console.log("archana", data);
     const payload = { ...data, address_type: isEditingType };
     console.log("arcPayload", payload);
-    //console.log("adreestype",address_type)
     setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
@@ -392,6 +394,7 @@ const AddressProfileCard = () => {
                 data={personalProfile.permanent_address || {}}
                 onEdit={() => setIsEditingType("permanent")}
                 onCopy={handleCopyCurrentAddress}
+                hasCurrentAddress={hasCurrentAddress}
                 variant={isEditingType === "current" ? "inactive" : "active"}
               />
             )}
