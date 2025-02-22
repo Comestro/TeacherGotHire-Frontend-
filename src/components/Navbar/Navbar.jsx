@@ -120,7 +120,7 @@ const Navbar = ({ links }) => {
               className="group relative flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold hover:from-teal-600 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100/50 active:scale-95"
             >
               <FiBriefcase className="mr-2 text-blue-100 text-lg transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
-              Hire Teacher
+              Hire Teachers
               <span className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-200/50 transition-all duration-300"></span>
             </Link>
           )}
