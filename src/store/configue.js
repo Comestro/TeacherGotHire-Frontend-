@@ -1,5 +1,5 @@
 const config = {
-    apiUrl : import.meta.env.VITE_API_URL || 'https://ptpi.tech/',
+    apiUrl : import.meta.env.VITE_API_URL || 'https://api.ptpinstitute.com/',
     pinCodeUrl : import.meta.env.VITE_POSTAL_API_URL || 'https://api.postalpincode.in/pincode/',
     };
   
