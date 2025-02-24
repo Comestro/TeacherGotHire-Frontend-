@@ -14,9 +14,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { getSubject } from "../../features/jobProfileSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
-  const dispatch = useDispatch();
-  const subject = useSelector((state) => state?.jobProfile?.subject);
+  const [subject, setSubject] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  console.log("subject in home page", subject);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [teacherType, setTeacherType] = useState("");
@@ -27,9 +29,24 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
 
 
   useEffect(() => {
-    dispatch(getSubject())
-  }, [])
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/public/classcategory"
+        );
+        setSubject(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
 
+    fetchData();
+  }, []); // Empty dependency array means this runs once on mount
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   // for pincode
   const [loadingPincode, setLoadingPincode] = useState(false);
@@ -132,7 +149,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       toast.error("Please enter a valid email address");
       return;
     }
-  
+
     const formData = {
       email: email,
       subject: selectedSubjects,
@@ -141,22 +158,21 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       state: pincodeDetails.state,
       city: pincodeDetails.city,
       area: selectedArea,
-      name: "Rahul"
+      name: "Rahul",
     };
 
-  
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/self/recruiterenquiryform/",
         formData,
         {
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
-      console.log("form submit ho gya bhai", response.data)
+
+      console.log("form submit ho gya bhai", response.data);
       if (response.status === 200 || response.status === 201) {
         toast.success("Application submitted successfully!");
         resetForm();
@@ -164,10 +180,11 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      toast.error(error.response?.data?.message || "Submission failed. Please try again.");
+      toast.error(
+        error.response?.data?.message || "Submission failed. Please try again."
+      );
     }
   };
-
 
   const isValidEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -257,23 +274,39 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                   <h3 className="text-lg font-medium mb-6">
                     Select Subjects You Teach
                   </h3>
-                  <div className="grid grid-cols-2 gap-3 mb-8 px-2 max-h-72 overflow-y-scroll">
-                    {subject.map((subject) => (
-                      <button
-                        key={subject.id}
-                        onClick={() => handleSubjectToggle(subject.id)}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                          selectedSubjects.includes(subject.subject_name)
-                            ? "border-teal-500 bg-teal-50"
-                            : "border-gray-200 hover:border-teal-300"
-                        }`}
-                      >
-                        <span className="text-sm">{subject.subject_name}</span>
-                        {selectedSubjects.includes(subject.id) && (
-                          <FiCheck className="text-teal-500" />
-                        )}
-                      </button>
-                    ))}
+                  <div className="mb-8 px-2 max-h-72 overflow-y-auto">
+                    {subject && subject.map((category) => {
+                      if (!category.subjects || category.subjects.length === 0)
+                        return null;
+
+                      return (
+                        <div key={category.id} className="mb-6">
+                          <h4 className="text-sm font-medium mb-3 text-gray-600">
+                            {category.name}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            {category.subjects.map((subject) => (
+                              <button
+                                key={subject.id}
+                                onClick={() => handleSubjectToggle(subject.id)}
+                                className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                  selectedSubjects.includes(subject.id)
+                                    ? "border-teal-500 bg-teal-50"
+                                    : "border-gray-200 hover:border-teal-300"
+                                }`}
+                              >
+                                <span className="text-sm">
+                                  {subject.subject_name}
+                                </span>
+                                {selectedSubjects.includes(subject.id) && (
+                                  <FiCheck className="text-teal-500" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div className="flex justify-between px-2">
                     <button
@@ -397,13 +430,13 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                       <FiArrowLeft className="mr-2" /> Back
                     </button>
                     <button
-                     onClick={() => {
-                      if (!isValidEmail(email)) {
-                        toast.error("Please enter a valid email address");
-                        return;
-                      }
-                      handleSubmit();
-                    }}
+                      onClick={() => {
+                        if (!isValidEmail(email)) {
+                          toast.error("Please enter a valid email address");
+                          return;
+                        }
+                        handleSubmit();
+                      }}
                       className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
                       // disabled={!isValidEmail(email)}
                     >
