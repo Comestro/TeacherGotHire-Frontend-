@@ -41,7 +41,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     const fetchData = async () => {
       try {
         const response = await apiClient.get(
-          "/api/public/classcategory"
+          "/api/public/classcategory/"
         );
         setSubject(response.data);
         setLoading(false);
