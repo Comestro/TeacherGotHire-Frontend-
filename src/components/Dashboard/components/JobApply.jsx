@@ -24,22 +24,6 @@ const JobApply = () => {
     console.log("attempts",attempts);
     console.log("passedOfflineAttempt",passedOfflineAttempt);
     
-    // Sample data (mocked based on your input)
-    // const attempts = [
-    //   {
-    //     exam: {
-    //       subjet_name: "Maths, class_category 6-10",
-    //       class_category_name: "6 to 10",
-    //     },
-    //   },
-    //   {
-    //     exam: {
-    //       subjet_name: "Maths, class_category 1-5",
-    //       class_category_name: "1 to 5",
-    //     },
-    //   },
-    // ];
-
      // Convert single values to arrays
   const convertToArray = (value) => {
     return Array.isArray(value) ? value : [value]; // If already an array, return it; otherwise, wrap it in an array
