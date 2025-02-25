@@ -99,7 +99,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
   };
 
   const handlelogout = async () => {
-    await userLogout().unwrap();
+    await userLogout();
     navigate("/signin");
   };
 

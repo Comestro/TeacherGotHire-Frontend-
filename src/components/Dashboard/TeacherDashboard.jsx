@@ -40,26 +40,29 @@ function TeacherDashboard() {
 
   const exams = verifyresponse?.offline_exam;
   const exam_id = passkeyresponse?.exam?.id;
+  console.log("examid",exam_id)
 
-  // const exam_id = exam?.id;
+  //const exam_id = exam?.id;
 
 
-  const passedOfflineAttempt = attempts?.find(
+  const passedOfflineAttempt = attempts?.filter(
     (attempt) =>
       attempt.isqualified &&
-      attempt.exam?.type === "offline" &&
-      attempt.exam?.level?.id === 2
+      attempt.exam?.level_name === "2nd Level Offline"&&
+      attempt.exam?.level_id === 3
   );
+ 
 
+  console.log("attempts",attempts)
   const isPassedOfflineAttemptNext = attempts?.some(
     (attempt) =>
       attempt.isqualified &&
-      attempt.exam?.type === "offline" &&
-      attempt.exam?.level?.id === 2 &&
-      attempt.exam?.id === exam_id
+      attempt.exam?.level_name === "2nd Level Offline" &&
+      attempt.exam?.level_id === 3 
   );
-
-  console.log(isPassedOfflineAttemptNext);
+  console.log("passkeyresponse",passkeyresponse);
+  console.log("isPassedOfflineAttemptNext",isPassedOfflineAttemptNext);
+  console.log("passedOfflineAttempt",passedOfflineAttempt);
 
   // Check if the user has passed the Offline Exam
   const passedOfflineExam = !!passedOfflineAttempt;
@@ -276,16 +279,16 @@ function TeacherDashboard() {
               <p className="text-gray-700 mb-6">
                 Now you are eligible to be a{" "}
                 <strong>
-                  {passedOfflineAttempt.exam?.subject?.subject_name} Teacher.
+                  {passedOfflineAttempt.exam?.subject?.subjet_name} Teacher.
                 </strong>
               </p>
               {/* Display the exam result */}
               <div className="text-gray-700">
                 <p>
-                  <strong>Exam Name:</strong> {passedOfflineAttempt.exam.name}
+                  {/* <strong>Exam Name:</strong> {passedOfflineAttempt.exam.name} */}
                 </p>
                 <p>
-                  <strong>Score:</strong> {passedOfflineAttempt.correct_answer}
+                  {/* <strong>Score:</strong> {passedOfflineAttempt.correct_answer} */}
                 </p>
                 <p>
                   <strong>Total Marks:</strong>{" "}

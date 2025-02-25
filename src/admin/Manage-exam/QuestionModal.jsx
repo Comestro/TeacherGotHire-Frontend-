@@ -19,6 +19,14 @@ import {
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 
+import {
+  getQuestions,
+  getQuestionById,
+  createQuestion,
+  updateQuestion,
+  deleteQuestion,
+} from "../../services/adminManageExam"; 
+
 const QuestionCard = ({ question, index, onEdit, onDelete }) => (
   // question card
   <Card sx={{ mb: 2 }}>
@@ -74,6 +82,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   useEffect(() => {
     if (selectedExam?.questions) {
       setQuestions(selectedExam.questions);
+     
     }
   }, [selectedExam]);
 
@@ -88,19 +97,26 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     });
   };
 
-  const handleSaveQuestion = () => {
+  const handleSaveQuestion = async() => {
     if (editQuestion) {
       // Update existing question
       const updatedQuestions = questions.map((q) =>
         q.id === editQuestion.id ? newQuestion : q
       );
       setQuestions(updatedQuestions);
+     updateQuestion();
     } else {
       // Add new question
       setQuestions([
         ...questions,
         { ...newQuestion, id: questions.length + 1 },
       ]);
+      const data = {
+        ...newQuestion,
+        exam : selectedExam.id
+      }
+      
+      createQuestion(data);
     }
     setOpenAddQuestionModal(false);
   };

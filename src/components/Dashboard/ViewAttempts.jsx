@@ -121,25 +121,18 @@ function SubjectResults({ subject, examResults }) {
     (result) => result.exam.subjet_name === subject
   );
 
-  console.log("subjectResults",subjectResults)
+ 
 
   // Map data to include required fields
   const attemptData = subjectResults.map((result, index) => {
-    // const totalQuestions = result.exam.questions.length;
-    const correctAnswers = result.correct_answer;
-    const totalMarks = result.exam.total_marks;
-    // const score = (correctAnswers / totalQuestions) * totalMarks;
-    // const percentage = (score / totalMarks) * 100;
-
     return {
       attempt: index + 1,
        level: result.exam.level_name,
       result: result.isqualified ? "Passed" : "Failed",
-      // percentage: percentage.toFixed(2),
+      percentage: result.calculate_percentage,
       date: new Date(result.created_at),
     };
   });
-
   // Sort attemptData in descending order of percentage
   attemptData.sort((a, b) => b.percentage - a.percentage);
 
@@ -168,7 +161,7 @@ function SubjectResults({ subject, examResults }) {
                   {data.result}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {data.calculate_percentage}%
+                  {data.percentage}%
                 </td>
               </tr>
             ))}
