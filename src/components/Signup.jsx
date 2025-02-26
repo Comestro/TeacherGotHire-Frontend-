@@ -5,6 +5,7 @@ import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
+import { login } from "../services/authUtils"; // Import the login function from authUtils
 import Navbar from "./Navbar/Navbar";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
@@ -41,9 +42,8 @@ function SignUpPage() {
       console.log("userData", userData);
       if (userData) {
         setSuccessMessage("Account created successfully.");
-        // Set session or token here if needed
-        
-        navigate("/signin");
+        // Call the login function after successful signup
+        await login({ email, password, navigate, setError, setLoading });
       }
     } catch (error) {
       setError(error.message || "Failed to create account. Please try again.");

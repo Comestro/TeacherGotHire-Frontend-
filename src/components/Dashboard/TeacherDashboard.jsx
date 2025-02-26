@@ -53,7 +53,7 @@ function TeacherDashboard() {
   );
  
 
-  console.log("attempts",attempts)
+  console.log("attempts1",attempts)
   const isPassedOfflineAttemptNext = attempts?.some(
     (attempt) =>
       attempt.isqualified &&
@@ -66,6 +66,7 @@ function TeacherDashboard() {
 
   // Check if the user has passed the Offline Exam
   const passedOfflineExam = !!passedOfflineAttempt;
+  
 
   useEffect(() => {
     dispatch(getInterview());
