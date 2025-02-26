@@ -248,3 +248,14 @@ export const setterExamSet= async () => {
     throw err;
   }
 };
+
+export const jobApply= async ({subject, class_category}) => {
+  try {
+    const response = await apiClient.post(`/api/self/apply/
+      `,{subject, class_category});
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};

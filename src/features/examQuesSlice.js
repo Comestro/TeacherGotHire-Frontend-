@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -341,6 +341,23 @@ export const generatePasskey= createAsyncThunk(
                   }
                 }
                 );
+
+                export const postJobApply= createAsyncThunk(
+                  "postJobApply",
+                  
+                  async ({subject, class_category}, { rejectWithValue }) => {
+                   
+                    try {
+                      const data = await jobApply({subject, class_category});
+                       return data; 
+                    } catch (error) {
+                      return rejectWithValue({
+                        message: error.message, 
+                        code: error.code || "UNKNOWN_ERROR", 
+                      });
+                    }
+                  }
+                  );
 const examQuesSlice = createSlice({
   name: "examQues",
   initialState,

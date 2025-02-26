@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getApiUrl } from "../../store/configue";
 import { useState, useEffect, useRef } from "react";
 import {
   FiX,
@@ -14,6 +15,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { getSubject } from "../../features/jobProfileSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
+
+
+  const apiClient = axios.create({
+    baseURL: getApiUrl(), // Use the API URL from config service
+    headers: {
+      "Content-Type": "application/json",
+    }, 
+  });
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,8 +40,8 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/public/classcategory"
+        const response = await apiClient.get(
+          "/api/public/classcategory/"
         );
         setSubject(response.data);
         setLoading(false);

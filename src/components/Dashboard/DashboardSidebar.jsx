@@ -137,6 +137,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 <HiMiniEye className="size-5 mt-1"/>
                 View Attempts
               </NavLink>
+
+              <NavLink
+                to="job-apply"
+                onClick={() => setIsOpen(false)}
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 ${
+                    isActive
+                      ? "bg-[#E5F1F9] text-[#3E98C7] font-semibold"
+                      : "text-gray-500"
+                  } hover:bg-[#F5F8FA] transition flex items-center gap-2`
+                }
+              >
+                <HiBriefcase className="size-5" />
+                Job Apply
+              </NavLink>
               
               
             </nav>
