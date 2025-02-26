@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -26,6 +26,7 @@ import { styled } from "@mui/system";
 import { FaCheck, FaTimes, FaEye } from "react-icons/fa";
 import { debounce } from "lodash";
 import Layout from "../Admin/Layout";
+import { getPasskey, updatePasskey } from "../../services/adminPasskeyApi";
 
 const StyledModal = styled(Modal)({
   display: "flex",
@@ -45,29 +46,13 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
     status === "Pending"
       ? "#FFC107"
       : status === "Approved"
-      ? "#4CAF50"
-      : "#F44336",
+        ? "#4CAF50"
+        : "#F44336",
   color: "#fff",
 }));
 
-const mockData = [
-  {
-    id: 1,
-    userName: "John Doe",
-    examName: "Mathematics Advanced",
-    examCenter: "Central Hall A",
-    passkey: "MATH2023A",
-    status: "Pending",
-    requestDate: "2023-12-01",
-    email: "john@example.com",
-    contact: "+1234567890",
-    examDate: "2023-12-15",
-  },
-  // Add more mock data as needed
-];
-
 const PasskeyManagement = () => {
-  const [data, setData] = useState(mockData);
+  const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -79,6 +64,21 @@ const PasskeyManagement = () => {
     data: null,
   });
   const [rejectReason, setRejectReason] = useState("");
+
+  // fetch passkey data from the API
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getPasskey();
+        setData(response);
+      } catch (error) {
+        console.error("Error fetching passkey data:", error);
+      }
+    };
+    fetchData();
+
+  }, []);
 
   const handleSearch = useCallback(
     debounce((term) => {
@@ -99,25 +99,44 @@ const PasskeyManagement = () => {
     });
   }, [data, searchTerm, statusFilter]);
 
-  const handleApprove = (id) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, status: "Approved", passkey: generatePasskey() }
-          : item
-      )
-    );
-    setConfirmModal({ open: false, type: null, data: null });
+  const handleApprove = async (id, code) => {
+    try {
+      await updatePasskey(id, {
+        user: id,
+        code: code,
+        status: true,
+      });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: "Approved" } : item
+        )
+      );
+      setConfirmModal({ open: false, type: null, data: null });
+    } catch (error) {
+      console.error("Error approving request:", error);
+    }
   };
 
-  const handleReject = (id) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "Rejected" } : item
-      )
-    );
-    setConfirmModal({ open: false, type: null, data: null });
-    setRejectReason("");
+
+
+  const handleReject = async (id, code) => {
+    try {
+      await updatePasskey(id, {
+        user: id,
+        code: code,
+        status: false,
+        // reason: rejectReason,
+      });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: "Rejected" } : item
+        )
+      );
+      setConfirmModal({ open: false, type: null, data: null });
+      setRejectReason("");
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+    }
   };
 
   const generatePasskey = () => {
@@ -174,14 +193,14 @@ const PasskeyManagement = () => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.userName}</TableCell>
-                    <TableCell>{row.examName}</TableCell>
-                    <TableCell>{row.examCenter}</TableCell>
-                    <TableCell>{row.passkey}</TableCell>
+                    <TableCell>{row.user.email}</TableCell>
+                    <TableCell>{row.exam.name}</TableCell>
+                    <TableCell>{row.center}</TableCell>
+                    <TableCell>{row.code}</TableCell>
                     <TableCell>
-                      <StatusChip label={row.status} status={row.status} />
+                      <StatusChip label={row.status ? "Approved" : "Pending"} status={row.status ? "Approved" : "Pending"} />
                     </TableCell>
-                    <TableCell>{row.requestDate}</TableCell>
+                    <TableCell>{new Date(row.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Button
                         onClick={() =>
@@ -191,7 +210,7 @@ const PasskeyManagement = () => {
                       >
                         <FaEye />
                       </Button>
-                      {row.status === "Pending" && (
+                      {!row.status && (
                         <>
                           <Button
                             color="success"
@@ -254,19 +273,15 @@ const PasskeyManagement = () => {
                     <Typography variant="subtitle1">
                       User Information
                     </Typography>
-                    <Typography>Name: {detailsModal.data.userName}</Typography>
-                    <Typography>Email: {detailsModal.data.email}</Typography>
-                    <Typography>
-                      Contact: {detailsModal.data.contact}
-                    </Typography>
+                    <Typography>Name: {detailsModal.data.user.email}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle1">Exam Details</Typography>
-                    <Typography>Name: {detailsModal.data.examName}</Typography>
+                    <Typography>Name: {detailsModal.data.exam.name}</Typography>
                     <Typography>
-                      Center: {detailsModal.data.examCenter}
+                      Center: {detailsModal.data.center}
                     </Typography>
-                    <Typography>Date: {detailsModal.data.examDate}</Typography>
+                    <Typography>Date: {new Date(detailsModal.data.created_at).toLocaleDateString()}</Typography>
                   </Grid>
                 </Grid>
               </>

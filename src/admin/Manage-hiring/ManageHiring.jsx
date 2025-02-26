@@ -23,10 +23,13 @@ import {
   Divider,
   FormControl,
   InputLabel,
+  Stack,
+  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FiDownload, FiFilter, FiMoreVertical } from "react-icons/fi";
 import Layout from "../Admin/Layout";
+import { getHireRequest, updateHireRequest } from "../../services/adminHiringRequest";
 
 const StyledTableCell = styled(TableCell)(({ theme = {} }) => ({
   backgroundColor: theme.palette?.common?.white || "#ffffff",
@@ -71,27 +74,34 @@ const ManageHiringRequests = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const dummyData = [
-    {
-      id: 1,
-      recruiterName: "John Doe",
-      teacherName: "Jane Smith",
-      role: "Mathematics Teacher",
-      subjects: "Algebra, Calculus",
-      status: "Pending",
-      requestDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      recruiterName: "Alice Johnson",
-      teacherName: "Bob Wilson",
-      role: "Science Teacher",
-      subjects: "Physics, Chemistry",
-      status: "Approved",
-      requestDate: "2024-01-14",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getHireRequest();
+        console.log("Response: ", response);
+        if (Array.isArray(response)) {
+          const formatData = response.map((item) => ({
+            id: item.id,
+            recruiterName: item.recruiter_id,
+            teacherName: item.teacher_id,
+            role: item.role,
+            subjects: item.subject,
+            status: item.status,
+            requestDate: item.date,
+          }));
+          setData(formatData);
+        }
+      } catch (error) {
+        console.error("Error fetching hire requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -107,7 +117,6 @@ const ManageHiringRequests = () => {
     setModalOpen(true);
   };
 
-  //   date format function
   const formatDate = (dateString) => {
     const options = { month: "short", day: "2-digit", year: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
@@ -118,14 +127,41 @@ const ManageHiringRequests = () => {
     setSelectedRequest(null);
   };
 
-  const handleApproveRequest = () => {
-    // Implement approve logic
-    handleCloseModal();
+  const handleApproveRequest = async () => {
+    try {
+      await updateHireRequest(selectedRequest.id, {
+        recruiter_id: selectedRequest.recruiter_id,
+        teacher_id: selectedRequest.teacher_id,
+        status: "fulfilled",
+      });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === selectedRequest.id ? { ...item, status: "fulfilled" } : item
+        )
+      );
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error approving request:", error);
+    }
   };
 
-  const handleRejectRequest = () => {
-    // Implement reject logic
-    handleCloseModal();
+  const handleRejectRequest = async () => {
+    try {
+      await updateHireRequest(selectedRequest.id, {
+        recruiter_id: selectedRequest.recruiter_id,
+        teacher_id: selectedRequest.teacher_id,
+        status: "rejected",
+        reject_reason: "Reason for rejection", // Add the actual reason here
+      });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === selectedRequest.id ? { ...item, status: "rejected" } : item
+        )
+      );
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+    }
   };
 
   const handleFilterChange = (key, value) => {
@@ -135,7 +171,7 @@ const ManageHiringRequests = () => {
     }));
   };
 
-  const filteredData = dummyData.filter((row) => {
+  const filteredData = data.filter((row) => {
     return (
       (filters.status === "all" ||
         row.status.toLowerCase() === filters.status) &&
@@ -150,7 +186,7 @@ const ManageHiringRequests = () => {
       Recruiter: row.recruiterName,
       Teacher: row.teacherName,
       Role: row.role,
-      Subjects: row.subjects,
+      Subjects: row.subjects.map((subject) => subject.subject_name).join(", "),
       Status: row.status,
       Date: formatDate(row.requestDate),
     }));
@@ -183,119 +219,139 @@ const ManageHiringRequests = () => {
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {/* Filters Panel */}
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Filters
                 </Typography>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={filters.status}
-                    onChange={(e) =>
-                      handleFilterChange("status", e.target.value)
-                    }
-                  >
-                    <MenuItem value="all">All</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="approved">Approved</MenuItem>
-                    <MenuItem value="rejected">Rejected</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <Autocomplete
-                  options={["Recruiter 1", "Recruiter 2"]}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Recruiter Name"
-                      fullWidth
-                      onChange={(e) =>
-                        handleFilterChange("recruiterName", e.target.value)
-                      }
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={filters.status}
+                        onChange={(e) => handleFilterChange("status", e.target.value)}
+                      >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="pending">Pending</MenuItem>
+                        <MenuItem value="approved">Approved</MenuItem>
+                        <MenuItem value="rejected">Rejected</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Autocomplete
+                      options={data.map((item) => item.recruiterName)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Recruiter Name"
+                          fullWidth
+                          onChange={(e) => handleFilterChange("recruiterName", e.target.value)}
+                        />
+                      )}
                     />
-                  )}
-                  sx={{ mb: 2 }}
-                />
-
-                <Button
-                  variant="outlined"
-                  startIcon={<FiFilter />}
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  onClick={() =>
-                    setFilters({
-                      status: "all",
-                      recruiterName: null,
-                      teacherName: null,
-                      category: "",
-                      specialization: "",
-                      dateRange: [null, null],
-                    })
-                  }
-                >
-                  Reset Filters
-                </Button>
-
-                <Button
-                  variant="contained"
-                  startIcon={<FiDownload />}
-                  fullWidth
-                  onClick={handleExportData}
-                >
-                  Export Data
-                </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Autocomplete
+                      options={data.map((item) => item.teacherName)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Teacher Name"
+                          fullWidth
+                          onChange={(e) => handleFilterChange("teacherName", e.target.value)}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Stack direction="row" spacing={2}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<FiFilter />}
+                        fullWidth
+                        onClick={() =>
+                          setFilters({
+                            status: "all",
+                            recruiterName: null,
+                            teacherName: null,
+                            category: "",
+                            specialization: "",
+                            dateRange: [null, null],
+                          })
+                        }
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<FiDownload />}
+                        fullWidth
+                        onClick={handleExportData}
+                      >
+                        Export
+                      </Button>
+                    </Stack>
+                  </Grid>
+                </Grid>
               </Paper>
             </Grid>
 
             {/* Table */}
-            <Grid item xs={12} md={9}>
+            <Grid item xs={12}>
               <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Recruiter</StyledTableCell>
-                      <StyledTableCell>Teacher</StyledTableCell>
-                      <StyledTableCell>Role</StyledTableCell>
-                      <StyledTableCell>Subjects</StyledTableCell>
-                      <StyledTableCell>Status</StyledTableCell>
-                      <StyledTableCell>Date</StyledTableCell>
-                      <StyledTableCell>Actions</StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredData
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((row) => (
-                        <TableRow
-                          key={row.id}
-                          hover
-                          onClick={() => handleOpenModal(row)}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <TableCell>{row.recruiterName}</TableCell>
-                          <TableCell>{row.teacherName}</TableCell>
-                          <TableCell>{row.role}</TableCell>
-                          <TableCell>{row.subjects}</TableCell>
-                          <TableCell>
-                            <StyledStatusChip
-                              label={row.status}
-                              status={row.status}
-                            />
-                          </TableCell>
-                          <TableCell>{formatDate(row.requestDate)}</TableCell>
-                          <TableCell>
-                            <IconButton>
-                              <FiMoreVertical />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+                {loading ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>Recruiter</StyledTableCell>
+                        <StyledTableCell>Teacher</StyledTableCell>
+                        <StyledTableCell>Role</StyledTableCell>
+                        <StyledTableCell>Subjects</StyledTableCell>
+                        <StyledTableCell>Status</StyledTableCell>
+                        <StyledTableCell>Date</StyledTableCell>
+                        <StyledTableCell>Actions</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredData
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row) => (
+                          <TableRow
+                            key={row.id}
+                            hover
+                            onClick={() => handleOpenModal(row)}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <TableCell>{row.recruiterName}</TableCell>
+                            <TableCell>{row.teacherName}</TableCell>
+                            <TableCell>{row.role}</TableCell>
+                            <TableCell>{row.subjects.map((subject) => subject.subject_name).join(", ")}</TableCell>
+                            <TableCell>
+                              <StyledStatusChip
+                                label={row.status}
+                                status={row.status}
+                              />
+                            </TableCell>
+                            <TableCell>{formatDate(row.requestDate)}</TableCell>
+                            <TableCell>
+                              <IconButton>
+                                <FiMoreVertical />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                )}
                 <TablePagination
                   component="div"
                   count={filteredData.length}
@@ -328,7 +384,7 @@ const ManageHiringRequests = () => {
                     Role: {selectedRequest.role}
                   </Typography>
                   <Typography variant="subtitle1" gutterBottom>
-                    Subjects: {selectedRequest.subjects}
+                    Subjects: {selectedRequest.subjects.map((subject) => subject.subject_name).join(", ")}
                   </Typography>
 
                   <Box sx={{ mt: 3, display: "flex", gap: 2 }}>

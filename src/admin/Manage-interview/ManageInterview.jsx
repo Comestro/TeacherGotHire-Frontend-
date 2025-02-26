@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
     Box, Container, Typography, Grid, Paper, TextField, Button, Autocomplete,
     FormControl, InputLabel, Select, MenuItem, Modal, Chip, IconButton, Switch,
-    ThemeProvider, createTheme, CssBaseline, TextareaAutosize
+    ThemeProvider, createTheme, CssBaseline, TextareaAutosize, CircularProgress, Alert
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -12,17 +12,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { FiDownload, FiRefreshCw, FiEye, FiCalendar, FiX, FiThumbsDown, FiCheck } from "react-icons/fi";
 import Layout from "../Admin/Layout";
-
-const mockTeachers = [
-    {
-        id: 1, name: "John Doe", exam: "Mathematics", score: 85, mode: "Online",
-        requestedDate: "2024-01-15", requestedTime: "10:00", status: "Pending", scheduledDate: null, rejectionReason: null
-    },
-    {
-        id: 2, name: "Jane Smith", exam: "Science", score: 92, mode: "Offline",
-        requestedDate: "2024-01-16", requestedTime: "14:00", status: "Scheduled", scheduledDate: "2024-01-20", rejectionReason: null
-    }
-];
+import { getInterview, updateInterview } from "../../services/adminInterviewApi";
 
 const InterviewManagement = () => {
     const [darkMode, setDarkMode] = useState(false);
@@ -38,10 +28,12 @@ const InterviewManagement = () => {
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
     const [completeModalOpen, setCompleteModalOpen] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
-    const [filteredTeachers, setFilteredTeachers] = useState(mockTeachers);
+    const [filteredTeachers, setFilteredTeachers] = useState([]);
     const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
     const [rejectionReason, setRejectionReason] = useState("");
     const [interviewScore, setInterviewScore] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const theme = createTheme({
         palette: {
@@ -67,6 +59,33 @@ const InterviewManagement = () => {
             }
         }
     });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getInterview();
+                const data = response.map(item => ({
+                    id: item.id,
+                    name: `${item.user.Fname} ${item.user.Lname}`,
+                    exam: `Subject ${item.subject}`,
+                    score: item.grade,
+                    mode: item.class_category === 1 ? "Online" : "Offline",
+                    requestedDate: dayjs(item.time).format("YYYY-MM-DD"),
+                    requestedTime: dayjs(item.time).format("HH:mm"),
+                    status: item.status ? "Scheduled" : "Pending",
+                    scheduledDate: item.status ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : null,
+                    rejectionReason: null
+                }));
+                setFilteredTeachers(data);
+                setLoading(false);
+            } catch (err) {
+                setError(err.message);
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
         handleFilterChange();
@@ -206,11 +225,11 @@ const InterviewManagement = () => {
             dateRange: [null, null],
             searchTerm: ""
         });
-        setFilteredTeachers(mockTeachers);
+        setFilteredTeachers(filteredTeachers);
     };
 
     const handleFilterChange = () => {
-        let filtered = mockTeachers.filter(teacher => {
+        let filtered = filteredTeachers.filter(teacher => {
             const matchesStatus = !filters.status || teacher.status === filters.status;
             const matchesName = !filters.teacherName ||
                 teacher.name.toLowerCase().includes(filters.teacherName.toLowerCase());
@@ -236,6 +255,26 @@ const InterviewManagement = () => {
         document.body.appendChild(link);
         link.click();
     };
+
+    if (loading) {
+        return (
+            <Layout>
+                <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress />
+                </Container>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <Alert severity="error">{error}</Alert>
+                </Container>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -309,7 +348,7 @@ const InterviewManagement = () => {
                             </Grid>
                             <Grid item xs={12} sm={6} md={4} lg={3}>
                                 <Autocomplete
-                                    options={mockTeachers.map(t => t.name)}
+                                    options={filteredTeachers.map(t => t.name)}
                                     value={filters.teacherName}
                                     onChange={(_, newValue) => setFilters({ ...filters, teacherName: newValue })}
                                     renderInput={(params) => (
