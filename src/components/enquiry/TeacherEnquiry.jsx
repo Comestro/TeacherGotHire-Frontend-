@@ -172,7 +172,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/self/recruiterenquiryform/",
+        "https://api.ptpinstitute.com/api/self/recruiterenquiryform/",
         formData,
         {
           headers: {
