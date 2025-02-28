@@ -134,7 +134,7 @@ const ManageQualification = () => {
     <Layout>
       <Container>
         <Typography variant="h4" gutterBottom>
-          Manage Qualifications
+          Manage Teacher Qualifications
         </Typography>
         <Button
           variant="contained"

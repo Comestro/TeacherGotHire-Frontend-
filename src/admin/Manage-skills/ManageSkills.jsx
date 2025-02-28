@@ -93,7 +93,7 @@ const ManageSkills = () => {
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>Manage Skills</Typography>
+        <Typography variant="h4" gutterBottom>Manage Extra Skills</Typography>
         <Button 
           variant="contained" 
           color="primary" 
