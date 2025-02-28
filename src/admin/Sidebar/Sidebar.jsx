@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -11,7 +11,6 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { Collapse, Tooltip } from "@mui/material";
-import { Link } from "react-router-dom";
 import { userLogout } from "../../features/authSlice";
 import {
   Logout as LogoutIcon,
@@ -105,21 +104,22 @@ export default function Sidebar({ open, handleDrawerClose }) {
 
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
-    { text: "Your profile", icon: <PersonIcon />, link: "/admin/profile" },
-    { text: "Manage Subject", icon: <SubjectIcon />, link: "/admin/manage/subject" },
-    { text: "Manage Teacher", icon: <GroupsIcon />, link: "/admin/manage/teacher" },
-    { text: "Manage Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
-    { text: "Manage Question", icon: <Quiz />, link: "/admin/manage/question" },
-    { text: "Manage Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
-    { text: "Manage Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
-    { text: "Manage Class", icon: <ClassIcon />, link: "/admin/manage/class/category" },
-    { text: "Manage Level", icon: <LayersIcon />, link: "/admin/manage/level" },
-    { text: "Manage Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
-    { text: "Manage Exam Center", icon: <LibraryBooks />, link: "/admin/manage/exam/center" },
-    { text: "Manage Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
-    { text: "Manage Passkey", icon: <Key />, link: "/admin/manage/passkey" },
-    { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
-    { text: "Manage Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
+    // data management
+    { text: "Class category", icon: <ClassIcon />, link: "/admin/manage/class/category" },
+    { text: "Subjects", icon: <SubjectIcon />, link: "/admin/manage/subject" },
+    { text: "Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
+    { text: "Level", icon: <LayersIcon />, link: "/admin/manage/level" },
+    { text: "Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
+    { text: "Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
+    // manage request
+    { text: "Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
+    { text: "Passkey", icon: <Key />, link: "/admin/manage/passkey" },
+    { text: "Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
+    // manage users
+    { text: "Teacher", icon: <GroupsIcon />, link: "/admin/manage/teacher" },
+    { text: "Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
+    { text: "Question User", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
+    { text: "Exam Center", icon: <LibraryBooks />, link: "/admin/manage/exam/center" },
   ];
 
   return (
@@ -145,7 +145,97 @@ export default function Sidebar({ open, handleDrawerClose }) {
       </DrawerHeader>
       <Divider />
       <List>
-        {menuItems.map((item) => (
+        {menuItems.slice(0, 1).map((item) => (
+          <Tooltip key={item.text} title={item.text} placement="right" arrow>
+            <ListItem disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={Link}
+                to={item.link}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+        ))}
+        <Divider textAlign="center">Data Management</Divider>
+        {menuItems.slice(1, 7).map((item) => (
+          <Tooltip key={item.text} title={item.text} placement="right" arrow>
+            <ListItem disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={Link}
+                to={item.link}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+        ))}
+        <Divider textAlign="center">Manage Request</Divider>
+        {menuItems.slice(7, 10).map((item) => (
+          <Tooltip key={item.text} title={item.text} placement="right" arrow>
+            <ListItem disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={Link}
+                to={item.link}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+        ))}
+        <Divider textAlign="center">Manage Users</Divider>
+        {menuItems.slice(10).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
             <ListItem disablePadding sx={{ display: "block" }}>
               <ListItemButton
@@ -188,6 +278,11 @@ export default function Sidebar({ open, handleDrawerClose }) {
         <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {[
+              {
+                text: "My profile",
+                icon: <PersonIcon />,
+                link: "/admin/profile"
+              },
               {
                 text: "Support",
                 icon: <SupportIcon />,
