@@ -16,6 +16,7 @@ const initialState = {
   approvedpasskey:[],
   verifyresponse:{},
   centerUser:[],
+  jobApply:[],
   subject: "",
   language: "",
   status: "idle",
@@ -565,6 +566,22 @@ const examQuesSlice = createSlice({
         state.approvedpasskey = action.payload;
       })
       .addCase(approveCenterUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(postJobApply.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postJobApply.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.jobApply = action.payload;
+        console.log("jobapply",action.payload)
+      })
+      .addCase(postJobApply.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

@@ -51,9 +51,6 @@ function TeacherDashboard() {
       attempt.exam?.level_name === "2nd Level Offline"&&
       attempt.exam?.level_id === 3
   );
- 
-
-  console.log("attempts1",attempts)
   const isPassedOfflineAttemptNext = attempts?.some(
     (attempt) =>
       attempt.isqualified &&
@@ -66,8 +63,6 @@ function TeacherDashboard() {
 
   // Check if the user has passed the Offline Exam
   const passedOfflineExam = !!passedOfflineAttempt;
-  
-
   useEffect(() => {
     dispatch(getInterview());
     dispatch(getSubjects());
@@ -272,34 +267,7 @@ function TeacherDashboard() {
                 </div>
               </div>
             ))}
-          {passedOfflineAttempt && (
-            <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 text-center mb-4">
-              <h2 className="text-2xl font-semibold text-green-600 mb-4">
-                Congratulations!
-              </h2>
-              <p className="text-gray-700 mb-6">
-                Now you are eligible to be a{" "}
-                <strong>
-                  {passedOfflineAttempt.exam?.subject?.subjet_name} Teacher.
-                </strong>
-              </p>
-              {/* Display the exam result */}
-              <div className="text-gray-700">
-                <p>
-                  {/* <strong>Exam Name:</strong> {passedOfflineAttempt.exam.name} */}
-                </p>
-                <p>
-                  {/* <strong>Score:</strong> {passedOfflineAttempt.correct_answer} */}
-                </p>
-                <p>
-                  <strong>Total Marks:</strong>{" "}
-                  {passedOfflineAttempt.correct_answer +
-                    passedOfflineAttempt.is_unanswered}
-                </p>
-                {/* Add any other exam result data you want to display */}
-              </div>
-            </div>
-          )}
+         
           {passkeyresponse &&
             Object.entries(passkeyresponse).length > 0 &&
             !isPassedOfflineAttemptNext && (

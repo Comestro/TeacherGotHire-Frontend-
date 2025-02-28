@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
 import { login } from "../services/authUtils"; // Import the login function from authUtils
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 import Navbar from "./Navbar/Navbar";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
@@ -24,6 +25,11 @@ function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
+  
+    const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+    };
 
   const password = watch("password");
   const inputClass = `w-full border-2 text-sm rounded-xl px-3 py-3 ${
@@ -160,7 +166,7 @@ function SignUpPage() {
               </div>
 
               {/* Password */}
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
@@ -181,10 +187,10 @@ function SignUpPage() {
                     {errors.password.message}
                   </span>
                 )}
-              </div>
+              </div> */}
 
               {/* Confirm Password */}
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
@@ -198,6 +204,69 @@ function SignUpPage() {
                       value === password || "Passwords do not match",
                   })}
                 />
+                {errors.confirmPassword && (
+                  <span className="text-red-500 text-sm">
+                    {errors.confirmPassword.message}
+                  </span>
+                )}
+              </div> */}
+                {/*  Password */}
+                <div className="mb-4 relative">
+                <label
+                  className="block text-sm font-medium  text-gray-700 mb-1"
+                  htmlFor="pass"
+                >
+                  Password
+                </label>
+                <Input
+                  placeholder="Enter your password"
+                  type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
+                  id="pass"
+                  className={inputClass}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                  {/* Toggle eye icon based on showPassword state */}
+                </button>
+                {errors.password && (
+                  <span className="text-red-500 text-sm">
+                    {errors.password.message}
+                  </span>
+                )}
+              </div>
+
+               {/* Confirm Password */}
+               <div className="mb-4 relative">
+                <label
+                  className="block text-sm font-medium  text-gray-700 mb-1"
+                  htmlFor="pass"
+                >
+                  Password
+                </label>
+                <Input
+                  placeholder="Enter your password"
+                  type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
+                  id="pass"
+                  className={inputClass}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                  {/* Toggle eye icon based on showPassword state */}
+                </button>
                 {errors.confirmPassword && (
                   <span className="text-red-500 text-sm">
                     {errors.confirmPassword.message}
