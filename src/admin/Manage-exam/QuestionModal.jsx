@@ -16,57 +16,75 @@ import {
   Select,
   MenuItem,
   Box,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 
 import {
-  getQuestions,
-  getQuestionById,
+  getExamById,
   createQuestion,
   updateQuestion,
   deleteQuestion,
-} from "../../services/adminManageExam"; 
+} from "../../services/adminManageExam";
 
-const QuestionCard = ({ question, index, onEdit, onDelete }) => (
-  // question card
-  <Card sx={{ mb: 2 }}>
-    <CardContent>
-      <Typography variant="h6" gutterBottom>
-        Question {index + 1}
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        {question.text}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        <strong>Options:</strong>
-      </Typography>
-      {question.options.map((option, i) => (
-        <Typography
-          key={i}
-          variant="body2"
-          color={
-            i + 1 === question.correct_option
-              ? "success.main"
-              : "text.secondary"
-          }
-        >
-          {i + 1}. {option}
+const QuestionCard = ({ question, index, onEdit, onDelete }) => {
+  if (!question) return null;
+
+  const normalizedOptions = question.options.map((option) => {
+    if (typeof option === "string") {
+      return { option, image: null };
+    }
+    return option; // Keep object options as is
+  });
+
+  return (
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Question {index + 1}
         </Typography>
-      ))}
-      <Typography variant="body2" mt={1} color="text.primary">
-        <strong>Solution:</strong> {question.solution}
-      </Typography>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <IconButton onClick={() => onEdit(question)}>
-          <Edit />
-        </IconButton>
-        <IconButton onClick={() => onDelete(question.id)}>
-          <Delete />
-        </IconButton>
-      </Box>
-    </CardContent>
-  </Card>
-);
+        <Typography variant="body1" gutterBottom>
+          {question.text}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          <strong>Options:</strong>
+        </Typography>
+        {normalizedOptions.map((option, i) => (
+          <Typography
+            key={i}
+            variant="body2"
+            color={
+              i + 1 === question.correct_option
+                ? "success.main"
+                : "text.secondary"
+            }
+          >
+            {i + 1}. {option.option}
+            {option.image && (
+              <img
+                src={option.image}
+                alt={`Option ${i + 1}`}
+                style={{ maxWidth: "100px", marginLeft: "10px" }}
+              />
+            )}
+          </Typography>
+        ))}
+        <Typography variant="body2" mt={1} color="text.primary">
+          <strong>Solution:</strong> {question.solution}
+        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <IconButton onClick={() => onEdit(question)}>
+            <Edit />
+          </IconButton>
+          <IconButton onClick={() => onDelete(question.id)}>
+            <Delete />
+          </IconButton>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [questions, setQuestions] = useState([]);
@@ -74,15 +92,21 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [editQuestion, setEditQuestion] = useState(null);
   const [newQuestion, setNewQuestion] = useState({
     text: "",
-    options: ["", "", "", ""],
+    options: [{ option: "", image: null }, { option: "", image: null }, { option: "", image: null }, { option: "", image: null }],
     correct_option: 1,
     solution: "",
   });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    if (selectedExam?.questions) {
-      setQuestions(selectedExam.questions);
-     
+    if (selectedExam?.id) {
+      const fetchQuestions = async () => {
+        const response = await getExamById(selectedExam.id);
+        // Ensure response structure matches expectations
+        setQuestions(response?.questions || []);
+      };
+      fetchQuestions();
     }
   }, [selectedExam]);
 
@@ -91,35 +115,32 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     setEditQuestion(null);
     setNewQuestion({
       text: "",
-      options: ["", "", "", ""],
+      options: [{ option: "", image: null }, { option: "", image: null }, { option: "", image: null }, { option: "", image: null }],
       correct_option: 1,
       solution: "",
     });
   };
 
-  const handleSaveQuestion = async() => {
+  const handleSaveQuestion = async () => {
     if (editQuestion) {
-      // Update existing question
-      const updatedQuestions = questions.map((q) =>
-        q.id === editQuestion.id ? newQuestion : q
-      );
-      setQuestions(updatedQuestions);
-     updateQuestion();
+      await updateQuestion(editQuestion.id, newQuestion);
+      setSnackbarMessage("Question updated successfully!");
     } else {
-      // Add new question
-      setQuestions([
-        ...questions,
-        { ...newQuestion, id: questions.length + 1 },
-      ]);
-      const data = {
+      await createQuestion({
         ...newQuestion,
-        exam : selectedExam.id
-      }
-      
-      createQuestion(data);
+        exam: selectedExam.id,
+      });
+      setSnackbarMessage("Question added successfully!");
     }
+
     setOpenAddQuestionModal(false);
+    setSnackbarOpen(true);
+
+    // Fetch latest questions from backend to ensure new question is reflected immediately
+    const response = await getExamById(selectedExam.id);
+    setQuestions(response?.questions || []);
   };
+
 
   const handleEditQuestion = (question) => {
     setEditQuestion(question);
@@ -127,8 +148,15 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     setOpenAddQuestionModal(true);
   };
 
-  const handleDeleteQuestion = (id) => {
+  const handleDeleteQuestion = async (id) => {
+    await deleteQuestion(id);
     setQuestions(questions.filter((q) => q.id !== id));
+    setSnackbarMessage("Question deleted successfully!");
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -188,7 +216,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
             </Box>
             {questions?.map((question, index) => (
               <QuestionCard
-                key={question.id}
+                key={question?.id || `question-${index}`} // Fallback key
                 question={question}
                 index={index}
                 onEdit={handleEditQuestion}
@@ -216,7 +244,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           <TextField
             fullWidth
             label="Question Text"
-            value={newQuestion.text}
+            value={newQuestion.text || ""}
             onChange={(e) =>
               setNewQuestion({ ...newQuestion, text: e.target.value })
             }
@@ -227,10 +255,10 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
               key={i}
               fullWidth
               label={`Option ${i + 1}`}
-              value={option}
+              value={option.option || ""}
               onChange={(e) => {
                 const newOptions = [...newQuestion.options];
-                newOptions[i] = e.target.value;
+                newOptions[i] = { ...newOptions[i], option: e.target.value };
                 setNewQuestion({ ...newQuestion, options: newOptions });
               }}
               sx={{ mb: 2 }}
@@ -257,7 +285,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           <TextField
             fullWidth
             label="Solution"
-            value={newQuestion.solution}
+            value={newQuestion.solution || ""}
             onChange={(e) =>
               setNewQuestion({ ...newQuestion, solution: e.target.value })
             }
@@ -270,6 +298,17 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for success messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
