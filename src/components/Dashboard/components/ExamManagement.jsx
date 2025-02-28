@@ -21,19 +21,16 @@ function ExamManagement() {
   const navigate = useNavigate();
 
   const { basicData } = useSelector((state) => state.personalProfile);
-  const { prefrence, educationData } = useSelector((state) => state.jobProfile);
+  const { prefrence} = useSelector((state) => state.jobProfile);
   const classCategories = useSelector(
     (state) => state.jobProfile.prefrence.class_category
   );
-  console.log("classCategories",classCategories)
+  console.log("prefrence",prefrence)
   
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
-  const { examSet,allcenter,attempts } = useSelector((state) => state.examQues);
-
-  console.log("educationData", educationData);
-  
+  const { examSet,allcenter,attempts } = useSelector((state) => state.examQues); 
   const { userData } = useSelector((state) => state?.auth);
   const { exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
@@ -41,10 +38,13 @@ function ExamManagement() {
   const exams = verifyresponse?.offline_exam;
   const isProfileComplete =
     ( basicData && Object.keys(basicData).length > 0 &&
-    prefrence && Object.keys(prefrence).length > 0 &&
-    educationData && educationData.length > 0);
+    prefrence && Object.values(prefrence).some(val => 
+        (Array.isArray(val) && val.length > 0) || 
+        (typeof val === "object" && val !== null && Object.keys(val).length > 0) || 
+        (typeof val === "string" && val.trim() !== "") 
+    ));
 
-  
+  console.log("isProfileComplete",isProfileComplete)
   const [activeTab, setActiveTab] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
