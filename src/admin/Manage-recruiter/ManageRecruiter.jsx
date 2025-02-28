@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import { getRecruiter } from "../../services/adminManageRecruiter";
+import { Link } from "react-router-dom";
 
 const ManageRecruiter = () => {
   const [recruiters, setRecruiters] = useState([]);
@@ -228,7 +229,7 @@ const ManageRecruiter = () => {
                     />
                   </TableCell>
                   <TableCell>{recruiter.name}</TableCell>
-                  <TableCell>{recruiter.phone}</TableCell>
+                  <TableCell><Link to={`https://api.whatsapp.com/send/?phone=${recruiter.phone}`}>{recruiter.phone}</Link></TableCell>
                   <TableCell>{recruiter.email}</TableCell>
                   <TableCell>{recruiter.gender}</TableCell>
                   <TableCell>
