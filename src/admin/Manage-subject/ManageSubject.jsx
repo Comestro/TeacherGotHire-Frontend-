@@ -20,12 +20,15 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Snackbar,
+  Grid,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
+import { Alert } from "@mui/material";
 import Layout from "../Admin/Layout";
 import {
   getSubjects,
@@ -43,6 +46,12 @@ const ManageSubject = () => {
   const [currentSubject, setCurrentSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [classes, setClasses] = useState([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [error, setError] = useState("");
 
   // Fetch subjects and classes on component mount
   useEffect(() => {
@@ -57,7 +66,11 @@ const ManageSubject = () => {
       setSubjects(data);
       setFilteredSubjects(data);
     } catch (error) {
-      console.error("Error fetching subjects:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching subjects",
+        severity: "error",
+      });
     }
   };
 
@@ -67,19 +80,25 @@ const ManageSubject = () => {
       const data = await getClasses();
       setClasses(data);
     } catch (error) {
-      console.error("Error fetching classes:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching classes",
+        severity: "error",
+      });
     }
   };
 
   // Handle adding a new subject
   const handleAddSubject = () => {
     setCurrentSubject({ class_category: "", subject_name: "" });
+    setError("");
     setIsEditModalOpen(true);
   };
 
   // Handle editing a subject
   const handleEditSubject = (subject) => {
     setCurrentSubject(subject);
+    setError("");
     setIsEditModalOpen(true);
   };
 
@@ -88,8 +107,17 @@ const ManageSubject = () => {
     try {
       await deleteSubject(subjectId);
       fetchSubjects();
+      setSnackbar({
+        open: true,
+        message: "Subject deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error deleting subject:", error);
+      setSnackbar({
+        open: true,
+        message: "Error deleting subject",
+        severity: "error",
+      });
     }
   };
 
@@ -101,29 +129,57 @@ const ManageSubject = () => {
       );
       fetchSubjects();
       setSelectedSubjects([]);
+      setSnackbar({
+        open: true,
+        message: "Selected subjects deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error deleting selected subjects:", error);
+      setSnackbar({
+        open: true,
+        message: "Error deleting selected subjects",
+        severity: "error",
+      });
     }
   };
 
   // Handle saving a subject (create or update)
   const handleSaveSubject = async () => {
+    if (!currentSubject.subject_name || !currentSubject.class_category) {
+      setError("All fields are required");
+      return;
+    }
+
     try {
       if (currentSubject.id) {
         await updateSubject(currentSubject.id, {
           ...currentSubject,
           class_category: currentSubject.class_category,
         });
+        setSnackbar({
+          open: true,
+          message: "Subject updated successfully",
+          severity: "success",
+        });
       } else {
         await createSubject({
           ...currentSubject,
           class_category: currentSubject.class_category,
         });
+        setSnackbar({
+          open: true,
+          message: "Subject added successfully",
+          severity: "success",
+        });
       }
       fetchSubjects();
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Error saving subject:", error);
+      setSnackbar({
+        open: true,
+        message: "Error saving subject",
+        severity: "error",
+      });
     }
   };
 
@@ -143,17 +199,23 @@ const ManageSubject = () => {
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>
-          Manage Subjects
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleAddSubject}
-        >
-          Add Subject
-        </Button>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={8}>
+            <Typography variant="h4" gutterBottom>
+              Manage Subjects
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4} style={{ textAlign: 'right' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddSubject}
+            >
+              Add Subject
+            </Button>
+          </Grid>
+        </Grid>
         <Box mt={2} mb={2}>
           <TextField
             label="Search Subjects"
@@ -234,6 +296,7 @@ const ManageSubject = () => {
           variant="contained"
           color="secondary"
           onClick={handleBulkDelete}
+          sx={{ mt: 2 }}
         >
           Delete Selected
         </Button>
@@ -278,6 +341,9 @@ const ManageSubject = () => {
                   subject_name: e.target.value,
                 })
               }
+              error={!!error}
+              helperText={error}
+              FormHelperTextProps={{ style: { color: 'red' } }}
             />
           </DialogContent>
           <DialogActions>
@@ -289,6 +355,18 @@ const ManageSubject = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </Layout>
   );
