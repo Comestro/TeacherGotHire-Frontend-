@@ -18,6 +18,7 @@ import {
   Snackbar,
   Pagination,
   Checkbox,
+  Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -180,17 +181,23 @@ const ManageClassCategory = () => {
       <Box mt={3}>
         <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
           <CardContent>
-            <Typography variant="h4" gutterBottom>
-              Manage Class Categories
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenAddEditModal()}
-            >
-              Add New Class Category
-            </Button>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={8}>
+                <Typography variant="h4" gutterBottom>
+                  Manage Class Categories
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4} style={{ textAlign: 'right' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenAddEditModal()}
+                >
+                  Add New Class Category
+                </Button>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
 
