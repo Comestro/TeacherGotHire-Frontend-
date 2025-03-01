@@ -4,8 +4,6 @@ import {
   Typography,
   Button,
   TextField,
-  Select,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -17,159 +15,202 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  InputLabel,
-  Chip,
   Box,
-  Tooltip,
   Snackbar,
+  Grid,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Warning as WarningIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
+import {
+  getQualification,
+  createQualification,
+  updateQualification,
+  deleteQualification,
+} from "../../services/adminManageQualificationApi";
 
 const ManageQualification = () => {
-  const [qualifications, setQualifications] = useState([
-    {
-      id: 1,
-      name: "Bachelor of Science",
-      category: "Degree",
-      dateAdded: "2023-01-01",
-      fields: ["Science"],
-    },
-    {
-      id: 2,
-      name: "Diploma in Education",
-      category: "Diploma",
-      dateAdded: "2023-02-01",
-      fields: ["Teaching"],
-    },
-    {
-      id: 3,
-      name: "Certification in Arts",
-      category: "Certification",
-      dateAdded: "2023-03-01",
-      fields: ["Arts"],
-    },
-  ]);
+  const [qualifications, setQualifications] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentQualification, setCurrentQualification] = useState(null);
+  const [currentQualification, setCurrentQualification] = useState({
+    id: null,
+    name: "",
+  });
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [notification, setNotification] = useState({
     open: false,
     message: "",
     type: "",
   });
+  const [error, setError] = useState("");
+
+  // fetch qualifications from the server
+  useEffect(() => {
+    const fetchQualifications = async () => {
+      try {
+        const data = await getQualification();
+        setQualifications(data);
+      } catch (error) {
+        setNotification({
+          open: true,
+          message: "Error fetching qualifications.",
+          type: "error",
+        });
+      }
+    };
+    fetchQualifications();
+  }, []);
 
   const handleAddQualification = () => {
-    setCurrentQualification(null);
+    setCurrentQualification({
+      id: null,
+      name: "",
+    });
+    setError("");
     setIsEditModalOpen(true);
   };
 
   const handleEditQualification = (qualification) => {
     setCurrentQualification(qualification);
+    setError("");
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteQualification = (qualificationId) => {
-    setQualifications(
-      qualifications.filter(
-        (qualification) => qualification.id !== qualificationId
-      )
-    );
-    setNotification({
-      open: true,
-      message: "Qualification deleted successfully.",
-      type: "success",
-    });
+  const handleDeleteQualification = async (qualificationId) => {
+    try {
+      await deleteQualification(qualificationId);
+      setQualifications(
+        qualifications.filter(
+          (qualification) => qualification.id !== qualificationId
+        )
+      );
+      setNotification({
+        open: true,
+        message: "Qualification deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      setNotification({
+        open: true,
+        message: "Error deleting qualification.",
+        type: "error",
+      });
+    }
   };
 
-  const handleBulkDelete = () => {
-    setQualifications(
-      qualifications.filter(
-        (qualification) => !selectedQualifications.includes(qualification.id)
-      )
-    );
-    setSelectedQualifications([]);
-    setNotification({
-      open: true,
-      message: "Selected qualifications deleted successfully.",
-      type: "success",
-    });
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(
+        selectedQualifications.map((id) => deleteQualification(id))
+      );
+      setQualifications(
+        qualifications.filter(
+          (qualification) => !selectedQualifications.includes(qualification.id)
+        )
+      );
+      setSelectedQualifications([]);
+      setNotification({
+        open: true,
+        message: "Selected qualifications deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      setNotification({
+        open: true,
+        message: "Error deleting selected qualifications.",
+        type: "error",
+      });
+    }
   };
 
-  const handleSaveQualification = () => {
-    // Add save logic here
-    setIsEditModalOpen(false);
-    setNotification({
-      open: true,
-      message: "Qualification saved successfully.",
-      type: "success",
-    });
+  const handleSaveQualification = async () => {
+    if (!currentQualification.name) {
+      setError("Qualification name is required");
+      return;
+    }
+
+    try {
+      const payload = {
+        name: currentQualification.name,
+      };
+
+      if (currentQualification.id) {
+        await updateQualification(currentQualification.id, payload);
+        setQualifications(
+          qualifications.map((qualification) =>
+            qualification.id === currentQualification.id
+              ? { ...qualification, ...payload }
+              : qualification
+          )
+        );
+        setNotification({
+          open: true,
+          message: "Qualification updated successfully.",
+          type: "success",
+        });
+      } else {
+        const newQualification = await createQualification(payload);
+        setQualifications([...qualifications, newQualification]);
+        setNotification({
+          open: true,
+          message: "Qualification added successfully.",
+          type: "success",
+        });
+      }
+      setIsEditModalOpen(false);
+    } catch (error) {
+      setNotification({
+        open: true,
+        message: "Error saving qualification.",
+        type: "error",
+      });
+    }
   };
 
   const filteredQualifications = qualifications.filter((qualification) => {
     return (
-      qualification.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (selectedCategory
-        ? qualification.category.toLowerCase() ===
-          selectedCategory.toLowerCase()
-        : true)
+      qualification.name &&
+      qualification.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
-
-  const checkDuplicate = (name) => {
-    return qualifications.some(
-      (qualification) => qualification.name.toLowerCase() === name.toLowerCase()
-    );
-  };
 
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>
-          Manage Teacher Qualifications
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleAddQualification}
-        >
-          Add Qualification
-        </Button>
-        <Box mt={2} mb={2}>
-          <TextField
-            label="Search Qualifications"
-            variant="outlined"
-            fullWidth
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </Box>
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <FormControl variant="outlined" style={{ minWidth: 200 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              label="Category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={8}>
+            <Typography variant="h4" gutterBottom>
+              Manage Teacher Qualifications
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddQualification}
+              fullWidth
+              style={{ height: '100%' }}
             >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              <MenuItem value="degree">Degree</MenuItem>
-              <MenuItem value="diploma">Diploma</MenuItem>
-              <MenuItem value="certification">Certification</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+              Add Qualification
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid container spacing={2} alignItems="center" mt={2} mb={2}>
+          <Grid item xs={12}>
+            <TextField
+              label="Search Qualifications"
+              variant="outlined"
+              fullWidth
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </Grid>
+        </Grid>
         <Table>
           <TableHead>
             <TableRow>
@@ -177,9 +218,6 @@ const ManageQualification = () => {
                 <Checkbox />
               </TableCell>
               <TableCell>Qualification Name</TableCell>
-              <TableCell>Category/Type</TableCell>
-              <TableCell>Date Added</TableCell>
-              <TableCell>Associated Fields</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -206,9 +244,6 @@ const ManageQualification = () => {
                   />
                 </TableCell>
                 <TableCell>{qualification.name}</TableCell>
-                <TableCell>{qualification.category}</TableCell>
-                <TableCell>{qualification.dateAdded}</TableCell>
-                <TableCell>{qualification.fields.join(", ")}</TableCell>
                 <TableCell>
                   <IconButton
                     onClick={() => handleEditQualification(qualification)}
@@ -237,7 +272,7 @@ const ManageQualification = () => {
           onClose={() => setIsEditModalOpen(false)}
         >
           <DialogTitle>
-            {currentQualification ? "Edit Qualification" : "Add Qualification"}
+            {currentQualification.id ? "Edit Qualification" : "Add Qualification"}
           </DialogTitle>
           <DialogContent>
             <TextField
@@ -245,43 +280,16 @@ const ManageQualification = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              defaultValue={
-                currentQualification ? currentQualification.name : ""
+              value={currentQualification.name}
+              onChange={(e) =>
+                setCurrentQualification({
+                  ...currentQualification,
+                  name: e.target.value,
+                })
               }
-              error={checkDuplicate(
-                currentQualification ? currentQualification.name : ""
-              )}
-              helperText={
-                checkDuplicate(
-                  currentQualification ? currentQualification.name : ""
-                )
-                  ? "This qualification already exists. Please enter a unique qualification."
-                  : ""
-              }
-            />
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Category/Type</InputLabel>
-              <Select
-                label="Category/Type"
-                defaultValue={
-                  currentQualification ? currentQualification.category : ""
-                }
-              >
-                <MenuItem value="degree">Degree</MenuItem>
-                <MenuItem value="diploma">Diploma</MenuItem>
-                <MenuItem value="certification">Certification</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Description"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              defaultValue={
-                currentQualification ? currentQualification.description : ""
-              }
+              error={!!error}
+              helperText={error}
+              FormHelperTextProps={{ style: { color: 'red' } }}
             />
           </DialogContent>
           <DialogActions>
