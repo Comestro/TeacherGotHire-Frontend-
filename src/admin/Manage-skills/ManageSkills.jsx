@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, Typography, Button, TextField, 
-  Table, TableBody, TableCell, TableHead, TableRow, Checkbox, 
-  IconButton, Dialog, DialogActions, DialogContent, DialogTitle, 
-  Box 
+import {
+  Container, Typography, Button, TextField,
+  Table, TableBody, TableCell, TableHead, TableRow, Checkbox,
+  IconButton, Dialog, DialogActions, DialogContent, DialogTitle,
+  Box, Snackbar, Grid
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Alert } from '@mui/material';
 import Layout from "../Admin/Layout";
-import { 
-  getSkills, updateSkill, deleteSkill, 
-  deleteAllSkills, createSkill 
+import {
+  getSkills, updateSkill, deleteSkill,
+  createSkill
 } from '../../services/adminSkillsApi';
 
 const ManageSkills = () => {
@@ -19,6 +20,12 @@ const ManageSkills = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentSkill, setCurrentSkill] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchSkills();
@@ -30,17 +37,23 @@ const ManageSkills = () => {
       setSkills(data);
       setFilteredSkills(data);
     } catch (error) {
-      console.error("Error fetching skills:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching skills",
+        severity: "error",
+      });
     }
   };
 
   const handleAddSkill = () => {
     setCurrentSkill({ name: '', description: '' });
+    setError("");
     setIsEditModalOpen(true);
   };
 
   const handleEditSkill = (skill) => {
     setCurrentSkill(skill);
+    setError("");
     setIsEditModalOpen(true);
   };
 
@@ -48,8 +61,17 @@ const ManageSkills = () => {
     try {
       await deleteSkill(skillId);
       fetchSkills();
+      setSnackbar({
+        open: true,
+        message: "Skill deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error deleting skill:", error);
+      setSnackbar({
+        open: true,
+        message: "Error deleting skill",
+        severity: "error",
+      });
     }
   };
 
@@ -58,22 +80,50 @@ const ManageSkills = () => {
       await Promise.all(selectedSkills.map(skillId => deleteSkill(skillId)));
       fetchSkills();
       setSelectedSkills([]);
+      setSnackbar({
+        open: true,
+        message: "Selected skills deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
-      console.error("Error deleting selected skills:", error);
+      setSnackbar({
+        open: true,
+        message: "Error deleting selected skills",
+        severity: "error",
+      });
     }
   };
 
   const handleSaveSkill = async () => {
+    if (!currentSkill.name) {
+      setError("Skill name is required");
+      return;
+    }
+
     try {
       if (currentSkill.id) {
         await updateSkill(currentSkill.id, currentSkill);
+        setSnackbar({
+          open: true,
+          message: "Skill updated successfully",
+          severity: "success",
+        });
       } else {
         await createSkill(currentSkill);
+        setSnackbar({
+          open: true,
+          message: "Skill added successfully",
+          severity: "success",
+        });
       }
       fetchSkills();
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Error saving skill:", error);
+      setSnackbar({
+        open: true,
+        message: "Error saving skill",
+        severity: "error",
+      });
     }
   };
 
@@ -93,20 +143,26 @@ const ManageSkills = () => {
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>Manage Extra Skills</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<AddIcon />} 
-          onClick={handleAddSkill}
-        >
-          Add Skill
-        </Button>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={8}>
+            <Typography variant="h4" gutterBottom>Manage Extra Skills</Typography>
+          </Grid>
+          <Grid item xs={12} sm={4} style={{ textAlign: 'right' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddSkill}
+            >
+              Add Skill
+            </Button>
+          </Grid>
+        </Grid>
         <Box mt={2} mb={2}>
-          <TextField 
-            label="Search Skills" 
-            variant="outlined" 
-            fullWidth 
+          <TextField
+            label="Search Skills"
+            variant="outlined"
+            fullWidth
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
           />
@@ -118,7 +174,7 @@ const ManageSkills = () => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                <Checkbox 
+                <Checkbox
                   checked={selectedSkills.length === filteredSkills.length}
                   onChange={(e) => {
                     if (e.target.checked) {
@@ -131,9 +187,6 @@ const ManageSkills = () => {
               </TableCell>
               <TableCell>Skill Name</TableCell>
               <TableCell>Skill Description</TableCell>
-              {/* <TableCell>Category</TableCell>
-              <TableCell>Level</TableCell>
-              <TableCell>Status</TableCell> */}
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -141,7 +194,7 @@ const ManageSkills = () => {
             {filteredSkills.map((skill, index) => (
               <TableRow key={index}>
                 <TableCell padding="checkbox">
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedSkills.includes(skill.id)}
                     onChange={(e) => {
                       if (e.target.checked) {
@@ -154,9 +207,6 @@ const ManageSkills = () => {
                 </TableCell>
                 <TableCell>{skill.name}</TableCell>
                 <TableCell>{skill.description}</TableCell>
-                {/* <TableCell>{skill.category}</TableCell>
-                <TableCell>{skill.level}</TableCell>
-                <TableCell>{skill.status}</TableCell> */}
                 <TableCell>
                   <IconButton onClick={() => handleEditSkill(skill)}>
                     <EditIcon />
@@ -169,58 +219,41 @@ const ManageSkills = () => {
             ))}
           </TableBody>
         </Table>
-        <Button 
-          variant="contained" 
-          color="secondary" 
+        <Button
+          variant="contained"
+          color="secondary"
           onClick={handleBulkDelete}
+          sx={{ mt: 2 }}
         >
           Delete Selected
         </Button>
         <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
           <DialogTitle>{currentSkill && currentSkill.id ? 'Edit Skill' : 'Add Skill'}</DialogTitle>
           <DialogContent>
-            <TextField 
-              label="Skill Name" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              value={currentSkill ? currentSkill.name : ''} 
+            <TextField
+              label="Skill Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={currentSkill ? currentSkill.name : ''}
               onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })}
+              error={!!error}
+              helperText={error}
+              FormHelperTextProps={{ style: { color: 'red' } }}
             />
-            <TextField 
-              label="Description" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              multiline 
-              rows={4} 
-              value={currentSkill ? currentSkill.description : ''} 
+            <TextField
+              label="Description"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              value={currentSkill ? currentSkill.description : ''}
               onChange={(e) => setCurrentSkill({ ...currentSkill, description: e.target.value })}
+              error={!!error}
+              helperText={error}
+              FormHelperTextProps={{ style: { color: 'red' } }}
             />
-            {/* <TextField 
-              label="Category" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              value={currentSkill ? currentSkill.category : ''} 
-              onChange={(e) => setCurrentSkill({ ...currentSkill, category: e.target.value })}
-            />
-            <TextField 
-              label="Level" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              value={currentSkill ? currentSkill.level : ''} 
-              onChange={(e) => setCurrentSkill({ ...currentSkill, level: e.target.value })}
-            />
-            <TextField 
-              label="Status" 
-              variant="outlined" 
-              fullWidth 
-              margin="normal" 
-              value={currentSkill ? currentSkill.status : ''} 
-              onChange={(e) => setCurrentSkill({ ...currentSkill, status: e.target.value })}
-            /> */}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsEditModalOpen(false)} color="primary">
@@ -231,6 +264,18 @@ const ManageSkills = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </Layout>
   );
