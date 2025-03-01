@@ -8,7 +8,6 @@ import {
   TextField,
   Select,
   MenuItem,
-  Autocomplete,
   Button,
   Table,
   TableBody,
@@ -25,6 +24,8 @@ import {
   InputLabel,
   Stack,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FiDownload, FiFilter, FiMoreVertical } from "react-icons/fi";
@@ -41,9 +42,11 @@ const StyledStatusChip = styled(Chip)(({ status }) => ({
   backgroundColor:
     status === "Pending"
       ? "#ffd700"
-      : status === "Approved"
-        ? "#4caf50"
-        : "#f44336",
+      : status === "fulfilled"
+      ? "#4caf50"
+      : status === "rejected"
+      ? "#f44336"
+      : "#f44336",
   color: "#fff",
 }));
 
@@ -76,6 +79,9 @@ const ManageHiringRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,8 +91,8 @@ const ManageHiringRequests = () => {
         if (Array.isArray(response)) {
           const formatData = response.map((item) => ({
             id: item.id,
-            recruiterName: item.recruiter_id,
-            teacherName: item.teacher_id,
+            recruiterName: item.recruiter_id, // This is an object
+            teacherName: item.teacher_id, // This is an object
             role: item.role,
             subjects: item.subject,
             status: item.status,
@@ -102,6 +108,12 @@ const ManageHiringRequests = () => {
     };
     fetchData();
   }, []);
+
+  // Helper function to format names
+  const formatName = (user) => {
+    if (!user) return "N/A";
+    return `${user.Fname} ${user.Lname}`;
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -130,8 +142,8 @@ const ManageHiringRequests = () => {
   const handleApproveRequest = async () => {
     try {
       await updateHireRequest(selectedRequest.id, {
-        recruiter_id: selectedRequest.recruiter_id,
-        teacher_id: selectedRequest.teacher_id,
+        recruiter_id: selectedRequest.recruiterName.id, // Use the recruiter ID
+        teacher_id: selectedRequest.teacherName.id, // Use the teacher ID
         status: "fulfilled",
       });
       setData((prev) =>
@@ -139,17 +151,23 @@ const ManageHiringRequests = () => {
           item.id === selectedRequest.id ? { ...item, status: "fulfilled" } : item
         )
       );
+      setSnackbarMessage("Request approved successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       handleCloseModal();
     } catch (error) {
       console.error("Error approving request:", error);
+      setSnackbarMessage("Failed to approve request.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
   const handleRejectRequest = async () => {
     try {
       await updateHireRequest(selectedRequest.id, {
-        recruiter_id: selectedRequest.recruiter_id,
-        teacher_id: selectedRequest.teacher_id,
+        recruiter_id: selectedRequest.recruiterName.id, // Use the recruiter ID
+        teacher_id: selectedRequest.teacherName.id, // Use the teacher ID
         status: "rejected",
         reject_reason: "Reason for rejection", // Add the actual reason here
       });
@@ -158,9 +176,15 @@ const ManageHiringRequests = () => {
           item.id === selectedRequest.id ? { ...item, status: "rejected" } : item
         )
       );
+      setSnackbarMessage("Request rejected successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       handleCloseModal();
     } catch (error) {
       console.error("Error rejecting request:", error);
+      setSnackbarMessage("Failed to reject request.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -176,15 +200,16 @@ const ManageHiringRequests = () => {
       (filters.status === "all" ||
         row.status.toLowerCase() === filters.status) &&
       (!filters.recruiterName ||
-        row.recruiterName.includes(filters.recruiterName)) &&
-      (!filters.teacherName || row.teacherName.includes(filters.teacherName))
+        formatName(row.recruiterName).toLowerCase().includes(filters.recruiterName.toLowerCase())) &&
+      (!filters.teacherName ||
+        formatName(row.teacherName).toLowerCase().includes(filters.teacherName.toLowerCase()))
     );
   });
 
   const handleExportData = () => {
     const csvData = filteredData.map((row) => ({
-      Recruiter: row.recruiterName,
-      Teacher: row.teacherName,
+      Recruiter: formatName(row.recruiterName),
+      Teacher: formatName(row.teacherName),
       Role: row.role,
       Subjects: row.subjects.map((subject) => subject.subject_name).join(", "),
       Status: row.status,
@@ -240,29 +265,19 @@ const ManageHiringRequests = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
-                    <Autocomplete
-                      options={data.map((item) => item.recruiterName)}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Recruiter Name"
-                          fullWidth
-                          onChange={(e) => handleFilterChange("recruiterName", e.target.value)}
-                        />
-                      )}
+                    <TextField
+                      label="Recruiter Name"
+                      fullWidth
+                      value={filters.recruiterName || ""}
+                      onChange={(e) => handleFilterChange("recruiterName", e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
-                    <Autocomplete
-                      options={data.map((item) => item.teacherName)}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Teacher Name"
-                          fullWidth
-                          onChange={(e) => handleFilterChange("teacherName", e.target.value)}
-                        />
-                      )}
+                    <TextField
+                      label="Teacher Name"
+                      fullWidth
+                      value={filters.teacherName || ""}
+                      onChange={(e) => handleFilterChange("teacherName", e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
@@ -331,8 +346,8 @@ const ManageHiringRequests = () => {
                             onClick={() => handleOpenModal(row)}
                             sx={{ cursor: "pointer" }}
                           >
-                            <TableCell>{row.recruiterName}</TableCell>
-                            <TableCell>{row.teacherName}</TableCell>
+                            <TableCell>{formatName(row.recruiterName)}</TableCell>
+                            <TableCell>{formatName(row.teacherName)}</TableCell>
                             <TableCell>{row.role}</TableCell>
                             <TableCell>{row.subjects.map((subject) => subject.subject_name).join(", ")}</TableCell>
                             <TableCell>
@@ -375,10 +390,10 @@ const ManageHiringRequests = () => {
                   <Divider sx={{ my: 2 }} />
 
                   <Typography variant="subtitle1" gutterBottom>
-                    Recruiter: {selectedRequest.recruiterName}
+                    Recruiter: {formatName(selectedRequest.recruiterName)}
                   </Typography>
                   <Typography variant="subtitle1" gutterBottom>
-                    Teacher: {selectedRequest.teacherName}
+                    Teacher: {formatName(selectedRequest.teacherName)}
                   </Typography>
                   <Typography variant="subtitle1" gutterBottom>
                     Role: {selectedRequest.role}
@@ -407,6 +422,21 @@ const ManageHiringRequests = () => {
               )}
             </ModalContent>
           </RequestDetailsModal>
+
+          {/* Snackbar for feedback messages */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={() => setSnackbarOpen(false)}
+          >
+            <Alert
+              onClose={() => setSnackbarOpen(false)}
+              severity={snackbarSeverity}
+              sx={{ width: '100%' }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </Box>
       </Container>
     </Layout>
