@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
     Box, Container, Typography, Grid, Paper, TextField, Button, Autocomplete,
     FormControl, InputLabel, Select, MenuItem, Modal, Chip, IconButton, Switch,
-    ThemeProvider, createTheme, CssBaseline, TextareaAutosize, CircularProgress, Alert
+    ThemeProvider, createTheme, CssBaseline, TextareaAutosize, CircularProgress, Alert, Snackbar
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -34,6 +34,9 @@ const InterviewManagement = () => {
     const [interviewScore, setInterviewScore] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     const theme = createTheme({
         palette: {
@@ -74,7 +77,8 @@ const InterviewManagement = () => {
                     requestedTime: dayjs(item.time).format("HH:mm"),
                     status: item.status ? "Scheduled" : "Pending",
                     scheduledDate: item.status ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : null,
-                    rejectionReason: null
+                    rejectionReason: null,
+                    link: item.link
                 }));
                 setFilteredTeachers(data);
                 setLoading(false);
@@ -90,6 +94,137 @@ const InterviewManagement = () => {
     useEffect(() => {
         handleFilterChange();
     }, [filters]);
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
+    const handleScheduleInterview = async () => {
+        try {
+            const updatedTeachers = filteredTeachers.map(t =>
+                t.id === selectedTeacher.id ? {
+                    ...t,
+                    status: "Scheduled",
+                    scheduledDate: selectedDateTime.format("YYYY-MM-DD HH:mm"),
+                    rejectionReason: null
+                } : t
+            );
+            setFilteredTeachers(updatedTeachers);
+            setScheduleModalOpen(false);
+            await updateInterview(selectedTeacher.id, { status: true, time: selectedDateTime.toISOString() });
+            setSnackbarMessage("Interview scheduled successfully!");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+        } catch (err) {
+            setSnackbarMessage("Failed to schedule interview.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleRejectInterview = async () => {
+        try {
+            const updatedTeachers = filteredTeachers.map(t =>
+                t.id === selectedTeacher.id ? {
+                    ...t,
+                    status: "Rejected",
+                    rejectionReason: rejectionReason,
+                    scheduledDate: null
+                } : t
+            );
+            setFilteredTeachers(updatedTeachers);
+            setRejectModalOpen(false);
+            setRejectionReason("");
+            await updateInterview(selectedTeacher.id, { status: false, rejectionReason });
+            setSnackbarMessage("Interview rejected successfully!");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+        } catch (err) {
+            setSnackbarMessage("Failed to reject interview.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleCompleteInterview = async () => {
+        try {
+            const updatedTeachers = filteredTeachers.map(t =>
+                t.id === selectedTeacher.id ? {
+                    ...t,
+                    status: "Completed",
+                    score: interviewScore
+                } : t
+            );
+            setFilteredTeachers(updatedTeachers);
+            setCompleteModalOpen(false);
+            setInterviewScore("");
+            await updateInterview(selectedTeacher.id, { grade: interviewScore, status: true });
+            setSnackbarMessage("Interview completed successfully!");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+        } catch (err) {
+            setSnackbarMessage("Failed to complete interview.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleViewDetails = (teacher) => {
+        setSelectedTeacher(teacher);
+        setOpenModal(true);
+    };
+
+    const handleOpenSchedule = (teacher) => {
+        setSelectedTeacher(teacher);
+        setScheduleModalOpen(true);
+    };
+
+    const handleOpenReject = (teacher) => {
+        setSelectedTeacher(teacher);
+        setRejectModalOpen(true);
+    };
+
+    const handleOpenComplete = (teacher) => {
+        setSelectedTeacher(teacher);
+        setCompleteModalOpen(true);
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            status: "",
+            teacherName: "",
+            dateRange: [null, null],
+            searchTerm: ""
+        });
+    };
+
+    const handleFilterChange = () => {
+        let filtered = filteredTeachers.filter(teacher => {
+            const matchesStatus = !filters.status || teacher.status === filters.status;
+            const matchesName = !filters.teacherName ||
+                teacher.name.toLowerCase().includes(filters.teacherName.toLowerCase());
+            const matchesSearch = !filters.searchTerm ||
+                Object.values(teacher).some(value =>
+                    String(value).toLowerCase().includes(filters.searchTerm.toLowerCase()));
+            const matchesDate = !filters.dateRange[0] || !filters.dateRange[1] ||
+                dayjs(teacher.requestedDate).isBetween(filters.dateRange[0], filters.dateRange[1], null, '[]');
+
+            return matchesStatus && matchesName && matchesSearch && matchesDate;
+        });
+
+        setFilteredTeachers(filtered);
+    };
+
+    const handleExport = () => {
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + filteredTeachers.map(teacher => Object.values(teacher).join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "teacher_interviews.csv");
+        document.body.appendChild(link);
+        link.click();
+    };
 
     const columns = [
         { field: "name", headerName: "Teacher Name", flex: 1, minWidth: 150 },
@@ -129,6 +264,23 @@ const InterviewManagement = () => {
         },
         { field: "scheduledDate", headerName: "Scheduled Date", flex: 1, minWidth: 150 },
         {
+            field: "link",
+            headerName: "Interview Link",
+            flex: 1,
+            minWidth: 150,
+            renderCell: (params) => (
+                params.value ? (
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => window.open(params.value, "_blank")}
+                    >
+                        Join Interview
+                    </Button>
+                ) : null
+            )
+        },
+        {
             field: "actions",
             headerName: "Actions",
             flex: 1,
@@ -157,104 +309,6 @@ const InterviewManagement = () => {
             )
         }
     ];
-
-    const handleViewDetails = (teacher) => {
-        setSelectedTeacher(teacher);
-        setOpenModal(true);
-    };
-
-    const handleOpenSchedule = (teacher) => {
-        setSelectedTeacher(teacher);
-        setScheduleModalOpen(true);
-    };
-
-    const handleScheduleInterview = () => {
-        const updatedTeachers = filteredTeachers.map(t =>
-            t.id === selectedTeacher.id ? {
-                ...t,
-                status: "Scheduled",
-                scheduledDate: selectedDateTime.format("YYYY-MM-DD HH:mm"),
-                rejectionReason: null
-            } : t
-        );
-        setFilteredTeachers(updatedTeachers);
-        setScheduleModalOpen(false);
-    };
-
-    const handleOpenReject = (teacher) => {
-        setSelectedTeacher(teacher);
-        setRejectModalOpen(true);
-    };
-
-    const handleRejectInterview = () => {
-        const updatedTeachers = filteredTeachers.map(t =>
-            t.id === selectedTeacher.id ? {
-                ...t,
-                status: "Rejected",
-                rejectionReason: rejectionReason,
-                scheduledDate: null
-            } : t
-        );
-        setFilteredTeachers(updatedTeachers);
-        setRejectModalOpen(false);
-        setRejectionReason("");
-    };
-
-    const handleOpenComplete = (teacher) => {
-        setSelectedTeacher(teacher);
-        setCompleteModalOpen(true);
-    };
-
-    const handleCompleteInterview = () => {
-        const updatedTeachers = filteredTeachers.map(t =>
-            t.id === selectedTeacher.id ? {
-                ...t,
-                status: "Completed",
-                score: interviewScore
-            } : t
-        );
-        setFilteredTeachers(updatedTeachers);
-        setCompleteModalOpen(false);
-        setInterviewScore("");
-    };
-
-    const handleResetFilters = () => {
-        setFilters({
-            status: "",
-            teacherName: "",
-            dateRange: [null, null],
-            searchTerm: ""
-        });
-        setFilteredTeachers(filteredTeachers);
-    };
-
-    const handleFilterChange = () => {
-        let filtered = filteredTeachers.filter(teacher => {
-            const matchesStatus = !filters.status || teacher.status === filters.status;
-            const matchesName = !filters.teacherName ||
-                teacher.name.toLowerCase().includes(filters.teacherName.toLowerCase());
-            const matchesSearch = !filters.searchTerm ||
-                Object.values(teacher).some(value =>
-                    String(value).toLowerCase().includes(filters.searchTerm.toLowerCase()));
-            const matchesDate = !filters.dateRange[0] || !filters.dateRange[1] ||
-                dayjs(teacher.requestedDate).isBetween(filters.dateRange[0], filters.dateRange[1], null, '[]');
-
-            return matchesStatus && matchesName && matchesSearch && matchesDate;
-        });
-
-        setFilteredTeachers(filtered);
-    };
-
-    const handleExport = () => {
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + filteredTeachers.map(teacher => Object.values(teacher).join(",")).join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "teacher_interviews.csv");
-        document.body.appendChild(link);
-        link.click();
-    };
 
     if (loading) {
         return (
@@ -560,6 +614,17 @@ const InterviewManagement = () => {
                             </Box>
                         </Paper>
                     </Modal>
+                    {/* Snackbar for success/error messages */}
+                    <Snackbar
+                        open={snackbarOpen}
+                        autoHideDuration={6000}
+                        onClose={handleSnackbarClose}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    >
+                        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                            {snackbarMessage}
+                        </Alert>
+                    </Snackbar>
 
                 </Container>
             </ThemeProvider>
