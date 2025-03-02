@@ -33,13 +33,13 @@ function Home() {
           backgroundImage: `url('Home3.png')`,
         }}
       >
-        <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 ">
+        <div className="hero h-[600px] w-full flex flex-col items-center justify-center px-4 z-0">
           <div className="flex justify-center items-center mx-auto flex-col w-full lg:w-[65%] text-gray-800 mb-2">
             <div className="flex">
               <p className="mb-4 font-bold text-2xl md:text-5xl leading-none text-center text-gray-600">
                 <div className="relative inline-block">
                   <span className="font-bold text-xl pb-10 md:text-5xl text-teal-600 me-1">
-                    PTP INSTITUTE
+                    Private Teacher Provider Intitute
                     <svg
                       className="absolute left-1/2 -translate-x-1/2 -bottom-4 w-[180px] md:w-[220px] text-teal-600"
                       viewBox="0 0 180 12"
@@ -55,8 +55,8 @@ function Home() {
                     </svg>
                   </span>
                 </div>
-                - पढ़ने, पढ़ाने
-                <span className="block mt-4">और पढ़वाने का बेहतरीन मंच</span>
+                
+                <span className="block mt-4 text-xl md:text-2xl"> - पढ़ने, पढ़ाने और पढ़वाने का बेहतरीन मंच</span>
               </p>
             </div>
           </div>
