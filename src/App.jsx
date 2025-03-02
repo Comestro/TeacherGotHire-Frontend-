@@ -13,7 +13,6 @@ import AdminProfile from "./admin/Profile/Profile";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
 import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
 import ManageRecruiter from "./admin/Manage-recruiter/ManageRecruiter";
-import ManageQuestion from "./admin/Manage-question/ManageQuestion";
 import ManageSkills from "./admin/Manage-skills/ManageSkills";
 import ManageQualification from "./admin/Manage-qualification/ManageQualification";
 import Support from "./admin/Support/Support";
@@ -144,15 +143,6 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<ManageRecruiter />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-            <Route
-              path="admin/manage/question"
-              element={
-                <RoleBasedRoute
-                  element={<ManageQuestion />}
                   allowedRoles={["admin"]}
                 />
               }
