@@ -18,6 +18,9 @@ import {
   Snackbar,
   Pagination,
   Checkbox,
+  Grid,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -31,10 +34,11 @@ import {
   updateLevel,
   createLevel,
   deleteLevel,
-  deleteAllLevel,
 } from "../../services/adminManageLevel";
 
 const ManageLevel = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [levels, setLevels] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openAddEditModal, setOpenAddEditModal] = useState(false);
@@ -51,6 +55,7 @@ const ManageLevel = () => {
   const itemsPerPage = 5;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [validationError, setValidationError] = useState("");
 
   useEffect(() => {
     const fetchLevels = async () => {
@@ -68,7 +73,8 @@ const ManageLevel = () => {
   }, []);
 
   const handleOpenAddEditModal = (level = null) => {
-    setSelectedLevel(level);
+    setSelectedLevel(level || { name: "", description: "" });
+    setValidationError("");
     setOpenAddEditModal(true);
   };
 
@@ -98,6 +104,12 @@ const ManageLevel = () => {
   };
 
   const handleSaveLevel = async () => {
+    setValidationError("");
+    if (!selectedLevel.name.trim()) {
+      setValidationError("Level name is required");
+      return;
+    }
+
     try {
       if (selectedLevel.id) {
         await updateLevel(selectedLevel.id, selectedLevel);
@@ -190,20 +202,27 @@ const ManageLevel = () => {
 
   return (
     <Layout>
-      <Box mt={3}>
+      <Box mt={3} px={isMobile ? 1 : 3}>
         <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
           <CardContent>
-            <Typography variant="h4" gutterBottom>
-              Manage Level
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenAddEditModal()}
-            >
-              Add New Level
-            </Button>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={8}>
+                <Typography variant="h4" gutterBottom>
+                  Manage Level
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: "left", sm: "right" } }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenAddEditModal()}
+                  sx={{ width: { xs: "100%", sm: "auto" } }}
+                >
+                  Add New Level
+                </Button>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
 
@@ -214,106 +233,110 @@ const ManageLevel = () => {
                 display="flex"
                 justifyContent="space-between"
                 alignItems="center"
+                flexDirection={{ xs: "column", sm: "row" }}
+                gap={2}
               >
                 <Typography variant="h6" gutterBottom>
                   Levels
                 </Typography>
-                <Box display="flex" alignItems="center">
-                  <TextField
-                    variant="outlined"
-                    size="small"
-                    placeholder="Search by level name"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton>
-                          <SearchIcon />
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                </Box>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search by level name"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  fullWidth={isMobile}
+                  sx={{ width: { xs: "100%", sm: 300 } }}
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton>
+                        <SearchIcon />
+                      </IconButton>
+                    ),
+                  }}
+                />
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={
-                            selectedLevels.length === filteredLevels.length
-                          }
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedLevels(
-                                filteredLevels.map((level) => level.id)
-                              );
-                            } else {
-                              setSelectedLevels([]);
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Description</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {currentLevels.map((level, index) => (
-                      <TableRow key={level.id}>
+              <Box sx={{ overflowX: "auto" }}>
+                <TableContainer>
+                  <Table sx={{ minWidth: 650 }}>
+                    <TableHead>
+                      <TableRow>
                         <TableCell padding="checkbox">
                           <Checkbox
-                            checked={selectedLevels.includes(level.id)}
+                            checked={
+                              selectedLevels.length === filteredLevels.length
+                            }
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedLevels([
-                                  ...selectedLevels,
-                                  level.id,
-                                ]);
-                              } else {
                                 setSelectedLevels(
-                                  selectedLevels.filter(
-                                    (id) => id !== level.id
-                                  )
+                                  filteredLevels.map((level) => level.id)
                                 );
+                              } else {
+                                setSelectedLevels([]);
                               }
                             }}
                           />
                         </TableCell>
-                        <TableCell>{index + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
-                        <TableCell>{level.name}</TableCell>
-                        <TableCell>{level.description}</TableCell>
-                        <TableCell>
-                          <Tooltip title="View">
-                            <IconButton
-                              onClick={() => handleOpenViewModal(level)}
-                            >
-                              <VisibilityIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Edit">
-                            <IconButton
-                              onClick={() => handleOpenAddEditModal(level)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton
-                              onClick={() => handleOpenDeleteModal(level)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
+                        <TableCell>ID</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Description</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {currentLevels.map((level, index) => (
+                        <TableRow key={level.id}>
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={selectedLevels.includes(level.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedLevels([
+                                    ...selectedLevels,
+                                    level.id,
+                                  ]);
+                                } else {
+                                  setSelectedLevels(
+                                    selectedLevels.filter(
+                                      (id) => id !== level.id
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{index + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
+                          <TableCell>{level.name}</TableCell>
+                          <TableCell>{level.description}</TableCell>
+                          <TableCell>
+                            <Tooltip title="View">
+                              <IconButton
+                                onClick={() => handleOpenViewModal(level)}
+                              >
+                                <VisibilityIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit">
+                              <IconButton
+                                onClick={() => handleOpenAddEditModal(level)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton
+                                onClick={() => handleOpenDeleteModal(level)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
               {pageCount > 1 && (
                 <Box mt={2} display="flex" justifyContent="center">
                   <Pagination
@@ -338,13 +361,13 @@ const ManageLevel = () => {
 
         <Modal open={openAddEditModal} onClose={handleCloseAddEditModal}>
           <Box
-            p={4}
-            bgcolor="background.paper"
             sx={{
+              p: { xs: 2, sm: 4 },
               width: "90%",
               maxWidth: "400px",
               margin: "auto",
-              marginTop: "10%",
+              marginTop: { xs: "20%", sm: "10%" },
+              bgcolor: "background.paper",
               boxShadow: 3,
               borderRadius: 2,
               maxHeight: "80vh",
@@ -352,37 +375,43 @@ const ManageLevel = () => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              {selectedLevel ? "Edit Level" : "Add New Level"}
+              {selectedLevel?.id ? "Edit Level" : "Add New Level"}
             </Typography>
             <TextField
               fullWidth
               margin="normal"
               label="Level Name"
-              value={selectedLevel ? selectedLevel.name : ""}
+              value={selectedLevel?.name || ""}
               onChange={(e) =>
                 setSelectedLevel({
                   ...selectedLevel,
                   name: e.target.value,
                 })
               }
+              error={!!validationError}
+              helperText={validationError}
+              FormHelperTextProps={{ style: { color: "red" } }}
             />
             <TextField
               fullWidth
               margin="normal"
               label="Description"
-              value={selectedLevel ? selectedLevel.description : ""}
+              value={selectedLevel?.description || ""}
               onChange={(e) =>
                 setSelectedLevel({
                   ...selectedLevel,
                   description: e.target.value,
                 })
               }
+              multiline
+              rows={3}
             />
-            <Box mt={2} display="flex" justifyContent="space-between">
+            <Box mt={2} display="flex" justifyContent="space-between" gap={2}>
               <Button
-                variant="contained"
+                variant="outlined"
                 color="secondary"
                 onClick={handleCloseAddEditModal}
+                fullWidth={isMobile}
               >
                 Cancel
               </Button>
@@ -390,6 +419,7 @@ const ManageLevel = () => {
                 variant="contained"
                 color="primary"
                 onClick={handleSaveLevel}
+                fullWidth={isMobile}
               >
                 Save
               </Button>

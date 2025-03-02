@@ -131,8 +131,6 @@ const ExamManagement = () => {
     fetchSubjects();
   }, []);
 
-  console.log("slectedExam",selectedExam)
-
   // fetch all class categories
   useEffect(() => {
     const fetchClassCategories = async () => {

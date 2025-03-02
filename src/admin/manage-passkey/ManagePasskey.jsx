@@ -17,10 +17,12 @@ import {
   Select,
   MenuItem,
   Chip,
-  Breadcrumbs,
-  Link,
   TablePagination,
   Grid,
+  Snackbar,
+  Alert,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FaCheck, FaTimes, FaEye } from "react-icons/fa";
@@ -43,15 +45,18 @@ const ModalContent = styled(Paper)({
 
 const StatusChip = styled(Chip)(({ theme, status }) => ({
   backgroundColor:
-    status === "Pending"
-      ? "#FFC107"
-      : status === "Approved"
-        ? "#4CAF50"
-        : "#F44336",
+    status === "requested"
+      ? "#FFC107" // Yellow for requested
+      : status === "fulfilled"
+        ? "#4CAF50" // Green for fulfilled
+        : "#F44336", // Red for rejected
   color: "#fff",
 }));
 
 const PasskeyManagement = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -64,9 +69,13 @@ const PasskeyManagement = () => {
     data: null,
   });
   const [rejectReason, setRejectReason] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  // fetch passkey data from the API
-
+  // Fetch passkey data from the API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -74,10 +83,14 @@ const PasskeyManagement = () => {
         setData(response);
       } catch (error) {
         console.error("Error fetching passkey data:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch passkey data",
+          severity: "error",
+        });
       }
     };
     fetchData();
-
   }, []);
 
   const handleSearch = useCallback(
@@ -99,48 +112,64 @@ const PasskeyManagement = () => {
     });
   }, [data, searchTerm, statusFilter]);
 
-  const handleApprove = async (id, code) => {
+  const handleApprove = async (id, code, userId) => {
     try {
-      await updatePasskey(id, {
-        user: id,
+      const payload = {
+        user: userId,
         code: code,
-        status: true,
-      });
+        status: "fulfilled", // Use "fulfilled" for approval
+      };
+      await updatePasskey(id, payload);
       setData((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, status: "Approved" } : item
+          item.id === id ? { ...item, status: "fulfilled" } : item
         )
       );
       setConfirmModal({ open: false, type: null, data: null });
+      setSnackbar({
+        open: true,
+        message: "Passkey approved successfully!",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error approving request:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to approve passkey",
+        severity: "error",
+      });
     }
   };
 
-
-
-  const handleReject = async (id, code) => {
+  const handleReject = async (id, code, userId) => {
     try {
-      await updatePasskey(id, {
-        user: id,
+      const payload = {
+        user: userId,
         code: code,
-        status: false,
-        // reason: rejectReason,
-      });
+        status: "rejected", // Use "rejected" for rejection
+        reason: rejectReason,
+      };
+      await updatePasskey(id, payload);
       setData((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, status: "Rejected" } : item
+          item.id === id ? { ...item, status: "rejected", reject_reason: rejectReason } : item
         )
       );
       setConfirmModal({ open: false, type: null, data: null });
       setRejectReason("");
+      setSnackbar({
+        open: true,
+        message: "Passkey rejected successfully!",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error rejecting request:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to reject passkey",
+        severity: "error",
+      });
     }
-  };
-
-  const generatePasskey = () => {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
   };
 
   return (
@@ -167,9 +196,9 @@ const PasskeyManagement = () => {
                 label="Status Filter"
               >
                 <MenuItem value="all">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Approved">Approved</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
+                <MenuItem value="requested">Requested</MenuItem>
+                <MenuItem value="fulfilled">Fulfilled</MenuItem>
+                <MenuItem value="rejected">Rejected</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -193,24 +222,28 @@ const PasskeyManagement = () => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.user.email}</TableCell>
-                    <TableCell>{row.exam.name}</TableCell>
-                    <TableCell>{row.center}</TableCell>
-                    <TableCell>{row.code}</TableCell>
+                    <TableCell>{row.user?.email || "N/A"}</TableCell>
+                    <TableCell>{row.exam?.name || "N/A"}</TableCell>
+                    <TableCell>{row.center?.name || "N/A"}</TableCell>
+                    <TableCell>{row.code || "N/A"}</TableCell>
                     <TableCell>
-                      <StatusChip label={row.status ? "Approved" : "Pending"} status={row.status ? "Approved" : "Pending"} />
-                    </TableCell>
-                    <TableCell>{new Date(row.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() =>
-                          setDetailsModal({ open: true, data: row })
+                      <StatusChip
+                        label={
+                          row.status === "fulfilled" ? "Fulfilled" :
+                            row.status === "rejected" ? "Rejected" : "Requested"
                         }
-                        size="small"
-                      >
+                        status={row.status}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Button onClick={() => setDetailsModal({ open: true, data: row })} size="small">
                         <FaEye />
                       </Button>
-                      {!row.status && (
+
+                      {row.status === "requested" && (
                         <>
                           <Button
                             color="success"
@@ -258,6 +291,7 @@ const PasskeyManagement = () => {
           />
         </TableContainer>
 
+        {/* Details Modal */}
         <StyledModal
           open={detailsModal.open}
           onClose={() => setDetailsModal({ open: false, data: null })}
@@ -273,15 +307,22 @@ const PasskeyManagement = () => {
                     <Typography variant="subtitle1">
                       User Information
                     </Typography>
-                    <Typography>Name: {detailsModal.data.user.email}</Typography>
+                    <Typography>
+                      Email: {detailsModal.data.user?.email || "N/A"}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle1">Exam Details</Typography>
-                    <Typography>Name: {detailsModal.data.exam.name}</Typography>
                     <Typography>
-                      Center: {detailsModal.data.center}
+                      Name: {detailsModal.data.exam?.name || "N/A"}
                     </Typography>
-                    <Typography>Date: {new Date(detailsModal.data.created_at).toLocaleDateString()}</Typography>
+                    <Typography>
+                      Center: {detailsModal.data.center?.name || "N/A"}
+                    </Typography>
+                    <Typography>
+                      Date:{" "}
+                      {new Date(detailsModal.data.created_at).toLocaleDateString()}
+                    </Typography>
                   </Grid>
                 </Grid>
               </>
@@ -289,6 +330,7 @@ const PasskeyManagement = () => {
           </ModalContent>
         </StyledModal>
 
+        {/* Confirm Modal */}
         <StyledModal
           open={confirmModal.open}
           onClose={() =>
@@ -307,7 +349,13 @@ const PasskeyManagement = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleApprove(confirmModal.data.id)}
+                  onClick={() =>
+                    handleApprove(
+                      confirmModal.data.id,
+                      confirmModal.data.code,
+                      confirmModal.data.user.id // Pass user ID
+                    )
+                  }
                 >
                   Confirm
                 </Button>
@@ -329,7 +377,13 @@ const PasskeyManagement = () => {
                 <Button
                   variant="contained"
                   color="error"
-                  onClick={() => handleReject(confirmModal.data.id)}
+                  onClick={() =>
+                    handleReject(
+                      confirmModal.data.id,
+                      confirmModal.data.code,
+                      confirmModal.data.user.id // Pass user ID
+                    )
+                  }
                 >
                   Confirm Rejection
                 </Button>
@@ -337,6 +391,20 @@ const PasskeyManagement = () => {
             )}
           </ModalContent>
         </StyledModal>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Layout>
   );

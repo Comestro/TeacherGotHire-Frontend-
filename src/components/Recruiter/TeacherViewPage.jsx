@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Loader from './components/Loader';
-import { fetchTeacherById } from '../../services/teacherService';
+import { getTeacherById } from '../../services/adminTeacherApi';
 
 const TeacherViewPage = () => {
   const { id } = useParams();
@@ -13,7 +13,7 @@ const TeacherViewPage = () => {
     const loadTeacher = async () => {
       try {
         console.log("teacher id", id)
-        const data = await fetchTeacherById(id);
+        const data = await getTeacherById(id);
         console.log("single teacher data ....", data)
         setTeacher(data);
         setLoading(false);
@@ -107,7 +107,7 @@ const TeacherViewPage = () => {
                 <p className="text-gray-600">{experience.company}</p>
                 <p className="text-sm text-gray-500">
                   {new Date(experience.start_date).toLocaleDateString()} -{' '}
-                  {experience.end_date 
+                  {experience.end_date
                     ? new Date(experience.end_date).toLocaleDateString()
                     : 'Present'}
                 </p>
@@ -168,7 +168,7 @@ const TeacherViewPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="font-semibold text-lg">Class Categories</h3>
                 <div className="flex flex-wrap gap-2 mt-2">
