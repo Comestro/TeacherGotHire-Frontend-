@@ -23,12 +23,15 @@ import {
   Snackbar,
   TablePagination,
   Badge,
+  useMediaQuery, // Import useMediaQuery
+  useTheme, // Import useTheme
 } from "@mui/material";
 import {
   Visibility as ViewIcon,
   GetApp as ExportIcon,
   Email as EmailIcon,
 } from "@mui/icons-material";
+import WhatsAppIcon from '@mui/icons-material/WhatsApp'; // Import WhatsApp icon
 import Layout from "../Admin/Layout";
 import { getRecruiter } from "../../services/adminManageRecruiter";
 import { Link } from "react-router-dom";
@@ -49,6 +52,9 @@ const ManageRecruiter = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const theme = useTheme(); // Use useTheme hook
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm')); // Define breakpoint
+
   useEffect(() => {
     // Fetch recruiters data from the API
     getRecruiter()
@@ -63,12 +69,27 @@ const ManageRecruiter = () => {
             status: item.is_verified ? 'Verified' : 'Pending',
           }));
           setRecruiters(formattedRecruiters);
+          setNotification({
+            open: true,
+            message: "Recruiters fetched successfully!",
+            type: "success",
+          });
         } else {
           console.error('Unexpected response structure:', response);
+          setNotification({
+            open: true,
+            message: "Failed to fetch recruiters: Unexpected response.",
+            type: "error",
+          });
         }
       })
       .catch(error => {
         console.error('Error fetching recruiters:', error);
+        setNotification({
+          open: true,
+          message: `Failed to fetch recruiters: ${error.message}`,
+          type: "error",
+        });
       });
   }, []);
 
@@ -117,6 +138,11 @@ const ManageRecruiter = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setNotification({
+      open: true,
+      message: "Recruiters data exported successfully!",
+      type: "success",
+    });
   };
 
   const filteredRecruiters = recruiters.filter((recruiter) => {
@@ -136,10 +162,17 @@ const ManageRecruiter = () => {
   return (
     <Layout>
       <Container>
-        <Typography variant="h4" gutterBottom>
-          Manage Recruiters
-        </Typography>
-        <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+          flexDirection={isSmallScreen ? "column" : "row"} // Stack on small screens
+          gap={2} // Add some gap between items
+        >
+          <Typography variant="h4" gutterBottom>
+            Manage Recruiters
+          </Typography>
           <Button
             variant="contained"
             color="secondary"
@@ -158,8 +191,14 @@ const ManageRecruiter = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </Box>
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <FormControl variant="outlined" style={{ minWidth: 200 }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          mb={2}
+          flexDirection={isSmallScreen ? "column" : "row"} // Stack on small screens
+          gap={2} // Add some gap between items
+        >
+          <FormControl variant="outlined" fullWidth>
             <InputLabel>Recruiter Gender</InputLabel>
             <Select
               label="Recruiter Gender"
@@ -174,7 +213,7 @@ const ManageRecruiter = () => {
               <MenuItem value="other">Other</MenuItem>
             </Select>
           </FormControl>
-          <FormControl variant="outlined" style={{ minWidth: 200 }}>
+          <FormControl variant="outlined" fullWidth>
             <InputLabel>Status</InputLabel>
             <Select
               label="Status"
@@ -190,7 +229,7 @@ const ManageRecruiter = () => {
             </Select>
           </FormControl>
         </Box>
-        <Table>
+        <Table size={isSmallScreen ? "small" : "medium"}> {/* Adjust table size */}
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
@@ -229,7 +268,11 @@ const ManageRecruiter = () => {
                     />
                   </TableCell>
                   <TableCell>{recruiter.name}</TableCell>
-                  <TableCell><Link to={`https://api.whatsapp.com/send/?phone=${recruiter.phone}`}>{recruiter.phone}</Link></TableCell>
+                  <TableCell>
+                    <Link to={`https://api.whatsapp.com/send/?phone=${recruiter.phone}`} target="_blank">
+                      {recruiter.phone}
+                    </Link>
+                  </TableCell>
                   <TableCell>{recruiter.email}</TableCell>
                   <TableCell>{recruiter.gender}</TableCell>
                   <TableCell>
@@ -248,8 +291,13 @@ const ManageRecruiter = () => {
                     <IconButton onClick={() => handleViewRecruiter(recruiter)}>
                       <ViewIcon />
                     </IconButton>
-                    <IconButton>
-                      <EmailIcon />
+                    <IconButton
+                      component="a"
+                      href={`https://api.whatsapp.com/send/?phone=${recruiter.phone}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <WhatsAppIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -264,26 +312,29 @@ const ManageRecruiter = () => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={isSmallScreen ? "Rows" : "Rows per page"} // Shorter label
         />
         <Dialog
           open={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
+          fullWidth // Make dialog full width
+          maxWidth="sm" // Set maximum width
         >
           <DialogTitle>View Recruiter</DialogTitle>
           <DialogContent>
-            <Typography variant="h6">
+            <Typography variant="subtitle1">
               Full Name: {currentRecruiter?.name}
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="subtitle1">
               Email Address: {currentRecruiter?.email}
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="subtitle1">
               Phone Number: {currentRecruiter?.phone}
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="subtitle1">
               Gender: {currentRecruiter?.gender}
             </Typography>
-            <Typography variant="h6">
+            <Typography variant="subtitle1">
               Status: {currentRecruiter?.status}
             </Typography>
           </DialogContent>
@@ -299,6 +350,7 @@ const ManageRecruiter = () => {
           onClose={() => setNotification({ ...notification, open: false })}
           message={notification.message}
           severity={notification.type}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         />
       </Container>
     </Layout>
