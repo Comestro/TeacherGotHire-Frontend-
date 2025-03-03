@@ -39,7 +39,7 @@ function Home() {
               <p className="mb-4 font-bold text-2xl md:text-5xl leading-none text-center text-gray-600">
                 <div className="relative inline-block">
                   <span className="font-bold text-xl pb-10 md:text-5xl text-teal-600 me-1">
-                    Private Teacher Provider Intitute
+                    Private Teacher Provider Institute
                     <svg
                       className="absolute left-1/2 -translate-x-1/2 -bottom-4 w-[180px] md:w-[220px] text-teal-600"
                       viewBox="0 0 180 12"
