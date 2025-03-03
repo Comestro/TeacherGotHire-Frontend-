@@ -1,6 +1,6 @@
 import apiService from "./apiService";
 
-const endpoint = "/api/admin/managecenter";
+const endpoint = "/api/admin/examcenter";
 
 export const getManageCenter = () => apiService.getAll(endpoint);
 export const createCenterManager = (data) => apiService.create(endpoint, data);

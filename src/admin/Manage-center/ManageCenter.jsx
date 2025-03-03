@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
-  Breadcrumbs,
-  Link,
   Button,
   TextField,
   Table,
@@ -30,7 +28,7 @@ import {
 import { FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import { createCenterManager, updateCenterManager, deleteCenterManager, getManageCenter } from "../../services/adminManageCenterApi";
-import axios from 'axios'; // Import axios for API calls
+import axios from 'axios';
 
 const ManageCenter = () => {
   const [examCenters, setExamCenters] = useState([]);
@@ -41,13 +39,11 @@ const ManageCenter = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [formData, setFormData] = useState({
-    // User Data
     username: "",
     email: "",
     password: "",
     Fname: "",
     Lname: "",
-    // Exam Center Data
     center_name: "",
     pincode: "",
     state: "",
@@ -55,17 +51,37 @@ const ManageCenter = () => {
     area: "",
     status: false,
   });
+  const [filteredCenters, setFilteredCenters] = useState([]);
+
+  const [validationErrors, setValidationErrors] = useState({});
+  const [pincodeStatus, setPincodeStatus] = useState(null);
+  const [loadingPincode, setLoadingPincode] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     fetchExamCenters();
   }, []);
 
+  useEffect(() => {
+    // Update filteredCenters whenever examCenters, searchTerm, or filterStatus changes
+    const filtered = examCenters.filter(
+      (center) =>
+        (center.center_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.state.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (filterStatus === "" || (filterStatus === "active" ? true : false) === center.status)
+    );
+    setFilteredCenters(filtered);
+  }, [examCenters, searchTerm, filterStatus]);
+
   const fetchExamCenters = async () => {
     try {
       const response = await getManageCenter();
-      setExamCenters(response.data);
+      setExamCenters(response);
     } catch (error) {
-      console.error("Error fetching exam centers:", error);
+      showSnackbar("Error fetching exam centers", "error");
     }
   };
 
@@ -86,24 +102,16 @@ const ManageCenter = () => {
     setPage(0);
   };
 
-  const filteredCenters = examCenters.filter(
-    (center) =>
-      (center.center_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        center.state.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (filterStatus === "" || (filterStatus === "active" ? true : false) === center.status)
-  );
+
 
   const handleAddCenter = () => {
     setSelectedCenter(null);
     setFormData({
-      // User Data
       username: "",
       email: "",
       password: "",
       Fname: "",
       Lname: "",
-      // Exam Center Data
       center_name: "",
       pincode: "",
       state: "",
@@ -111,19 +119,18 @@ const ManageCenter = () => {
       area: "",
       status: false,
     });
+    setValidationErrors({});
     setIsModalOpen(true);
   };
 
   const handleEditCenter = (center) => {
     setSelectedCenter(center);
     setFormData({
-      // User Data (Assuming you can edit user data as well)
-      username: center.user.username || "", // Adjust if your response has different user fields
+      username: center.user.username || "",
       email: center.user.email || "",
-      password: "", // Don't pre-fill password for security
+      password: "",
       Fname: center.user.Fname || "",
       Lname: center.user.Lname || "",
-      // Exam Center Data
       center_name: center.center_name,
       pincode: center.pincode,
       state: center.state,
@@ -131,6 +138,7 @@ const ManageCenter = () => {
       area: center.area,
       status: center.status,
     });
+    setValidationErrors({});
     setIsModalOpen(true);
   };
 
@@ -139,15 +147,37 @@ const ManageCenter = () => {
       try {
         await deleteCenterManager(centerId);
         setExamCenters(examCenters.filter((center) => center.id !== centerId));
+        showSnackbar("Exam center deleted successfully", "success");
       } catch (error) {
-        console.error("Error deleting exam center:", error);
-        // Optionally display an error message to the user
+        showSnackbar("Error deleting exam center", "error");
       }
     }
   };
 
+  const validateForm = () => {
+    let errors = {};
+    if (!formData.username) errors.username = "Username is required";
+    if (!formData.email) errors.email = "Email is required";
+    if (!formData.Fname) errors.Fname = "First Name is required";
+    if (!formData.Lname) errors.Lname = "Last Name is required";
+    if (!formData.center_name) errors.center_name = "Center Name is required";
+    if (!formData.area) errors.area = "Area is required";
+    if (!formData.pincode) errors.pincode = "Pincode is required";
+    else if (!/^\d{6}$/.test(formData.pincode)) errors.pincode = "Pincode must be a 6-digit number";
+    if (!formData.city) errors.city = "City is required";
+    if (!formData.state) errors.state = "State is required";
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      showSnackbar("Please correct the errors in the form", "error");
+      return;
+    }
+
     try {
       const payload = {
         user: {
@@ -168,86 +198,115 @@ const ManageCenter = () => {
       };
 
       if (selectedCenter) {
-        // Update existing center (You might need a different API for this)
         await updateCenterManager(selectedCenter.id, payload);
-        setExamCenters(
-          examCenters.map((center) =>
-            center.id === selectedCenter.id ? { ...center, ...payload.exam_center, user: payload.user } : center
-          )
-        );
+        showSnackbar("Exam center updated successfully", "success");
       } else {
-        // Create new center
-        const response = await createCenterManager(payload);
-        setExamCenters([...examCenters, response.data]); // Assuming API returns the created center
+        await createCenterManager(payload);
+        showSnackbar("Exam center created successfully", "success");
       }
       setIsModalOpen(false);
-      fetchExamCenters(); // Refresh the list
+      fetchExamCenters();
     } catch (error) {
-      console.error("Error submitting form:", error);
-      // Optionally display an error message to the user
+      showSnackbar("Error submitting form", "error");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+
+    let updatedValue = type === "checkbox" ? checked : value;
 
     if (name === "pincode") {
-      // Fetch state and city based on pincode
+      if (!/^\d*$/.test(value)) return; // Only allow digits
+      if (value.length > 6) return; // Limit to 6 characters
+      updatedValue = value; // Keep it as a string
+    }
+
+    setFormData({
+      ...formData,
+      [name]: updatedValue,
+    });
+
+    setValidationErrors({ ...validationErrors, [name]: "" });
+
+    if (name === "pincode" && value.length === 6) {
       fetchPostalData(value);
     }
   };
 
+
   const fetchPostalData = async (pincode) => {
-    if (pincode.length === 6) {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_POSTAL_API_URL}${pincode}`);
-        if (response.data && response.data[0].Status === "Success") {
-          // Assuming the first post office is the relevant one
-          const postOffice = response.data[0].PostOffice[0];
-          setFormData({
-            ...formData,
-            city: postOffice.District,
-            state: postOffice.State,
-          });
-        } else {
-          console.error("Invalid pincode");
-          setFormData({
-            ...formData,
-            city: "",
-            state: "",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching postal data:", error);
-        setFormData({
-          ...formData,
+    setLoadingPincode(true);
+    setPincodeStatus(null);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_POSTAL_API_URL}${pincode}`);
+      if (response.data && response.data[0].Status === "Success") {
+        const postOffice = response.data[0].PostOffice[0];
+        setFormData((prevData) => ({
+          ...prevData,
+          city: postOffice.District,
+          state: postOffice.State,
+          pincode: pincode.toString(), // Ensure it's stored as a string
+        }));
+        setPincodeStatus("success");
+        showSnackbar("Pincode details fetched successfully", "success");
+      } else {
+        setFormData((prevData) => ({
+          ...prevData,
           city: "",
           state: "",
-        });
+          pincode: pincode.toString(), // Ensure it's stored as a string
+        }));
+        setPincodeStatus("error");
+        showSnackbar("Invalid pincode", "error");
       }
-    } else {
-      setFormData({
-        ...formData,
+    } catch (error) {
+      setFormData((prevData) => ({
+        ...prevData,
         city: "",
         state: "",
-      });
+        pincode: pincode.toString(), // Ensure it's stored as a string
+      }));
+      setPincodeStatus("error");
+      showSnackbar("Error fetching postal data", "error");
+    } finally {
+      setLoadingPincode(false);
     }
+  };
+
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  const modalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "80%",
+    maxWidth: "600px",
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    padding: "20px",
+    overflowY: "auto",
+    maxHeight: "80vh",
   };
 
   return (
     <Layout>
       <Container>
-        {/* Header Section */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={4}
-        >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
           <Box>
             <Typography variant="h4" component="h1" gutterBottom>
               Manage Exam Centers
@@ -256,17 +315,11 @@ const ManageCenter = () => {
               Add and manage exam centers for teacher assessments
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<FiPlus />}
-            onClick={handleAddCenter}
-          >
+          <Button variant="contained" color="primary" startIcon={<FiPlus />} onClick={handleAddCenter}>
             Add New Center
           </Button>
         </Box>
 
-        {/* Search and Filter Section */}
         <Box display="flex" mb={4}>
           <TextField
             fullWidth
@@ -281,11 +334,7 @@ const ManageCenter = () => {
           />
           <FormControl variant="outlined" style={{ minWidth: 200 }}>
             <InputLabel>Status</InputLabel>
-            <Select
-              value={filterStatus}
-              onChange={handleFilterStatus}
-              label="Status"
-            >
+            <Select value={filterStatus} onChange={handleFilterStatus} label="Status">
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -295,7 +344,6 @@ const ManageCenter = () => {
           </FormControl>
         </Box>
 
-        {/* Exam Centers Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -316,22 +364,13 @@ const ManageCenter = () => {
                     <TableCell>{`${center.city}, ${center.state}`}</TableCell>
                     <TableCell>{center.pincode}</TableCell>
                     <TableCell>
-                      <Chip
-                        label={center.status ? "Active" : "Inactive"}
-                        color={center.status ? "success" : "default"}
-                      />
+                      <Chip label={center.status ? "Active" : "Inactive"} color={center.status ? "success" : "default"} />
                     </TableCell>
                     <TableCell>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEditCenter(center)}
-                      >
+                      <IconButton color="primary" onClick={() => handleEditCenter(center)}>
                         <FiEdit2 />
                       </IconButton>
-                      <IconButton
-                        color="secondary"
-                        onClick={() => handleDeleteCenter(center.id)}
-                      >
+                      <IconButton color="secondary" onClick={() => handleDeleteCenter(center.id)}>
                         <FiTrash2 />
                       </IconButton>
                     </TableCell>
@@ -350,14 +389,12 @@ const ManageCenter = () => {
           />
         </TableContainer>
 
-        {/* Add/Edit Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <Box sx={modalStyle}>
             <Typography variant="h6" gutterBottom>
               {selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}
             </Typography>
             <form onSubmit={handleSubmit}>
-              {/* User Information */}
               <Typography variant="subtitle1" gutterBottom>
                 User Information
               </Typography>
@@ -369,6 +406,8 @@ const ManageCenter = () => {
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
+                  error={!!validationErrors.username}
+                  helperText={validationErrors.username}
                 />
               </FormControl>
               <FormControl fullWidth margin="normal">
@@ -379,6 +418,8 @@ const ManageCenter = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  error={!!validationErrors.email}
+                  helperText={validationErrors.email}
                 />
               </FormControl>
               <FormControl fullWidth margin="normal">
@@ -401,6 +442,8 @@ const ManageCenter = () => {
                     name="Fname"
                     value={formData.Fname}
                     onChange={handleInputChange}
+                    error={!!validationErrors.Fname}
+                    helperText={validationErrors.Fname}
                   />
                 </FormControl>
                 <FormControl fullWidth margin="normal" sx={{ ml: 1 }}>
@@ -411,6 +454,8 @@ const ManageCenter = () => {
                     name="Lname"
                     value={formData.Lname}
                     onChange={handleInputChange}
+                    error={!!validationErrors.Lname}
+                    helperText={validationErrors.Lname}
                   />
                 </FormControl>
               </Box>
@@ -426,6 +471,8 @@ const ManageCenter = () => {
                   name="center_name"
                   value={formData.center_name}
                   onChange={handleInputChange}
+                  error={!!validationErrors.center_name}
+                  helperText={validationErrors.center_name}
                 />
               </FormControl>
               <FormControl fullWidth margin="normal">
@@ -436,7 +483,23 @@ const ManageCenter = () => {
                   name="area"
                   value={formData.area}
                   onChange={handleInputChange}
+                  error={!!validationErrors.area}
+                  helperText={validationErrors.area}
                 />
+              </FormControl>
+              <FormControl fullWidth margin="normal">
+                <TextField
+                  label="Pincode"
+                  variant="outlined"
+                  required
+                  name="pincode"
+                  value={formData.pincode}
+                  onChange={handleInputChange}
+                  error={!!validationErrors.pincode || pincodeStatus === 'error'}
+                  helperText={validationErrors.pincode || (pincodeStatus === 'error' ? "Invalid Pincode" : "")}
+                  inputProps={{ maxLength: 6 }}
+                />
+                {loadingPincode && <Typography variant="caption">Loading...</Typography>}
               </FormControl>
               <Box display="flex" justifyContent="space-between" mb={2}>
                 <FormControl fullWidth margin="normal" sx={{ mr: 1 }}>
@@ -447,6 +510,8 @@ const ManageCenter = () => {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    error={!!validationErrors.city}
+                    helperText={validationErrors.city}
                   />
                 </FormControl>
                 <FormControl fullWidth margin="normal" sx={{ ml: 1 }}>
@@ -460,19 +525,11 @@ const ManageCenter = () => {
                       readOnly: true,
                     }}
                     onChange={handleInputChange}
+                    error={!!validationErrors.state}
+                    helperText={validationErrors.state}
                   />
                 </FormControl>
               </Box>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Pincode"
-                  variant="outlined"
-                  required
-                  name="pincode"
-                  value={formData.pincode}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
               <FormControlLabel
                 control={
                   <Switch
@@ -495,23 +552,15 @@ const ManageCenter = () => {
             </form>
           </Box>
         </Modal>
+
+        <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Layout>
   );
-};
-
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "80%", // Make the modal responsive
-  maxWidth: "600px", // Set a maximum width for larger screens
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-  overflowY: "auto",
 };
 
 export default ManageCenter;
