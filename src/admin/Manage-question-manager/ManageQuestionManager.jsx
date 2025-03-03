@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -29,52 +29,72 @@ import {
 } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-
-const dummyManagers = [
-  {
-    id: 1,
-    name: "Amit Sharma",
-    subjects: ["Math", "Science"],
-    totalQuestions: 120,
-    status: true,
-    assignmentDate: "2023-01-15",
-  },
-  {
-    id: 2,
-    name: "Priya Singh",
-    subjects: ["English", "History"],
-    totalQuestions: 80,
-    status: false,
-    assignmentDate: "2023-02-10",
-  },
-  {
-    id: 3,
-    name: "Ravi Kumar",
-    subjects: ["Geography", "Civics"],
-    totalQuestions: 50,
-    status: true,
-    assignmentDate: "2023-03-05",
-  },
-];
+import { getQuestionsManager, adminManageAssignedUserManager, updateAssignedUserManager, deleteAssignedUserManager } from "../../services/adminManageQuestionManager";
+import { getSubjects } from "../../services/adminSubujectApi";
 
 const ManageQuestionManager = () => {
   const [openModal, setOpenModal] = useState(false);
-  const [managers, setManagers] = useState(dummyManagers);
+  const [managers, setManagers] = useState([]);
   const [selectedManager, setSelectedManager] = useState(null);
   const [subjects, setSubjects] = useState([]);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
   const [status, setStatus] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filterStatus, setFilterStatus] = useState("");
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    Fname: "",
+    Lname: "",
+    password: "",
+  });
+
+  useEffect(() => {
+    fetchManagers();
+    fetchSubjects();
+  }, []);
+
+  const fetchManagers = async () => {
+    try {
+      const response = await getQuestionsManager();
+      setManagers(response);
+    } catch (error) {
+      console.error("Error fetching managers:", error);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await getSubjects();
+      setAvailableSubjects(response);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+    }
+  };
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
-  const handleSave = () => {
-    // Save logic here
-    setOpenSnackbar(true);
-    handleCloseModal();
+  const handleSave = async () => {
+    try {
+      const payload = {
+        user: {
+          email: newUserData.email,
+          Fname: newUserData.Fname,
+          Lname: newUserData.Lname,
+          password: newUserData.password,
+        },
+        subject: subjects,
+      };
+      await adminManageAssignedUserManager(payload);
+      setOpenSnackbar(true);
+      fetchManagers(); // Refresh data after successful save
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error creating user:", error);
+      // Handle error appropriately (e.g., display an error message)
+    }
   };
 
   const handleSearch = (e) => {
@@ -94,14 +114,25 @@ const ManageQuestionManager = () => {
     setFilterStatus(e.target.value);
   };
 
-  const filteredManagers = managers.filter(
-    (manager) =>
-      (manager.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        manager.subjects.some((subject) =>
-          subject.toLowerCase().includes(searchTerm.toLowerCase())
-        )) &&
-      (filterStatus === "" || manager.status === (filterStatus === "active"))
-  );
+  const filteredManagers = Array.isArray(managers)
+    ? managers.filter((manager) => {
+      const fullName = `${manager.user.Fname} ${manager.user.Lname}`.toLowerCase();
+      const searchTermLower = searchTerm.toLowerCase();
+
+      const subjectMatch = manager.subject.some((subject) =>
+        subject.subject_name.toLowerCase().includes(searchTermLower)
+      );
+
+      return (
+        (fullName.includes(searchTermLower) || subjectMatch) &&
+        (filterStatus === "" || (filterStatus === "active" ? true : false) === manager.user.is_verified)
+      );
+    })
+    : [];
+
+  const handleInputChange = (e) => {
+    setNewUserData({ ...newUserData, [e.target.name]: e.target.value });
+  };
 
   return (
     <Layout>
@@ -156,9 +187,7 @@ const ManageQuestionManager = () => {
               <TableRow>
                 <TableCell>Manager Name</TableCell>
                 <TableCell>Assigned Subjects</TableCell>
-                <TableCell>Total Questions Added</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Assignment Date</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -166,21 +195,25 @@ const ManageQuestionManager = () => {
               {filteredManagers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((manager) => (
-                  <TableRow key={manager.id}>
+                  <TableRow key={manager.user.id}>
                     <TableCell>
-                      <Link href={`/manager/${manager.id}`} color="inherit">
-                        {manager.name}
+                      <Link href={`/manager/${manager.user.id}`} color="inherit">
+                        {manager.user.Fname} {manager.user.Lname}
                       </Link>
                     </TableCell>
-                    <TableCell>{manager.subjects.join(", ")}</TableCell>
-                    <TableCell>{manager.totalQuestions}</TableCell>
+                    <TableCell>
+                      {manager.subject.map((sub) => (
+                        <div key={sub.id}>
+                          {sub.subject_name} (Class {sub.class_category})
+                        </div>
+                      ))}
+                    </TableCell>
                     <TableCell>
                       <Chip
-                        label={manager.status ? "Active" : "Inactive"}
-                        color={manager.status ? "success" : "default"}
+                        label={manager.user.is_verified ? "Active" : "Inactive"}
+                        color={manager.user.is_verified ? "success" : "default"}
                       />
                     </TableCell>
-                    <TableCell>{manager.assignmentDate}</TableCell>
                     <TableCell>
                       <IconButton>
                         <Edit />
@@ -212,45 +245,62 @@ const ManageQuestionManager = () => {
             <Typography variant="h6" gutterBottom>
               Assign Question Manager
             </Typography>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Select User</InputLabel>
-              <Select
-                value={selectedManager}
-                onChange={(e) => setSelectedManager(e.target.value)}
-              >
-                {/* Map through users */}
-                <MenuItem value={1}>User 1</MenuItem>
-                <MenuItem value={2}>User 2</MenuItem>
-              </Select>
-            </FormControl>
+            <TextField
+              label="First Name"
+              name="Fname"
+              fullWidth
+              margin="normal"
+              onChange={handleInputChange}
+            />
+            <TextField
+              label="Last Name"
+              name="Lname"
+              fullWidth
+              margin="normal"
+              onChange={handleInputChange}
+            />
+            <TextField
+              label="Email"
+              name="email"
+              fullWidth
+              margin="normal"
+              onChange={handleInputChange}
+            />
+            <TextField
+              label="Password"
+              name="password"
+              fullWidth
+              margin="normal"
+              type="password"
+              onChange={handleInputChange}
+            />
             <FormControl fullWidth margin="normal">
               <InputLabel>Assign Subject(s)</InputLabel>
-              <Select
-                multiple
-                value={subjects}
-                onChange={(e) => setSubjects(e.target.value)}
-                renderValue={(selected) => (
-                  <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} sx={{ margin: "2px" }} />
-                    ))}
-                  </Box>
-                )}
-              >
-                {/* Map through subjects */}
-                <MenuItem value="Math">Math</MenuItem>
-                <MenuItem value="Science">Science</MenuItem>
-              </Select>
+              {Array.isArray(availableSubjects) ? (
+                <Select
+                  multiple
+                  value={subjects}
+                  onChange={(e) => setSubjects(e.target.value)}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={
+                          availableSubjects.find(sub => sub.id === value)?.subject_name || value
+                        } sx={{ margin: "2px" }} />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {availableSubjects.map((subject) => (
+                    <MenuItem key={subject.id} value={subject.id}>
+                      {subject.subject_name} (Class {subject.class_category})
+                    </MenuItem>
+                  ))}
+                </Select>
+              ) : (
+                <Typography>Loading subjects...</Typography>
+              )}
             </FormControl>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={status}
-                  onChange={(e) => setStatus(e.target.checked)}
-                />
-              }
-              label="Active"
-            />
             <Box
               sx={{
                 display: "flex",
