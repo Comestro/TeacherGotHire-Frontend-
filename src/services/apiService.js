@@ -1,9 +1,11 @@
 import axios from "axios";
+import { getApiUrl } from "../store/configue";
 
-const API_URL = "https://api.ptpinstitute.com/";
+
+// const API_URL = "https://api.ptpinstitute.com/";
 
 const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: getApiUrl(),
   headers: {
     "Content-Type": "application/json",
   },
