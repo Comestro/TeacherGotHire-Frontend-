@@ -268,7 +268,7 @@ function TeacherDashboard() {
               </div>
             ))}
          
-          {passkeyresponse &&
+          {/* {passkeyresponse &&
             Object.entries(passkeyresponse).length > 0 &&
             !isPassedOfflineAttemptNext && (
               <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100">
@@ -300,7 +300,7 @@ function TeacherDashboard() {
                   </form>
                 </div>
               </div>
-            )}
+            )} */}
         </div>
       </div>
     </>
