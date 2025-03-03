@@ -67,7 +67,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   });
 
   const handlePincodeChange = async (e) => {
-    const enteredPincode = e.target.value.replace(/\D/g, "");
+    const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(enteredPincode);
 
     if (enteredPincode.length === 6) {
@@ -118,7 +118,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     },
     {
       type: "personal",
-      title: "Personal Tutor",
+      title: "Personal(Home) Tutor",
       description: "Private one-on-one tutoring",
     },
   ];
@@ -403,6 +403,12 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                     </button>
                     <button
                       onClick={() => setCurrentStep(3)}
+                      disabled={
+                        pincode.length !== 6 ||
+                        loadingPincode ||
+                        !pincodeDetails.state ||
+                        (areas.length > 0 && !selectedArea)
+                      }
                       className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
                       //   disabled={!pincode || !selectedArea}
                     >
