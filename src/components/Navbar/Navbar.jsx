@@ -98,7 +98,7 @@ const Navbar = ({ links }) => {
              <span className="relative flex items-center justify-center gap-2">
                <FiBriefcase className="w-5 h-5  duration-300" />
                <span className="bg-gradient-to-r from-white/80 to-white bg-clip-text text-transparent">
-                 Hire Teacher
+               शिक्षक नियुक्त करे
                </span>
              </span>
            
@@ -156,7 +156,7 @@ const Navbar = ({ links }) => {
               }}
               className="w-full flex items-center bg-teal-600 text-white px-4 py-2 rounded-lg"
             >
-              <FiBriefcase className="mr-2" /> Hire Teacher
+              <FiBriefcase className="mr-2" /> शिक्षक नियुक्त करे
             </button>
           )}
 
