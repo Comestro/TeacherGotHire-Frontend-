@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-import { getQuestionsManager, adminManageAssignedUserManager } from "../../services/adminManageQuestionManager";
+import { getQuestionsManager, adminManageAssignedUserManager, updateAssignedUserManager, deleteAssignedUserManager } from "../../services/adminManageQuestionManager";
 import { getSubjects } from "../../services/adminSubujectApi";
 
 const ManageQuestionManager = () => {
@@ -68,7 +68,7 @@ const ManageQuestionManager = () => {
   const fetchSubjects = async () => {
     try {
       const response = await getSubjects();
-      setAvailableSubjects(response);  
+      setAvailableSubjects(response);
     } catch (error) {
       console.error("Error fetching subjects:", error);
     }
