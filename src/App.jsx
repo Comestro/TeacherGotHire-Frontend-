@@ -64,7 +64,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
-              <Route path="test" element={<Test />} />
+              {/* <Route path="test" element={<Test />} /> */}
 
               <Route path="contact" element={<ContactUs />} />
               <Route path="exam-mode" element={<ExamMode />} />
