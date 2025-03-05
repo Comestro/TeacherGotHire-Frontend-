@@ -56,7 +56,7 @@ function Home() {
                   </span>
                 </div>
                 
-                <span className="block mt-4 text-xl md:text-2xl"> - पढ़ने, पढ़ाने और पढ़वाने का बेहतरीन मंच</span>
+                <span className="block mt-4 text-xl md:text-2xl">  पढ़ने, पढ़ाने और पढ़वाने का बेहतरीन मंच</span>
               </p>
             </div>
           </div>

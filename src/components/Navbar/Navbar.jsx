@@ -88,23 +88,23 @@ const Navbar = ({ links }) => {
           {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-4">
             {!shouldHide && (
-             <button
-             onClick={() => setShowEnquiry(true)}
-             className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-size-200 transition-all 
+              <button
+                onClick={() => setShowEnquiry(true)}
+                className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-size-200 transition-all 
              duration-300 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
              hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
-           >
-             {/* Content */}
-             <span className="relative flex items-center justify-center gap-2">
-               <FiBriefcase className="w-5 h-5  duration-300" />
-               <span className="bg-gradient-to-r from-white/80 to-white bg-clip-text text-transparent">
-               शिक्षक नियुक्त करे
-               </span>
-             </span>
-           
-             {/* Hover border animation */}
-             <div className="absolute inset-0 rounded-xl border-2 border-white/20 transition-all duration-500 group-hover:border-white/40 group-hover:scale-[0.98]" />
-           </button>
+              >
+                {/* Content */}
+                <span className="relative flex items-center justify-center gap-2">
+                  <FiBriefcase className="w-5 h-5  duration-300" />
+                  <span className="bg-gradient-to-r from-white/80 to-white bg-clip-text text-transparent">
+                    शिक्षक खोजें
+                  </span>
+                </span>
+
+                {/* Hover border animation */}
+                <div className="absolute inset-0 rounded-xl border-2 border-white/20 transition-all duration-500 group-hover:border-white/40 group-hover:scale-[0.98]" />
+              </button>
             )}
 
             {profile.email ? (
@@ -124,14 +124,23 @@ const Navbar = ({ links }) => {
               </div>
             ) : (
               !shouldHide && (
-                <Link
-                  to="/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
-                >
-                  <FiUserPlus className="w-5 h-5" />
-                  <span>Register as Teacher</span>
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    to="/signin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
+                  >
+                    <FiUserPlus className="w-5 h-5" />
+                    <span>Register as Teacher</span>
+                  </Link>
+                  <Link
+                    to="/signup/recruiter"
+                    className="flex items-center gap-2 px-3 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-blue-50 hover:shadow-md"
+                  >
+                    <FiUserPlus className="w-5 h-5" />
+                    <span>Recruiter Sign Up</span>
+                  </Link>
+                </div>
               )
             )}
           </div>
@@ -156,7 +165,7 @@ const Navbar = ({ links }) => {
               }}
               className="w-full flex items-center bg-teal-600 text-white px-4 py-2 rounded-lg"
             >
-              <FiBriefcase className="mr-2" /> शिक्षक नियुक्त करे
+              <FiBriefcase className="mr-2" /> शिक्षक खोजें
             </button>
           )}
 
@@ -179,14 +188,24 @@ const Navbar = ({ links }) => {
             </>
           ) : (
             !shouldHide && (
-              <Link
-                to="/signin"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
-              >
-                <FiUserPlus className="w-5 h-5" />
-                <span>Register as Teacher</span>
-              </Link>
+              <div className="space-y-3">
+                <Link
+                  to="/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
+                >
+                  <FiUserPlus className="w-5 h-5" />
+                  <span>Register as Teacher</span>
+                </Link>
+                <Link
+                  to="/signup/recruiter"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-2 w-full px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-blue-50 hover:shadow-md"
+                >
+                  <FiBriefcase className="w-5 h-5" />
+                  <span>Recruiter Sign Up</span>
+                </Link>
+              </div>
             )
           )}
         </div>
