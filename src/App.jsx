@@ -53,6 +53,7 @@ import ManageHiringRequests from "./admin/Manage-hiring/ManageHiring";
 import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
 import InterviewManagement from "./admin/Manage-interview/ManageInterview";
 import JobApply from "./components/Dashboard/components/JobApply";
+import Test from "./admin/test/Test";
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
+              {/* <Route path="test" element={<Test />} /> */}
 
               <Route path="contact" element={<ContactUs />} />
               <Route path="exam-mode" element={<ExamMode />} />

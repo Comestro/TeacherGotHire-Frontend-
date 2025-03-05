@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaChalkboardTeacher, FaSchool, FaUserTie, FaClipboardCheck, FaUserCheck, FaBriefcase, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaChalkboardTeacher, FaUserTie, FaClipboardCheck, FaUserCheck, FaBriefcase, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import Layout from "../Admin/Layout";
