@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../store/configue";
-//import { userLogout as logoutAction } from "../features/authSlice"; 
-import store, {persistor} from "../store/store"
+import store, { persistor } from "../store/store";
+import { userLogout } from "../features/authSlice";
 
 const apiClient = axios.create({
   baseURL: getApiUrl(),
@@ -24,9 +24,16 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const handleApiError = (err) => {
+const handleApiError = async (err) => {
   if (err.response) {
     const { status, data } = err.response;
+    if (status === 401) {
+      await store.dispatch(userLogout()).unwrap();
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("role");
+      await persistor.purge();
+      await persistor.flush();
+    }
     throw {
       status,
       message: data.message || `An error occurred. Status code: ${status}`,
@@ -69,8 +76,14 @@ const getRequest = async (url) => {
 export const createaccount = async (userDetails) =>
   postRequest("/api/register/teacher/", userDetails);
 
-export const createRecruiteraccount = async (userDetails) =>
-  postRequest("/api/register/recruiter/", userDetails);
+export const createRecruiteraccount = async (userDetails) => {
+  const response = await postRequest("/api/register/recruiter/", userDetails);
+  if (response && response.access_token) {
+    localStorage.setItem("access_token", response.access_token);
+    localStorage.setItem("role", response.role);
+  }
+  return response;
+};
 
 export const fetchUserData = async () => getRequest("/api/self/customuser/");
 

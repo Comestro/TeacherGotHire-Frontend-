@@ -1,9 +1,10 @@
 import { login as loginService } from "./authServices";
+import { userLogout } from "../features/authSlice";
 
 export const login = async ({ email, password, navigate, setError, setLoading }) => {
   setError("");
   setLoading(true);
-
+ 
   try {
     const userData = await loginService({ email, password }); // Call the service function to authenticate the user
 
@@ -33,4 +34,16 @@ export const login = async ({ email, password, navigate, setError, setLoading })
   } finally {
     setLoading(false); // Set loading to false
   }
+};
+
+export const handleLogout = (dispatch, navigate) => {
+  dispatch(userLogout())
+    .unwrap()
+    .then(() => {
+      console.log("Logout successful!");
+      navigate("/signin");
+    })
+    .catch((error) => {
+      console.error("Logout failed:", error);
+    });
 };

@@ -1,5 +1,5 @@
 import React from 'react'
-import { createRecruiteraccount, verifyOtp } from '../services/authServices'
+import { createRecruiteraccount } from '../services/authServices'
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Input from "./Input";
@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { recruiterPostData } from "../features/authSlice";
 import CustomHeader from './commons/CustomHeader';
+
 const RecruiterSignUpPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -18,50 +19,28 @@ const RecruiterSignUpPage = () => {
         formState: { errors, isValid },
     } = useForm();
     const [error, setError] = useState("");
-    const [otpSent, setOtpSent] = useState(false);
-    const [email, setEmail] = useState("");
-    const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     const password = watch("password");
 
     const recruitersign = async ({ Fname, Lname, email, password }) => {
       setError("");
-      setLoading(true); // Set loading to true
+      setLoading(true);
     
       try {
-        const userData = await createRecruiteraccount({ Fname, Lname, email, password });
-        if (userData) {
-          setOtpSent(true);
-          setEmail(email); // Set the email state here
-          setSuccessMessage("OTP has been sent to your email.");
+        const response = await createRecruiteraccount({ Fname, Lname, email, password });
+        if (response && response.access_token) {
+          localStorage.setItem('access_token', response.access_token);
+          dispatch(recruiterPostData(response));
+          navigate("/signin");
         }
       } catch (error) {
         setError(error.message || "Failed to create account. Please try again.");
       } finally {
-        setLoading(false); // Set loading to false
+        setLoading(false);
       }
     };
-    const verifyOtpHandler = async () => {
-      setError("");
-      setLoading(true); // Set loading to true
-      setSuccessMessage("");
-    
-      try {
-        const response = await verifyOtp({ email, otp }); // Ensure email is included in the payload
-        if (response) {
-          dispatch(recruiterPostData(response.data));
-          navigate("/signin");
-        } else {
-          setError(response.message || "Invalid OTP. Please try again.");
-        }
-      } catch (error) {
-        setError(error.name || "Failed to verify OTP. Please try again.");
-      } finally {
-        setLoading(false); // Set loading to false
-      }
-    };
+
     return (
         <>
         <CustomHeader />
@@ -72,7 +51,6 @@ const RecruiterSignUpPage = () => {
         {/* Form Container */}
         <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-10">
           <div className="max-w-md w-full mt-5">
-          {!otpSent ? (
            <>
            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Recruiters </span>
@@ -225,72 +203,16 @@ const RecruiterSignUpPage = () => {
                 )}
               </div>
 
-              {/* Submit Button */}
+              {/* Sign Up Button */}
               <Button
-                type="submit" disabled={!isValid || loading} 
-                className={`w-full py-2 rounded-xl transition ${
-                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
-                }`}
+                type="submit"
+                disabled={!isValid || loading}
+                className={`w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition duration-200`}
               >
-                 {loading ? "Sending..." : "Sign Up"}
+                {loading ? "Signing up..." : "Sign Up"}
               </Button>
             </form>
-
-            {error && (
-              <p className="text-red-500 text-sm mt-4">Error: {error}</p>
-            )}
-
-            {/* <div className="text-center my-2">
-              <div className="flex items-center">
-                <hr className="flex-grow border-gray-300" />
-                <span className="px-4 text-sm text-gray-600">Or</span>
-                <hr className="flex-grow border-gray-300" />
-              </div>
-
-              <p className="text-sm font-medium text-gray-600 mt-6">
-                Have an account?{" "}
-                <span
-                  onClick={() => navigate("/signin")}
-                  className="text-teal-600 hover:underline font-semibold"
-                >
-                  Sign In
-                </span>
-              </p>
-            </div> */}
-            </>) : (
-              <>
-               <>
-               {successMessage && (
-                  <p className="bg-green-200 text-green-900 px-3 py-2 rounded border border-green-700 text-center mb-4">{successMessage}</p>
-                )}
-                <h2 className="mb-8 font-bold text-gray-500 text-xl md:text-4xl leading-none">
-                  Verify OTP
-                </h2>
-                {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Enter OTP
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Enter the OTP sent to your email"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="w-full border-2 text-sm rounded-xl px-3 py-3 border-gray-300 focus:border-green-500"
-                  />
-                </div>
-                <Button
-                  onClick={verifyOtpHandler}
-                  disabled={!otp || loading} // Disable button when loading or OTP is empty
-                  className={`w-full py-2 rounded-xl transition ${
-                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 text-white hover:bg-teal-700"
-                  }`}                >
-                  {loading ? "Verifying..." : "Verify OTP"}
-                </Button>
-              </>
-              </>
-            )}
+           </>
           </div>
         </div>
 
@@ -355,7 +277,8 @@ const RecruiterSignUpPage = () => {
           </div>
         </div>
       </div>
-    </>
-    )
-}
-export default RecruiterSignUpPage
+        </>
+    );
+};
+
+export default RecruiterSignUpPage;

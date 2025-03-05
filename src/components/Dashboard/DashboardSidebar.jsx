@@ -11,6 +11,7 @@ import { HiMiniEye } from "react-icons/hi2";
 import { getUserData, userLogout } from "../../features/authSlice";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
+import { handleLogout } from "../../services/authUtils";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
@@ -20,23 +21,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   useEffect(() => {
     dispatch(getUserData());
   }, [dispatch]);
-
-  // const handleLogout = () => {
-  //   logout();
-  //   navigate("/signin");
-  // };
-
-  const handleLogout = () => {
-      dispatch(userLogout())
-        .unwrap()
-        .then(() => {
-          console.log("Logout successful!");
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-        });
-        navigate("/signin");
-    };
 
   return (
     <>
@@ -164,7 +148,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </div>
               <div className="border-t border-gray-200">
                 <button
-                  onClick={handleLogout}
+                  onClick={() => handleLogout(dispatch, navigate)}
                   className="flex items-center gap-1 text-md text-red-500 py-2 px-4"
                 >
                   <HiOutlineLogin className="size-5" />

@@ -42,7 +42,7 @@ function Login() {
 
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello,{" "}
-              <span className="font-bold text-teal-600">Teachers</span>
+              <span className="font-bold text-teal-600">User</span>
             </h2>
             <h2 className=" font-bold text-gray-500 text-xl md:text-4xl leading-none">
               Sign in to{" "}
