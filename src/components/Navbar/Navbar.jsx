@@ -43,8 +43,12 @@ const Navbar = ({ links }) => {
     setIsProfileOpen(false);
   };
 
-  const UserDropdown = () => (
-    <div className="absolute right-0 mt-3 bg-white rounded-lg shadow-lg border w-48">
+  const UserDropdown = ({ isMobile = false }) => (
+    <div
+      className={`${
+        isMobile ? "w-full" : "absolute right-0 mt-3 w-48"
+      } bg-white rounded-lg shadow-lg border z-50`}
+    >
       <Link
         to="/teacher"
         className="flex items-center px-4 py-3 hover:bg-gray-50"
@@ -108,16 +112,19 @@ const Navbar = ({ links }) => {
             )}
 
             {profile.email ? (
-              <div className="relative ml-4">
+              <div className="relative ml-4 z-10">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center text-sm text-gray-700 hover:text-gray-900"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors bg-gray-50 hover:bg-gray-100"
                 >
-                  <span className="mr-2">
-                    {profile.Fname} {profile.Lname}
-                  </span>
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <FiUser className="text-gray-600" />
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center shadow-sm transition-all hover:bg-gray-200">
+                    <FiUser className="text-gray-600 text-sm" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium text-teal-700">
+                      {profile.Fname} {profile.Lname}
+                    </span>
+                    <p className="text-xs text-gray-500">{profile.email}</p>
                   </div>
                 </button>
                 {isProfileOpen && <UserDropdown />}
@@ -183,7 +190,30 @@ const Navbar = ({ links }) => {
                     <p className="text-sm text-gray-600">{profile.email}</p>
                   </div>
                 </div>
-                <UserDropdown />
+                <div
+                  className={`w-full`}
+                >
+                  <Link
+                    to="/teacher"
+                    className="flex items-center px-2 py-3 hover:bg-gray-50"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    <FiUser className="mr-2" /> Dashboard
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="flex items-center px-2 py-3 hover:bg-gray-50"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    <FiSettings className="mr-2" /> Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center px-2 py-3 hover:bg-gray-50 rounded-b-lg"
+                  >
+                    <FiLogOut className="mr-2" /> Logout
+                  </button>
+                </div>
               </div>
             </>
           ) : (
