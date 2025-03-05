@@ -38,6 +38,7 @@ import {
   BusinessCenter,
   Quiz,
   LibraryBooks,
+  WorkOutline,
 } from "@mui/icons-material";
 
 const drawerWidth = 240;
@@ -110,6 +111,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
     { text: "Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
     { text: "Level", icon: <LayersIcon />, link: "/admin/manage/level" },
     { text: "Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
+    { text: "Job Type", icon: <WorkOutline />, link: "/admin/manage/teacher/jobtype" },
     { text: "Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
     // manage request
     { text: "Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
@@ -144,15 +146,15 @@ export default function Sidebar({ open, handleDrawerClose }) {
         </IconButton>
       </DrawerHeader>
       <Divider />
-      <List>
+      <List sx={{ py: 0.5 }}>
         {menuItems.slice(0, 1).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block" }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 48,
+                  minHeight: 42,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -175,14 +177,14 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </Tooltip>
         ))}
         <Divider textAlign="center">Data Management</Divider>
-        {menuItems.slice(1, 7).map((item) => (
+        {menuItems.slice(1, 8).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block" }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 48,
+                  minHeight: 42,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -205,14 +207,14 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </Tooltip>
         ))}
         <Divider textAlign="center">Manage Request</Divider>
-        {menuItems.slice(7, 10).map((item) => (
+        {menuItems.slice(8, 11).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block" }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 48,
+                  minHeight: 42,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -235,14 +237,14 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </Tooltip>
         ))}
         <Divider textAlign="center">Manage Users</Divider>
-        {menuItems.slice(10).map((item) => (
+        {menuItems.slice(11).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block" }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 48,
+                  minHeight: 42,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -266,8 +268,8 @@ export default function Sidebar({ open, handleDrawerClose }) {
         ))}
         <Divider />
         {/* Collapsible Settings Section */}
-        <ListItem disablePadding onClick={handleCollapseToggle}>
-          <ListItemButton>
+        <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0.3 }}>
+          <ListItemButton sx={{ minHeight: 42 }}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
@@ -276,7 +278,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </ListItemButton>
         </ListItem>
         <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
+          <List component="div" disablePadding sx={{ py: 0 }}>
             {[
               {
                 text: "My profile",
@@ -300,13 +302,13 @@ export default function Sidebar({ open, handleDrawerClose }) {
               },
             ].map((item) => (
               <Tooltip key={item.text} title={item.text} placement="right" arrow>
-                <ListItem disablePadding>
+                <ListItem disablePadding sx={{ py: 0.2 }}>
                   <ListItemButton
                     component={Link}
                     to={item.link}
                     sx={{
                       pl: 4,
-                      minHeight: 48,
+                      minHeight: 38,
                       justifyContent: open ? "initial" : "center",
                       px: 2.5,
                     }}
@@ -333,9 +335,9 @@ export default function Sidebar({ open, handleDrawerClose }) {
       </List>
       <Divider />
       {/* Logout Button */}
-      <List>
-        <ListItem disablePadding sx={{ mt: 2 }}>
-          <ListItemButton onClick={handlelogout}>
+      <List sx={{ py: 0.5 }}>
+        <ListItem disablePadding sx={{ mt: 1 }}>
+          <ListItemButton onClick={handlelogout} sx={{ minHeight: 42 }}>
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>
