@@ -25,6 +25,15 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+export const fetchSingleTeacherById = async (teacherId) => {
+  try {
+    const response = await axiosInstance.get(`/api/admin/teacher/${teacherId}/`);
+    return response.data; // Return the single teacher's data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "An error occurred while fetching the teacher.");
+  }
+};
+
 const apiService = {
   getAll: async (endpoint) => {
     try {
