@@ -473,7 +473,7 @@ const ExamManagement = () => {
                       <TableCell>{exam.level.name}</TableCell>
                       <TableCell>{exam.class_category.name}</TableCell>
                       <TableCell>{exam.total_marks}</TableCell>
-                      <TableCell>{exam.duration}</TableCell>
+                      <TableCell>{exam.duration} min</TableCell>
                       <TableCell>{exam.type}</TableCell>
                       <TableCell>
                         <Button

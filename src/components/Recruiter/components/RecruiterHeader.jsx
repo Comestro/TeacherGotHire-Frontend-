@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
-import { useSelector } from "react-redux";
-import { userLogout } from "../../../features/authSlice";
-
+import { useSelector, useDispatch } from "react-redux";
+import { handleLogout } from "../../../services/authUtils";
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profile = useSelector((state) => state?.auth?.userData || {});
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -17,12 +18,6 @@ const TeacherRecruiterHeader = () => {
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
-
- const handleLogout = () => {
-     userLogout();
-     setIsProfileMenuOpen(false);
-   };
- 
 
   return (
     <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
@@ -109,7 +104,7 @@ const TeacherRecruiterHeader = () => {
                 >
                   Profile
                 </Link>
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+                <button onClick={() => handleLogout(dispatch, navigate)} className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
                   Logout
                 </button>
               </div>

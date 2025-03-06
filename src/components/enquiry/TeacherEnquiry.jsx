@@ -14,7 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getSubject } from "../../features/jobProfileSlice";
 
-export const TeacherEnquiry = ({ showModal, setShowModal }) => {
+export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
 
 
   const apiClient = axios.create({
