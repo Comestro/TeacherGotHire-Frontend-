@@ -27,7 +27,8 @@ apiClient.interceptors.request.use(
 const handleApiError = async (err) => {
   if (err.response) {
     const { status, data } = err.response;
-    if (status === 401) {
+    // Only perform logout actions for 401s that aren't from the login endpoint
+    if (status === 401 && !err.config.url.includes('/api/login/')) {
       await store.dispatch(userLogout()).unwrap();
       localStorage.removeItem("access_token");
       localStorage.removeItem("role");
