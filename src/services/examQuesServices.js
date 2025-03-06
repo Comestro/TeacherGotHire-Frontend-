@@ -270,6 +270,18 @@ export const addQuestionToExamSet= async () => {
   }
 };
 
+export const getAssignUserSubject= async () => {
+  try {
+    const response = await apiClient.get(`/api/self/assigneduser/`);
+    console.log("Assignuser",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
 export const jobApply= async ({subject, class_category}) => {
   try {
     const response = await apiClient.post(`/api/self/apply/

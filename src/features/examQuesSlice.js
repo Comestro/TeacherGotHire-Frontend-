@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -17,6 +17,7 @@ const initialState = {
   verifyresponse:{},
   centerUser:[],
   jobApply:[],
+  setterUser:[],
   subject: "",
   language: "",
   status: "idle",
@@ -377,6 +378,22 @@ export const generatePasskey= createAsyncThunk(
                       }
                     }
                     );
+
+                    export const getSetterInfo= createAsyncThunk(
+                      "getSetterInfo",
+                      async (__, { rejectWithValue }) => {
+                        
+                        try {
+                          const data = await getAssignUserSubject();
+                           return data; 
+                        } catch (error) {
+                          return rejectWithValue({
+                            message: error.message, 
+                            code: error.code || "UNKNOWN_ERROR", 
+                          });
+                        }
+                      }
+                      );
 const examQuesSlice = createSlice({
   name: "examQues",
   initialState,
@@ -600,6 +617,22 @@ const examQuesSlice = createSlice({
         console.log("jobapply",action.payload)
       })
       .addCase(postJobApply.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(getSetterInfo.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getSetterInfo.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.setterUser = action.payload;
+        console.log("setterUser",action.payload)
+      })
+      .addCase(getSetterInfo.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

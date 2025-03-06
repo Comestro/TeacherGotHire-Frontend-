@@ -287,6 +287,7 @@ const ExamManagement = () => {
   // handle edit
   const handleEdit = (exam) => {
     setSelectedExam(exam);
+    console.log("exam")
     setFormData({
       name: exam.name,
       subject: exam.subject.id,
@@ -295,7 +296,7 @@ const ExamManagement = () => {
       total_marks: exam.total_marks,
       duration: exam.duration,
       // Only set type if level is 2 or above
-      type: exam.level.id >= 2 ? exam.type : "",
+      type: exam.level.id >=2 ? exam.type : "",
     });
     setOpenAddModal(true);
   };

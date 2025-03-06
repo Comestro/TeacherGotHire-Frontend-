@@ -9,6 +9,7 @@ import {
   putExamSet,
   deleteExamSet,
   postQuestionToExamSet,
+  getSetterInfo,
 } from "../../features/examQuesSlice";
 import { getClassCategory } from "../../features/jobProfileSlice";
 import Loader from "../Loader";
@@ -26,10 +27,10 @@ const QuestionManagement = () => {
     marks: 1,
   });
   const dispatch = useDispatch();
-  const { setterExamSet, loading, error } = useSelector(
+  const { setterExamSet, loading, setterUser,error } = useSelector(
     (state) => state.examQues
   );
-
+  console.log("setterUser",setterUser);
   console.log("selectedExamSet", selectedExamSet);
 
   console.log("currentQuestion", currentQuestion);
@@ -39,6 +40,7 @@ const QuestionManagement = () => {
 
   useEffect(() => {
     dispatch(getClassCategory());
+    dispatch(getSetterInfo());
   }, [dispatch]);
 
   const { classCategories } = useSelector((state) => state?.jobProfile);
@@ -546,11 +548,11 @@ const QuestionManagement = () => {
                             Question {index + 1}
                           </h3>
                           <p className="text-gray-500">
-                            Marks: {question.marks}
+                            Marks: {question.total_marks}
                           </p>
                         </div>
                       </div>
-                      <p className="mb-4">{question.question}</p>
+                      <p className="mb-4">{question.text}</p>
                       <div className="grid grid-cols-2 gap-4">
                         {question.options.map((option, i) => (
                           <div
@@ -562,7 +564,7 @@ const QuestionManagement = () => {
                             }`}
                           >
                             <span className="font-medium mr-2">{i + 1}.</span>
-                            {option}
+                            {option.option}
                           </div>
                         ))}
                       </div>

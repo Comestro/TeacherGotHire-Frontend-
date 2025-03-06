@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
+import { handleLogout } from "../../services/authUtils";
+import {  useDispatch } from "react-redux";
+import {  useNavigate } from "react-router-dom";
 
 const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const toggleMobileMenu = () => {
+
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
@@ -32,18 +38,7 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
           >
             Home
           </Link>
-          <Link
-            to="/about"
-            className="text-gray-700 hover:text-teal-600 font-medium transition"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/contact"
-            className="text-gray-700 hover:text-teal-600 font-medium transition"
-          >
-            Contact
-          </Link>
+          
         </nav>
 
         {/* Profile Section */}
@@ -73,7 +68,9 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
               >
                 Profile
               </Link>
-              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+              <button
+              onClick={() => handleLogout(dispatch, navigate)}
+              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
                 Logout
               </button>
             </div>
