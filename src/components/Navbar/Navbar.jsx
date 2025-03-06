@@ -90,7 +90,7 @@ const Navbar = ({ links }) => {
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             {!shouldHide && (
               <button
                 onClick={() => setShowEnquiry(true)}

@@ -43,8 +43,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar Drawer */}
       <div
         className={`fixed top-0 left-0 h-full w-72   bg-slate-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0 z-50" : "-translate-x-full"
-        } md:translate-x-0 md:fixed`}
+          isOpen ? "translate-x-0 z-50 max-h-screen" : "-translate-x-full z-50"
+        } md:translate-x-0 md:fixed md:z-40`}
       >
         {/* Profile Section */}
         <div className="flex flex-col h-screen bg-white">
