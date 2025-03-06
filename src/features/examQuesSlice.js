@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -277,6 +277,7 @@ export const generatePasskey= createAsyncThunk(
         );
 
 
+
         export const getExamSets= createAsyncThunk(
           "getExamSets",
           async (__, { rejectWithValue }) => {
@@ -295,7 +296,7 @@ export const generatePasskey= createAsyncThunk(
 
           export const putExamSet= createAsyncThunk(
             "putExamSet",
-            async (__, { rejectWithValue }) => {
+            async (_, { rejectWithValue }) => {
               
               try {
                 const data = await createExamSet();
@@ -312,10 +313,10 @@ export const generatePasskey= createAsyncThunk(
 
             export const deleteExamSet= createAsyncThunk(
               "deleteExamSet",
-              async (__, { rejectWithValue }) => {
+              async (id, { rejectWithValue }) => {
                 
                 try {
-                  const data = await createExamSet();
+                  const data = await delExamSet(id);
                    return data; 
                 } catch (error) {
                   return rejectWithValue({
@@ -359,6 +360,23 @@ export const generatePasskey= createAsyncThunk(
                     }
                   }
                   );
+
+                  export const postQuestionToExamSet= createAsyncThunk(
+                    "postQuestionToExamSet",
+                    
+                    async (payload, { rejectWithValue }) => {
+                     console.log("setter",payload) 
+                      try {
+                        const data = await addQuestionToExamSet(payload);
+                         return data; 
+                      } catch (error) {
+                        return rejectWithValue({
+                          message: error.message, 
+                          code: error.code || "UNKNOWN_ERROR", 
+                        });
+                      }
+                    }
+                    );
 const examQuesSlice = createSlice({
   name: "examQues",
   initialState,

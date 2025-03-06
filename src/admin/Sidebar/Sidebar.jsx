@@ -11,7 +11,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import { Collapse, Tooltip } from "@mui/material";
-import { userLogout } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
+import { handleLogout } from "../../services/authUtils";
 import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -92,15 +93,11 @@ const Drawer = styled(MuiDrawer, {
 export default function Sidebar({ open, handleDrawerClose }) {
   const theme = useTheme();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [collapseOpen, setCollapseOpen] = useState(false);
 
   const handleCollapseToggle = () => {
     setCollapseOpen((prev) => !prev);
-  };
-
-  const handlelogout = async () => {
-    await userLogout();
-    navigate("/signin");
   };
 
   const menuItems = [
@@ -337,7 +334,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
       {/* Logout Button */}
       <List sx={{ py: 0.5 }}>
         <ListItem disablePadding sx={{ mt: 1 }}>
-          <ListItemButton onClick={handlelogout} sx={{ minHeight: 42 }}>
+          <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 42 }}>
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>

@@ -32,7 +32,7 @@ function ExamManagement() {
   );
   const { examSet,allcenter,attempts } = useSelector((state) => state.examQues); 
   const { userData } = useSelector((state) => state?.auth);
-  const { exam, passkeyresponse, verifyresponse } = useSelector(
+  const { interview,exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
   const exams = verifyresponse?.offline_exam;
@@ -675,7 +675,8 @@ const handleCategoryChange = (category) => {
                             </button>
                           </div>
                         </form>
-                      ) : !isApproved ? (
+                      ) : interview &&
+                          interview.length > 0 ? (
                         // Pending card after submission
                         <div>
                           <div className="flex items-center justify-between mb-4">
