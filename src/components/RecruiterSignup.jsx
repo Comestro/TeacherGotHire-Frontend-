@@ -45,12 +45,12 @@ const RecruiterSignUpPage = () => {
         <>
         <CustomHeader />
       <div
-        className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
+        className="flex bg-cover bg-no-repeat items-center justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-10">
-          <div className="max-w-md w-full mt-5">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center p-6 md:p-0">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
            <>
            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Recruiters </span>

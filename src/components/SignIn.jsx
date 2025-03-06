@@ -32,12 +32,12 @@ function Login() {
       <CustomHeader />
       {loading && <Loader />}
       <div
-        className="flex bg-cover bg-no-repeat items-center justify-center mt-5"
+        className="flex bg-cover bg-no-repeat items-center justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
-          <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center p-6 md:p-0">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
@@ -155,14 +155,30 @@ function Login() {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <p className="text-sm font-medium text-gray-600 mt-6">
-                <span
-                  onClick={() => navigate("/forgot-password")}
-                  className="text-teal-600 hover:underline font-semibold cursor-pointer"
+              <div className="flex flex-col space-y-4 mt-4">
+                <Button
+                  onClick={() => navigate("/signup/teacher")}
+                  textColor="text-teal-600"
+                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
                 >
-                  Forgot-Password
-                </span>
-              </p>
+                  Register as Teacher
+                </Button>
+                <Button
+                  onClick={() => navigate("/signup/recruiter")}
+                  textColor="text-teal-600"
+                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
+                >
+                  Register as Recruiter
+                </Button>
+                {/* <p className="text-sm font-medium text-gray-600">
+                  <span
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-teal-600 hover:underline font-semibold cursor-pointer"
+                  >
+                    Forgot Password?
+                  </span>
+                </p> */}
+              </div>
             </div>
           </div>
         </div>
