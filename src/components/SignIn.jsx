@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,29 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const role = localStorage.getItem("role");
+    if (token && role) {
+      switch (role) {
+        case "recruiter":
+          navigate("/recruiter");
+          break;
+        case "teacher":
+          navigate("/teacher");
+          break;
+        case "centeruser":
+          navigate("/examcenter");
+          break;
+        case "questionuser":
+          navigate("/subject-expert");
+          break;
+        default:
+          navigate("/admin/dashboard");
+      }
+    }
+  }, [navigate]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -50,16 +73,7 @@ function Login() {
                 PTPI
               </span>
             </h2>
-            <p className="text-sm font-medium text-gray-600 mt-2 mb-4">
-              Don't have an account?{" "}
-              <span
-                onClick={() => navigate("/signup/teacher")}
-                className="text-teal-600 hover:underline font-semibold cursor-pointer"
-              >
-                Sign Up
-              </span>
-            </p>
-
+           
             <form onSubmit={handleSubmit((data) => login({ ...data, navigate, setError, setLoading }))} className="space-y-5">
               {/* Email */}
               <div className="mb-4">
