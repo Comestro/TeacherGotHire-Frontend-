@@ -55,11 +55,11 @@ function Login() {
       <CustomHeader />
       {loading && <Loader />}
       <div
-        className="flex bg-cover bg-no-repeat items-center justify-center min-h-screen"
+        className="flex bg-cover bg-no-repeat md:items-center md:justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center p-6 md:p-0">
+        <div className="w-full md:w-1/2 flex md:pl-72  md:p-0 mt-20 md:mt-0">
           <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 

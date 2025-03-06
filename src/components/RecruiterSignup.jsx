@@ -45,12 +45,12 @@ const RecruiterSignUpPage = () => {
         <>
         <CustomHeader />
       <div
-        className="flex bg-cover bg-no-repeat items-center justify-center min-h-screen"
+        className="flex bg-cover bg-no-repeat md:items-center md:justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center p-6 md:p-0">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
+        <div className="w-full md:w-1/2 flex md:pl-72 mt-20 md:mt-0">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-7">
            <>
            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello, <span className="font-bold text-teal-600">Recruiters </span>
@@ -78,7 +78,7 @@ const RecruiterSignUpPage = () => {
             <form onSubmit={handleSubmit(recruitersign)} className="space-y-5">
               {/* Full Name */}
               <div className="flex gap-2">
-                <div className="flex-1">
+                <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
                   </label>
@@ -100,7 +100,7 @@ const RecruiterSignUpPage = () => {
                     </span>
                   )}
                 </div>
-                <div>
+                <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Last Name
                   </label>

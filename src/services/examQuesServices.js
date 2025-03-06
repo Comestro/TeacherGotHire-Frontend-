@@ -239,7 +239,28 @@ export const createExamSet= async (payload) => {
 
 export const setterExamSet= async () => {
   try {
-    const response = await apiClient.get(`/api/examsetter/exams/`);
+    const response = await apiClient.get(`/api/examsetter/`);
+    console.log("ExamSetter",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const delExamSet= async (id) => {
+  try {
+    const response = await apiClient.delete(`/api/examsetter/${id}/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+export const addQuestionToExamSet= async () => {
+  try {
+    const response = await apiClient.get(`/api/examsetter/question/`);
     console.log("ExamSetter",response)
     return response.data;
     

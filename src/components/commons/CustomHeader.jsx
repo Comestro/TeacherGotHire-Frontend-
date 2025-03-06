@@ -1,5 +1,6 @@
 import React from "react";
 import { IoIosNotifications, IoMdMenu } from "react-icons/io";
+import { HiOutlineArrowSmLeft } from "react-icons/hi";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -14,12 +15,12 @@ const CustomHeader = ({ isOpen, setIsOpen }) => {
     <div className="flex items-center justify-between px-4 py-2 bg-teal-600 text-white shadow-md -z-10 md:z-0">
       {/* Drawer Toggle Button */}
       <div className="flex items-center gap-4">
-        <button
+        <Link
           className="p-2 rounded-md bg-white bg-opacity-20 hover:bg-opacity-30 transition md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
+          to={'/'}
         >
-          <IoMdMenu className="text-white text-xl" />
-        </button>
+          <HiOutlineArrowSmLeft className="text-white text-xl" />
+        </Link>
         <h1 className="text-2xl font-semibold hidden md:block md:pl-5">
           PTP INSTITUTE
         </h1>
