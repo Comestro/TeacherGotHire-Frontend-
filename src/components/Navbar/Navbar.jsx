@@ -19,6 +19,7 @@ const Navbar = ({ links }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profile = useSelector((state) => state.auth.userData || {});
+  console.log("Profile menu: ", profile);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);
 
@@ -90,7 +91,7 @@ const Navbar = ({ links }) => {
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             {!shouldHide && (
               <button
                 onClick={() => setShowEnquiry(true)}
