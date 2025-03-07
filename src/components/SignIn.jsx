@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -20,6 +20,29 @@ function Login() {
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
 
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const role = localStorage.getItem("role");
+    if (token && role) {
+      switch (role) {
+        case "recruiter":
+          navigate("/recruiter");
+          break;
+        case "teacher":
+          navigate("/teacher");
+          break;
+        case "centeruser":
+          navigate("/examcenter");
+          break;
+        case "questionuser":
+          navigate("/subject-expert");
+          break;
+        default:
+          navigate("/admin/dashboard");
+      }
+    }
+  }, [navigate]);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -32,17 +55,17 @@ function Login() {
       <CustomHeader />
       {loading && <Loader />}
       <div
-        className="flex bg-cover bg-no-repeat items-center justify-center mt-5"
+        className="flex bg-cover bg-no-repeat md:items-center md:justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center justify-center px-4 md:pl-20">
-          <div className="max-w-lg w-full mt-5 bg-white rounded-lg p-6">
+        <div className="w-full md:w-1/2 flex md:pl-72  md:p-0 mt-20 md:mt-0">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello,{" "}
-              <span className="font-bold text-teal-600">Teachers</span>
+              <span className="font-bold text-teal-600">User</span>
             </h2>
             <h2 className=" font-bold text-gray-500 text-xl md:text-4xl leading-none">
               Sign in to{" "}
@@ -50,16 +73,7 @@ function Login() {
                 PTPI
               </span>
             </h2>
-            <p className="text-sm font-medium text-gray-600 mt-2 mb-4">
-              Don't have an account?{" "}
-              <span
-                onClick={() => navigate("/signup/teacher")}
-                className="text-teal-600 hover:underline font-semibold cursor-pointer"
-              >
-                Sign Up
-              </span>
-            </p>
-
+           
             <form onSubmit={handleSubmit((data) => login({ ...data, navigate, setError, setLoading }))} className="space-y-5">
               {/* Email */}
               <div className="mb-4">
@@ -155,14 +169,30 @@ function Login() {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <p className="text-sm font-medium text-gray-600 mt-6">
-                <span
-                  onClick={() => navigate("/forgot-password")}
-                  className="text-teal-600 hover:underline font-semibold cursor-pointer"
+              <div className="flex flex-col space-y-4 mt-4">
+                <Button
+                  onClick={() => navigate("/signup/teacher")}
+                  textColor="text-teal-600"
+                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
                 >
-                  Forgot-Password
-                </span>
-              </p>
+                  Register as Teacher
+                </Button>
+                <Button
+                  onClick={() => navigate("/signup/recruiter")}
+                  textColor="text-teal-600"
+                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
+                >
+                  Register as Recruiter
+                </Button>
+                {/* <p className="text-sm font-medium text-gray-600">
+                  <span
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-teal-600 hover:underline font-semibold cursor-pointer"
+                  >
+                    Forgot Password?
+                  </span>
+                </p> */}
+              </div>
             </div>
           </div>
         </div>

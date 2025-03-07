@@ -11,6 +11,7 @@ import { HiMiniEye } from "react-icons/hi2";
 import { getUserData, userLogout } from "../../features/authSlice";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
+import { handleLogout } from "../../services/authUtils";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
@@ -21,30 +22,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     dispatch(getUserData());
   }, [dispatch]);
 
-  // const handleLogout = () => {
-  //   logout();
-  //   navigate("/signin");
-  // };
-
-  const handleLogout = () => {
-      dispatch(userLogout())
-        .unwrap()
-        .then(() => {
-          console.log("Logout successful!");
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-        });
-        navigate("/signin");
-    };
-
   return (
     <>
       {/* Sidebar Drawer */}
       <div
         className={`fixed top-0 left-0 h-full w-72   bg-slate-50 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0 z-50" : "-translate-x-full"
-        } md:translate-x-0 md:fixed`}
+          isOpen ? "translate-x-0 z-50 max-h-screen" : "-translate-x-full z-50"
+        } md:translate-x-0 md:fixed md:z-40`}
       >
         {/* Profile Section */}
         <div className="flex flex-col h-screen bg-white">
@@ -164,7 +148,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               </div>
               <div className="border-t border-gray-200">
                 <button
-                  onClick={handleLogout}
+                  onClick={() => handleLogout(dispatch, navigate)}
                   className="flex items-center gap-1 text-md text-red-500 py-2 px-4"
                 >
                   <HiOutlineLogin className="size-5" />

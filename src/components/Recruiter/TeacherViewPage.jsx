@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Loader from './components/Loader';
-import { getTeacherById } from '../../services/adminTeacherApi';
+import { useDispatch } from 'react-redux';
+import { getTeacher } from '../../services/teacherService';
+import { fetchSingleTeacherById } from '../../services/apiService';
 
 const TeacherViewPage = () => {
   const { id } = useParams();
   const [teacher, setTeacher] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const loadTeacher = async () => {
       try {
         console.log("teacher id", id)
-        const data = await getTeacherById(id);
+        const data = await fetchSingleTeacherById(id);
         console.log("single teacher data ....", data)
         setTeacher(data);
         setLoading(false);
@@ -69,7 +72,7 @@ const TeacherViewPage = () => {
         {/* Teacher Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
           <img
-            src={teacher.profiles?.profile_picture || "https://via.placeholder.com/150"}
+            src={teacher.profiles?.profile_picture || "/images/profile.jpg"}
             alt={teacher.Fname}
             className="w-32 h-32 rounded-full object-cover border-4 border-teal-500"
           />

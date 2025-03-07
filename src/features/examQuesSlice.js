@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -17,6 +17,7 @@ const initialState = {
   verifyresponse:{},
   centerUser:[],
   jobApply:[],
+  setterUser:[],
   subject: "",
   language: "",
   status: "idle",
@@ -277,6 +278,7 @@ export const generatePasskey= createAsyncThunk(
         );
 
 
+
         export const getExamSets= createAsyncThunk(
           "getExamSets",
           async (__, { rejectWithValue }) => {
@@ -295,7 +297,7 @@ export const generatePasskey= createAsyncThunk(
 
           export const putExamSet= createAsyncThunk(
             "putExamSet",
-            async (__, { rejectWithValue }) => {
+            async (_, { rejectWithValue }) => {
               
               try {
                 const data = await createExamSet();
@@ -312,10 +314,10 @@ export const generatePasskey= createAsyncThunk(
 
             export const deleteExamSet= createAsyncThunk(
               "deleteExamSet",
-              async (__, { rejectWithValue }) => {
+              async (id, { rejectWithValue }) => {
                 
                 try {
-                  const data = await createExamSet();
+                  const data = await delExamSet(id);
                    return data; 
                 } catch (error) {
                   return rejectWithValue({
@@ -359,6 +361,39 @@ export const generatePasskey= createAsyncThunk(
                     }
                   }
                   );
+
+                  export const postQuestionToExamSet= createAsyncThunk(
+                    "postQuestionToExamSet",
+                    
+                    async (payload, { rejectWithValue }) => {
+                     console.log("setter",payload) 
+                      try {
+                        const data = await addQuestionToExamSet(payload);
+                         return data; 
+                      } catch (error) {
+                        return rejectWithValue({
+                          message: error.message, 
+                          code: error.code || "UNKNOWN_ERROR", 
+                        });
+                      }
+                    }
+                    );
+            
+                    export const getSetterInfo= createAsyncThunk(
+                      "getSetterInfo",
+                      async (__, { rejectWithValue }) => {
+                        
+                        try {
+                          const data = await getAssignUserSubject();
+                           return data; 
+                        } catch (error) {
+                          return rejectWithValue({
+                            message: error.message, 
+                            code: error.code || "UNKNOWN_ERROR", 
+                          });
+                        }
+                      }
+                      );
 const examQuesSlice = createSlice({
   name: "examQues",
   initialState,
@@ -585,6 +620,25 @@ const examQuesSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       });
+
+      builder
+      // for get data handeling
+      .addCase(getSetterInfo.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getSetterInfo.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.setterUser = action.payload;
+        console.log("setterUser",action.payload)
+      })
+      .addCase(getSetterInfo.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+
+      
   },
   resetState: () => initialState,
 });

@@ -32,11 +32,13 @@ function ExamManagement() {
   );
   const { examSet,allcenter,attempts } = useSelector((state) => state.examQues); 
   const { userData } = useSelector((state) => state?.auth);
-  const { exam, passkeyresponse, verifyresponse } = useSelector(
+  const { interview,exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
+ 
   const exams = verifyresponse?.offline_exam;
-  const isProfileComplete =
+  const 
+  isProfileComplete =
     ( basicData && Object.keys(basicData).length > 0 &&
     prefrence && Object.values(prefrence).some(val => 
         (Array.isArray(val) && val.length > 0) || 
@@ -675,7 +677,8 @@ const handleCategoryChange = (category) => {
                             </button>
                           </div>
                         </form>
-                      ) : !isApproved ? (
+                      ) : interview &&
+                          interview.length > 0 ? (
                         // Pending card after submission
                         <div>
                           <div className="flex items-center justify-between mb-4">
