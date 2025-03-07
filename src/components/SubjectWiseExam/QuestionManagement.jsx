@@ -14,8 +14,6 @@ import {
 } from "../../features/examQuesSlice";
 import Loader from "../Loader";
 const QuestionManagement = () => {
-  const [selectedClass, setSelectedClass] = useState("");
-  const [currentExamSet, setCurrentExamSet] = useState("");
   const [selectedExamSet, setSelectedExamSet] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({
@@ -44,7 +42,7 @@ const QuestionManagement = () => {
     dispatch(getLevels());
   }, [dispatch]);
 
-  const subjects = setterUser[0].subject;
+  const subjects = setterUser[0]?.subject;
   console.log("subject", subjects);
   const handleSubjectChange = (e) => {
     const selectedId = parseInt(e.target.value, 10);
@@ -334,6 +332,9 @@ const QuestionManagement = () => {
 
                   <div>
                     <div className="relative flex-1 w-full">
+                    <label className="block text-sm font-medium mb-1">
+                      Select a Subject
+                    </label>
                       <select
                         {...register("subject", {
                           required: "subject is required",

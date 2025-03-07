@@ -1,15 +1,23 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { handleLogout } from "../../../services/authUtils";
+import { getUserData } from "../../../features/authSlice";
 
 const TeacherRecruiterHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profile = useSelector((state) => state?.auth?.userData || {});
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const profile = useSelector((state) => state.auth.userData || {});
+    console.log("Profile menu: ", profile);
+
+    useEffect(() => {
+         dispatch(getUserData());
+       }, [dispatch]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
