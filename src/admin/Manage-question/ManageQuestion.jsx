@@ -25,6 +25,7 @@ import {
   Paper,
   Grid,
   Chip,
+  Avatar,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -100,14 +101,11 @@ const ManageQuestion = () => {
     setCurrentQuestion({
       id: null,
       text: "",
-      subject: { id: "", subject_name: "" },
-      level: { id: "", name: "", description: "" },
-      classCategory: { id: "", name: "" },
-      options: [],
-      time: "",
-      language: "",
+      options: ["", "", "", ""],
+      exam: "",
       solution: "",
       correct_option: "",
+      time: 2.5,
       created_at: new Date().toISOString(),
     });
     setIsEditModalOpen(true);
@@ -162,17 +160,19 @@ const ManageQuestion = () => {
   const handleSaveQuestion = async () => {
     try {
       const questionData = {
-        ...currentQuestion,
-        subject: currentQuestion.subject.id,
-        level: currentQuestion.level.id,
-        classCategory: currentQuestion.classCategory.id,
+        text: currentQuestion.text,
+        options: currentQuestion.options,
+        exam: currentQuestion.exam,
+        solution: currentQuestion.solution,
+        correct_option: currentQuestion.correct_option,
+        time: currentQuestion.time,
       };
 
       if (currentQuestion.id) {
         await updateQuestion(currentQuestion.id, questionData);
         setQuestions(
           questions.map((question) =>
-            question.id === currentQuestion.id ? currentQuestion : question
+            question.id === currentQuestion.id ? { ...question, ...questionData } : question
           )
         );
       } else {
@@ -283,28 +283,11 @@ const ManageQuestion = () => {
     }
   };
 
-  const handleOptionDelete = (optionToDelete) => {
-    setCurrentQuestion({
-      ...currentQuestion,
-      options: currentQuestion.options.filter((option) => option !== optionToDelete),
-    });
-  };
-
-  const handleOptionAdd = (event) => {
-    if (event.key === "Enter" && event.target.value.trim() !== "") {
-      setCurrentQuestion({
-        ...currentQuestion,
-        options: [...currentQuestion.options, event.target.value.trim()],
-      });
-      event.target.value = "";
-    }
-  };
-
   return (
     <Layout>
       <Container>
         <Typography variant="h4" gutterBottom>
-          Manage Questions
+          Manage Questions new
         </Typography>
         <Box display="flex" justifyContent="space-between" mb={2}>
           <Button
@@ -452,163 +435,74 @@ const ManageQuestion = () => {
         <Dialog
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          maxWidth="md"
+          fullWidth
         >
           <DialogTitle>
-            {currentQuestion && currentQuestion.id
-              ? "Edit Question"
-              : "Add Question"}
+            {currentQuestion?.id ? "Edit Question" : "Add New Question"}
           </DialogTitle>
           <DialogContent>
-            <TextField
-              label="Question Text"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={currentQuestion ? currentQuestion.text : ""}
-              onChange={(e) =>
-                setCurrentQuestion({ ...currentQuestion, text: e.target.value })
-              }
-            />
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Category/Topic</InputLabel>
-              <Select
-                label="Category/Topic"
-                value={currentQuestion ? currentQuestion.classCategory.id : ""}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+              <TextField
+                label="Question Text"
+                fullWidth
+                value={currentQuestion?.text || ""}
                 onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    classCategory: {
-                      ...currentQuestion.classCategory,
-                      id: e.target.value,
-                    },
-                  })
+                  setCurrentQuestion({ ...currentQuestion, text: e.target.value })
                 }
-              >
-                {classCategories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddClassCategory}
-              style={{ marginTop: "10px" }}
-            >
-              Add Class Category
-            </Button>
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Subject</InputLabel>
-              <Select
-                label="Subject"
-                value={currentQuestion ? currentQuestion.subject.id : ""}
-                onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    subject: { ...currentQuestion.subject, id: e.target.value },
-                  })
-                }
-              >
-                {subjects.map((subject) => (
-                  <MenuItem key={subject.id} value={subject.id}>
-                    {subject.subject_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddSubject}
-              style={{ marginTop: "10px" }}
-            >
-              Add Subject
-            </Button>
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel>Difficulty Level</InputLabel>
-              <Select
-                label="Difficulty Level"
-                value={currentQuestion ? currentQuestion.level.id : ""}
-                onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    level: { ...currentQuestion.level, id: e.target.value },
-                  })
-                }
-              >
-                {difficultyLevels.map((level) => (
-                  <MenuItem key={level.id} value={level.id}>
-                    {level.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddLevel}
-              style={{ marginTop: "10px" }}
-            >
-              Add Level
-            </Button>
-            <Box display="flex" flexWrap="wrap" gap={1} mt={2}>
+              />
               {currentQuestion?.options.map((option, index) => (
-                <Chip
+                <TextField
                   key={index}
-                  label={option}
-                  onDelete={() => handleOptionDelete(option)}
-                  color="primary"
+                  label={`Option ${index + 1}`}
+                  fullWidth
+                  value={option}
+                  onChange={(e) => {
+                    const newOptions = [...currentQuestion.options];
+                    newOptions[index] = e.target.value;
+                    setCurrentQuestion({ ...currentQuestion, options: newOptions });
+                  }}
+                  sx={{ mb: 2 }}
                 />
               ))}
+              <TextField
+                label="Exam Number"
+                type="number"
+                fullWidth
+                value={currentQuestion?.exam || ""}
+                onChange={(e) =>
+                  setCurrentQuestion({ ...currentQuestion, exam: parseInt(e.target.value) })
+                }
+              />
+              <TextField
+                label="Solution"
+                fullWidth
+                value={currentQuestion?.solution || ""}
+                onChange={(e) =>
+                  setCurrentQuestion({ ...currentQuestion, solution: e.target.value })
+                }
+              />
+              <TextField
+                label="Correct Option (1-4)"
+                type="number"
+                fullWidth
+                value={currentQuestion?.correct_option || ""}
+                onChange={(e) =>
+                  setCurrentQuestion({ ...currentQuestion, correct_option: parseInt(e.target.value) })
+                }
+                inputProps={{ min: 1, max: 4 }}
+              />
+              <TextField
+                label="Time (minutes)"
+                type="number"
+                fullWidth
+                value={currentQuestion?.time || 2.5}
+                onChange={(e) =>
+                  setCurrentQuestion({ ...currentQuestion, time: parseFloat(e.target.value) })
+                }
+                inputProps={{ step: 0.5 }}
+              />
             </Box>
-            <TextField
-              label="Add Option"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              onKeyDown={handleOptionAdd}
-            />
-            <TextField
-              label="Correct Option Index"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={currentQuestion ? currentQuestion.correct_option : ""}
-              onChange={(e) =>
-                setCurrentQuestion({
-                  ...currentQuestion,
-                  correct_option: e.target.value,
-                })
-              }
-            />
-            <TextField
-              label="Time (in minutes)"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={currentQuestion ? currentQuestion.time : ""}
-              onChange={(e) =>
-                setCurrentQuestion({
-                  ...currentQuestion,
-                  time: e.target.value,
-                })
-              }
-            />
-            <TextField
-              label="Language"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={currentQuestion ? currentQuestion.language : ""}
-              onChange={(e) =>
-                setCurrentQuestion({
-                  ...currentQuestion,
-                  language: e.target.value,
-                })
-              }
-            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsEditModalOpen(false)} color="primary">

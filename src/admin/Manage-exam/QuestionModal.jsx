@@ -31,13 +31,6 @@ import {
 const QuestionCard = ({ question, index, onEdit, onDelete }) => {
   if (!question) return null;
 
-  const normalizedOptions = question.options.map((option) => {
-    if (typeof option === "string") {
-      return { option, image: null };
-    }
-    return option; // Keep object options as is
-  });
-
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -50,7 +43,7 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
         <Typography variant="body2" color="text.secondary" gutterBottom>
           <strong>Options:</strong>
         </Typography>
-        {normalizedOptions.map((option, i) => (
+        {question.options.map((option, i) => (
           <Typography
             key={i}
             variant="body2"
@@ -60,18 +53,14 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
                 : "text.secondary"
             }
           >
-            {i + 1}. {option.option}
-            {option.image && (
-              <img
-                src={option.image}
-                alt={`Option ${i + 1}`}
-                style={{ maxWidth: "100px", marginLeft: "10px" }}
-              />
-            )}
+            {i + 1}. {option}
           </Typography>
         ))}
         <Typography variant="body2" mt={1} color="text.primary">
           <strong>Solution:</strong> {question.solution}
+        </Typography>
+        <Typography variant="body2" mt={1} color="text.primary">
+          <strong>Language:</strong> {question.language}
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
           <IconButton onClick={() => onEdit(question)}>
@@ -90,11 +79,14 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [questions, setQuestions] = useState([]);
   const [openAddQuestionModal, setOpenAddQuestionModal] = useState(false);
   const [editQuestion, setEditQuestion] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [newQuestion, setNewQuestion] = useState({
     text: "",
-    options: [{ option: "", image: null }, { option: "", image: null }, { option: "", image: null }, { option: "", image: null }],
+    options: ["", "", "", ""],
     correct_option: 1,
     solution: "",
+    time: 2.5,
+    language: "English"
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -103,8 +95,13 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     if (selectedExam?.id) {
       const fetchQuestions = async () => {
         const response = await getExamById(selectedExam.id);
-        // Ensure response structure matches expectations
-        setQuestions(response?.questions || []);
+        // Transform the options format for each question
+        const transformedQuestions = response?.questions?.map(q => ({
+          ...q,
+          options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
+          language: q.language || "English"
+        })) || [];
+        setQuestions(transformedQuestions);
       };
       fetchQuestions();
     }
@@ -115,9 +112,11 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     setEditQuestion(null);
     setNewQuestion({
       text: "",
-      options: [{ option: "", image: null }, { option: "", image: null }, { option: "", image: null }, { option: "", image: null }],
+      options: ["", "", "", ""],
       correct_option: 1,
       solution: "",
+      time: 2.5,
+      language: "English"
     });
   };
 
@@ -138,13 +137,23 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
 
     // Fetch latest questions from backend to ensure new question is reflected immediately
     const response = await getExamById(selectedExam.id);
-    setQuestions(response?.questions || []);
+    // Transform the options format for each question
+    const transformedQuestions = response?.questions?.map(q => ({
+      ...q,
+      options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
+      language: q.language || "English"
+    })) || [];
+    setQuestions(transformedQuestions);
   };
 
-
   const handleEditQuestion = (question) => {
-    setEditQuestion(question);
-    setNewQuestion(question);
+    // Transform options if they are in object format
+    const transformedQuestion = {
+      ...question,
+      options: question.options.map(opt => typeof opt === 'object' ? opt.option : opt)
+    };
+    setEditQuestion(transformedQuestion);
+    setNewQuestion(transformedQuestion);
     setOpenAddQuestionModal(true);
   };
 
@@ -205,7 +214,21 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                 mb: 2,
               }}
             >
-              <Typography variant="h6">Questions</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="h6">Questions</Typography>
+                <FormControl sx={{ minWidth: 120 }}>
+                  <InputLabel>Filter Language</InputLabel>
+                  <Select
+                    value={selectedLanguage}
+                    label="Filter Language"
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    size="small"
+                  >
+                    <MenuItem value="English">English</MenuItem>
+                    <MenuItem value="Hindi">Hindi</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -214,15 +237,18 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                 Add Question
               </Button>
             </Box>
-            {questions?.map((question, index) => (
-              <QuestionCard
-                key={question?.id || `question-${index}`} // Fallback key
-                question={question}
-                index={index}
-                onEdit={handleEditQuestion}
-                onDelete={handleDeleteQuestion}
-              />
-            ))}
+            {questions
+              ?.filter(q => q.language === selectedLanguage)
+              ?.map((question, index) => (
+                <QuestionCard
+                  key={question?.id || `question-${index}`}
+                  question={question}
+                  index={index}
+                  onEdit={handleEditQuestion}
+                  onDelete={handleDeleteQuestion}
+                />
+              ))
+            }
           </Grid>
         </Grid>
       </DialogContent>
@@ -240,56 +266,81 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         <DialogTitle>
           {editQuestion ? "Edit Question" : "Add New Question"}
         </DialogTitle>
-        <DialogContent dividers>
-          <TextField
-            fullWidth
-            label="Question Text"
-            value={newQuestion.text || ""}
-            onChange={(e) =>
-              setNewQuestion({ ...newQuestion, text: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
-          {newQuestion.options.map((option, i) => (
+        <DialogContent>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel>Language</InputLabel>
+              <Select
+                value={newQuestion.language}
+                label="Language"
+                onChange={(e) =>
+                  setNewQuestion({
+                    ...newQuestion,
+                    language: e.target.value,
+                  })
+                }
+              >
+                <MenuItem value="English">English</MenuItem>
+                <MenuItem value="Hindi">Hindi</MenuItem>
+              </Select>
+            </FormControl>
+
             <TextField
-              key={i}
+              label="Question Text"
               fullWidth
-              label={`Option ${i + 1}`}
-              value={option.option || ""}
-              onChange={(e) => {
-                const newOptions = [...newQuestion.options];
-                newOptions[i] = { ...newOptions[i], option: e.target.value };
-                setNewQuestion({ ...newQuestion, options: newOptions });
-              }}
-              sx={{ mb: 2 }}
+              value={newQuestion.text}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, text: e.target.value })
+              }
             />
-          ))}
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Correct Option</InputLabel>
-            <Select
+            {newQuestion.options.map((option, index) => (
+              <TextField
+                key={index}
+                label={`Option ${index + 1}`}
+                fullWidth
+                value={option}
+                onChange={(e) => {
+                  const newOptions = [...newQuestion.options];
+                  newOptions[index] = e.target.value;
+                  setNewQuestion({ ...newQuestion, options: newOptions });
+                }}
+              />
+            ))}
+            <TextField
+              label="Correct Option (1-4)"
+              type="number"
+              fullWidth
               value={newQuestion.correct_option}
               onChange={(e) =>
                 setNewQuestion({
                   ...newQuestion,
-                  correct_option: e.target.value,
+                  correct_option: parseInt(e.target.value),
                 })
               }
-            >
-              {newQuestion.options.map((_, i) => (
-                <MenuItem key={i + 1} value={i + 1}>
-                  Option {i + 1}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            label="Solution"
-            value={newQuestion.solution || ""}
-            onChange={(e) =>
-              setNewQuestion({ ...newQuestion, solution: e.target.value })
-            }
-          />
+              inputProps={{ min: 1, max: 4 }}
+            />
+            <TextField
+              label="Solution"
+              fullWidth
+              value={newQuestion.solution}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, solution: e.target.value })
+              }
+            />
+            <TextField
+              label="Time (minutes)"
+              type="number"
+              fullWidth
+              value={newQuestion.time}
+              onChange={(e) =>
+                setNewQuestion({
+                  ...newQuestion,
+                  time: parseFloat(e.target.value),
+                })
+              }
+              inputProps={{ step: 0.5 }}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddQuestionModal(false)}>Cancel</Button>
