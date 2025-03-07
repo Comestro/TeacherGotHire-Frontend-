@@ -374,7 +374,7 @@ const ManageTeacherJobType = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>SN.</TableCell>
                   <TableCell>Job Type</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
@@ -389,9 +389,9 @@ const ManageTeacherJobType = () => {
                 ) : (
                   filteredJobTypes
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((job) => (
+                    .map((job, index) => (
                       <TableRow key={job.id} hover>
-                        <TableCell>{job.id}</TableCell>
+                        <TableCell>{index+1}</TableCell>
                         <TableCell>{job.jobrole_name}</TableCell>
                         <TableCell align="right">
                           <IconButton

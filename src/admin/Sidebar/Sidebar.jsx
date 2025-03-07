@@ -143,15 +143,15 @@ export default function Sidebar({ open, handleDrawerClose }) {
         </IconButton>
       </DrawerHeader>
       <Divider />
-      <List sx={{ py: 0.5 }}>
+      <List sx={{ py: 0.2 }}>
         {menuItems.slice(0, 1).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 42,
+                  minHeight: 38,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -173,15 +173,15 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </ListItem>
           </Tooltip>
         ))}
-        <Divider textAlign="center">Data Management</Divider>
+        <Divider textAlign="center" sx={{ my: 0.5 }}>Data Management</Divider>
         {menuItems.slice(1, 8).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 42,
+                  minHeight: 36,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -203,15 +203,15 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </ListItem>
           </Tooltip>
         ))}
-        <Divider textAlign="center">Manage Request</Divider>
+        <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Request</Divider>
         {menuItems.slice(8, 11).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 42,
+                  minHeight: 36,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -233,15 +233,15 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </ListItem>
           </Tooltip>
         ))}
-        <Divider textAlign="center">Manage Users</Divider>
+        <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Users</Divider>
         {menuItems.slice(11).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0.3 }}>
+            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
                 sx={{
-                  minHeight: 42,
+                  minHeight: 36,
                   justifyContent: open ? "initial" : "center",
                   px: 2.5,
                 }}
@@ -263,10 +263,10 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </ListItem>
           </Tooltip>
         ))}
-        <Divider />
+        <Divider sx={{ my: 0.5 }} />
         {/* Collapsible Settings Section */}
-        <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0.3 }}>
-          <ListItemButton sx={{ minHeight: 42 }}>
+        <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0 }}>
+          <ListItemButton sx={{ minHeight: 36 }}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
@@ -299,13 +299,13 @@ export default function Sidebar({ open, handleDrawerClose }) {
               },
             ].map((item) => (
               <Tooltip key={item.text} title={item.text} placement="right" arrow>
-                <ListItem disablePadding sx={{ py: 0.2 }}>
+                <ListItem disablePadding sx={{ py: 0 }}>
                   <ListItemButton
                     component={Link}
                     to={item.link}
                     sx={{
                       pl: 4,
-                      minHeight: 38,
+                      minHeight: 32,
                       justifyContent: open ? "initial" : "center",
                       px: 2.5,
                     }}
@@ -330,11 +330,11 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </List>
         </Collapse>
       </List>
-      <Divider />
+      <Divider sx={{ my: 0.5 }} />
       {/* Logout Button */}
-      <List sx={{ py: 0.5 }}>
-        <ListItem disablePadding sx={{ mt: 1 }}>
-          <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 42 }}>
+      <List sx={{ py: 0.2 }}>
+        <ListItem disablePadding sx={{ mt: 0.5 }}>
+          <ListItemButton onClick={handlelogout} sx={{ minHeight: 36 }}>
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>

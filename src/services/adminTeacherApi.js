@@ -15,13 +15,13 @@ export const getTeacherProfile = (id) =>
   apiService.getById("/api/all/teacher/basicProfile", id);
 // get skills of teacher by id
 export const getTeacherSkills = (id) =>
-  apiService.getAll(`/api/self/teacherskill/?teacher_id=${id}`);
+  apiService.getAll(`/api/admin/teacherskill/?teacher_id=${id}`);
 // get qualification of teacher by id
 export const getTeacherQualification = (id) =>
-  apiService.getById("/api/admin/teacherqualification", id);
+  apiService.getAll(`/api/admin/teacherqualification/?teacher_id=${id}`);
 // get experience of teacher by id
 export const getTeacherExperience = (id) =>
-  apiService.getById("/api/admin/teacherexperience", id);
+  apiService.getAll(`/api/admin/teacherexperience/?teacher_id=${id}`);
 
 // get scorecard of teacher by id
 export const getTeacherScorecard = (id) =>
