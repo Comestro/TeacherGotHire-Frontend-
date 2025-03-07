@@ -48,7 +48,7 @@ const ManageClassCategory = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openAddEditModal, setOpenAddEditModal] = useState(false);
@@ -86,24 +86,42 @@ const ManageClassCategory = () => {
     fetchCategories();
   }, []);
 
+  // Updated form validation with duplicate name check
   const validateForm = () => {
     const errors = {};
+
+    // Basic validation
     if (!selectedCategory?.name || selectedCategory.name.trim() === "") {
       errors.name = "Category name is required";
     } else if (selectedCategory.name.length < 2) {
       errors.name = "Category name must be at least 2 characters";
     } else if (selectedCategory.name.length > 50) {
       errors.name = "Category name cannot exceed 50 characters";
+    } else {
+      // Check for duplicate names (only for new categories)
+      if (!selectedCategory.id) {
+        const nameExists = categories.some(
+          cat => cat.name.toLowerCase() === selectedCategory.name.toLowerCase()
+        );
+
+        if (nameExists) {
+          errors.name = "Class category with this name already exists";
+        }
+      }
     }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
+  // Enhanced showSnackbar function
   const showSnackbar = (message, severity = "success") => {
+    // Clean up the message if it's an array (sometimes the server returns arrays)
+    const cleanMessage = Array.isArray(message) ? message[0] : message;
+
     setSnackbar({
       open: true,
-      message,
+      message: cleanMessage,
       severity,
     });
   };
@@ -136,7 +154,7 @@ const ManageClassCategory = () => {
       ...selectedCategory,
       [name]: value,
     });
-    
+
     // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
@@ -148,7 +166,7 @@ const ManageClassCategory = () => {
 
   const handleSaveCategory = async () => {
     if (!validateForm()) return;
-    
+
     try {
       setSubmitting(true);
       if (selectedCategory.id) {
@@ -159,17 +177,44 @@ const ManageClassCategory = () => {
           )
         );
         showSnackbar("Category updated successfully!");
+        handleCloseAddEditModal();
       } else {
         const newCategory = await createClassCategory(selectedCategory);
         setCategories([...categories, newCategory]);
         showSnackbar("Category added successfully!");
+        handleCloseAddEditModal();
       }
-      handleCloseAddEditModal();
     } catch (error) {
       console.error("Error saving category:", error);
-      const errorMessage = error.response?.data?.message || 
-        (selectedCategory.id ? "Failed to update category" : "Failed to add category");
-      showSnackbar(errorMessage, "error");
+
+      // Handle specific error format from the server
+      if (error.response?.data) {
+        const responseData = error.response.data;
+
+        // Handle case where server returns field-specific errors
+        if (responseData.name && Array.isArray(responseData.name)) {
+          // Set field-specific error
+          setFormErrors({
+            ...formErrors,
+            name: responseData.name[0]
+          });
+
+          // Show the specific error message in the snackbar
+          showSnackbar(responseData.name[0], "error");
+          return;
+        }
+        // Handle case where server returns general message
+        else if (responseData.message) {
+          showSnackbar(responseData.message, "error");
+          return;
+        }
+      }
+
+      // Fallback for other error types
+      const fallbackMessage = selectedCategory.id
+        ? "Failed to update category"
+        : "Failed to add category";
+      showSnackbar(fallbackMessage, "error");
     } finally {
       setSubmitting(false);
     }
@@ -180,20 +225,32 @@ const ManageClassCategory = () => {
       setSubmitting(true);
       await deleteClassCategory(selectedCategory.id);
       setCategories(categories.filter((cat) => cat.id !== selectedCategory.id));
-      showSnackbar("Category deleted successfully!");
+      showSnackbar(`Category "${selectedCategory.name}" deleted successfully!`);
+      handleCloseDeleteModal();
     } catch (error) {
       console.error("Error deleting category:", error);
-      const errorMessage = error.response?.data?.message || "Failed to delete category";
-      showSnackbar(errorMessage, "error");
+
+      // Extract specific error message if available
+      if (error.response?.data) {
+        if (error.response.data.message) {
+          showSnackbar(error.response.data.message, "error");
+        } else if (typeof error.response.data === 'string') {
+          showSnackbar(error.response.data, "error");
+        } else {
+          showSnackbar("Failed to delete category. It might be in use.", "error");
+        }
+      } else {
+        showSnackbar("Failed to delete category", "error");
+      }
     } finally {
       setSubmitting(false);
-      handleCloseDeleteModal();
     }
   };
 
+  // Updated bulk delete handler with better error handling
   const handleBulkDelete = async () => {
     if (selectedCategories.length === 0) return;
-    
+
     try {
       setSubmitting(true);
       await Promise.all(
@@ -204,8 +261,19 @@ const ManageClassCategory = () => {
       showSnackbar(`${selectedCategories.length} categories deleted successfully!`);
     } catch (error) {
       console.error("Error bulk deleting categories:", error);
-      const errorMessage = error.response?.data?.message || "Failed to delete selected categories";
-      showSnackbar(errorMessage, "error");
+
+      // Extract specific error message if available
+      if (error.response?.data) {
+        if (error.response.data.message) {
+          showSnackbar(error.response.data.message, "error");
+        } else if (typeof error.response.data === 'string') {
+          showSnackbar(error.response.data, "error");
+        } else {
+          showSnackbar("Failed to delete some categories. They might be in use.", "error");
+        }
+      } else {
+        showSnackbar("Failed to delete selected categories", "error");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -243,9 +311,9 @@ const ManageClassCategory = () => {
     <Layout>
       <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
         {/* Header Card */}
-        <Card 
-          elevation={2} 
-          sx={{ 
+        <Card
+          elevation={2}
+          sx={{
             borderRadius: { xs: 1, sm: 2 },
             mb: { xs: 2, sm: 3 },
             overflow: 'hidden'
@@ -254,9 +322,9 @@ const ManageClassCategory = () => {
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={8}>
-                <Typography 
-                  variant={isMobile ? "h5" : "h4"} 
-                  sx={{ 
+                <Typography
+                  variant={isMobile ? "h5" : "h4"}
+                  sx={{
                     fontWeight: 700,
                     color: 'primary.main',
                     fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
@@ -272,7 +340,7 @@ const ManageClassCategory = () => {
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenAddEditModal()}
                   fullWidth={isMobile}
-                  sx={{ 
+                  sx={{
                     py: { xs: 1, sm: 'auto' },
                     textTransform: 'none',
                     boxShadow: 2
@@ -286,9 +354,9 @@ const ManageClassCategory = () => {
         </Card>
 
         {/* Categories List Card */}
-        <Card 
-          elevation={2} 
-          sx={{ 
+        <Card
+          elevation={2}
+          sx={{
             borderRadius: { xs: 1, sm: 2 },
             overflow: 'hidden'
           }}
@@ -303,16 +371,16 @@ const ManageClassCategory = () => {
               gap={2}
               mb={2}
             >
-              <Typography 
-                variant="h6" 
-                sx={{ 
+              <Typography
+                variant="h6"
+                sx={{
                   fontWeight: 600,
                   fontSize: { xs: '1.1rem', sm: '1.25rem' }
                 }}
               >
                 Class Categories ({filteredCategories.length})
               </Typography>
-              
+
               <TextField
                 variant="outlined"
                 size="small"
@@ -332,7 +400,7 @@ const ManageClassCategory = () => {
                 sx={{ width: { xs: '100%', sm: '220px' } }}
               />
             </Box>
-            
+
             {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                 <CircularProgress />
@@ -345,13 +413,13 @@ const ManageClassCategory = () => {
               </Alert>
             ) : (
               <>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
+                <Paper
+                  elevation={0}
+                  sx={{
                     border: '1px solid',
                     borderColor: 'divider',
                     borderRadius: 1,
-                    overflow: 'hidden', 
+                    overflow: 'hidden',
                     mb: 2,
                     width: '100%'
                   }}
@@ -381,8 +449,8 @@ const ManageClassCategory = () => {
                       </TableHead>
                       <TableBody>
                         {currentCategories.map((category, index) => (
-                          <TableRow 
-                            key={category.id} 
+                          <TableRow
+                            key={category.id}
                             hover
                             sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
                           >
@@ -419,10 +487,10 @@ const ManageClassCategory = () => {
                     </Table>
                   </TableContainer>
                 </Paper>
-                
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
+
+                <Box
+                  sx={{
+                    display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
                     justifyContent: 'space-between',
                     alignItems: { xs: 'stretch', sm: 'center' },
@@ -436,7 +504,7 @@ const ManageClassCategory = () => {
                     onClick={handleBulkDelete}
                     disabled={selectedCategories.length === 0 || submitting}
                     fullWidth={isMobile}
-                    sx={{ 
+                    sx={{
                       py: { xs: 1, sm: 'auto' },
                       textTransform: 'none',
                       order: { xs: 2, sm: 1 }
@@ -444,7 +512,7 @@ const ManageClassCategory = () => {
                   >
                     Delete Selected {selectedCategories.length > 0 && `(${selectedCategories.length})`}
                   </Button>
-                  
+
                   {pageCount > 1 && (
                     <Pagination
                       count={pageCount}
@@ -462,8 +530,8 @@ const ManageClassCategory = () => {
         </Card>
 
         {/* Add/Edit Modal */}
-        <Modal 
-          open={openAddEditModal} 
+        <Modal
+          open={openAddEditModal}
           onClose={!submitting ? handleCloseAddEditModal : undefined}
           closeAfterTransition
           BackdropComponent={Backdrop}
@@ -499,9 +567,9 @@ const ManageClassCategory = () => {
                 </IconButton>
               )}
             </Box>
-            
+
             <Divider sx={{ mb: 2 }} />
-            
+
             <TextField
               fullWidth
               margin="normal"
@@ -516,12 +584,12 @@ const ManageClassCategory = () => {
                 autoFocus: true,
               }}
             />
-            
-            <Box 
-              mt={3} 
-              display="flex" 
+
+            <Box
+              mt={3}
+              display="flex"
               flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="flex-end" 
+              justifyContent="flex-end"
               gap={2}
             >
               <Button
@@ -529,7 +597,7 @@ const ManageClassCategory = () => {
                 onClick={handleCloseAddEditModal}
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   order: { xs: 2, sm: 1 }
                 }}
@@ -542,7 +610,7 @@ const ManageClassCategory = () => {
                 onClick={handleSaveCategory}
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   order: { xs: 1, sm: 2 }
                 }}
@@ -560,8 +628,8 @@ const ManageClassCategory = () => {
         </Modal>
 
         {/* Delete Confirmation Modal */}
-        <Modal 
-          open={openDeleteModal} 
+        <Modal
+          open={openDeleteModal}
           onClose={!submitting ? handleCloseDeleteModal : undefined}
           closeAfterTransition
           BackdropComponent={Backdrop}
@@ -597,9 +665,9 @@ const ManageClassCategory = () => {
                 </IconButton>
               )}
             </Box>
-            
+
             <Divider sx={{ mb: 2 }} />
-            
+
             <Typography variant="body1" mb={1}>
               Are you sure you want to delete:
             </Typography>
@@ -609,12 +677,12 @@ const ManageClassCategory = () => {
             <Typography variant="body2" color="text.secondary" mb={2}>
               This action cannot be undone. All associated data will be permanently removed.
             </Typography>
-            
-            <Box 
-              mt={2} 
-              display="flex" 
+
+            <Box
+              mt={2}
+              display="flex"
               flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="flex-end" 
+              justifyContent="flex-end"
               gap={2}
             >
               <Button
@@ -622,7 +690,7 @@ const ManageClassCategory = () => {
                 onClick={handleCloseDeleteModal}
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   order: { xs: 2, sm: 1 }
                 }}
@@ -635,7 +703,7 @@ const ManageClassCategory = () => {
                 onClick={handleDeleteCategory}
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   order: { xs: 1, sm: 2 }
                 }}
@@ -658,7 +726,15 @@ const ManageClassCategory = () => {
             onClose={() => setSnackbar({ ...snackbar, open: false })}
             severity={snackbar.severity}
             variant="filled"
-            sx={{ width: "100%", boxShadow: 3 }}
+            elevation={6}
+            sx={{
+              width: "100%",
+              boxShadow: 3,
+              '& .MuiAlert-message': {
+                maxWidth: '100%',
+                wordBreak: 'break-word'
+              }
+            }}
           >
             {snackbar.message}
           </Alert>
