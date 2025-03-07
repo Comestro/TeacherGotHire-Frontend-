@@ -378,7 +378,7 @@ export const generatePasskey= createAsyncThunk(
                       }
                     }
                     );
-
+            
                     export const getSetterInfo= createAsyncThunk(
                       "getSetterInfo",
                       async (__, { rejectWithValue }) => {
@@ -636,6 +636,9 @@ const examQuesSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       });
+
+
+      
   },
   resetState: () => initialState,
 });

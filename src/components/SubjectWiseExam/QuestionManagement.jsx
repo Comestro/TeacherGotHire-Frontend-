@@ -10,44 +10,51 @@ import {
   deleteExamSet,
   postQuestionToExamSet,
   getSetterInfo,
+  getLevels,
 } from "../../features/examQuesSlice";
-import { getClassCategory } from "../../features/jobProfileSlice";
 import Loader from "../Loader";
-
 const QuestionManagement = () => {
   const [selectedClass, setSelectedClass] = useState("");
   const [currentExamSet, setCurrentExamSet] = useState("");
-  // const [currentQuestion, setCurrentQuestion] = useState();
   const [selectedExamSet, setSelectedExamSet] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({
-    question: "",
+    text: "",
     options: ["", "", "", ""],
     correctAnswer: "",
     solution: "",
-    marks: 1,
+    language: [],
+    time: "",
   });
   const dispatch = useDispatch();
-  const { setterExamSet, loading, setterUser,error } = useSelector(
+  const { setterExamSet, loading, setterUser, levels, error } = useSelector(
     (state) => state.examQues
   );
-  console.log("setterUser",setterUser);
+  console.log("setterUser", setterUser);
   console.log("selectedExamSet", selectedExamSet);
-
+  console.log("levels", levels);
   console.log("currentQuestion", currentQuestion);
   console.log("setterExamSet", setterExamSet);
+  console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    dispatch(getClassCategory());
     dispatch(getSetterInfo());
+    dispatch(getLevels());
   }, [dispatch]);
 
-  const { classCategories } = useSelector((state) => state?.jobProfile);
-  console.log("classCategories", classCategories);
+  const subjects = setterUser[0].subject;
+  console.log("subject", subjects);
+  const handleSubjectChange = (e) => {
+    const selectedId = parseInt(e.target.value, 10);
+    const subject = subjects.find((sub) => sub.id === selectedId);
 
-  const handleClassCategory = (e) => {
-    setSelectedClass(e.target.value);
+    if (subject) {
+      setSelectedSubject(subject);
+      setValue("subject_id", subject.id);
+      setValue("class_category", subject.class_category);
+    }
   };
 
   const {
@@ -66,6 +73,7 @@ const QuestionManagement = () => {
   // Handle Exam Set Submission
   const onSubmit = async (data) => {
     console.log("data", data);
+
     try {
       const payload = {
         name: data.name,
@@ -81,7 +89,7 @@ const QuestionManagement = () => {
 
       if (editingIndex !== null) {
         const id = setterExamSet[editingIndex].id;
-        console.log("id",id)
+        console.log("id", id);
         await dispatch(putExamSet({ payload, id })).unwrap();
       } else {
         await dispatch(postExamSet(payload)).unwrap();
@@ -114,33 +122,40 @@ const QuestionManagement = () => {
     }
   };
 
-  // Question Actions
-  const handleQuestionSubmit = (e) => {
+  const handleQuestionSubmit = async (e) => {
     e.preventDefault();
-    const updatedExamSet = {
-      ...selectedExamSet,
-      questions: [
-        ...selectedExamSet.questions,
-        {
-          ...currentQuestion,
-          id: Date.now(),
-        },
-      ],
+    console.log("Form Data being sent:", currentQuestion);
+
+    const payload = {
+      text: currentQuestion.text,
+      options: currentQuestion.options,
+      solution: currentQuestion.solution,
+      correctoption: currentQuestion.correctAnswer,
+      exam: selectedExamSet.id,
+      language: currentQuestion.language,
+      time: parseInt(currentQuestion.time),
     };
-    postQuestionToExamSet(
-      setterExamSet.map((set) =>
-        set.id === selectedExamSet.id ? updatedExamSet : set
-      )
-      
-    );
-    console.log('hckds')
-    setSelectedExamSet(updatedExamSet);
-    setCurrentQuestion({
-      question: "",
-      options: ["", "", "", ""],
-      correctAnswer: "",
-      marks: 1,
-    });
+
+    console.log("Payload being sent:", payload);
+
+    try {
+      const response = await dispatch(postQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
+      console.log("API Response:", response);
+
+      const updatedExamSet = {
+        ...selectedExamSet,
+        questions: [
+          ...selectedExamSet.questions,
+          {
+            ...currentQuestion,
+            id: Date.now(),
+          },
+        ],
+      };
+      // Add any state updates if needed
+    } catch (error) {
+      console.error("API Error:", error);
+    }
   };
 
   return (
@@ -216,9 +231,7 @@ const QuestionManagement = () => {
                           </td>
                           <td className="py-4 space-x-4 text-center">
                             <button
-                              onClick={() =>
-                                setSelectedExamSet(examSet)
-                              }
+                              onClick={() => setSelectedExamSet(examSet)}
                               className="text-blue-600 hover:text-blue-800"
                             >
                               Add Questions
@@ -272,34 +285,28 @@ const QuestionManagement = () => {
                       </span>
                     )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Subject
-                    </label>
-                    <input
-                      type="number"
-                      {...register("subject", {
-                        required: "Subject is required",
-                      })}
-                      className="w-full p-2 border rounded-md"
-                    />
-                    {errors.subject && (
-                      <span className="text-red-500 text-sm">
-                        {errors.subject.message}
-                      </span>
-                    )}
-                  </div>
-
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Level
                     </label>
-                    <input
-                      type="text"
-                      {...register("level", { required: "Level is required" })}
-                      className="w-full p-2 border rounded-md"
-                    />
+                    <select
+                      {...register("level", {
+                        required: "Level is required",
+                      })}
+                      className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg bg-white 
+                       focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none 
+                       transition-all cursor-pointer text-gray-700"
+                    >
+                      <option value="" className="text-gray-400">
+                        Select a Level
+                      </option>
+                      {levels.map((lev, index) => (
+                        <option key={index} value={lev.id}>
+                          {lev.name}
+                        </option>
+                      ))}
+                    </select>
+
                     {errors.level && (
                       <span className="text-red-500 text-sm">
                         {errors.level.message}
@@ -308,26 +315,48 @@ const QuestionManagement = () => {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Type
+                    </label>
+                    <select
+                      {...register("type", { required: "Type is required" })}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value="online">Online</option>
+                      <option value="offline">Offline</option>
+                    </select>
+                    {errors.type && (
+                      <span className="text-red-500 text-sm">
+                        {errors.type.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
                     <div className="relative flex-1 w-full">
                       <select
-                        {...register("class_category", {
-                          required: "Category is required",
+                        {...register("subject", {
+                          required: "subject is required",
                         })}
                         className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg bg-white 
                        focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none 
                        transition-all cursor-pointer text-gray-700"
-                        value={selectedClass}
-                        onChange={handleClassCategory}
+                        onChange={handleSubjectChange}
                       >
                         <option value="" className="text-gray-400">
-                          Select a class Category
+                          Select a Subject
                         </option>
-                        {classCategories.map((category, index) => (
-                          <option key={index} value={category.id}>
-                            {category.name}
+                        {setterUser[0].subject.map((sub, index) => (
+                          <option key={index} value={sub.id}>
+                            {sub.subject_name}
                           </option>
                         ))}
                       </select>
+                      <input
+                        type="hidden"
+                        {...register("class_category")}
+                        value={selectedSubject?.class_category || ""}
+                      />
                     </div>
                   </div>
 
@@ -363,24 +392,6 @@ const QuestionManagement = () => {
                     {errors.duration && (
                       <span className="text-red-500 text-sm">
                         {errors.duration.message}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Type
-                    </label>
-                    <select
-                      {...register("type", { required: "Type is required" })}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="online">Online</option>
-                      <option value="offline">Offline</option>
-                    </select>
-                    {errors.type && (
-                      <span className="text-red-500 text-sm">
-                        {errors.type.message}
                       </span>
                     )}
                   </div>
@@ -438,11 +449,11 @@ const QuestionManagement = () => {
                         Question
                       </label>
                       <textarea
-                        value={currentQuestion.question}
+                        value={currentQuestion.text}
                         onChange={(e) =>
                           setCurrentQuestion({
                             ...currentQuestion,
-                            question: e.target.value,
+                            text: e.target.value,
                           })
                         }
                         className="w-full p-2 border rounded-md h-12"
@@ -503,24 +514,65 @@ const QuestionManagement = () => {
                           ))}
                         </select>
                       </div>
+                    </div>
+
+                    {/* Languages */}
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">
-                          Marks
+                          Choose Language
                         </label>
-                        <input
-                          type="number"
-                          value={currentQuestion.marks}
+                        <select
+                          value={currentQuestion.language} // Corrected attribute name
                           onChange={(e) =>
                             setCurrentQuestion({
                               ...currentQuestion,
-                              marks: e.target.value,
+                              language: e.target.value, // Corrected attribute name
                             })
                           }
                           className="w-full p-2 border rounded-md"
-                          min="1"
                           required
-                        />
+                        >
+                          <option value="">Select Language</option>
+                          <option value="Hindi">Hindi</option>
+                          <option value="English">English</option>
+                        </select>
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Solution
+                      </label>
+                      <textarea
+                        value={currentQuestion.solution}
+                        onChange={(e) =>
+                          setCurrentQuestion({
+                            ...currentQuestion,
+                            solution: e.target.value,
+                          })
+                        }
+                        className="w-full p-2 border rounded-md h-12"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Time (in hours)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1" // Allows decimal values (e.g., 1.5 for 1 hour and 30 minutes)
+                        value={currentQuestion.time}
+                        onChange={(e) =>
+                          setCurrentQuestion({
+                            ...currentQuestion,
+                            time: parseFloat(e.target.value), // Convert the input value to a float
+                          })
+                        }
+                        className="w-full p-2 border rounded-md h-12"
+                        required
+                      />
                     </div>
 
                     <button
@@ -534,7 +586,7 @@ const QuestionManagement = () => {
 
                 {/* Questions List */}
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                   <h2 className="text-xl font-semibold mb-6">
+                  <h2 className="text-xl font-semibold mb-6">
                     Exam Questions ({selectedExamSet.questions.length})
                   </h2>
                   {selectedExamSet.questions.map((question, index) => (
@@ -558,18 +610,18 @@ const QuestionManagement = () => {
                           <div
                             key={i}
                             className={`p-3 rounded-md ${
-                              option === question.correctAnswer
+                              option === question.correct_option
                                 ? "bg-green-100 border border-green-300"
                                 : "bg-gray-50"
                             }`}
                           >
                             <span className="font-medium mr-2">{i + 1}.</span>
-                            {option.option}
+                            {option}
                           </div>
                         ))}
                       </div>
                     </div>
-                  ))} 
+                  ))}
                 </div>
               </div>
             )}
