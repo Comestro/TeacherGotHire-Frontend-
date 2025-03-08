@@ -38,9 +38,30 @@ function SignUpPage() {
       : "border-gray-300 focus:border-green-500"
   }`;
 
- 
+  // const signup = async ({ Fname, Lname, email, password }) => {
+  //   console.log(email, password);
+  //   // setError("");
+  //   setLoading(true); // Set loading to true
 
-  const signup = async ({ Fname, Lname, email, password,  navigate }) => {
+  //   try {
+  //     const userData = await createaccount({ Fname, Lname, email, password });
+  //     console.log("userData", userData);
+      
+  //     if (userData) {
+  //       setSuccessMessage("Account created successfully.");
+  //       // Call the login function after successful signup
+  //       await login({ email, password, navigate, setError, setLoading });
+  //     }
+  //   } catch (error) {
+
+  //     // setError(error.message || "Failed to create account. Please try again.");
+  //     console.log("bhjn",error)
+  //   } finally {
+  //     setLoading(false); // Set loading to false
+  //   }
+  // };
+
+  const signup = async ({ Fname, Lname, email, password }) => {
     console.log(email, password);
     setError(""); // Clear previous errors
     setLoading(true); // Start loading
