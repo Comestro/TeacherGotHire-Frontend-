@@ -56,12 +56,13 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  padding: theme.spacing(1),
 }));
 
 const ModalContent = styled(Box)(({ theme }) => ({
   backgroundColor: "#fff",
   borderRadius: "8px",
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   minWidth: "300px",
   width: "90%",
   maxWidth: "600px",
@@ -69,6 +70,7 @@ const ModalContent = styled(Box)(({ theme }) => ({
   overflow: "auto",
   [theme.breakpoints.up("md")]: {
     width: "500px",
+    padding: theme.spacing(3),
   },
 }));
 
@@ -223,8 +225,6 @@ const ExamManagement = () => {
 
   const validateForm = () => {
     const errors = {};
-
-    if (!formData.name?.trim()) errors.name = "Exam name is required";
     if (!formData.class_category) errors.class_category = "Class category is required";
     if (!formData.subject) errors.subject = "Subject is required";
     if (!formData.level) errors.level = "Level is required";
@@ -328,14 +328,19 @@ const ExamManagement = () => {
 
   const handleSave = async () => {
     if (!validateForm()) return;
-
     setLoading(true);
     try {
-      // Prepare payload based on level
-      const payload = { ...formData };
-      if (parseInt(payload.level) < 2) {
-        delete payload.type;
-      }
+      // Prepare payload with all required fields
+      const payload = {
+        subject: formData.subject,
+        class_category: formData.class_category,
+        level: formData.level,
+        total_marks: formData.total_marks,
+        duration: formData.duration,
+        type: parseInt(formData.level) >= 2 ? formData.type : undefined
+      };
+
+      console.log("Sending payload:", payload);
 
       if (selectedExam) {
         const response = await updateExam(selectedExam.id, payload);
@@ -349,12 +354,15 @@ const ExamManagement = () => {
       setOpenAddModal(false);
     } catch (error) {
       console.error("Error saving exam:", error);
-      showSnackbar(error);
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save exam";
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
-
   const handleDelete = (exam) => {
     setSelectedExam(exam);
     setOpenDeleteModal(true);
@@ -426,7 +434,6 @@ const ExamManagement = () => {
   const handleEdit = (exam) => {
     setSelectedExam(exam);
     setFormData({
-      name: exam.name,
       subject: exam.subject.id,
       class_category: exam.class_category.id,
       level: exam.level.id,
