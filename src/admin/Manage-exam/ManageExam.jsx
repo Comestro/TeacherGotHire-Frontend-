@@ -78,7 +78,23 @@ const ResponsiveTableContainer = styled(Box)(({ theme }) => ({
   "& .MuiTable-root": {
     minWidth: "650px",
   },
+  "& .MuiTableCell-root": {
+    [theme.breakpoints.down("sm")]: {
+      padding: theme.spacing(1),
+    },
+  },
+  "& .MuiTablePagination-selectLabel": {
+    [theme.breakpoints.down("sm")]: {
+      display: "none",
+    },
+  },
+  "& .MuiTablePagination-displayedRows": {
+    [theme.breakpoints.down("sm")]: {
+      margin: 0,
+    },
+  },
 }));
+
 
 const FilterContainer = styled(Box)(({ theme, open }) => ({
   display: open ? "flex" : "none",
@@ -90,7 +106,13 @@ const FilterContainer = styled(Box)(({ theme, open }) => ({
   borderRadius: theme.shape.borderRadius,
   [theme.breakpoints.up("md")]: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
+    "& .MuiFormControl-root": {
+      minWidth: "200px",
+      flexGrow: 1,
+      maxWidth: "300px",
+    }
   },
 }));
 
@@ -147,10 +169,11 @@ const ExamManagement = () => {
       setExams(response);
     } catch (error) {
       console.error("Error fetching exams:", error);
-      showSnackbar(
-        error.response?.data?.message || "Failed to load exams",
-        "error"
-      );
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to load exams";
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -201,25 +224,32 @@ const ExamManagement = () => {
   const validateForm = () => {
     const errors = {};
 
+    if (!formData.name?.trim()) errors.name = "Exam name is required";
     if (!formData.class_category) errors.class_category = "Class category is required";
     if (!formData.subject) errors.subject = "Subject is required";
     if (!formData.level) errors.level = "Level is required";
-    if (!formData.total_marks) errors.total_marks = "Total marks is required";
-    else if (isNaN(formData.total_marks) || parseInt(formData.total_marks) <= 0)
+
+    if (!formData.total_marks) {
+      errors.total_marks = "Total marks is required";
+    } else if (isNaN(formData.total_marks) || parseInt(formData.total_marks) <= 0) {
       errors.total_marks = "Total marks must be a positive number";
+    }
 
-    if (!formData.duration) errors.duration = "Duration is required";
-    else if (isNaN(formData.duration) || parseInt(formData.duration) <= 0)
+    if (!formData.duration) {
+      errors.duration = "Duration is required";
+    } else if (isNaN(formData.duration) || parseInt(formData.duration) <= 0) {
       errors.duration = "Duration must be a positive number";
+    }
 
-    if (parseInt(formData.level) >= 2 && !formData.type)
+    if (parseInt(formData.level) >= 2 && !formData.type) {
       errors.type = "Type is required for this level";
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // handle form change
+  // Add real-time validation to handleFormChange
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     const newFormData = { ...formData, [name]: value };
@@ -236,13 +266,34 @@ const ExamManagement = () => {
 
     setFormData(newFormData);
 
-    // Clear error for this field if it exists
-    if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
-        [name]: undefined
-      });
+    // Real-time validation for the changed field
+    const newErrors = { ...formErrors };
+
+    if (name === 'name' && !value.trim()) {
+      newErrors.name = "Exam name is required";
+    } else if (name === 'total_marks') {
+      if (!value) {
+        newErrors.total_marks = "Total marks is required";
+      } else if (isNaN(value) || parseInt(value) <= 0) {
+        newErrors.total_marks = "Total marks must be a positive number";
+      } else {
+        delete newErrors.total_marks;
+      }
+    } else if (name === 'duration') {
+      if (!value) {
+        newErrors.duration = "Duration is required";
+      } else if (isNaN(value) || parseInt(value) <= 0) {
+        newErrors.duration = "Duration must be a positive number";
+      } else {
+        delete newErrors.duration;
+      }
+    } else if (name === 'type' && parseInt(formData.level) >= 2 && !value) {
+      newErrors.type = "Type is required for this level";
+    } else {
+      delete newErrors[name];
     }
+
+    setFormErrors(newErrors);
   };
 
   // handle pagination
@@ -256,11 +307,23 @@ const ExamManagement = () => {
   };
 
   const showSnackbar = (message, severity = "success") => {
-    setSnackbar({
-      open: true,
-      message,
-      severity,
-    });
+    // If message is an error object with response data
+    if (message && typeof message === 'object' && message.response) {
+      const serverMessage = message.response.data?.message ||
+        message.response.data?.error ||
+        "An error occurred";
+      setSnackbar({
+        open: true,
+        message: serverMessage,
+        severity: "error",
+      });
+    } else {
+      setSnackbar({
+        open: true,
+        message,
+        severity,
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -275,21 +338,18 @@ const ExamManagement = () => {
       }
 
       if (selectedExam) {
-        await updateExam(selectedExam.id, payload);
-        showSnackbar("Exam updated successfully!");
+        const response = await updateExam(selectedExam.id, payload);
+        showSnackbar(response.message || "Exam updated successfully!");
       } else {
-        await createExam(payload);
-        showSnackbar("Exam created successfully!");
+        const response = await createExam(payload);
+        showSnackbar(response.message || "Exam created successfully!");
       }
 
       await fetchExams();
       setOpenAddModal(false);
     } catch (error) {
       console.error("Error saving exam:", error);
-      showSnackbar(
-        error.response?.data?.message || "Error saving exam!",
-        "error"
-      );
+      showSnackbar(error);
     } finally {
       setLoading(false);
     }
@@ -303,16 +363,13 @@ const ExamManagement = () => {
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await deleteExam(selectedExam.id);
+      const response = await deleteExam(selectedExam.id);
       await fetchExams();
       setOpenDeleteModal(false);
-      showSnackbar("Exam deleted successfully!");
+      showSnackbar(response.message || "Exam deleted successfully!");
     } catch (error) {
       console.error("Error deleting exam:", error);
-      showSnackbar(
-        error.response?.data?.message || "Error deleting exam!",
-        "error"
-      );
+      showSnackbar(error);
     } finally {
       setLoading(false);
     }
@@ -865,16 +922,30 @@ const ExamManagement = () => {
 
           <Snackbar
             open={snackbar.open}
-            autoHideDuration={6000}
+            autoHideDuration={5000}
             onClose={() => setSnackbar({ ...snackbar, open: false })}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            sx={{
+              '& .MuiAlert-root': {
+                width: { xs: '90%', sm: '100%' },
+                maxWidth: '400px',
+              }
+            }}
           >
             <Alert
               severity={snackbar.severity}
-              sx={{ width: "100%" }}
               variant="filled"
               elevation={6}
               onClose={() => setSnackbar({ ...snackbar, open: false })}
+              sx={{
+                width: "100%",
+                alignItems: "center",
+                '& .MuiAlert-message': {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontSize: '0.9rem'
+                }
+              }}
             >
               {snackbar.message}
             </Alert>
