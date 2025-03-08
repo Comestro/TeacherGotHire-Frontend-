@@ -55,14 +55,32 @@ const handleApiError = async (err) => {
 };
 
 // Helper function for POST requests
+// const postRequest = async (url, payload) => {
+//   try {
+//     const response = await apiClient.post(url, payload);
+//     console.log("response",response)
+//     return response.data;
+//   } catch (err) {
+//     handleApiError(err);
+//   }
+// };
 const postRequest = async (url, payload) => {
   try {
     const response = await apiClient.post(url, payload);
+    console.log("response", response);
     return response.data;
   } catch (err) {
+    console.error("API Error:", err);
     handleApiError(err);
+    
+    // Extract meaningful error message
+    const errorMessage = err.response?.data?.message?.email[0]|| "Something went wrong.";
+    
+    // Throw the error so the calling function can catch it
+    throw new Error(errorMessage);
   }
 };
+
 
 // Helper function for GET requests
 const getRequest = async (url) => {
@@ -74,8 +92,22 @@ const getRequest = async (url) => {
   }
 };
 
-export const createaccount = async (userDetails) =>
-  postRequest("/api/register/teacher/", userDetails);
+// export const createaccount = async (userDetails) =>
+//   postRequest("/api/register/teacher/", userDetails);
+
+export const createaccount = async (userDetails) => {
+  try {
+    const response = await postRequest("/api/register/teacher/", userDetails);
+    console.log("response", response);
+    return response;
+  } catch (error) {
+    console.error("Error in createaccount:", error);
+
+    // Rethrow error so it can be caught in `signup`
+    throw error;
+  }
+};
+
 
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);

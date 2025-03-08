@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
@@ -26,7 +26,7 @@ function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
-  
+   
     const togglePasswordVisibility = () => {
       setShowPassword(!showPassword);
     };
@@ -38,26 +38,29 @@ function SignUpPage() {
       : "border-gray-300 focus:border-green-500"
   }`;
 
-  const signup = async ({ Fname, Lname, email, password }) => {
-    console.log(email, password);
-    setError("");
-    setLoading(true); // Set loading to true
+ 
 
+  const signup = async ({ Fname, Lname, email, password,  navigate }) => {
+    console.log(email, password);
+    setError(""); // Clear previous errors
+    setLoading(true); // Start loading
+  
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
       console.log("userData", userData);
+  
       if (userData) {
         setSuccessMessage("Account created successfully.");
-        // Call the login function after successful signup
         await login({ email, password, navigate, setError, setLoading });
       }
     } catch (error) {
-      setError(error.message || "Failed to create account. Please try again.");
+      console.error("Signup error:", error);
+      setError(error.message); // Now, the error will be properly displayed in the UI
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false); // Stop loading
     }
   };
-
+  
   return (
     <>
       <CustomHeader />
@@ -96,9 +99,9 @@ function SignUpPage() {
             </div>
 
             {/* Error Message */}
-            {error && (
+            {/* {error && (
               <p className="text-red-600 text-center mb-4">{error}</p>
-            )}
+            )} */}
 
             <form
               onSubmit={handleSubmit(signup)}
