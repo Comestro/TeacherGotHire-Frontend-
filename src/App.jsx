@@ -53,6 +53,7 @@ import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
 import InterviewManagement from "./admin/Manage-interview/ManageInterview";
 import JobApply from "./components/Dashboard/components/JobApply";
 import Test from "./admin/test/Test";
+import ManageTeacherApplied from "./admin/Manage-teacher-applied/ManageTeacherApplied";
 
 function App() {
   return (
@@ -234,6 +235,15 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<ManageCenter />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/teacher/applied/job"
+              element={
+                <RoleBasedRoute
+                  element={<ManageTeacherApplied />}
                   allowedRoles={["admin"]}
                 />
               }
