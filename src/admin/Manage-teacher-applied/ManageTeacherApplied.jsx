@@ -43,6 +43,8 @@ import {
 import { styled } from '@mui/material/styles';
 import Layout from '../Admin/Layout';
 import { getJobApplied } from '../../services/adminManageJobApplied';
+import { getTeacherjobType } from '../../features/jobProfileSlice';
+import { getClassCategory } from '../../services/adminClassCategoryApi';
 
 // Styled components
 const StatusChip = styled(Chip)(({ theme, status }) => ({
@@ -106,11 +108,34 @@ const ManageTeacherApplied = () => {
         message: '',
         severity: 'success',
     });
-
-    // Filter options - These could be fetched from API as well
-    const classCategoryOptions = ['1 to 5', '6 to 8', '9 to 12'];
-    const jobTypeOptions = ['Tutor', 'School Teacher', 'Online Tutor'];
+    const [classCategoryOptions, setClassCategoryOptions] = useState([]);
+    const [jobTypeOptions, setJobTypeOptions] = useState([]);
     const statusOptions = ['Pending', 'Approved', 'Rejected'];
+
+    // Fetch class categories and job types
+    const fetchClassCategories = async () => {
+        try {
+            const response = await getClassCategory();
+            setClassCategoryOptions(response.map((category) => category.name));
+        } catch (err) {
+            console.error("Error fetching class categories:", err);
+        }
+    };
+    // Fetch job types
+    const fetchJobTypes = async () => {
+        try {
+            const response = await getTeacherjobType();
+            setJobTypeOptions(response.map((jobType) => jobType.teacher_job_name));
+        } catch (err) {
+            console.error("Error fetching job types:", err);
+        }
+    };
+    useEffect(() => {
+        // fetch class categories
+        fetchClassCategories();
+        // fetch job types
+        fetchJobTypes();
+    }, []);
 
     // Fetch job applications data
     useEffect(() => {
@@ -118,10 +143,6 @@ const ManageTeacherApplied = () => {
             try {
                 setLoading(true);
                 const response = await getJobApplied();
-                console.log('====================================');
-                console.log('Teacher applications:', response);
-                console.log('====================================');
-
                 // Format the data to match the expected structure
                 const formattedData = Array.isArray(response) ? response.map(app => ({
                     id: app.id,
@@ -140,7 +161,6 @@ const ManageTeacherApplied = () => {
                 })) : [];
 
                 setApplications(formattedData);
-                console.log("Formatted teacher applications:", formattedData);
                 setError(null);
             } catch (err) {
                 console.error("Error fetching job applications:", err);
