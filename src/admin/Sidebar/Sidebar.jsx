@@ -334,7 +334,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
       {/* Logout Button */}
       <List sx={{ py: 0.2 }}>
         <ListItem disablePadding sx={{ mt: 0.5 }}>
-          <ListItemButton onClick={handlelogout} sx={{ minHeight: 36 }}>
+          <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36 }}>
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>
