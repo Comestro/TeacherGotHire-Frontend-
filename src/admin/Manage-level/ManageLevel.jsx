@@ -11,106 +11,165 @@ import {
   TableCell,
   TableBody,
   IconButton,
-  Modal,
+  Dialog,
   Button,
   TextField,
-  Tooltip,
   Snackbar,
   Pagination,
-  Checkbox,
   Grid,
   useMediaQuery,
   useTheme,
+  Paper,
+  InputAdornment,
+  CircularProgress,
+  Divider,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Backdrop,
+  FormHelperText,
+  Alert
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Alert } from "@mui/material";
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Visibility as VisibilityIcon,
+  Search as SearchIcon,
+  Close as CloseIcon
+} from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import {
   getLevel,
   updateLevel,
   createLevel,
-  deleteLevel,
 } from "../../services/adminManageLevel";
 
 const ManageLevel = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
   const [levels, setLevels] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [openAddEditModal, setOpenAddEditModal] = useState(false);
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openAddEditDialog, setOpenAddEditDialog] = useState(false);
+  const [openViewDialog, setOpenViewDialog] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(null);
-  const [selectedLevels, setSelectedLevels] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = isMobile ? 5 : 8;
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [validationError, setValidationError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    const fetchLevels = async () => {
-      try {
-        const data = await getLevel();
-        setLevels(data);
-      } catch (error) {
-        setError("Failed to fetch levels");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLevels();
   }, []);
 
-  const handleOpenAddEditModal = (level = null) => {
+  const fetchLevels = async () => {
+    try {
+      setLoading(true);
+      const data = await getLevel();
+      setLevels(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to fetch levels. Please try again.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showSnackbar = (message, severity = "success") => {
+    // Clean up the message if it's an array or object
+    let displayMessage;
+
+    if (Array.isArray(message)) {
+      displayMessage = message[0]; // Take first error if it's an array
+    } else if (typeof message === 'object' && message !== null) {
+      // If message is an object, try to extract first error message
+      const firstKey = Object.keys(message)[0];
+      const firstValue = message[firstKey];
+      displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
+    } else {
+      displayMessage = message;
+    }
+
+    setSnackbar({
+      open: true,
+      message: displayMessage,
+      severity,
+    });
+  };
+
+  const handleOpenAddEditDialog = (level = null) => {
     setSelectedLevel(level || { name: "", description: "" });
-    setValidationError("");
-    setOpenAddEditModal(true);
+    setFormErrors({});
+    setOpenAddEditDialog(true);
   };
 
-  const handleCloseAddEditModal = () => {
+  const handleCloseAddEditDialog = () => {
+    if (submitting) return;
     setSelectedLevel(null);
-    setOpenAddEditModal(false);
+    setFormErrors({});
+    setOpenAddEditDialog(false);
   };
 
-  const handleOpenDeleteModal = (level) => {
+  const handleOpenViewDialog = (level) => {
     setSelectedLevel(level);
-    setOpenDeleteModal(true);
+    setOpenViewDialog(true);
   };
 
-  const handleCloseDeleteModal = () => {
+  const handleCloseViewDialog = () => {
     setSelectedLevel(null);
-    setOpenDeleteModal(false);
+    setOpenViewDialog(false);
   };
 
-  const handleOpenViewModal = (level) => {
-    setSelectedLevel(level);
-    setOpenViewModal(true);
+  const validateForm = () => {
+    const errors = {};
+
+    if (!selectedLevel?.name || selectedLevel.name.trim() === "") {
+      errors.name = "Level name is required";
+    } else if (selectedLevel.name.length < 2) {
+      errors.name = "Level name must be at least 2 characters";
+    } else if (selectedLevel.name.length > 50) {
+      errors.name = "Level name cannot exceed 50 characters";
+    }
+
+    if (selectedLevel?.description && selectedLevel.description.length > 200) {
+      errors.description = "Description cannot exceed 200 characters";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const handleCloseViewModal = () => {
-    setSelectedLevel(null);
-    setOpenViewModal(false);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedLevel({
+      ...selectedLevel,
+      [name]: value,
+    });
+
+    // Clear validation error for the field being edited
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: null,
+      });
+    }
   };
 
   const handleSaveLevel = async () => {
-    setValidationError("");
-    if (!selectedLevel.name.trim()) {
-      setValidationError("Level name is required");
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
+      setSubmitting(true);
       if (selectedLevel.id) {
         await updateLevel(selectedLevel.id, selectedLevel);
         setLevels(
@@ -118,106 +177,110 @@ const ManageLevel = () => {
             lvl.id === selectedLevel.id ? selectedLevel : lvl
           )
         );
-        setSnackbar({
-          open: true,
-          message: "Level updated successfully!",
-          severity: "success",
-        });
+        showSnackbar(`Level "${selectedLevel.name}" updated successfully!`);
       } else {
         const newLevel = await createLevel(selectedLevel);
         setLevels([...levels, newLevel]);
-        setSnackbar({
-          open: true,
-          message: "Level added successfully!",
-          severity: "success",
-        });
+        showSnackbar(`Level "${selectedLevel.name}" added successfully!`);
       }
+      handleCloseAddEditDialog();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to save level",
-        severity: "error",
-      });
-    }
-    handleCloseAddEditModal();
-  };
+      console.error("Error saving level:", error);
 
-  const handleDeleteLevel = async () => {
-    try {
-      await deleteLevel(selectedLevel.id);
-      setLevels(levels.filter((lvl) => lvl.id !== selectedLevel.id));
-      setSnackbar({
-        open: true,
-        message: "Level deleted successfully!",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete level",
-        severity: "error",
-      });
-    }
-    handleCloseDeleteModal();
-  };
+      // Handle field-specific errors from backend
+      if (error.response?.data) {
+        const responseData = error.response.data;
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(
-        selectedLevels.map((levelId) => deleteLevel(levelId))
+        // Handle case where server returns field-specific errors
+        if (typeof responseData === 'object' && !Array.isArray(responseData)) {
+          const fieldErrors = {};
+          let hasFieldErrors = false;
+
+          // Process each field error
+          for (const [field, errorMessages] of Object.entries(responseData)) {
+            if (Array.isArray(errorMessages) && errorMessages.length > 0) {
+              fieldErrors[field] = errorMessages[0];
+              hasFieldErrors = true;
+            }
+          }
+
+          if (hasFieldErrors) {
+            setFormErrors(fieldErrors);
+
+            // Show the first field error in the snackbar
+            const firstField = Object.keys(fieldErrors)[0];
+            showSnackbar(fieldErrors[firstField], "error");
+            return;
+          }
+        }
+
+        // Handle general message
+        if (responseData.message || typeof responseData === 'string') {
+          const errorMessage = responseData.message || responseData;
+          showSnackbar(errorMessage, "error");
+          return;
+        }
+      }
+
+      // Fallback error message
+      showSnackbar(
+        `Failed to ${selectedLevel.id ? 'update' : 'create'} level. Please try again.`,
+        "error"
       );
-      setLevels(levels.filter((lvl) => !selectedLevels.includes(lvl.id)));
-      setSelectedLevels([]);
-      setSnackbar({
-        open: true,
-        message: "Selected levels deleted successfully!",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete selected levels",
-        severity: "error",
-      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const filteredLevels = levels.filter((lvl) =>
-    lvl.name.toLowerCase().includes(searchTerm.toLowerCase())
+    lvl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (lvl.description && lvl.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const pageCount = Math.ceil(filteredLevels.length / itemsPerPage);
+  const pageCount = Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage));
   const currentLevels = filteredLevels.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
   return (
     <Layout>
-      <Box mt={3} px={isMobile ? 1 : 3}>
-        <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
-          <CardContent>
+      <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+        {/* Header Card */}
+        <Card
+          elevation={2}
+          sx={{
+            borderRadius: { xs: 1, sm: 2 },
+            mb: { xs: 2, sm: 3 },
+            overflow: 'hidden'
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={8}>
-                <Typography variant="h4" gutterBottom>
-                  Manage Level
+                <Typography
+                  variant={isMobile ? "h5" : "h4"}
+                  sx={{
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+                  }}
+                >
+                  Manage Experience Levels
                 </Typography>
               </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: "left", sm: "right" } }}>
+              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
                 <Button
                   variant="contained"
                   color="primary"
                   startIcon={<AddIcon />}
-                  onClick={() => handleOpenAddEditModal()}
-                  sx={{ width: { xs: "100%", sm: "auto" } }}
+                  onClick={() => handleOpenAddEditDialog()}
+                  fullWidth={isMobile}
+                  sx={{
+                    py: { xs: 1, sm: 'auto' },
+                    textTransform: 'none',
+                    boxShadow: 2
+                  }}
                 >
                   Add New Level
                 </Button>
@@ -226,292 +289,391 @@ const ManageLevel = () => {
           </CardContent>
         </Card>
 
-        <Box mt={3}>
-          <Card style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
-            <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                flexDirection={{ xs: "column", sm: "row" }}
-                gap={2}
+        {/* Levels List Card */}
+        <Card
+          elevation={2}
+          sx={{
+            borderRadius: { xs: 1, sm: 2 },
+            overflow: 'hidden'
+          }}
+        >
+          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+            <Box
+              display="flex"
+              flexDirection={{ xs: 'column', sm: 'row' }}
+              justifyContent="space-between"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+              gap={2}
+              mb={2}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}
               >
-                <Typography variant="h6" gutterBottom>
-                  Levels
-                </Typography>
-                <TextField
-                  variant="outlined"
-                  size="small"
-                  placeholder="Search by level name"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  fullWidth={isMobile}
-                  sx={{ width: { xs: "100%", sm: 300 } }}
-                  InputProps={{
-                    endAdornment: (
-                      <IconButton>
-                        <SearchIcon />
-                      </IconButton>
-                    ),
-                  }}
-                />
+                Experience Levels ({filteredLevels.length})
+              </Typography>
+
+              <TextField
+                placeholder="Search levels"
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ width: { xs: '100%', sm: '220px' } }}
+              />
+            </Box>
+
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={4}>
+                <CircularProgress />
               </Box>
-              <Box sx={{ overflowX: "auto" }}>
-                <TableContainer>
-                  <Table sx={{ minWidth: 650 }}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={
-                              selectedLevels.length === filteredLevels.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedLevels(
-                                  filteredLevels.map((level) => level.id)
-                                );
-                              } else {
-                                setSelectedLevels([]);
-                              }
+            ) : filteredLevels.length === 0 ? (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {searchTerm
+                  ? "No levels match your search criteria."
+                  : "No levels available. Add a new level to get started."
+                }
+              </Alert>
+            ) : (
+              <>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    overflow: 'auto',
+                    mb: 2
+                  }}
+                >
+                  <TableContainer sx={{ minWidth: isMobile ? '100%' : 650, maxHeight: 440 }}>
+                    <Table size={isMobile ? "small" : "medium"}>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: 'background.default' }}>
+                          <TableCell sx={{ fontWeight: 600, width: '5%' }}>#</TableCell>
+                          <TableCell sx={{ fontWeight: 600, width: '25%' }}>Name</TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              width: '50%',
+                              display: { xs: 'none', sm: 'table-cell' }
                             }}
-                          />
-                        </TableCell>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Description</TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {currentLevels.map((level, index) => (
-                        <TableRow key={level.id}>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={selectedLevels.includes(level.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedLevels([
-                                    ...selectedLevels,
-                                    level.id,
-                                  ]);
-                                } else {
-                                  setSelectedLevels(
-                                    selectedLevels.filter(
-                                      (id) => id !== level.id
-                                    )
-                                  );
-                                }
-                              }}
-                            />
+                          >
+                            Description
                           </TableCell>
-                          <TableCell>{index + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
-                          <TableCell>{level.name}</TableCell>
-                          <TableCell>{level.description}</TableCell>
-                          <TableCell>
-                            <Tooltip title="View">
-                              <IconButton
-                                onClick={() => handleOpenViewModal(level)}
-                              >
-                                <VisibilityIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit">
-                              <IconButton
-                                onClick={() => handleOpenAddEditModal(level)}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                onClick={() => handleOpenDeleteModal(level)}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
+                          <TableCell
+                            align="center"
+                            sx={{
+                              fontWeight: 600,
+                              width: isMobile ? '20%' : '10%'
+                            }}
+                          >
+                            Actions
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-              {pageCount > 1 && (
-                <Box mt={2} display="flex" justifyContent="center">
-                  <Pagination
-                    count={pageCount}
-                    page={currentPage}
-                    onChange={(event, value) => setCurrentPage(value)}
-                    color="primary"
-                  />
-                </Box>
+                      </TableHead>
+                      <TableBody>
+                        {currentLevels.map((level, index) => (
+                          <TableRow
+                            key={level.id}
+                            hover
+                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
+                          >
+                            <TableCell>
+                              {index + 1 + (currentPage - 1) * itemsPerPage}
+                            </TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography variant="body2" fontWeight={500}>
+                                  {level.name}
+                                </Typography>
+                                {isMobile && level.description && (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                      display: '-webkit-box',
+                                      overflow: 'hidden',
+                                      WebkitBoxOrient: 'vertical',
+                                      WebkitLineClamp: 2,
+                                    }}
+                                  >
+                                    {level.description}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                              {level.description || "—"}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Box
+                                display="flex"
+                                justifyContent={isMobile ? "center" : "flex-start"}
+                                gap={1}
+                              >
+                                <IconButton
+                                  size={isMobile ? "small" : "medium"}
+                                  color="info"
+                                  onClick={() => handleOpenViewDialog(level)}
+                                >
+                                  <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
+                                </IconButton>
+                                <IconButton
+                                  size={isMobile ? "small" : "medium"}
+                                  color="primary"
+                                  onClick={() => handleOpenAddEditDialog(level)}
+                                >
+                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
+                                </IconButton>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+
+                {pageCount > 1 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      mt: 2
+                    }}
+                  >
+                    <Pagination
+                      count={pageCount}
+                      page={currentPage}
+                      onChange={(event, value) => setCurrentPage(value)}
+                      color="primary"
+                      size={isMobile ? "small" : "medium"}
+                      sx={{ py: 1 }}
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Add/Edit Level Dialog */}
+        <Dialog
+          open={openAddEditDialog}
+          onClose={!submitting ? handleCloseAddEditDialog : undefined}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: { xs: 1, sm: 2 },
+              width: { xs: '95%', sm: 'auto' }
+            }
+          }}
+        >
+          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {selectedLevel?.id ? "Edit Experience Level" : "Add Experience Level"}
+              </Typography>
+              {!submitting && (
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  onClick={handleCloseAddEditDialog}
+                  aria-label="close"
+                  size="small"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
               )}
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleBulkDelete}
-                disabled={selectedLevels.length === 0}
-              >
-                Delete Selected
-              </Button>
-            </CardContent>
-          </Card>
-        </Box>
+            </Box>
+          </DialogTitle>
 
-        <Modal open={openAddEditModal} onClose={handleCloseAddEditModal}>
-          <Box
-            sx={{
-              p: { xs: 2, sm: 4 },
-              width: "90%",
-              maxWidth: "400px",
-              margin: "auto",
-              marginTop: { xs: "20%", sm: "10%" },
-              bgcolor: "background.paper",
-              boxShadow: 3,
-              borderRadius: 2,
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              {selectedLevel?.id ? "Edit Level" : "Add New Level"}
-            </Typography>
+          <Divider />
+
+          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
             <TextField
-              fullWidth
-              margin="normal"
               label="Level Name"
-              value={selectedLevel?.name || ""}
-              onChange={(e) =>
-                setSelectedLevel({
-                  ...selectedLevel,
-                  name: e.target.value,
-                })
-              }
-              error={!!validationError}
-              helperText={validationError}
-              FormHelperTextProps={{ style: { color: "red" } }}
-            />
-            <TextField
+              variant="outlined"
               fullWidth
               margin="normal"
-              label="Description"
-              value={selectedLevel?.description || ""}
-              onChange={(e) =>
-                setSelectedLevel({
-                  ...selectedLevel,
-                  description: e.target.value,
-                })
-              }
-              multiline
-              rows={3}
+              name="name"
+              value={selectedLevel?.name || ""}
+              onChange={handleInputChange}
+              error={Boolean(formErrors.name)}
+              helperText={formErrors.name || ""}
+              disabled={submitting}
+              autoFocus
             />
-            <Box mt={2} display="flex" justifyContent="space-between" gap={2}>
+
+            <TextField
+              label="Description (optional)"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              name="description"
+              value={selectedLevel?.description || ""}
+              onChange={handleInputChange}
+              error={Boolean(formErrors.description)}
+              helperText={formErrors.description || ""}
+              disabled={submitting}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+
+          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'flex-end',
+                gap: 1
+              }}
+            >
               <Button
+                onClick={handleCloseAddEditDialog}
                 variant="outlined"
-                color="secondary"
-                onClick={handleCloseAddEditModal}
+                color="primary"
+                disabled={submitting}
                 fullWidth={isMobile}
+                sx={{
+                  order: { xs: 2, sm: 1 },
+                  textTransform: 'none'
+                }}
               >
                 Cancel
               </Button>
+
               <Button
-                variant="contained"
-                color="primary"
                 onClick={handleSaveLevel}
+                variant="contained"
+                color="primary"
+                disabled={submitting}
                 fullWidth={isMobile}
+                sx={{
+                  order: { xs: 1, sm: 2 },
+                  textTransform: 'none'
+                }}
               >
-                Save
+                {submitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : selectedLevel?.id ? (
+                  "Update"
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Box>
-          </Box>
-        </Modal>
+          </DialogActions>
+        </Dialog>
 
-        <Modal open={openViewModal} onClose={handleCloseViewModal}>
-          <Box
-            p={4}
-            bgcolor="background.paper"
-            sx={{
-              width: "90%",
-              maxWidth: "400px",
-              margin: "auto",
-              marginTop: "10%",
-              boxShadow: 3,
-              borderRadius: 2,
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              View Level
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Name:</strong> {selectedLevel?.name}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Description:</strong> {selectedLevel?.description}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="center">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCloseViewModal}
+        {/* View Level Dialog */}
+        <Dialog
+          open={openViewDialog}
+          onClose={handleCloseViewDialog}
+          PaperProps={{
+            sx: {
+              borderRadius: { xs: 1, sm: 2 },
+              width: { xs: '95%', sm: 'auto' },
+              maxWidth: '450px'
+            }
+          }}
+        >
+          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Level Details
+              </Typography>
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={handleCloseViewDialog}
+                aria-label="close"
+                size="small"
               >
-                Close
-              </Button>
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Box>
-          </Box>
-        </Modal>
+          </DialogTitle>
 
-        <Modal open={openDeleteModal} onClose={handleCloseDeleteModal}>
-          <Box
-            p={4}
-            bgcolor="background.paper"
-            sx={{
-              width: "90%",
-              maxWidth: "400px",
-              margin: "auto",
-              marginTop: "10%",
-              boxShadow: 3,
-              borderRadius: 2,
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Delete Level
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              Are you sure you want to delete this level? This action cannot be
-              undone.
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleCloseDeleteModal}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteLevel}
-              >
-                Confirm
-              </Button>
+          <Divider />
+
+          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
+            <Box mb={2}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Level Name
+              </Typography>
+              <Typography variant="body1" fontWeight={500}>
+                {selectedLevel?.name}
+              </Typography>
             </Box>
-          </Box>
-        </Modal>
 
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Description
+              </Typography>
+              <Typography variant="body1">
+                {selectedLevel?.description || "No description available."}
+              </Typography>
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Button
+              onClick={handleCloseViewDialog}
+              variant="contained"
+              color="primary"
+              fullWidth={isMobile}
+              sx={{ textTransform: 'none' }}
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Loading backdrop */}
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+          open={submitting}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+
+        {/* Notification Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          sx={{ mt: { xs: 7, sm: 8 } }}
         >
           <Alert
             onClose={() => setSnackbar({ ...snackbar, open: false })}
             severity={snackbar.severity}
+            variant="filled"
+            elevation={6}
+            sx={{
+              width: "100%",
+              boxShadow: 3,
+              '& .MuiAlert-message': {
+                maxWidth: '100%',
+                wordBreak: 'break-word'
+              }
+            }}
           >
             {snackbar.message}
           </Alert>
