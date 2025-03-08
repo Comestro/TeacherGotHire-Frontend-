@@ -156,6 +156,26 @@ const QuestionManagement = () => {
     }
   };
 
+  const handleEditQuestion = (questionId) => {
+    console.log("Editing question:", questionId);
+    // Implement your edit logic here
+  };
+
+  const handleDeleteQuestion= (questionId) => {
+    console.log("Deleting question:", questionId);
+    // Implement your delete logic here
+  };
+  const [selectedLanguage, setSelectedLanguage] = useState("All");
+  const languages = [
+    ...new Set(selectedExamSet?.questions.map((q) => q.language)),
+  ];
+
+  const filteredQuestions =
+    selectedLanguage === "All"
+      ? selectedExamSet?.questions
+      : selectedExamSet?.questions.filter((q) => q.language === selectedLanguage);
+
+
   return (
     <>
       <Helmet>
@@ -586,7 +606,7 @@ const QuestionManagement = () => {
                 </form>
 
                 {/* Questions List */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                {/* <div className="bg-white p-6 rounded-lg shadow-md">
                   <h2 className="text-xl font-semibold mb-6">
                     Exam Questions ({selectedExamSet.questions.length})
                   </h2>
@@ -623,7 +643,72 @@ const QuestionManagement = () => {
                       </div>
                     </div>
                   ))}
-                </div>
+                </div> */}
+
+<div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-6">
+        Exam Questions ({filteredQuestions.length})
+      </h2>
+
+      {/* Filter Dropdown */}
+      <div className="mb-4">
+        <label className="font-medium mr-2">Filter by Language:</label>
+        <select
+          className="border rounded px-3 py-2"
+          value={selectedLanguage}
+          onChange={(e) => setSelectedLanguage(e.target.value)}
+        >
+          <option value="All">All</option>
+          {languages.map((lang) => (
+            <option key={lang} value={lang}>
+              {lang}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {filteredQuestions.map((question, index) => (
+        <div key={question.id} className="border-b last:border-0 pb-6 mb-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="font-medium text-lg">Question {index + 1}</h3>
+              <p className="text-gray-500">Marks: {question.total_marks}</p>
+              <p className="text-gray-400 text-sm">Language: {question.language}</p>
+            </div>
+            <div className="space-x-2">
+              <button
+                onClick={() => handleEdit(question.id)}
+                className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(question.id)}
+                className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+          <p className="mb-4">{question.text}</p>
+          <div className="grid grid-cols-2 gap-4">
+            {question.options.map((option, i) => (
+              <div
+                key={i}
+                className={`p-3 rounded-md ${
+                  option === question.correct_option
+                    ? "bg-green-100 border border-green-300"
+                    : "bg-gray-50"
+                }`}
+              >
+                <span className="font-medium mr-2">{i + 1}.</span>
+                {option}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
               </div>
             )}
           </div>
