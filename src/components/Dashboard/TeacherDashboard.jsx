@@ -215,7 +215,7 @@ function TeacherDashboard() {
           <ExamManagement />
         </div>
 
-        <div className="flex flex-col items-center mt-10">
+        {/* <div className="flex flex-col items-center mt-10">
           {interview &&
             interview.length > 0 &&
             interview.map((item) => (
@@ -263,13 +263,13 @@ function TeacherDashboard() {
                     </div>
 
                     {/* Additional details can go here */}
-                  </div>
+                  {/* </div>
                 </div>
               </div>
             ))}
          
          
-        </div>
+        </div> */} 
       </div>
     </>
   );
