@@ -278,11 +278,6 @@ export default function Sidebar({ open, handleDrawerClose }) {
           <List component="div" disablePadding sx={{ py: 0 }}>
             {[
               {
-                text: "My profile",
-                icon: <PersonIcon />,
-                link: "/admin/profile"
-              },
-              {
                 text: "Support",
                 icon: <SupportIcon />,
                 link: "/admin/support",

@@ -9,7 +9,6 @@ import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
 import JobProfileEdit from "./components/Profile/JobProfile/jobProfileEdit";
 import AdminDashboard from "./admin/Dashboard/Dashboard";
-import AdminProfile from "./admin/Profile/Profile";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
 import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
 import ManageRecruiter from "./admin/Manage-recruiter/ManageRecruiter";
@@ -109,15 +108,6 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<AdminDashboard />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-            <Route
-              path="admin/profile"
-              element={
-                <RoleBasedRoute
-                  element={<AdminProfile />}
                   allowedRoles={["admin"]}
                 />
               }
