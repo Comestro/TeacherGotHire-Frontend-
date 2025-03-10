@@ -36,7 +36,7 @@ const ViewTeacherAdmin = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const { id } = useParams();
   const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -69,14 +69,14 @@ const ViewTeacherAdmin = () => {
   const handleDownloadProfile = () => {
     setOpenDownloadModal(true);
     setDownloadLoading(true);
-    
+
     setTimeout(() => {
       const content = document.querySelector("#pdf-content");
       if (!content) {
         console.error("PDF content not found");
         setOpenDownloadModal(false);
         setDownloadLoading(false);
-        
+
         setOpenSnackbar(true);
         setNotificationMessage({
           type: "error",
@@ -93,7 +93,7 @@ const ViewTeacherAdmin = () => {
           const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
           pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
           pdf.save(`teacher-profile-${teacherData?.id || 'download'}.pdf`);
-          
+
           setNotificationMessage({
             type: "success",
             text: "Profile downloaded successfully!"
@@ -293,10 +293,10 @@ const ViewTeacherAdmin = () => {
               <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
                 Confirm Deactivation
               </Typography>
-              
+
               {isMobile && (
-                <IconButton 
-                  size="small" 
+                <IconButton
+                  size="small"
                   onClick={() => setOpenDeactivateModal(false)}
                   sx={{ ml: 1 }}
                 >
@@ -304,11 +304,11 @@ const ViewTeacherAdmin = () => {
                 </IconButton>
               )}
             </Box>
-            
+
             <Typography variant="body1" sx={{ mb: 3 }}>
               Are you sure you want to deactivate this account? This action cannot be undone.
             </Typography>
-            
+
             <Box
               display="flex"
               flexDirection={{ xs: 'column', sm: 'row' }}
@@ -348,19 +348,19 @@ const ViewTeacherAdmin = () => {
           open={openSnackbar}
           autoHideDuration={6000}
           onClose={() => setOpenSnackbar(false)}
-          anchorOrigin={{ 
-            vertical: isMobile ? 'top' : 'bottom', 
-            horizontal: 'center' 
+          anchorOrigin={{
+            vertical: isMobile ? 'top' : 'bottom',
+            horizontal: 'center'
           }}
           sx={{ bottom: { xs: 70, sm: 'auto' } }} // Position above bottom nav on mobile
         >
-          <Alert 
-            onClose={() => setOpenSnackbar(false)} 
+          <Alert
+            onClose={() => setOpenSnackbar(false)}
             severity={notificationMessage.type}
             variant="filled"
-            sx={{ 
+            sx={{
               width: '100%',
-              boxShadow: 3 
+              boxShadow: 3
             }}
           >
             {notificationMessage.text}
@@ -377,7 +377,7 @@ const ViewTeacherAdmin = () => {
             teacherData={teacherData}
           />
         )}
-        
+
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={downloadLoading}

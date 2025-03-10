@@ -24,7 +24,8 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    useMediaQuery
+    useMediaQuery,
+    Pagination
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -39,61 +40,8 @@ import {
     Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-
-// Mock data for demo purposes
-const mockInquiries = [
-    {
-        id: 1,
-        recruiterName: "Prince Kumar",
-        email: "admin@example.com",
-        contactNumber: "8547963212",
-        subjects: ["Science (6 to 10)", "Maths (1 to 5)"],
-        teacherType: "School Teacher",
-        location: {
-            city: "Purnia",
-            state: "Bihar",
-            area: "Hanuman Bagh",
-            pincode: "854301"
-        },
-        status: "Pending",
-        createdAt: "2025-02-28T14:28:00Z",
-        adminNotes: ""
-    },
-    {
-        id: 2,
-        recruiterName: "Anjali Singh",
-        email: "anjali@school.com",
-        contactNumber: "9876543210",
-        subjects: ["English (All levels)", "Social Studies (6 to 8)"],
-        teacherType: "Tutor",
-        location: {
-            city: "Delhi",
-            state: "Delhi",
-            area: "Rohini",
-            pincode: "110085"
-        },
-        status: "Approved",
-        createdAt: "2025-02-26T09:15:00Z",
-        adminNotes: "Good fit for our platform, has multiple positions to fill"
-    },
-    {
-        id: 3,
-        recruiterName: "Rajesh Khanna",
-        email: "rkhanna@academy.edu",
-        contactNumber: "7123456789",
-        subjects: ["Physics (11 to 12)", "Chemistry (11 to 12)"],
-        teacherType: "Coaching Faculty",
-        location: {
-            city: "Mumbai",
-            state: "Maharashtra",
-            area: "Andheri",
-            pincode: "400053"
-        },
-        status: "Rejected",
-        createdAt: "2025-02-25T11:40:00Z",
-        adminNotes: "Inquiry was incomplete"
-    }
-];
+import Layout from '../Admin/Layout';
+import { getRecruiterEnquiry } from '../../services/adminRecruiterEnquiryApi';
 
 const ManageRecruiterEnquiry = () => {
     const theme = useTheme();
@@ -122,11 +70,41 @@ const ManageRecruiterEnquiry = () => {
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
     const [adminNote, setAdminNote] = useState('');
 
+    // Add pagination state
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
     // Load data on component mount
     useEffect(() => {
-        // In a real app, this would be an API call
-        setInquiries(mockInquiries);
-        setFilteredInquiries(mockInquiries);
+        const fetchInquiries = async () => {
+            try {
+                const response = await getRecruiterEnquiry();
+                // Transform the data to match the expected structure
+                const transformedInquiries = response.map(item => ({
+                    id: item.id,
+                    recruiterName: item.name,
+                    email: item.email,
+                    contactNumber: item.contact,
+                    subjects: item.subject.map(s => s.subject_name),
+                    teacherType: item.teachertype,
+                    location: {
+                        city: item.city,
+                        state: item.state,
+                        area: item.area,
+                        pincode: item.pincode
+                    },
+                    status: "Pending", // Assuming default status
+                    createdAt: new Date().toISOString(), // Assuming current date as creation date
+                    adminNotes: ""
+                }));
+                setInquiries(transformedInquiries);
+                setFilteredInquiries(transformedInquiries);
+            } catch (error) {
+                console.error("Error fetching recruiter inquiries:", error);
+            }
+        };
+
+        fetchInquiries();
     }, []);
 
     // Handle search and filtering
@@ -173,6 +151,17 @@ const ManageRecruiterEnquiry = () => {
 
         setFilteredInquiries(results);
     }, [searchTerm, filters, inquiries, sortOption]);
+
+    // Calculate paginated data
+    const paginatedInquiries = filteredInquiries.slice(
+        (page - 1) * rowsPerPage,
+        page * rowsPerPage
+    );
+
+    // Handle page change
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
 
     // Handle view details
     const handleViewDetails = (inquiry) => {
@@ -243,235 +232,278 @@ const ManageRecruiterEnquiry = () => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ py: 3 }}>
-            {/* Page Header */}
-            <Box sx={{ mb: 3 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    Manage Recruiter Inquiries
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                    Review and manage inquiries from recruiters seeking qualified teachers
-                </Typography>
-            </Box>
+        <Layout>
+            <Container maxWidth="xl" sx={{ py: 3 }}>
+                {/* Page Header */}
+                <Box sx={{ mb: 3 }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                        Manage Recruiter Inquiries
+                    </Typography>
+                    <Typography variant="subtitle1" color="text.secondary">
+                        Review and manage inquiries from recruiters seeking qualified teachers
+                    </Typography>
+                </Box>
 
-            {/* Search, Sort & Filter Section */}
-            <Paper
-                elevation={2}
-                sx={{
-                    p: 2,
-                    mb: 3,
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 10,
-                    backgroundColor: 'background.paper'
-                }}
-            >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Search by name, email, subject, or location..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                        }}
-                    />
+                {/* Search, Sort & Filter Section */}
+                <Paper
+                    elevation={2}
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 10,
+                        backgroundColor: 'background.paper'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Search by name, email, subject, or location..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                            }}
+                        />
 
-                    <Box sx={{ display: 'flex', ml: 1 }}>
-                        <IconButton
-                            color={isFilterExpanded ? "primary" : "default"}
-                            onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                        >
-                            <FilterListIcon />
-                        </IconButton>
+                        <Box sx={{ display: 'flex', ml: 1 }}>
+                            <IconButton
+                                color={isFilterExpanded ? "primary" : "default"}
+                                onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                            >
+                                <FilterListIcon />
+                            </IconButton>
 
-                        <FormControl variant="outlined" size="small" sx={{ ml: 1, minWidth: 120, display: { xs: 'none', md: 'block' } }}>
+                            <FormControl variant="outlined" size="small" sx={{ ml: 1, minWidth: 120, display: { xs: 'none', md: 'block' } }}>
+                                <Select
+                                    value={sortOption}
+                                    onChange={(e) => setSortOption(e.target.value)}
+                                    displayEmpty
+                                    startAdornment={<SortIcon sx={{ mr: 0.5, color: 'text.secondary' }} />}
+                                >
+                                    <MenuItem value="newest">Newest First</MenuItem>
+                                    <MenuItem value="oldest">Oldest First</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    </Box>
+
+                    {/* Mobile Sort Option */}
+                    <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" size="small">
+                            <InputLabel>Sort By</InputLabel>
                             <Select
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value)}
-                                displayEmpty
-                                startAdornment={<SortIcon sx={{ mr: 0.5, color: 'text.secondary' }} />}
+                                label="Sort By"
                             >
                                 <MenuItem value="newest">Newest First</MenuItem>
                                 <MenuItem value="oldest">Oldest First</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
-                </Box>
 
-                {/* Mobile Sort Option */}
-                <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
-                    <FormControl fullWidth variant="outlined" size="small">
-                        <InputLabel>Sort By</InputLabel>
-                        <Select
-                            value={sortOption}
-                            onChange={(e) => setSortOption(e.target.value)}
-                            label="Sort By"
-                        >
-                            <MenuItem value="newest">Newest First</MenuItem>
-                            <MenuItem value="oldest">Oldest First</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
+                    {/* Filter Section - Collapsible */}
+                    <Collapse in={isFilterExpanded}>
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item xs={12} sm={6} md={4} lg={3}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Teacher Type</InputLabel>
+                                    <Select
+                                        value={filters.teacherType}
+                                        onChange={(e) => setFilters({ ...filters, teacherType: e.target.value })}
+                                        label="Teacher Type"
+                                    >
+                                        <MenuItem value="">All Types</MenuItem>
+                                        <MenuItem value="School Teacher">School Teacher</MenuItem>
+                                        <MenuItem value="Tutor">Tutor</MenuItem>
+                                        <MenuItem value="Coaching Faculty">Coaching Faculty</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
 
-                {/* Filter Section - Collapsible */}
-                <Collapse in={isFilterExpanded}>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={12} sm={6} md={4} lg={3}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Teacher Type</InputLabel>
-                                <Select
-                                    value={filters.teacherType}
-                                    onChange={(e) => setFilters({ ...filters, teacherType: e.target.value })}
-                                    label="Teacher Type"
-                                >
-                                    <MenuItem value="">All Types</MenuItem>
-                                    <MenuItem value="School Teacher">School Teacher</MenuItem>
-                                    <MenuItem value="Tutor">Tutor</MenuItem>
-                                    <MenuItem value="Coaching Faculty">Coaching Faculty</MenuItem>
-                                </Select>
-                            </FormControl>
+                            <Grid item xs={12} sm={6} md={4} lg={3}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>State</InputLabel>
+                                    <Select
+                                        value={filters.location.state}
+                                        onChange={(e) => setFilters({
+                                            ...filters,
+                                            location: { ...filters.location, state: e.target.value }
+                                        })}
+                                        label="State"
+                                    >
+                                        <MenuItem value="">All States</MenuItem>
+                                        <MenuItem value="Bihar">Bihar</MenuItem>
+                                        <MenuItem value="Delhi">Delhi</MenuItem>
+                                        <MenuItem value="Maharashtra">Maharashtra</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                            <Grid item xs={12} md={4} lg={6}>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                    <Chip
+                                        label="Pending"
+                                        clickable
+                                        color={filters.status.includes('Pending') ? "primary" : "default"}
+                                        onClick={() => {
+                                            const newStatus = filters.status.includes('Pending')
+                                                ? filters.status.filter(s => s !== 'Pending')
+                                                : [...filters.status, 'Pending'];
+                                            setFilters({ ...filters, status: newStatus });
+                                        }}
+                                    />
+
+                                    <Chip
+                                        label="Approved"
+                                        clickable
+                                        color={filters.status.includes('Approved') ? "success" : "default"}
+                                        onClick={() => {
+                                            const newStatus = filters.status.includes('Approved')
+                                                ? filters.status.filter(s => s !== 'Approved')
+                                                : [...filters.status, 'Approved'];
+                                            setFilters({ ...filters, status: newStatus });
+                                        }}
+                                    />
+
+                                    <Chip
+                                        label="Rejected"
+                                        clickable
+                                        color={filters.status.includes('Rejected') ? "error" : "default"}
+                                        onClick={() => {
+                                            const newStatus = filters.status.includes('Rejected')
+                                                ? filters.status.filter(s => s !== 'Rejected')
+                                                : [...filters.status, 'Rejected'];
+                                            setFilters({ ...filters, status: newStatus });
+                                        }}
+                                    />
+                                </Box>
+                            </Grid>
                         </Grid>
 
-                        <Grid item xs={12} sm={6} md={4} lg={3}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>State</InputLabel>
-                                <Select
-                                    value={filters.location.state}
-                                    onChange={(e) => setFilters({
-                                        ...filters,
-                                        location: { ...filters.location, state: e.target.value }
-                                    })}
-                                    label="State"
-                                >
-                                    <MenuItem value="">All States</MenuItem>
-                                    <MenuItem value="Bihar">Bihar</MenuItem>
-                                    <MenuItem value="Delhi">Delhi</MenuItem>
-                                    <MenuItem value="Maharashtra">Maharashtra</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} md={4} lg={6}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                <Chip
-                                    label="Pending"
-                                    clickable
-                                    color={filters.status.includes('Pending') ? "primary" : "default"}
-                                    onClick={() => {
-                                        const newStatus = filters.status.includes('Pending')
-                                            ? filters.status.filter(s => s !== 'Pending')
-                                            : [...filters.status, 'Pending'];
-                                        setFilters({ ...filters, status: newStatus });
-                                    }}
-                                />
-
-                                <Chip
-                                    label="Approved"
-                                    clickable
-                                    color={filters.status.includes('Approved') ? "success" : "default"}
-                                    onClick={() => {
-                                        const newStatus = filters.status.includes('Approved')
-                                            ? filters.status.filter(s => s !== 'Approved')
-                                            : [...filters.status, 'Approved'];
-                                        setFilters({ ...filters, status: newStatus });
-                                    }}
-                                />
-
-                                <Chip
-                                    label="Rejected"
-                                    clickable
-                                    color={filters.status.includes('Rejected') ? "error" : "default"}
-                                    onClick={() => {
-                                        const newStatus = filters.status.includes('Rejected')
-                                            ? filters.status.filter(s => s !== 'Rejected')
-                                            : [...filters.status, 'Rejected'];
-                                        setFilters({ ...filters, status: newStatus });
-                                    }}
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button
-                            size="small"
-                            onClick={() => {
-                                setFilters({
-                                    subjects: [],
-                                    classCategory: '',
-                                    teacherType: '',
-                                    location: { state: '', city: '' },
-                                    status: []
-                                });
-                            }}
-                        >
-                            Clear Filters
-                        </Button>
-                    </Box>
-                </Collapse>
-            </Paper>
-
-            {/* Inquiry List Section */}
-            <Box>
-                {/* Desktop View - Table */}
-                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <Paper elevation={1}>
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: '2fr 2fr 2fr 1fr 1fr',
-                            p: 2,
-                            fontWeight: 'bold',
-                            borderBottom: 1,
-                            borderColor: 'divider'
-                        }}>
-                            <Typography variant="subtitle2">Recruiter</Typography>
-                            <Typography variant="subtitle2">Requirements</Typography>
-                            <Typography variant="subtitle2">Location</Typography>
-                            <Typography variant="subtitle2">Status</Typography>
-                            <Typography variant="subtitle2" align="center">Actions</Typography>
-                        </Box>
-
-                        {filteredInquiries.map((inquiry) => (
-                            <Box
-                                key={inquiry.id}
-                                sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '2fr 2fr 2fr 1fr 1fr',
-                                    p: 2,
-                                    borderBottom: 1,
-                                    borderColor: 'divider',
-                                    '&:hover': {
-                                        backgroundColor: 'action.hover',
-                                    }
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button
+                                size="small"
+                                onClick={() => {
+                                    setFilters({
+                                        subjects: [],
+                                        classCategory: '',
+                                        teacherType: '',
+                                        location: { state: '', city: '' },
+                                        status: []
+                                    });
                                 }}
                             >
-                                <Box>
-                                    <Typography variant="body2" fontWeight="medium">{inquiry.recruiterName}</Typography>
-                                    <Typography variant="caption" display="block">{inquiry.email}</Typography>
-                                    <Typography variant="caption" color="text.secondary">{inquiry.contactNumber}</Typography>
-                                </Box>
+                                Clear Filters
+                            </Button>
+                        </Box>
+                    </Collapse>
+                </Paper>
 
-                                <Box>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
-                                        {inquiry.subjects.map((subject, idx) => (
-                                            <Chip key={idx} label={subject} size="small" variant="outlined" />
-                                        ))}
+                {/* Inquiry List Section */}
+                <Box>
+                    {/* Desktop View - Table */}
+                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Paper elevation={1}>
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '2fr 2fr 2fr 1fr',
+                                p: 2,
+                                fontWeight: 'bold',
+                                borderBottom: 1,
+                                borderColor: 'divider'
+                            }}>
+                                <Typography variant="subtitle2">Recruiter</Typography>
+                                <Typography variant="subtitle2">Requirements</Typography>
+                                <Typography variant="subtitle2">Location</Typography>
+                                <Typography variant="subtitle2">Status</Typography>
+                            </Box>
+
+                            {paginatedInquiries.map((inquiry) => (
+                                <Box
+                                    key={inquiry.id}
+                                    sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '2fr 2fr 2fr 1fr',
+                                        p: 2,
+                                        borderBottom: 1,
+                                        borderColor: 'divider',
+                                        '&:hover': {
+                                            backgroundColor: 'action.hover',
+                                        }
+                                    }}
+                                >
+                                    <Box>
+                                        <Typography variant="body2" fontWeight="medium">{inquiry.recruiterName}</Typography>
+                                        <Typography variant="caption" display="block">{inquiry.email}</Typography>
+                                        <Typography variant="caption" color="text.secondary">{inquiry.contactNumber}</Typography>
                                     </Box>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Teacher Type: {inquiry.teacherType}
-                                    </Typography>
-                                </Box>
 
-                                <Box>
-                                    <Typography variant="body2">{inquiry.location.city}, {inquiry.location.state}</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {inquiry.location.area} - {inquiry.location.pincode}
-                                    </Typography>
-                                </Box>
+                                    <Box>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
+                                            {inquiry.subjects.map((subject, idx) => (
+                                                <Chip key={idx} label={subject} size="small" variant="outlined" />
+                                            ))}
+                                        </Box>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Teacher Type: {inquiry.teacherType}
+                                        </Typography>
+                                    </Box>
 
-                                <Box>
+                                    <Box>
+                                        <Typography variant="body2">{inquiry.location.city}, {inquiry.location.state}</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {inquiry.location.area} - {inquiry.location.pincode}
+                                        </Typography>
+                                    </Box>
+
+                                    <Box>
+                                        <Chip
+                                            label={inquiry.status}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: getStatusColor(inquiry.status),
+                                                color: '#fff',
+                                                mr: 1
+                                            }}
+                                        />
+                                        <Tooltip title="View Details">
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                onClick={() => handleViewDetails(inquiry)}
+                                            >
+                                                <VisibilityIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                </Box>
+                            ))}
+                        </Paper>
+                    </Box>
+
+                    {/* Mobile View - Cards */}
+                    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                        {paginatedInquiries.map((inquiry) => (
+                            <Card
+                                key={inquiry.id}
+                                sx={{
+                                    mb: 2,
+                                    border: `1px solid ${theme.palette.divider}`,
+                                    position: 'relative'
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 12,
+                                        right: 12,
+                                        zIndex: 1
+                                    }}
+                                >
                                     <Chip
                                         label={inquiry.status}
                                         size="small"
@@ -482,402 +514,272 @@ const ManageRecruiterEnquiry = () => {
                                     />
                                 </Box>
 
-                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                    <Tooltip title="View Details">
-                                        <IconButton size="small" onClick={() => handleViewDetails(inquiry)}>
-                                            <VisibilityIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
+                                <CardContent>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="h6" component="div">
+                                            {inquiry.recruiterName}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {inquiry.email} | {inquiry.contactNumber}
+                                        </Typography>
+                                    </Box>
 
-                                    {inquiry.status === 'Pending' && (
-                                        <>
-                                            <Tooltip title="Approve">
-                                                <IconButton
-                                                    size="small"
-                                                    color="success"
-                                                    onClick={() => handleApprove(inquiry.id)}
-                                                >
-                                                    <CheckIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
+                                    <Divider sx={{ mb: 2 }} />
 
-                                            <Tooltip title="Reject">
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleOpenRejectModal(inquiry)}
-                                                >
-                                                    <CloseIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </>
-                                    )}
-                                </Box>
-                            </Box>
+                                    <Grid container spacing={1}>
+                                        <Grid item xs={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Teacher Type
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {inquiry.teacherType}
+                                            </Typography>
+                                        </Grid>
+
+                                        <Grid item xs={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Location
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {inquiry.location.city}, {inquiry.location.state}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Subjects
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                            {inquiry.subjects.map((subject, idx) => (
+                                                <Chip key={idx} label={subject} size="small" variant="outlined" />
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<VisibilityIcon />}
+                                            onClick={() => handleViewDetails(inquiry)}
+                                        >
+                                            View Details
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
                         ))}
-                    </Paper>
-                </Box>
-
-                {/* Mobile View - Cards */}
-                <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                    {filteredInquiries.map((inquiry) => (
-                        <Card
-                            key={inquiry.id}
-                            sx={{
-                                mb: 2,
-                                border: `1px solid ${theme.palette.divider}`,
-                                position: 'relative'
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 12,
-                                    right: 12,
-                                    zIndex: 1
-                                }}
-                            >
-                                <Chip
-                                    label={inquiry.status}
-                                    size="small"
-                                    sx={{
-                                        backgroundColor: getStatusColor(inquiry.status),
-                                        color: '#fff'
-                                    }}
-                                />
-                            </Box>
-
-                            <CardContent>
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography variant="h6" component="div">
-                                        {inquiry.recruiterName}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {inquiry.email} | {inquiry.contactNumber}
-                                    </Typography>
-                                </Box>
-
-                                <Divider sx={{ mb: 2 }} />
-
-                                <Grid container spacing={1}>
-                                    <Grid item xs={6}>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Teacher Type
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            {inquiry.teacherType}
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid item xs={6}>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Location
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            {inquiry.location.city}, {inquiry.location.state}
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-
-                                <Box sx={{ mt: 2 }}>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Subjects
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                        {inquiry.subjects.map((subject, idx) => (
-                                            <Chip key={idx} label={subject} size="small" variant="outlined" />
-                                        ))}
-                                    </Box>
-                                </Box>
-                            </CardContent>
-
-                            <Divider />
-
-                            <Box sx={{ display: 'flex', p: 1, justifyContent: 'space-between' }}>
-                                <Button
-                                    startIcon={<VisibilityIcon />}
-                                    onClick={() => handleViewDetails(inquiry)}
-                                >
-                                    View Details
-                                </Button>
-
-                                {inquiry.status === 'Pending' && (
-                                    <Box>
-                                        <IconButton
-                                            color="success"
-                                            onClick={() => handleApprove(inquiry.id)}
-                                        >
-                                            <CheckIcon />
-                                        </IconButton>
-
-                                        <IconButton
-                                            color="error"
-                                            onClick={() => handleOpenRejectModal(inquiry)}
-                                        >
-                                            <CloseIcon />
-                                        </IconButton>
-                                    </Box>
-                                )}
-                            </Box>
-                        </Card>
-                    ))}
-                </Box>
-
-                {filteredInquiries.length === 0 && (
-                    <Box sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography variant="h6" color="text.secondary">
-                            No inquiries found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Try adjusting your search or filters
-                        </Typography>
                     </Box>
-                )}
-            </Box>
 
-            {/* Floating Action Button for Mobile */}
-            {isMobile && selectedInquiry && (
-                <Box
-                    sx={{
-                        position: 'fixed',
-                        bottom: 16,
-                        right: 16,
-                        zIndex: 1000,
+                    {/* Add Pagination */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                        <Pagination
+                            count={Math.ceil(filteredInquiries.length / rowsPerPage)}
+                            page={page}
+                            onChange={handleChangePage}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+
+                    {filteredInquiries.length === 0 && (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                            <Typography variant="h6" color="text.secondary">
+                                No inquiries found
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Try adjusting your search or filters
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+
+                {/* Inquiry Details Drawer */}
+                <Drawer
+                    anchor={isMobile ? 'bottom' : 'right'}
+                    open={isDrawerOpen}
+                    onClose={() => setIsDrawerOpen(false)}
+                    PaperProps={{
+                        sx: {
+                            width: isMobile ? '100%' : '400px',
+                            height: isMobile ? '90%' : '100%',
+                            borderTopLeftRadius: isMobile ? 16 : 0,
+                            borderTopRightRadius: isMobile ? 16 : 0,
+                        }
                     }}
                 >
-                    <Tooltip title="Add Note">
-                        <IconButton
-                            color="primary"
-                            sx={{
-                                backgroundColor: theme.palette.primary.main,
-                                color: theme.palette.primary.contrastText,
-                                '&:hover': {
-                                    backgroundColor: theme.palette.primary.dark,
-                                },
-                            }}
-                            onClick={() => setIsNoteModalOpen(true)}
-                        >
-                            <AddIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Box>
-            )}
-
-            {/* Inquiry Details Drawer */}
-            <Drawer
-                anchor={isMobile ? 'bottom' : 'right'}
-                open={isDrawerOpen}
-                onClose={() => setIsDrawerOpen(false)}
-                PaperProps={{
-                    sx: {
-                        width: isMobile ? '100%' : '400px',
-                        height: isMobile ? '90%' : '100%',
-                        borderTopLeftRadius: isMobile ? 16 : 0,
-                        borderTopRightRadius: isMobile ? 16 : 0,
-                    }
-                }}
-            >
-                {selectedInquiry && (
-                    <Box sx={{ p: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">Inquiry Details</Typography>
-                            <IconButton onClick={() => setIsDrawerOpen(false)}>
-                                <CloseIcon />
-                            </IconButton>
-                        </Box>
-
-                        <Divider sx={{ mb: 3 }} />
-
-                        <Typography variant="subtitle2" gutterBottom>Recruiter Information</Typography>
-                        <Box sx={{ mb: 2 }}>
-                            <Typography variant="body1">{selectedInquiry.recruiterName}</Typography>
-                            <Typography variant="body2">{selectedInquiry.email}</Typography>
-                            <Typography variant="body2">{selectedInquiry.contactNumber}</Typography>
-                        </Box>
-
-                        <Divider sx={{ mb: 2 }} />
-
-                        <Typography variant="subtitle2" gutterBottom>Inquiry Details</Typography>
-                        <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={6}>
-                                <Typography variant="body2" color="text.secondary">Teacher Type</Typography>
-                                <Typography variant="body1">{selectedInquiry.teacherType}</Typography>
-                            </Grid>
-
-                            <Grid item xs={6}>
-                                <Typography variant="body2" color="text.secondary">Status</Typography>
-                                <Chip
-                                    label={selectedInquiry.status}
-                                    size="small"
-                                    sx={{
-                                        backgroundColor: getStatusColor(selectedInquiry.status),
-                                        color: '#fff'
-                                    }}
-                                />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Typography variant="body2" color="text.secondary">Subjects</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                    {selectedInquiry.subjects.map((subject, idx) => (
-                                        <Chip key={idx} label={subject} size="small" />
-                                    ))}
-                                </Box>
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Typography variant="body2" color="text.secondary">Location</Typography>
-                                <Typography variant="body1">
-                                    {selectedInquiry.location.area}, {selectedInquiry.location.city}, {selectedInquiry.location.state} - {selectedInquiry.location.pincode}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-
-                        <Divider sx={{ mb: 2 }} />
-
-                        <Box sx={{ mb: 3 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant="subtitle2">Admin Notes</Typography>
-                                <IconButton size="small" onClick={() => setIsNoteModalOpen(true)}>
-                                    <NotesIcon fontSize="small" />
+                    {selectedInquiry && (
+                        <Box sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Typography variant="h6">Inquiry Details</Typography>
+                                <IconButton onClick={() => setIsDrawerOpen(false)}>
+                                    <CloseIcon />
                                 </IconButton>
                             </Box>
 
-                            <Paper
-                                variant="outlined"
-                                sx={{
-                                    mt: 1,
-                                    p: 2,
-                                    minHeight: '80px',
-                                    backgroundColor: theme.palette.background.default
-                                }}
-                            >
-                                {selectedInquiry.adminNotes ? (
-                                    <Typography
-                                        variant="body2"
-                                        sx={{ whiteSpace: 'pre-wrap' }}
-                                    >
-                                        {selectedInquiry.adminNotes}
-                                    </Typography>
-                                ) : (
-                                    <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                                        No notes added yet
-                                    </Typography>
-                                )}
-                            </Paper>
-                        </Box>
+                            <Divider sx={{ mb: 3 }} />
 
-                        {/* Action Buttons at Bottom */}
-                        {selectedInquiry.status === 'Pending' && (
-                            <Box
-                                sx={{
-                                    position: 'sticky',
-                                    bottom: 0,
-                                    py: 2,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    gap: 2,
-                                    backgroundColor: theme.palette.background.paper,
-                                    borderTop: `1px solid ${theme.palette.divider}`,
-                                    mt: 2
-                                }}
-                            >
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    fullWidth
-                                    startIcon={<CheckIcon />}
-                                    onClick={() => handleApprove(selectedInquiry.id)}
-                                >
-                                    Approve
-                                </Button>
-
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    fullWidth
-                                    startIcon={<CloseIcon />}
-                                    onClick={() => handleOpenRejectModal(selectedInquiry)}
-                                >
-                                    Reject
-                                </Button>
+                            <Typography variant="subtitle2" gutterBottom>Recruiter Information</Typography>
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="body1">{selectedInquiry.recruiterName}</Typography>
+                                <Typography variant="body2">{selectedInquiry.email}</Typography>
+                                <Typography variant="body2">{selectedInquiry.contactNumber}</Typography>
                             </Box>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            <Typography variant="subtitle2" gutterBottom>Inquiry Details</Typography>
+                            <Grid container spacing={2} sx={{ mb: 2 }}>
+                                <Grid item xs={6}>
+                                    <Typography variant="body2" color="text.secondary">Teacher Type</Typography>
+                                    <Typography variant="body1">{selectedInquiry.teacherType}</Typography>
+                                </Grid>
+
+                                <Grid item xs={6}>
+                                    <Typography variant="body2" color="text.secondary">Status</Typography>
+                                    <Chip
+                                        label={selectedInquiry.status}
+                                        size="small"
+                                        sx={{
+                                            backgroundColor: getStatusColor(selectedInquiry.status),
+                                            color: '#fff'
+                                        }}
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <Typography variant="body2" color="text.secondary">Subjects</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                        {selectedInquiry.subjects.map((subject, idx) => (
+                                            <Chip key={idx} label={subject} size="small" />
+                                        ))}
+                                    </Box>
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <Typography variant="body2" color="text.secondary">Location</Typography>
+                                    <Typography variant="body1">
+                                        {selectedInquiry.location.area}, {selectedInquiry.location.city}, {selectedInquiry.location.state} - {selectedInquiry.location.pincode}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            {/* Modify the Admin Notes section in the drawer to use a traditional button */}
+                            <Box sx={{ mb: 3 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="subtitle2">Admin Notes</Typography>
+                                    <Button
+                                        startIcon={<NotesIcon />}
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => setIsNoteModalOpen(true)}
+                                    >
+                                        Add Note
+                                    </Button>
+                                </Box>
+
+                                <Paper
+                                    variant="outlined"
+                                    sx={{
+                                        mt: 1,
+                                        p: 2,
+                                        minHeight: '80px',
+                                        backgroundColor: theme.palette.background.default
+                                    }}
+                                >
+                                    {selectedInquiry.adminNotes ? (
+                                        <Typography
+                                            variant="body2"
+                                            sx={{ whiteSpace: 'pre-wrap' }}
+                                        >
+                                            {selectedInquiry.adminNotes}
+                                        </Typography>
+                                    ) : (
+                                        <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                                            No notes added yet
+                                        </Typography>
+                                    )}
+                                </Paper>
+                            </Box>
+                        </Box>
+                    )}
+                </Drawer>
+
+                {/* Reject Modal */}
+                <Dialog
+                    open={isRejectModalOpen}
+                    onClose={() => setIsRejectModalOpen(false)}
+                    fullWidth
+                    maxWidth="sm"
+                >
+                    <DialogTitle>Reject Inquiry</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" paragraph>
+                            Please provide a reason for rejecting this inquiry from {selectedInquiry?.recruiterName}
+                        </Typography>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel>Rejection Reason</InputLabel>
+                            <Select
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                label="Rejection Reason"
+                                sx={{ mb: 2 }}
+                            >
+                                <MenuItem value="Incomplete information">Incomplete information</MenuItem>
+                                <MenuItem value="Not matching our platform requirements">Not matching our platform requirements</MenuItem>
+                                <MenuItem value="No suitable teachers available">No suitable teachers available</MenuItem>
+                                <MenuItem value="Other">Other (please specify)</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        {rejectReason === 'Other' && (
+                            <TextField
+                                fullWidth
+                                multiline
+                                rows={3}
+                                label="Specify reason"
+                                variant="outlined"
+                                value={rejectReason === 'Other' ? rejectReason : ''}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                            />
                         )}
-                    </Box>
-                )}
-            </Drawer>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setIsRejectModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleReject} color="error">Reject Inquiry</Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* Reject Modal */}
-            <Dialog
-                open={isRejectModalOpen}
-                onClose={() => setIsRejectModalOpen(false)}
-                fullWidth
-                maxWidth="sm"
-            >
-                <DialogTitle>Reject Inquiry</DialogTitle>
-                <DialogContent>
-                    <Typography variant="body2" paragraph>
-                        Please provide a reason for rejecting this inquiry from {selectedInquiry?.recruiterName}
-                    </Typography>
-                    <FormControl fullWidth variant="outlined">
-                        <InputLabel>Rejection Reason</InputLabel>
-                        <Select
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                            label="Rejection Reason"
-                            sx={{ mb: 2 }}
-                        >
-                            <MenuItem value="Incomplete information">Incomplete information</MenuItem>
-                            <MenuItem value="Not matching our platform requirements">Not matching our platform requirements</MenuItem>
-                            <MenuItem value="No suitable teachers available">No suitable teachers available</MenuItem>
-                            <MenuItem value="Other">Other (please specify)</MenuItem>
-                        </Select>
-                    </FormControl>
+                {/* Add Note Modal */}
 
-                    {rejectReason === 'Other' && (
+                <Dialog
+                    open={isNoteModalOpen}
+                    onClose={() => setIsNoteModalOpen(false)}
+                    fullWidth
+                    maxWidth="sm"
+                >
+                    <DialogTitle>Add Admin Note</DialogTitle>
+                    <DialogContent>
                         <TextField
                             fullWidth
                             multiline
-                            rows={3}
-                            label="Specify reason"
+                            rows={4}
+                            label="Add a note for this inquiry"
                             variant="outlined"
-                            value={rejectReason === 'Other' ? rejectReason : ''}
-                            onChange={(e) => setRejectReason(e.target.value)}
+                            value={adminNote}
+                            onChange={(e) => setAdminNote(e.target.value)}
                         />
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsRejectModalOpen(false)}>Cancel</Button>
-                    <Button onClick={handleReject} color="error">Reject Inquiry</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Add Note Modal */}
-
-            <Dialog
-                open={isNoteModalOpen}
-                onClose={() => setIsNoteModalOpen(false)}
-                fullWidth
-                maxWidth="sm"
-            >
-                <DialogTitle>Add Admin Note</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={4}
-                        label="Add a note for this inquiry"
-                        variant="outlined"
-                        value={adminNote}
-                        onChange={(e) => setAdminNote(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsNoteModalOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddNote} color="primary">Add Note</Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setIsNoteModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddNote} color="primary">Add Note</Button>
+                    </DialogActions>
+                </Dialog>
+            </Container>
+        </Layout>
 
     );
 }

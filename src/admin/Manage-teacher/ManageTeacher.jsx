@@ -33,6 +33,8 @@ import {
 import Layout from "../Admin/Layout";
 import { getTeacher } from "../../services/adminTeacherApi";
 import { Link } from "react-router-dom";
+import { getQualification } from "../../services/adminManageQualificationApi";
+import { getSubjects } from "../../services/adminSubujectApi";
 
 const ManageTeacher = () => {
   const [teachers, setTeachers] = useState([]);
