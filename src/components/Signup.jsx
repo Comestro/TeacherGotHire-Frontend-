@@ -20,8 +20,11 @@ function SignUpPage() {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
-  } = useForm();
+    formState: { errors, isValid, dirtyFields },
+  } = useForm({
+    mode: "onChange",
+    criteriaMode: "all"
+  });
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,19 +32,18 @@ function SignUpPage() {
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     number: false,
-    special: false,
-    capital: false,
+    special: false
   });
 
-  const password = watch("password");
+  const watchedFields = watch();
+  const password = watchedFields.password;
 
   useEffect(() => {
     if (password) {
       setPasswordCriteria({
         length: password.length >= 8,
         number: /\d/.test(password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-        capital: /[A-Z]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
       });
     }
   }, [password]);
@@ -50,11 +52,19 @@ function SignUpPage() {
     setShowPassword(!showPassword);
   };
 
-  const inputClass = `w-full border-2 text-sm rounded-xl px-3 py-3 ${
-    errors.email
-      ? "border-red-500 focus:border-red-500"
-      : "border-gray-300 focus:border-green-500"
-  }`;
+  const isEmailValid = (email) => {
+    return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
+  };
+
+  const getInputClassName = (fieldName) => {
+    return `w-full border-2 text-sm rounded-xl p-3 transition-colors ${
+      dirtyFields[fieldName]
+        ? errors[fieldName]
+          ? "border-red-500 focus:border-red-500"
+          : "border-teal-600 focus:border-teal-600"
+        : "border-gray-300 focus:border-teal-600"
+    }`;
+  };
 
   const signup = async ({ Fname, Lname, email, password }) => {
     setError("");
@@ -81,112 +91,110 @@ function SignUpPage() {
         <title>PTPI | Signup Page</title>
       </Helmet>
       {loading && <Loader />}
+      <ToastContainer />
       <div
-        className="flex bg-cover bg-no-repeat mt-3 items-center justify-center"
+        className="flex min-h-screen bg-cover bg-no-repeat bg-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8">
-          <div className="max-w-md w-full mt-5">
-            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
-              Hello,{" "}
-              <span className="font-bold text-teal-600">Teachers </span>
-            </h2>
-            <h2 className="mb-2 font-bold text-gray-500 text-xl md:text-4xl leading-none">
-              Signup To{" "}
-              <span className="font-bold text-xl md:text-4xl text-teal-600">
-                PTPI{" "}
-              </span>
-            </h2>
-
-            <div className="mb-5">
-              <p className="text-sm font-medium text-gray-600">
-                Have an account?{" "}
-                <span
-                  onClick={() => navigate("/signin")}
-                  className="text-teal-600 hover:underline font-semibold cursor-pointer"
-                >
-                  Sign In
-                </span>
-              </p>
+        <div className="w-full md:w-1/2 flex justify-center md:pl-16 lg:pl-24 xl:pl-32 mt-16 md:mt-0">
+          <div className="w-full max-w-md bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
+            <div className="space-y-2 mb-6">
+              <h2 className="font-bold text-gray-500 text-lg sm:text-xl leading-tight">
+                Hello, <span className="text-teal-600">Teachers</span>
+              </h2>
+              <h2 className="font-bold text-gray-500 text-2xl sm:text-3xl md:text-4xl leading-tight">
+                Signup To <span className="text-teal-600">PTPI</span>
+              </h2>
             </div>
 
-            <form onSubmit={handleSubmit(signup)} className="space-y-4 mb-5">
-              <div className="flex gap-2">
-                <div className="flex flex-col flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+            <form onSubmit={handleSubmit(signup)} className="space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     First Name
                   </label>
-                  <Input
-                    className={inputClass}
-                    placeholder="Enter your first name"
-                    {...register("Fname", {
-                      required: "First name is required",
-                    })}
-                  />
+                  <div className="relative">
+                    <Input
+                      className={getInputClassName("Fname")}
+                      placeholder="Enter your first name"
+                      {...register("Fname", {
+                        required: "First name is required",
+                      })}
+                    />
+                    {dirtyFields.Fname && !errors.Fname && (
+                      <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                    )}
+                  </div>
                   {errors.Fname && (
-                    <span className="text-red-500 text-sm">
-                      {errors.Fname.message}
-                    </span>
+                    <p className="mt-1 text-sm text-red-600">{errors.Fname.message}</p>
                   )}
                 </div>
-                <div className="flex flex-col flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Last Name
                   </label>
-                  <Input
-                    className={inputClass}
-                    placeholder="Enter your last name"
-                    {...register("Lname", {
-                      required: "Last name is required",
-                    })}
-                  />
+                  <div className="relative">
+                    <Input
+                      className={getInputClassName("Lname")}
+                      placeholder="Enter your last name"
+                      {...register("Lname", {
+                        required: "Last name is required",
+                      })}
+                    />
+                    {dirtyFields.Lname && !errors.Lname && (
+                      <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                    )}
+                  </div>
                   {errors.Lname && (
-                    <span className="text-red-500 text-sm">
-                      {errors.Lname.message}
-                    </span>
+                    <p className="mt-1 text-sm text-red-600">{errors.Lname.message}</p>
                   )}
                 </div>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Email
                 </label>
-                <Input
-                  placeholder="Enter your email"
-                  type="email"
-                  className={inputClass}
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                      message: "Invalid email format",
-                    },
-                  })}
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your email"
+                    type="email"
+                    className={getInputClassName("email")}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
+                  />
+                  {dirtyFields.email && !errors.email && (
+                    <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                  )}
+                </div>
                 {errors.email && (
-                  <span className="text-red-500 text-sm">{errors.email.message}</span>
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
                 )}
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Password
                 </label>
                 <div className="relative">
                   <Input
                     placeholder="Enter your password"
                     type={showPassword ? "text" : "password"}
-                    className={inputClass}
+                    className={getInputClassName("password")}
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
                         value: 8,
-                        message: "Password must be at least 8 characters long",
+                        message: "Password must be at least 8 characters",
                       },
                       validate: (value) => {
                         if (!/\d/.test(value)) return "Password must contain at least one number";
-                        if (!/[A-Z]/.test(value)) return "Password must contain at least one capital letter";
                         if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character";
                         return true;
                       }
@@ -195,140 +203,148 @@ function SignUpPage() {
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
                   </button>
                 </div>
                 {errors.password && (
-                  <span className="text-red-500 text-sm">{errors.password.message}</span>
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                 )}
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center text-sm">
-                    <FaCheck className={`mr-2 ${passwordCriteria.length ? 'text-green-500' : 'text-gray-300'}`} />
-                    <span className={passwordCriteria.length ? 'text-green-500' : 'text-gray-500'}>
-                      At least 8 characters
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FaCheck className={`mr-2 ${passwordCriteria.number ? 'text-green-500' : 'text-gray-300'}`} />
-                    <span className={passwordCriteria.number ? 'text-green-500' : 'text-gray-500'}>
-                      Contains a number
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FaCheck className={`mr-2 ${passwordCriteria.special ? 'text-green-500' : 'text-gray-300'}`} />
-                    <span className={passwordCriteria.special ? 'text-green-500' : 'text-gray-500'}>
-                      Contains a special character
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <FaCheck className={`mr-2 ${passwordCriteria.capital ? 'text-green-500' : 'text-gray-300'}`} />
-                    <span className={passwordCriteria.capital ? 'text-green-500' : 'text-gray-500'}>
-                      Contains a capital letter
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <Input
-                  placeholder="Confirm your password"
-                  type="password"
-                  className={inputClass}
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === password || "Passwords do not match",
-                  })}
-                />
-                {errors.confirmPassword && (
-                  <span className="text-red-500 text-sm">
-                    {errors.confirmPassword.message}
-                  </span>
-                )}
+                {/* Password Criteria */}
+                <div className="mt-2 space-y-1">
+                  <p className={`text-xs ${passwordCriteria.length ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ At least 8 characters
+                  </p>
+                  <p className={`text-xs ${passwordCriteria.number ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ Contains a number
+                  </p>
+                  <p className={`text-xs ${passwordCriteria.special ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ Contains a special character
+                  </p>
+                </div>
               </div>
 
               <Button
                 type="submit"
-                disabled={!isValid || loading}
-                className={`w-full py-2 rounded-xl transition ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-teal-600 text-white hover:bg-teal-700"
+                className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 flex items-center justify-center ${
+                  !isValid || loading
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:bg-teal-700"
                 }`}
+                disabled={!isValid || loading}
               >
-                {loading ? "Sending..." : "Sign Up"}
+                {loading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Sign Up as Teacher"
+                )}
               </Button>
             </form>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate("/signup/recruiter")}
+                className="w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
+              >
+                Sign up as Recruiter
+              </button>
+
+              <div className="relative mt-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => navigate("/signin")}
+                className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 border border-teal-600 text-sm font-medium rounded-xl text-teal-600 bg-white hover:bg-teal-50 transition duration-200"
+              >
+                Already have an account? Sign in
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 hidden md:flex flex-col pl-36 justify-center h-screen p-10 ">
+        {/* Timeline - Hidden on mobile, shown on md screens and up */}
+        <div className="hidden md:flex w-1/2 flex-col justify-center pl-16 lg:pl-24">
           {/* Step 1 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-teal-500 text-white font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">
                 1
               </div>
-              <div className="h-12 w-1 bg-teal-500"></div>
+              <div className="h-16 w-1 bg-teal-600"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Get Signup Completed
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Create Account
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Fill in your details to create your account
+              </p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
                 2
               </div>
-              <div className="h-12 w-1 bg-gray-300"></div>
+              <div className="h-16 w-1 bg-gray-300"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Select Teacher in Progress
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Verify Email
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Confirm your email address
+              </p>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="flex items-start space-x-4 mb-4">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
-                3
-              </div>
-              <div className="h-12 w-1 bg-gray-300"></div>
-            </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Take interview
-              </div>
-            </div>
-          </div>
-
-          {/* Step 4 */}
           <div className="flex items-start space-x-4">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
-                4
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
+                3
               </div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Hire Teacher
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Complete Profile
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Set up your teacher profile
+              </p>
             </div>
           </div>
         </div>
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 }

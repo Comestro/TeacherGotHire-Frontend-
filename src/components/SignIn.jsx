@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { login } from "../services/authUtils"; // Import the login function from authUtils
+import { login } from "../services/authUtils";
 import Input from "./Input";
 import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
+import { FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
@@ -16,10 +16,19 @@ import "react-toastify/dist/ReactToastify.css";
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, dirtyFields },
+    watch
+  } = useForm({
+    mode: "onChange",
+    criteriaMode: "all"
+  });
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
+  const watchedFields = watch();
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -66,6 +75,10 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
+  const isEmailValid = (email) => {
+    return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
+  };
+
   return (
     <>
       <Helmet>
@@ -75,85 +88,109 @@ function Login() {
       {loading && <Loader />}
       <ToastContainer />
       <div
-        className="flex bg-cover bg-no-repeat md:items-center md:justify-center min-h-screen"
+        className="flex min-h-screen bg-cover bg-no-repeat bg-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
         {/* Form Container */}
-        <div className="w-full md:w-1/2 flex md:pl-72  md:p-0 mt-20 md:mt-0">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
-            {errors.email && <p className="text-red-600 text-center mb-4">{errors.email.message}</p>}
-            {errors.password && <p className="text-red-600 text-center mb-4">{errors.password.message}</p>}
-            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
-              Hello,{" "}
-              <span className="font-bold text-teal-600">User</span>
-            </h2>
-            <h2 className=" font-bold text-gray-500 text-xl md:text-4xl leading-none">
-              Sign in to{" "}
-              <span className="font-bold text-xl md:text-4xl text-teal-600">
-                PTPI
-              </span>
-            </h2>
+        <div className="w-full md:w-1/2 flex justify-center md:pl-16 lg:pl-24 xl:pl-32 mt-16 md:mt-0">
+          <div className="w-full max-w-md bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
+            <div className="space-y-2 mb-6">
+              <h2 className="font-bold text-gray-500 text-lg sm:text-xl leading-tight">
+                Hello, <span className="text-teal-600">User</span>
+              </h2>
+              <h2 className="font-bold text-gray-500 text-2xl sm:text-3xl md:text-4xl leading-tight">
+                Sign in to <span className="text-teal-600">PTPI</span>
+              </h2>
+            </div>
            
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
               {/* Email */}
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium  text-gray-700 mb-1"
-                  htmlFor="email"
-                >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="email">
                   Email
                 </label>
-                <Input
-                  placeholder="Enter your email"
-                  type="email"
-                  id="email"
-                  className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 "
-                  {...register("email", {
-                    required: true,
-                    validate: {
-                      matchPattern: (value) =>
-                        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(
-                          value
-                        ) || "Email address must be valid",
-                    },
-                  })}
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your email"
+                    type="email"
+                    id="email"
+                    className={`w-full border-2 text-sm rounded-xl p-3 pr-10 transition-colors ${
+                      dirtyFields.email
+                        ? isEmailValid(watchedFields.email)
+                          ? "border-teal-600 focus:border-teal-600"
+                          : "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-teal-600"
+                    }`}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
+                  />
+                  {dirtyFields.email && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {isEmailValid(watchedFields.email) ? (
+                        <FaCheckCircle className="text-teal-600" />
+                      ) : (
+                        <FaTimesCircle className="text-red-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Password */}
-              <div className="mb-4 relative">
-                <label
-                  className="block text-sm font-medium  text-gray-700 mb-1"
-                  htmlFor="pass"
-                >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="pass">
                   Password
                 </label>
-                <Input
-                  placeholder="Enter your password"
-                  type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
-                  id="pass"
-                  className="w-full border-2 border-gray-300 text-sm rounded-xl p-3 pr-10" // Add padding for the eye icon
-                  {...register("password", {
-                    required: "Password is required",
-                  })}
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
-                  {/* Toggle eye icon based on showPassword state */}
-                </button>
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    id="pass"
+                    className={`w-full border-2 text-sm rounded-xl p-3 pr-10 transition-colors ${
+                      dirtyFields.password
+                        ? watchedFields.password?.length >= 6
+                          ? "border-teal-600 focus:border-teal-600"
+                          : "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-teal-600"
+                    }`}
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                )}
               </div>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className={`w-full bg-teal-600 text-white py-2 rounded-xl hover:bg-teal-700 transition flex items-center justify-center ${
-                  loading ? "cursor-not-allowed" : ""
+                className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 flex items-center justify-center ${
+                  !isValid || loading
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:bg-teal-700"
                 }`}
-                disabled={loading}
+                disabled={!isValid || loading}
               >
                 {loading ? (
                   <svg
@@ -182,84 +219,85 @@ function Login() {
               </Button>
             </form>
 
-            <div className="text-center my-4">
+            <div className="mt-6 space-y-4">
               <div className="flex items-center">
                 <hr className="flex-grow border-gray-300" />
-                <span className="px-4 text-sm text-gray-600">Or</span>
+                <span className="px-4 text-sm text-gray-500">Or</span>
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <div className="flex flex-col space-y-4 mt-4">
+              <div className="space-y-3">
                 <Button
                   onClick={() => navigate("/signup/teacher")}
                   textColor="text-teal-600"
-                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
+                  className="w-full bg-white border-2 border-teal-600 py-3 rounded-xl hover:bg-teal-50 transition duration-200"
                 >
                   Register as Teacher
                 </Button>
                 <Button
                   onClick={() => navigate("/signup/recruiter")}
                   textColor="text-teal-600"
-                  className="w-full bg-white border-2 border-teal-600 py-2 rounded-xl hover:bg-teal-50 transition"
+                  className="w-full bg-white border-2 border-teal-600 py-3 rounded-xl hover:bg-teal-50 transition duration-200"
                 >
                   Register as Recruiter
                 </Button>
-                {/* <p className="text-sm font-medium text-gray-600">
-                  <span
-                    onClick={() => navigate("/forgot-password")}
-                    className="text-teal-600 hover:underline font-semibold cursor-pointer"
-                  >
-                    Forgot Password?
-                  </span>
-                </p> */}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Step Progress */}
-        <div className="hidden md:flex w-full md:w-1/2 flex-col pl-36 justify-center h-screen p-10">
+        {/* Timeline - Hidden on mobile, shown on md screens and up */}
+        <div className="hidden md:flex w-1/2 flex-col justify-center pl-16 lg:pl-24">
           {/* Step 1 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-teal-500 text-white font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">
                 1
               </div>
-              <div className="h-12 w-1 bg-teal-500"></div>
+              <div className="h-16 w-1 bg-teal-600"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
                 Enter Credentials
-              </div>
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Sign in with your registered email and password
+              </p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
                 2
               </div>
-              <div className="h-12 w-1 bg-gray-300"></div>
+              <div className="h-16 w-1 bg-gray-300"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
                 Login Successful
-              </div>
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Verification and authentication complete
+              </p>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
                 3
               </div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
                 Go to Dashboard
-              </div>
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Access your personalized dashboard
+              </p>
             </div>
           </div>
         </div>
