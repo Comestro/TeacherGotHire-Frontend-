@@ -13,6 +13,8 @@ import { updateTeacherPrefrence } from "../../../services/jobProfileService";
 import { HiExclamationCircle, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import Loader from "../../Loader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
@@ -34,11 +36,12 @@ const PrefrenceProfile = () => {
     (state) => state.jobProfile.teacherjobRole
   );
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
+  const { error } = useSelector((state) => state.jobProfile);
   console.log("teacher preference value", teacherprefrence);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
 
-  const [error, setError] = useState("");
+  const [errorState, setError] = useState("");
 
   console.log("category", category);
 
@@ -60,7 +63,19 @@ const PrefrenceProfile = () => {
       prefered_subject: [],
       teacher_job_type: [],
     },
+    mode: "onChange"
   });
+
+  // Show form validation errors as toasts
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach((error) => {
+        if (error.message) {
+          toast.error(error.message);
+        }
+      });
+    }
+  }, [errors]);
 
   const selectedClassCategories = watch("class_category") || [];
   const filteredSubjects = selectedClassCategories.flatMap((catId) => {
@@ -111,27 +126,35 @@ const PrefrenceProfile = () => {
     }
   }, [teacherprefrence, setValue]);
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const fetchPreferences = () => {
     dispatch(getPrefrence());
   };
 
   const onSubmit = async (data) => {
-    setIsLoading(true); // Show loader
-
+    setIsLoading(true);
     try {
       await updateTeacherPrefrence(data);
       dispatch(postPrefrence(data));
       fetchPreferences();
       setIsEditingPrefrence(false);
-      setIsLoading(false); // Hide loader
+      toast.success("Job preferences updated successfully!");
     } catch (err) {
-      setIsLoading(false); // Hide loader on error
-      setError("Failed to update preferences. Please try again.");
+      const errorMessage = err.response?.data?.message || err.message || "Failed to update preferences";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="p-4 border rounded-xl">
+      <ToastContainer position="top-right" autoClose={3000} />
       {isLoading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between md:gap-10 mb-6 pb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">
@@ -161,7 +184,7 @@ const PrefrenceProfile = () => {
         )}
       </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <div className="mb-4 md:px-2 ">
+      <div className="mb-4 md:px-2">
         {!isEditingPrefrence ? (
           <div className="">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -194,40 +217,31 @@ const PrefrenceProfile = () => {
                       : ["Not Provided"],
                 },
                 {
-                  title: "Preferred Job",
+                  title: "Teacher Job Type",
                   value:
                     teacherprefrence?.teacher_job_type?.length > 0
                       ? teacherprefrence.teacher_job_type.map(
-                          (jobrole) => jobrole.teacher_job_name
+                          (jobtype) => jobtype.teacher_job_name
                         )
                       : ["Not Provided"],
                 },
               ].map((item, index) => (
                 <div
                   key={index}
-                  className="border border-gray-200 rounded-lg p-4 flex items-start gap-4 transition"
+                  className="bg-white p-4 rounded-lg border border-gray-200"
                 >
-                  {/* Icon Placeholder */}
-                  <div className="flex-shrink-0 w-12 h-12 bg-[#E6F4FA] flex items-center justify-center rounded-md">
-                    <span className="text-[#3E98C7] font-bold text-lg">
-                      {item.title.charAt(0)}
-                    </span>
-                  </div>
-                  {/* Content */}
-                  <div className="flex flex-col w-full">
-                    <h3 className="text-sm font-semibold text-[#3E98C7] uppercase tracking-wide">
-                      {item.title}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {item.value.map((val, i) => (
-                        <span
-                          key={i}
-                          className="bg-[#E6F4FA] text-[#3E98C7] text-xs font-medium py-1 px-3 rounded-full"
-                        >
-                          {val}
-                        </span>
-                      ))}
-                    </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {item.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {item.value.map((val, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                      >
+                        {val}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -289,6 +303,7 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
+
                 {/* Job Role Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
@@ -334,6 +349,7 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
+
                 {/* Preferred Subjects Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
@@ -397,6 +413,7 @@ const PrefrenceProfile = () => {
                     </div>
                   )}
                 </div>
+
                 {/* Teacher Job Type Section */}
                 <div className="space-y-4">
                   <div className="mb-2">
