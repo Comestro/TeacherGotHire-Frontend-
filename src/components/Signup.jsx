@@ -1,16 +1,17 @@
-import React, { useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
-import { login } from "../services/authUtils"; // Import the login function from authUtils
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
-import Navbar from "./Navbar/Navbar";
+import { login } from "../services/authUtils";
+import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -24,77 +25,67 @@ function SignUpPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
-   
-    const togglePasswordVisibility = () => {
-      setShowPassword(!showPassword);
-    };
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    number: false,
+    special: false,
+    capital: false,
+  });
 
   const password = watch("password");
+
+  useEffect(() => {
+    if (password) {
+      setPasswordCriteria({
+        length: password.length >= 8,
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        capital: /[A-Z]/.test(password),
+      });
+    }
+  }, [password]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const inputClass = `w-full border-2 text-sm rounded-xl px-3 py-3 ${
     errors.email
       ? "border-red-500 focus:border-red-500"
       : "border-gray-300 focus:border-green-500"
   }`;
 
-  // const signup = async ({ Fname, Lname, email, password }) => {
-  //   console.log(email, password);
-  //   // setError("");
-  //   setLoading(true); // Set loading to true
-
-  //   try {
-  //     const userData = await createaccount({ Fname, Lname, email, password });
-  //     console.log("userData", userData);
-      
-  //     if (userData) {
-  //       setSuccessMessage("Account created successfully.");
-  //       // Call the login function after successful signup
-  //       await login({ email, password, navigate, setError, setLoading });
-  //     }
-  //   } catch (error) {
-
-  //     // setError(error.message || "Failed to create account. Please try again.");
-  //     console.log("bhjn",error)
-  //   } finally {
-  //     setLoading(false); // Set loading to false
-  //   }
-  // };
-
   const signup = async ({ Fname, Lname, email, password }) => {
-    console.log(email, password);
-    setError(""); // Clear previous errors
-    setLoading(true); // Start loading
+    setError("");
+    setLoading(true);
   
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
-      console.log("userData", userData);
-  
       if (userData) {
-        setSuccessMessage("Account created successfully.");
+        toast.success("Account created successfully!");
         await login({ email, password, navigate, setError, setLoading });
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      setError(error.message); // Now, the error will be properly displayed in the UI
+      const errorMessage = error.message || "Failed to create account";
+      toast.error(errorMessage);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
-  
+
   return (
     <>
       <CustomHeader />
       <Helmet>
         <title>PTPI | Signup Page</title>
       </Helmet>
-      {loading && <Loader />} {/* Show loader while loading */}
+      {loading && <Loader />}
       <div
-        className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
+        className="flex bg-cover bg-no-repeat mt-3 items-center justify-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
-        {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8 ">
+        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8">
           <div className="max-w-md w-full mt-5">
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello,{" "}
@@ -112,23 +103,14 @@ function SignUpPage() {
                 Have an account?{" "}
                 <span
                   onClick={() => navigate("/signin")}
-                  className="text-teal-600 hover:underline font-semibold"
+                  className="text-teal-600 hover:underline font-semibold cursor-pointer"
                 >
                   Sign In
                 </span>
               </p>
             </div>
 
-            {/* Error Message */}
-            {/* {error && (
-              <p className="text-red-600 text-center mb-4">{error}</p>
-            )} */}
-
-            <form
-              onSubmit={handleSubmit(signup)}
-              className="space-y-4 mb-5"
-            >
-              {/* Full Name */}
+            <form onSubmit={handleSubmit(signup)} className="space-y-4 mb-5">
               <div className="flex gap-2">
                 <div className="flex flex-col flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -141,7 +123,6 @@ function SignUpPage() {
                       required: "First name is required",
                     })}
                   />
-
                   {errors.Fname && (
                     <span className="text-red-500 text-sm">
                       {errors.Fname.message}
@@ -167,7 +148,6 @@ function SignUpPage() {
                 </div>
               </div>
 
-              {/* Email */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email
@@ -189,27 +169,69 @@ function SignUpPage() {
                 )}
               </div>
 
-              {/* Password */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
-                <Input
-                  placeholder="Enter your password"
-                  type="password"
-                  className={inputClass}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters long",
-                    },
-                  })}
-                />
-              </div> 
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    className={inputClass}
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters long",
+                      },
+                      validate: (value) => {
+                        if (!/\d/.test(value)) return "Password must contain at least one number";
+                        if (!/[A-Z]/.test(value)) return "Password must contain at least one capital letter";
+                        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character";
+                        return true;
+                      }
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <span className="text-red-500 text-sm">{errors.password.message}</span>
+                )}
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center text-sm">
+                    <FaCheck className={`mr-2 ${passwordCriteria.length ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={passwordCriteria.length ? 'text-green-500' : 'text-gray-500'}>
+                      At least 8 characters
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <FaCheck className={`mr-2 ${passwordCriteria.number ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={passwordCriteria.number ? 'text-green-500' : 'text-gray-500'}>
+                      Contains a number
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <FaCheck className={`mr-2 ${passwordCriteria.special ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={passwordCriteria.special ? 'text-green-500' : 'text-gray-500'}>
+                      Contains a special character
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <FaCheck className={`mr-2 ${passwordCriteria.capital ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={passwordCriteria.capital ? 'text-green-500' : 'text-gray-500'}>
+                      Contains a capital letter
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-              {/* Confirm Password */}
-               <div className="mb-4">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
@@ -223,21 +245,17 @@ function SignUpPage() {
                       value === password || "Passwords do not match",
                   })}
                 />
-                
                 {errors.confirmPassword && (
                   <span className="text-red-500 text-sm">
                     {errors.confirmPassword.message}
                   </span>
                 )}
               </div>
-                
-             
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={!isValid || loading}
-                className={`w-full py-2 rounded-xl transition  ${
+                className={`w-full py-2 rounded-xl transition ${
                   loading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-teal-600 text-white hover:bg-teal-700"
@@ -246,10 +264,6 @@ function SignUpPage() {
                 {loading ? "Sending..." : "Sign Up"}
               </Button>
             </form>
-
-            {error && (
-              <p className="text-red-500 text-sm mt-4">Error: {error}</p>
-            )}
           </div>
         </div>
 
@@ -314,6 +328,7 @@ function SignUpPage() {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 }
