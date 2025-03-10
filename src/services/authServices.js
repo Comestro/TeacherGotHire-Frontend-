@@ -74,7 +74,7 @@ const postRequest = async (url, payload) => {
     handleApiError(err);
     
     // Extract meaningful error message
-    const errorMessage = err.response?.data?.error?.email[0]|| "Something went wrong.";
+    const errorMessage = err.response?.data?.message?.email[0]|| "Something went wrong.";
     console.log("errorMessage",errorMessage)
     // Throw the error so the calling function can catch it
     throw new Error(errorMessage);
