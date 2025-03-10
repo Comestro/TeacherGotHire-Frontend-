@@ -37,7 +37,7 @@ const handleApiError = async (err) => {
     }
     throw {
       status,
-      message: data.message || `An error occurred. Status code: ${status}`,
+      message: data.message || (typeof data === 'string' ? data : `An error occurred. Status code: ${status}`),
       data,
     };
   } else if (err.request) {
@@ -131,7 +131,18 @@ export const login = async (credentials) => {
     localStorage.setItem("role", role);
     return response.data;
   } catch (err) {
-    handleApiError(err);
+    if (err.response?.data) {
+      // Handle string response
+      if (typeof err.response.data === 'string') {
+        throw new Error(err.response.data);
+      }
+      // Handle object response
+      if (typeof err.response.data === 'object') {
+        const message = err.response.data.message || err.response.data.detail || "Invalid credentials. Please try again.";
+        throw new Error(message);
+      }
+    }
+    throw new Error('Network error. Please check your connection and try again.');
   }
 };
 

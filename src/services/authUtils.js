@@ -1,13 +1,9 @@
 import { login as loginService } from "./authServices";
 import { userLogout } from "../features/authSlice";
 
-export const login = async ({ email, password, navigate, setError, setLoading }) => {
-  setError("");
-  setLoading(true);
- 
+export const login = async ({ email, password, navigate }) => {
   try {
-    const userData = await loginService({ email, password }); // Call the service function to authenticate the user
-
+    const userData = await loginService({ email, password });
     if (userData) {
       if (userData?.role === "recruiter") {
         navigate("/recruiter");
@@ -21,18 +17,9 @@ export const login = async ({ email, password, navigate, setError, setLoading })
         navigate("/admin/dashboard");
       }
     }
+    return userData;
   } catch (error) {
-    if (error.status === 401) {
-      setError("Invalid email or password. Please try again.");
-    } else if (error.status === 400) {
-      setError("Bad request. Please check your input.");
-    } else if (error.status === 500) {
-      setError("Server error. Please try again later.");
-    } else {
-      setError(error.message || "An unexpected error occurred.");
-    }
-  } finally {
-    setLoading(false); // Set loading to false
+    throw error;
   }
 };
 
