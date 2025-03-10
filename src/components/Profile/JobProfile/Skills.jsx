@@ -15,6 +15,8 @@ import {
   HiXCircle,
 } from "react-icons/hi";
 import { HiCheckBadge } from "react-icons/hi2";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Skills = () => {
   const [suggestions, setSuggestions] = useState([]);
@@ -53,14 +55,17 @@ const Skills = () => {
   const handleSuggestionClick = async (skill) => {
     try {
       if (teacherSkill.find((item) => item.skill.id === skill.id)) {
-        return; // Skill already added
+        toast.warning("This skill is already added");
+        return;
       }
       await dispatch(postSkillsProfile({ skill: skill.id })).unwrap();
       dispatch(getSkillsProfile());
       setValue("skillInput", "");
       setSuggestions([]);
+      toast.success("Skill added successfully!");
     } catch (error) {
       console.error("Error adding skill:", error);
+      toast.error(error.response?.data?.message || "Failed to add skill");
     }
   };
 
@@ -68,8 +73,10 @@ const Skills = () => {
     try {
       await dispatch(delSkillProfile(skillToRemove)).unwrap();
       dispatch(getSkillsProfile());
+      toast.success("Skill removed successfully!");
     } catch (error) {
       console.error("Error removing skill:", error);
+      toast.error(error.response?.data?.message || "Failed to remove skill");
     }
   };
 
@@ -90,6 +97,7 @@ const Skills = () => {
 
   return (
     <div className="bg-white rounded-xl mx-4 sm:mx-0 p-6 border border-gray-200 mt-8">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">

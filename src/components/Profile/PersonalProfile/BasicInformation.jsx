@@ -5,6 +5,8 @@ import { getBasic, postBasic } from "../../../features/personalProfileSlice";
 import { BsFillPersonFill } from "react-icons/bs";
 import Loader from "../../Loader";
 import Heading from "../../commons/Heading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditableField = ({
   label,
@@ -15,17 +17,25 @@ const EditableField = ({
   field,
   inputType = "text",
   options = [],
+  error,
 }) => {
-  const [tempValue, setTempValue] = useState(value);
+  const [tempValue, setTempValue] = useState(value || "");
+
+  useEffect(() => {
+    setTempValue(value || "");
+  }, [value]);
 
   const handleCancel = () => {
-    setTempValue(value);
+    setTempValue(value || "");
     onToggleEdit(false);
   };
 
   const handleSave = () => {
+    if (field === "phone_number" && tempValue && tempValue.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
     onSave(tempValue);
-    onToggleEdit(false);
   };
 
   return (
@@ -67,10 +77,11 @@ const EditableField = ({
           )
         ) : inputType === "select" ? (
           <select
-            value={tempValue}
+            value={tempValue || ""}
             onChange={(e) => setTempValue(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500  md:min-w-60"
           >
+            <option value="">Select {label}</option>
             {options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -85,13 +96,24 @@ const EditableField = ({
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-60 md:w-full"
           />
         ) : (
-          <input
-            type={inputType}
-            value={tempValue}
-            placeholder={"Type " + label}
-            onChange={(e) => setTempValue(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-60"
-          />
+          <div className="flex flex-col">
+            <input
+              type={inputType}
+              value={tempValue || ""}
+              placeholder={"Type " + label}
+              onChange={(e) => {
+                if (field === "phone_number") {
+                  setTempValue(e.target.value.replace(/\D/g, '').slice(0, 10));
+                } else {
+                  setTempValue(e.target.value);
+                }
+              }}
+              className={`border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-60 ${
+                error ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          </div>
         )}
       </div>
       {field !== "email" && field !== "Fname" && (
@@ -139,7 +161,7 @@ const BasicInformation = () => {
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [editingFields, setEditingFields] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -149,10 +171,15 @@ const BasicInformation = () => {
 
   const toggleEditingField = (field, state) => {
     setEditingFields((prev) => ({ ...prev, [field]: state }));
+    if (!state) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
   const handleSave = async (field, value) => {
     setLoading(true);
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+
     try {
       const data = new FormData();
       if (field === "profile_image" && value instanceof File) {
@@ -161,14 +188,22 @@ const BasicInformation = () => {
         data.append(field, value);
       }
 
-      console.log("checking for file upload", data);
       await updateBasicProfile(data);
       dispatch(postBasic({ [field]: value }));
       dispatch(getBasic());
+      toast.success("Updated successfully!");
+      toggleEditingField(field, false);
     } catch (error) {
-      setError(error.message);
-    }
-    finally{
+      if (error.response?.data?.[field]) {
+        const fieldError = Array.isArray(error.response.data[field])
+          ? error.response.data[field][0]
+          : error.response.data[field];
+        setErrors((prev) => ({ ...prev, [field]: fieldError }));
+        toast.error(fieldError);
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -195,6 +230,7 @@ const BasicInformation = () => {
       label: "Contact No",
       field: "phone_number",
       value: basicData.phone_number,
+      inputType: "tel",
     },
     {
       label: "Language",
@@ -202,9 +238,8 @@ const BasicInformation = () => {
       value: basicData.language,
       inputType: "select",
       options: [
-        { label: "Hindi", value: "hindi" },
-        { label: "English", value: "English" },
-        { label: "Other", value: "Other" },
+        { value: "English", label: "English" },
+        { value: "Hindi", label: "Hindi" },
       ],
     },
     {
@@ -220,7 +255,6 @@ const BasicInformation = () => {
       ],
     },
     {
-      
       label: "Religion",
       field: "religion",
       inputType: "select",
@@ -238,24 +272,25 @@ const BasicInformation = () => {
 
   return (
     <div className="p-5 mt-2 flex flex-col gap-1 border rounded-lg">
-      {loading && <Loader/>}
-      <Heading icons={<BsFillPersonFill/>} title="Basic Informations"/>
-      {fields.map(({ label, field, value, inputType, options }) => (
-        <React.Fragment key={field}>
+      <ToastContainer position="top-right" autoClose={3000} />
+      {loading && <Loader />}
+      <Heading icons={<BsFillPersonFill />} title="Basic Informations" />
+      {fields.map((field) => (
+        <React.Fragment key={field.field}>
           <EditableField
-            label={label}
-            field={field}
-            value={value}
-            isEditing={editingFields[field]}
-            onToggleEdit={(state) => toggleEditingField(field, state)}
-            onSave={(newValue) => handleSave(field, newValue)}
-            inputType={inputType}
-            options={options}
+            label={field.label}
+            field={field.field}
+            value={field.value}
+            isEditing={editingFields[field.field]}
+            onToggleEdit={(state) => toggleEditingField(field.field, state)}
+            onSave={(value) => handleSave(field.field, value)}
+            inputType={field.inputType}
+            options={field.options}
+            error={errors[field.field]}
           />
           <hr />
         </React.Fragment>
       ))}
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>
   );
 };

@@ -10,12 +10,13 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from rea
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { register, handleSubmit } = useForm();
-  const [error, setError] = useState("");
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
@@ -43,6 +44,24 @@ function Login() {
     }
   }, [navigate]);
 
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      await login({ ...data, navigate });
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -54,6 +73,7 @@ function Login() {
       </Helmet>
       <CustomHeader />
       {loading && <Loader />}
+      <ToastContainer />
       <div
         className="flex bg-cover bg-no-repeat md:items-center md:justify-center min-h-screen"
         style={{ backgroundImage: 'url("/bg.png")' }}
@@ -61,8 +81,8 @@ function Login() {
         {/* Form Container */}
         <div className="w-full md:w-1/2 flex md:pl-72  md:p-0 mt-20 md:mt-0">
           <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8">
-            {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-
+            {errors.email && <p className="text-red-600 text-center mb-4">{errors.email.message}</p>}
+            {errors.password && <p className="text-red-600 text-center mb-4">{errors.password.message}</p>}
             <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
               Hello,{" "}
               <span className="font-bold text-teal-600">User</span>
@@ -74,7 +94,7 @@ function Login() {
               </span>
             </h2>
            
-            <form onSubmit={handleSubmit((data) => login({ ...data, navigate, setError, setLoading }))} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* Email */}
               <div className="mb-4">
                 <label

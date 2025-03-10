@@ -37,7 +37,7 @@ const handleApiError = async (err) => {
     }
     throw {
       status,
-      message: data.message || `An error occurred. Status code: ${status}`,
+      message: data.message || (typeof data === 'string' ? data : `An error occurred. Status code: ${status}`),
       data,
     };
   } else if (err.request) {
@@ -55,32 +55,19 @@ const handleApiError = async (err) => {
 };
 
 // Helper function for POST requests
-// const postRequest = async (url, payload) => {
-//   try {
-//     const response = await apiClient.post(url, payload);
-//     console.log("response",response)
-//     return response.data;
-//   } catch (err) {
-//     handleApiError(err);
-//   }
-// };
 const postRequest = async (url, payload) => {
   try {
     const response = await apiClient.post(url, payload);
     console.log("response", response);
     return response.data;
   } catch (err) {
-    console.error("API Error:", err);
     handleApiError(err);
     
-    // Extract meaningful error message
-    const errorMessage = err.response?.data?.error?.email[0]|| "Something went wrong.";
-    console.log("errorMessage",errorMessage)
-    // Throw the error so the calling function can catch it
+    // Extract meaningful error message from the API response
+    const errorMessage = err.response?.data?.error?.email?.[0] || err.response?.data?.message || "Something went wrong";
     throw new Error(errorMessage);
   }
 };
-
 
 // Helper function for GET requests
 const getRequest = async (url) => {
@@ -91,9 +78,6 @@ const getRequest = async (url) => {
     handleApiError(err);
   }
 };
-
-// export const createaccount = async (userDetails) =>
-//   postRequest("/api/register/teacher/", userDetails);
 
 export const createaccount = async (userDetails) => {
   try {
@@ -107,7 +91,6 @@ export const createaccount = async (userDetails) => {
     throw error;
   }
 };
-
 
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);
@@ -131,7 +114,18 @@ export const login = async (credentials) => {
     localStorage.setItem("role", role);
     return response.data;
   } catch (err) {
-    handleApiError(err);
+    if (err.response?.data) {
+      // Handle string response
+      if (typeof err.response.data === 'string') {
+        throw new Error(err.response.data);
+      }
+      // Handle object response
+      if (typeof err.response.data === 'object') {
+        const message = err.response.data.message || err.response.data.detail || "Invalid credentials. Please try again.";
+        throw new Error(message);
+      }
+    }
+    throw new Error('Network error. Please check your connection and try again.');
   }
 };
 

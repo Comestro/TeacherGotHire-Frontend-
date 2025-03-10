@@ -12,6 +12,8 @@ import {
 import { HiOutlineAcademicCap, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import Loader from "../../Loader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Education = () => {
   const dispatch = useDispatch();
@@ -51,12 +53,9 @@ const Education = () => {
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
-      console.log("edudata", data);
-      console.log("editindex", editingIndex);
       setLoading(true);
       if (editingIndex !== null) {
         const id = educationData[editingIndex].id;
-        // Construct payload with only necessary fields
         const payload = {
           institution: data.institution,
           qualification: data.qualification,
@@ -65,16 +64,19 @@ const Education = () => {
         };
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
+        toast.success("Education details updated successfully!");
       } else {
-        await dispatch(postEducationProfile(data)).unwrap(); // Dispatch with new data
+        await dispatch(postEducationProfile(data)).unwrap();
         fetchProfile();
+        toast.success("Education details added successfully!");
       }
 
       setIsEditing(false);
-      setEditingIndex(null); // Exit editing mode
-      reset(); // Reset form
+      setEditingIndex(null);
+      reset();
     } catch (err) {
       console.error("Error:", err);
+      toast.error(err.response?.data?.message || "Failed to save education details");
     } finally {
       setLoading(false);
     }
@@ -90,19 +92,20 @@ const Education = () => {
   };
 
   const handleDelete = async (index) => {
-    // console.log("in", index);
     try {
       const id = educationData[index].id;
-      console.log(id);
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
+      toast.success("Education details deleted successfully!");
     } catch (err) {
       console.error("Error:", err);
+      toast.error(err.response?.data?.message || "Failed to delete education details");
     }
   };
 
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white  border border-gray-200">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Enhanced Header */}
       {loading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
@@ -151,7 +154,7 @@ const Education = () => {
                 <button
                   onClick={() => {
                     handleEdit(index);
-                    setIsFormVisible(true);
+                    setIsEditing(true);
                     setEditingRowIndex(index);
                   }}
                   className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"

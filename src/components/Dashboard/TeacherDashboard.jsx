@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -16,6 +16,8 @@ import ExamManagement from "./components/ExamManagement";
 import { Helmet } from "react-helmet-async";
 import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
+import axios from "axios";
+import { ToastContainer } from "react-toastify";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ function TeacherDashboard() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const inputRef = useRef(null);
 
   const { basicData } = useSelector((state) => state.personalProfile);
   const percentage = useSelector(
@@ -76,26 +79,37 @@ function TeacherDashboard() {
 
   const handleSubmitPhoneNumber = async (e) => {
     e.preventDefault();
-    if (!/^\d{10}$/.test(phoneNumber)) {
+    setError("");
+
+    if (phoneNumber.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
     try {
-      const response = await updateBasicProfile({ phone_number: phoneNumber });
-      if (response.status === 200) {
-        toast.success("Phone number saved successfully");
-        setShowPhoneModal(false);
-        dispatch(getProfilCompletion());
-      }
+      const response = await axios.post(
+        "https://api.ptpinstitute.com/api/self/basicProfile/",
+        { phone_number: phoneNumber },
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      toast.success("Phone number updated successfully!");
+      setShowPhoneModal(false);
+      dispatch(getProfilCompletion());
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save phone number");
-      toast.error("Failed to save phone number");
-    } finally {
-      setLoading(false);
+      if (err.response?.data?.phone_number) {
+        const errorMessage = Array.isArray(err.response.data.phone_number) 
+          ? err.response.data.phone_number[0] 
+          : err.response.data.phone_number;
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        setError("An error occurred. Please try again.");
+        toast.error("An error occurred. Please try again.");
+      }
     }
   };
 
@@ -127,8 +141,6 @@ function TeacherDashboard() {
   };
 
   const PhoneNumberModal = () => {
-    const inputRef = React.useRef(null);
-  
     React.useEffect(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -200,9 +212,8 @@ function TeacherDashboard() {
       <Helmet>
         <title>PTPI | Teacher Dashboard</title>
       </Helmet>
-
+      <ToastContainer position="top-right" autoClose={3000} />
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
-
 
       <div className="min-h-screen bg-white">
         <div className="md:px-6 py-5">

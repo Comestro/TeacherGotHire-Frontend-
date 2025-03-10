@@ -13,11 +13,14 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 import { HiOutlineBriefcase, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import moment from "moment";
 import Loader from "../../Loader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const formatDate = (date) => {
   if (!date) return "N/A";
   return moment(date).format("MMMM D, YYYY"); // Example: January 19, 2025
 };
+
 const Experience = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Assuming you use navigate elsewhere
@@ -53,7 +56,6 @@ const Experience = () => {
     dispatch(getExprienceProfile());
   }, [dispatch]);
 
-
   // Refetch profile data
   const fetchProfile = () => {
     dispatch(getExprienceProfile());
@@ -79,9 +81,11 @@ const Experience = () => {
 
         await dispatch(putExprienceProfile({ payload, id })).unwrap();
         fetchProfile();
+        toast.success("Experience updated successfully!");
       } else {
         await dispatch(postExprienceProfile(payload)).unwrap(); // Dispatch with new data
         fetchProfile();
+        toast.success("Experience added successfully!");
       }
 
       // Reset form and editing state
@@ -93,6 +97,7 @@ const Experience = () => {
       setLoading(false);
       console.warn(err);
       setErrors(err);
+      toast.error(err.response?.data?.message || "Failed to save experience");
     }
   };
 
@@ -120,8 +125,10 @@ const Experience = () => {
       const id = experienceData[index].id;
       await dispatch(delExprienceProfile({ id: id })).unwrap();
       fetchProfile();
+      toast.success("Experience deleted successfully!");
     } catch (err) {
       setError(err.message);
+      toast.error(err.response?.data?.message || "Failed to delete experience");
     }
   };
 
@@ -135,6 +142,7 @@ const Experience = () => {
 
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Enhanced Header */}
       {loading && (<Loader/>)}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
