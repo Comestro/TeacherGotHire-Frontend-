@@ -35,8 +35,10 @@ function ExamManagement() {
   const { interview,exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
+ 
   const exams = verifyresponse?.offline_exam;
-  const isProfileComplete =
+  const 
+  isProfileComplete =
     ( basicData && Object.keys(basicData).length > 0 &&
     prefrence && Object.values(prefrence).some(val => 
         (Array.isArray(val) && val.length > 0) || 

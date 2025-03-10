@@ -19,6 +19,7 @@ const Navbar = ({ links }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profile = useSelector((state) => state.auth.userData || {});
+  
   console.log("Profile menu: ", profile);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);

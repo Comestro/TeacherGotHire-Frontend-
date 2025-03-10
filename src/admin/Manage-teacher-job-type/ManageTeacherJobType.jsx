@@ -11,7 +11,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Modal,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
   IconButton,
   Card,
@@ -19,510 +22,736 @@ import {
   Grid,
   Alert,
   Snackbar,
-  TablePagination,
+  Pagination,
   useTheme,
   useMediaQuery,
   CircularProgress,
   FormHelperText,
+  InputAdornment,
+  Divider,
+  Backdrop
 } from "@mui/material";
-import { styled } from "@mui/system";
 import {
-  FaPlus,
-  FaPencilAlt,
-  FaTrash,
-  FaBriefcase,
-  FaSearch,
-} from "react-icons/fa";
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Work as WorkIcon,
+  Search as SearchIcon,
+  Close as CloseIcon
+} from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import { getJobTypes, createJobType, updateJobType, deleteJobType } from "../../services/adminManageJobtype";
-
-const StyledModal = styled(Modal)({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-});
-
-// Define ModalContent outside the component to prevent recreation on each render
-const ModalContent = styled(Paper)(({ theme, width }) => ({
-  padding: "24px",
-  minWidth: "300px",
-  width: width,
-  maxWidth: "90vw",
-}));
 
 const ManageTeacherJobType = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const modalWidth = isMobile ? "90%" : "400px";
-
+  
   const [jobTypes, setJobTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [filteredJobTypes, setFilteredJobTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const [openModal, setOpenModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [newJobType, setNewJobType] = useState({ jobrole_name: "" });
+  const [jobFormData, setJobFormData] = useState({ jobrole_name: "" });
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [notification, setNotification] = useState({
+  const [currentPage, setCurrentPage] = useState(1);
+  const [formErrors, setFormErrors] = useState({});
+  const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-  const [fieldErrors, setFieldErrors] = useState({});
-
-  // Use a ref for the text input to maintain focus
+  
+  const rowsPerPage = isMobile ? 5 : 10;
   const inputRef = useRef(null);
 
-  // Focus the text field when the modal opens
+  // Focus the text field when the dialog opens
   useEffect(() => {
-    if (openModal && inputRef.current) {
-      const timeoutId = setTimeout(() => {
+    if (openEditDialog && inputRef.current) {
+      setTimeout(() => {
         inputRef.current.focus();
       }, 100);
-      return () => clearTimeout(timeoutId);
     }
-  }, [openModal]);
+  }, [openEditDialog]);
 
   useEffect(() => {
     fetchJobTypes();
   }, []);
 
+  // Filter job types when search term changes
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredJobTypes(jobTypes);
+    } else {
+      const filtered = jobTypes.filter((job) =>
+        job.jobrole_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredJobTypes(filtered);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, jobTypes]);
+
   const fetchJobTypes = async () => {
     setLoading(true);
     try {
       const data = await getJobTypes();
-      setJobTypes(data || []);
+      setJobTypes(Array.isArray(data) ? data : []);
+      setFilteredJobTypes(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch job types:", err);
       setError("Failed to load job types. Please try again later.");
-
-      // Fallback to sample data for development/testing
-      setJobTypes([
-        { "id": 1, "jobrole_name": "Teacher" },
-        { "id": 2, "jobrole_name": "Professor" },
-        { "id": 3, "jobrole_name": "Principal" },
-        { "id": 4, "jobrole_name": "PtTeacher" },
-        { "id": 5, "jobrole_name": "Sports Teacher" },
-        { "id": 6, "jobrole_name": "Lecturer" },
-        { "id": 7, "jobrole_name": "Administrator" }
-      ]);
+      showSnackbar("Failed to load job types. Please try again later.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenModal = (job = null) => {
-    setSelectedJob(job);
-    if (job) {
-      setNewJobType({ jobrole_name: job.jobrole_name });
+  const showSnackbar = (message, severity = "success") => {
+    // Clean up the message if it's an array or object
+    let displayMessage;
+    
+    if (Array.isArray(message)) {
+      displayMessage = message[0]; // Take first error if it's an array
+    } else if (typeof message === 'object' && message !== null) {
+      // If message is an object, try to extract first error message
+      const firstKey = Object.keys(message)[0];
+      const firstValue = message[firstKey];
+      displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
     } else {
-      setNewJobType({ jobrole_name: "" });
+      displayMessage = message;
     }
-    // Clear any previous field errors
-    setFieldErrors({});
-    setOpenModal(true);
+    
+    setSnackbar({
+      open: true,
+      message: displayMessage,
+      severity,
+    });
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
+  const handleOpenEditDialog = (job = null) => {
+    setSelectedJob(job);
+    setJobFormData({ 
+      jobrole_name: job ? job.jobrole_name : "" 
+    });
+    setFormErrors({});
+    setOpenEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    if (submitting) return;
+    setOpenEditDialog(false);
     setSelectedJob(null);
-    setNewJobType({ jobrole_name: "" });
-    setFieldErrors({});
+    setJobFormData({ jobrole_name: "" });
+    setFormErrors({});
   };
 
-  const handleSave = async () => {
-    // Reset field errors
-    setFieldErrors({});
+  const handleOpenDeleteDialog = (job) => {
+    setSelectedJob(job);
+    setOpenDeleteDialog(true);
+  };
 
-    // Client-side validation
-    let hasErrors = false;
+  const handleCloseDeleteDialog = () => {
+    if (submitting) return;
+    setOpenDeleteDialog(false);
+    setSelectedJob(null);
+  };
+
+  const validateForm = () => {
     const errors = {};
-
-    if (!newJobType.jobrole_name.trim()) {
-      errors.jobrole_name = ["Job role name is required"];
-      hasErrors = true;
-    } else if (newJobType.jobrole_name.trim().length < 3) {
-      errors.jobrole_name = ["Role name must be at least 3 characters"];
-      hasErrors = true;
+    
+    if (!jobFormData.jobrole_name || jobFormData.jobrole_name.trim() === "") {
+      errors.jobrole_name = "Job role name is required";
+    } else if (jobFormData.jobrole_name.trim().length < 3) {
+      errors.jobrole_name = "Job role name must be at least 3 characters";
+    } else if (jobFormData.jobrole_name.trim().length > 50) {
+      errors.jobrole_name = "Job role name cannot exceed 50 characters";
     }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    if (hasErrors) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    setLoading(true);
+  const handleSaveJobType = async () => {
+    if (!validateForm()) return;
+    
+    setSubmitting(true);
     try {
+      const payload = {
+        jobrole_name: jobFormData.jobrole_name.trim(),
+      };
+
       if (selectedJob) {
         // Update existing job role
-        await updateJobType(selectedJob.id, newJobType);
+        await updateJobType(selectedJob.id, payload);
         setJobTypes(
           jobTypes.map((job) =>
-            job.id === selectedJob.id ? { ...job, ...newJobType } : job
+            job.id === selectedJob.id ? { ...job, ...payload } : job
           )
         );
-        setNotification({
-          open: true,
-          message: "Job type updated successfully!",
-          severity: "success",
-        });
-        handleCloseModal();
+        showSnackbar(`Job type "${payload.jobrole_name}" updated successfully`);
       } else {
         // Create new job role
-        const newJob = await createJobType(newJobType);
+        const newJob = await createJobType(payload);
         setJobTypes([...jobTypes, newJob]);
-        setNotification({
-          open: true,
-          message: "New job type added successfully!",
-          severity: "success",
-        });
-        handleCloseModal();
+        showSnackbar(`Job type "${payload.jobrole_name}" added successfully`);
       }
-    } catch (err) {
-      console.error("Failed to save job type:", err);
-
-      // Handle validation errors from backend
-      if (err.response && err.response.data) {
-        const responseData = err.response.data;
-
+      handleCloseEditDialog();
+    } catch (error) {
+      console.error("Failed to save job type:", error);
+      
+      // Handle field-specific errors from backend
+      if (error.response?.data) {
+        const responseData = error.response.data;
+        
         if (responseData.jobrole_name) {
-          setFieldErrors({ jobrole_name: responseData.jobrole_name });
-        } else {
-          // General error
-          setNotification({
-            open: true,
-            message: `Failed to ${selectedJob ? "update" : "create"} job type. ${err.response.data.message || 'Please try again.'}`,
-            severity: "error",
+          setFormErrors({ 
+            jobrole_name: Array.isArray(responseData.jobrole_name) 
+              ? responseData.jobrole_name[0] 
+              : responseData.jobrole_name 
           });
+          
+          // Show error message in snackbar
+          const errorMessage = Array.isArray(responseData.jobrole_name) 
+            ? responseData.jobrole_name[0] 
+            : responseData.jobrole_name;
+            
+          showSnackbar(errorMessage, "error");
+        } else if (responseData.message) {
+          // General error message
+          showSnackbar(responseData.message, "error");
+        } else if (responseData.error) {
+          showSnackbar(responseData.error, "error");
+        } else if (typeof responseData === 'string') {
+          showSnackbar(responseData, "error");
+        } else {
+          showSnackbar(
+            `Failed to ${selectedJob ? "update" : "add"} job type. Please try again.`,
+            "error"
+          );
         }
       } else {
-        setNotification({
-          open: true,
-          message: `Failed to ${selectedJob ? "update" : "create"} job type. Please try again.`,
-          severity: "error",
-        });
+        showSnackbar(
+          `Failed to ${selectedJob ? "update" : "add"} job type. Please try again.`,
+          "error"
+        );
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (job) => {
-    setSelectedJob(job);
-    setDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    setLoading(true);
+  const handleDeleteJobType = async () => {
+    if (!selectedJob) return;
+    
+    setSubmitting(true);
     try {
       await deleteJobType(selectedJob.id);
       setJobTypes(jobTypes.filter((job) => job.id !== selectedJob.id));
-      setNotification({
-        open: true,
-        message: "Job type deleted successfully!",
-        severity: "success",
-      });
-    } catch (err) {
-      console.error("Failed to delete job type:", err);
-      setNotification({
-        open: true,
-        message: err.response?.data?.message || "Failed to delete job type. Please try again.",
-        severity: "error",
-      });
+      showSnackbar(`Job type "${selectedJob.jobrole_name}" deleted successfully`);
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete job type:", error);
+      
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          showSnackbar(error.response.data, "error");
+        } else if (error.response.data.message) {
+          showSnackbar(error.response.data.message, "error");
+        } else if (error.response.data.error) {
+          showSnackbar(error.response.data.error, "error");
+        } else {
+          showSnackbar("Failed to delete job type. Please try again.", "error");
+        }
+      } else {
+        showSnackbar("Failed to delete job type. Please try again.", "error");
+      }
     } finally {
-      setDeleteModal(false);
-      setSelectedJob(null);
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const filteredJobTypes = jobTypes.filter((job) =>
-    job.jobrole_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setJobFormData({
+      ...jobFormData,
+      [name]: value
+    });
+    
+    // Clear field error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: null
+      });
+    }
+  };
+
+  // Calculate pagination
+  const pageCount = Math.ceil(filteredJobTypes.length / rowsPerPage);
+  const currentPageData = filteredJobTypes.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
   );
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // Handle input change without losing focus
-  const handleInputChange = (e) => {
-    setNewJobType({ ...newJobType, jobrole_name: e.target.value });
-
-    // Clear field error when user starts typing
-    if (fieldErrors.jobrole_name) {
-      setFieldErrors({
-        ...fieldErrors,
-        jobrole_name: null
-      });
-    }
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
   };
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mb: 1,
-              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" }
-            }}
-          >
-            <FaBriefcase style={{ marginRight: "12px" }} />
-            Manage Teacher Job Types
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "space-between",
-              alignItems: { xs: "stretch", sm: "center" },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              placeholder="Search job types..."
-              variant="outlined"
-              size="small"
-              fullWidth={isMobile}
-              InputProps={{
-                startAdornment: <FaSearch style={{ marginRight: "8px" }} />,
-              }}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<FaPlus />}
-              onClick={() => handleOpenModal()}
-              fullWidth={isMobile}
-              disabled={loading}
-            >
-              Add New Job Type
-            </Button>
-          </Box>
-        </Box>
-
-        {loading && !openModal && !deleteModal ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        ) : isMobile || isTablet ? (
-          <Grid container spacing={2}>
-            {filteredJobTypes.length === 0 ? (
-              <Grid item xs={12}>
-                <Paper sx={{ p: 3, textAlign: "center" }}>
-                  <Typography variant="body1" color="text.secondary">
-                    {searchTerm ? "No job types match your search." : "No job types available."}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ) : (
-              filteredJobTypes
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((job) => (
-                  <Grid item xs={12} sm={6} key={job.id}>
-                    <Card sx={{ height: '100%' }}>
-                      <CardContent>
-                        <Typography variant="h6">{job.jobrole_name}</Typography>
-                        <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "flex-end" }}>
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenModal(job)}
-                            size="small"
-                            disabled={loading}
-                          >
-                            <FaPencilAlt />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDelete(job)}
-                            size="small"
-                            disabled={loading}
-                          >
-                            <FaTrash />
-                          </IconButton>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))
-            )}
-          </Grid>
-        ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Job Type</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredJobTypes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      {searchTerm ? "No job types match your search." : "No job types available."}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredJobTypes
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((job) => (
-                      <TableRow key={job.id} hover>
-                        <TableCell>{job.id}</TableCell>
-                        <TableCell>{job.jobrole_name}</TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenModal(job)}
-                            size="small"
-                            disabled={loading}
-                          >
-                            <FaPencilAlt />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDelete(job)}
-                            size="small"
-                            disabled={loading}
-                          >
-                            <FaTrash />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-
-        {filteredJobTypes.length > 0 && (
-          <TablePagination
-            component="div"
-            count={filteredJobTypes.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}
-          />
-        )}
-
-        <StyledModal
-          open={openModal}
-          onClose={loading ? undefined : handleCloseModal}
-          keepMounted
+      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+        {/* Header Section */}
+        <Card 
+          elevation={2} 
+          sx={{ 
+            borderRadius: { xs: 1, sm: 2 },
+            mb: { xs: 2, sm: 3 },
+            overflow: 'hidden'
+          }}
         >
-          <ModalContent width={modalWidth}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              {selectedJob ? "Edit Job Type" : "Add New Job Type"}
-            </Typography>
-            <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                label="Job Role Name"
-                value={newJobType.jobrole_name}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                autoFocus
-                inputRef={inputRef}
-                error={!!fieldErrors.jobrole_name}
-                InputProps={{
-                  autoFocus: true
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={8}>
+                <Typography 
+                  variant={isMobile ? "h5" : "h4"} 
+                  sx={{ 
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <WorkIcon sx={{ mr: 1.5, fontSize: 'inherit' }} />
+                  Manage Teacher Job Types
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenEditDialog()}
+                  fullWidth={isMobile}
+                  sx={{ 
+                    py: { xs: 1, sm: 'auto' },
+                    textTransform: 'none',
+                    boxShadow: 2
+                  }}
+                >
+                  Add New Job Type
+                </Button>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Search and Content Section */}
+        <Card 
+          elevation={2} 
+          sx={{ 
+            borderRadius: { xs: 1, sm: 2 },
+            overflow: 'hidden',
+            mb: 2
+          }}
+        >
+          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+            <Box
+              display="flex"
+              flexDirection={{ xs: 'column', sm: 'row' }}
+              justifyContent="space-between"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+              gap={2}
+              mb={2}
+            >
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
                 }}
+              >
+                Job Types ({filteredJobTypes.length})
+              </Typography>
+              
+              <TextField
+                placeholder="Search job types..."
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ width: { xs: '100%', sm: '220px' } }}
               />
-              {fieldErrors.jobrole_name && (
-                <FormHelperText error>
-                  {fieldErrors.jobrole_name[0]}
-                </FormHelperText>
+            </Box>
+            
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={4}>
+                <CircularProgress />
+              </Box>
+            ) : filteredJobTypes.length === 0 ? (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {searchTerm 
+                  ? "No job types match your search criteria."
+                  : "No job types available. Add a new job type to get started."
+                }
+              </Alert>
+            ) : isMobile || isTablet ? (
+              <>
+                <Grid container spacing={2}>
+                  {currentPageData.map((job, index) => (
+                    <Grid item xs={12} sm={6} key={job.id}>
+                      <Card 
+                        elevation={1} 
+                        sx={{ 
+                          height: '100%', 
+                          borderRadius: 1,
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            boxShadow: 3
+                          }
+                        }}
+                      >
+                        <CardContent>
+                          <Box 
+                            sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Typography 
+                              variant="subtitle1" 
+                              fontWeight={500}
+                            >
+                              {job.jobrole_name}
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleOpenEditDialog(job)}
+                                size="small"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                color="error"
+                                onClick={() => handleOpenDeleteDialog(job)}
+                                size="small"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </>
+            ) : (
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  mb: 2,
+                  width: '100%'
+                }}
+              >
+                <TableContainer sx={{ maxHeight: 440 }}>
+                  <Table size="medium">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'background.default' }}>
+                        <TableCell sx={{ fontWeight: 600, width: '5%' }}>#</TableCell>
+                        <TableCell sx={{ fontWeight: 600, width: '75%' }}>Job Type</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, width: '20%' }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {currentPageData.map((job, index) => (
+                        <TableRow 
+                          key={job.id} 
+                          hover
+                          sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
+                        >
+                          <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                          <TableCell>{job.jobrole_name}</TableCell>
+                          <TableCell align="right">
+                            <Box display="flex" justifyContent="flex-end" gap={1}>
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleOpenEditDialog(job)}
+                                size="small"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                color="error"
+                                onClick={() => handleOpenDeleteDialog(job)}
+                                size="small"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            )}
+            
+            {/* Pagination */}
+            {filteredJobTypes.length > 0 && pageCount > 1 && (
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 3
+                }}
+              >
+                <Pagination
+                  count={pageCount}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size={isMobile ? "small" : "medium"}
+                  sx={{ py: 1 }}
+                />
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Add/Edit Dialog */}
+        <Dialog 
+          open={openEditDialog} 
+          onClose={!submitting ? handleCloseEditDialog : undefined}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: { 
+              borderRadius: { xs: 1, sm: 2 },
+              width: { xs: '95%', sm: 'auto' }
+            }
+          }}
+        >
+          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {selectedJob ? "Edit Job Type" : "Add New Job Type"}
+              </Typography>
+              {!submitting && (
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  onClick={handleCloseEditDialog}
+                  aria-label="close"
+                  size="small"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
               )}
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-              <Button variant="outlined" onClick={handleCloseModal} disabled={loading}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSave}
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Save'}
-              </Button>
-            </Box>
-          </ModalContent>
-        </StyledModal>
-
-        <StyledModal
-          open={deleteModal}
-          onClose={loading ? undefined : () => setDeleteModal(false)}
-          keepMounted
-        >
-          <ModalContent width={modalWidth}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Confirm Deletion
-            </Typography>
-            <Typography sx={{ mb: 3 }}>
-              Are you sure you want to delete "{selectedJob?.jobrole_name}"? This action cannot
-              be undone.
-            </Typography>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-              <Button
+          </DialogTitle>
+          
+          <Divider />
+          
+          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
+            <TextField
+              label="Job Role Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              name="jobrole_name"
+              value={jobFormData.jobrole_name}
+              onChange={handleInputChange}
+              error={Boolean(formErrors.jobrole_name)}
+              helperText={formErrors.jobrole_name || ""}
+              disabled={submitting}
+              autoFocus
+              inputRef={inputRef}
+              InputLabelProps={{ shrink: true }}
+            />
+          </DialogContent>
+          
+          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box 
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'flex-end',
+                gap: 1
+              }}
+            >
+              <Button 
+                onClick={handleCloseEditDialog} 
                 variant="outlined"
-                onClick={() => setDeleteModal(false)}
-                disabled={loading}
+                color="primary"
+                disabled={submitting}
+                fullWidth={isMobile}
+                sx={{ 
+                  order: { xs: 2, sm: 1 },
+                  textTransform: 'none'
+                }}
               >
                 Cancel
               </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={confirmDelete}
-                disabled={loading}
+              
+              <Button 
+                onClick={handleSaveJobType} 
+                variant="contained" 
+                color="primary"
+                disabled={submitting}
+                fullWidth={isMobile}
+                sx={{ 
+                  order: { xs: 1, sm: 2 },
+                  textTransform: 'none'
+                }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Delete'}
+                {submitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : selectedJob ? (
+                  "Update"
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Box>
-          </ModalContent>
-        </StyledModal>
+          </DialogActions>
+        </Dialog>
 
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={openDeleteDialog}
+          onClose={!submitting ? handleCloseDeleteDialog : undefined}
+          PaperProps={{
+            sx: { 
+              borderRadius: { xs: 1, sm: 2 },
+              width: { xs: '95%', sm: 'auto' },
+              maxWidth: '450px'
+            }
+          }}
+        >
+          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
+                Delete Job Type
+              </Typography>
+              {!submitting && (
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  onClick={handleCloseDeleteDialog}
+                  aria-label="close"
+                  size="small"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Box>
+          </DialogTitle>
+          
+          <Divider />
+          
+          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
+            <Typography variant="body1" mb={1}>
+              Are you sure you want to delete this job type:
+            </Typography>
+            <Typography variant="subtitle1" fontWeight={600} mb={2}>
+              "{selectedJob?.jobrole_name}"
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          
+          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+            <Box 
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'flex-end',
+                gap: 1
+              }}
+            >
+              <Button 
+                onClick={handleCloseDeleteDialog} 
+                variant="outlined"
+                disabled={submitting}
+                fullWidth={isMobile}
+                sx={{ 
+                  order: { xs: 2, sm: 1 },
+                  textTransform: 'none'
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleDeleteJobType} 
+                variant="contained" 
+                color="error"
+                disabled={submitting}
+                fullWidth={isMobile}
+                sx={{ 
+                  order: { xs: 1, sm: 2 },
+                  textTransform: 'none'
+                }}
+              >
+                {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
+        {/* Loading Backdrop */}
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+          open={submitting}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+
+        {/* Notification Snackbar */}
         <Snackbar
-          open={notification.open}
+          open={snackbar.open}
           autoHideDuration={6000}
-          onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          sx={{ mt: { xs: 7, sm: 8 } }}
         >
           <Alert
-            onClose={() => setNotification({ ...notification, open: false })}
-            severity={notification.severity}
-            sx={{ width: "100%" }}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
             variant="filled"
             elevation={6}
+            sx={{ 
+              width: "100%", 
+              boxShadow: 3,
+              '& .MuiAlert-message': {
+                maxWidth: '100%',
+                wordBreak: 'break-word'
+              }
+            }}
           >
-            {notification.message}
+            {snackbar.message}
           </Alert>
         </Snackbar>
       </Container>

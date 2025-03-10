@@ -38,7 +38,7 @@ apiClient.interceptors.response.use(
 
 export const fetchLevel = async () => {
   try {
-    const response = await apiClient.get(`/api/checklevel/`);
+    const response = await apiClient.get(`/api/admin/level/`);
     console.log("level", response);
     return response.data;
   } catch (err) {
@@ -258,10 +258,22 @@ export const delExamSet= async (id) => {
     throw err;
   }
 };
-export const addQuestionToExamSet= async () => {
+export const addQuestionToExamSet= async (payload) => {
   try {
-    const response = await apiClient.get(`/api/examsetter/question/`);
+    const response = await apiClient.post(`/api/examsetter/question/`,payload);
     console.log("ExamSetter",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const getAssignUserSubject= async () => {
+  try {
+    const response = await apiClient.get(`/api/self/assigneduser/`);
+    console.log("Assignuser",response)
     return response.data;
     
   } catch (err) {

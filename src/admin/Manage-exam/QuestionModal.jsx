@@ -18,6 +18,8 @@ import {
   Box,
   Snackbar,
   Alert,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 
@@ -76,6 +78,9 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
 };
 
 const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [questions, setQuestions] = useState([]);
   const [openAddQuestionModal, setOpenAddQuestionModal] = useState(false);
   const [editQuestion, setEditQuestion] = useState(null);
@@ -90,26 +95,56 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  // Form validation error state; you can extend this as needed.
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     if (selectedExam?.id) {
       const fetchQuestions = async () => {
-        const response = await getExamById(selectedExam.id);
-        // Transform the options format for each question
-        const transformedQuestions = response?.questions?.map(q => ({
-          ...q,
-          options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
-          language: q.language || "English"
-        })) || [];
-        setQuestions(transformedQuestions);
+        try {
+          const response = await getExamById(selectedExam.id);
+          const transformedQuestions = response?.questions?.map(q => ({
+            ...q,
+            options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
+            language: q.language || "English"
+          })) || [];
+          setQuestions(transformedQuestions);
+        } catch (error) {
+          setSnackbarMessage(error.response?.data?.message || "Failed to fetch questions.");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
       };
       fetchQuestions();
     }
   }, [selectedExam]);
 
+  const validateForm = () => {
+    let errors = {};
+    if (!newQuestion.text.trim()) {
+      errors.text = "Question text is required.";
+    }
+    newQuestion.options.forEach((opt, index) => {
+      if (!opt.trim()) {
+        errors[`option_${index}`] = `Option ${index + 1} is required.`;
+      }
+    });
+    // Check if correct_option is provided and is between 1 and 4.
+    if (newQuestion.correct_option === "" || isNaN(newQuestion.correct_option)) {
+      errors.correct_option = "Correct Option is required.";
+    } else if (newQuestion.correct_option < 1 || newQuestion.correct_option > 4) {
+      errors.correct_option = "Correct Option must be between 1 and 4.";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddQuestion = () => {
     setOpenAddQuestionModal(true);
     setEditQuestion(null);
+    setFormErrors({});
     setNewQuestion({
       text: "",
       options: ["", "", "", ""],
@@ -121,46 +156,81 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   };
 
   const handleSaveQuestion = async () => {
-    if (editQuestion) {
-      await updateQuestion(editQuestion.id, newQuestion);
-      setSnackbarMessage("Question updated successfully!");
-    } else {
-      await createQuestion({
-        ...newQuestion,
-        exam: selectedExam.id,
-      });
-      setSnackbarMessage("Question added successfully!");
+    if (!validateForm()) return;
+
+    try {
+      if (editQuestion) {
+        await updateQuestion(editQuestion.id, newQuestion);
+        setSnackbarMessage("Question updated successfully!");
+      } else {
+        await createQuestion({ ...newQuestion, exam: selectedExam.id });
+        setSnackbarMessage("Question added successfully!");
+      }
+      setSnackbarSeverity("success");
+      setOpenAddQuestionModal(false);
+      setFormErrors({}); // clear any existing errors
+    } catch (error) {
+      // If we receive field-specific errors, show them inline
+      if (error.response?.data && typeof error.response.data === 'object') {
+        const errors = {};
+        for (const key in error.response.data) {
+          if (Array.isArray(error.response.data[key])) {
+            errors[key] = error.response.data[key][0]; // use the first error message
+          } else {
+            errors[key] = error.response.data[key];
+          }
+        }
+        setFormErrors(errors);
+      } else {
+        // Generic error handling via Snackbar
+        const errorMsg = error.response?.data || "Action failed.";
+        setSnackbarMessage(errorMsg);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
+      return; // so that the questions don't get refreshed if save failed
     }
 
-    setOpenAddQuestionModal(false);
-    setSnackbarOpen(true);
-
-    // Fetch latest questions from backend to ensure new question is reflected immediately
-    const response = await getExamById(selectedExam.id);
-    // Transform the options format for each question
-    const transformedQuestions = response?.questions?.map(q => ({
-      ...q,
-      options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
-      language: q.language || "English"
-    })) || [];
-    setQuestions(transformedQuestions);
+    try {
+      const response = await getExamById(selectedExam.id);
+      const transformedQuestions = response?.questions?.map(q => ({
+        ...q,
+        options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
+        language: q.language || "English"
+      })) || [];
+      setQuestions(transformedQuestions);
+    } catch (fetchError) {
+      const fetchErrorMsg =
+        (fetchError.response?.data && typeof fetchError.response.data === 'object'
+          ? Object.values(fetchError.response.data).flat().join(" ")
+          : fetchError.response?.data) || "Failed to refresh questions.";
+      setSnackbarMessage(fetchErrorMsg);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   const handleEditQuestion = (question) => {
-    // Transform options if they are in object format
     const transformedQuestion = {
       ...question,
       options: question.options.map(opt => typeof opt === 'object' ? opt.option : opt)
     };
     setEditQuestion(transformedQuestion);
     setNewQuestion(transformedQuestion);
+    setFormErrors({});
     setOpenAddQuestionModal(true);
   };
 
   const handleDeleteQuestion = async (id) => {
-    await deleteQuestion(id);
-    setQuestions(questions.filter((q) => q.id !== id));
-    setSnackbarMessage("Question deleted successfully!");
+    try {
+      await deleteQuestion(id);
+      setQuestions(questions.filter((q) => q.id !== id));
+      setSnackbarMessage("Question deleted successfully!");
+      setSnackbarSeverity("success");
+    } catch (error) {
+      setSnackbarMessage(error.response?.data?.message || "Failed to delete question.");
+      setSnackbarSeverity("error");
+    }
     setSnackbarOpen(true);
   };
 
@@ -169,7 +239,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Exam Details - {selectedExam?.name}</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={3}>
@@ -181,15 +251,13 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                   Basic Information
                 </Typography>
                 <Typography variant="body1">
-                  <strong>Subject:</strong>{" "}
-                  {selectedExam?.subject?.subject_name}
+                  <strong>Subject:</strong> {selectedExam?.subject?.subject_name}
                 </Typography>
                 <Typography variant="body1">
                   <strong>Level:</strong> {selectedExam?.level?.name}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>Class Category:</strong>{" "}
-                  {selectedExam?.class_category?.name}
+                  <strong>Class Category:</strong> {selectedExam?.class_category?.name}
                 </Typography>
                 <Typography variant="body1">
                   <strong>Total Marks:</strong> {selectedExam?.total_marks}
@@ -209,13 +277,16 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
             <Box
               sx={{
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
                 alignItems: "center",
                 mb: 2,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="h6">Questions</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="h6">
+                  Questions ({questions.filter(q => q.language === selectedLanguage).length})
+                </Typography>
                 <FormControl sx={{ minWidth: 120 }}>
                   <InputLabel>Filter Language</InputLabel>
                   <Select
@@ -229,11 +300,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                   </Select>
                 </FormControl>
               </Box>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={handleAddQuestion}
-              >
+              <Button variant="contained" startIcon={<Add />} onClick={handleAddQuestion}>
                 Add Question
               </Button>
             </Box>
@@ -262,10 +329,9 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         onClose={() => setOpenAddQuestionModal(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={fullScreen}
       >
-        <DialogTitle>
-          {editQuestion ? "Edit Question" : "Add New Question"}
-        </DialogTitle>
+        <DialogTitle>{editQuestion ? "Edit Question" : "Add New Question"}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
             <FormControl fullWidth>
@@ -292,6 +358,8 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
               onChange={(e) =>
                 setNewQuestion({ ...newQuestion, text: e.target.value })
               }
+              error={!!formErrors.text}
+              helperText={formErrors.text}
             />
             {newQuestion.options.map((option, index) => (
               <TextField
@@ -304,6 +372,8 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                   newOptions[index] = e.target.value;
                   setNewQuestion({ ...newQuestion, options: newOptions });
                 }}
+                error={!!formErrors[`option_${index}`]}
+                helperText={formErrors[`option_${index}`]}
               />
             ))}
             <TextField
@@ -314,10 +384,12 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
               onChange={(e) =>
                 setNewQuestion({
                   ...newQuestion,
-                  correct_option: parseInt(e.target.value),
+                  correct_option: parseInt(e.target.value, 10),
                 })
               }
               inputProps={{ min: 1, max: 4 }}
+              error={!!formErrors.correct_option}
+              helperText={formErrors.correct_option}
             />
             <TextField
               label="Solution"
@@ -344,19 +416,17 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddQuestionModal(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveQuestion}>
-            Save
-          </Button>
+          <Button variant="contained" onClick={handleSaveQuestion}>Save</Button>
         </DialogActions>
       </Dialog>
-
-      {/* Snackbar for success messages */}
+      {/* Snackbar for messages – top right positioning */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

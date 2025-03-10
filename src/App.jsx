@@ -9,7 +9,6 @@ import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
 import JobProfileEdit from "./components/Profile/JobProfile/jobProfileEdit";
 import AdminDashboard from "./admin/Dashboard/Dashboard";
-import AdminProfile from "./admin/Profile/Profile";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
 import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
 import ManageRecruiter from "./admin/Manage-recruiter/ManageRecruiter";
@@ -54,6 +53,8 @@ import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
 import InterviewManagement from "./admin/Manage-interview/ManageInterview";
 import JobApply from "./components/Dashboard/components/JobApply";
 import Test from "./admin/test/Test";
+import ManageTeacherApplied from "./admin/Manage-teacher-applied/ManageTeacherApplied";
+import ManageRecruiterEnquiry from "./admin/Manage-recruiter-enquiry/ManageRecruiterEnquiry";
 
 function App() {
   return (
@@ -109,15 +110,6 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<AdminDashboard />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-            <Route
-              path="admin/profile"
-              element={
-                <RoleBasedRoute
-                  element={<AdminProfile />}
                   allowedRoles={["admin"]}
                 />
               }
@@ -244,6 +236,24 @@ function App() {
               element={
                 <RoleBasedRoute
                   element={<ManageCenter />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/teacher/applied/job"
+              element={
+                <RoleBasedRoute
+                  element={<ManageTeacherApplied />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="admin/manage/recruiter/enquiry"
+              element={
+                <RoleBasedRoute
+                  element={<ManageRecruiterEnquiry />}  
                   allowedRoles={["admin"]}
                 />
               }

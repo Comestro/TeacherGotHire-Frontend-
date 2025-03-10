@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
+import { handleLogout } from "../../services/authUtils";
+import {  useDispatch,useSelector } from "react-redux";
+import {  useNavigate } from "react-router-dom";
+import { getUserData } from "../../features/authSlice";
 
 const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
+  const profile = useSelector((state) => state.auth.userData || {});
+  console.log("Profile menu: ", profile);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+ useEffect(() => {
+     dispatch(getUserData());
+   }, [dispatch]);
   const toggleMobileMenu = () => {
+
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
@@ -32,18 +45,7 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
           >
             Home
           </Link>
-          <Link
-            to="/about"
-            className="text-gray-700 hover:text-teal-600 font-medium transition"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/contact"
-            className="text-gray-700 hover:text-teal-600 font-medium transition"
-          >
-            Contact
-          </Link>
+          
         </nav>
 
         {/* Profile Section */}
@@ -53,10 +55,12 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
             onClick={toggleProfileMenu}
           >
             <FaUserCircle className="w-8 h-8 text-teal-600" />
-            <div className="hidden md:flex flex-col items-start ">
-              <span className="font-medium">Rahul Kumar</span>
-              <span className="text-sm text-gray-500 -mt-1">rahulkumar@gmail.com</span>
-            </div>
+            <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium text-teal-700">
+                      {profile.Fname} {profile.Lname}
+                    </span>
+                    <p className="text-xs text-gray-500">{profile.email}</p>
+                  </div>
           </button>
 
           {isProfileMenuOpen && (
@@ -73,7 +77,9 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
               >
                 Profile
               </Link>
-              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+              <button
+              onClick={() => handleLogout(dispatch, navigate)}
+              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
                 Logout
               </button>
             </div>

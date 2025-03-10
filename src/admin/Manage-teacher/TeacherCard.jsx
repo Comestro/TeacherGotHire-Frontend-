@@ -1,202 +1,281 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
   Grid,
   Avatar,
   Typography,
-  Badge,
-  IconButton,
-  Modal,
-  TextField,
-  Button,
   Box,
   Divider,
+  Chip,
+  useMediaQuery,
+  useTheme,
   Paper,
+  Tooltip,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import VerifiedIcon from '@mui/icons-material/Verified';
+import GppBadIcon from '@mui/icons-material/GppBad';
 
 const TeacherCard = ({ teacherData }) => {
-  const [open, setOpen] = useState(false);
-  const [editedData, setEditedData] = useState(teacherData);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   if (!teacherData) return null;
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleSave = () => setOpen(false);
-
-  const handleChange = (field, event) => {
-    const [parent, child] = field.split('.');
-    if (child) {
-      setEditedData({
-        ...editedData,
-        [parent]: {
-          ...editedData[parent],
-          [child]: event.target.value,
-        },
-      });
-    } else {
-      setEditedData({ ...editedData, [field]: event.target.value });
-    }
-  };
-
   return (
-    <>
-      <Card sx={{ boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
-        <CardContent>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm={4} display="flex" justifyContent="center">
+    <Card
+      elevation={3}
+      sx={{
+        borderRadius: { xs: 1.5, sm: 2 },
+        overflow: "hidden",
+        mb: { xs: 2, sm: 3 },
+        border: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {/* Left Column - Image and Bio */}
+          <Grid
+            item
+            xs={12}
+            sm={4}
+            md={3}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: { xs: "center", sm: "flex-start" },
+              mb: { xs: 1, sm: 0 }
+            }}
+          >
+            {/* Profile Image */}
+            <Box sx={{ 
+              width: '100%',
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center'
+            }}>
               <Avatar
                 alt={teacherData?.Fname || "N/A"}
                 src={teacherData?.profiles?.profile_picture || ""}
-                sx={{ width: 130, height: 130, borderRadius: 1 }}
+                sx={{
+                  width: { xs: 120, sm: 130, md: 150 },
+                  height: { xs: 120, sm: 130, md: 150 },
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  mb: 1.5,
+                }}
               />
-            </Grid>
-            <Grid item xs={12} sm={8}>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="h5" fontWeight="bold">
+            </Box>
+
+            {/* Bio Section - Mobile Only */}
+            {isMobile && (
+              <Box sx={{ width: '100%', mt: 1 }}>
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 1.5,
+                    bgcolor: 'background.default',
+                    borderRadius: 1,
+                    borderLeft: '3px solid',
+                    borderColor: 'primary.main',
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={600} mb={0.5}>
+                    Professional Bio
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      lineHeight: 1.6,
+                      color: 'text.secondary',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {teacherData?.profiles?.bio || "No professional summary available for this teacher."}
+                  </Typography>
+                </Paper>
+              </Box>
+            )}
+          </Grid>
+
+          {/* Right Column - Details */}
+          <Grid item xs={12} sm={8} md={9}>
+            {/* Name and Email with Verification Badge */}
+            <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                <Typography
+                  variant={isMobile ? "h6" : "h5"}
+                  sx={{
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    lineHeight: 1.2,
+                  }}
+                >
                   {teacherData?.Fname || "N/A"} {teacherData?.Lname || "N/A"}
                 </Typography>
-                <IconButton onClick={handleOpen} color="primary">
-                  <EditIcon />
-                </IconButton>
+                
+                <Tooltip 
+                  title={teacherData?.is_verified ? "Verified Teacher" : "Not Verified"}
+                  arrow
+                >
+                  {teacherData?.is_verified ? (
+                    <VerifiedIcon 
+                      color="success" 
+                      fontSize={isMobile ? "small" : "medium"} 
+                      sx={{ verticalAlign: 'middle' }} 
+                    />
+                  ) : (
+                    <GppBadIcon 
+                      color="error"
+                      fontSize={isMobile ? "small" : "medium"} 
+                      sx={{ verticalAlign: 'middle' }} 
+                    />
+                  )}
+                </Tooltip>
               </Box>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="body1" color="textSecondary">
-                <strong>Email:</strong> {teacherData?.email || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Phone:</strong> {teacherData?.profiles?.phone_number || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Bio:</strong> {teacherData?.profiles?.bio || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Religion:</strong> {teacherData?.profiles?.religion || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Date of Birth:</strong> {teacherData?.profiles?.date_of_birth || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Marital Status:</strong> {teacherData?.profiles?.marital_status || "N/A"}
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                <strong>Gender:</strong> {teacherData?.profiles?.gender || "N/A"}
-              </Typography>
-              <Badge
-                sx={{ marginLeft: 3 }}
-                badgeContent={teacherData?.is_verified ? "Verified" : "Not Verified"}
-                color={teacherData?.is_verified ? "primary" : "error"}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+              
+              {teacherData?.email && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ 
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
+                    mt: 0.5
+                  }}
+                >
+                  {teacherData.email}
+                </Typography>
+              )}
+            </Box>
 
-      {/* Edit Modal */}
-      <Modal open={open} onClose={handleClose}>
-        <Box
-          p={4}
-          bgcolor="background.paper"
-          sx={{
-            width: "90%",
-            maxWidth: 500,
-            margin: "auto",
-            mt: "10%",
-            boxShadow: 3,
-            borderRadius: 2,
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" gutterBottom fontWeight="bold">
-            Edit Teacher Information
-          </Typography>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="First Name"
-            value={editedData?.Fname || ""}
-            onChange={(event) => handleChange("Fname", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Last Name"
-            value={editedData?.Lname || ""}
-            onChange={(event) => handleChange("Lname", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Email"
-            value={editedData?.email || ""}
-            onChange={(event) => handleChange("email", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Phone"
-            value={editedData?.profiles?.phone_number || ""}
-            onChange={(event) => handleChange("profiles.phone_number", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Bio"
-            value={editedData?.profiles?.bio || ""}
-            onChange={(event) => handleChange("profiles.bio", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Religion"
-            value={editedData?.profiles?.religion || ""}
-            onChange={(event) => handleChange("profiles.religion", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Date of Birth"
-            value={editedData?.profiles?.date_of_birth || ""}
-            onChange={(event) => handleChange("profiles.date_of_birth", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Marital Status"
-            value={editedData?.profiles?.marital_status || ""}
-            onChange={(event) => handleChange("profiles.marital_status", event)}
-            variant="outlined"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Gender"
-            value={editedData?.profiles?.gender || ""}
-            onChange={(event) => handleChange("profiles.gender", event)}
-            variant="outlined"
-          />
-          <Box mt={3} display="flex" justifyContent="space-between">
-            <Button variant="outlined" color="secondary" onClick={handleClose} sx={{ width: "45%" }}>
-              Cancel
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleSave} sx={{ width: "45%" }}>
-              Save
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-    </>
+            <Divider sx={{ mb: { xs: 2, sm: 2.5 } }} />
+            
+            {/* Bio Section - Tablet and Desktop */}
+            {!isMobile && (
+              <>
+                <Box sx={{ mb: 2.5 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 1,
+                      color: 'text.primary',
+                    }}
+                  >
+                    Professional Bio
+                  </Typography>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 1.5,
+                      bgcolor: 'background.default',
+                      borderRadius: 1,
+                      borderLeft: '4px solid',
+                      borderColor: 'primary.main',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        lineHeight: 1.6,
+                        color: 'text.secondary',
+                        fontSize: '0.95rem',
+                      }}
+                    >
+                      {teacherData?.profiles?.bio || "No professional summary available for this teacher."}
+                    </Typography>
+                  </Paper>
+                </Box>
+                <Divider sx={{ mb: 2.5 }} />
+              </>
+            )}
+            
+            {/* Personal and Contact Information - Combined */}
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  mb: 1.5,
+                  color: 'text.primary',
+                }}
+              >
+                Teacher Information
+              </Typography>
+              
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <DetailItem 
+                    label="Phone"
+                    value={teacherData?.profiles?.phone_number || "Not provided"} 
+                  />
+                  <DetailItem 
+                    label="Gender"
+                    value={teacherData?.profiles?.gender || "Not specified"} 
+                  />
+                  <DetailItem 
+                    label="Religion"
+                    value={teacherData?.profiles?.religion || "Not specified"} 
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <DetailItem 
+                    label="Date of Birth"
+                    value={teacherData?.profiles?.date_of_birth || "Not provided"} 
+                  />
+                  <DetailItem 
+                    label="Marital Status"
+                    value={teacherData?.profiles?.marital_status || "Not specified"} 
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
   );
 };
+
+// Helper component for info items with improved layout
+const DetailItem = ({ label, value }) => (
+  <Box 
+    sx={{ 
+      mb: 1.5,
+      display: 'flex',
+      flexDirection: 'row',
+      borderBottom: '1px dashed',
+      borderColor: 'divider',
+      pb: 0.75,
+      '&:last-child': {
+        borderBottom: 'none'  
+      }
+    }}
+  >
+    <Typography
+      variant="body2"
+      sx={{ 
+        fontWeight: 600, 
+        color: 'text.secondary',
+        width: '120px',
+        flexShrink: 0
+      }}
+    >
+      {label}:
+    </Typography>
+    <Typography
+      variant="body2"
+      sx={{
+        color: 'text.primary',
+        wordBreak: 'break-word'
+      }}
+    >
+      {value}
+    </Typography>
+  </Box>
+);
 
 export default TeacherCard;
