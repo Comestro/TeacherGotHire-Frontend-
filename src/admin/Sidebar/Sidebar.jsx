@@ -10,7 +10,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import { Collapse, Tooltip } from "@mui/material";
+import { Badge, Collapse, Tooltip } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { handleLogout } from "../../services/authUtils";
 import {
@@ -40,6 +40,17 @@ import {
   Quiz,
   LibraryBooks,
   WorkOutline,
+  Category,
+  MenuBook,
+  Psychology,
+  Grade,
+  WorkspacePremium,
+  AssignmentInd,
+  NotificationImportant,
+  School,
+  SupervisorAccount,
+  QuestionMark,
+  LocationOn,
 } from "@mui/icons-material";
 
 const drawerWidth = 240;
@@ -103,23 +114,26 @@ export default function Sidebar({ open, handleDrawerClose }) {
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
     // data management
-    { text: "Class category", icon: <ClassIcon />, link: "/admin/manage/class/category" },
-    { text: "Subjects", icon: <SubjectIcon />, link: "/admin/manage/subject" },
-    { text: "Skills", icon: <BuildIcon />, link: "/admin/manage/skills" },
-    { text: "Level", icon: <LayersIcon />, link: "/admin/manage/level" },
-    { text: "Qualification", icon: <SchoolIcon />, link: "/admin/manage/qualification" },
+    { text: "Class category", icon: <Category />, link: "/admin/manage/class/category" },
+    { text: "Subjects", icon: <MenuBook />, link: "/admin/manage/subject" },
+    { text: "Skills", icon: <Psychology />, link: "/admin/manage/skills" },
+    { text: "Level", icon: <Grade />, link: "/admin/manage/level" },
+    { text: "Qualification", icon: <WorkspacePremium />, link: "/admin/manage/qualification" },
     { text: "Job Type", icon: <WorkOutline />, link: "/admin/manage/teacher/jobtype" },
-    { text: "Exam", icon: <AssignmentIcon />, link: "/admin/manage/exam" },
+    { text: "Exam", icon: <Quiz />, link: "/admin/manage/exam" },
     // manage request
     { text: "Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
     { text: "Passkey", icon: <Key />, link: "/admin/manage/passkey" },
     { text: "Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
+    { text: "Job Applied", icon: <AssignmentInd />, link: "/admin/manage/teacher/applied/job" },
+    { text: "Recruiter Enquiry", icon: <NotificationImportant />, link: "/admin/manage/recruiter/enquiry" },
     // manage users
-    { text: "Teacher", icon: <GroupsIcon />, link: "/admin/manage/teacher" },
-    { text: "Recruiter", icon: <WorkIcon />, link: "/admin/manage/recruiter" },
+    { text: "Teacher", icon: <School />, link: "/admin/manage/teacher" },
+    { text: "Recruiter", icon: <SupervisorAccount />, link: "/admin/manage/recruiter" },
     { text: "Question User", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
-    { text: "Exam Center", icon: <LibraryBooks />, link: "/admin/manage/exam/center" },
+    { text: "Exam Center", icon: <LocationOn />, link: "/admin/manage/exam/center" },
   ];
+
 
   return (
     <Drawer variant="permanent" open={open}>
@@ -204,7 +218,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </Tooltip>
         ))}
         <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Request</Divider>
-        {menuItems.slice(8, 11).map((item) => (
+        {menuItems.slice(8, 13).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
             <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
@@ -234,7 +248,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
           </Tooltip>
         ))}
         <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Users</Divider>
-        {menuItems.slice(11).map((item) => (
+        {menuItems.slice(13).map((item) => (
           <Tooltip key={item.text} title={item.text} placement="right" arrow>
             <ListItem disablePadding sx={{ display: "block", py: 0 }}>
               <ListItemButton
