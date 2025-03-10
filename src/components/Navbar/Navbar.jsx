@@ -75,41 +75,52 @@ const Navbar = ({ links }) => {
   );
 
   return (
-    <nav ref={navRef} className="bg-white shadow-sm">
+    <nav ref={navRef} className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Left Section */}
           <div className="flex items-center">
             <button
-              className="md:hidden p-2 text-gray-600"
+              className="md:hidden p-2 text-gray-600 hover:text-teal-600 transition-colors"
               onClick={() => setIsMobileOpen(!isMobileOpen)}
             >
               {isMobileOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
-            <Link to="/" className="text-xl font-semibold text-gray-800">
-              PTP INSTITUTE
+            <Link to="/" className="text-xl font-bold text-gray-800">
+              PTP <span className="text-teal-600">INSTITUTE</span>
             </Link>
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-3">
             {!shouldHide && (
               <button
                 onClick={() => setShowEnquiry(true)}
-                className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-size-200 transition-all 
-             duration-300 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
-             hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
+                className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
+                duration-500 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
+                hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
               >
                 {/* Content */}
                 <span className="relative flex items-center justify-center gap-2">
-                  <FiBriefcase className="w-5 h-5  duration-300" />
-                  <span className="bg-gradient-to-r from-white/80 to-white bg-clip-text text-transparent">
+                  <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                  <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
                     शिक्षक खोजें
                   </span>
                 </span>
 
+                {/* Shine effect */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                </div>
+
                 {/* Hover border animation */}
-                <div className="absolute inset-0 rounded-xl border-2 border-white/20 transition-all duration-500 group-hover:border-white/40 group-hover:scale-[0.98]" />
+                <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
+
+                {/* Glow effect */}
+                <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
+
+                {/* Ripple effect on hover */}
+                <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
               </button>
             )}
 
@@ -136,11 +147,17 @@ const Navbar = ({ links }) => {
                 <div className="flex gap-2">
                   <Link
                     to="/signin"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
+                  >
+                    <FiUser className="w-5 h-5" />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    to="/signup/teacher"
                     className="flex items-center gap-2 px-3 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
                   >
                     <FiUserPlus className="w-5 h-5" />
-                    <span>Register as Teacher</span>
+                    <span>Register as a Teacher</span>
                   </Link>
                   <Link
                     to="/signup/recruiter"
@@ -162,7 +179,17 @@ const Navbar = ({ links }) => {
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="p-4 border-b">
-          <span className="text-lg font-semibold">Menu</span>
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-bold text-gray-800">
+              PTP <span className="text-teal-600">INSTITUTE</span>
+            </span>
+            <button
+              className="p-2 text-gray-600 hover:text-teal-600"
+              onClick={() => setIsMobileOpen(false)}
+            >
+              <FiX size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="p-4 space-y-4">
@@ -172,9 +199,31 @@ const Navbar = ({ links }) => {
                 setShowEnquiry(true);
                 setIsMobileOpen(false);
               }}
-              className="w-full flex items-center bg-teal-600 text-white px-4 py-2 rounded-lg"
+              className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
+             duration-500 hover:bg-right-bottom hover:shadow-2xl w-full px-6 py-3 rounded-xl font-semibold text-white
+             hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
             >
-              <FiBriefcase className="mr-2" /> शिक्षक खोजें
+              {/* Content */}
+              <span className="relative flex items-center justify-center gap-2">
+                <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
+                  शिक्षक खोजें
+                </span>
+              </span>
+
+              {/* Shine effect */}
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+              </div>
+
+              {/* Hover border animation */}
+              <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
+
+              {/* Glow effect */}
+              <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
+
+              {/* Ripple effect on hover */}
+              <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
             </button>
           )}
 
@@ -192,30 +241,7 @@ const Navbar = ({ links }) => {
                     <p className="text-sm text-gray-600">{profile.email}</p>
                   </div>
                 </div>
-                <div
-                  className={`w-full`}
-                >
-                  <Link
-                    to="/teacher"
-                    className="flex items-center px-2 py-3 hover:bg-gray-50"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
-                    <FiUser className="mr-2" /> Dashboard
-                  </Link>
-                  <Link
-                    to="/settings"
-                    className="flex items-center px-2 py-3 hover:bg-gray-50"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
-                    <FiSettings className="mr-2" /> Settings
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center px-2 py-3 hover:bg-gray-50 rounded-b-lg"
-                  >
-                    <FiLogOut className="mr-2" /> Logout
-                  </button>
-                </div>
+                <UserDropdown isMobile={true} />
               </div>
             </>
           ) : (
@@ -223,8 +249,16 @@ const Navbar = ({ links }) => {
               <div className="space-y-3">
                 <Link
                   to="/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-2 w-full px-4 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md justify-center"
+                >
+                  <FiUser className="w-5 h-5" />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  to="/signup/teacher"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-2 w-full px-4 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md justify-center"
                 >
                   <FiUserPlus className="w-5 h-5" />
                   <span>Register as Teacher</span>
@@ -232,9 +266,9 @@ const Navbar = ({ links }) => {
                 <Link
                   to="/signup/recruiter"
                   onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2 w-full px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-blue-50 hover:shadow-md"
+                  className="flex items-center gap-2 w-full px-4 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-blue-50 hover:shadow-md justify-center"
                 >
-                  <FiBriefcase className="w-5 h-5" />
+                  <FiUserPlus className="w-5 h-5" />
                   <span>Recruiter Sign Up</span>
                 </Link>
               </div>
@@ -244,6 +278,30 @@ const Navbar = ({ links }) => {
       </div>
 
       <TeacherEnquiry showModal={showEnquiry} setShowModal={setShowEnquiry} />
+      <style jsx>{`
+        @keyframes shine {
+          from {
+            transform: translateX(-100%);
+          }
+          50% {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(100%);
+          }
+        }
+
+        @keyframes ripple {
+          from {
+            transform: scale(1);
+            opacity: 1;
+          }
+          to {
+            transform: scale(1.05);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </nav>
   );
 };
