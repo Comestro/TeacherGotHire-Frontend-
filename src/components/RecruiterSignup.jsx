@@ -260,7 +260,7 @@ const RecruiterSignUpPage = () => {
 
               <div className="mt-6 text-center">
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate("/signup/teacher")}
                   className="w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
                 >
                   Sign up as Teacher
