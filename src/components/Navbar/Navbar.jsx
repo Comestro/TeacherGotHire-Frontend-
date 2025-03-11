@@ -50,25 +50,25 @@ const Navbar = ({ links }) => {
     <div
       className={`${
         isMobile ? "w-full" : "absolute right-0 mt-3 w-48"
-      } bg-white rounded-lg shadow-lg border z-50`}
+      } bg-white z-50`}
     >
       <Link
         to="/teacher"
-        className="flex items-center px-4 py-3 hover:bg-gray-50"
+        className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
         <FiUser className="mr-2" /> Dashboard
       </Link>
       <Link
         to="/settings"
-        className="flex items-center px-4 py-3 hover:bg-gray-50"
+        className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
         <FiSettings className="mr-2" /> Settings
       </Link>
       <button
         onClick={handleLogout}
-        className="w-full flex items-center px-4 py-3 hover:bg-gray-50 rounded-b-lg"
+        className="w-full flex items-center px-2 py-3 hover:bg-gray-50 rounded-b-lg"
       >
         <FiLogOut className="mr-2" /> Logout
       </button>
@@ -114,7 +114,6 @@ const Navbar = ({ links }) => {
                     <p className="text-[10px] text-gray-500">{profile.email}</p>
                   </div>
                 </button>
-                {isProfileOpen && <UserDropdown />}
               </div>
             )}
           </div>
