@@ -93,7 +93,7 @@ function Login() {
       >
         {/* Form Container */}
         <div className="w-full md:w-1/2 flex justify-center md:pl-16 lg:pl-24 xl:pl-32 mt-16 md:mt-0">
-          <div className="w-full max-w-md bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
+          <div className="w-full max-w-md bg-white rounded-xl p-6 sm:p-8">
             <div className="space-y-2 mb-6">
               <h2 className="font-bold text-gray-500 text-lg sm:text-xl leading-tight">
                 Hello, <span className="text-teal-600">User</span>

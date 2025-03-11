@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject,editExamSet,editQuestionToExamSet} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -297,10 +297,10 @@ export const generatePasskey= createAsyncThunk(
 
           export const putExamSet= createAsyncThunk(
             "putExamSet",
-            async (_, { rejectWithValue }) => {
+            async ({ payload, id }, { rejectWithValue }) => {
               
               try {
-                const data = await createExamSet();
+                const data = await editExamSet({ payload, id });
                  return data; 
               } catch (error) {
                 return rejectWithValue({
@@ -355,8 +355,8 @@ export const generatePasskey= createAsyncThunk(
                        return data; 
                     } catch (error) {
                       return rejectWithValue({
-                        message: error.message, 
-                        code: error.code || "UNKNOWN_ERROR", 
+                         
+                        code: error || "UNKNOWN_ERROR", 
                       });
                     }
                   }
@@ -378,6 +378,23 @@ export const generatePasskey= createAsyncThunk(
                       }
                     }
                     );
+
+                    export const putQuestionToExamSet= createAsyncThunk(
+                      "putQuestionToExamSet",
+                      
+                      async (payload, { rejectWithValue }) => {
+                       console.log("setter",payload) 
+                        try {
+                          const data = await editQuestionToExamSet(payload);
+                           return data; 
+                        } catch (error) {
+                          return rejectWithValue({
+                            message: error.message, 
+                            code: error.code || "UNKNOWN_ERROR", 
+                          });
+                        }
+                      }
+                      );
             
                     export const getSetterInfo= createAsyncThunk(
                       "getSetterInfo",

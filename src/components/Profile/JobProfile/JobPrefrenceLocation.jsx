@@ -21,20 +21,21 @@ const JobPrefrenceLocation = () => {
     (state) => state.jobProfile.prefrenceLocation || []
   );
   const { attempts, interview } = useSelector((state) => state.examQues);
-
+  const {userData} = useSelector((state)=>state.auth)
   console.log("interview",attempts );
 
   const passedOfflineExam =  attempts?.some(
     (attempt) => attempt?.isqualified === true && attempt?.exam?.type === "offline"
   );
 
-  const gradeCheck = interview?.grade > 5;
+  const gradeCheck = interview;
 
   const bothConditonCheck = passedOfflineExam || gradeCheck;
   // const jobLocationsId = useSelector(
   //   (state) => state.jobProfile.prefrenceLocation[0].id || []
   // );
 
+  
   // console.log("joblocationid",jobLocationsId);
   const [isEditing, setIsEditing] = useState(false); // Edit mode
   const [editIndex, setEditIndex] = useState(); // Index for editing
@@ -102,7 +103,7 @@ const JobPrefrenceLocation = () => {
       // Add preference_id to the data
       const locationData = {
         ...data,
-        preference: teacherprefrence?.id, // Add the preference ID from Redux state
+        user: userData?.id, // Add the preference ID from Redux state
       };
       if (isEditing) {
         // Update existing location

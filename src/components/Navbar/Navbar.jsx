@@ -12,6 +12,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "../../features/authSlice";
 import { TeacherEnquiry } from "../enquiry/TeacherEnquiry";
+import { FaSignInAlt } from "react-icons/fa";
 
 const Navbar = ({ links }) => {
   const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const Navbar = ({ links }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profile = useSelector((state) => state.auth.userData || {});
-  
+
   console.log("Profile menu: ", profile);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);
@@ -49,25 +50,25 @@ const Navbar = ({ links }) => {
     <div
       className={`${
         isMobile ? "w-full" : "absolute right-0 mt-3 w-48"
-      } bg-white rounded-lg shadow-lg border z-50`}
+      } bg-white z-50`}
     >
       <Link
         to="/teacher"
-        className="flex items-center px-4 py-3 hover:bg-gray-50"
+        className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
         <FiUser className="mr-2" /> Dashboard
       </Link>
       <Link
         to="/settings"
-        className="flex items-center px-4 py-3 hover:bg-gray-50"
+        className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
         <FiSettings className="mr-2" /> Settings
       </Link>
       <button
         onClick={handleLogout}
-        className="w-full flex items-center px-4 py-3 hover:bg-gray-50 rounded-b-lg"
+        className="w-full flex items-center px-2 py-3 hover:bg-gray-50 rounded-b-lg"
       >
         <FiLogOut className="mr-2" /> Logout
       </button>
@@ -77,7 +78,7 @@ const Navbar = ({ links }) => {
   return (
     <nav ref={navRef} className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-16 items-center">
           {/* Left Section */}
           <div className="flex items-center">
             <button
@@ -89,6 +90,32 @@ const Navbar = ({ links }) => {
             <Link to="/" className="text-xl font-bold text-gray-800">
               PTP <span className="text-teal-600">INSTITUTE</span>
             </Link>
+          </div>
+
+          <div className="md:hidden">
+            {!profile.email ? (
+              <Link to="/signin" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors">
+              <FaSignInAlt />
+              <span>Login</span>
+            </Link>
+            ) : (
+              <div className="relative ml-4 z-10">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors bg-gray-50 hover:bg-gray-100"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center shadow-sm transition-all hover:bg-gray-200">
+                    <FiUser className="text-gray-600 text-sm" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium text-teal-700">
+                      {profile.Fname} {profile.Lname}
+                    </span>
+                    <p className="text-[10px] text-gray-500">{profile.email}</p>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Desktop Links */}
@@ -261,7 +288,7 @@ const Navbar = ({ links }) => {
                   className="flex items-center gap-2 w-full px-4 py-2.5 font-medium text-teal-600 transition-all duration-300 border-2 border-teal-500 rounded-lg hover:bg-purple-50 hover:shadow-md justify-center"
                 >
                   <FiUserPlus className="w-5 h-5" />
-                  <span>Register as Teacher</span>
+                  <span>Register as a Teacher</span>
                 </Link>
                 <Link
                   to="/signup/recruiter"
