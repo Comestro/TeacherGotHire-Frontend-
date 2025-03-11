@@ -20,6 +20,8 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  background: 'linear-gradient(90deg, #1a237e 0%, #283593 50%, #303f9f 100%)',
+  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
@@ -50,14 +52,15 @@ export default function Layout({ children }) {
   const handleDrawerClose = () => setOpen(false);
   const location = useLocation();
   const path = location.pathname
-    .replace("/", "")
+    .replace(/\//g, " ") // Replace all slashes with spaces
     .replace("-", " ")
+    .trim() // Remove any leading/trailing spaces
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
-    <Box sx={{ 
-      display: "flex", 
-      width: "100%", 
+    <Box sx={{
+      display: "flex",
+      width: "100%",
       position: "relative",
       overflow: "hidden" // This prevents horizontal scrollbar on the whole layout
     }}>
@@ -73,7 +76,15 @@ export default function Layout({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              fontWeight: 500,
+              letterSpacing: '0.5px',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+            }}
+          >
             {path}
           </Typography>
         </Toolbar>
@@ -83,13 +94,13 @@ export default function Layout({ children }) {
         component="main"
         sx={{
           width: '100%',
-          overflowX: 'hidden !important', 
+          overflowX: 'hidden !important',
           maxWidth: '100%',
         }}
       >
-        <Box sx={{ 
+        <Box sx={{
           overflowX: 'hidden !important',
-          width: '100%', 
+          width: '100%',
           maxWidth: '100%',
         }}>
           {children}

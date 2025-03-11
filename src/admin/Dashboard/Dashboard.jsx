@@ -248,13 +248,13 @@ export default function AdminDashboard() {
             width: isMobile ? '100%' : 'auto',
             justifyContent: isMobile ? 'space-between' : 'flex-end'
           }}>
-            <Tooltip title="Notifications">
+            {/* <Tooltip title="Notifications">
               <IconButton color="inherit">
                 <Badge badgeContent={4} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip title={darkMode ? "Light Mode" : "Dark Mode"}>
               <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
