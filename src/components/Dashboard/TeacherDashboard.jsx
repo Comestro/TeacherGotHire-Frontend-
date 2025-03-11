@@ -80,36 +80,30 @@ function TeacherDashboard() {
   const handleSubmitPhoneNumber = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     if (phoneNumber.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
+      setLoading(false);
       return;
     }
 
     try {
-      const response = await axios.post(
-        "https://api.ptpinstitute.com/api/self/basicProfile/",
-        { phone_number: phoneNumber },
-        {
-          headers: {
-            Authorization: `Token ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
+      await updateBasicProfile({ phone_number: phoneNumber });
       toast.success("Phone number updated successfully!");
       setShowPhoneModal(false);
       dispatch(getProfilCompletion());
     } catch (err) {
-      if (err.response?.data?.phone_number) {
-        const errorMessage = Array.isArray(err.response.data.phone_number) 
-          ? err.response.data.phone_number[0] 
-          : err.response.data.phone_number;
-        setError(errorMessage);
-        toast.error(errorMessage);
-      } else {
-        setError("An error occurred. Please try again.");
-        toast.error("An error occurred. Please try again.");
-      }
+      const errorMessage = err.response?.data?.phone_number 
+        ? Array.isArray(err.response.data.phone_number)
+          ? err.response.data.phone_number[0]
+          : err.response.data.phone_number
+        : "An error occurred. Please try again.";
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,7 +149,7 @@ function TeacherDashboard() {
           </h2>
           <form onSubmit={handleSubmitPhoneNumber}>
             <div className="mb-4">
-              <label className="block text-[#67B3DA] text-sm font-medium mb-2">
+              <label className="block text-teal-600 text-sm font-medium mb-2">
                 Phone Number*
               </label>
               <input
@@ -165,8 +159,10 @@ function TeacherDashboard() {
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 required
                 placeholder="Enter 10-digit phone number"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                  error ? "border-red-500" : "focus:border-[#67B3DA]"
+                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
+                  error 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-gray-200 focus:border-teal-600"
                 }`}
               />
               {error && (
@@ -177,15 +173,17 @@ function TeacherDashboard() {
               <button
                 type="button"
                 onClick={() => setShowPhoneModal(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className={`px-5 py-2 text-white rounded-md transition-colors ${
-                  loading ? "bg-[#67B3DA]" : "bg-gradient-to-r from-[#3E98C7] to-[#67B3DA]"
+                disabled={loading || phoneNumber.length !== 10}
+                className={`px-5 py-2 text-white rounded-lg transition-all ${
+                  loading || phoneNumber.length !== 10
+                    ? "bg-teal-400 cursor-not-allowed"
+                    : "bg-teal-600 hover:bg-teal-700 hover:shadow-md"
                 }`}
               >
                 {loading ? (
