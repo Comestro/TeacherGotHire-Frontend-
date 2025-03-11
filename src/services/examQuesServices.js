@@ -236,6 +236,15 @@ export const createExamSet= async (payload) => {
     throw err;
   }
 };
+export const editExamSet= async ({ payload, id }) => {
+  try {
+    const response = await apiClient.put(`/api/examsetter/${id}/`,payload);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
 
 export const setterExamSet= async () => {
   try {
@@ -261,6 +270,18 @@ export const delExamSet= async (id) => {
 export const addQuestionToExamSet= async (payload) => {
   try {
     const response = await apiClient.post(`/api/examsetter/question/`,payload);
+    console.log("ExamSetter",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const editQuestionToExamSet= async (payload) => {
+  try {
+    const response = await apiClient.putt(`/api/examsetter/question/`,payload);
     console.log("ExamSetter",response)
     return response.data;
     

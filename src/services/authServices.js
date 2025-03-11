@@ -2,6 +2,8 @@ import axios from "axios";
 import { getApiUrl } from "../store/configue";
 import store, { persistor } from "../store/store";
 import { userLogout } from "../features/authSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const apiClient = axios.create({
   baseURL: getApiUrl(),
@@ -126,7 +128,23 @@ export const verifyOtp = async (payload) =>
 export const login = async (credentials) => {
   try {
     const response = await apiClient.post("/api/login/", credentials);
-    const { access_token, role } = response.data;
+    const { access_token, role,is_active } = response.data;
+
+    if (!is_active) {
+      
+      toast.error("Your account is deactivated. Please contact the admin.", {
+        position: "top-center",
+        autoClose: 5000, // Close after 5 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      alert("Your account is deactivated. Please contact the admin.");
+      return; 
+    }
+
     localStorage.setItem("access_token", access_token);
     localStorage.setItem("role", role);
     return response.data;

@@ -13,7 +13,6 @@ const JobProfileEdit = () => {
           <div className="px-4 mt-4">
             <PrefrenceProfile/>
           </div>
-          <JobPrefrenceLocation/>
           <div className="px-4">
             <Experience/>
             <Education/>
