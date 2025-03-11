@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -69,6 +69,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import Layout from '../Admin/Layout';
 import { useNavigate } from 'react-router-dom';
+import { getDashboardData } from '../../services/adminDashboardApi';
 
 ChartJS.register(
   CategoryScale,
@@ -82,106 +83,6 @@ ChartJS.register(
   Legend
 );
 
-// Mock data for the dashboard
-const mockData = {
-  teachers: {
-    total: 1248,
-    pending: 37,
-    thisMonth: 124,
-  },
-  recruiters: {
-    total: 456,
-    schools: 312,
-    institutes: 98,
-    individual: 46,
-  },
-  jobs: {
-    total: 875,
-    pending: 112,
-    inProgress: 245,
-    completed: 518,
-  },
-  interviews: {
-    upcoming: 42,
-    next: {
-      teacher: "Sarah Johnson",
-      position: "Science Teacher",
-      school: "Westfield High",
-      time: "Tomorrow, 10:00 AM",
-    }
-  },
-  exams: {
-    total: 342,
-    passRate: "78%",
-    avgScore: 82,
-    pendingResults: 18,
-  },
-  skills: {
-    total: 195,
-    pending: 12,
-  },
-  qualifications: {
-    total: 85,
-    pendingReview: 7,
-  },
-  // Chart data
-  chartData: {
-    signups: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [
-        {
-          label: 'Teachers',
-          data: [65, 78, 90, 124, 156, 170],
-          borderColor: '#4a6572',
-          backgroundColor: 'rgba(74, 101, 114, 0.5)',
-          tension: 0.3,
-        },
-        {
-          label: 'Recruiters',
-          data: [28, 32, 39, 46, 57, 62],
-          borderColor: '#8e9eab',
-          backgroundColor: 'rgba(142, 158, 171, 0.5)',
-          tension: 0.3,
-        }
-      ]
-    },
-    jobsData: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [
-        {
-          label: 'Jobs Posted',
-          data: [45, 59, 80, 81, 103, 125],
-          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        },
-        {
-          label: 'Jobs Filled',
-          data: [30, 42, 65, 70, 85, 98],
-          backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        }
-      ]
-    },
-    recruiterTypes: {
-      labels: ['Schools', 'Institutes', 'Individual'],
-      datasets: [
-        {
-          data: [312, 98, 46],
-          backgroundColor: [
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 159, 64, 0.7)',
-            'rgba(255, 99, 132, 0.7)'
-          ],
-          borderColor: [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(255, 99, 132, 1)'
-          ],
-          borderWidth: 1,
-        },
-      ],
-    }
-  }
-};
-
 export default function AdminDashboard() {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -190,20 +91,37 @@ export default function AdminDashboard() {
   const [darkMode, setDarkMode] = useState(false);
   const [chartTab, setChartTab] = useState(0);
   const [showAllActions, setShowAllActions] = useState(false);
+  const [mockData, setMockData] = useState({
+    teachers: { total: 0, pending: 0, thisMonth: 0 },
+    recruiters: { total: 0, pending: 0, thisMonth: 0 },
+    interviews: { upcoming: 0, completed: 0 },
+    passkeys: { total: 0, pending: 0, approved: 0 },
+    examcenters: { total_examcenter: 0 },
+    QuestioReports: { total: 0 },
+    HireRequests: { total: 0, requested: 0, approved: 0, rejected: 0 },
+    TeacherApply: { total: 0, pending: 0, approved: 0 },
+    RecruiterEnquiryForm: { total: 0 },
+    subjects: { total: 0 },
+    class_categories: { total: 0 },
+    assignedquestionusers: { total: 0 },
+    skills: { total: 0 }
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await getDashboardData();
+        setMockData(response);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const handleChartTabChange = (event, newValue) => {
     setChartTab(newValue);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return '#ff9800';
-      case 'active': return '#2196f3';
-      case 'upcoming': return '#9c27b0';
-      case 'complete':
-      case 'approved': return '#4caf50';
-      default: return '#757575';
-    }
   };
 
   const chartOptions = {
@@ -211,13 +129,14 @@ export default function AdminDashboard() {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top',
+        position: isMobile ? 'bottom' : 'top',
         labels: {
           color: darkMode ? '#fff' : '#333',
-          boxWidth: isMobile ? 10 : 40,
+          boxWidth: isMobile ? 8 : 40,
           font: {
-            size: isMobile ? 10 : 12
-          }
+            size: isMobile ? 8 : 12
+          },
+          padding: isMobile ? 5 : 10
         }
       },
       title: {
@@ -228,12 +147,14 @@ export default function AdminDashboard() {
       x: {
         grid: {
           color: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+          display: !isMobile
         },
         ticks: {
           color: darkMode ? '#aaa' : '#666',
           font: {
             size: isMobile ? 8 : 12
-          }
+          },
+          maxRotation: isMobile ? 45 : 0
         }
       },
       y: {
@@ -244,21 +165,25 @@ export default function AdminDashboard() {
           color: darkMode ? '#aaa' : '#666',
           font: {
             size: isMobile ? 8 : 12
+          },
+          callback: function (value) {
+            if (isMobile && value > 100) {
+              return value.toString().substring(0, 1) + '00';
+            }
+            return value;
           }
         }
       }
     }
   };
 
-  // Statistics summary data
   const statsSummary = [
-    { label: 'Pending Teachers', value: mockData.teachers.pending, color: '#ff9800', icon: <PeopleIcon fontSize="small" /> },
-    { label: 'Job Requests', value: mockData.jobs.pending, color: '#2196f3', icon: <JobIcon fontSize="small" /> },
-    { label: 'Upcoming Interviews', value: mockData.interviews.upcoming, color: '#9c27b0', icon: <CalendarIcon fontSize="small" /> },
-    { label: 'Pending Exam Results', value: mockData.exams.pendingResults, color: '#4caf50', icon: <AssessmentIcon fontSize="small" /> },
+    { label: 'Pending Teachers', value: mockData.teachers?.pending, color: '#ff9800', icon: <PeopleIcon fontSize="small" /> },
+    { label: 'Pending Recruiters', value: mockData.recruiters?.pending, color: '#2196f3', icon: <SchoolIcon fontSize="small" /> },
+    { label: 'Upcoming Interviews', value: mockData.interviews?.upcoming, color: '#9c27b0', icon: <CalendarIcon fontSize="small" /> },
+    { label: 'Total Passkeys', value: mockData.passkeys?.total, color: '#4caf50', icon: <Key fontSize="small" /> },
   ];
 
-  // Using the menu items provided
   const quickActions = [
     { icon: <SchoolIcon />, text: "Teachers", color: "#ff9800", link: "/admin/manage/teacher" },
     { icon: <SupervisorAccount />, text: "Recruiters", color: "#2196f3", link: "/admin/manage/recruiter" },
@@ -278,7 +203,6 @@ export default function AdminDashboard() {
     { icon: <WorkOutline />, text: "Job Types", color: "#795548", link: "/admin/manage/teacher/jobtype" },
   ];
 
-  // Display limited items for mobile or all if expanded
   const displayedQuickActions = showAllActions
     ? quickActions
     : quickActions.slice(0, isMobile ? 6 : isTablet ? 8 : 12);
@@ -339,34 +263,73 @@ export default function AdminDashboard() {
           </Box>
         </Box>
 
-        {/* Key Metrics Summary - Responsive for all devices */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+        {/* Key Metrics Summary - Enhanced Responsive Design */}
+        <Box sx={{ mb: { xs: 2.5, sm: 3, md: 4 } }}>
+          <Typography
+            variant={isMobile ? "subtitle1" : "h6"}
+            sx={{
+              mb: { xs: 1, sm: 1.5, md: 2 },
+              fontWeight: 600,
+              color: darkMode ? '#fff' : 'inherit'
+            }}
+          >
             Key Metrics
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={isMobile ? 1 : isTablet ? 1.5 : 2}>
             {statsSummary.map((stat, index) => (
-              <Grid item xs={6} sm={3} key={index}>
+              <Grid item xs={6} sm={6} md={3} key={index}>
                 <Paper
-                  elevation={2}
+                  elevation={darkMode ? 1 : 2}
                   sx={{
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+                    p: { xs: 1.25, sm: 1.75, md: 2 },
+                    borderRadius: { xs: 1.5, sm: 2 },
+                    backgroundColor: darkMode ? 'rgba(255,255,255,0.07)' : 'white',
                     borderLeft: `4px solid ${stat.color}`,
                     display: 'flex',
                     alignItems: 'center',
                     height: '100%',
+                    minHeight: { xs: 60, sm: 70, md: 80 },
+                    transition: 'all 0.2s ease',
+                    boxShadow: darkMode ? '0 2px 8px rgba(0,0,0,0.15)' : undefined,
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.25)' : '0 4px 12px rgba(0,0,0,0.1)'
+                    }
                   }}
                 >
-                  <Avatar sx={{ bgcolor: stat.color, mr: 1.5, width: 40, height: 40 }}>
+                  <Avatar sx={{
+                    bgcolor: darkMode ? `${stat.color}80` : stat.color,
+                    mr: { xs: 1, sm: 1.5 },
+                    width: { xs: 28, sm: 32, md: 40 },
+                    height: { xs: 28, sm: 32, md: 40 },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' }
+                    }
+                  }}>
                     {stat.icon}
                   </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" noWrap>
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography
+                      variant={isMobile ? "caption" : isTablet ? "body2" : "body2"}
+                      sx={{
+                        maxWidth: { xs: '85px', sm: '150px', md: '100%' },
+                        color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.8rem' }
+                      }}
+                    >
                       {stat.label}
                     </Typography>
-                    <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold">
+                    <Typography
+                      variant={isMobile ? "body2" : isTablet ? "body1" : "h6"}
+                      sx={{
+                        fontWeight: 'bold',
+                        color: darkMode ? '#fff' : 'inherit',
+                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                      }}
+                    >
                       {stat.value}
                     </Typography>
                   </Box>
@@ -400,7 +363,7 @@ export default function AdminDashboard() {
                   <Typography variant="h6" fontWeight="medium" noWrap>Teachers</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.teachers.total}
+                  {mockData.teachers?.total}
                 </Typography>
                 <Box sx={{
                   display: 'flex',
@@ -411,12 +374,12 @@ export default function AdminDashboard() {
                 }}>
                   <Chip
                     size="small"
-                    label={`${mockData.teachers.pending} pending`}
+                    label={`${mockData.teachers?.pending} pending`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                   <Chip
                     size="small"
-                    label={`+${mockData.teachers.thisMonth} this month`}
+                    label={`+${mockData.teachers?.thisMonth} this month`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                 </Box>
@@ -443,7 +406,7 @@ export default function AdminDashboard() {
                   <Typography variant="h6" fontWeight="medium" noWrap>Recruiters</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.recruiters.total}
+                  {mockData.recruiters?.total}
                 </Typography>
                 <Box sx={{
                   display: 'flex',
@@ -454,12 +417,12 @@ export default function AdminDashboard() {
                 }}>
                   <Chip
                     size="small"
-                    label={`${mockData.recruiters.schools} schools`}
+                    label={`${mockData.recruiters?.pending} pending`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                   <Chip
                     size="small"
-                    label={`${mockData.recruiters.institutes} institutes`}
+                    label={`+${mockData.recruiters?.thisMonth} this month`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                 </Box>
@@ -467,50 +430,7 @@ export default function AdminDashboard() {
             </Paper>
           </Grid>
 
-          {/* Job Requests Card */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2,
-                display: 'flex',
-                height: '100%',
-                background: 'linear-gradient(to right, #8e9eab, #eef2f3)',
-                color: '#333',
-                borderRadius: 2,
-              }}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <JobIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" fontWeight="medium" noWrap>Job Requests</Typography>
-                </Box>
-                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.jobs.total}
-                </Typography>
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mt: 'auto',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: isMobile ? 1 : 0
-                }}>
-                  <Chip
-                    size="small"
-                    label={`${mockData.jobs.pending} pending`}
-                    sx={{ backgroundColor: 'rgba(0,0,0,0.1)', color: '#333', maxWidth: '100%' }}
-                  />
-                  <Chip
-                    size="small"
-                    label={`${mockData.jobs.completed} completed`}
-                    sx={{ backgroundColor: 'rgba(0,0,0,0.1)', color: '#333', maxWidth: '100%' }}
-                  />
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Interviews Card - shown on medium and larger screens, or as second row on mobile */}
+          {/* Interviews Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Paper
               elevation={3}
@@ -526,30 +446,29 @@ export default function AdminDashboard() {
               <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <CalendarIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" fontWeight="medium" noWrap>Upcoming Interviews</Typography>
+                  <Typography variant="h6" fontWeight="medium" noWrap>Interviews</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.interviews.upcoming}
+                  {mockData.interviews?.upcoming}
                 </Typography>
                 <Box sx={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                   mt: 'auto',
-                  maxWidth: '100%'
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: isMobile ? 1 : 0
                 }}>
-                  <Typography variant="caption" noWrap>Next interview:</Typography>
-                  <Typography variant="body2" fontWeight="medium" noWrap>
-                    {mockData.interviews.next.teacher} - {mockData.interviews.next.position}
-                  </Typography>
-                  <Typography variant="caption" noWrap>
-                    {mockData.interviews.next.time}
-                  </Typography>
+                  <Chip
+                    size="small"
+                    label={`${mockData.interviews?.completed} completed`}
+                    sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
+                  />
                 </Box>
               </Box>
             </Paper>
           </Grid>
 
-          {/* Exams Card */}
+          {/* Passkeys Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Paper
               elevation={3}
@@ -564,11 +483,11 @@ export default function AdminDashboard() {
             >
               <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <AssessmentIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" fontWeight="medium" noWrap>Exams Conducted</Typography>
+                  <Key sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Passkeys</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.exams.total}
+                  {mockData.passkeys?.total}
                 </Typography>
                 <Box sx={{
                   display: 'flex',
@@ -579,12 +498,12 @@ export default function AdminDashboard() {
                 }}>
                   <Chip
                     size="small"
-                    label={`${mockData.exams.passRate} pass rate`}
+                    label={`${mockData.passkeys?.pending} pending`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                   <Chip
                     size="small"
-                    label={`${mockData.exams.avgScore} avg score`}
+                    label={`${mockData.passkeys?.approved} approved`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                 </Box>
@@ -592,7 +511,7 @@ export default function AdminDashboard() {
             </Paper>
           </Grid>
 
-          {/* Additional stats card */}
+          {/* Exam Centers Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Paper
               elevation={3}
@@ -607,11 +526,61 @@ export default function AdminDashboard() {
             >
               <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingUpIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" fontWeight="medium" noWrap>Platform Growth</Typography>
+                  <LocationOn sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Exam Centers</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
-                  {mockData.teachers.thisMonth + Math.floor(mockData.recruiters.total / 10)}
+                  {mockData.examcenters?.total_examcenter}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Question Reports Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #8e9eab, #eef2f3)',
+                color: '#333',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <QuestionAnswerIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Question Reports</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.QuestioReports?.total}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Hire Requests Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #5d4157, #a8caba)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <BusinessCenter sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Hire Requests</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.HireRequests?.total}
                 </Typography>
                 <Box sx={{
                   display: 'flex',
@@ -622,15 +591,188 @@ export default function AdminDashboard() {
                 }}>
                   <Chip
                     size="small"
-                    label={`${mockData.teachers.thisMonth} teachers`}
+                    label={`${mockData.HireRequests?.requested} requested`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                   <Chip
                     size="small"
-                    label={`${Math.floor(mockData.recruiters.total / 10)} recruiters`}
+                    label={`${mockData.HireRequests?.approved} approved`}
+                    sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
+                  />
+                  <Chip
+                    size="small"
+                    label={`${mockData.HireRequests?.rejected} rejected`}
                     sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
                   />
                 </Box>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Teacher Apply Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #4a6572, #336699)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <AssignmentInd sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Teacher Apply</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.TeacherApply?.total}
+                </Typography>
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  mt: 'auto',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: isMobile ? 1 : 0
+                }}>
+                  <Chip
+                    size="small"
+                    label={`${mockData.TeacherApply?.pending} pending`}
+                    sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
+                  />
+                  <Chip
+                    size="small"
+                    label={`${mockData.TeacherApply?.approved} approved`}
+                    sx={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', maxWidth: '100%' }}
+                  />
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Recruiter Enquiry Form Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #3a6186, #89253e)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <NotificationImportant sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Recruiter Enquiry</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.RecruiterEnquiryForm?.total}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Subjects Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #134e5e, #71b280)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <MenuBook sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Subjects</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.subjects?.total}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Class Categories Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #4b6cb7, #182848)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Category sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Class Categories</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.class_categories?.total}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Assigned Question Users Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #8e9eab, #eef2f3)',
+                color: '#333',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <QuestionAnswerIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Assigned Questions</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.assignedquestionusers?.total}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Skills Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                display: 'flex',
+                height: '100%',
+                background: 'linear-gradient(to right, #5d4157, #a8caba)',
+                color: 'white',
+                borderRadius: 2,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Psychology sx={{ mr: 1 }} />
+                  <Typography variant="h6" fontWeight="medium" noWrap>Skills</Typography>
+                </Box>
+                <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
+                  {mockData.skills?.total}
+                </Typography>
               </Box>
             </Paper>
           </Grid>
@@ -754,10 +896,45 @@ export default function AdminDashboard() {
 
           <Box sx={{ height: { xs: 250, sm: 300, md: 350 }, mt: 2, width: '100%' }}>
             {chartTab === 0 && (
-              <Line options={chartOptions} data={mockData.chartData.signups} />
+              <Line options={chartOptions} data={{
+                labels: ['Teachers', 'Recruiters', 'Interviews', 'Hire Requests', 'Teacher Applications'],
+                datasets: [
+                  {
+                    label: 'Total',
+                    data: [
+                      mockData.teachers?.total || 0,
+                      mockData.recruiters?.total || 0,
+                      mockData.interviews?.upcoming + mockData.interviews?.completed || 0,
+                      mockData.HireRequests?.total || 0,
+                      mockData.TeacherApply?.total || 0
+                    ],
+                    borderColor: 'rgb(53, 162, 235)',
+                    backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                  }
+                ],
+              }} />
             )}
             {chartTab === 1 && (
-              <Bar options={chartOptions} data={mockData.chartData.jobsData} />
+              <Bar options={chartOptions} data={{
+                labels: ['Hire Requests', 'Teacher Applications', 'Pending Teachers', 'Pending Recruiters'],
+                datasets: [
+                  {
+                    label: 'Total',
+                    data: [
+                      mockData.HireRequests?.total || 0,
+                      mockData.TeacherApply?.total || 0,
+                      mockData.teachers?.pending || 0,
+                      mockData.recruiters?.pending || 0
+                    ],
+                    backgroundColor: [
+                      'rgba(255, 99, 132, 0.5)',
+                      'rgba(54, 162, 235, 0.5)',
+                      'rgba(255, 206, 86, 0.5)',
+                      'rgba(75, 192, 192, 0.5)',
+                    ],
+                  }
+                ],
+              }} />
             )}
             {chartTab === 2 && (
               <Box sx={{
@@ -767,10 +944,51 @@ export default function AdminDashboard() {
                 width: '100%'
               }}>
                 <Box sx={{ flex: 1, height: '100%', p: 1 }}>
-                  <Doughnut options={chartOptions} data={mockData.chartData.recruiterTypes} />
+                  <Doughnut options={{ ...chartOptions, maintainAspectRatio: false }} data={{
+                    labels: ['Teachers', 'Recruiters', 'Exam Centers'],
+                    datasets: [
+                      {
+                        data: [
+                          mockData.teachers?.total || 0,
+                          mockData.recruiters?.total || 0,
+                          mockData.examcenters?.total_examcenter || 0
+                        ],
+                        backgroundColor: [
+                          'rgba(255, 99, 132, 0.7)',
+                          'rgba(53, 162, 235, 0.7)',
+                          'rgba(75, 192, 192, 0.7)',
+                        ],
+                        borderColor: [
+                          'rgb(255, 99, 132)',
+                          'rgb(53, 162, 235)',
+                          'rgb(75, 192, 192)',
+                        ],
+                        borderWidth: 1,
+                      },
+                    ],
+                  }} />
                 </Box>
                 <Box sx={{ flex: 1, height: '100%', p: 1 }}>
-                  <Bar options={chartOptions} data={mockData.chartData.jobsData} />
+                  <Bar options={chartOptions} data={{
+                    labels: ['Subjects', 'Class Categories', 'Skills', 'Assigned Questions'],
+                    datasets: [
+                      {
+                        label: 'Total',
+                        data: [
+                          mockData.subjects?.total || 0,
+                          mockData.class_categories?.total || 0,
+                          mockData.skills?.total || 0,
+                          mockData.assignedquestionusers?.total || 0
+                        ],
+                        backgroundColor: [
+                          'rgba(153, 102, 255, 0.5)',
+                          'rgba(255, 159, 64, 0.5)',
+                          'rgba(255, 205, 86, 0.5)',
+                          'rgba(75, 192, 192, 0.5)',
+                        ],
+                      }
+                    ],
+                  }} />
                 </Box>
               </Box>
             )}
