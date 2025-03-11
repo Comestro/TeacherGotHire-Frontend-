@@ -1,16 +1,17 @@
-import React, { useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount } from "../services/authServices";
-import { login } from "../services/authUtils"; // Import the login function from authUtils
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
-import Navbar from "./Navbar/Navbar";
+import { login } from "../services/authUtils";
+import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -19,297 +20,327 @@ function SignUpPage() {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
-  } = useForm();
+    formState: { errors, isValid, dirtyFields },
+  } = useForm({
+    mode: "onChange",
+    criteriaMode: "all"
+  });
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
-   
-    const togglePasswordVisibility = () => {
-      setShowPassword(!showPassword);
-    };
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    number: false,
+    special: false
+  });
 
-  const password = watch("password");
-  const inputClass = `w-full border-2 text-sm rounded-xl px-3 py-3 ${
-    errors.email
-      ? "border-red-500 focus:border-red-500"
-      : "border-gray-300 focus:border-green-500"
-  }`;
+  const watchedFields = watch();
+  const password = watchedFields.password;
 
-  // const signup = async ({ Fname, Lname, email, password }) => {
-  //   console.log(email, password);
-  //   // setError("");
-  //   setLoading(true); // Set loading to true
+  useEffect(() => {
+    if (password) {
+      setPasswordCriteria({
+        length: password.length >= 8,
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      });
+    }
+  }, [password]);
 
-  //   try {
-  //     const userData = await createaccount({ Fname, Lname, email, password });
-  //     console.log("userData", userData);
-      
-  //     if (userData) {
-  //       setSuccessMessage("Account created successfully.");
-  //       // Call the login function after successful signup
-  //       await login({ email, password, navigate, setError, setLoading });
-  //     }
-  //   } catch (error) {
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
-  //     // setError(error.message || "Failed to create account. Please try again.");
-  //     console.log("bhjn",error)
-  //   } finally {
-  //     setLoading(false); // Set loading to false
-  //   }
-  // };
+  const isEmailValid = (email) => {
+    return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
+  };
+
+  const getInputClassName = (fieldName) => {
+    return `w-full border-2 text-sm rounded-xl p-3 transition-colors ${
+      dirtyFields[fieldName]
+        ? errors[fieldName]
+          ? "border-red-500 focus:border-red-500"
+          : "border-teal-600 focus:border-teal-600"
+        : "border-gray-300 focus:border-teal-600"
+    }`;
+  };
 
   const signup = async ({ Fname, Lname, email, password }) => {
-    console.log(email, password);
-    setError(""); // Clear previous errors
-    setLoading(true); // Start loading
+    setError("");
+    setLoading(true);
   
     try {
       const userData = await createaccount({ Fname, Lname, email, password });
-      console.log("userData", userData);
-  
       if (userData) {
-        setSuccessMessage("Account created successfully.");
+        toast.success("Account created successfully!");
         await login({ email, password, navigate, setError, setLoading });
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      setError(error.message); // Now, the error will be properly displayed in the UI
+      const errorMessage = error.message || "Failed to create account";
+      toast.error(errorMessage);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
-  
+
   return (
     <>
       <CustomHeader />
       <Helmet>
         <title>PTPI | Signup Page</title>
       </Helmet>
-      {loading && <Loader />} {/* Show loader while loading */}
+      {loading && <Loader />}
+      <ToastContainer />
       <div
-        className="flex bg-cover bg-no-repeat mt-3  items-center justify-center"
+        className="flex min-h-screen bg-cover bg-no-repeat bg-center"
         style={{ backgroundImage: 'url("/bg.png")' }}
       >
-        {/* Form Container */}
-        <div className="w-full md:w-1/2 flex items-center md:pl-72 justify-center md:p-0 p-8 ">
-          <div className="max-w-md w-full mt-5">
-            <h2 className="mb-1 font-bold text-gray-500 text-lg md:text-xl leading-none">
-              Hello,{" "}
-              <span className="font-bold text-teal-600">Teachers </span>
-            </h2>
-            <h2 className="mb-2 font-bold text-gray-500 text-xl md:text-4xl leading-none">
-              Signup To{" "}
-              <span className="font-bold text-xl md:text-4xl text-teal-600">
-                PTPI{" "}
-              </span>
-            </h2>
-
-            <div className="mb-5">
-              <p className="text-sm font-medium text-gray-600">
-                Have an account?{" "}
-                <span
-                  onClick={() => navigate("/signin")}
-                  className="text-teal-600 hover:underline font-semibold"
-                >
-                  Sign In
-                </span>
-              </p>
+        <div className="w-full md:w-1/2 flex justify-center md:pl-16 lg:pl-24 xl:pl-32 mt-16 md:mt-0">
+          <div className="w-full max-w-md bg-white rounded-xl p-6 sm:p-8">
+            <div className="space-y-2 mb-6">
+              <h2 className="font-bold text-gray-500 text-lg sm:text-xl leading-tight">
+                Hello, <span className="text-teal-600">Teachers</span>
+              </h2>
+              <h2 className="font-bold text-gray-500 text-2xl sm:text-3xl md:text-4xl leading-tight">
+                Signup To <span className="text-teal-600">PTPI</span>
+              </h2>
             </div>
 
-            {/* Error Message */}
-            {/* {error && (
-              <p className="text-red-600 text-center mb-4">{error}</p>
-            )} */}
-
-            <form
-              onSubmit={handleSubmit(signup)}
-              className="space-y-4 mb-5"
-            >
-              {/* Full Name */}
-              <div className="flex gap-2">
-                <div className="flex flex-col flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+            <form onSubmit={handleSubmit(signup)} className="space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     First Name
                   </label>
-                  <Input
-                    className={inputClass}
-                    placeholder="Enter your first name"
-                    {...register("Fname", {
-                      required: "First name is required",
-                    })}
-                  />
-
+                  <div className="relative">
+                    <Input
+                      className={getInputClassName("Fname")}
+                      placeholder="Enter your first name"
+                      {...register("Fname", {
+                        required: "First name is required",
+                      })}
+                    />
+                    {dirtyFields.Fname && !errors.Fname && (
+                      <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                    )}
+                  </div>
                   {errors.Fname && (
-                    <span className="text-red-500 text-sm">
-                      {errors.Fname.message}
-                    </span>
+                    <p className="mt-1 text-sm text-red-600">{errors.Fname.message}</p>
                   )}
                 </div>
-                <div className="flex flex-col flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Last Name
                   </label>
-                  <Input
-                    className={inputClass}
-                    placeholder="Enter your last name"
-                    {...register("Lname", {
-                      required: "Last name is required",
-                    })}
-                  />
+                  <div className="relative">
+                    <Input
+                      className={getInputClassName("Lname")}
+                      placeholder="Enter your last name"
+                      {...register("Lname", {
+                        required: "Last name is required",
+                      })}
+                    />
+                    {dirtyFields.Lname && !errors.Lname && (
+                      <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                    )}
+                  </div>
                   {errors.Lname && (
-                    <span className="text-red-500 text-sm">
-                      {errors.Lname.message}
-                    </span>
+                    <p className="mt-1 text-sm text-red-600">{errors.Lname.message}</p>
                   )}
                 </div>
               </div>
 
-              {/* Email */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Email
                 </label>
-                <Input
-                  placeholder="Enter your email"
-                  type="email"
-                  className={inputClass}
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                      message: "Invalid email format",
-                    },
-                  })}
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your email"
+                    type="email"
+                    className={getInputClassName("email")}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
+                  />
+                  {dirtyFields.email && !errors.email && (
+                    <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
+                  )}
+                </div>
                 {errors.email && (
-                  <span className="text-red-500 text-sm">{errors.email.message}</span>
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
                 )}
               </div>
 
-              {/* Password */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Password
                 </label>
-                <Input
-                  placeholder="Enter your password"
-                  type="password"
-                  className={inputClass}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters long",
-                    },
-                  })}
-                />
-              </div> 
-
-              {/* Confirm Password */}
-               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <Input
-                  placeholder="Confirm your password"
-                  type="password"
-                  className={inputClass}
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === password || "Passwords do not match",
-                  })}
-                />
-                
-                {errors.confirmPassword && (
-                  <span className="text-red-500 text-sm">
-                    {errors.confirmPassword.message}
-                  </span>
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    className={getInputClassName("password")}
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters",
+                      },
+                      validate: (value) => {
+                        if (!/\d/.test(value)) return "Password must contain at least one number";
+                        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character";
+                        return true;
+                      }
+                    })}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                 )}
-              </div>
-                
-             
 
-              {/* Submit Button */}
+                {/* Password Criteria */}
+                <div className="mt-2 space-y-1">
+                  <p className={`text-xs ${passwordCriteria.length ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ At least 8 characters
+                  </p>
+                  <p className={`text-xs ${passwordCriteria.number ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ Contains a number
+                  </p>
+                  <p className={`text-xs ${passwordCriteria.special ? 'text-teal-600' : 'text-gray-500'}`}>
+                    ✓ Contains a special character
+                  </p>
+                </div>
+              </div>
+
               <Button
                 type="submit"
-                disabled={!isValid || loading}
-                className={`w-full py-2 rounded-xl transition  ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-teal-600 text-white hover:bg-teal-700"
+                className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 flex items-center justify-center ${
+                  !isValid || loading
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:bg-teal-700"
                 }`}
+                disabled={!isValid || loading}
               >
-                {loading ? "Sending..." : "Sign Up"}
+                {loading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Sign Up as Teacher"
+                )}
               </Button>
             </form>
 
-            {error && (
-              <p className="text-red-500 text-sm mt-4">Error: {error}</p>
-            )}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate("/signup/recruiter")}
+                className="w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
+              >
+                Sign up as Recruiter
+              </button>
+
+              <div className="relative mt-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => navigate("/signin")}
+                className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 border border-teal-600 text-sm font-medium rounded-xl text-teal-600 bg-white hover:bg-teal-50 transition duration-200"
+              >
+                Already have an account? Sign in
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 hidden md:flex flex-col pl-36 justify-center h-screen p-10 ">
+        {/* Timeline - Hidden on mobile, shown on md screens and up */}
+        <div className="hidden md:flex w-1/2 flex-col justify-center pl-16 lg:pl-24">
           {/* Step 1 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-teal-500 text-white font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">
                 1
               </div>
-              <div className="h-12 w-1 bg-teal-500"></div>
+              <div className="h-16 w-1 bg-teal-600"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Get Signup Completed
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Create Account
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Fill in your details to create your account
+              </p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="flex items-start space-x-4 mb-4">
+          <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
                 2
               </div>
-              <div className="h-12 w-1 bg-gray-300"></div>
+              <div className="h-16 w-1 bg-gray-300"></div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Select Teacher in Progress
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Verify Email
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Confirm your email address
+              </p>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="flex items-start space-x-4 mb-4">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
-                3
-              </div>
-              <div className="h-12 w-1 bg-gray-300"></div>
-            </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Take interview
-              </div>
-            </div>
-          </div>
-
-          {/* Step 4 */}
           <div className="flex items-start space-x-4">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold">
-                4
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
+                3
               </div>
             </div>
-            <div>
-              <div className="text-gray-500 font-bold text-sm md:text-xl leading-none">
-                Hire Teacher
-              </div>
+            <div className="pt-2">
+              <h3 className="text-gray-700 font-bold text-xl">
+                Complete Profile
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Set up your teacher profile
+              </p>
             </div>
           </div>
         </div>

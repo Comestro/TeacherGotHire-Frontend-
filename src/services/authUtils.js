@@ -1,10 +1,12 @@
 import { login as loginService } from "./authServices";
 import { userLogout } from "../features/authSlice";
+import { toast } from "react-toastify";
 
 export const login = async ({ email, password, navigate }) => {
   try {
     const userData = await loginService({ email, password });
     if (userData) {
+      toast.success("Login successful!");
       if (userData?.role === "recruiter") {
         navigate("/recruiter");
       } else if (userData?.role === "teacher") {
@@ -19,6 +21,7 @@ export const login = async ({ email, password, navigate }) => {
     }
     return userData;
   } catch (error) {
+    toast.error(error.message || "Login failed");
     throw error;
   }
 };
@@ -27,10 +30,11 @@ export const handleLogout = (dispatch, navigate) => {
   dispatch(userLogout())
     .unwrap()
     .then(() => {
-      console.log("Logout successful!");
+      toast.success("Logged out successfully!");
       navigate("/signin");
     })
     .catch((error) => {
       console.error("Logout failed:", error);
+      toast.error("Failed to logout");
     });
 };

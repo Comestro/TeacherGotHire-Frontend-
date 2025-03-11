@@ -28,6 +28,19 @@ const AppBar = styled(MuiAppBar, {
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
+  overflowX: "hidden",
+}));
+
+const Main = styled(Box)(({ theme }) => ({
+  flexGrow: 1,
+  padding: theme.spacing(3),
+  marginTop: 64, // AppBar height
+  width: '100%',
+  overflowX: 'hidden', // Prevent horizontal overflow in main content
+  transition: theme.transitions.create('margin', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
 }));
 
 export default function Layout({ children }) {
@@ -42,7 +55,12 @@ export default function Layout({ children }) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ 
+      display: "flex", 
+      width: "100%", 
+      position: "relative",
+      overflow: "hidden" // This prevents horizontal scrollbar on the whole layout
+    }}>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
@@ -61,9 +79,22 @@ export default function Layout({ children }) {
         </Toolbar>
       </AppBar>
       <Sidebar open={open} handleDrawerClose={handleDrawerClose} />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-        {children}
-      </Box>
+      <Main
+        component="main"
+        sx={{
+          width: '100%',
+          overflowX: 'hidden !important', 
+          maxWidth: '100%',
+        }}
+      >
+        <Box sx={{ 
+          overflowX: 'hidden !important',
+          width: '100%', 
+          maxWidth: '100%',
+        }}>
+          {children}
+        </Box>
+      </Main>
     </Box>
   );
 }

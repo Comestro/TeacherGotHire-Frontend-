@@ -1,797 +1,561 @@
-d/dashboard.htm -->
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - TeacherGotHire</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Font Awesome Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
-    />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="dashboard.css" />
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body>
-    <div class="d-flex" id="wrapper">
-      <!-- Sidebar -->
-      <div class="bg-white border-end" id="sidebar-wrapper">
-        <div
-          class="sidebar-heading d-flex align-items-center p-3 border-bottom"
-        >
-          <img
-            src="../../assets/images/logo.png"
-            alt="Logo"
-            class="me-2"
-            width="32"
-          />
-          <span class="fs-5 fw-semibold">TeacherGotHire</span>
-        </div>
-        <div class="sidebar-menu">
-          <ul class="list-unstyled ps-0">
-            <li class="mb-1">
-              <a
-                href="#"
-                class="btn btn-primary rounded-3 w-100 text-start active"
-              >
-                <i class="fas fa-chart-line me-2"></i> Dashboard
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-chalkboard-teacher me-2"></i> Manage Teachers
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-building me-2"></i> Manage Recruiters
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-clipboard-list me-2"></i> Job Requests
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-user-tie me-2"></i> Interviews
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-file-alt me-2"></i> Exams
-              </a>
-            </li>
-            <li class="mb-1">
-              <a href="#" class="btn btn-light rounded-3 w-100 text-start">
-                <i class="fas fa-cog me-2"></i> Settings
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <!-- Sidebar Toggle Button -->
-      <div id="sidebar-toggle" class="d-none">
-        <i class="fas fa-bars"></i>
-      </div>
+import React, { useState } from 'react';
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Avatar,
+  IconButton,
+  Chip,
+  Switch,
+  useTheme,
+  useMediaQuery,
+  Tab,
+  Tabs,
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  School as SchoolIcon,
+  WorkOutline as JobIcon,
+  CalendarToday as CalendarIcon,
+  Assessment as AssessmentIcon,
+  TrendingUp as TrendingUpIcon,
+  CheckCircle as CheckCircleIcon,
+  Schedule as ScheduleIcon,
+  Notifications as NotificationsIcon,
+  Mail as MailIcon,
+  Settings as SettingsIcon,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
+  AccountCircle as AccountIcon,
+  KeyboardArrowRight as ArrowRightIcon,
+  Timeline as TimelineIcon,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  ShowChart as ShowChartIcon,
+  Category,
+  MenuBook,
+  Psychology,
+  Grade,
+  WorkspacePremium,
+  Quiz,
+  BusinessCenter,
+  Key,
+  VideoCall,
+  AssignmentInd,
+  NotificationImportant,
+  SupervisorAccount,
+  QuestionAnswer as QuestionAnswerIcon,
+  LocationOn,
+} from '@mui/icons-material';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import Layout from '../Admin/Layout';
 
-      <!-- Page Content -->
-      <div id="page-content-wrapper">
-        <!-- Navbar -->
-        <nav
-          class="navbar navbar-expand-lg navbar-light bg-white border-bottom"
-        >
-          <div class="container-fluid">
-            <button class="btn btn-link d-md-none" id="sidebarToggle">
-              <i class="fas fa-bars"></i>
-            </button>
-            <h1 class="h4 mb-0">Admin Dashboard</h1>
-            <div class="ms-auto d-flex align-items-center">
-              <div class="dropdown me-3">
-                <a
-                  href="#"
-                  class="btn btn-outline-secondary position-relative"
-                  id="notificationsDropdown"
-                  data-bs-toggle="dropdown"
-                >
-                  <i class="fas fa-bell"></i>
-                  <span
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                  >
-                    5
-                  </span>
-                </a>
-                <div
-                  class="dropdown-menu dropdown-menu-end"
-                  aria-labelledby="notificationsDropdown"
-                >
-                  <h6 class="dropdown-header">New Notifications</h6>
-                  <a class="dropdown-item" href="#"
-                    ><i class="fas fa-user-plus me-2 text-success"></i> 3 new
-                    teacher registrations</a
-                  >
-                  <a class="dropdown-item" href="#"
-                    ><i class="fas fa-briefcase me-2 text-primary"></i> 2 new
-                    job requests</a
-                  >
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item text-center" href="#"
-                    >View all notifications</a
-                  >
-                </div>
-              </div>
+// ... existing code ...
 
-              <div class="dropdown">
-                <a
-                  href="#"
-                  class="d-flex align-items-center text-decoration-none dropdown-toggle"
-                  id="userDropdown"
-                  data-bs-toggle="dropdown"
+export default function AdminDashboard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const [darkMode, setDarkMode] = useState(false);
+  const [chartTab, setChartTab] = useState(0);
+
+  // ... existing code ...
+
+  // Adding quick action items based on menu items
+  const quickActions = [
+    { icon: <SchoolIcon />, text: "Teachers", color: "#ff9800", link: "/admin/manage/teacher" },
+    { icon: <SupervisorAccount />, text: "Recruiters", color: "#2196f3", link: "/admin/manage/recruiter" },
+    { icon: <BusinessCenter />, text: "Hiring", color: "#9c27b0", link: "/admin/manage/hiring" },
+    { icon: <VideoCall />, text: "Interviews", color: "#f44336", link: "/admin/manage/interview" },
+    { icon: <Quiz />, text: "Exams", color: "#4caf50", link: "/admin/manage/exam" },
+    { icon: <MenuBook />, text: "Subjects", color: "#607d8b", link: "/admin/manage/subject" },
+    { icon: <Category />, text: "Categories", color: "#795548", link: "/admin/manage/class/category" },
+    { icon: <Key />, text: "Passkeys", color: "#009688", link: "/admin/manage/passkey" },
+  ];
+
+  return (
+    <Layout>
+      <Box sx={{
+        flexGrow: 1,
+        p: { xs: 1, sm: 2, md: 3 },
+        backgroundColor: darkMode ? '#121212' : '#f5f5f5',
+        minHeight: '100vh',
+        color: darkMode ? '#fff' : '#333',
+        transition: 'all 0.3s ease',
+        overflow: 'hidden', // Prevent horizontal overflow
+        width: '100%',
+        maxWidth: '100%'
+      }}>
+        {/* Header */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between',
+          mb: 3,
+          alignItems: isMobile ? 'flex-start' : 'center',
+          width: '100%',
+          overflow: 'hidden'
+        }}>
+          <Box>
+            <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold" color={darkMode ? 'primary.light' : 'primary.dark'} noWrap>
+              Admin Dashboard
+            </Typography>
+          </Box>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mt: isMobile ? 2 : 0,
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'space-between' : 'flex-end'
+          }}>
+            <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* ... existing Quick Stats Summary ... */}
+
+        {/* KPI & Analytics Overview - with overflow control */}
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+          Analytics Overview
+        </Typography>
+        <Box sx={{ width: '100%', overflowX: 'hidden' }}>
+          <Grid container spacing={isMobile ? 2 : 3} sx={{ mb: 4 }}>
+            {/* ... existing grid items ... */}
+          </Grid>
+        </Box>
+
+        {/* Quick Actions Panel - Improved for more items */}
+        <Typography variant="h6" sx={{ mb: 2, mt: 4, fontWeight: 500 }}>
+          Quick Actions
+        </Typography>
+        <Box sx={{ width: '100%', overflowX: 'hidden' }}>
+          <Grid container spacing={isMobile ? 1 : 2} sx={{ mb: 4 }}>
+            {quickActions.map((action, index) => (
+              <Grid item xs={6} sm={4} md={3} lg={3} xl={2} key={index}>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: { xs: 80, sm: 100 },
+                    width: '100%',
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                    backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+                    color: darkMode ? 'white' : '#333',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'white',
+                    }
+                  }}
                 >
-                  <img
-                    src="https://via.placeholder.com/32"
-                    class="rounded-circle me-2"
-                    width="32"
-                    height="32"
-                    alt="Admin"
+                  <Box sx={{
+                    color: action.color,
+                    p: { xs: 0.5, sm: 1 },
+                    borderRadius: '50%',
+                    mb: { xs: 0.5, sm: 1 }
+                  }}>
+                    {action.icon}
+                  </Box>
+                  <Typography 
+                    variant={isMobile ? "caption" : "body2"} 
+                    textAlign="center"
+                    sx={{ 
+                      display: '-webkit-box',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical'
+                    }}
+                  >
+                    {action.text}
+                  </Typography>
+                </Button>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
+        {/* Analytics Charts - with improved responsiveness */}
+        <Typography variant="h6" sx={{ mb: 2, mt: 4, fontWeight: 500 }}>
+          Analytics & Growth
+        </Typography>
+        <Paper
+          elevation={3}
+          sx={{
+            borderRadius: 2,
+            overflow: 'hidden',
+            backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+            p: 2,
+            maxWidth: '100%'
+          }}
+        >
+          <Box sx={{ width: '100%', overflowX: 'auto', pb: 1 }}>
+            <Tabs
+              value={chartTab}
+              onChange={handleChartTabChange}
+              variant={isMobile ? "scrollable" : "standard"}
+              sx={{ mb: 2 }}
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+            >
+              <Tab
+                icon={<ShowChartIcon />}
+                label={isMobile ? undefined : "Growth"}
+                iconPosition={isMobile ? "top" : "start"}
+              />
+              <Tab
+                icon={<BarChartIcon />}
+                label={isMobile ? undefined : "Jobs"}
+                iconPosition={isMobile ? "top" : "start"}
+              />
+              <Tab
+                icon={<PieChartIcon />}
+                label={isMobile ? undefined : "Distribution"}
+                iconPosition={isMobile ? "top" : "start"}
+              />
+            </Tabs>
+          </Box>
+
+          <Box sx={{ 
+            height: { xs: 250, sm: 300, md: 350 }, 
+            mt: 2, 
+            width: '100%', 
+            overflow: 'hidden',
+            maxWidth: '100%'
+          }}>
+            {chartTab === 0 && (
+              <Line options={{
+                ...chartOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+              }} data={mockData.chartData.signups} />
+            )}
+            {chartTab === 1 && (
+              <Bar options={{
+                ...chartOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+              }} data={mockData.chartData.jobsData} />
+            )}
+            {chartTab === 2 && (
+              <Box sx={{
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                height: '100%',
+                maxWidth: '100%'
+              }}>
+                <Box sx={{
+                  height: isMobile ? '200px' : '100%',
+                  width: isMobile ? '100%' : '50%',
+                  position: 'relative',
+                  maxWidth: '100%'
+                }}>
+                  <Doughnut
+                    data={mockData.chartData.recruiterTypes}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: isMobile ? 'bottom' : 'right',
+                          labels: {
+                            color: darkMode ? '#fff' : '#333',
+                            boxWidth: isMobile ? 10 : 15,
+                            padding: isMobile ? 8 : 12
+                          }
+                        }
+                      }
+                    }}
                   />
-                  <span>Admin User</span>
-                </a>
-                <ul
-                  class="dropdown-menu dropdown-menu-end"
-                  aria-labelledby="userDropdown"
-                >
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="fas fa-user me-2"></i> Profile</a
-                    >
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="fas fa-cog me-2"></i> Settings</a
-                    >
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="fas fa-sign-out-alt me-2"></i> Logout</a
-                    >
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        <!-- Dashboard Content -->
-        <div class="container-fluid p-4">
-          <div class="row mb-4">
-            <div class="col">
-              <h2 class="h5 text-muted">
-                Monitor platform performance, manage teachers, recruiters, and
-                job requests seamlessly.
-              </h2>
-            </div>
-            <div class="col-auto">
-              <div class="btn-group">
-                <button class="btn btn-outline-secondary">
-                  <i class="fas fa-calendar me-1"></i> Mar 1 - Mar 3, 2025
-                </button>
-                <button
-                  class="btn btn-outline-secondary dropdown-toggle"
-                  data-bs-toggle="dropdown"
-                >
-                  <i class="fas fa-filter me-1"></i> Filter
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- KPI & Analytics Overview -->
-          <div class="row g-4 mb-4">
-            <!-- Total Teachers Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">Total Teachers</h6>
-                      <h2 class="card-title mb-0">576</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-primary-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-chalkboard-teacher text-primary"></i>
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <div class="me-3">
-                      <span class="badge bg-success rounded-pill"
-                        >540 Approved</span
-                      >
-                    </div>
-                    <div>
-                      <span class="badge bg-warning rounded-pill"
-                        >36 Pending</span
-                      >
-                    </div>
-                  </div>
-                  <div class="progress mt-3" style="height: 5px">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      style="width: 94%"
-                    ></div>
-                    <div
-                      class="progress-bar bg-warning"
-                      role="progressbar"
-                      style="width: 6%"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Total Recruiters Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">Total Recruiters</h6>
-                      <h2 class="card-title mb-0">128</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-info-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-building text-info"></i>
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center mb-3">
-                    <div class="me-3">
-                      <i class="fas fa-school text-primary me-1"></i> 68 Schools
-                    </div>
-                    <div class="me-3">
-                      <i class="fas fa-university text-warning me-1"></i> 42
-                      Institutes
-                    </div>
-                    <div>
-                      <i class="fas fa-user-tie text-success me-1"></i> 18
-                      Individuals
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <span class="text-success me-2"
-                      ><i class="fas fa-arrow-up"></i> 12%</span
-                    >
-                    <small class="text-muted">Since last month</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Job Requests Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">Job Requests</h6>
-                      <h2 class="card-title mb-0">93</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-success-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-clipboard-list text-success"></i>
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <div class="me-3">
-                      <span class="badge bg-warning rounded-pill"
-                        >24 Pending</span
-                      >
-                    </div>
-                    <div class="me-3">
-                      <span class="badge bg-info rounded-pill"
-                        >38 In Progress</span
-                      >
-                    </div>
-                    <div>
-                      <span class="badge bg-success rounded-pill"
-                        >31 Completed</span
-                      >
-                    </div>
-                  </div>
-                  <div class="progress mt-3" style="height: 5px">
-                    <div
-                      class="progress-bar bg-warning"
-                      role="progressbar"
-                      style="width: 26%"
-                    ></div>
-                    <div
-                      class="progress-bar bg-info"
-                      role="progressbar"
-                      style="width: 41%"
-                    ></div>
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      style="width: 33%"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upcoming Interviews Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">
-                        Upcoming Interviews
-                      </h6>
-                      <h2 class="card-title mb-0">17</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-danger-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-calendar-check text-danger"></i>
-                    </div>
-                  </div>
-                  <div class="upcoming-interview mb-2">
-                    <small class="text-muted d-block">Next interview:</small>
-                    <div class="d-flex align-items-center">
-                      <i class="fas fa-user-clock text-primary me-2"></i>
-                      <div>
-                        <strong>John Smith</strong> with
-                        <strong>ABC School</strong>
-                        <small class="text-muted d-block">Today, 2:30 PM</small>
-                      </div>
-                    </div>
-                  </div>
-                  <a href="#" class="btn btn-sm btn-outline-primary"
-                    >View Schedule</a
+                </Box>
+                <Box sx={{
+                  width: isMobile ? '100%' : '50%',
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  maxWidth: '100%'
+                }}>
+                  <Typography variant="h6" fontWeight="medium" noWrap>Recruiter Distribution</Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    sx={{ 
+                      mb: 2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
                   >
-                </div>
-              </div>
-            </div>
+                    Schools make up {Math.round(mockData.recruiters.schools / mockData.recruiters.total * 100)}% of our recruiter base
+                  </Typography>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1
+                  }}>
+                    {[
+                      { type: 'Schools', count: mockData.recruiters.schools, color: 'rgba(54, 162, 235, 0.7)' },
+                      { type: 'Institutes', count: mockData.recruiters.institutes, color: 'rgba(255, 159, 64, 0.7)' },
+                      { type: 'Individual', count: mockData.recruiters.individual, color: 'rgba(255, 99, 132, 0.7)' }
+                    ].map((item, index) => (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 12, height: 12, backgroundColor: item.color, borderRadius: 1, flexShrink: 0 }} />
+                        <Typography variant="body2" noWrap>
+                          {item.type}: <strong>{item.count}</strong>
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            )}
+          </Box>
 
-            <!-- Exams Conducted Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">Exams Conducted</h6>
-                      <h2 class="card-title mb-0">42</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-warning-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-file-alt text-warning"></i>
-                    </div>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <div>
-                      <small class="text-muted">Pass Rate</small>
-                      <h6 class="mb-0">76%</h6>
-                    </div>
-                    <div>
-                      <small class="text-muted">Average Score</small>
-                      <h6 class="mb-0">68/100</h6>
-                    </div>
-                    <div>
-                      <small class="text-muted">Completion</small>
-                      <h6 class="mb-0">92%</h6>
-                    </div>
-                  </div>
-                  <canvas id="examsChart" height="60"></canvas>
-                </div>
-              </div>
-            </div>
+          <Box sx={{
+            textAlign: 'right',
+            pt: 2,
+            mt: 2,
+            borderTop: '1px solid',
+            borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+          }}>
+            <Button
+              color="primary"
+              variant="contained"
+              startIcon={<AssessmentIcon />}
+              size={isMobile ? "small" : "medium"}
+            >
+              Full Analytics Report
+            </Button>
+          </Box>
+        </Paper>
 
-            <!-- New Signups Card -->
-            <div class="col-md-6 col-lg-4">
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-3">
-                    <div>
-                      <h6 class="card-subtitle text-muted">
-                        New Signups This Month
-                      </h6>
-                      <h2 class="card-title mb-0">48</h2>
-                    </div>
-                    <div
-                      class="dashboard-icon bg-purple-light rounded-circle d-flex align-items-center justify-content-center"
-                    >
-                      <i class="fas fa-user-plus text-purple"></i>
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center mb-3">
-                    <div class="me-4">
-                      <span class="text-primary fw-bold">34</span>
-                      <small class="text-muted d-block">Teachers</small>
-                    </div>
-                    <div>
-                      <span class="text-success fw-bold">14</span>
-                      <small class="text-muted d-block">Recruiters</small>
-                    </div>
-                  </div>
-                  <canvas id="signupsChart" height="60"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Actions Panel -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white border-bottom-0">
-              <h5 class="card-title mb-0">Quick Actions</h5>
-            </div>
-            <div class="card-body pb-2">
-              <div class="row g-3">
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-primary-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-user-check text-primary"></i>
-                      </div>
-                      <h6 class="mb-0">Approve Teachers</h6>
-                      <span class="badge bg-danger">36</span>
-                    </div>
-                  </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-warning-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-briefcase text-warning"></i>
-                      </div>
-                      <h6 class="mb-0">Manage Jobs</h6>
-                      <span class="badge bg-danger">24</span>
-                    </div>
-                  </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-info-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-calendar-alt text-info"></i>
-                      </div>
-                      <h6 class="mb-0">Schedule Interviews</h6>
-                    </div>
-                  </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-success-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-handshake text-success"></i>
-                      </div>
-                      <h6 class="mb-0">Recruiter Requests</h6>
-                      <span class="badge bg-danger">8</span>
-                    </div>
-                  </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-danger-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-clipboard-check text-danger"></i>
-                      </div>
-                      <h6 class="mb-0">Manage Exams</h6>
-                    </div>
-                  </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                  <a href="#" class="text-decoration-none">
-                    <div
-                      class="quick-action-card p-3 text-center border rounded h-100"
-                    >
-                      <div
-                        class="quick-action-icon bg-purple-light mb-3 mx-auto rounded-circle"
-                      >
-                        <i class="fas fa-bell text-purple"></i>
-                      </div>
-                      <h6 class="mb-0">Send Notifications</h6>
-                    </div>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Activity & Notifications -->
-          <div class="row">
-            <div class="col-lg-7 mb-4">
-              <div class="card border-0 shadow-sm h-100">
-                <div
-                  class="card-header bg-white d-flex justify-content-between align-items-center"
-                >
-                  <h5 class="card-title mb-0">Recent Activity</h5>
-                  <div class="dropdown">
-                    <button
-                      class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                      type="button"
-                      id="activityFilterDropdown"
-                      data-bs-toggle="dropdown"
-                    >
-                      All Activities
-                    </button>
-                    <ul
-                      class="dropdown-menu"
-                      aria-labelledby="activityFilterDropdown"
-                    >
-                      <li>
-                        <a class="dropdown-item" href="#"
-                          >Teacher Registration</a
-                        >
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#">Recruiter Activity</a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#">Interview Updates</a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#">Exam Results</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="card-body p-0">
-                  <div class="activity-list">
-                    <div class="activity-item d-flex p-3 border-bottom">
-                      <div
-                        class="activity-icon me-3 bg-primary-light text-primary rounded-circle"
-                      >
-                        <i class="fas fa-user-plus"></i>
-                      </div>
-                      <div class="activity-content">
-                        <h6 class="mb-1">New Teacher Registration</h6>
-                        <p class="mb-1">
-                          Sarah Johnson submitted application for Mathematics
-                          teacher position
-                        </p>
-                        <small class="text-muted">20 minutes ago</small>
-                      </div>
-                      <div class="activity-action ms-auto">
-                        <button class="btn btn-sm btn-outline-primary">
-                          Review
-                        </button>
-                      </div>
-                    </div>
-                    <div class="activity-item d-flex p-3 border-bottom">
-                      <div
-                        class="activity-icon me-3 bg-success-light text-success rounded-circle"
-                      >
-                        <i class="fas fa-briefcase"></i>
-                      </div>
-                      <div class="activity-content">
-                        <h6 class="mb-1">New Job Request</h6>
-                        <p class="mb-1">
-                          Westfield School posted a requirement for Physics
-                          Teacher
-                        </p>
-                        <small class="text-muted">1 hour ago</small>
-                      </div>
-                      <div class="activity-action ms-auto">
-                        <button class="btn btn-sm btn-outline-success">
-                          View
-                        </button>
-                      </div>
-                    </div>
-                    <div class="activity-item d-flex p-3 border-bottom">
-                      <div
-                        class="activity-icon me-3 bg-info-light text-info rounded-circle"
-                      >
-                        <i class="fas fa-calendar-check"></i>
-                      </div>
-                      <div class="activity-content">
-                        <h6 class="mb-1">Interview Scheduled</h6>
-                        <p class="mb-1">
-                          James Wilson is scheduled for interview with Parkview
-                          Academy
-                        </p>
-                        <small class="text-muted">2 hours ago</small>
-                      </div>
-                      <div class="activity-action ms-auto">
-                        <button class="btn btn-sm btn-outline-info">
-                          Details
-                        </button>
-                      </div>
-                    </div>
-                    <div class="activity-item d-flex p-3 border-bottom">
-                      <div
-                        class="activity-icon me-3 bg-warning-light text-warning rounded-circle"
-                      >
-                        <i class="fas fa-clipboard-check"></i>
-                      </div>
-                      <div class="activity-content">
-                        <h6 class="mb-1">Exam Completed</h6>
-                        <p class="mb-1">
-                          15 teachers completed English Proficiency Test
-                        </p>
-                        <small class="text-muted">4 hours ago</small>
-                      </div>
-                      <div class="activity-action ms-auto">
-                        <button class="btn btn-sm btn-outline-warning">
-                          Results
-                        </button>
-                      </div>
-                    </div>
-                    <div class="activity-item d-flex p-3">
-                      <div
-                        class="activity-icon me-3 bg-danger-light text-danger rounded-circle"
-                      >
-                        <i class="fas fa-user-check"></i>
-                      </div>
-                      <div class="activity-content">
-                        <h6 class="mb-1">Teacher Approved</h6>
-                        <p class="mb-1">
-                          Admin approved Michael Brown as Science Teacher
-                        </p>
-                        <small class="text-muted">5 hours ago</small>
-                      </div>
-                      <div class="activity-action ms-auto">
-                        <button class="btn btn-sm btn-outline-secondary">
-                          Profile
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-footer bg-white border-top">
-                  <a href="#" class="btn btn-link text-decoration-none w-100"
-                    >View All Activity</a
+        {/* Additional Widgets Panel */}
+        <Typography variant="h6" sx={{ mb: 2, mt: 4, fontWeight: 500 }}>
+          Key Insights
+        </Typography>
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          {/* Recent Teachers */}
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 2,
+                overflow: 'hidden',
+                backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+                height: '100%'
+              }}
+            >
+              <Box sx={{ p: 2, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                <Typography variant="h6" sx={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                  <PeopleIcon sx={{ mr: 1, fontSize: 20 }} /> Recent Teachers
+                </Typography>
+              </Box>
+              <List sx={{ overflow: 'hidden', maxWidth: '100%' }}>
+                {[
+                  { name: "Michael Johnson", subject: "Mathematics", date: "12 Mar 2025", status: "pending" },
+                  { name: "Emma Rodriguez", subject: "English Literature", date: "11 Mar 2025", status: "approved" },
+                  { name: "David Chen", subject: "Physics", date: "10 Mar 2025", status: "active" },
+                ].map((teacher, index) => (
+                  <ListItem 
+                    key={index}
+                    divider={index !== 2}
+                    secondaryAction={
+                      <Chip 
+                        size="small"
+                        label={teacher.status}
+                        sx={{ 
+                          bgcolor: getStatusColor(teacher.status),
+                          color: 'white',
+                          maxWidth: { xs: '70px', sm: 'none' },
+                          '& .MuiChip-label': {
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }
+                        }}
+                      />
+                    }
+                    sx={{ pr: 8 }} // Ensure space for the action
                   >
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-5 mb-4">
-              <div class="card border-0 shadow-sm h-100">
-                <div
-                  class="card-header bg-white d-flex justify-content-between align-items-center"
-                >
-                  <h5 class="card-title mb-0">System Notifications</h5>
-                  <button class="btn btn-sm btn-outline-secondary">
-                    Mark All Read
-                  </button>
-                </div>
-                <div class="card-body p-0">
-                  <div class="notification-list">
-                    <a
-                      href="#"
-                      class="notification-item d-flex p-3 border-bottom text-decoration-none text-dark"
-                    >
-                      <div
-                        class="notification-icon me-3 bg-danger text-white rounded-circle"
-                      >
-                        <i class="fas fa-exclamation-triangle"></i>
-                      </div>
-                      <div class="notification-content">
-                        <h6 class="mb-1">System Alert</h6>
-                        <p class="mb-1 text-muted">
-                          Database backup scheduled in 30 minutes
-                        </p>
-                        <small class="text-muted">Just now</small>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="notification-item d-flex p-3 border-bottom text-decoration-none text-dark"
-                    >
-                      <div
-                        class="notification-icon me-3 bg-primary text-white rounded-circle"
-                      >
-                        <i class="fas fa-bell"></i>
-                      </div>
-                      <div class="notification-content">
-                        <h6 class="mb-1">New Feature Added</h6>
-                        <p class="mb-1 text-muted">
-                          Video interview capability has been enabled
-                        </p>
-                        <small class="text-muted">2 hours ago</small>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="notification-item d-flex p-3 border-bottom text-decoration-none text-dark"
-                    >
-                      <div
-                        class="notification-icon me-3 bg-warning text-white rounded-circle"
-                      >
-                        <i class="fas fa-flag"></i>
-                      </div>
-                      <div class="notification-content">
-                        <h6 class="mb-1">Content Reported</h6>
-                        <p class="mb-1 text-muted">
-                          A job posting has been flagged for review
-                        </p>
-                        <small class="text-muted">Yesterday</small>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="notification-item d-flex p-3 border-bottom text-decoration-none text-dark"
-                    >
-                      <div
-                        class="notification-icon me-3 bg-info text-white rounded-circle"
-                      >
-                        <i class="fas fa-chart-line"></i>
-                      </div>
-                      <div class="notification-content">
-                        <h6 class="mb-1">Weekly Report Ready</h6>
-                        <p class="mb-1 text-muted">
-                          Platform analytics for past week is available
-                        </p>
-                        <small class="text-muted">2 days ago</small>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="notification-item d-flex p-3 text-decoration-none text-dark"
-                    >
-                      <div
-                        class="notification-icon me-3 bg-success text-white rounded-circle"
-                      >
-                        <i class="fas fa-check-circle"></i>
-                      </div>
-                      <div class="notification-content">
-                        <h6 class="mb-1">Integration Complete</h6>
-                        <p class="mb-1 text-muted">
-                          Email notification system setup completed
-                        </p>
-                        <small class="text-muted">3 days ago</small>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-                <div class="card-footer bg-white border-top">
-                  <a href="#" class="btn btn-link text-decoration-none w-100"
-                    >View All Notifications</a
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                    <ListItemIcon>
+                      <Avatar sx={{ bgcolor: darkMode ? 'primary.dark' : 'primary.light' }}>
+                        {teacher.name.charAt(0)}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={teacher.name}
+                      primaryTypographyProps={{ 
+                        noWrap: true,
+                        sx: { maxWidth: { xs: '120px', sm: '200px', md: '250px' } }
+                      }}
+                      secondary={teacher.subject}
+                      secondaryTypographyProps={{ 
+                        noWrap: true,
+                        sx: { maxWidth: { xs: '120px', sm: '200px', md: '250px' } }
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="dashboard.js"></script>
-  </body>
-</html>
+          {/* Upcoming Interviews */}
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 2,
+                overflow: 'hidden',
+                backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+                height: '100%'
+              }}
+            >
+              <Box sx={{ p: 2, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                <Typography variant="h6" sx={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                  <VideoCall sx={{ mr: 1, fontSize: 20 }} /> Upcoming Interviews
+                </Typography>
+              </Box>
+              <List sx={{ overflow: 'hidden', maxWidth: '100%' }}>
+                {[
+                  { teacher: "Sarah Johnson", school: "Westfield High", position: "Science Teacher", time: "Tomorrow, 10:00 AM", status: "upcoming" },
+                  { teacher: "Robert Williams", school: "Lincoln Elementary", position: "Art Teacher", time: "12 Mar, 2:30 PM", status: "upcoming" },
+                  { teacher: "Jessica Brown", school: "Oakridge Institute", position: "Math Teacher", time: "15 Mar, 11:00 AM", status: "scheduled" },
+                ].map((interview, index) => (
+                  <ListItem 
+                    key={index}
+                    divider={index !== 2}
+                    secondaryAction={
+                      <Chip 
+                        size="small"
+                        icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
+                        label={interview.time}
+                        sx={{ 
+                          maxWidth: { xs: '100px', sm: 'auto' },
+                          '& .MuiChip-label': {
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            pr: { xs: 0, sm: 1 }
+                          }
+                        }}
+                      />
+                    }
+                    sx={{ pr: 9 }} // Ensure space for the action
+                  >
+                    <ListItemIcon>
+                      <Avatar sx={{ bgcolor: getStatusColor(interview.status) }}>
+                        {interview.teacher.charAt(0)}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={interview.teacher}
+                      primaryTypographyProps={{ 
+                        noWrap: true,
+                        sx: { maxWidth: { xs: '120px', sm: '200px', md: '250px' } }
+                      }}
+                      secondary={`${interview.position} - ${interview.school}`}
+                      secondaryTypographyProps={{ 
+                        noWrap: true,
+                        sx: { maxWidth: { xs: '120px', sm: '200px', md: '250px' } }
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Upcoming Tasks/Important Reminders - Mobile Focused */}
+        {isMobile && (
+          <Box sx={{ mt: 3, width: '100%', overflowX: 'hidden' }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+              Important Reminders
+            </Typography>
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 2,
+                p: 2,
+                backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
+                maxWidth: '100%'
+              }}
+            >
+              <List dense disablePadding>
+                <ListItem>
+                  <ListItemIcon>
+                    <Avatar sx={{ bgcolor: '#ff9800', width: 28, height: 28 }}>
+                      <PeopleIcon fontSize="small" />
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Approve new teachers (37)"
+                    secondary="Action needed within 24 hours"
+                    primaryTypographyProps={{ noWrap: true }}
+                    secondaryTypographyProps={{ noWrap: true }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <Avatar sx={{ bgcolor: '#2196f3', width: 28, height: 28 }}>
+                      <CalendarIcon fontSize="small" />
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Next interview: Tomorrow, 10:00 AM"
+                    secondary="Sarah Johnson - Science Teacher"
+                    primaryTypographyProps={{ noWrap: true }}
+                    secondaryTypographyProps={{ noWrap: true }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <Avatar sx={{ bgcolor: '#4caf50', width: 28, height: 28 }}>
+                      <AssessmentIcon fontSize="small" />
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Publish exam results"
+                    secondary="Physics Proficiency Test"
+                    primaryTypographyProps={{ noWrap: true }}
+                    secondaryTypographyProps={{ noWrap: true }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+          </Box>
+        )}
+      </Box>
+    </Layout>
+  );
+}
