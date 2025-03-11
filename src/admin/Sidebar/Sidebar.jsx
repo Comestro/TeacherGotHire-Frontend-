@@ -53,6 +53,32 @@ import {
   LocationOn,
 } from "@mui/icons-material";
 
+// Custom scrollbar styles
+const ScrollbarStyle = styled('style')({
+  children: `
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #888 #f1f1f1;
+      overflow-y: auto;
+      overflow-x: hidden !important;
+    }
+  `
+});
+
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -61,7 +87,7 @@ const openedMixin = (theme) => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: "hidden",
+  overflowX: "hidden !important",
 });
 
 const closedMixin = (theme) => ({
@@ -69,7 +95,7 @@ const closedMixin = (theme) => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: "hidden",
+  overflowX: "hidden !important",
   width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up("sm")]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
@@ -91,13 +117,20 @@ const Drawer = styled(MuiDrawer, {
   flexShrink: 0,
   whiteSpace: "nowrap",
   boxSizing: "border-box",
+  overflowX: "hidden !important",
   ...(open && {
     ...openedMixin(theme),
-    "& .MuiDrawer-paper": openedMixin(theme),
+    "& .MuiDrawer-paper": {
+      ...openedMixin(theme),
+      overflowX: "hidden !important",
+    },
   }),
   ...(!open && {
     ...closedMixin(theme),
-    "& .MuiDrawer-paper": closedMixin(theme),
+    "& .MuiDrawer-paper": {
+      ...closedMixin(theme),
+      overflowX: "hidden !important",
+    },
   }),
 }));
 
@@ -134,223 +167,249 @@ export default function Sidebar({ open, handleDrawerClose }) {
     { text: "Exam Center", icon: <LocationOn />, link: "/admin/manage/exam/center" },
   ];
 
-
   return (
-    <Drawer variant="permanent" open={open}>
-      <DrawerHeader>
-        <Box
-          sx={{
-            flexGrow: 1,
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: 24,
-          }}
-        >
-          PTPI
-        </Box>
-        <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "rtl" ? (
-            <ChevronRightIcon />
-          ) : (
-            <ChevronLeftIcon />
-          )}
-        </IconButton>
-      </DrawerHeader>
-      <Divider />
-      <List sx={{ py: 0.2 }}>
-        {menuItems.slice(0, 1).map((item) => (
-          <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 38,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
+    <>
+      <ScrollbarStyle />
+      <Drawer 
+        variant="permanent" 
+        open={open}
+        sx={{
+          overflowX: "hidden !important",
+          width: open ? drawerWidth : theme.spacing(7),
+          [theme.breakpoints.up("sm")]: {
+            width: open ? drawerWidth : theme.spacing(8),
+          },
+          '& .MuiDrawer-paper': {
+            overflowX: "hidden !important"
+          }
+        }}
+        PaperProps={{
+          className: "custom-scrollbar",
+          sx: {
+            overflowX: "hidden !important",
+            width: open ? drawerWidth : theme.spacing(7),
+            [theme.breakpoints.up("sm")]: {
+              width: open ? drawerWidth : theme.spacing(8),
+            },
+            boxShadow: open ? '2px 0px 10px rgba(0,0,0,0.1)' : 'none',
+          }
+        }}
+      >
+        <DrawerHeader>
+          <Box
+            sx={{
+              flexGrow: 1,
+              textAlign: "center",
+              fontWeight: "bold",
+              fontSize: 24,
+            }}
+          >
+            PTPI
+          </Box>
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === "rtl" ? (
+              <ChevronRightIcon />
+            ) : (
+              <ChevronLeftIcon />
+            )}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List sx={{ py: 0.2, overflowX: "hidden !important" }}>
+          {menuItems.slice(0, 1).map((item) => (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <ListItem disablePadding sx={{ display: "block", py: 0 }}>
+                <ListItemButton
+                  component={Link}
+                  to={item.link}
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
+                    minHeight: 38,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          </Tooltip>
-        ))}
-        <Divider textAlign="center" sx={{ my: 0.5 }}>Data Management</Divider>
-        {menuItems.slice(1, 8).map((item) => (
-          <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 36,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          </Tooltip>
-        ))}
-        <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Request</Divider>
-        {menuItems.slice(8, 13).map((item) => (
-          <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 36,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          </Tooltip>
-        ))}
-        <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Users</Divider>
-        {menuItems.slice(13).map((item) => (
-          <Tooltip key={item.text} title={item.text} placement="right" arrow>
-            <ListItem disablePadding sx={{ display: "block", py: 0 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 36,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          </Tooltip>
-        ))}
-        <Divider sx={{ my: 0.5 }} />
-        {/* Collapsible Settings Section */}
-        <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0 }}>
-          <ListItemButton sx={{ minHeight: 36 }}>
-            <ListItemIcon>
-              <SettingsIcon />
-            </ListItemIcon>
-            <ListItemText primary="Settings" />
-            {collapseOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </ListItemButton>
-        </ListItem>
-        <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding sx={{ py: 0 }}>
-            {[
-              {
-                text: "Support",
-                icon: <SupportIcon />,
-                link: "/admin/support",
-              },
-              {
-                text: "Change-Password",
-                icon: <LockIcon />,
-                link: "/admin/change/password",
-              },
-              {
-                text: "Contact",
-                icon: <ContactMailIcon />,
-                link: "/admin/contact",
-              },
-            ].map((item) => (
-              <Tooltip key={item.text} title={item.text} placement="right" arrow>
-                <ListItem disablePadding sx={{ py: 0 }}>
-                  <ListItemButton
-                    component={Link}
-                    to={item.link}
+                  <ListItemIcon
                     sx={{
-                      pl: 4,
-                      minHeight: 32,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
                     }}
                   >
-                    <ListItemIcon
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+          ))}
+          <Divider textAlign="center" sx={{ my: 0.5 }}>Data Management</Divider>
+          {menuItems.slice(1, 8).map((item) => (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <ListItem disablePadding sx={{ display: "block", py: 0 }}>
+                <ListItemButton
+                  component={Link}
+                  to={item.link}
+                  sx={{
+                    minHeight: 36,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+          ))}
+          <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Request</Divider>
+          {menuItems.slice(8, 13).map((item) => (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <ListItem disablePadding sx={{ display: "block", py: 0 }}>
+                <ListItemButton
+                  component={Link}
+                  to={item.link}
+                  sx={{
+                    minHeight: 36,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+          ))}
+          <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Users</Divider>
+          {menuItems.slice(13).map((item) => (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <ListItem disablePadding sx={{ display: "block", py: 0 }}>
+                <ListItemButton
+                  component={Link}
+                  to={item.link}
+                  sx={{
+                    minHeight: 36,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+          ))}
+          <Divider sx={{ my: 0.5 }} />
+          {/* Collapsible Settings Section */}
+          <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0 }}>
+            <ListItemButton sx={{ minHeight: 36 }}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+              {collapseOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </ListItemButton>
+          </ListItem>
+          <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding sx={{ py: 0, overflowX: "hidden !important" }}>
+              {[
+                {
+                  text: "Support",
+                  icon: <SupportIcon />,
+                  link: "/admin/support",
+                },
+                {
+                  text: "Change-Password",
+                  icon: <LockIcon />,
+                  link: "/admin/change/password",
+                },
+                {
+                  text: "Contact",
+                  icon: <ContactMailIcon />,
+                  link: "/admin/contact",
+                },
+              ].map((item) => (
+                <Tooltip key={item.text} title={item.text} placement="right" arrow>
+                  <ListItem disablePadding sx={{ py: 0 }}>
+                    <ListItemButton
+                      component={Link}
+                      to={item.link}
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
+                        pl: 4,
+                        minHeight: 32,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </Tooltip>
-            ))}
-          </List>
-        </Collapse>
-      </List>
-      <Divider sx={{ my: 0.5 }} />
-      {/* Logout Button */}
-      <List sx={{ py: 0.2 }}>
-        <ListItem disablePadding sx={{ mt: 0.5 }}>
-          <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36 }}>
-            <ListItemIcon>
-              <LogoutIcon color="error" />
-            </ListItemIcon>
-            <ListItemText primary="Logout" sx={{ color: "error.main" }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Drawer>
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.text}
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </Tooltip>
+              ))}
+            </List>
+          </Collapse>
+        </List>
+        <Divider sx={{ my: 0.5 }} />
+        {/* Logout Button */}
+        <List>
+          <ListItem disablePadding sx={{ mt: 0.5 }}>
+            <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36 }}>
+              <ListItemIcon>
+                <LogoutIcon color="error" />
+              </ListItemIcon>
+              <ListItemText primary="Logout" sx={{ color: "error.main" }} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Drawer>
+    </>
   );
 }
