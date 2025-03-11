@@ -31,7 +31,7 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-import { getTeacher } from "../../services/adminTeacherApi";
+import { getTeacher, updateTeacher } from "../../services/adminTeacherApi";
 import { Link } from "react-router-dom";
 import { getQualification } from "../../services/adminManageQualificationApi";
 import { getSubjects } from "../../services/adminSubujectApi";
@@ -54,6 +54,12 @@ const ManageTeacher = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Dynamic data state
+  const [qualifications, setQualifications] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [statuses, setStatuses] = useState(["Approved", "Pending", "Rejected"]);
+
   // Fetch teacher data
   useEffect(() => {
     const fetchTeacherData = async () => {
@@ -61,7 +67,29 @@ const ManageTeacher = () => {
         setLoading(true);
         const response = await getTeacher();
         if (Array.isArray(response)) {
-          setTeachers(response);
+          // Ensure we have complete data and normalize it
+          const normalizedTeachers = response.map(teacher => ({
+            ...teacher,
+            teacherqualifications: teacher.teacherqualifications || [],
+            teachersubjects: teacher.teachersubjects || [],
+            teachersaddress: teacher.teachersaddress || [],
+            status: teacher.status || "Pending"
+          }));
+
+          setTeachers(normalizedTeachers);
+
+          // Extract unique locations from teacher data
+          const uniqueLocations = new Set();
+          normalizedTeachers.forEach(teacher => {
+            if (Array.isArray(teacher.teachersaddress)) {
+              teacher.teachersaddress.forEach(address => {
+                if (address && address.state) {
+                  uniqueLocations.add(address.state);
+                }
+              });
+            }
+          });
+          setLocations(Array.from(uniqueLocations));
         } else {
           console.error("Error fetching teacher data: ", response);
           setError("Failed to load teacher data. Please try again later.");
@@ -74,6 +102,41 @@ const ManageTeacher = () => {
       }
     };
     fetchTeacherData();
+  }, []);
+
+  // Fetch qualifications
+  useEffect(() => {
+    const fetchQualifications = async () => {
+      try {
+        const response = await getQualification();
+        if (Array.isArray(response)) {
+          setQualifications(response);
+        } else {
+          console.error("Error fetching qualifications: ", response);
+        }
+      } catch (error) {
+        console.error("Error fetching qualifications: ", error);
+      }
+    };
+    fetchQualifications();
+  }, []);
+
+  // Fetch subjects
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await getSubjects();
+        if (Array.isArray(response)) {
+          console.log("Subjects data:", response); // Debugging log
+          setSubjects(response);
+        } else {
+          console.error("Error fetching subjects: ", response);
+        }
+      } catch (error) {
+        console.error("Error fetching subjects: ", error);
+      }
+    };
+    fetchSubjects();
   }, []);
 
   const handleDeleteTeacher = (teacherId) => {
@@ -137,16 +200,20 @@ const ManageTeacher = () => {
         "Total Marks",
       ],
       ...filteredTeachers.map((teacher) => [
-        teacher.id,
-        teacher.Fname,
-        teacher.Lname,
-        teacher.email,
-        teacher.teachersubjects.join(", "),
-        teacher.teachersaddress.map((address) => address.state).join(", "),
-        teacher.teacherqualifications
-          .map((q) => q.qualification.name)
+        teacher.id || '',
+        teacher.Fname || '',
+        teacher.Lname || '',
+        teacher.email || '',
+        (teacher.teachersubjects || []).join(", "),
+        (teacher.teachersaddress || [])
+          .map((address) => address?.state || '')
+          .filter(Boolean)
           .join(", "),
-        teacher.total_marks,
+        (teacher.teacherqualifications || [])
+          .map((q) => q?.qualification?.name || '')
+          .filter(Boolean)
+          .join(", "),
+        teacher.total_marks || 0,
       ]),
     ]
       .map((e) => e.join(","))
@@ -164,27 +231,40 @@ const ManageTeacher = () => {
   };
 
   const filteredTeachers = teachers.filter((teacher) => {
+    // Basic data checks to prevent errors
+    const teacherQualifications = teacher.teacherqualifications || [];
+    const teacherSubjects = teacher.teachersubjects || [];
+    const teacherAddresses = teacher.teachersaddress || [];
+
     return (
-      (teacher.Fname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.Lname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.id.toString().includes(searchQuery)) &&
-      (selectedQualification
-        ? teacher.teacherqualifications
-          .map((q) => q.qualification.name.toLowerCase())
-          .includes(selectedQualification.toLowerCase())
-        : true) &&
-      (selectedSubject
-        ? teacher.teachersubjects.includes(selectedSubject)
-        : true) &&
-      (selectedLocation
-        ? teacher.teachersaddress
-          .map((a) => a.state.toLowerCase())
-          .includes(selectedLocation.toLowerCase())
-        : true) &&
-      (selectedStatus
-        ? teacher.status.toLowerCase() === selectedStatus.toLowerCase()
-        : true)
+      // Search query filtering
+      (!searchQuery ||
+        (teacher.Fname?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (teacher.Lname?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (teacher.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (teacher.id?.toString() || '').includes(searchQuery)) &&
+
+      // Qualification filtering
+      (!selectedQualification ||
+        teacherQualifications.some(q =>
+          (q?.qualification?.name?.toLowerCase() || '') === selectedQualification.toLowerCase()
+        )) &&
+
+      // Subject filtering - check if teacher has the selected subject
+      (!selectedSubject ||
+        teacherSubjects.some(subject =>
+          (subject?.toLowerCase() || '') === selectedSubject.toLowerCase()
+        )) &&
+
+      // Location filtering
+      (!selectedLocation ||
+        teacherAddresses.some(address =>
+          (address?.state?.toLowerCase() || '') === selectedLocation.toLowerCase()
+        )) &&
+
+      // Status filtering
+      (!selectedStatus ||
+        (teacher.status?.toLowerCase() || '') === selectedStatus.toLowerCase())
     );
   });
 
@@ -195,6 +275,60 @@ const ManageTeacher = () => {
       return;
     }
     setSelectedTeachers([]);
+  };
+
+  // Handler for status change
+  // Handler for status change
+  const handleStatusChange = async (teacherId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "Approved" ? "Rejected" : "Approved";
+
+      // Find the teacher object to get their email
+      const teacher = teachers.find(t => t.id === teacherId);
+
+      if (!teacher) {
+        setNotification({
+          open: true,
+          message: "Teacher not found",
+          type: "error",
+        });
+        return;
+      }
+
+      // Include all required fields in the update request
+      const updateData = {
+        email: teacher.email,
+        status: newStatus,
+        // Add any other required fields here if needed by your API
+      };
+
+      console.log("Sending update data:", updateData);
+
+      // Call API to update teacher status
+      const response = await updateTeacher(teacherId, updateData);
+
+      if (response) {
+        // Update the local state after successful API call
+        setTeachers(
+          teachers.map((t) =>
+            t.id === teacherId ? { ...t, status: newStatus } : t
+          )
+        );
+
+        setNotification({
+          open: true,
+          message: `Teacher status updated to ${newStatus}`,
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating teacher status:", error);
+      setNotification({
+        open: true,
+        message: `Failed to update teacher status: ${error.message || "Unknown error"}`,
+        type: "error",
+      });
+    }
   };
 
   return (
@@ -267,9 +401,11 @@ const ManageTeacher = () => {
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
-                  <MenuItem value="phd">PhD</MenuItem>
-                  <MenuItem value="masters">Masters</MenuItem>
-                  <MenuItem value="bachelors">Bachelors</MenuItem>
+                  {qualifications.map((qualification) => (
+                    <MenuItem key={qualification.id} value={qualification.name?.toLowerCase()}>
+                      {qualification.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -284,10 +420,11 @@ const ManageTeacher = () => {
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
-                  <MenuItem value="math">Math</MenuItem>
-                  <MenuItem value="science">Science</MenuItem>
-                  <MenuItem value="english">English</MenuItem>
-                  <MenuItem value="history">History</MenuItem>
+                  {subjects.map((subject) => (
+                    <MenuItem key={subject.id} value={subject.subject_name?.toLowerCase()}>
+                      {subject.subject_name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -302,11 +439,11 @@ const ManageTeacher = () => {
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
-                  <MenuItem value="delhi">Delhi</MenuItem>
-                  <MenuItem value="mumbai">Mumbai</MenuItem>
-                  <MenuItem value="bangalore">Bangalore</MenuItem>
-                  <MenuItem value="chennai">Chennai</MenuItem>
-                  <MenuItem value="hyderabad">Hyderabad</MenuItem>
+                  {locations.map((location, index) => (
+                    <MenuItem key={index} value={location?.toLowerCase()}>
+                      {location}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -321,9 +458,11 @@ const ManageTeacher = () => {
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
-                  <MenuItem value="approved">Approved</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="rejected">Rejected</MenuItem>
+                  {statuses.map((status, index) => (
+                    <MenuItem key={index} value={status.toLowerCase()}>
+                      {status}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -383,7 +522,7 @@ const ManageTeacher = () => {
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((teacher) => (
                         <TableRow
-                          key={teacher.id}
+                          key={teacher.id || Math.random().toString()}
                           hover
                           sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
                         >
@@ -404,35 +543,27 @@ const ManageTeacher = () => {
                               }}
                             />
                           </TableCell>
-                          <TableCell>{`${teacher.Fname} ${teacher.Lname}`}</TableCell>
-                          <TableCell>{teacher.email}</TableCell>
+                          <TableCell>{`${teacher.Fname || ''} ${teacher.Lname || ''}`}</TableCell>
+                          <TableCell>{teacher.email || ''}</TableCell>
                           <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                            {teacher.teacherqualifications
-                              .map((q) => q.qualification.name)
-                              .join(", ")}
+                            {(teacher.teacherqualifications || [])
+                              .map((q) => q?.qualification?.name || '')
+                              .filter(Boolean)
+                              .join(", ") || 'N/A'}
                           </TableCell>
                           <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                            {teacher.teachersubjects.join(", ")}
+                            {(teacher.teachersubjects || []).join(", ") || 'N/A'}
                           </TableCell>
                           <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                            {teacher.teachersaddress.map((address) => address.state).join(", ")}
+                            {(teacher.teachersaddress || [])
+                              .map((address) => address?.state || '')
+                              .filter(Boolean)
+                              .join(", ") || 'N/A'}
                           </TableCell>
                           <TableCell>
                             <Switch
                               checked={teacher.status === "Approved"}
-                              onChange={() => {
-                                const newStatus =
-                                  teacher.status === "Approved"
-                                    ? "Rejected"
-                                    : "Approved";
-                                setTeachers(
-                                  teachers.map((t) =>
-                                    t.id === teacher.id
-                                      ? { ...t, status: newStatus }
-                                      : t
-                                  )
-                                );
-                              }}
+                              onChange={() => handleStatusChange(teacher.id, teacher.status)}
                               color="primary"
                               size="small"
                             />
