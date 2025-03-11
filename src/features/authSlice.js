@@ -3,15 +3,14 @@ import {
   createaccount,
   createRecruiteraccount,
   fetchUserData,
- logout,
+  logout,
   resendOtp,
 } from "../services/authServices";
-import {persistor} from "../store/store"
-// import { persistor } from "../store"; // Import persistor
+import { persistor } from "../store/store";
 
 const initialState = {
   userData: {},
-  resendotp:{},
+  resendotp: {},
   recruiterData: {},
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null, // Stores user data after login
@@ -32,6 +31,7 @@ export const getUserData = createAsyncThunk(
     }
   }
 );
+
 export const getPostData = createAsyncThunk(
   "getPostData",
   async ({ Fname, Lname, email, password }, { rejectWithValue }) => {
@@ -88,19 +88,18 @@ export const getResendOtp = createAsyncThunk(
   }
 );
 
-
-
-export  const  userLogout = createAsyncThunk(
+export const userLogout = createAsyncThunk(
   "userLogout", async (_, { rejectWithValue }) => {
     try {
-      const response = await logout("/api/logout/", { 
-      });
-      return {};
+      await logout();
+      return { success: true };
     } catch (error) {
       console.error("Error in userLogout:", error);
-    }}
-)
-
+      // Still return success since local logout was done in the service
+      return { success: true };
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -178,13 +177,12 @@ const authSlice = createSlice({
         state.status = "loading";
         state.error = null; 
       })
-      .addCase(userLogout.fulfilled, () =>   {
-        return { ...initialState }; // 🛑 Completely reset state to initial
-      }
-    )      
-      .addCase(userLogout.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; 
+      .addCase(userLogout.fulfilled, () => {
+        return initialState; // Reset state to initial
+      })
+      .addCase(userLogout.rejected, () => {
+        // Even if rejected, we want to reset the state
+        return initialState;
       });
   },
 });
