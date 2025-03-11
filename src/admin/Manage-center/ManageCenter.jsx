@@ -12,7 +12,10 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Modal,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Box,
   Select,
   MenuItem,
@@ -24,13 +27,35 @@ import {
   Snackbar,
   Alert,
   TablePagination,
+  useTheme,
+  useMediaQuery,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
+  CircularProgress,
+  Tooltip,
+  alpha
 } from "@mui/material";
-import { FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Search as SearchIcon,
+  LocationOn as LocationIcon,
+  Phone as PhoneIcon,
+  Mail as EmailIcon
+} from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import { createCenterManager, updateCenterManager, deleteCenterManager, getManageCenter } from "../../services/adminManageCenterApi";
 import axios from 'axios';
 
 const ManageCenter = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const [examCenters, setExamCenters] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState(null);
@@ -59,6 +84,10 @@ const ManageCenter = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [centerToDelete, setCenterToDelete] = useState(null);
 
   useEffect(() => {
     fetchExamCenters();
@@ -68,20 +97,26 @@ const ManageCenter = () => {
     // Update filteredCenters whenever examCenters, searchTerm, or filterStatus changes
     const filtered = examCenters.filter(
       (center) =>
-        (center.center_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.state.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (center.center_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.state?.toLowerCase().includes(searchTerm.toLowerCase())) &&
         (filterStatus === "" || (filterStatus === "active" ? true : false) === center.status)
     );
     setFilteredCenters(filtered);
   }, [examCenters, searchTerm, filterStatus]);
 
   const fetchExamCenters = async () => {
+    setIsLoading(true);
     try {
       const response = await getManageCenter();
-      setExamCenters(response);
+      setExamCenters(Array.isArray(response) ? response : []);
+      showSnackbar("Exam centers loaded successfully", "success");
     } catch (error) {
+      console.error("Error fetching exam centers:", error);
       showSnackbar("Error fetching exam centers", "error");
+      setExamCenters([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,8 +137,6 @@ const ManageCenter = () => {
     setPage(0);
   };
 
-
-
   const handleAddCenter = () => {
     setSelectedCenter(null);
     setFormData({
@@ -120,37 +153,90 @@ const ManageCenter = () => {
       status: false,
     });
     setValidationErrors({});
+    setPincodeStatus(null);
     setIsModalOpen(true);
   };
 
   const handleEditCenter = (center) => {
     setSelectedCenter(center);
     setFormData({
-      username: center.user.username || "",
-      email: center.user.email || "",
-      password: "",
-      Fname: center.user.Fname || "",
-      Lname: center.user.Lname || "",
-      center_name: center.center_name,
-      pincode: center.pincode,
-      state: center.state,
-      city: center.city,
-      area: center.area,
-      status: center.status,
+      username: center.user?.username || "",
+      email: center.user?.email || "",
+      password: "", // Leave password empty for edit
+      Fname: center.user?.Fname || "",
+      Lname: center.user?.Lname || "",
+      center_name: center.center_name || "",
+      pincode: center.pincode || "",
+      state: center.state || "",
+      city: center.city || "",
+      area: center.area || "",
+      status: center.status || false,
     });
     setValidationErrors({});
+    setPincodeStatus(null);
     setIsModalOpen(true);
   };
 
-  const handleDeleteCenter = async (centerId) => {
-    if (window.confirm("Are you sure you want to delete this exam center?")) {
-      try {
-        await deleteCenterManager(centerId);
-        setExamCenters(examCenters.filter((center) => center.id !== centerId));
-        showSnackbar("Exam center deleted successfully", "success");
-      } catch (error) {
-        showSnackbar("Error deleting exam center", "error");
-      }
+  const handleToggleStatus = async (center) => {
+    try {
+      const updatedStatus = !center.status;
+
+      const payload = {
+        user: {
+          username: center.user?.username,
+          email: center.user?.email,
+          Fname: center.user?.Fname,
+          Lname: center.user?.Lname,
+          // Do not include password in update
+        },
+        exam_center: {
+          center_name: center.center_name,
+          pincode: center.pincode,
+          state: center.state,
+          city: center.city,
+          area: center.area,
+          status: updatedStatus,
+        },
+      };
+
+      await updateCenterManager(center.id, payload);
+
+      // Update local state
+      setExamCenters(prevCenters =>
+        prevCenters.map(c =>
+          c.id === center.id
+            ? { ...c, status: updatedStatus }
+            : c
+        )
+      );
+
+      showSnackbar(`Exam center ${updatedStatus ? 'activated' : 'deactivated'} successfully`, "success");
+    } catch (error) {
+      console.error("Error updating center status:", error);
+      showSnackbar("Error updating exam center status", "error");
+    }
+  };
+
+  const handleDeleteConfirmation = (center) => {
+    setCenterToDelete(center);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCenter = async () => {
+    if (!centerToDelete) return;
+
+    try {
+      setIsSubmitting(true);
+      await deleteCenterManager(centerToDelete.id);
+      setExamCenters(examCenters.filter((center) => center.id !== centerToDelete.id));
+      showSnackbar("Exam center deleted successfully", "success");
+    } catch (error) {
+      console.error("Error deleting exam center:", error);
+      showSnackbar("Error deleting exam center", "error");
+    } finally {
+      setIsSubmitting(false);
+      setDeleteDialogOpen(false);
+      setCenterToDelete(null);
     }
   };
 
@@ -158,6 +244,8 @@ const ManageCenter = () => {
     let errors = {};
     if (!formData.username) errors.username = "Username is required";
     if (!formData.email) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = "Email is invalid";
+
     if (!formData.Fname) errors.Fname = "First Name is required";
     if (!formData.Lname) errors.Lname = "Last Name is required";
     if (!formData.center_name) errors.center_name = "Center Name is required";
@@ -166,6 +254,11 @@ const ManageCenter = () => {
     else if (!/^\d{6}$/.test(formData.pincode)) errors.pincode = "Pincode must be a 6-digit number";
     if (!formData.city) errors.city = "City is required";
     if (!formData.state) errors.state = "State is required";
+
+    // Only validate password if adding a new center
+    if (!selectedCenter && !formData.password) {
+      errors.password = "Password is required for new centers";
+    }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -179,11 +272,11 @@ const ManageCenter = () => {
     }
 
     try {
+      setIsSubmitting(true);
       const payload = {
         user: {
           username: formData.username,
           email: formData.email,
-          password: formData.password,
           Fname: formData.Fname,
           Lname: formData.Lname,
         },
@@ -197,6 +290,11 @@ const ManageCenter = () => {
         },
       };
 
+      // Only include password for new centers
+      if (!selectedCenter) {
+        payload.user.password = formData.password;
+      }
+
       if (selectedCenter) {
         await updateCenterManager(selectedCenter.id, payload);
         showSnackbar("Exam center updated successfully", "success");
@@ -207,7 +305,10 @@ const ManageCenter = () => {
       setIsModalOpen(false);
       fetchExamCenters();
     } catch (error) {
-      showSnackbar("Error submitting form", "error");
+      console.error("Error submitting form:", error);
+      showSnackbar("Error saving exam center", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -233,7 +334,6 @@ const ManageCenter = () => {
       fetchPostalData(value);
     }
   };
-
 
   const fetchPostalData = async (pincode) => {
     setLoadingPincode(true);
@@ -261,6 +361,7 @@ const ManageCenter = () => {
         showSnackbar("Invalid pincode", "error");
       }
     } catch (error) {
+      console.error("Error fetching postal data:", error);
       setFormData((prevData) => ({
         ...prevData,
         city: "",
@@ -273,7 +374,6 @@ const ManageCenter = () => {
       setLoadingPincode(false);
     }
   };
-
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -288,272 +388,581 @@ const ManageCenter = () => {
     setSnackbarOpen(false);
   };
 
-  const modalStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "80%",
-    maxWidth: "600px",
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    padding: "20px",
-    overflowY: "auto",
-    maxHeight: "80vh",
+  // Render mobile card view
+  const renderMobileCards = () => {
+    return filteredCenters
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      .map((center) => (
+        <Card key={center.id} sx={{ mb: 2, borderRadius: 2, overflow: 'hidden', borderLeft: `4px solid ${center.status ? theme.palette.success.main : theme.palette.grey[400]}` }} elevation={2}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {center.center_name}
+              </Typography>
+              <Chip
+                label={center.status ? "Active" : "Inactive"}
+                color={center.status ? "success" : "default"}
+                size="small"
+              />
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
+              <Typography variant="body2">{`${center.area}, ${center.city}, ${center.state}`}</Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
+              <Typography variant="body2">{center.pincode}</Typography>
+            </Box>
+
+            {center.user && (
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <EmailIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
+                <Typography variant="body2">{center.user.email}</Typography>
+              </Box>
+            )}
+          </CardContent>
+
+          <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+            <Box>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={center.status}
+                    onChange={() => handleToggleStatus(center)}
+                    size="small"
+                    color="success"
+                  />
+                }
+                label={<Typography variant="body2">Active</Typography>}
+              />
+            </Box>
+
+            <Box>
+              <Tooltip title="Edit Center">
+                <IconButton color="primary" onClick={() => handleEditCenter(center)} size="small">
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Delete Center">
+                <IconButton color="error" onClick={() => handleDeleteConfirmation(center)} size="small">
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </CardActions>
+        </Card>
+      ));
   };
 
   return (
     <Layout>
-      <Container>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
-              Manage Exam Centers
-            </Typography>
-            <Typography variant="subtitle1" color="textSecondary">
-              Add and manage exam centers for teacher assessments
-            </Typography>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
+        {/* Header section */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 3 },
+            mb: 3,
+            borderRadius: 2,
+            backgroundImage: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.paper, 0.5)})`,
+          }}
+        >
+          <Box
+            display="flex"
+            flexDirection={{ xs: 'column', md: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', md: 'center' }}
+            gap={2}
+          >
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  color: 'primary.main',
+                  fontSize: { xs: '1.75rem', sm: '2.125rem' }
+                }}
+              >
+                Manage Exam Centers
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {filteredCenters.length} centers found
+              </Typography>
+            </Box>
+
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddCenter}
+              sx={{
+                boxShadow: 2,
+                textTransform: 'none',
+                minWidth: { xs: '100%', sm: 'auto' }
+              }}
+            >
+              Add New Center
+            </Button>
           </Box>
-          <Button variant="contained" color="primary" startIcon={<FiPlus />} onClick={handleAddCenter}>
-            Add New Center
-          </Button>
-        </Box>
+        </Paper>
 
-        <Box display="flex" mb={4}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search exam centers..."
-            InputProps={{
-              startAdornment: <FiSearch style={{ marginRight: 8 }} />,
-            }}
-            value={searchTerm}
-            onChange={handleSearch}
-            style={{ marginRight: "20px" }}
-          />
-          <FormControl variant="outlined" style={{ minWidth: 200 }}>
-            <InputLabel>Status</InputLabel>
-            <Select value={filterStatus} onChange={handleFilterStatus} label="Status">
-              <MenuItem value="">
-                <em>All</em>
-              </MenuItem>
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+        {/* Search and Filters */}
+        <Paper
+          elevation={2}
+          sx={{
+            p: { xs: 2, sm: 3 },
+            mb: 3,
+            borderRadius: 2
+          }}
+        >
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search by name, city or state..."
+                size="small"
+                value={searchTerm}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
+                }}
+              />
+            </Grid>
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Pincode</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredCenters
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((center) => (
-                  <TableRow key={center.id}>
-                    <TableCell>{center.center_name}</TableCell>
-                    <TableCell>{`${center.city}, ${center.state}`}</TableCell>
-                    <TableCell>{center.pincode}</TableCell>
-                    <TableCell>
-                      <Chip label={center.status ? "Active" : "Inactive"} color={center.status ? "success" : "default"} />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton color="primary" onClick={() => handleEditCenter(center)}>
-                        <FiEdit2 />
-                      </IconButton>
-                      <IconButton color="secondary" onClick={() => handleDeleteCenter(center.id)}>
-                        <FiTrash2 />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={filteredCenters.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </TableContainer>
+            <Grid item xs={12} md={4}>
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Status</InputLabel>
+                <Select value={filterStatus} onChange={handleFilterStatus} label="Status">
+                  <MenuItem value="">
+                    <em>All</em>
+                  </MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Paper>
 
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <Box sx={modalStyle}>
-            <Typography variant="h6" gutterBottom>
+        {/* Content - Centers Data */}
+        <Paper
+          elevation={2}
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" py={6} flexDirection="column" gap={2}>
+              <CircularProgress />
+              <Typography variant="body2" color="text.secondary">Loading exam centers...</Typography>
+            </Box>
+          ) : filteredCenters.length === 0 ? (
+            <Box p={3} textAlign="center">
+              <Alert severity="info">No exam centers found matching your criteria</Alert>
+            </Box>
+          ) : (
+            <>
+              {isMobile ? (
+                // Mobile view with cards
+                <Box p={2}>
+                  {renderMobileCards()}
+                </Box>
+              ) : (
+                // Desktop view with table
+                <TableContainer>
+                  <Table size={isTablet ? "small" : "medium"}>
+                    <TableHead sx={{ bgcolor: 'background.default' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600 }}>Center Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Pincode</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Manager</TableCell>
+                        <TableCell sx={{ fontWeight: 600, width: 100 }} align="center">Status</TableCell>
+                        <TableCell sx={{ fontWeight: 600, width: 120 }} align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredCenters
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((center) => (
+                          <TableRow
+                            key={center.id}
+                            hover
+                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
+                          >
+                            <TableCell>{center.center_name}</TableCell>
+                            <TableCell>{`${center.area}, ${center.city}, ${center.state}`}</TableCell>
+                            <TableCell>{center.pincode}</TableCell>
+                            <TableCell>
+                              {center.user ? (
+                                <Box>
+                                  <Typography variant="body2">{`${center.user.Fname} ${center.user.Lname}`}</Typography>
+                                  <Typography variant="caption" color="text.secondary">{center.user.email}</Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">Not assigned</Typography>
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Box display="flex" alignItems="center" justifyContent="center">
+                                <Switch
+                                  checked={center.status}
+                                  onChange={() => handleToggleStatus(center)}
+                                  color="success"
+                                  size="small"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Box display="flex" justifyContent="center" gap={1}>
+                                <Tooltip title="Edit Center">
+                                  <IconButton
+                                    color="primary"
+                                    onClick={() => handleEditCenter(center)}
+                                    size="small"
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Center">
+                                  <IconButton
+                                    color="error"
+                                    onClick={() => handleDeleteConfirmation(center)}
+                                    size="small"
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
+              {/* Pagination */}
+              <Box
+                display="flex"
+                justifyContent="flex-end"
+                p={2}
+                sx={{
+                  backgroundColor: theme.palette.background.default,
+                  borderTop: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, 50]}
+                  component="div"
+                  count={filteredCenters.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
+                />
+              </Box>
+            </>
+          )}
+        </Paper>
+
+        {/* Add/Edit Center Modal */}
+        <Dialog
+          open={isModalOpen}
+          onClose={() => !isSubmitting && setIsModalOpen(false)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            elevation: 3,
+            sx: { borderRadius: 2 }
+          }}
+        >
+          <DialogTitle>
+            <Typography variant="h6" fontWeight={600}>
               {selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}
             </Typography>
-            <form onSubmit={handleSubmit}>
-              <Typography variant="subtitle1" gutterBottom>
-                User Information
-              </Typography>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Username"
-                  variant="outlined"
-                  required
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  error={!!validationErrors.username}
-                  helperText={validationErrors.username}
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Email"
-                  variant="outlined"
-                  required
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  error={!!validationErrors.email}
-                  helperText={validationErrors.email}
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Password"
-                  variant="outlined"
-                  required
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <Box display="flex" justifyContent="space-between" mb={2}>
-                <FormControl fullWidth margin="normal" sx={{ mr: 1 }}>
+          </DialogTitle>
+
+          <DialogContent dividers>
+            <form id="center-form" onSubmit={handleSubmit}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
+                    User Information
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Username"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    error={!!validationErrors.username}
+                    helperText={validationErrors.username}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Email"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    error={!!validationErrors.email}
+                    helperText={validationErrors.email}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+
+                {!selectedCenter && (
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Password"
+                      variant="outlined"
+                      required
+                      fullWidth
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      error={!!validationErrors.password}
+                      helperText={validationErrors.password || "Required for new centers"}
+                      disabled={isSubmitting}
+                    />
+                  </Grid>
+                )}
+
+                <Grid item xs={12} sm={6}>
                   <TextField
                     label="First Name"
                     variant="outlined"
                     required
+                    fullWidth
                     name="Fname"
                     value={formData.Fname}
                     onChange={handleInputChange}
                     error={!!validationErrors.Fname}
                     helperText={validationErrors.Fname}
+                    disabled={isSubmitting}
                   />
-                </FormControl>
-                <FormControl fullWidth margin="normal" sx={{ ml: 1 }}>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
                   <TextField
                     label="Last Name"
                     variant="outlined"
                     required
+                    fullWidth
                     name="Lname"
                     value={formData.Lname}
                     onChange={handleInputChange}
                     error={!!validationErrors.Lname}
                     helperText={validationErrors.Lname}
+                    disabled={isSubmitting}
                   />
-                </FormControl>
-              </Box>
+                </Grid>
 
-              <Typography variant="subtitle1" gutterBottom>
-                Exam Center Information
-              </Typography>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Center Name"
-                  variant="outlined"
-                  required
-                  name="center_name"
-                  value={formData.center_name}
-                  onChange={handleInputChange}
-                  error={!!validationErrors.center_name}
-                  helperText={validationErrors.center_name}
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Area"
-                  variant="outlined"
-                  required
-                  name="area"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  error={!!validationErrors.area}
-                  helperText={validationErrors.area}
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Pincode"
-                  variant="outlined"
-                  required
-                  name="pincode"
-                  value={formData.pincode}
-                  onChange={handleInputChange}
-                  error={!!validationErrors.pincode || pincodeStatus === 'error'}
-                  helperText={validationErrors.pincode || (pincodeStatus === 'error' ? "Invalid Pincode" : "")}
-                  inputProps={{ maxLength: 6 }}
-                />
-                {loadingPincode && <Typography variant="caption">Loading...</Typography>}
-              </FormControl>
-              <Box display="flex" justifyContent="space-between" mb={2}>
-                <FormControl fullWidth margin="normal" sx={{ mr: 1 }}>
+                <Grid item xs={12}>
+                  <Divider />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
+                    Exam Center Information
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    label="Center Name"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="center_name"
+                    value={formData.center_name}
+                    onChange={handleInputChange}
+                    error={!!validationErrors.center_name}
+                    helperText={validationErrors.center_name}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    label="Area"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="area"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    error={!!validationErrors.area}
+                    helperText={validationErrors.area}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    label="Pincode"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="pincode"
+                    value={formData.pincode}
+                    onChange={handleInputChange}
+                    error={!!validationErrors.pincode || pincodeStatus === 'error'}
+                    helperText={
+                      validationErrors.pincode ||
+                      (loadingPincode ? "Loading location data..." :
+                        pincodeStatus === 'error' ? "Invalid Pincode" : "")
+                    }
+                    InputProps={{
+                      endAdornment: loadingPincode ? <CircularProgress size={20} /> : null,
+                    }}
+                    inputProps={{ maxLength: 6 }}
+                    disabled={isSubmitting || loadingPincode}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4}>
                   <TextField
                     label="City"
                     variant="outlined"
                     required
+                    fullWidth
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
                     error={!!validationErrors.city}
                     helperText={validationErrors.city}
+                    disabled={isSubmitting}
                   />
-                </FormControl>
-                <FormControl fullWidth margin="normal" sx={{ ml: 1 }}>
+                </Grid>
+
+                <Grid item xs={12} sm={4}>
                   <TextField
                     label="State"
                     variant="outlined"
                     required
+                    fullWidth
                     name="state"
                     value={formData.state}
                     InputProps={{
                       readOnly: true,
                     }}
-                    onChange={handleInputChange}
                     error={!!validationErrors.state}
                     helperText={validationErrors.state}
+                    disabled={isSubmitting}
                   />
-                </FormControl>
-              </Box>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                    name="status"
-                    color="primary"
-                  />
-                }
-                label="Active"
-              />
-              <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button onClick={() => setIsModalOpen(false)} sx={{ mr: 2 }}>
-                  Cancel
-                </Button>
-                <Button type="submit" variant="contained" color="primary">
-                  {selectedCenter ? "Update" : "Add"} Center
-                </Button>
-              </Box>
-            </form>
-          </Box>
-        </Modal>
+                </Grid>
 
-        <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
+                        name="status"
+                        color="success"
+                        disabled={isSubmitting}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2">
+                        {formData.status ? "Active" : "Inactive"}
+                      </Typography>
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </form>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              variant="outlined"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="center-form"
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting}
+            >
+              {selectedCenter ? "Update" : "Save"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => !isSubmitting && setDeleteDialogOpen(false)}
+          PaperProps={{
+            elevation: 3,
+            sx: { borderRadius: 2 }
+          }}
+        >
+          <DialogTitle>
+            <Typography variant="h6" fontWeight={600}>
+              Confirm Delete
+            </Typography>
+          </DialogTitle>
+
+          <DialogContent>
+            <Typography variant="body1">
+              Are you sure you want to delete the exam center?
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              variant="outlined"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteCenter}
+              variant="contained"
+              color="error"
+              disabled={isSubmitting}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
           <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
             {snackbarMessage}
           </Alert>
@@ -561,6 +970,7 @@ const ManageCenter = () => {
       </Container>
     </Layout>
   );
-};
+
+}
 
 export default ManageCenter;

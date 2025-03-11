@@ -233,10 +233,10 @@ export default function AdminDashboard() {
           alignItems: isMobile ? 'flex-start' : 'center'
         }}>
           <Box>
-            <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold" color={darkMode ? 'primary.light' : 'primary.dark'}>
+            <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold" color={darkMode ? 'primary.light' : 'primary.dark'} >
               Admin Dashboard
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2"  color={darkMode ? 'text.light' : 'text.dark'}>
               Welcome back, Admin | {new Date().toLocaleDateString()}
             </Typography>
           </Box>
@@ -248,13 +248,6 @@ export default function AdminDashboard() {
             width: isMobile ? '100%' : 'auto',
             justifyContent: isMobile ? 'space-between' : 'flex-end'
           }}>
-            {/* <Tooltip title="Notifications">
-              <IconButton color="inherit">
-                <Badge badgeContent={4} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip> */}
             <Tooltip title={darkMode ? "Light Mode" : "Dark Mode"}>
               <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
