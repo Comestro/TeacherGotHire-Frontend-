@@ -9,11 +9,11 @@ import { FiUser, FiBriefcase, FiLock, FiSave } from "react-icons/fi";
 
 export default function SettingsPage() {
   const [userData, setUserData] = useState({
-    name: "Rahul Kumar",
+    name: "Rahul",
     email: "rahul@gmail.com",
     bio: "Front-end developer passionate about creating beautiful user experiences",
     profilePhoto: "",
-    jobTitle: "Senior Developer",
+    jobTitle: "Kumar",
     company: "Tech Corp",
   });
 
@@ -94,7 +94,7 @@ export default function SettingsPage() {
               
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Full name</label>
+                  <label className="text-sm font-medium text-gray-700">First name</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -108,7 +108,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Job title</label>
+                  <label className="text-sm font-medium text-gray-700">Last Name</label>
                   <input
                     type="text"
                     name="jobTitle"

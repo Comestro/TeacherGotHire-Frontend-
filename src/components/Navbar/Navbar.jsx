@@ -93,29 +93,34 @@ const Navbar = ({ links }) => {
           </div>
 
           <div className="md:hidden">
-            {!profile.email ? (
-              <Link to="/signin" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors">
-              <FaSignInAlt />
-              <span>Login</span>
-            </Link>
-            ) : (
-              <div className="relative ml-4 z-10">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors bg-gray-50 hover:bg-gray-100"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center shadow-sm transition-all hover:bg-gray-200">
-                    <FiUser className="text-gray-600 text-sm" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium text-teal-700">
-                      {profile.Fname} {profile.Lname}
-                    </span>
-                    <p className="text-[10px] text-gray-500">{profile.email}</p>
-                  </div>
-                </button>
+            <button
+              onClick={() => setShowEnquiry(true)}
+              className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
+                duration-500 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
+                hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
+            >
+              {/* Content */}
+              <span className="relative flex items-center justify-center gap-2">
+                <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
+                  शिक्षक खोजें
+                </span>
+              </span>
+
+              {/* Shine effect */}
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
               </div>
-            )}
+
+              {/* Hover border animation */}
+              <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
+
+              {/* Glow effect */}
+              <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
+
+              {/* Ripple effect on hover */}
+              <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
+            </button>
           </div>
 
           {/* Desktop Links */}
@@ -220,43 +225,9 @@ const Navbar = ({ links }) => {
         </div>
 
         <div className="p-4 space-y-4">
-          {!shouldHide && (
-            <button
-              onClick={() => {
-                setShowEnquiry(true);
-                setIsMobileOpen(false);
-              }}
-              className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
-             duration-500 hover:bg-right-bottom hover:shadow-2xl w-full px-6 py-3 rounded-xl font-semibold text-white
-             hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
-            >
-              {/* Content */}
-              <span className="relative flex items-center justify-center gap-2">
-                <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
-                <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
-                  शिक्षक खोजें
-                </span>
-              </span>
-
-              {/* Shine effect */}
-              <div className="absolute inset-0">
-                <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-              </div>
-
-              {/* Hover border animation */}
-              <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
-
-              {/* Glow effect */}
-              <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
-
-              {/* Ripple effect on hover */}
-              <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
-            </button>
-          )}
-
           {profile.email ? (
             <>
-              <div className="pt-4 border-t">
+              <div className="pt-4 ">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                     <FiUser className="text-gray-600" />
