@@ -497,7 +497,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
                           }}
                           className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
                         >
-                          Submit Application
+                          Send Request
                         </button>
                       </div>
                     </div>
