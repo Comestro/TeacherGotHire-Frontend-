@@ -253,7 +253,7 @@ function App() {
               path="admin/manage/recruiter/enquiry"
               element={
                 <RoleBasedRoute
-                  element={<ManageRecruiterEnquiry />}  
+                  element={<ManageRecruiterEnquiry />}
                   allowedRoles={["admin"]}
                 />
               }
@@ -325,7 +325,7 @@ function App() {
                   />
                 }
               />
-               <Route
+              <Route
                 path="job-apply"
                 element={
                   <RoleBasedRoute

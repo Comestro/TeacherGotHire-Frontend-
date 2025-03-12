@@ -18,31 +18,40 @@ import {
   Card,
   CardContent,
   Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Checkbox,
   TablePagination,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   FormHelperText,
   IconButton,
   useMediaQuery,
   useTheme,
   Container,
+  Chip,
+  Menu,
+  Tooltip,
+  Paper,
+  Avatar,
+  Divider,
 } from "@mui/material";
-import { FaPlus, FaEye, FaPencilAlt, FaTrash, FaFilter, FaSearch } from "react-icons/fa";
-import { styled } from "@mui/system";
+import { styled } from "@mui/material/styles";
+import {
+  FaPlus,
+  FaFilter,
+  FaSearch,
+  FaEye,
+  FaEllipsisV,
+  FaCheck,
+  FaTimes,
+  FaUser,
+  FaClock,
+  FaBookOpen,
+  FaLayerGroup,
+  FaSchool,
+  FaPencilAlt,
+  FaTrash
+} from "react-icons/fa";
 import Layout from "../Admin/Layout";
 import {
   getExam,
-  // getExamById,
   deleteExam,
-  deleteAllExam,
   createExam,
   updateExam,
 } from "../../services/adminManageExam";
@@ -74,30 +83,6 @@ const ModalContent = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ResponsiveTableContainer = styled(Box)(({ theme }) => ({
-  overflowX: "auto",
-  width: "100%",
-  "& .MuiTable-root": {
-    minWidth: "650px",
-  },
-  "& .MuiTableCell-root": {
-    [theme.breakpoints.down("sm")]: {
-      padding: theme.spacing(1),
-    },
-  },
-  "& .MuiTablePagination-selectLabel": {
-    [theme.breakpoints.down("sm")]: {
-      display: "none",
-    },
-  },
-  "& .MuiTablePagination-displayedRows": {
-    [theme.breakpoints.down("sm")]: {
-      margin: 0,
-    },
-  },
-}));
-
-
 const FilterContainer = styled(Box)(({ theme, open }) => ({
   display: open ? "flex" : "none",
   flexDirection: "column",
@@ -118,6 +103,50 @@ const FilterContainer = styled(Box)(({ theme, open }) => ({
   },
 }));
 
+const ExamCard = styled(Card)(({ theme, status }) => ({
+  height: '100%',
+  marginBottom: theme?.spacing(2) || 16,
+  transition: "transform 0.2s, box-shadow 0.2s",
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: "0px 4px 10px rgba(0,0,0,0.1)", // Use literal shadow instead of theme.shadows[4]
+  },
+  border: status ? "1px solid #4CAF50" : "1px solid transparent",
+  position: "relative",
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%'
+});
+
+const StatusChip = styled(Chip)(({ theme, status }) => ({
+  position: "absolute",
+  top: theme.spacing(1),
+  right: theme.spacing(1),
+  backgroundColor: status ? "#4CAF50" : "#FF9800",
+  color: "white",
+}));
+
+const InfoItem = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "flex-start", // Changed from center to allow wrapping
+  marginBottom: theme.spacing(1),
+  gap: theme.spacing(1),
+  "& svg": {
+    color: theme.palette.primary.main,
+    minWidth: 20,
+    marginTop: 4, // To align with text when it wraps
+  },
+  "& .MuiTypography-root": {
+    wordBreak: "break-word", // Allow breaking long words
+  }
+}));
+
 const ExamManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -125,7 +154,6 @@ const ExamManagement = () => {
 
   const [loading, setLoading] = useState(false);
   const [exams, setExams] = useState([]);
-  const [selectedExams, setSelectedExams] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -142,7 +170,7 @@ const ExamManagement = () => {
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(9);
   const [subjects, setSubjects] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -156,7 +184,10 @@ const ExamManagement = () => {
     type: "",
   });
   const [formErrors, setFormErrors] = useState({});
-  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [actionMenuAnchor, setActionMenuAnchor] = useState(null);
+  const [menuExam, setMenuExam] = useState(null);
+  const [openStatusConfirmation, setOpenStatusConfirmation] = useState(false);
+  const [statusAction, setStatusAction] = useState(null);
 
   // fetch all exams in ascending order
   useEffect(() => {
@@ -340,8 +371,6 @@ const ExamManagement = () => {
         type: parseInt(formData.level) >= 2 ? formData.type : undefined
       };
 
-      console.log("Sending payload:", payload);
-
       if (selectedExam) {
         const response = await updateExam(selectedExam.id, payload);
         showSnackbar(response.message || "Exam updated successfully!");
@@ -363,48 +392,22 @@ const ExamManagement = () => {
       setLoading(false);
     }
   };
-  const handleDelete = (exam) => {
-    setSelectedExam(exam);
+
+  const handleDelete = () => {
     setOpenDeleteModal(true);
+    setActionMenuAnchor(null);
   };
 
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      const response = await deleteExam(selectedExam.id);
+      const response = await deleteExam(menuExam.id);
       await fetchExams();
       setOpenDeleteModal(false);
       showSnackbar(response.message || "Exam deleted successfully!");
     } catch (error) {
       console.error("Error deleting exam:", error);
       showSnackbar(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedExams.length === 0) {
-      showSnackbar("No exams selected for deletion", "warning");
-      return;
-    }
-    setIsBulkDeleteDialogOpen(true);
-  };
-
-  const handleConfirmBulkDelete = async () => {
-    setLoading(true);
-    try {
-      await Promise.all(selectedExams.map((examId) => deleteExam(examId)));
-      await fetchExams();
-      setSelectedExams([]);
-      showSnackbar("Selected exams deleted successfully!");
-      setIsBulkDeleteDialogOpen(false);
-    } catch (error) {
-      console.error("Error deleting selected exams:", error);
-      showSnackbar(
-        error.response?.data?.message || "Error deleting selected exams!",
-        "error"
-      );
     } finally {
       setLoading(false);
     }
@@ -431,19 +434,61 @@ const ExamManagement = () => {
   };
 
   // handle edit
-  const handleEdit = (exam) => {
-    setSelectedExam(exam);
+  const handleEdit = () => {
+    setSelectedExam(menuExam);
     setFormData({
-      subject: exam.subject.id,
-      class_category: exam.class_category.id,
-      level: exam.level.id,
-      total_marks: exam.total_marks,
-      duration: exam.duration,
-      // Only set type if level is 2 or above
-      type: exam.level.id >= 2 ? exam.type : "",
+      subject: menuExam.subject.id,
+      class_category: menuExam.class_category.id,
+      level: menuExam.level.id,
+      total_marks: menuExam.total_marks,
+      duration: menuExam.duration,
+      type: menuExam.level.id >= 2 ? menuExam.type : "",
     });
     setFormErrors({});
     setOpenAddModal(true);
+    setActionMenuAnchor(null);
+  };
+
+  const handleOpenMenu = (event, exam) => {
+    setActionMenuAnchor(event.currentTarget);
+    setMenuExam(exam);
+  };
+
+  const handleCloseMenu = () => {
+    setActionMenuAnchor(null);
+  };
+
+  const handleStatusChange = (action) => {
+    setStatusAction(action);
+    setOpenStatusConfirmation(true);
+    setActionMenuAnchor(null);
+  };
+
+  const handleConfirmStatusChange = async () => {
+    setLoading(true);
+    try {
+      // Update exam status based on the action (accept = true, reject = false)
+      const payload = {
+        status: statusAction === 'accept'
+      };
+
+      const response = await updateExam(menuExam.id, payload);
+
+      showSnackbar(
+        statusAction === 'accept'
+          ? "Exam accepted successfully!"
+          : "Exam rejected successfully!",
+        "success"
+      );
+
+      await fetchExams();
+      setOpenStatusConfirmation(false);
+    } catch (error) {
+      console.error("Error updating exam status:", error);
+      showSnackbar("Failed to update exam status", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredExams = exams.filter((exam) => {
@@ -464,6 +509,13 @@ const ExamManagement = () => {
   if (loading) {
     return <Loader />;
   }
+
+  const getAssignedUserName = (exam) => {
+    if (exam.assigneduser && exam.assigneduser.user) {
+      return `${exam.assigneduser.user.Fname} ${exam.assigneduser.user.Lname}`;
+    }
+    return "Admin";
+  };
 
   return (
     <Layout>
@@ -496,8 +548,13 @@ const ExamManagement = () => {
                 startIcon={<FaFilter />}
                 onClick={() => setShowFilters(!showFilters)}
                 size={isMobile ? "small" : "medium"}
+                sx={{
+                  borderWidth: showFilters ? 2 : 1,
+                  borderColor: showFilters ? theme.palette.primary.main : 'inherit',
+                  fontWeight: showFilters ? 'bold' : 'normal'
+                }}
               >
-                {showFilters ? "Hide Filters" : "Filters"}
+                {isMobile ? (showFilters ? "Hide" : "Filter") : (showFilters ? "Hide Filters" : "Filters")}
               </Button>
             </Box>
           </Box>
@@ -583,134 +640,206 @@ const ExamManagement = () => {
             </FormControl>
           </FilterContainer>
 
-          <Card sx={{ mb: 4 }}>
-            <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
-              {selectedExams.length > 0 && (
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={handleBulkDelete}
-                  sx={{ mb: 2 }}
-                  size={isMobile ? "small" : "medium"}
-                >
-                  Delete Selected ({selectedExams.length})
-                </Button>
-              )}
-
-              <ResponsiveTableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          indeterminate={
-                            selectedExams.length > 0 &&
-                            selectedExams.length < exams.length
-                          }
-                          checked={
-                            exams.length > 0 &&
-                            selectedExams.length === exams.length
-                          }
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedExams(exams.map((exam) => exam.id));
-                            } else {
-                              setSelectedExams([]);
-                            }
-                          }}
+          {filteredExams.length === 0 ? (
+            <Paper
+            // elevation={1}
+            // sx={{
+            //   p: 4,
+            //   textAlign: 'center',
+            //   backgroundColor: '#f9f9f9',
+            //   borderRadius: 2
+            // }}
+            >
+              <Typography variant="h6">No exams found</Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                Try adjusting your search or filters
+              </Typography>
+            </Paper>
+          ) : (
+            <>
+              {/* // Update the Grid item sizing */}
+              <Grid container spacing={2}>
+                {filteredExams
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((exam) => (
+                    <Grid item xs={12} sm={6} lg={4} key={exam.id}>
+                      <ExamCard status={exam.status} elevation={2}>
+                        <StatusChip
+                          label={exam.status ? "Approved" : "Pending"}
+                          status={exam.status}
+                          size="small"
                         />
-                      </TableCell>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Subject</TableCell>
-                      <TableCell>Level</TableCell>
-                      <TableCell>Class</TableCell>
-                      <TableCell>Marks</TableCell>
-                      <TableCell>Duration</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredExams.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={10} align="center">
-                          No exams found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredExams
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((exam, index) => (
-                          <TableRow key={index} hover>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedExams.includes(exam.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedExams([...selectedExams, exam.id]);
-                                  } else {
-                                    setSelectedExams(
-                                      selectedExams.filter((id) => id !== exam.id)
-                                    );
-                                  }
+                        <StyledCardContent>
+                          <Typography
+                            variant="h6"
+                            component="h2"
+                            sx={{
+                              mb: 2,
+                              fontWeight: 'bold',
+                              pr: { xs: 10, sm: 8 }, // More space for status chip on mobile
+                              fontSize: { xs: '1rem', sm: '1.25rem' }, // Smaller font on mobile
+                              lineHeight: 1.3,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical'
+                            }}
+                          >
+                            {exam.name}
+                          </Typography>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={12} sm={6}>
+                              <InfoItem>
+                                <FaBookOpen />
+                                <Typography variant="body2">
+                                  <strong>Subject:</strong> {exam.subject.subject_name}
+                                </Typography>
+                              </InfoItem>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <InfoItem>
+                                <FaLayerGroup />
+                                <Typography variant="body2">
+                                  <strong>Level:</strong> {exam.level.name}
+                                </Typography>
+                              </InfoItem>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <InfoItem>
+                                <FaSchool />
+                                <Typography variant="body2">
+                                  <strong>Class:</strong> {exam.class_category.name}
+                                </Typography>
+                              </InfoItem>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <InfoItem>
+                                <FaClock />
+                                <Typography variant="body2">
+                                  <strong>Duration:</strong> {exam.duration} min
+                                </Typography>
+                              </InfoItem>
+                            </Grid>
+                          </Grid>
+
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 2,
+                            pt: 2,
+                            borderTop: '1px solid #eee'
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  mr: 1,
+                                  bgcolor: theme.palette.primary.main,
+                                  fontSize: '0.8rem'
                                 }}
-                              />
-                            </TableCell>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>{exam.name.slice(0, 15)}</TableCell>
-                            <TableCell>{exam.subject.subject_name}</TableCell>
-                            <TableCell>{exam.level.name}</TableCell>
-                            <TableCell>{exam.class_category.name}</TableCell>
-                            <TableCell>{exam.total_marks}</TableCell>
-                            <TableCell>{exam.duration} min</TableCell>
-                            <TableCell>{exam.type}</TableCell>
-                            <TableCell>
+                              >
+                                <FaUser size={12} />
+                              </Avatar>
+                              <Typography variant="body2">
+                                <strong>Added by:</strong> {getAssignedUserName(exam)}
+                              </Typography>
+                            </Box>
+
+                            <Box>
                               <IconButton
+                                color="primary"
                                 onClick={() => handleView(exam)}
                                 size="small"
-                                title="View"
-                                color="primary"
+                                title="View Details"
                               >
                                 <FaEye />
                               </IconButton>
                               <IconButton
-                                onClick={() => handleEdit(exam)}
+                                onClick={(e) => handleOpenMenu(e, exam)}
                                 size="small"
-                                title="Edit"
-                                color="secondary"
                               >
-                                <FaPencilAlt />
+                                <FaEllipsisV />
                               </IconButton>
-                              <IconButton
-                                onClick={() => handleDelete(exam)}
-                                size="small"
-                                title="Delete"
-                                color="error"
-                              >
-                                <FaTrash />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                    )}
-                  </TableBody>
-                </Table>
-              </ResponsiveTableContainer>
+                            </Box>
+                          </Box>
+                        </StyledCardContent>
+                      </ExamCard>
+                    </Grid>
+                  ))}
+              </Grid>
 
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                component="div"
-                count={filteredExams.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
-              />
-            </CardContent>
-          </Card>
+              <Box sx={{
+                mt: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                backgroundColor: 'white',
+                borderRadius: 1,
+                boxShadow: 1
+              }}>
+                <TablePagination
+                  component="div"
+                  count={filteredExams.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={isMobile ? [9, 18] : [9, 18, 36]} // Fewer options on mobile
+                  labelRowsPerPage={isMobile ? "Rows:" : "Exams per page:"}
+                  labelDisplayedRows={({ from, to, count }) =>
+                    isMobile ? `${from}-${to} of ${count}` : `${from}-${to} of ${count} exams`
+                  }
+                  sx={{
+                    '.MuiTablePagination-selectLabel': {
+                      display: { xs: 'none', sm: 'block' }
+                    }
+                  }}
+                />
+              </Box>
+            </>
+          )}
 
+          {/* Action Menu */}
+          <Menu
+            anchorEl={actionMenuAnchor}
+            open={Boolean(actionMenuAnchor)}
+            onClose={handleCloseMenu}
+            PaperProps={{
+              elevation: 3,
+              sx: { minWidth: 200 }
+            }}
+          >
+            <MenuItem onClick={handleEdit}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <FaPencilAlt size={14} />
+                <Typography>Edit Exam</Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => handleStatusChange('accept')} disabled={menuExam?.status}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#4CAF50' }}>
+                <FaCheck size={14} />
+                <Typography>Accept Exam</Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => handleStatusChange('reject')} disabled={!menuExam?.status}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#FF9800' }}>
+                <FaTimes size={14} />
+                <Typography>Reject Exam</Typography>
+              </Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleDelete} sx={{ color: theme.palette.error.main }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <FaTrash size={14} />
+                <Typography>Delete Exam</Typography>
+              </Box>
+            </MenuItem>
+          </Menu>
+
+          {/* Modals */}
           <StyledModal
             open={openAddModal}
             onClose={() => {
@@ -794,11 +923,9 @@ const ExamManagement = () => {
                     error={!!formErrors.total_marks}
                     helperText={formErrors.total_marks}
                     type="number"
-                    InputProps={{ inputProps: { min: 1 } }}
-                    disabled={loading}
                   />
                 </Grid>
-                <Grid item xs={12} sm={formData.level >= 2 ? 6 : 12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Duration (minutes) *"
@@ -808,11 +935,9 @@ const ExamManagement = () => {
                     error={!!formErrors.duration}
                     helperText={formErrors.duration}
                     type="number"
-                    InputProps={{ inputProps: { min: 1 } }}
-                    disabled={loading}
                   />
                 </Grid>
-                {formData.level >= 2 && (
+                {parseInt(formData.level) >= 2 && (
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth error={!!formErrors.type}>
                       <InputLabel>Type *</InputLabel>
@@ -831,64 +956,47 @@ const ExamManagement = () => {
                     </FormControl>
                   </Grid>
                 )}
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      mt: 2,
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      gap: 1,
-                    }}
-                  >
-                    <Button
-                      onClick={() => setOpenAddModal(false)}
-                      disabled={loading}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleSave}
-                      disabled={loading}
-                    >
-                      {loading ? "Saving..." : "Save"}
-                    </Button>
-                  </Box>
-                </Grid>
               </Grid>
+              <Box mt={2} display="flex" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSave}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save"}
+                </Button>
+              </Box>
             </ModalContent>
           </StyledModal>
 
           <ViewQuestionModal
             open={openViewModal}
             onClose={() => setOpenViewModal(false)}
-            selectedExam={selectedExam}
+            exam={selectedExam}
+            fetchExams={fetchExams}
+            showSnackbar={showSnackbar}
           />
 
           <Dialog
             open={openDeleteModal}
-            onClose={() => !loading && setOpenDeleteModal(false)}
-            fullWidth
-            maxWidth="xs"
+            onClose={() => {
+              if (!loading) setOpenDeleteModal(false);
+            }}
           >
             <DialogTitle>Delete Exam</DialogTitle>
             <DialogContent>
               <Typography>
-                Are you sure you want to delete the exam "{selectedExam?.name}"? This action cannot be
-                undone.
+                Are you sure you want to delete this exam set?
               </Typography>
             </DialogContent>
             <DialogActions>
-              <Button
-                onClick={() => setOpenDeleteModal(false)}
-                disabled={loading}
-              >
+              <Button onClick={() => setOpenDeleteModal(false)} disabled={loading}>
                 Cancel
               </Button>
               <Button
-                variant="contained"
-                color="error"
                 onClick={handleConfirmDelete}
+                color="error"
                 disabled={loading}
               >
                 {loading ? "Deleting..." : "Delete"}
@@ -897,69 +1005,42 @@ const ExamManagement = () => {
           </Dialog>
 
           <Dialog
-            open={isBulkDeleteDialogOpen}
-            onClose={() => !loading && setIsBulkDeleteDialogOpen(false)}
-            fullWidth
-            maxWidth="xs"
+            open={openStatusConfirmation}
+            onClose={() => {
+              if (!loading) setOpenStatusConfirmation(false);
+            }}
           >
-            <DialogTitle>Delete Multiple Exams</DialogTitle>
+            <DialogTitle>{statusAction === 'accept' ? 'Accept' : 'Reject'} Exam</DialogTitle>
             <DialogContent>
               <Typography>
-                Are you sure you want to delete {selectedExams.length} selected exams? This action cannot be
-                undone.
+                Are you sure you want to {statusAction === 'accept' ? 'accept' : 'reject'} this exam set?
               </Typography>
             </DialogContent>
             <DialogActions>
-              <Button
-                onClick={() => setIsBulkDeleteDialogOpen(false)}
-                disabled={loading}
-              >
+              <Button onClick={() => setOpenStatusConfirmation(false)} disabled={loading}>
                 Cancel
               </Button>
               <Button
-                variant="contained"
-                color="error"
-                onClick={handleConfirmBulkDelete}
+                onClick={handleConfirmStatusChange}
+                color="primary"
                 disabled={loading}
               >
-                {loading ? "Deleting..." : "Delete Selected"}
+                {loading ? "Processing..." : statusAction === 'accept' ? 'Accept' : 'Reject'}
               </Button>
             </DialogActions>
           </Dialog>
 
           <Snackbar
             open={snackbar.open}
-            autoHideDuration={5000}
+            autoHideDuration={6000}
             onClose={() => setSnackbar({ ...snackbar, open: false })}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            sx={{
-              '& .MuiAlert-root': {
-                width: { xs: '90%', sm: '100%' },
-                maxWidth: '400px',
-              }
-            }}
           >
-            <Alert
-              severity={snackbar.severity}
-              variant="filled"
-              elevation={6}
-              onClose={() => setSnackbar({ ...snackbar, open: false })}
-              sx={{
-                width: "100%",
-                alignItems: "center",
-                '& .MuiAlert-message': {
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  fontSize: '0.9rem'
-                }
-              }}
-            >
-              {snackbar.message}
-            </Alert>
+            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
           </Snackbar>
         </Box>
       </Container>
     </Layout>
   );
-};
+}
+
 export default ExamManagement;
