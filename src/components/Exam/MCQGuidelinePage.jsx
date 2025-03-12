@@ -61,12 +61,13 @@ const MCQGuidelinePage = () => {
           <li>Make sure your device is fully charged or connected to a power source. / सुनिश्चित करें कि आपका डिवाइस पूरी तरह चार्ज है या बिजली के स्रोत से जुड़ा हुआ है।</li>
           <li>Read each question carefully before answering. / प्रत्येक प्रश्न का उत्तर देने से पहले ध्यानपूर्वक पढ़ें।</li>
           <li>You cannot go back to previous questions once you move to the next one. / एक बार अगले प्रश्न पर जाने के बाद, आप पिछले प्रश्न पर वापस नहीं जा सकते।</li>
-          <li>Manage your time wisely; each question has a time limit. / अपने समय का बुद्धिमानी से प्रबंधन करें; प्रत्येक प्रश्न की समय सीमा होती है।</li>
+          <li>Manage your time wisely each question has a time limit. / अपने समय का बुद्धिमानी से प्रबंधन करें; प्रत्येक प्रश्न की समय सीमा होती है।</li>
           <li>Do not refresh the page or press the back button on your browser. / पेज को रीफ्रेश न करें और न ही ब्राउज़र का बैक बटन दबाएँ।</li>
           <li>Review your answers if allowed before submitting. / यदि अनुमति हो तो सबमिट करने से पहले अपने उत्तरों की समीक्षा करें।</li>
           <li>Click the "Submit" button to finish the test. / टेस्ट समाप्त करने के लिए "Submit" बटन पर क्लिक करें।</li>
           <li>If you encounter technical issues, contact support immediately. / यदि आपको कोई तकनीकी समस्या आती है, तो तुरंत सहायता से संपर्क करें।</li>
-          <li>Ensure no external assistance is used; tests are monitored for fairness. / सुनिश्चित करें कि कोई बाहरी सहायता नहीं ली जा रही है; परीक्षाएं निष्पक्षता के लिए निगरानी की जाती हैं।</li>
+          <li>Ensure no external assistance is used tests are monitored for fairness. / सुनिश्चित करें कि कोई बाहरी सहायता नहीं ली जा रही है; परीक्षाएं निष्पक्षता के लिए निगरानी की जाती हैं।</li>
+          <li>Report incorrect questions immediately. / गलत प्रश्नों की तुरंत रिपोर्ट करें।</li>
         </ul>
 
         <div className="mt-6">
