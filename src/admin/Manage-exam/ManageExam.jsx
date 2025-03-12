@@ -973,9 +973,7 @@ const ExamManagement = () => {
           <ViewQuestionModal
             open={openViewModal}
             onClose={() => setOpenViewModal(false)}
-            exam={selectedExam}
-            fetchExams={fetchExams}
-            showSnackbar={showSnackbar}
+            selectedExam={selectedExam}
           />
 
           <Dialog

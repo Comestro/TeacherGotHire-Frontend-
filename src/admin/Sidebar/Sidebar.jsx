@@ -163,7 +163,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
     // manage users
     { text: "Teacher", icon: <School />, link: "/admin/manage/teacher" },
     { text: "Recruiter", icon: <SupervisorAccount />, link: "/admin/manage/recruiter" },
-    { text: "Question User", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
+    { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
     { text: "Exam Center", icon: <LocationOn />, link: "/admin/manage/exam/center" },
   ];
 

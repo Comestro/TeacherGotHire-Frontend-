@@ -198,7 +198,7 @@ export default function AdminDashboard() {
     { icon: <WorkspacePremium />, text: "Qualifications", color: "#3f51b5", link: "/admin/manage/qualification" },
     { icon: <AssignmentInd />, text: "Job Applications", color: "#00bcd4", link: "/admin/manage/teacher/applied/job" },
     { icon: <NotificationImportant />, text: "Enquiries", color: "#ff5722", link: "/admin/manage/recruiter/enquiry" },
-    { icon: <QuestionAnswerIcon />, text: "Q&A Users", color: "#8bc34a", link: "/admin/manage/question/manager" },
+    { icon: <QuestionAnswerIcon />, text: "Question manager", color: "#8bc34a", link: "/admin/manage/question/manager" },
     { icon: <LocationOn />, text: "Exam Centers", color: "#009688", link: "/admin/manage/exam/center" },
     { icon: <WorkOutline />, text: "Job Types", color: "#795548", link: "/admin/manage/teacher/jobtype" },
   ];
@@ -736,7 +736,7 @@ export default function AdminDashboard() {
               <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <QuestionAnswerIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" fontWeight="medium" noWrap>Assigned Questions</Typography>
+                  <Typography variant="h6" fontWeight="medium" noWrap>Questions Manager</Typography>
                 </Box>
                 <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" sx={{ mb: 1 }}>
                   {mockData.assignedquestionusers?.total}
