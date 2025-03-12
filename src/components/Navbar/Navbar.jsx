@@ -96,12 +96,12 @@ const Navbar = ({ links }) => {
             <button
               onClick={() => setShowEnquiry(true)}
               className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
-                duration-500 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
+                duration-500 hover:bg-right-bottom hover:shadow-2xl px-3 py-2 rounded-xl font-semibold text-white
                 hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
             >
               {/* Content */}
               <span className="relative flex items-center justify-center gap-2">
-                <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                <FiBriefcase className="w-4 h-4 transition-transform group-hover:rotate-12" />
                 <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
                   शिक्षक खोजें
                 </span>
