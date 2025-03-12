@@ -91,15 +91,10 @@ const FilterContainer = styled(Box)(({ theme, open }) => ({
   padding: theme.spacing(2),
   backgroundColor: "#f5f5f5",
   borderRadius: theme.shape.borderRadius,
+  width: '100%',
   [theme.breakpoints.up("md")]: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    "& .MuiFormControl-root": {
-      minWidth: "200px",
-      flexGrow: 1,
-      maxWidth: "300px",
-    }
+    flexDirection: "column", // Changed from row to column for better layout
+    alignItems: "stretch",
   },
 }));
 
@@ -188,11 +183,48 @@ const ExamManagement = () => {
   const [menuExam, setMenuExam] = useState(null);
   const [openStatusConfirmation, setOpenStatusConfirmation] = useState(false);
   const [statusAction, setStatusAction] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedAddedBy, setSelectedAddedBy] = useState("");
+  const [uniqueUsers, setUniqueUsers] = useState([]);
+
 
   // fetch all exams in ascending order
   useEffect(() => {
     fetchExams();
   }, []);
+
+  useEffect(() => {
+    if (exams.length > 0) {
+      try {
+        const users = new Set();
+        exams.forEach(exam => {
+          const user = getAssignedUserName(exam);
+          if (user && user !== "Unknown") {
+            users.add(user);
+          }
+        });
+        setUniqueUsers(Array.from(users).sort());
+        console.log("Unique users:", Array.from(users).sort());
+      } catch (error) {
+        console.error("Error processing unique users:", error);
+        setUniqueUsers([]);
+      }
+    }
+  }, [exams]);
+
+  const getAssignedUserName = (exam) => {
+    try {
+      if (exam.assigneduser && exam.assigneduser.user) {
+        const firstName = exam.assigneduser.user.Fname || '';
+        const lastName = exam.assigneduser.user.Lname || '';
+        return `${firstName} ${lastName}`.trim() || "Unknown";
+      }
+      return "Admin";
+    } catch (error) {
+      console.error("Error getting assigned user name:", error);
+      return "Unknown";
+    }
+  };
 
   const fetchExams = async () => {
     setLoading(true);
@@ -492,6 +524,14 @@ const ExamManagement = () => {
   };
 
   const filteredExams = exams.filter((exam) => {
+    // Get and normalize the assigned user name for this exam
+    const examUser = getAssignedUserName(exam);
+
+    // Debug log for troubleshooting
+    if (selectedAddedBy && examUser !== selectedAddedBy) {
+      console.log(`Filter mismatch: Exam user "${examUser}" !== selected "${selectedAddedBy}"`);
+    }
+
     return (
       (exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         exam.id.toString().includes(searchQuery)) &&
@@ -502,20 +542,20 @@ const ExamManagement = () => {
       (selectedClassCategory
         ? exam.class_category.name === selectedClassCategory
         : true) &&
-      (selectedType ? exam.type === selectedType : true)
+      (selectedType ? exam.type === selectedType : true) &&
+      // New filters
+      (selectedStatus !== ""
+        ? exam.status === (selectedStatus === "true")
+        : true) &&
+      (selectedAddedBy !== ""
+        ? examUser === selectedAddedBy
+        : true)
     );
   });
 
   if (loading) {
     return <Loader />;
   }
-
-  const getAssignedUserName = (exam) => {
-    if (exam.assigneduser && exam.assigneduser.user) {
-      return `${exam.assigneduser.user.Fname} ${exam.assigneduser.user.Lname}`;
-    }
-    return "Admin";
-  };
 
   return (
     <Layout>
@@ -573,87 +613,230 @@ const ExamManagement = () => {
           </Box>
 
           <FilterContainer open={showFilters}>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel>Subject</InputLabel>
-              <Select
-                label="Subject"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>All Subjects</em>
-                </MenuItem>
-                {subjects.map((subject) => (
-                  <MenuItem key={subject.id} value={subject.subject_name}>
-                    {subject.subject_name}
+            {/* First row of filters */}
+            <Box sx={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              gap: 2,
+              mb: 2
+            }}>
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Subject</InputLabel>
+                <Select
+                  label="Subject"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>All Subjects</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel>Class Category</InputLabel>
-              <Select
-                label="Class Category"
-                value={selectedClassCategory}
-                onChange={(e) => setSelectedClassCategory(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>All Categories</em>
-                </MenuItem>
-                {classCategories.map((classCategory, index) => (
-                  <MenuItem key={index + 1} value={classCategory.name}>
-                    {classCategory.name}
+                  {subjects.map((subject) => (
+                    <MenuItem key={subject.id} value={subject.subject_name}>
+                      {subject.subject_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Class Category</InputLabel>
+                <Select
+                  label="Class Category"
+                  value={selectedClassCategory}
+                  onChange={(e) => setSelectedClassCategory(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>All Categories</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel>Level</InputLabel>
-              <Select
-                label="Level"
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>All Levels</em>
-                </MenuItem>
-                {levels.map((level, index) => (
-                  <MenuItem key={index + 1} value={level.name}>
-                    {level.name}
+                  {classCategories.map((classCategory, index) => (
+                    <MenuItem key={index + 1} value={classCategory.name}>
+                      {classCategory.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Level</InputLabel>
+                <Select
+                  label="Level"
+                  value={selectedLevel}
+                  onChange={(e) => setSelectedLevel(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>All Levels</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                label="Type"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
+                  {levels.map((level, index) => (
+                    <MenuItem key={index + 1} value={level.name}>
+                      {level.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Second row of filters */}
+            <Box sx={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+              gap: 2
+            }}>
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Type</InputLabel>
+                <Select
+                  label="Type"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>All Types</em>
+                  </MenuItem>
+                  <MenuItem value="online">Online</MenuItem>
+                  <MenuItem value="offline">Offline</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* New Status Filter */}
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  startAdornment={
+                    selectedStatus !== "" ? (
+                      <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                        {selectedStatus === "true" ? (
+                          <FaCheck style={{ color: '#4CAF50', fontSize: '0.8rem' }} />
+                        ) : (
+                          <FaTimes style={{ color: '#FF9800', fontSize: '0.8rem' }} />
+                        )}
+                      </Box>
+                    ) : null
+                  }
+                >
+                  <MenuItem value="">
+                    <em>All Status</em>
+                  </MenuItem>
+                  <MenuItem value="true" sx={{ color: '#4CAF50', fontWeight: 500 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <FaCheck /> Approved
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="false" sx={{ color: '#FF9800', fontWeight: 500 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <FaTimes /> Pending
+                    </Box>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* New Added By Filter */}
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Added By</InputLabel>
+                <Select
+                  label="Added By"
+                  value={selectedAddedBy}
+                  onChange={(e) => setSelectedAddedBy(e.target.value)}
+                  startAdornment={
+                    selectedAddedBy !== "" ? (
+                      <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                        <FaUser style={{ fontSize: '0.8rem' }} />
+                      </Box>
+                    ) : null
+                  }
+                >
+                  <MenuItem value="">
+                    <em>All Users</em>
+                  </MenuItem>
+                  {uniqueUsers.map((user, index) => (
+                    <MenuItem key={`user-${index}`} value={user}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.8rem' }}>
+                          {user.charAt(0)}
+                        </Avatar>
+                        {user}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Filter actions */}
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              mt: 2,
+              gap: 1,
+              width: '100%'
+            }}>
+              <Button
+                size="small"
+                startIcon={<FaTimes />}
+                onClick={() => {
+                  setSelectedSubject("");
+                  setSelectedClassCategory("");
+                  setSelectedLevel("");
+                  setSelectedType("");
+                  setSelectedStatus("");
+                  setSelectedAddedBy("");
+                }}
+                sx={{ textTransform: 'none' }}
               >
-                <MenuItem value="">
-                  <em>All Types</em>
-                </MenuItem>
-                <MenuItem value="online">Online</MenuItem>
-                <MenuItem value="offline">Offline</MenuItem>
-              </Select>
-            </FormControl>
+                Clear Filters
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<FaFilter />}
+                onClick={() => setShowFilters(false)}
+                sx={{ textTransform: 'none' }}
+              >
+                Apply Filters
+              </Button>
+            </Box>
           </FilterContainer>
 
           {filteredExams.length === 0 ? (
             <Paper
-            // elevation={1}
-            // sx={{
-            //   p: 4,
-            //   textAlign: 'center',
-            //   backgroundColor: '#f9f9f9',
-            //   borderRadius: 2
-            // }}
+              elevation={1}
+              sx={{
+                p: 4,
+                textAlign: 'center',
+                backgroundColor: '#f9f9f9',
+                borderRadius: 2,
+                mt: 2
+              }}
             >
-              <Typography variant="h6">No exams found</Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                Try adjusting your search or filters
+              <Box sx={{ mb: 2 }}>
+                <FaSearch style={{ fontSize: '2rem', opacity: 0.5 }} />
+              </Box>
+              <Typography variant="h6" gutterBottom>No exams found</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Try adjusting your search criteria or filters
               </Typography>
+              {(searchQuery || selectedSubject || selectedLevel || selectedClassCategory ||
+                selectedType || selectedStatus || selectedAddedBy) && (
+                  <Button
+                    startIcon={<FaTimes />}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedSubject("");
+                      setSelectedClassCategory("");
+                      setSelectedLevel("");
+                      setSelectedType("");
+                      setSelectedStatus("");
+                      setSelectedAddedBy("");
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
             </Paper>
           ) : (
             <>
