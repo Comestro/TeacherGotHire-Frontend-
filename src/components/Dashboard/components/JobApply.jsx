@@ -4,11 +4,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { attemptsExam, postJobApply } from "../../../features/examQuesSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation"
 
 
 const JobApply = () => {
+
+  const [appliedJobs,setAppliedJobs] = useState("")
   const dispatch = useDispatch();
-  const { attempts,jobApply} = useSelector((state) => state.examQues);
+  const { attempts,jobApply,error} = useSelector((state) => state.examQues);
+  console.log("error",error)
   useEffect(() => {
     dispatch(attemptsExam());
   }, [dispatch]);
@@ -36,7 +40,7 @@ const JobApply = () => {
         toast.success("You will be notified.");
       }
     } catch (error) {
-      console.error("Error notifying:", error);
+      console.error("Error notifying:", error.code.response.data.error);
     }
   };
 
@@ -48,12 +52,12 @@ const JobApply = () => {
 
       const response = await dispatch(postJobApply({ subject, class_category })).unwrap();
 
-      if (!response.status) {
-        setAppliedJobs((prev) =>
-          prev.filter((job) => job.subjectId !== subjectId || job.classCategoryId !== classCategoryId)
-        ); // Remove from applied list
-        toast.info("You will not be notified.");
-      }
+      // if (!response.status) {
+      //   setAppliedJobs((prev) =>
+      //     prev.filter((job) => job.subjectId !== subjectId || job.classCategoryId !== classCategoryId)
+      //   ); // Remove from applied list
+      //   toast.info("You will not be notified.");
+      // }
     } catch (error) {
       console.error("Error canceling:", error);
     }
@@ -61,6 +65,7 @@ const JobApply = () => {
 
   return (
     <div className="p-6">
+      
       {passedOfflineAttempt && passedOfflineAttempt.length > 0 ? (
         <>
           <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg border-l-4 border-green-500">
@@ -104,12 +109,19 @@ const JobApply = () => {
                         >
                           Notify
                         </button>
+                   
+                        
                       )}
+                     
                     </td>
                   </tr>
+                  
                 );
               })}
             </tbody>
+            {error && (
+                    <p className="text-red-600 text-center mb-4">{error.code.response.data.error}</p>
+                  )} 
           </table>
         </>
       ) : (
@@ -117,7 +129,11 @@ const JobApply = () => {
           ❌ <strong>Sorry!</strong> You are not eligible for the Teacher Job Role.
         </div>
       )}
+
+       
+      <JobPrefrenceLocation/>
     </div>
+    
   );
 };
 

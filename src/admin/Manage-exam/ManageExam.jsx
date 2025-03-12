@@ -489,7 +489,7 @@ const ExamManagement = () => {
                 onClick={handleAddNew}
                 size={isMobile ? "small" : "medium"}
               >
-                {isMobile ? "Add" : "Add New Exam"}
+                {isMobile ? "Add" : "Add New Exam Set"}
               </Button>
               <Button
                 variant="outlined"
@@ -719,7 +719,7 @@ const ExamManagement = () => {
           >
             <ModalContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                {selectedExam ? "Edit Exam" : "Add New Exam"}
+                {selectedExam ? "Edit Exam Set" : "Add New Exam Set"}
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>

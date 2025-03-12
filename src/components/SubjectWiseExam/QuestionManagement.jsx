@@ -9,6 +9,7 @@ import {
   putExamSet,
   deleteExamSet,
   postQuestionToExamSet,
+  putQuestionToExamSet,
   getSetterInfo,
   getLevels,
 } from "../../features/examQuesSlice";
@@ -35,6 +36,7 @@ const QuestionManagement = () => {
   console.log("setterExamSet", setterExamSet);
   console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [editingQuestionIndex,setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ const QuestionManagement = () => {
 
   const subjects = setterUser[0]?.subject;
   console.log("subject", subjects);
+
   const handleSubjectChange = (e) => {
     const selectedId = parseInt(e.target.value, 10);
     const subject = subjects.find((sub) => sub.id === selectedId);
@@ -86,10 +89,12 @@ const QuestionManagement = () => {
       console.log("payload", payload);
 
       if (editingIndex !== null) {
+        console.log("editingIndex", editingIndex);
         const id = setterExamSet[editingIndex].id;
-        console.log("id", id);
+        console.log("id");
         await dispatch(putExamSet({ payload, id })).unwrap();
       } else {
+        console.log("cghbjn");
         await dispatch(postExamSet(payload)).unwrap();
       }
       dispatch(getExamSets()); // Refresh exam sets
@@ -104,6 +109,7 @@ const QuestionManagement = () => {
   // Handle Edit
   const handleEdit = (index) => {
     setEditingIndex(index);
+    console.log("editingIndex", editingIndex);
     setIsEditing(true);
     const examSet = setterExamSet[index];
     Object.keys(examSet).forEach((key) => setValue(key, examSet[key]));
@@ -120,6 +126,7 @@ const QuestionManagement = () => {
     }
   };
 
+  // handle Question Sumbtion
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Data being sent:", currentQuestion);
@@ -137,19 +144,25 @@ const QuestionManagement = () => {
     console.log("Payload being sent:", payload);
 
     try {
-      const response = await dispatch(postQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
-      console.log("API Response:", response);
 
-      const updatedExamSet = {
-        ...selectedExamSet,
-        questions: [
-          ...selectedExamSet.questions,
-          {
-            ...currentQuestion,
-            id: Date.now(),
-          },
-        ],
-      };
+      if (editingQuestionIndex !== null){
+        const response = await dispatch(postQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
+        console.log("API Response:", response);
+      }else{
+        const response = await dispatch(putQuestionToExamSet(payload)).unwrap();
+      }
+      
+
+      // const updatedExamSet = {
+      //   ...selectedExamSet,
+      //   questions: [
+      //     ...selectedExamSet.questions,
+      //     {
+      //       ...currentQuestion,
+      //       id: Date.now(),
+      //     },
+      //   ],
+      // };
       // Add any state updates if needed
     } catch (error) {
       console.error("API Error:", error);
@@ -158,10 +171,13 @@ const QuestionManagement = () => {
 
   const handleEditQuestion = (questionId) => {
     console.log("Editing question:", questionId);
-    // Implement your edit logic here
+    setEditingQuestionIndex(questionId)
+    const examSet = setterExamSet[editingIndex]
+    console.log("examSet",examSet)
+    // Object.keys(examSet).forEach((key) => setValue(key, examSet[key]));
   };
 
-  const handleDeleteQuestion= (questionId) => {
+  const handleDeleteQuestion = (questionId) => {
     console.log("Deleting question:", questionId);
     // Implement your delete logic here
   };
@@ -173,8 +189,9 @@ const QuestionManagement = () => {
   const filteredQuestions =
     selectedLanguage === "All"
       ? selectedExamSet?.questions
-      : selectedExamSet?.questions.filter((q) => q.language === selectedLanguage);
-
+      : selectedExamSet?.questions.filter(
+          (q) => q.language === selectedLanguage
+        );
 
   return (
     <>
@@ -352,9 +369,9 @@ const QuestionManagement = () => {
 
                   <div>
                     <div className="relative flex-1 w-full">
-                    <label className="block text-sm font-medium mb-1">
-                      Select a Subject
-                    </label>
+                      <label className="block text-sm font-medium mb-1">
+                        Select a Subject
+                      </label>
                       <select
                         {...register("subject", {
                           required: "subject is required",
@@ -606,11 +623,32 @@ const QuestionManagement = () => {
                 </form>
 
                 {/* Questions List */}
-                {/* <div className="bg-white p-6 rounded-lg shadow-md">
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
                   <h2 className="text-xl font-semibold mb-6">
-                    Exam Questions ({selectedExamSet.questions.length})
+                    Exam Questions ({filteredQuestions.length})
                   </h2>
-                  {selectedExamSet.questions.map((question, index) => (
+
+                  {/* Filter Dropdown */}
+                  <div className="mb-4">
+                    <label className="font-medium mr-2">
+                      Filter by Language:
+                    </label>
+                    <select
+                      className="border rounded px-3 py-2"
+                      value={selectedLanguage}
+                      onChange={(e) => setSelectedLanguage(e.target.value)}
+                    >
+                      <option value="All">All</option>
+                      {languages.map((lang) => (
+                        <option key={lang} value={lang}>
+                          {lang}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {filteredQuestions.map((question, index) => (
                     <div
                       key={question.id}
                       className="border-b last:border-0 pb-6 mb-6"
@@ -623,6 +661,23 @@ const QuestionManagement = () => {
                           <p className="text-gray-500">
                             Marks: {question.total_marks}
                           </p>
+                          <p className="text-gray-400 text-sm">
+                            Language: {question.language}
+                          </p>
+                        </div>
+                        <div className="space-x-2">
+                          <button
+                            onClick={() => handleEditQuestion(question.id)}
+                            className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                       <p className="mb-4">{question.text}</p>
@@ -643,72 +698,7 @@ const QuestionManagement = () => {
                       </div>
                     </div>
                   ))}
-                </div> */}
-
-<div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-6">
-        Exam Questions ({filteredQuestions.length})
-      </h2>
-
-      {/* Filter Dropdown */}
-      <div className="mb-4">
-        <label className="font-medium mr-2">Filter by Language:</label>
-        <select
-          className="border rounded px-3 py-2"
-          value={selectedLanguage}
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-        >
-          <option value="All">All</option>
-          {languages.map((lang) => (
-            <option key={lang} value={lang}>
-              {lang}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {filteredQuestions.map((question, index) => (
-        <div key={question.id} className="border-b last:border-0 pb-6 mb-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="font-medium text-lg">Question {index + 1}</h3>
-              <p className="text-gray-500">Marks: {question.total_marks}</p>
-              <p className="text-gray-400 text-sm">Language: {question.language}</p>
-            </div>
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(question.id)}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(question.id)}
-                className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-          <p className="mb-4">{question.text}</p>
-          <div className="grid grid-cols-2 gap-4">
-            {question.options.map((option, i) => (
-              <div
-                key={i}
-                className={`p-3 rounded-md ${
-                  option === question.correct_option
-                    ? "bg-green-100 border border-green-300"
-                    : "bg-gray-50"
-                }`}
-              >
-                <span className="font-medium mr-2">{i + 1}.</span>
-                {option}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+                </div>
               </div>
             )}
           </div>
