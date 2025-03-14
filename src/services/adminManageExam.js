@@ -11,10 +11,10 @@ export const deleteExam = (id) => apiService.delete(endpoint, id);
 export const deleteAllExam = (examIds) => apiService.bulkDelete(endpoint, examIds);
 
 // question related create, update and delete
-export const getQuestions = () => apiService.getAll("/api/admin/question");
-export const getQuestionById = (id) => apiService.getById("/api/admin/question", id);
-export const createQuestion = (data) => apiService.create("/api/admin/question", data);
-export const updateQuestion = (id, data) => apiService.update("/api/admin/question", id, data);
-export const deleteQuestion = (id) => apiService.delete("/api/admin/question", id);
+export const getQuestions = () => apiService.getAll("/api/examsetter/question");
+export const getQuestionById = (id) => apiService.getById("/api/examsetter/question", id);
+export const createQuestion = (data) => apiService.create("/api/examsetter/question", data);
+export const updateQuestion = (id, data) => apiService.update("/api/examsetter/question", id, data);
+export const deleteQuestion = (id) => apiService.delete("/api/examsetter/question", id);
 
 
