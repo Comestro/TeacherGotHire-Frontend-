@@ -76,11 +76,11 @@ const TeacherAvatar = styled(Avatar)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ theme, active }) => ({
   fontWeight: 500,
-  backgroundColor: active ? theme.palette.success.light : theme.palette.error.light,
-  color: active ? theme.palette.success.dark : theme.palette.error.dark,
+  backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+  color: '#fff',
   '&:hover': {
-    backgroundColor: active ? theme.palette.success.light : theme.palette.error.light,
-  },
+    backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+  }
 }));
 
 const FilterPaper = styled(Paper)(({ theme }) => ({
@@ -464,6 +464,7 @@ const ManageTeacher = () => {
               label={teacher.is_active ? "Active" : "Inactive"}
               active={teacher.is_active}
               size="small"
+              sx={{ color: '#fff' }}
             />
           </Box>
 
@@ -711,11 +712,11 @@ const ManageTeacher = () => {
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     displayEmpty
                     renderValue={(selected) => {
-                      if (!selected) return "All Statuses";
+                      if (!selected) return "All Status";
                       return selected === "approved" ? "Active" : selected === "rejected" ? "Inactive" : "All Statuses";
                     }}
                   >
-                    <MenuItem value="">All Statuses</MenuItem>
+                    <MenuItem value="">All Status</MenuItem>
                     <MenuItem value="approved">Active</MenuItem>
                     <MenuItem value="rejected">Inactive</MenuItem>
                   </Select>

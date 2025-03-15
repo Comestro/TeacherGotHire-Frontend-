@@ -424,7 +424,7 @@ const PasskeyManagement = () => {
                   label="Status Filter"
                   startAdornment={<FaFilter style={{ marginRight: 8 }} />}
                 >
-                  <MenuItem value="all">All Statuses</MenuItem>
+                  <MenuItem value="all">All Status</MenuItem>
                   <MenuItem value="requested">Requested</MenuItem>
                   <MenuItem value="fulfilled">Fulfilled</MenuItem>
                   <MenuItem value="rejected">Rejected</MenuItem>
