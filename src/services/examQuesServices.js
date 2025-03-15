@@ -281,7 +281,7 @@ export const addQuestionToExamSet= async (payload) => {
 
 export const editQuestionToExamSet= async (payload) => {
   try {
-    const response = await apiClient.putt(`/api/examsetter/question/`,payload);
+    const response = await apiClient.put(`/api/examsetter/question/`,payload);
     console.log("ExamSetter",response)
     return response.data;
     
