@@ -51,6 +51,8 @@ import {
   SupervisorAccount,
   QuestionMark,
   LocationOn,
+  Report,
+  FlagCircle,
 } from "@mui/icons-material";
 
 // Custom scrollbar styles
@@ -160,18 +162,19 @@ export default function Sidebar({ open, handleDrawerClose }) {
     { text: "Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
     { text: "Job Applied", icon: <AssignmentInd />, link: "/admin/manage/teacher/applied/job" },
     { text: "Recruiter Enquiry", icon: <NotificationImportant />, link: "/admin/manage/recruiter/enquiry" },
+    { text: "Question Report", icon: <FlagCircle />, link: "/admin/manage/question/report" },
     // manage users
     { text: "Teacher", icon: <School />, link: "/admin/manage/teacher" },
     { text: "Recruiter", icon: <SupervisorAccount />, link: "/admin/manage/recruiter" },
-    { text: "Question User", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
+    { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
     { text: "Exam Center", icon: <LocationOn />, link: "/admin/manage/exam/center" },
   ];
 
   return (
     <>
       <ScrollbarStyle />
-      <Drawer 
-        variant="permanent" 
+      <Drawer
+        variant="permanent"
         open={open}
         sx={{
           overflowX: "hidden !important",
@@ -276,7 +279,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </Tooltip>
           ))}
           <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Request</Divider>
-          {menuItems.slice(8, 13).map((item) => (
+          {menuItems.slice(8, 14).map((item) => (
             <Tooltip key={item.text} title={item.text} placement="right" arrow>
               <ListItem disablePadding sx={{ display: "block", py: 0 }}>
                 <ListItemButton
@@ -306,7 +309,7 @@ export default function Sidebar({ open, handleDrawerClose }) {
             </Tooltip>
           ))}
           <Divider textAlign="center" sx={{ my: 0.5 }}>Manage Users</Divider>
-          {menuItems.slice(13).map((item) => (
+          {menuItems.slice(14).map((item) => (
             <Tooltip key={item.text} title={item.text} placement="right" arrow>
               <ListItem disablePadding sx={{ display: "block", py: 0 }}>
                 <ListItemButton

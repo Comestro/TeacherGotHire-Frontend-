@@ -19,9 +19,13 @@ import {
   Snackbar,
   Alert,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Divider,
+  Paper,
+  Stack,
+  Chip
 } from "@mui/material";
-import { Edit, Delete, Add } from "@mui/icons-material";
+import { Edit, Delete, Add, School, ArrowBack, Assessment, AccessTime } from "@mui/icons-material";
 
 import {
   getExamById,
@@ -31,55 +35,146 @@ import {
 } from "../../services/adminManageExam";
 
 const QuestionCard = ({ question, index, onEdit, onDelete }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   if (!question) return null;
 
   return (
-    <Card sx={{ mb: 2 }}>
+    <Paper
+      elevation={3}
+      sx={{
+        mb: 3,
+        borderRadius: 2,
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: 6
+        }
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Question {index + 1}
-        </Typography>
-        <Typography variant="body1" gutterBottom>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexDirection: isMobile ? 'column' : 'row',
+          mb: 1
+        }}>
+          <Box>
+            <Typography
+              variant="h6"
+              color="primary"
+              gutterBottom
+              fontWeight="medium"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Assessment fontSize="small" />
+              Question {index + 1}
+            </Typography>
+            <Chip
+              label={question.language}
+              size="small"
+              color={question.language === "English" ? "info" : "secondary"}
+              sx={{ mb: 1 }}
+            />
+          </Box>
+          <Box sx={{
+            display: "flex",
+            mt: isMobile ? 1 : 0,
+            alignSelf: isMobile ? 'flex-end' : 'center'
+          }}>
+            <IconButton
+              onClick={() => onEdit(question)}
+              color="primary"
+              size="small"
+              sx={{ mr: 1 }}
+            >
+              <Edit />
+            </IconButton>
+            <IconButton
+              onClick={() => onDelete(question.id)}
+              color="error"
+              size="small"
+            >
+              <Delete />
+            </IconButton>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 1 }} />
+
+        <Typography
+          variant="body1"
+          gutterBottom
+          sx={{
+            fontSize: { xs: '0.95rem', sm: '1rem' },
+            fontWeight: 500
+          }}
+        >
           {question.text}
         </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          <strong>Options:</strong>
-        </Typography>
-        {question.options.map((option, i) => (
-          <Typography
-            key={i}
-            variant="body2"
-            color={
-              i + 1 === question.correct_option
-                ? "success.main"
-                : "text.secondary"
-            }
-          >
-            {i + 1}. {option}
+
+        <Box sx={{ mt: 2, mb: 1 }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Options:
           </Typography>
-        ))}
-        <Typography variant="body2" mt={1} color="text.primary">
-          <strong>Solution:</strong> {question.solution}
-        </Typography>
-        <Typography variant="body2" mt={1} color="text.primary">
-          <strong>Language:</strong> {question.language}
-        </Typography>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-          <IconButton onClick={() => onEdit(question)}>
-            <Edit />
-          </IconButton>
-          <IconButton onClick={() => onDelete(question.id)}>
-            <Delete />
-          </IconButton>
+          <Grid container spacing={1}>
+            {question.options.map((option, i) => (
+              <Grid item xs={12} sm={6} key={i}>
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 1,
+                    backgroundColor: i + 1 === question.correct_option ? 'success.light' : 'background.default',
+                    border: i + 1 === question.correct_option ? '1px solid' : '1px solid',
+                    borderColor: i + 1 === question.correct_option ? 'success.main' : 'divider'
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color={i + 1 === question.correct_option ? "success.dark" : "text.secondary"}
+                    fontWeight={i + 1 === question.correct_option ? 500 : 400}
+                  >
+                    {i + 1}. {option}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         </Box>
+
+        {question.solution && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" fontWeight={500}>
+              Solution:
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {question.solution}
+            </Typography>
+          </Box>
+        )}
+
+        {question.time && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.5 }}>
+            <AccessTime fontSize="small" color="action" sx={{ mr: 0.5 }} />
+            <Typography variant="body2" color="text.secondary">
+              {question.time} minutes
+            </Typography>
+          </Box>
+        )}
       </CardContent>
-    </Card>
+    </Paper>
   );
 };
 
 const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [questions, setQuestions] = useState([]);
   const [openAddQuestionModal, setOpenAddQuestionModal] = useState(false);
@@ -97,7 +192,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  // Form validation error state; you can extend this as needed.
+  // Form validation error state
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
@@ -238,38 +333,129 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     setSnackbarOpen(false);
   };
 
+  const filteredQuestions = questions.filter(q => q.language === selectedLanguage);
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={fullScreen}>
-      <DialogTitle>Exam Details - {selectedExam?.name}</DialogTitle>
-      <DialogContent dividers>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      fullScreen={fullScreen}
+      sx={{
+        "& .MuiDialog-paper": {
+          borderRadius: { xs: 0, sm: 2 }
+        }
+      }}
+    >
+      <DialogTitle
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          bgcolor: 'primary.light',
+          color: 'primary.contrastText',
+          fontWeight: 'bold'
+        }}
+      >
+        {isMobile && (
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={onClose}
+            sx={{ mr: 2 }}
+          >
+            <ArrowBack />
+          </IconButton>
+        )}
+        <Box>
+          <Typography variant={isMobile ? "subtitle1" : "h6"} component="div">
+            {selectedExam?.name}
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.9 }}>
+            Exam Management Portal
+          </Typography>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
         <Grid container spacing={3}>
           {/* Basic Info Card */}
           <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Basic Information
+            <Paper
+              elevation={2}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                height: '100%'
+              }}
+            >
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 2,
+                gap: 1
+              }}>
+                <School color="primary" />
+                <Typography variant="h6" color="primary.main" fontWeight="medium">
+                  Exam Information
                 </Typography>
-                <Typography variant="body1">
-                  <strong>Subject:</strong> {selectedExam?.subject?.subject_name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Level:</strong> {selectedExam?.level?.name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Class Category:</strong> {selectedExam?.class_category?.name}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Total Marks:</strong> {selectedExam?.total_marks}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Duration:</strong> {selectedExam?.duration} minutes
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Type:</strong> {selectedExam?.type || "N/A"}
-                </Typography>
-              </CardContent>
-            </Card>
+              </Box>
+
+              <Divider sx={{ mb: 2 }} />
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Subject
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.subject?.subject_name || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Level
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.level?.name || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Class Category
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.class_category?.name || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Type
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.type || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Total Marks
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.total_marks || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Duration
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {selectedExam?.duration || "N/A"} minutes
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
 
           {/* Questions Section */}
@@ -279,34 +465,57 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
+                alignItems: { xs: "stretch", sm: "center" },
+                mb: 3,
+                gap: 2
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="h6">
-                  Questions ({questions.filter(q => q.language === selectedLanguage).length})
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                flexWrap: 'wrap',
+                width: { xs: '100%', sm: 'auto' }
+              }}>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Assessment /> Questions ({filteredQuestions.length})
                 </Typography>
-                <FormControl sx={{ minWidth: 120 }}>
-                  <InputLabel>Filter Language</InputLabel>
+                <FormControl
+                  sx={{
+                    minWidth: 120,
+                    flex: { xs: 1, sm: 'none' }
+                  }}
+                  size="small"
+                >
+                  <InputLabel>Language</InputLabel>
                   <Select
                     value={selectedLanguage}
-                    label="Filter Language"
+                    label="Language"
                     onChange={(e) => setSelectedLanguage(e.target.value)}
-                    size="small"
                   >
                     <MenuItem value="English">English</MenuItem>
                     <MenuItem value="Hindi">Hindi</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
-              <Button variant="contained" startIcon={<Add />} onClick={handleAddQuestion}>
+
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Add />}
+                onClick={handleAddQuestion}
+                fullWidth={isMobile}
+                sx={{
+                  borderRadius: 2,
+                  py: isMobile ? 1 : 'inherit'
+                }}
+              >
                 Add Question
               </Button>
             </Box>
-            {questions
-              ?.filter(q => q.language === selectedLanguage)
-              ?.map((question, index) => (
+
+            {filteredQuestions.length > 0 ? (
+              filteredQuestions.map((question, index) => (
                 <QuestionCard
                   key={question?.id || `question-${index}`}
                   question={question}
@@ -315,26 +524,80 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                   onDelete={handleDeleteQuestion}
                 />
               ))
-            }
+            ) : (
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  borderRadius: 2,
+                  borderStyle: 'dashed'
+                }}
+              >
+                <Typography color="text.secondary" sx={{ mb: 1 }}>
+                  No questions available in {selectedLanguage}.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={handleAddQuestion}
+                >
+                  Add Question
+                </Button>
+              </Paper>
+            )}
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ borderRadius: 2 }}
+        >
+          Close
+        </Button>
       </DialogActions>
 
       {/* Add/Edit Question Modal */}
       <Dialog
         open={openAddQuestionModal}
         onClose={() => setOpenAddQuestionModal(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
         fullScreen={fullScreen}
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: { xs: 0, sm: 2 }
+          }
+        }}
       >
-        <DialogTitle>{editQuestion ? "Edit Question" : "Add New Question"}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <FormControl fullWidth>
+        <DialogTitle sx={{
+          bgcolor: editQuestion ? 'warning.light' : 'primary.light',
+          color: editQuestion ? 'warning.contrastText' : 'primary.contrastText',
+          px: { xs: 2, sm: 3 },
+          py: 2
+        }}>
+          {isMobile && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => setOpenAddQuestionModal(false)}
+              sx={{ mr: 2 }}
+            >
+              <ArrowBack />
+            </IconButton>
+          )}
+          <Typography variant="h6">
+            {editQuestion ? "Edit Question" : "Add New Question"}
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: { xs: 2, sm: 3 }, mt: 1 }}>
+          <Stack spacing={3}>
+            <FormControl fullWidth size={isMobile ? "small" : "medium"}>
               <InputLabel>Language</InputLabel>
               <Select
                 value={newQuestion.language}
@@ -360,73 +623,128 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
               }
               error={!!formErrors.text}
               helperText={formErrors.text}
+              multiline
+              rows={3}
+              size={isMobile ? "small" : "medium"}
             />
-            {newQuestion.options.map((option, index) => (
-              <TextField
-                key={index}
-                label={`Option ${index + 1}`}
-                fullWidth
-                value={option}
-                onChange={(e) => {
-                  const newOptions = [...newQuestion.options];
-                  newOptions[index] = e.target.value;
-                  setNewQuestion({ ...newQuestion, options: newOptions });
-                }}
-                error={!!formErrors[`option_${index}`]}
-                helperText={formErrors[`option_${index}`]}
-              />
-            ))}
+
+            <Typography variant="subtitle1" color="primary" sx={{ mt: 2 }}>
+              Options
+            </Typography>
+
+            <Grid container spacing={2}>
+              {newQuestion.options.map((option, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <TextField
+                    label={`Option ${index + 1}`}
+                    fullWidth
+                    value={option}
+                    onChange={(e) => {
+                      const newOptions = [...newQuestion.options];
+                      newOptions[index] = e.target.value;
+                      setNewQuestion({ ...newQuestion, options: newOptions });
+                    }}
+                    error={!!formErrors[`option_${index}`]}
+                    helperText={formErrors[`option_${index}`]}
+                    size={isMobile ? "small" : "medium"}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            <Box sx={{ mt: 1 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+                    <TextField
+                      label="Correct Option (1-4)"
+                      type="number"
+                      fullWidth
+                      value={newQuestion.correct_option}
+                      onChange={(e) =>
+                        setNewQuestion({
+                          ...newQuestion,
+                          correct_option: parseInt(e.target.value, 10),
+                        })
+                      }
+                      inputProps={{ min: 1, max: 4 }}
+                      error={!!formErrors.correct_option}
+                      helperText={formErrors.correct_option}
+                      size={isMobile ? "small" : "medium"}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Time (minutes)"
+                    type="number"
+                    fullWidth
+                    value={newQuestion.time}
+                    onChange={(e) =>
+                      setNewQuestion({
+                        ...newQuestion,
+                        time: parseFloat(e.target.value),
+                      })
+                    }
+                    inputProps={{ step: 0.5 }}
+                    size={isMobile ? "small" : "medium"}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
             <TextField
-              label="Correct Option (1-4)"
-              type="number"
-              fullWidth
-              value={newQuestion.correct_option}
-              onChange={(e) =>
-                setNewQuestion({
-                  ...newQuestion,
-                  correct_option: parseInt(e.target.value, 10),
-                })
-              }
-              inputProps={{ min: 1, max: 4 }}
-              error={!!formErrors.correct_option}
-              helperText={formErrors.correct_option}
-            />
-            <TextField
-              label="Solution"
+              label="Solution (Optional)"
               fullWidth
               value={newQuestion.solution}
               onChange={(e) =>
                 setNewQuestion({ ...newQuestion, solution: e.target.value })
               }
+              multiline
+              rows={2}
+              size={isMobile ? "small" : "medium"}
             />
-            <TextField
-              label="Time (minutes)"
-              type="number"
-              fullWidth
-              value={newQuestion.time}
-              onChange={(e) =>
-                setNewQuestion({
-                  ...newQuestion,
-                  time: parseFloat(e.target.value),
-                })
-              }
-              inputProps={{ step: 0.5 }}
-            />
-          </Box>
+          </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddQuestionModal(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveQuestion}>Save</Button>
+
+        <DialogActions sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}>
+          <Button
+            onClick={() => setOpenAddQuestionModal(false)}
+            fullWidth={isMobile}
+            variant="outlined"
+            sx={{ borderRadius: 2 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveQuestion}
+            fullWidth={isMobile}
+            sx={{ borderRadius: 2 }}
+          >
+            {editQuestion ? "Update Question" : "Save Question"}
+          </Button>
         </DialogActions>
       </Dialog>
-      {/* Snackbar for messages – top right positioning */}
+
+      {/* Snackbar for messages */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

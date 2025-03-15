@@ -29,9 +29,8 @@ apiClient.interceptors.request.use(
 const handleApiError = async (err) => {
   if (err.response) {
     const { status, data } = err.response;
-    // Only perform logout actions for 401s that aren't from the login endpoint
-    if (status === 401 && !err.config.url.includes('/api/login/')) {
-      await store.dispatch(userLogout()).unwrap();
+    // Only perform logout actions for 401s that aren't from the login or logout endpoints
+    if (status === 401 && !err.config.url.includes('/api/login/') && !err.config.url.includes('/api/logout/')) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("role");
       await persistor.purge();
@@ -161,20 +160,24 @@ export const resetPassword = async (uidb64, token, newPassword) =>
 
 export const logout = async () => {
   try {
-  
-     
-     const response = await apiClient.post("/api/logout/");
-     console.log("Logged out successfully:", response.data);
-     
-     localStorage.removeItem("access_token");
-     localStorage.removeItem("role");
- 
-     await persistor.purge(); // Clears persisted state
-     await persistor.flush(); // Ensures changes are flushed to storage
- 
-     // Step 4: Return the response data (optional)
-     return response.data;
+    // Remove tokens first to prevent further API calls
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("role");
+    
+    // Clear redux persist state
+    await persistor.purge();
+    await persistor.flush();
+    
+    // Try to call logout API, but don't wait for it
+    apiClient.post("/api/logout/").catch(() => {
+      // Ignore any errors from logout API
+      console.log("Logout API call failed, but local logout successful");
+    });
+    
+    return { success: true };
   } catch (err) {
-    handleApiError(err);
+    console.error("Error during logout:", err);
+    // Still return success since we've cleared local state
+    return { success: true };
   }
 };
