@@ -16,10 +16,4 @@ export const getQuestionById = (id) => apiService.getById("/api/examsetter/quest
 export const createQuestion = (data) => apiService.create("/api/examsetter/question", data);
 export const updateQuestion = (id, data) => apiService.update("/api/examsetter/question", id, data);
 export const deleteQuestion = (id) => apiService.delete("/api/examsetter/question", id);
-export const getQuestions = () => apiService.getAll("/api/examsetter/question");
-export const getQuestionById = (id) => apiService.getById("/api/examsetter/question", id);
-export const createQuestion = (data) => apiService.create("/api/examsetter/question", data);
-export const updateQuestion = (id, data) => apiService.update("/api/examsetter/question", id, data);
-export const deleteQuestion = (id) => apiService.delete("/api/examsetter/question", id);
-
 
