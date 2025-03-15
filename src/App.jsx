@@ -55,6 +55,8 @@ import JobApply from "./components/Dashboard/components/JobApply";
 import Test from "./admin/test/Test";
 import ManageTeacherApplied from "./admin/Manage-teacher-applied/ManageTeacherApplied";
 import ManageRecruiterEnquiry from "./admin/Manage-recruiter-enquiry/ManageRecruiterEnquiry";
+import ManageQuestionReport from "./admin/Manage-Question-Report/ManageQuestionReport";
+import ExamDetails from "./admin/Manage-exam/ExamDetails";
 
 function App() {
   return (
@@ -178,6 +180,15 @@ function App() {
               }
             />
             <Route
+              path="admin/manage/question/report"
+              element={
+                <RoleBasedRoute
+                  element={<ManageQuestionReport />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
               path="admin/contact"
               element={
                 <RoleBasedRoute
@@ -230,6 +241,11 @@ function App() {
                   allowedRoles={["admin"]}
                 />
               }
+            />
+            <Route
+              path="admin/exam/:examId"
+              element={<ExamDetails />}
+              allowedRoles={["admin"]}
             />
             <Route
               path="admin/manage/exam/center"

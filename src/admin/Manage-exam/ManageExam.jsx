@@ -59,7 +59,7 @@ import { getSubjects } from "../../services/adminSubujectApi";
 import { getClassCategory } from "../../services/adminClassCategoryApi";
 import { getLevel } from "../../services/adminManageLevel";
 import Loader from "../../components/Loader";
-import ViewQuestionModal from "./QuestionModal";
+import { Link } from "react-router-dom";
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
@@ -445,10 +445,6 @@ const ExamManagement = () => {
     }
   };
 
-  const handleView = (exam) => {
-    setSelectedExam(exam);
-    setOpenViewModal(true);
-  };
 
   const handleAddNew = () => {
     setSelectedExam(null);
@@ -934,8 +930,9 @@ const ExamManagement = () => {
 
                             <Box>
                               <IconButton
+                                component={Link}
+                                to={`/admin/exam/${exam.id}`}
                                 color="primary"
-                                onClick={() => handleView(exam)}
                                 size="small"
                                 title="View Details"
                               >
@@ -1152,12 +1149,6 @@ const ExamManagement = () => {
               </Box>
             </ModalContent>
           </StyledModal>
-
-          <ViewQuestionModal
-            open={openViewModal}
-            onClose={() => setOpenViewModal(false)}
-            selectedExam={selectedExam}
-          />
 
           <Dialog
             open={openDeleteModal}
