@@ -28,6 +28,7 @@ import {
     Breadcrumbs,
     Badge,
     Fade,
+    CircularProgress
 } from "@mui/material";
 import {
     ArrowBack,
@@ -43,7 +44,7 @@ import {
     Check,
     Close,
     Warning,
-    HelpOutline,
+    HelpOutline
 } from "@mui/icons-material";
 import { FaArrowLeft } from "react-icons/fa";
 import {
@@ -291,6 +292,7 @@ const ExamDetails = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
     const [formErrors, setFormErrors] = useState({});
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [formSubmitting, setFormSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchExamData = async () => {
@@ -366,11 +368,13 @@ const ExamDetails = () => {
     };
 
     const handleBackToExams = () => {
-        navigate('/admin/manage-exams');
+        navigate('/admin/manage/exam');
     };
 
     const handleSaveQuestion = async () => {
         if (!validateForm()) return;
+
+        setFormSubmitting(true);
 
         try {
             if (editQuestion) {
@@ -381,6 +385,25 @@ const ExamDetails = () => {
                 setSnackbarMessage("Question added successfully!");
             }
             setSnackbarSeverity("success");
+
+            try {
+                const response = await getExamById(examId);
+                const transformedQuestions = response?.questions?.map(q => ({
+                    ...q,
+                    options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
+                    language: q.language || "English"
+                })) || [];
+                setQuestions(transformedQuestions);
+            } catch (fetchError) {
+                const fetchErrorMsg =
+                    (fetchError.response?.data && typeof fetchError.response.data === 'object'
+                        ? Object.values(fetchError.response.data).flat().join(" ")
+                        : fetchError.response?.data) || "Failed to refresh questions.";
+                setSnackbarMessage(fetchErrorMsg);
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+            }
+
             setOpenAddQuestionModal(false);
             setFormErrors({});
         } catch (error) {
@@ -400,24 +423,8 @@ const ExamDetails = () => {
                 setSnackbarSeverity("error");
                 setSnackbarOpen(true);
             }
-            return;
-        }
-
-        try {
-            const response = await getExamById(examId);
-            const transformedQuestions = response?.questions?.map(q => ({
-                ...q,
-                options: q.options.map(opt => typeof opt === 'object' ? opt.option : opt),
-                language: q.language || "English"
-            })) || [];
-            setQuestions(transformedQuestions);
-        } catch (fetchError) {
-            const fetchErrorMsg =
-                (fetchError.response?.data && typeof fetchError.response.data === 'object'
-                    ? Object.values(fetchError.response.data).flat().join(" ")
-                    : fetchError.response?.data) || "Failed to refresh questions.";
-            setSnackbarMessage(fetchErrorMsg);
-            setSnackbarSeverity("error");
+        } finally {
+            setFormSubmitting(false);
             setSnackbarOpen(true);
         }
     };
@@ -788,6 +795,7 @@ const ExamDetails = () => {
                                 edge="start"
                                 onClick={() => setOpenAddQuestionModal(false)}
                                 sx={{ mr: 2, color: 'inherit' }}
+                                disabled={formSubmitting}
                             >
                                 <ArrowBack />
                             </IconButton>
@@ -800,38 +808,90 @@ const ExamDetails = () => {
                         </Box>
                     </DialogTitle>
 
-                    <DialogContent sx={{ p: { xs: 2, sm: 3 }, mt: 1 }}>
-                        <Stack spacing={3}>
-                            <FormControl fullWidth size={isMobile ? "small" : "medium"}>
-                                <InputLabel>Language</InputLabel>
-                                <Select
-                                    value={newQuestion.language}
-                                    label="Language"
-                                    onChange={(e) =>
-                                        setNewQuestion({
-                                            ...newQuestion,
-                                            language: e.target.value,
-                                        })
-                                    }
+                    <DialogContent sx={{ p: { xs: 2, sm: 3 }, mt: 2, mb: 2, position: 'relative' }}>
+                        {/* Full-page loader overlay */}
+                        {formSubmitting && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                    zIndex: 10,
+                                    borderRadius: 'inherit'
+                                }}
+                            >
+                                <CircularProgress size={60} thickness={4} />
+                                <Typography variant="h6" sx={{ mt: 2, fontWeight: 500 }}>
+                                    {editQuestion ? "Updating..." : "Saving..."}
+                                </Typography>
+                            </Box>
+                        )}
+
+                        <Stack spacing={3.5}>
+                            <Box sx={{ mb: 3 }}>
+                                <Typography
+                                    variant="subtitle1"
+                                    color="text.primary"
+                                    fontWeight={500}
+                                    gutterBottom
+                                    sx={{ mb: 1 }}
                                 >
-                                    <MenuItem value="English">English</MenuItem>
-                                    <MenuItem value="Hindi">Hindi</MenuItem>
-                                </Select>
-                            </FormControl>
+                                    Question Language*
+                                </Typography>
+                                <FormControl
+                                    fullWidth
+                                    size={isMobile ? "small" : "medium"}
+                                    variant="outlined"
+                                    error={!!formErrors.language}
+                                    disabled={formSubmitting}
+                                >
+                                    <Select
+                                        value={newQuestion.language || ''}
+                                        displayEmpty
+                                        onChange={(e) =>
+                                            setNewQuestion({
+                                                ...newQuestion,
+                                                language: e.target.value,
+                                            })
+                                        }
+                                    >
+                                        <MenuItem disabled value="">
+                                            <em>Select a language</em>
+                                        </MenuItem>
+                                        <MenuItem value="English">English</MenuItem>
+                                        <MenuItem value="Hindi">Hindi</MenuItem>
+                                    </Select>
+                                    {formErrors.language && (
+                                        <FormHelperText>{formErrors.language}</FormHelperText>
+                                    )}
+                                </FormControl>
+                            </Box>
 
                             <TextField
                                 label="Question Text"
                                 fullWidth
+                                variant="outlined"
                                 value={newQuestion.text}
                                 onChange={(e) =>
                                     setNewQuestion({ ...newQuestion, text: e.target.value })
                                 }
                                 error={!!formErrors.text}
-                                helperText={formErrors.text}
+                                helperText={formErrors.text || "Enter the complete question text here"}
                                 multiline
                                 rows={3}
                                 size={isMobile ? "small" : "medium"}
                                 required
+                                disabled={formSubmitting}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             />
 
                             <Box sx={{ mt: 1 }}>
@@ -842,18 +902,21 @@ const ExamDetails = () => {
                                         mb: 1.5,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 0.5
+                                        gap: 0.5,
+                                        fontWeight: 500
                                     }}
                                 >
-                                    <DescriptionOutlined fontSize="small" /> Options
+                                    <DescriptionOutlined fontSize="small" /> Question Options
                                 </Typography>
 
-                                <Grid container spacing={2}>
+                                <Grid container spacing={2.5}>
                                     {newQuestion.options.map((option, index) => (
-                                        <Grid item xs={12} key={index}>
+                                        <Grid item xs={12} sm={6} key={index}>
                                             <TextField
                                                 label={`Option ${index + 1}`}
+                                                placeholder={`Enter option ${index + 1}`}
                                                 fullWidth
+                                                variant="outlined"
                                                 value={option}
                                                 onChange={(e) => {
                                                     const updatedOptions = [...newQuestion.options];
@@ -867,15 +930,25 @@ const ExamDetails = () => {
                                                 helperText={formErrors[`option_${index}`]}
                                                 size={isMobile ? "small" : "medium"}
                                                 required
+                                                disabled={formSubmitting}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                }}
                                             />
                                         </Grid>
                                     ))}
                                 </Grid>
                             </Box>
 
-                            <FormControl fullWidth size={isMobile ? "small" : "medium"}>
-                                <InputLabel>Correct Option</InputLabel>
+                            <FormControl
+                                fullWidth
+                                size={isMobile ? "small" : "medium"}
+                                variant="outlined"
+                                disabled={formSubmitting}
+                            >
+                                <InputLabel id="correct-option-label">Correct Option</InputLabel>
                                 <Select
+                                    labelId="correct-option-label"
                                     value={newQuestion.correct_option}
                                     label="Correct Option"
                                     onChange={(e) =>
@@ -892,11 +965,18 @@ const ExamDetails = () => {
                                         </MenuItem>
                                     ))}
                                 </Select>
+                                {formErrors.correct_option && (
+                                    <Typography color="error" variant="caption" sx={{ mt: 0.5, ml: 1.5 }}>
+                                        {formErrors.correct_option}
+                                    </Typography>
+                                )}
                             </FormControl>
 
                             <TextField
-                                label="Solution"
+                                label="Solution (Optional)"
+                                placeholder="Provide an explanation for the correct answer"
                                 fullWidth
+                                variant="outlined"
                                 value={newQuestion.solution}
                                 onChange={(e) =>
                                     setNewQuestion({ ...newQuestion, solution: e.target.value })
@@ -904,30 +984,69 @@ const ExamDetails = () => {
                                 multiline
                                 rows={3}
                                 size={isMobile ? "small" : "medium"}
+                                disabled={formSubmitting}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             />
 
                             <TextField
-                                label="Time (in minutes)"
+                                label="Time Allocation"
+                                placeholder="Time in minutes"
                                 fullWidth
+                                variant="outlined"
                                 type="number"
                                 value={newQuestion.time}
                                 onChange={(e) =>
                                     setNewQuestion({ ...newQuestion, time: e.target.value })
                                 }
                                 error={!!formErrors.time}
-                                helperText={formErrors.time}
+                                helperText={formErrors.time || "The time allocated for this question (in minutes)"}
                                 size={isMobile ? "small" : "medium"}
                                 required
+                                disabled={formSubmitting}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 0.5,
+                                    min: 0.5,
+                                }}
                             />
 
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                mt: 3,
+                                gap: 2
+                            }}>
+                                <Button
+                                    variant="outlined"
+                                    color="inherit"
+                                    onClick={() => setOpenAddQuestionModal(false)}
+                                    sx={{ px: 3 }}
+                                    disabled={formSubmitting}
+                                >
+                                    Cancel
+                                </Button>
                                 <Button
                                     variant="contained"
-                                    color="primary"
+                                    color={editQuestion ? "warning" : "primary"}
                                     onClick={handleSaveQuestion}
-                                    sx={{ px: 4 }}
+                                    disabled={formSubmitting}
+                                    sx={{
+                                        px: 4,
+                                        fontWeight: 500
+                                    }}
                                 >
-                                    Save
+                                    {formSubmitting ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <CircularProgress size={20} color="inherit" thickness={4} />
+                                            {editQuestion ? "Updating..." : "Saving..."}
+                                        </Box>
+                                    ) : (
+                                        editQuestion ? "Update Question" : "Save Question"
+                                    )}
                                 </Button>
                             </Box>
                         </Stack>
