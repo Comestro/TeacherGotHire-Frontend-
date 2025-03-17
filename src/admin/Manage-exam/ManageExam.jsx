@@ -842,112 +842,114 @@ const ExamManagement = () => {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((exam) => (
                     <Grid item xs={12} sm={6} lg={4} key={exam.id}>
-                      <ExamCard status={exam.status} elevation={2}>
-                        <StatusChip
-                          label={exam.status ? "Approved" : "Pending"}
-                          status={exam.status}
-                          size="small"
-                        />
-                        <StyledCardContent>
-                          <Typography
-                            variant="h6"
-                            component="h2"
-                            sx={{
-                              mb: 2,
-                              fontWeight: 'bold',
-                              pr: { xs: 10, sm: 8 }, // More space for status chip on mobile
-                              fontSize: { xs: '1rem', sm: '1.25rem' }, // Smaller font on mobile
-                              lineHeight: 1.3,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical'
-                            }}
-                          >
-                            {exam.name}
-                          </Typography>
+                      <Link to={`/admin/exam/${exam.id}`} >
+                        <ExamCard status={exam.status} elevation={2}>
+                          <StatusChip
+                            label={exam.status ? "Approved" : "Pending"}
+                            status={exam.status}
+                            size="small"
+                          />
+                          <StyledCardContent>
+                            <Typography
+                              variant="h6"
+                              component="h2"
+                              sx={{
+                                mb: 2,
+                                fontWeight: 'bold',
+                                pr: { xs: 10, sm: 8 }, // More space for status chip on mobile
+                                fontSize: { xs: '1rem', sm: '1.25rem' }, // Smaller font on mobile
+                                lineHeight: 1.3,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}
+                            >
+                              {exam.name}
+                            </Typography>
 
-                          <Grid container spacing={1}>
-                            <Grid item xs={12} sm={6}>
-                              <InfoItem>
-                                <FaBookOpen />
-                                <Typography variant="body2">
-                                  <strong>Subject:</strong> {exam.subject.subject_name}
-                                </Typography>
-                              </InfoItem>
+                            <Grid container spacing={1}>
+                              <Grid item xs={12} sm={6}>
+                                <InfoItem>
+                                  <FaBookOpen />
+                                  <Typography variant="body2">
+                                    <strong>Subject:</strong> {exam.subject.subject_name}
+                                  </Typography>
+                                </InfoItem>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <InfoItem>
+                                  <FaLayerGroup />
+                                  <Typography variant="body2">
+                                    <strong>Level:</strong> {exam.level.name}
+                                  </Typography>
+                                </InfoItem>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <InfoItem>
+                                  <FaSchool />
+                                  <Typography variant="body2">
+                                    <strong>Class:</strong> {exam.class_category.name}
+                                  </Typography>
+                                </InfoItem>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <InfoItem>
+                                  <FaClock />
+                                  <Typography variant="body2">
+                                    <strong>Duration:</strong> {exam.duration} min
+                                  </Typography>
+                                </InfoItem>
+                              </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <InfoItem>
-                                <FaLayerGroup />
-                                <Typography variant="body2">
-                                  <strong>Level:</strong> {exam.level.name}
-                                </Typography>
-                              </InfoItem>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <InfoItem>
-                                <FaSchool />
-                                <Typography variant="body2">
-                                  <strong>Class:</strong> {exam.class_category.name}
-                                </Typography>
-                              </InfoItem>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <InfoItem>
-                                <FaClock />
-                                <Typography variant="body2">
-                                  <strong>Duration:</strong> {exam.duration} min
-                                </Typography>
-                              </InfoItem>
-                            </Grid>
-                          </Grid>
 
-                          <Box sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mt: 2,
-                            pt: 2,
-                            borderTop: '1px solid #eee'
-                          }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Avatar
-                                sx={{
-                                  width: 24,
-                                  height: 24,
-                                  mr: 1,
-                                  bgcolor: theme.palette.primary.main,
-                                  fontSize: '0.8rem'
-                                }}
-                              >
-                                <FaUser size={12} />
-                              </Avatar>
-                              <Typography variant="body2">
-                                <strong>Added by:</strong> {getAssignedUserName(exam)}
-                              </Typography>
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              mt: 2,
+                              pt: 2,
+                              borderTop: '1px solid #eee'
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Avatar
+                                  sx={{
+                                    width: 24,
+                                    height: 24,
+                                    mr: 1,
+                                    bgcolor: theme.palette.primary.main,
+                                    fontSize: '0.8rem'
+                                  }}
+                                >
+                                  <FaUser size={12} />
+                                </Avatar>
+                                <Typography variant="body2">
+                                  <strong>Added by:</strong> {getAssignedUserName(exam)}
+                                </Typography>
+                              </Box>
+
+                              <Box>
+                                <IconButton
+                                  component={Link}
+                                  to={`/admin/exam/${exam.id}`}
+                                  color="primary"
+                                  size="small"
+                                  title="View Details"
+                                >
+                                  <FaEye />
+                                </IconButton>
+                                <IconButton
+                                  onClick={(e) => handleOpenMenu(e, exam)}
+                                  size="small"
+                                >
+                                  <FaEllipsisV />
+                                </IconButton>
+                              </Box>
                             </Box>
-
-                            <Box>
-                              <IconButton
-                                component={Link}
-                                to={`/admin/exam/${exam.id}`}
-                                color="primary"
-                                size="small"
-                                title="View Details"
-                              >
-                                <FaEye />
-                              </IconButton>
-                              <IconButton
-                                onClick={(e) => handleOpenMenu(e, exam)}
-                                size="small"
-                              >
-                                <FaEllipsisV />
-                              </IconButton>
-                            </Box>
-                          </Box>
-                        </StyledCardContent>
-                      </ExamCard>
+                          </StyledCardContent>
+                        </ExamCard>
+                      </Link>
                     </Grid>
                   ))}
               </Grid>
