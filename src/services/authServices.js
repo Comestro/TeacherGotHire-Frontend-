@@ -158,26 +158,26 @@ export const resetPassword = async (uidb64, token, newPassword) =>
     confirm_password: newPassword,
   });
 
-export const logout = async () => {
-  try {
-    // Remove tokens first to prevent further API calls
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("role");
-    
-    // Clear redux persist state
-    await persistor.purge();
-    await persistor.flush();
-    
-    // Try to call logout API, but don't wait for it
-    apiClient.post("/api/logout/").catch(() => {
-      // Ignore any errors from logout API
-      console.log("Logout API call failed, but local logout successful");
-    });
-    
-    return { success: true };
-  } catch (err) {
-    console.error("Error during logout:", err);
-    // Still return success since we've cleared local state
-    return { success: true };
-  }
-};
+  export const logout = async () => {
+    try {
+      // Step 1: Call the logout API first
+      await apiClient.post("/api/logout/").catch((err) => {
+        console.error("Logout API call failed:", err);
+        // Even if the API fails, proceed with local logout
+      });
+  
+      // Step 2: Clear local storage after the API call
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("role");
+  
+      // Step 3: Clear redux persist state
+      await persistor.purge();
+      await persistor.flush();
+  
+      return { success: true };
+    } catch (err) {
+      console.error("Error during logout:", err);
+      // Still return success since we've cleared local state
+      return { success: true };
+    }
+  };

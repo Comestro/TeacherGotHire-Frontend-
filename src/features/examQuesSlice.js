@@ -579,6 +579,22 @@ const examQuesSlice = createSlice({
 
       builder
       // for get data handeling
+      .addCase(getAllCenterUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getAllCenterUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.centerUser = action.payload;
+        console.log("centerUser",action.payload)
+      })
+      .addCase(getAllCenterUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
       .addCase(generatePasskey.pending, (state) => {
         state.status = "loading";
         state.error = null;

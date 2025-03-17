@@ -38,6 +38,7 @@ const ExamCenterDashboard = () => {
     return matchesStatus && matchesDate;
   });
 
+  console.log("centeruser",centerUser)
   // Handle approve button click
   const handleApprove = async (userId) => {
     try {
@@ -103,7 +104,7 @@ const ExamCenterDashboard = () => {
       {/* User List */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-medium text-gray-700 mb-4">User Details</h2>
-        {filteredUsers.length > 0 ? (
+        {centerUser?.length > 0 ? (
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200">
@@ -114,7 +115,7 @@ const ExamCenterDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user) => (
+              {centerUser?.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-100">
                   <td className="border border-gray-300 px-4 py-2">{user.code}</td>
                   <td className="border border-gray-300 px-4 py-2">{user.created_at}</td>
