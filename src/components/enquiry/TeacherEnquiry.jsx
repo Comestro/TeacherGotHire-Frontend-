@@ -13,7 +13,6 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getSubject } from "../../features/jobProfileSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
   const apiClient = axios.create({
@@ -25,6 +24,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [contactError, setContactError] = useState("");
 
   console.log("subject in home page", subject);
 
@@ -186,7 +186,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
         }
       );
 
-      console.log("form submit ho gya bhai", response.data);
       if (response.status === 200 || response.status === 201) {
         toast.success("Application submitted successfully!");
         resetForm();
@@ -194,9 +193,18 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      toast.error(
-        error.response?.data?.message || "Submission failed. Please try again."
-      );
+      if (
+        error.response?.data?.contact?.includes("This field must be unique.")
+      ) {
+        const errorMsg = "This contact number is already registered";
+        setContactError(errorMsg);
+        toast.error(errorMsg);
+      } else {
+        toast.error(
+          error.response?.data?.message ||
+            "Submission failed. Please try again."
+        );
+      }
     }
   };
   const isValidEmail = (email) => {
@@ -451,11 +459,27 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
                             <input
                               type="tel"
                               value={contactNumber}
-                              onChange={(e) => setContactNumber(e.target.value)}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                              onChange={(e) => {
+                                setContactNumber(e.target.value);
+                                setContactError(""); // Clear error when user types
+                              }}
+                              className={`w-full pl-10 pr-4 py-3 border ${
+                                contactError
+                                  ? "border-red-500"
+                                  : "border-gray-200"
+                              } rounded-lg focus:outline-none focus:ring-2 ${
+                                contactError
+                                  ? "focus:ring-red-500"
+                                  : "focus:ring-teal-500"
+                              }`}
                               placeholder="Enter phone number"
                             />
                           </div>
+                          {contactError && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {contactError}
+                            </p>
+                          )}
                         </div>
 
                         <div>

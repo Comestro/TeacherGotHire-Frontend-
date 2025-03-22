@@ -7,6 +7,7 @@ import {
 } from "react-icons/md";
 import { FiUser, FiBriefcase, FiLock, FiSave } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { postBasic } from "../../features/personalProfileSlice";
 
 export default function SettingsPage() {
   const dispatch = useDispatch();
@@ -31,6 +32,7 @@ export default function SettingsPage() {
     if (basicData) {
       setUserData({
         user: {
+          id: basicData.user?.id || "",
           Fname: basicData.user?.Fname || "",
           Lname: basicData.user?.Lname || "",
           email: basicData.user?.email || "",
@@ -70,26 +72,41 @@ export default function SettingsPage() {
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setUserData({
-        ...userData,
-        profile_picture: URL.createObjectURL(file)
-      });
+      setUserData(prev => ({
+        ...prev,
+        profile_picture: file,
+        profilePicturePreview: URL.createObjectURL(file), 
+      }));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Prepare data for API submission
-    const submissionData = {
-      ...userData,
-      user: {
-        Fname: userData.user.Fname,
-        Lname: userData.user.Lname,
-        email: userData.user.email,
-      }
-    };
-    console.log('Updated data:', submissionData);
-    // Add your API submission logic here
+  
+    const formData = new FormData();
+  
+    formData.append("user.Fname", userData.user.Fname);
+    formData.append("user.Lname", userData.user.Lname);
+  
+    formData.append("phone_number", userData.phone_number);
+    formData.append("bio", userData.bio);
+    formData.append("date_of_birth", userData.date_of_birth);
+    formData.append("marital_status", userData.marital_status);
+    formData.append("gender", userData.gender);
+    formData.append("language", userData.language);
+  
+    if (userData.profile_picture instanceof File) {
+      formData.append("profile_picture", userData.profile_picture);
+    } else if (typeof userData.profile_picture === "string") {
+      // formData.append("profile_picture", userData.profile_picture);
+    }
+  
+    try {
+      const result = await dispatch(postBasic(formData)).unwrap();
+      console.log("Success:", result);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (

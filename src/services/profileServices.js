@@ -4,10 +4,7 @@ import { getApiUrl,getPincodeUrl } from '../store/configue';
 
 const apiClient = axios.create({
   baseURL: getApiUrl(), // Use the API URL from config service
-  headers: {
-    'Content-Type': 'application/json',
-    
-  },
+  
   withCredentials: true, 
 }); 
 
@@ -19,18 +16,21 @@ const pincodeClient = axios.create({
   withCredentials: true, 
 });
 
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access_token'); // Fetch the token from localStorage
-    if (token) {
-      config.headers['Authorization'] = `Token ${token}`; // Add the token to the header
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers['Authorization'] = `Token ${token}`;
   }
-);
+
+  // Let Axios handle Content-Type for FormData
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']; // Axios auto-sets multipart/form-data
+  } else {
+    config.headers['Content-Type'] = 'application/json';
+  }
+
+  return config;
+});
 
 apiClient.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {

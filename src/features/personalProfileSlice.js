@@ -190,7 +190,7 @@ const personalProfileSlice = createSlice({
         // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
-          // state.basicData = action.payload; i will not update the basic data after post b
+          state.basicData = action.payload;
         })
         // Handle rejected state
         .addCase(postBasic.rejected, (state, action) => {

@@ -60,7 +60,7 @@ const Navbar = ({ links }) => {
         <FiUser className="mr-2" /> Dashboard
       </Link>
       <Link
-        to="/settings"
+        to="/teacher/setting"
         className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
