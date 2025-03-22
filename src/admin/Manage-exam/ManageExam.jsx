@@ -991,7 +991,7 @@ const ExamManagement = () => {
             onClose={handleCloseMenu}
             PaperProps={{
               elevation: 3,
-              sx: { minWidth: 200 }
+              sx: { minWidth: 200 },
             }}
           >
             <MenuItem onClick={handleEdit}>
@@ -1000,13 +1000,19 @@ const ExamManagement = () => {
                 <Typography>Edit Exam</Typography>
               </Box>
             </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('accept')} disabled={menuExam?.status}>
+            <MenuItem
+              onClick={() => handleStatusChange('accept')}
+              disabled={menuExam?.status === true} // Disable if already approved
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#4CAF50' }}>
                 <FaCheck size={14} />
                 <Typography>Accept Exam</Typography>
               </Box>
             </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('reject')} disabled={!menuExam?.status}>
+            <MenuItem
+              onClick={() => handleStatusChange('reject')}
+              disabled={menuExam?.status === false} // Disable if already rejected
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#FF9800' }}>
                 <FaTimes size={14} />
                 <Typography>Reject Exam</Typography>
