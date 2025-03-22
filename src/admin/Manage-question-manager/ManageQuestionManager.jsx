@@ -145,11 +145,11 @@ const ManageQuestionManager = () => {
   // Modal handlers
   const handleOpenModal = (isEdit = false, manager = null) => {
     setIsEditMode(isEdit);
-  
+
     if (isEdit && manager) {
       setSelectedManager(manager);
       setUserData({
-        id: manager.user.id,
+        id: manager.id, // Use the root-level `id` here
         email: manager.user.email,
         Fname: manager.user.Fname,
         Lname: manager.user.Lname,
@@ -157,10 +157,9 @@ const ManageQuestionManager = () => {
         is_verified: manager.user.is_verified
       });
       setSelectedSubjects(manager.subject.map(sub => sub.id));
-  
+
       // For edit mode, determine selected class categories
       const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
-      // Convert to numbers to ensure proper matching
       setSelectedClassCategories(uniqueClassCategories.map(Number));
     } else {
       // Reset form for new manager
@@ -176,7 +175,7 @@ const ManageQuestionManager = () => {
       setSelectedSubjects([]);
       setSelectedClassCategories([]);
     }
-  
+
     setOpenModal(true);
   };
 
@@ -197,45 +196,42 @@ const ManageQuestionManager = () => {
   const handleSave = async () => {
     try {
       setLoadingAction(true);
-  
+
       // Validate form
       if (!userData.email || !userData.Fname || !userData.Lname || (!isEditMode && !userData.password)) {
         setNotification({
           open: true,
           message: "Please fill all required fields",
-          severity: "error"
+          severity: "error",
         });
         setLoadingAction(false);
         return;
       }
-  
+
       if (selectedSubjects.length === 0) {
         setNotification({
           open: true,
           message: "Please select at least one subject",
-          severity: "error"
+          severity: "error",
         });
         setLoadingAction(false);
         return;
       }
-  
+
       // Prepare payload
       const payload = {
         user: {
-          id: isEditMode ? userData.id : null,  // Include ID for edit mode
           email: userData.email,
           Fname: userData.Fname,
           Lname: userData.Lname,
-          is_verified: userData.is_verified
+          ...(isEditMode ? {} : { password: userData.password }), // Include password only for new users
         },
         subject: selectedSubjects,
+        status: userData.is_verified, // Include status in the payload
       };
-  
-      // Add password only for new users
-      if (!isEditMode) {
-        payload.user.password = userData.password;
-      }
-  
+
+      console.log("Payload for user creation or update:", payload); // Debugging log
+
       // Call API
       let response;
       if (isEditMode) {
@@ -243,15 +239,15 @@ const ManageQuestionManager = () => {
       } else {
         response = await adminManageAssignedUserManager(payload);
       }
-  
+
       // Check if the response was successful
-      if (response && response.status) {
+      if (response && response.detail) {
         setNotification({
           open: true,
-          message: isEditMode ? "Manager updated successfully!" : "Manager assigned successfully!",
-          severity: "success"
+          message: response.detail, // Use the success message from the API response
+          severity: "success",
         });
-        
+
         // Refresh data and close modal
         await fetchData();
         handleCloseModal();
@@ -260,16 +256,24 @@ const ManageQuestionManager = () => {
       }
     } catch (error) {
       console.error("Error saving manager:", error);
+
+      // Extract detailed error message
+      const errorMessage =
+        error.response?.data?.error || // Specific error message from the API
+        error.response?.data?.message || // General message from the API
+        error.message || // Fallback to generic error message
+        "Failed to save changes";
+
       setNotification({
         open: true,
-        message: `Error: ${error.message || "Failed to save changes"}`,
-        severity: "error"
+        message: `Error: ${errorMessage}`,
+        severity: "error",
       });
     } finally {
       setLoadingAction(false);
     }
   };
-  
+
 
   // Delete functionality
   const handleDeleteConfirmation = (manager) => {
@@ -279,28 +283,28 @@ const ManageQuestionManager = () => {
 
   const handleDeleteManager = async () => {
     if (!managerToDelete) return;
-  
+
     try {
       setLoadingAction(true);
-      const response = await deleteAssignedUserManager(managerToDelete.user.id);
-      
-      if (response && response.status) {
-        setNotification({
-          open: true,
-          message: "Manager deleted successfully!",
-          severity: "success"
-        });
-        
-        await fetchData();
-      } else {
-        throw new Error("Failed to delete manager");
-      }
+
+      // Use the root-level `id` for deletion
+      await deleteAssignedUserManager(managerToDelete.id);
+
+      // Show success notification
+      setNotification({
+        open: true,
+        message: "Manager deleted successfully!",
+        severity: "success",
+      });
+
+      // Refresh data after deletion
+      await fetchData();
     } catch (error) {
       console.error("Error deleting manager:", error);
       setNotification({
         open: true,
-        message: `Error: ${error.message || "Failed to delete manager"}`,
-        severity: "error"
+        message: `Error: ${error.response?.data?.detail || error.message || "Failed to delete manager"}`,
+        severity: "error",
       });
     } finally {
       setLoadingAction(false);
@@ -308,13 +312,12 @@ const ManageQuestionManager = () => {
       setManagerToDelete(null);
     }
   };
-  
   // Status toggle functionality
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
       const updatedStatus = !manager.user.is_verified;
-  
+
       // Update the payload structure to match API expectations
       const payload = {
         user: {
@@ -326,9 +329,9 @@ const ManageQuestionManager = () => {
         },
         subject: manager.subject.map(sub => sub.id)
       };
-  
+
       const response = await updateAssignedUserManager(manager.user.id, payload);
-      
+
       if (response && response.status) {
         // Update local state for immediate UI update
         setManagers(prev =>
@@ -338,7 +341,7 @@ const ManageQuestionManager = () => {
               : m
           )
         );
-  
+
         setNotification({
           open: true,
           message: `Manager status ${updatedStatus ? 'activated' : 'deactivated'} successfully!`,
