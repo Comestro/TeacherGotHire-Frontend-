@@ -24,19 +24,80 @@ import {
   Grid,
   TableContainer,
   CircularProgress,
+  Chip,
+  Tooltip,
+  Avatar,
+  InputAdornment,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  Divider,
+  Badge,
+  Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Visibility as ViewIcon,
   GetApp as ExportIcon,
-  Delete as DeleteIcon,
+  Search as SearchIcon,
+  Refresh as RefreshIcon,
+  FilterList as FilterIcon,
+  Check as CheckIcon,
+  Clear as ClearIcon,
+  HelpOutline as HelpIcon,
+  PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
 import Layout from "../Admin/Layout";
 import { getTeacher, updateTeacher } from "../../services/adminTeacherApi";
 import { Link } from "react-router-dom";
 import { getQualification } from "../../services/adminManageQualificationApi";
 import { getSubjects } from "../../services/adminSubujectApi";
 
+// Styled components for enhanced UI
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    right: 3,
+    top: 3,
+    padding: '0 4px',
+  },
+}));
+
+const TeacherAvatar = styled(Avatar)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  width: 40,
+  height: 40,
+  fontWeight: 600,
+}));
+
+const StatusChip = styled(Chip)(({ theme, active }) => ({
+  fontWeight: 500,
+  backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+  }
+}));
+
+const FilterPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  borderRadius: theme.shape.borderRadius * 2,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    boxShadow: theme.shadows[4],
+  }
+}));
+
 const ManageTeacher = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const [teachers, setTeachers] = useState([]);
   const [selectedTeachers, setSelectedTeachers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,123 +111,179 @@ const ManageTeacher = () => {
     type: "",
   });
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [confirmStatusChange, setConfirmStatusChange] = useState({
+    open: false,
+    id: null,
+    currentStatus: null,
+    bulk: false
+  });
+  const [expandedFilters, setExpandedFilters] = useState(!isMobile);
+  const [processingStatus, setProcessingStatus] = useState(false);
 
   // Dynamic data state
   const [qualifications, setQualifications] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [statuses, setStatuses] = useState(["Approved", "Pending", "Rejected"]);
 
   // Fetch teacher data
-  useEffect(() => {
-    const fetchTeacherData = async () => {
-      try {
-        setLoading(true);
-        const response = await getTeacher();
-        if (Array.isArray(response)) {
-          // Ensure we have complete data and normalize it
-          const normalizedTeachers = response.map(teacher => ({
-            ...teacher,
-            teacherqualifications: teacher.teacherqualifications || [],
-            teachersubjects: teacher.teachersubjects || [],
-            teachersaddress: teacher.teachersaddress || [],
-            status: teacher.status || "Pending"
-          }));
+  const fetchTeacherData = async (showRefresh = false) => {
+    try {
+      if (showRefresh) setRefreshing(true);
+      else setLoading(true);
 
-          setTeachers(normalizedTeachers);
+      const response = await getTeacher();
+      if (Array.isArray(response)) {
+        // Ensure we have complete data and normalize it
+        const normalizedTeachers = response.map(teacher => ({
+          ...teacher,
+          teacherqualifications: teacher.teacherqualifications || [],
+          teachersubjects: teacher.teachersubjects || [],
+          teachersaddress: teacher.teachersaddress || [],
+        }));
 
-          // Extract unique locations from teacher data
-          const uniqueLocations = new Set();
-          normalizedTeachers.forEach(teacher => {
-            if (Array.isArray(teacher.teachersaddress)) {
-              teacher.teachersaddress.forEach(address => {
-                if (address && address.state) {
-                  uniqueLocations.add(address.state);
-                }
-              });
-            }
+        setTeachers(normalizedTeachers);
+
+        // Extract unique locations from teacher data
+        const uniqueLocations = new Set();
+        normalizedTeachers.forEach(teacher => {
+          if (Array.isArray(teacher.teachersaddress)) {
+            teacher.teachersaddress.forEach(address => {
+              if (address && address.state) {
+                uniqueLocations.add(address.state);
+              }
+            });
+          }
+        });
+        setLocations(Array.from(uniqueLocations));
+
+        if (showRefresh) {
+          setNotification({
+            open: true,
+            message: "Teacher data refreshed successfully",
+            type: "success",
           });
-          setLocations(Array.from(uniqueLocations));
-        } else {
-          console.error("Error fetching teacher data: ", response);
-          setError("Failed to load teacher data. Please try again later.");
         }
-      } catch (error) {
-        console.error("Error fetching teacher data: ", error);
-        setError("An error occurred while fetching data");
-      } finally {
-        setLoading(false);
+      } else {
+        console.error("Error fetching teacher data: ", response);
+        setError("Failed to load teacher data. Please try again later.");
       }
-    };
-    fetchTeacherData();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching teacher data: ", error);
+      setError("An error occurred while fetching data");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-  // Fetch qualifications
   useEffect(() => {
+    fetchTeacherData();
+
+    // Fetch qualifications and subjects
     const fetchQualifications = async () => {
       try {
         const response = await getQualification();
         if (Array.isArray(response)) {
           setQualifications(response);
-        } else {
-          console.error("Error fetching qualifications: ", response);
         }
       } catch (error) {
-        console.error("Error fetching qualifications: ", error);
+        console.error("Error fetching qualifications:", error);
       }
     };
-    fetchQualifications();
-  }, []);
 
-  // Fetch subjects
-  useEffect(() => {
     const fetchSubjects = async () => {
       try {
         const response = await getSubjects();
         if (Array.isArray(response)) {
-          console.log("Subjects data:", response); // Debugging log
           setSubjects(response);
-        } else {
-          console.error("Error fetching subjects: ", response);
         }
       } catch (error) {
-        console.error("Error fetching subjects: ", error);
+        console.error("Error fetching subjects:", error);
       }
     };
+
+    fetchQualifications();
     fetchSubjects();
   }, []);
 
-  const handleDeleteTeacher = (teacherId) => {
-    setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
-    setNotification({
+  // Reset page when filtering changes
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, selectedQualification, selectedSubject, selectedLocation, selectedStatus]);
+
+  // Adjust rows per page based on screen size
+  useEffect(() => {
+    setRowsPerPage(isMobile ? 5 : 10);
+
+    // If on mobile, collapse filters by default
+    if (isMobile) {
+      setExpandedFilters(false);
+    }
+  }, [isMobile]);
+
+  const confirmToggleStatus = (teacherId, currentStatus) => {
+    setConfirmStatusChange({
       open: true,
-      message: "Teacher deleted successfully",
-      type: "success",
+      id: teacherId,
+      currentStatus: currentStatus,
+      bulk: false
     });
   };
 
-  const handleBulkDelete = () => {
-    if (selectedTeachers.length === 0) {
+  const handleToggleStatus = async (teacherId, currentStatus) => {
+    try {
+      setProcessingStatus(true);
+
+      // Find the teacher object to get their email
+      const teacher = teachers.find(t => t.id === teacherId);
+
+      if (!teacher) {
+        setNotification({
+          open: true,
+          message: "Teacher not found",
+          type: "error",
+        });
+        return;
+      }
+
+      // Prepare update data with required fields
+      const updateData = {
+        email: teacher.email,
+        is_active: !currentStatus // Toggle the active status
+      };
+
+      // Call API to update teacher status
+      const response = await updateTeacher(teacherId, updateData);
+
+      if (response) {
+        // Update the local state after successful API call
+        setTeachers(
+          teachers.map((t) =>
+            t.id === teacherId ? { ...t, is_active: !currentStatus } : t
+          )
+        );
+
+        setNotification({
+          open: true,
+          message: `Teacher ${!currentStatus ? "activated" : "deactivated"} successfully`,
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating teacher status:", error);
       setNotification({
         open: true,
-        message: "Please select at least one teacher to delete",
-        type: "warning",
+        message: `Failed to update status: ${error.message || "Unknown error"}`,
+        type: "error",
       });
-      return;
+    } finally {
+      setProcessingStatus(false);
+      setConfirmStatusChange({ open: false, id: null, currentStatus: null, bulk: false });
     }
-
-    setTeachers(
-      teachers.filter((teacher) => !selectedTeachers.includes(teacher.id))
-    );
-    setSelectedTeachers([]);
-    setNotification({
-      open: true,
-      message: "Selected teachers deleted successfully",
-      type: "success",
-    });
   };
 
   const handleChangePage = (event, newPage) => {
@@ -176,6 +293,10 @@ const ManageTeacher = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleRefresh = () => {
+    fetchTeacherData(true);
   };
 
   const handleExportData = () => {
@@ -194,6 +315,8 @@ const ManageTeacher = () => {
         "First Name",
         "Last Name",
         "Email",
+        "Status",
+        "Verified",
         "Subjects",
         "Address",
         "Qualifications",
@@ -204,6 +327,8 @@ const ManageTeacher = () => {
         teacher.Fname || '',
         teacher.Lname || '',
         teacher.email || '',
+        teacher.is_active ? 'Active' : 'Inactive',
+        teacher.is_verified ? 'Verified' : 'Not Verified',
         (teacher.teachersubjects || []).join(", "),
         (teacher.teachersaddress || [])
           .map((address) => address?.state || '')
@@ -223,11 +348,17 @@ const ManageTeacher = () => {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "teachers_data.csv");
+    link.setAttribute("download", `teachers_export_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    setNotification({
+      open: true,
+      message: `${filteredTeachers.length} teachers exported successfully`,
+      type: "success",
+    });
   };
 
   const filteredTeachers = teachers.filter((teacher) => {
@@ -235,6 +366,16 @@ const ManageTeacher = () => {
     const teacherQualifications = teacher.teacherqualifications || [];
     const teacherSubjects = teacher.teachersubjects || [];
     const teacherAddresses = teacher.teachersaddress || [];
+
+    // Map status to is_active
+    let activeStatusMatch = true;
+    if (selectedStatus) {
+      if (selectedStatus.toLowerCase() === "approved") {
+        activeStatusMatch = teacher.is_active === true;
+      } else if (selectedStatus.toLowerCase() === "rejected") {
+        activeStatusMatch = teacher.is_active === false;
+      }
+    }
 
     return (
       // Search query filtering
@@ -263,8 +404,7 @@ const ManageTeacher = () => {
         )) &&
 
       // Status filtering
-      (!selectedStatus ||
-        (teacher.status?.toLowerCase() || '') === selectedStatus.toLowerCase())
+      activeStatusMatch
     );
   });
 
@@ -277,64 +417,120 @@ const ManageTeacher = () => {
     setSelectedTeachers([]);
   };
 
-  // Handler for status change
-  // Handler for status change
-  const handleStatusChange = async (teacherId, currentStatus) => {
-    try {
-      const newStatus = currentStatus === "Approved" ? "Rejected" : "Approved";
+  // Function to render teacher cards for mobile view
+  const renderTeacherCard = (teacher) => {
+    const initials = `${teacher.Fname?.charAt(0) || ''}${teacher.Lname?.charAt(0) || ''}`;
 
-      // Find the teacher object to get their email
-      const teacher = teachers.find(t => t.id === teacherId);
+    return (
+      <Card
+        key={teacher.id}
+        sx={{
+          mb: 2,
+          borderRadius: 2,
+          boxShadow: 2,
+          borderLeft: `5px solid ${teacher.is_active ? theme.palette.success.main : theme.palette.error.main}`,
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-3px)',
+            boxShadow: 4,
+          }
+        }}
+      >
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+            <Box display="flex" alignItems="center">
+              <Checkbox
+                checked={selectedTeachers.includes(teacher.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedTeachers([...selectedTeachers, teacher.id]);
+                  } else {
+                    setSelectedTeachers(selectedTeachers.filter((id) => id !== teacher.id));
+                  }
+                }}
+                sx={{ p: 0, mr: 1 }}
+              />
+              <TeacherAvatar>{initials}</TeacherAvatar>
+              <Box ml={1}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ lineHeight: 1.2 }}>
+                  {`${teacher.Fname || ''} ${teacher.Lname || ''}`}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {teacher.email || ''}
+                </Typography>
+              </Box>
+            </Box>
+            <StatusChip
+              label={teacher.is_active ? "Active" : "Inactive"}
+              active={teacher.is_active}
+              size="small"
+              sx={{ color: '#fff' }}
+            />
+          </Box>
 
-      if (!teacher) {
-        setNotification({
-          open: true,
-          message: "Teacher not found",
-          type: "error",
-        });
-        return;
-      }
+          <Divider sx={{ my: 1.5 }} />
 
-      // Include all required fields in the update request
-      const updateData = {
-        email: teacher.email,
-        status: newStatus,
-        // Add any other required fields here if needed by your API
-      };
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Typography variant="caption" color="textSecondary" display="block">
+                Qualifications:
+              </Typography>
+              <Typography variant="body2">
+                {(teacher.teacherqualifications || [])
+                  .map((q) => q?.qualification?.name || '')
+                  .filter(Boolean)
+                  .join(", ") || 'N/A'}
+              </Typography>
+            </Grid>
 
-      console.log("Sending update data:", updateData);
+            <Grid item xs={12}>
+              <Typography variant="caption" color="textSecondary" display="block">
+                Location:
+              </Typography>
+              <Typography variant="body2">
+                {(teacher.teachersaddress || [])
+                  .map((address) => address?.state || '')
+                  .filter(Boolean)
+                  .join(", ") || 'N/A'}
+              </Typography>
+            </Grid>
+          </Grid>
 
-      // Call API to update teacher status
-      const response = await updateTeacher(teacherId, updateData);
-
-      if (response) {
-        // Update the local state after successful API call
-        setTeachers(
-          teachers.map((t) =>
-            t.id === teacherId ? { ...t, status: newStatus } : t
-          )
-        );
-
-        setNotification({
-          open: true,
-          message: `Teacher status updated to ${newStatus}`,
-          type: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Error updating teacher status:", error);
-      setNotification({
-        open: true,
-        message: `Failed to update teacher status: ${error.message || "Unknown error"}`,
-        type: "error",
-      });
-    }
+          <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+            <Tooltip title={teacher.is_active ? "Deactivate" : "Activate"}>
+              <Box>
+                <Switch
+                  checked={teacher.is_active === true}
+                  onChange={() => confirmToggleStatus(teacher.id, teacher.is_active)}
+                  color={teacher.is_active ? "success" : "error"}
+                  size="small"
+                />
+              </Box>
+            </Tooltip>
+            <Box>
+              <IconButton
+                component={Link}
+                to={`/admin/view/teacher/${teacher.id}`}
+                size="small"
+                color="primary"
+              >
+                <ViewIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    );
   };
+
+  // Calculate the number of active and inactive teachers
+  const activeTeachers = teachers.filter(teacher => teacher.is_active === true).length;
+  const inactiveTeachers = teachers.filter(teacher => teacher.is_active === false).length;
 
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
-        {/* Header section */}
+        {/* Header section with stats */}
         <Box
           display="flex"
           flexDirection={{ xs: 'column', md: 'row' }}
@@ -343,157 +539,300 @@ const ManageTeacher = () => {
           gap={2}
           mb={3}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              color: "primary.main",
-              fontWeight: 700,
-              fontSize: { xs: "1.75rem", sm: "2.125rem" },
-            }}
-          >
-            Manage Teachers
-          </Typography>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                color: "primary.main",
+                fontWeight: 700,
+                fontSize: { xs: "1.75rem", sm: "2.125rem" },
+              }}
+            >
+              Manage Teachers
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+              {teachers.length} teachers registered • {activeTeachers} active • {inactiveTeachers} inactive
+            </Typography>
+          </Box>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<ExportIcon />}
-            onClick={handleExportData}
-            sx={{
-              boxShadow: 2,
-              textTransform: 'none',
-              minWidth: { xs: '100%', sm: 'auto' }
-            }}
-          >
-            Export Data
-          </Button>
+          <Box display="flex" gap={2} width={{ xs: '100%', md: 'auto' }}>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={handleRefresh}
+              disabled={refreshing}
+              sx={{
+                textTransform: 'none',
+                minWidth: { xs: '50%', md: 'auto' }
+              }}
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<ExportIcon />}
+              onClick={handleExportData}
+              sx={{
+                boxShadow: 2,
+                textTransform: 'none',
+                minWidth: { xs: '50%', md: 'auto' }
+              }}
+            >
+              Export Data
+            </Button>
+          </Box>
         </Box>
 
-        {/* Search and filters */}
-        <Paper
-          elevation={2}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            mb: 3,
-            borderRadius: 2
-          }}
-        >
+        {/* Search bar */}
+        <FilterPaper elevation={2}>
           <Box mb={2}>
             <TextField
-              label="Search Teachers"
-              variant="outlined"
               fullWidth
+              placeholder="Search by name, email, or ID"
+              variant="outlined"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: searchQuery && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
             />
           </Box>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl variant="outlined" fullWidth size="small">
-                <InputLabel>Qualification</InputLabel>
-                <Select
-                  label="Qualification"
-                  value={selectedQualification}
-                  onChange={(e) => setSelectedQualification(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>All</em>
-                  </MenuItem>
-                  {qualifications.map((qualification) => (
-                    <MenuItem key={qualification.id} value={qualification.name?.toLowerCase()}>
-                      {qualification.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl variant="outlined" fullWidth size="small">
-                <InputLabel>Subject Expertise</InputLabel>
-                <Select
-                  label="Subject Expertise"
-                  value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>All</em>
-                  </MenuItem>
-                  {subjects.map((subject) => (
-                    <MenuItem key={subject.id} value={subject.subject_name?.toLowerCase()}>
-                      {subject.subject_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl variant="outlined" fullWidth size="small">
-                <InputLabel>Location</InputLabel>
-                <Select
-                  label="Location"
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>All</em>
-                  </MenuItem>
-                  {locations.map((location, index) => (
-                    <MenuItem key={index} value={location?.toLowerCase()}>
-                      {location}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl variant="outlined" fullWidth size="small">
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>All</em>
-                  </MenuItem>
-                  {statuses.map((status, index) => (
-                    <MenuItem key={index} value={status.toLowerCase()}>
-                      {status}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </Paper>
+          {/* Filter section with toggle for mobile */}
+          <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="subtitle1" fontWeight={600} color="text.primary">
+              Filters
+            </Typography>
+            {isMobile && (
+              <Button
+                startIcon={<FilterIcon />}
+                onClick={() => setExpandedFilters(!expandedFilters)}
+                size="small"
+                color="inherit"
+              >
+                {expandedFilters ? 'Hide Filters' : 'Show Filters'}
+              </Button>
+            )}
+          </Box>
 
-        {/* Teachers Table */}
+          {/* Collapsible filters */}
+          {(expandedFilters || !isMobile) && (
+            <Grid container spacing={2}>
+              {/* Qualification Filter */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Typography variant="body2" fontWeight={500} gutterBottom>Qualification</Typography>
+                <FormControl variant="outlined" fullWidth size="small">
+                  <Select
+                    value={selectedQualification}
+                    onChange={(e) => setSelectedQualification(e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) return "All Qualifications";
+                      return selected;
+                    }}
+                  >
+                    <MenuItem value="">All Qualifications</MenuItem>
+                    {qualifications.map((qualification) => (
+                      <MenuItem key={qualification.id} value={qualification.name?.toLowerCase()}>
+                        {qualification.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Subject Filter */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Typography variant="body2" fontWeight={500} gutterBottom>Subject</Typography>
+                <FormControl variant="outlined" fullWidth size="small">
+                  <Select
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) return "All Subjects";
+                      return selected;
+                    }}
+                  >
+                    <MenuItem value="">All Subjects</MenuItem>
+                    {subjects.map((subject) => (
+                      <MenuItem key={subject.id} value={subject.subject_name?.toLowerCase()}>
+                        {subject.subject_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Location Filter */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Typography variant="body2" fontWeight={500} gutterBottom>Location</Typography>
+                <FormControl variant="outlined" fullWidth size="small">
+                  <Select
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) return "All Locations";
+                      return selected;
+                    }}
+                  >
+                    <MenuItem value="">All Locations</MenuItem>
+                    {locations.map((location, index) => (
+                      <MenuItem key={index} value={location?.toLowerCase()}>
+                        {location}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Status Filter */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Typography variant="body2" fontWeight={500} gutterBottom>Status</Typography>
+                <FormControl variant="outlined" fullWidth size="small">
+                  <Select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) return "All Status";
+                      return selected === "approved" ? "Active" : selected === "rejected" ? "Inactive" : "All Statuses";
+                    }}
+                  >
+                    <MenuItem value="">All Status</MenuItem>
+                    <MenuItem value="approved">Active</MenuItem>
+                    <MenuItem value="rejected">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          )}
+
+          {/* Filter results summary */}
+          {filteredTeachers.length > 0 && (
+            <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Showing {filteredTeachers.length} of {teachers.length} teachers
+              </Typography>
+              {(selectedQualification || selectedSubject || selectedLocation || selectedStatus) && (
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedQualification("");
+                    setSelectedSubject("");
+                    setSelectedLocation("");
+                    setSelectedStatus("");
+                  }}
+                  startIcon={<ClearIcon fontSize="small" />}
+                  color="primary"
+                >
+                  Clear filters
+                </Button>
+              )}
+            </Box>
+          )}
+        </FilterPaper>
+
+        {/* Teachers List/Table */}
         <Paper
-          elevation={2}
+          elevation={3}
           sx={{
             borderRadius: 2,
             overflow: "hidden",
+            transition: "all 0.3s ease"
           }}
         >
           {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={4}>
-              <CircularProgress />
+            <Box p={3}>
+              <Grid container spacing={2}>
+                {[1, 2, 3, 4, 5].map((item) => (
+                  <Grid item xs={12} key={item}>
+                    <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 1 }} />
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
           ) : error ? (
-            <Box p={3}>
-              <Alert severity="error">{error}</Alert>
+            <Box p={3} textAlign="center">
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                action={
+                  <Button color="inherit" size="small" onClick={handleRefresh}>
+                    Try Again
+                  </Button>
+                }
+              >
+                {error}
+              </Alert>
             </Box>
           ) : filteredTeachers.length === 0 ? (
-            <Box p={3} textAlign="center">
-              <Alert severity="info">No teachers found matching your criteria</Alert>
+            <Box p={4} textAlign="center">
+              <Box mb={2}>
+                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus ? (
+                  <HelpIcon fontSize="large" color="action" sx={{ fontSize: 60, opacity: 0.5 }} />
+                ) : (
+                  <PersonAddIcon fontSize="large" color="primary" sx={{ fontSize: 60, opacity: 0.7 }} />
+                )}
+              </Box>
+              <Typography variant="h6" color="textSecondary" gutterBottom>
+                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus
+                  ? "No teachers match your search criteria"
+                  : "No teachers registered yet"}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" paragraph>
+                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus
+                  ? "Try adjusting your search filters to find what you're looking for."
+                  : "Teachers who register on the platform will appear here."}
+              </Typography>
+              {(searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus) && (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<ClearIcon />}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedQualification("");
+                    setSelectedSubject("");
+                    setSelectedLocation("");
+                    setSelectedStatus("");
+                  }}
+                  sx={{ mt: 1 }}
+                >
+                  Clear all filters
+                </Button>
+              )}
+            </Box>
+          ) : isMobile ? (
+            // Mobile card view
+            <Box p={2}>
+              {filteredTeachers
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map(renderTeacherCard)}
             </Box>
           ) : (
+            // Desktop table view
             <>
               <TableContainer>
                 <Table>
-                  <TableHead sx={{ bgcolor: 'background.default' }}>
+                  <TableHead sx={{ bgcolor: theme.palette.background.default }}>
                     <TableRow>
                       <TableCell padding="checkbox">
                         <Checkbox
@@ -508,10 +847,9 @@ const ManageTeacher = () => {
                           onChange={handleSelectAllClick}
                         />
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Full Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Email Address</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                       <TableCell sx={{ fontWeight: 600, display: { xs: 'none', md: 'table-cell' } }}>Qualification</TableCell>
-                      <TableCell sx={{ fontWeight: 600, display: { xs: 'none', sm: 'table-cell' } }}>Subjects</TableCell>
                       <TableCell sx={{ fontWeight: 600, display: { xs: 'none', lg: 'table-cell' } }}>Location</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
@@ -520,137 +858,167 @@ const ManageTeacher = () => {
                   <TableBody>
                     {filteredTeachers
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((teacher) => (
-                        <TableRow
-                          key={teacher.id || Math.random().toString()}
-                          hover
-                          sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={selectedTeachers.includes(teacher.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedTeachers([
-                                    ...selectedTeachers,
-                                    teacher.id,
-                                  ]);
-                                } else {
-                                  setSelectedTeachers(
-                                    selectedTeachers.filter((id) => id !== teacher.id)
-                                  );
-                                }
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>{`${teacher.Fname || ''} ${teacher.Lname || ''}`}</TableCell>
-                          <TableCell>{teacher.email || ''}</TableCell>
-                          <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                            {(teacher.teacherqualifications || [])
-                              .map((q) => q?.qualification?.name || '')
-                              .filter(Boolean)
-                              .join(", ") || 'N/A'}
-                          </TableCell>
-                          <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                            {(teacher.teachersubjects || []).join(", ") || 'N/A'}
-                          </TableCell>
-                          <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                            {(teacher.teachersaddress || [])
-                              .map((address) => address?.state || '')
-                              .filter(Boolean)
-                              .join(", ") || 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={teacher.status === "Approved"}
-                              onChange={() => handleStatusChange(teacher.id, teacher.status)}
-                              color="primary"
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Box display="flex" gap={1}>
-                              <IconButton
-                                component={Link}
-                                to={`/admin/view/teacher/${teacher.id}`}
+                      .map((teacher) => {
+                        const initials = `${teacher.Fname?.charAt(0) || ''}${teacher.Lname?.charAt(0) || ''}`;
+                        return (
+                          <TableRow
+                            key={teacher.id || Math.random().toString()}
+                            hover
+                            sx={{ '&:nth-of-type(even)': { backgroundColor: theme.palette.action.hover } }}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedTeachers.includes(teacher.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedTeachers([...selectedTeachers, teacher.id]);
+                                  } else {
+                                    setSelectedTeachers(selectedTeachers.filter((id) => id !== teacher.id));
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box display="flex" alignItems="center">
+                                <TeacherAvatar>{initials}</TeacherAvatar>
+                                <Box ml={1}>
+                                  <Typography variant="subtitle2" fontWeight={600}>
+                                    {`${teacher.Fname || ''} ${teacher.Lname || ''}`}
+                                  </Typography>
+                                  <Typography variant="body2" color="textSecondary">
+                                    ID: {teacher.id || ''}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </TableCell>
+                            <TableCell>{teacher.email || ''}</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                              {(teacher.teacherqualifications || [])
+                                .map((q) => q?.qualification?.name || '')
+                                .filter(Boolean)
+                                .join(", ") || 'N/A'}
+                            </TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
+                              {(teacher.teachersaddress || [])
+                                .map((address) => address?.state || '')
+                                .filter(Boolean)
+                                .join(", ") || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <StatusChip
+                                label={teacher.is_active ? "Active" : "Inactive"}
+                                active={teacher.is_active}
                                 size="small"
-                                color="primary"
-                              >
-                                <ViewIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                onClick={() => handleDeleteTeacher(teacher.id)}
-                                size="small"
-                                color="error"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    component={Link}
+                                    to={`/admin/view/teacher/${teacher.id}`}
+                                    size="small"
+                                    color="primary"
+                                  >
+                                    <ViewIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title={teacher.is_active ? "Deactivate" : "Activate"}>
+                                  <span>
+                                    <Switch
+                                      checked={teacher.is_active === true}
+                                      onChange={() => confirmToggleStatus(teacher.id, teacher.is_active)}
+                                      size="small"
+                                      color={teacher.is_active ? "success" : "error"}
+                                      sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                          color: theme.palette.success.main,
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                          backgroundColor: theme.palette.success.main,
+                                        },
+                                        '& .MuiSwitch-switchBase:not(.Mui-checked)': {
+                                          color: theme.palette.error.main,
+                                        },
+                                        '& .MuiSwitch-switchBase:not(.Mui-checked) + .MuiSwitch-track': {
+                                          backgroundColor: theme.palette.error.light,
+                                        },
+                                      }}
+                                    />
+                                  </span>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+                      )}
                   </TableBody>
                 </Table>
               </TableContainer>
-              <Box
-                display="flex"
-                flexDirection={{ xs: 'column', sm: 'row' }}
-                justifyContent="space-between"
-                alignItems={{ xs: 'stretch', sm: 'center' }}
-                p={2}
-                gap={2}
-              >
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={handleBulkDelete}
-                  startIcon={<DeleteIcon />}
-                  disabled={selectedTeachers.length === 0}
-                  sx={{
-                    textTransform: 'none',
-                    order: { xs: 2, sm: 1 },
-                    boxShadow: 1
-                  }}
-                >
-                  Delete Selected ({selectedTeachers.length})
-                </Button>
-                <TablePagination
-                  rowsPerPageOptions={[10, 25, 50]}
-                  component="div"
-                  count={filteredTeachers.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  sx={{
-                    order: { xs: 1, sm: 2 },
-                    '.MuiTablePagination-toolbar': {
-                      flexWrap: 'wrap'
-                    }
-                  }}
-                />
-              </Box>
+
+              {/* Pagination */}
+
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={filteredTeachers.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
             </>
           )}
         </Paper>
-
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={6000}
-          onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={() => setNotification({ ...notification, open: false })}
-            severity={notification.type}
-            sx={{ width: '100%' }}
-          >
-            {notification.message}
-          </Alert>
-        </Snackbar>
       </Container>
+
+      {/* Snackbar notification */}
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+      >
+        <Alert
+          severity={notification.type}
+          onClose={() => setNotification({ ...notification, open: false })}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Confirm status change dialog */}
+      <Dialog
+        open={confirmStatusChange.open}
+        onClose={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
+      >
+        <DialogTitle>
+          Confirm Status Change
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to {confirmStatusChange.currentStatus ? "deactivate" : "activate"} the selected teacher?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
+            color="primary"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleToggleStatus(confirmStatusChange.id, confirmStatusChange.currentStatus)}
+            color="error"
+            disabled={processingStatus}
+          >
+            {processingStatus ? "Processing..." : "Confirm"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
-};
+}
 
 export default ManageTeacher;

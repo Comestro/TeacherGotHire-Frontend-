@@ -33,17 +33,17 @@ import {
   Fade,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { 
-  FaCheck, 
-  FaTimes, 
-  FaEye, 
-  FaSearch, 
-  FaFilter 
+import {
+  FaCheck,
+  FaTimes,
+  FaEye,
+  FaSearch,
+  FaFilter
 } from "react-icons/fa";
-import { 
-  MdClose, 
-  MdCheckCircle, 
-  MdCancel, 
+import {
+  MdClose,
+  MdCheckCircle,
+  MdCancel,
   MdAccessTime,
   MdRefresh
 } from "react-icons/md";
@@ -75,18 +75,18 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
   fontWeight: 500,
   backgroundColor:
     status === "requested"
-      ? theme.palette.warning.main
+      ? theme.palette?.warning?.main || '#ff9800'
       : status === "fulfilled"
-        ? theme.palette.success.main
-        : theme.palette.error.main,
+        ? theme.palette?.success?.main || '#4caf50'
+        : theme.palette?.error?.main || '#f44336',
   color: "#fff",
   '&:hover': {
     backgroundColor:
       status === "requested"
-        ? theme.palette.warning.dark
+        ? theme.palette?.warning?.dark || '#f57c00'
         : status === "fulfilled"
-          ? theme.palette.success.dark
-          : theme.palette.error.dark,
+          ? theme.palette?.success?.dark || '#388e3c'
+          : theme.palette?.error?.dark || '#d32f2f',
   }
 }));
 
@@ -156,12 +156,13 @@ const PasskeyManagement = () => {
 
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      const matchesSearch = 
+      // Make sure we safely access properties with optional chaining
+      const matchesSearch =
         (item.user?.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.exam?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.center?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.code || "").toLowerCase().includes(searchTerm.toLowerCase());
-        
+
       const matchesStatus =
         statusFilter === "all" || item.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -243,34 +244,20 @@ const PasskeyManagement = () => {
     }
   };
 
-  // Function to render status icon based on status
-  const renderStatusIcon = (status) => {
-    switch (status) {
-      case "fulfilled":
-        return <MdCheckCircle style={{ color: theme.palette.success.main }} />;
-      case "rejected":
-        return <MdCancel style={{ color: theme.palette.error.main }} />;
-      case "requested":
-      default:
-        return <MdAccessTime style={{ color: theme.palette.warning.main }} />;
-    }
-  };
-
   // Render mobile card view
   const renderMobileCard = (row) => {
     return (
-      <Card 
+      <Card
         key={row.id}
         variant="outlined"
         sx={{
           mb: 2,
-          borderLeft: `4px solid ${
-            row.status === "fulfilled" 
-              ? theme.palette.success.main
-              : row.status === "rejected"
-                ? theme.palette.error.main
-                : theme.palette.warning.main
-          }`
+          borderLeft: `4px solid ${row.status === "fulfilled"
+            ? theme.palette?.success?.main || '#4caf50'
+            : row.status === "rejected"
+              ? theme.palette?.error?.main || '#f44336'
+              : theme.palette?.warning?.main || '#ff9800'
+            }`
         }}
       >
         <CardContent sx={{ p: 2 }}>
@@ -280,7 +267,6 @@ const PasskeyManagement = () => {
             </Typography>
             <StatusChip
               size="small"
-              icon={renderStatusIcon(row.status)}
               label={
                 row.status === "fulfilled" ? "Fulfilled" :
                   row.status === "rejected" ? "Rejected" : "Requested"
@@ -288,9 +274,9 @@ const PasskeyManagement = () => {
               status={row.status}
             />
           </Box>
-          
+
           <Divider sx={{ my: 1 }} />
-          
+
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Typography variant="caption" color="textSecondary">
@@ -325,18 +311,18 @@ const PasskeyManagement = () => {
               </Typography>
             </Grid>
           </Grid>
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
             <Tooltip title="View Details">
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setDetailsModal({ open: true, data: row })}
                 color="primary"
               >
                 <FaEye />
               </IconButton>
             </Tooltip>
-            
+
             {row.status === "requested" && (
               <>
                 <Tooltip title="Approve">
@@ -380,18 +366,18 @@ const PasskeyManagement = () => {
   return (
     <Layout>
       <Box sx={{ p: { xs: 2, sm: 3 } }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
           flexDirection: isMobile ? 'column' : 'row',
           gap: isMobile ? 2 : 0
         }}>
-          <Typography 
-            variant={isMobile ? "h5" : "h4"} 
-            sx={{ 
-              fontWeight: 600, 
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{
+              fontWeight: 600,
               mb: isMobile ? 1 : 0,
               width: isMobile ? '100%' : 'auto'
             }}
@@ -400,7 +386,7 @@ const PasskeyManagement = () => {
           </Typography>
 
           <Button
-            variant="outlined" 
+            variant="outlined"
             startIcon={<MdRefresh />}
             onClick={fetchData}
             disabled={loading}
@@ -411,8 +397,8 @@ const PasskeyManagement = () => {
           </Button>
         </Box>
 
-        <Paper 
-          elevation={2} 
+        <Paper
+          elevation={2}
           sx={{ p: { xs: 2, sm: 3 }, mb: 3, borderRadius: 2 }}
         >
           <Grid container spacing={2}>
@@ -438,7 +424,7 @@ const PasskeyManagement = () => {
                   label="Status Filter"
                   startAdornment={<FaFilter style={{ marginRight: 8 }} />}
                 >
-                  <MenuItem value="all">All Statuses</MenuItem>
+                  <MenuItem value="all">All Status</MenuItem>
                   <MenuItem value="requested">Requested</MenuItem>
                   <MenuItem value="fulfilled">Fulfilled</MenuItem>
                   <MenuItem value="rejected">Rejected</MenuItem>
@@ -453,11 +439,11 @@ const PasskeyManagement = () => {
             <CircularProgress />
           </Box>
         ) : filteredData.length === 0 ? (
-          <Paper 
-            elevation={2} 
-            sx={{ 
-              p: 3, 
-              textAlign: 'center', 
+          <Paper
+            elevation={2}
+            sx={{
+              p: 3,
+              textAlign: 'center',
               borderRadius: 2,
               backgroundColor: theme.palette.grey[50]
             }}
@@ -466,7 +452,7 @@ const PasskeyManagement = () => {
               No passkey requests found
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {searchTerm || statusFilter !== "all" 
+              {searchTerm || statusFilter !== "all"
                 ? "Try adjusting your search or filter"
                 : "There are no passkey requests at this time"}
             </Typography>
@@ -485,9 +471,9 @@ const PasskeyManagement = () => {
             </Box>
           </>
         ) : (
-          <TableContainer 
-            component={Paper} 
-            sx={{ 
+          <TableContainer
+            component={Paper}
+            sx={{
               borderRadius: 2,
               overflow: 'hidden',
               boxShadow: 2
@@ -509,10 +495,10 @@ const PasskeyManagement = () => {
                 {filteredData
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
-                    <TableRow 
+                    <TableRow
                       key={row.id}
-                      hover 
-                      sx={{ 
+                      hover
+                      sx={{
                         '&:nth-of-type(odd)': {
                           backgroundColor: theme.palette.action.hover
                         }
@@ -531,20 +517,19 @@ const PasskeyManagement = () => {
                               row.status === "rejected" ? "Rejected" : "Requested"
                           }
                           status={row.status}
-                          icon={renderStatusIcon(row.status)}
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
-                        {row.created_at 
-                          ? new Date(row.created_at).toLocaleDateString() 
+                        {row.created_at
+                          ? new Date(row.created_at).toLocaleDateString()
                           : "N/A"}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                           <Tooltip title="View Details">
-                            <IconButton 
-                              onClick={() => setDetailsModal({ open: true, data: row })} 
+                            <IconButton
+                              onClick={() => setDetailsModal({ open: true, data: row })}
                               size="small"
                               color="primary"
                             >
@@ -621,23 +606,23 @@ const PasskeyManagement = () => {
             <ModalContent>
               {detailsModal.data && (
                 <>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     mb: 3
                   }}>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                       Request Details
                     </Typography>
-                    <IconButton 
+                    <IconButton
                       onClick={() => setDetailsModal({ open: false, data: null })}
                       size="small"
                     >
                       <MdClose />
                     </IconButton>
                   </Box>
-                  
+
                   <Box sx={{ mb: 2 }}>
                     <StatusChip
                       label={
@@ -648,9 +633,9 @@ const PasskeyManagement = () => {
                       sx={{ borderRadius: 1 }}
                     />
                   </Box>
-                  
+
                   <Divider sx={{ mb: 3 }} />
-                  
+
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
@@ -662,7 +647,7 @@ const PasskeyManagement = () => {
                         </Typography>
                       </Paper>
                     </Grid>
-                    
+
                     <Grid item xs={12}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                         Exam Details
@@ -693,18 +678,18 @@ const PasskeyManagement = () => {
                         </Grid>
                       </Paper>
                     </Grid>
-                    
+
                     {detailsModal.data.status === "rejected" && detailsModal.data.reject_reason && (
                       <Grid item xs={12}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.error.main }}>
                           Rejection Reason
                         </Typography>
-                        <Paper 
-                          variant="outlined" 
-                          sx={{ 
-                            p: 2, 
-                            mt: 1, 
-                            borderRadius: 1, 
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 2,
+                            mt: 1,
+                            borderRadius: 1,
                             borderColor: theme.palette.error.light,
                             backgroundColor: theme.palette.error.light + '10'
                           }}
@@ -716,9 +701,9 @@ const PasskeyManagement = () => {
                       </Grid>
                     )}
                   </Grid>
-                  
+
                   <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button 
+                    <Button
                       variant="outlined"
                       onClick={() => setDetailsModal({ open: false, data: null })}
                     >
@@ -741,16 +726,16 @@ const PasskeyManagement = () => {
         >
           <Fade in={confirmModal.open}>
             <ModalContent>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 mb: 3
               }}>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   {confirmModal.type === "approve" ? "Approve Request" : "Reject Request"}
                 </Typography>
-                <IconButton 
+                <IconButton
                   onClick={() => !processing && setConfirmModal({ open: false, type: null, data: null })}
                   size="small"
                   disabled={processing}
@@ -758,9 +743,9 @@ const PasskeyManagement = () => {
                   <MdClose />
                 </IconButton>
               </Box>
-              
+
               <Divider sx={{ mb: 3 }} />
-              
+
               {confirmModal.type === "approve" ? (
                 <>
                   <Typography variant="body1" sx={{ mb: 3 }}>
@@ -843,9 +828,9 @@ const PasskeyManagement = () => {
           open={snackbar.open}
           autoHideDuration={6000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ 
-            vertical: isMobile ? 'top' : 'bottom', 
-            horizontal: 'center' 
+          anchorOrigin={{
+            vertical: isMobile ? 'top' : 'bottom',
+            horizontal: 'center'
           }}
         >
           <Alert

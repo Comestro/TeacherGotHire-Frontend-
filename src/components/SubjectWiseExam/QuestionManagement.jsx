@@ -25,6 +25,7 @@ const QuestionManagement = () => {
     language: [],
     time: "",
   });
+  
   const dispatch = useDispatch();
   const { setterExamSet, loading, setterUser, levels, error } = useSelector(
     (state) => state.examQues
@@ -146,24 +147,11 @@ const QuestionManagement = () => {
     try {
 
       if (editingQuestionIndex !== null){
-        const response = await dispatch(postQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
+        const response = await dispatch(putQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
         console.log("API Response:", response);
       }else{
-        const response = await dispatch(putQuestionToExamSet(payload)).unwrap();
+        const response = await dispatch(postQuestionToExamSet(payload)).unwrap();
       }
-      
-
-      // const updatedExamSet = {
-      //   ...selectedExamSet,
-      //   questions: [
-      //     ...selectedExamSet.questions,
-      //     {
-      //       ...currentQuestion,
-      //       id: Date.now(),
-      //     },
-      //   ],
-      // };
-      // Add any state updates if needed
     } catch (error) {
       console.error("API Error:", error);
     }
@@ -171,11 +159,34 @@ const QuestionManagement = () => {
 
   const handleEditQuestion = (questionId) => {
     console.log("Editing question:", questionId);
-    setEditingQuestionIndex(questionId)
-    const examSet = setterExamSet[editingIndex]
-    console.log("examSet",examSet)
-    // Object.keys(examSet).forEach((key) => setValue(key, examSet[key]));
-  };
+    
+    // Find the index of the question with the matching id
+    const examSet = setterExamSet[editingIndex]?.questions || [];
+    const questionToEdit = examSet.find((q) => q.id === questionId);
+
+    if (questionToEdit) {
+        console.log("Editing question details:", questionToEdit);
+        
+
+        setCurrentQuestion({
+          text: questionToEdit.text,
+          options: questionToEdit.options,
+          correctAnswer: questionToEdit.correct_option,
+          solution: questionToEdit.solution,
+          language: questionToEdit.language,
+          time: questionToEdit.time.toString(), // Ensure time is a string
+        });
+  
+        // Set the editing question state
+        setEditingQuestionIndex(questionId);
+
+        // Set form values
+        Object.keys(questionToEdit).forEach((key) => setValue(key, questionToEdit[key]));
+    } else {
+        console.log("Question not found!");
+    }
+};
+
 
   const handleDeleteQuestion = (questionId) => {
     console.log("Deleting question:", questionId);
@@ -384,7 +395,7 @@ const QuestionManagement = () => {
                         <option value="" className="text-gray-400">
                           Select a Subject
                         </option>
-                        {setterUser[0].subject.map((sub, index) => (
+                        {setterUser[0]?.subject.map((sub, index) => (
                           <option key={index} value={sub.id}>
                             {sub.subject_name}
                           </option>

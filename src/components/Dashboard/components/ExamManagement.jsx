@@ -12,7 +12,10 @@ import {
   resetPasskeyResponse,
   verifyPasscode,
 } from "../../../features/examQuesSlice";
-import {getPrefrence,getEducationProfile} from "../../../features/jobProfileSlice"
+import {
+  getPrefrence,
+  getEducationProfile,
+} from "../../../features/jobProfileSlice";
 
 import { useNavigate } from "react-router-dom";
 
@@ -21,32 +24,51 @@ function ExamManagement() {
   const navigate = useNavigate();
 
   const { basicData } = useSelector((state) => state.personalProfile);
-  const { prefrence} = useSelector((state) => state.jobProfile);
+  const { prefrence } = useSelector((state) => state.jobProfile);
   const classCategories = useSelector(
     (state) => state.jobProfile.prefrence.class_category
   );
-  console.log("prefrence",prefrence)
-  
+
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
-  const { examSet,allcenter,attempts } = useSelector((state) => state.examQues); 
-  const { userData } = useSelector((state) => state?.auth);
-  const { interview,exam, passkeyresponse, verifyresponse } = useSelector(
+  const { examSet, allcenter, attempts } = useSelector(
     (state) => state.examQues
   );
- 
-  const exams = verifyresponse?.offline_exam;
-  const 
-  isProfileComplete =
-    ( basicData && Object.keys(basicData).length > 0 &&
-    prefrence && Object.values(prefrence).some(val => 
-        (Array.isArray(val) && val.length > 0) || 
-        (typeof val === "object" && val !== null && Object.keys(val).length > 0) || 
-        (typeof val === "string" && val.trim() !== "") 
-    ));
 
-  console.log("isProfileComplete",isProfileComplete)
+  const level1ExamSets = examSet?.filter(
+    (exam) => exam.level.name === "1st Level"
+  );
+  const level2OnlineExamSets = examSet?.filter(
+    (exam) => exam.level.name === "2nd Level Online"
+  );
+  const level2OfflineExamSets = examSet?.filter(
+    (exam) => exam.level.name === "2nd Level Offline"
+  );
+
+  console.log("level2OfflineExamSets", level2OfflineExamSets);
+  console.log("level2OnlineExamSets", level2OnlineExamSets);
+  const { userData } = useSelector((state) => state?.auth);
+  const { interview, exam, passkeyresponse, verifyresponse } = useSelector(
+    (state) => state.examQues
+  );
+  console.log("interview", interview);
+  console.log("examSet", examSet);
+  const exams = verifyresponse?.offline_exam;
+  const isProfileComplete =
+    basicData &&
+    Object.keys(basicData).length > 0 &&
+    prefrence &&
+    Object.values(prefrence).some(
+      (val) =>
+        (Array.isArray(val) && val.length > 0) ||
+        (typeof val === "object" &&
+          val !== null &&
+          Object.keys(val).length > 0) ||
+        (typeof val === "string" && val.trim() !== "")
+    );
+
+  console.log("isProfileComplete", isProfileComplete);
   const [activeTab, setActiveTab] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +81,6 @@ function ExamManagement() {
     };
     fetchData();
     const subject = prefrence?.prefered_subject;
-  
   }, [dispatch]);
 
   // Set activeTab after prefrence is fetched
@@ -73,12 +94,9 @@ function ExamManagement() {
   //   return <div>Loading...</div>; // Show a loading spinner or message
   // }
 
-  
-
   const exam_id = passkeyresponse?.exam?.id;
 
-  
-  const[filteredSubjects,setFilteredSubjects]= useState([]);
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
@@ -89,9 +107,7 @@ function ExamManagement() {
   const [showReminderMessage, setShowReminderMessage] = useState(false);
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [passcode, setPasscode] = useState("");
-  const [offlineSet,SetOfflineSet] = useState("");
-
-  
+  const [offlineSet, SetOfflineSet] = useState("");
 
   // Check localStorage on component mount to see if a reminder is needed
   useEffect(() => {
@@ -100,7 +116,7 @@ function ExamManagement() {
       setShowReminderMessage(true);
     }
   }, []);
-  
+
   // Handle "Remind me later" button click
   const handleRemindMeLater = () => {
     // Set a flag in localStorage to show the reminder on refresh
@@ -108,40 +124,36 @@ function ExamManagement() {
 
     // Hide the card and show the reminder message
     setCenterSelectionPopup(false);
-    setShowReminderMessage(true)
+    setShowReminderMessage(true);
   };
 
   useEffect(() => {
     dispatch(getAllCenter());
     if (classCategories) {
       setActiveTab(classCategories[0]?.id);
-     
     }
   }, []);
 
-// Handle category switch
-const handleCategoryChange = (category) => {
-  console.log("category", category);
-  setActiveTab(category?.id); // Update activeTab
-  setSelectedSubject(""); // Reset subject on category change
-};
+  // Handle category switch
+  const handleCategoryChange = (category) => {
+    console.log("category", category);
+    setActiveTab(category?.id); // Update activeTab
+    setSelectedSubject(""); // Reset subject on category change
+  };
 
   useEffect(() => {
     if (activeTab !== null) {
       const subject = prefrence?.prefered_subject || [];
       console.log("prefrence", subject);
-  
+
       const filteredSubjects = subject.filter(
         (subject) => subject.class_category === activeTab
       );
-  
+
       setFilteredSubjects(filteredSubjects);
       console.log("filteredSubjects", filteredSubjects);
     }
   }, [activeTab]); // Runs on mount and when activeTab changes
-
-
-  
 
   const handleSubjectChange = (e) => {
     const subjectId = e.target.value;
@@ -160,7 +172,6 @@ const handleCategoryChange = (category) => {
     navigate("/exam");
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     // Simulate submission (e.g., API call)
@@ -175,24 +186,10 @@ const handleCategoryChange = (category) => {
     );
     setIsSubmitted(true);
   };
-  
-
-  const simulateAdminApproval = () => {
-    // Simulate admin approval after 3 seconds
-    setTimeout(() => {
-      setApprovedDateTime(selectedDateTime); // Use the selected date/time as approved
-      setIsApproved(true);
-    }, 3000);
-  };
-
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
   };
   const user_id = userData.id;
-  // const pass_exam_id = attempts?.find(
-  //   ({ exam, isqualified }) => exam?.level?.id === 2 && isqualified
-  // )?.exam?.id;
-
   const handleGeneratePasskey = async (event, exam) => {
     event.preventDefault();
     console.log("exam", exam);
@@ -220,13 +217,12 @@ const handleCategoryChange = (category) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
     dispatch(setExam(examSet[2]?.id));
-    dispatch(verifyPasscode({user_id,exam_id:offlineSet,passcode}))
+    dispatch(verifyPasscode({ user_id, exam_id: offlineSet, passcode }));
     dispatch(resetPasskeyResponse());
     navigate("/exam");
     // Add your verification logic here
     alert("Verification successful! You can now proceed with the exam.");
   };
-
   // Simulate page refresh behavior
   useEffect(() => {
     const isVerificationCardShown = localStorage.getItem(
@@ -236,10 +232,8 @@ const handleCategoryChange = (category) => {
       setShowVerificationCard(true);
     }
   }, []);
-
   return (
     <>
-     
       <div className=" mx-auto p-6 bg-white rounded-lg border">
         <div className="mb-8">
           <div className="bg-gradient-to-r from-[#3E98C7] to-gray-800 rounded-xl p-6 shadow">
@@ -262,14 +256,12 @@ const handleCategoryChange = (category) => {
           </div>
         </div>
 
-         {/* Stepper Component */}
-         {
-          attempts && (<div className="col-span-3">
-          <Steppers />
+        {/* Stepper Component */}
+        {attempts && (
+          <div className="col-span-3">
+            <Steppers />
           </div>
-        ) }
-      
-
+        )} 
         {isProfileComplete ? (
           <>
             {" "}
@@ -349,14 +341,17 @@ const handleCategoryChange = (category) => {
                     Choose a subject from the dropdown above to view available
                     exams and interview options for your selected class category
                   </p>
-              </div>
+                </div>
               )}
 
               {selectedSubject && examSet && (
                 <>
                   {/* Level 1 Exam Card */}
-                  {examSet[0] && (
-                    <div className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2">
+                  {level1ExamSets.map((exam) => (
+                    <div
+                      key={exam.id}
+                      className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
                           Level 1
@@ -366,67 +361,95 @@ const handleCategoryChange = (category) => {
                         </span>
                       </div>
                       <h4 className="text-xl font-bold text-gray-800 mb-3">
-                        {examSet[0].subject.subject_name} Fundamentals{" "}
-                        {examSet[0].name}
+                        {exam.subject.subject_name} Fundamentals {exam.name}
                       </h4>
                       <div className="space-y-2 text-sm text-gray-600">
                         <p>
-                          • {examSet[0].questions.length} Multiple Choice
-                          Questions
+                          • {exam.questions.length} Multiple Choice Questions
                         </p>
-                        <p>• {examSet[0].duration} Minute Duration</p>
-                        <p>• {examSet[0].total_marks} Total Marks</p>
+                        <p>• {exam.duration} Minute Duration</p>
+                        <p>• {exam.total_marks} Total Marks</p>
                         <p>• Basic Concepts Assessment</p>
                       </div>
-
                       <button
-                        onClick={() => {
-                          handleExam(examSet[0]);
-                        }}
+                        onClick={() => handleExam(exam)}
                         className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors duration-300"
                       >
                         <FaLockOpen className="w-5 h-5" />
                         Start Level 1 Exam
                       </button>
                     </div>
+                  ))}
+
+                  {level1ExamSets.length === 0 && (
+                    <div className="relative min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2">
+                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
+                            Level 1
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            Basic Level
+                          </span>
+                        </div>
+                        <h4 className="text-xl font-bold text-gray-800 mb-3">
+                          {selectedSubject} Basic
+                        </h4>
+                        <div className="space-y-2 text-sm text-gray-600 opacity-75">
+                          <p>• 75 Scenario-based Questions</p>
+                          <p>• 90 Minute Duration</p>
+                          <p>• Complex Problem Solving</p>
+                        </div>
+                        <div className="mt-6 text-center">
+                          <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">
+                            Complete Level 1 to unlock
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
-                  {examSet[1] ? (
-                    <div className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                          Level 2
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          Advanced Level
-                        </span>
-                      </div>
-                      <h4 className="text-xl font-bold text-gray-800 mb-3">
-                        {examSet[1].subject.subject_name} Advanced{" "}
-                        {examSet[1].name}
-                      </h4>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <p>
-                          • {examSet[1].questions.length} Multiple Choice
-                          Questions
-                        </p>
-                        <p>• {examSet[1].duration} Minute Duration</p>
-                        <p>• {examSet[1].total_marks} Total Marks</p>
-                        <p>• Basic Concepts Assessment</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          handleExam(examSet[1]);
-                        }}
-                        className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors duration-300"
+                  {/* Level 2 Online Exam Sets */}
+                  {level2OnlineExamSets.length > 0 &&
+                    level2OnlineExamSets.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
                       >
-                        <FaLockOpen className="w-5 h-5" />
-                        Start Level 2 Exam
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Level 2 Locked Card */}
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
+                            Level 2 Online
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            Advanced Level
+                          </span>
+                        </div>
+                        <h4 className="text-xl font-bold text-gray-800 mb-3">
+                          {exam.subject.subject_name} Advanced {exam.name}
+                        </h4>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p>
+                            • {exam.questions.length} Multiple Choice Questions
+                          </p>
+                          <p>• {exam.duration} Minute Duration</p>
+                          <p>• {exam.total_marks} Total Marks</p>
+                          <p>• Advanced Problem Solving</p>
+                        </div>
+                        <button
+                          onClick={() => handleExam(exam)}
+                          className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
+                        >
+                          <FaLockOpen className="w-5 h-5" />
+                          Start Level 2 Online Exam
+                        </button>
+                      </div>
+                    ))}
+
+                  {/* Locked Level 2 Card (if no Level 2 exams are available) */}
+                  {level2OnlineExamSets.length === 0 &&
+                    level2OfflineExamSets.length === 0 && (
                       <div className="relative min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2">
                         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
                         <div className="relative z-10">
@@ -454,10 +477,9 @@ const handleCategoryChange = (category) => {
                           </div>
                         </div>
                       </div>
-                    </>
-                  )}
+                    )}
 
-                  {examSet[2] ? (
+                  {level2OfflineExamSets ? (
                     <div>
                       {centerSelectionPopup ? (
                         <>
@@ -479,7 +501,10 @@ const handleCategoryChange = (category) => {
                               </h3>
                               <form
                                 onSubmit={(event) =>
-                                  handleGeneratePasskey(event, examSet[2].id)
+                                  handleGeneratePasskey(
+                                    event,
+                                    level2OfflineExamSets[0].id
+                                  )
                                 }
                                 className="space-y-4"
                               >
@@ -557,48 +582,52 @@ const handleCategoryChange = (category) => {
                           </div>
                         </div>
                       ) : (
-                        // Start Exam Card
-                        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                          <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                                Level 2
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                Advanced Level
-                              </span>
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-800 mb-3">
-                              {examSet[2].subject.subject_name} Advanced{" "}
-                              {examSet[2].name}
-                            </h4>
-                            <div className="space-y-2 text-sm text-gray-600">
-                              <p>
-                                • {examSet[2].questions.length} Multiple Choice
-                                Questions
-                              </p>
-                              <p>• {examSet[2].duration} Minute Duration</p>
-                              <p>• {examSet[2].total_marks} Total Marks</p>
-                              <p>• Basic Concepts Assessment</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (
-                                  Object.entries(passkeyresponse).length > 0
-                                ) {
-                                  setShowVerificationCard(true);
-                                } else {
-                                  setCenterSelectionPopup(true);
-                                  // Show center selection popup
-                                }
-                              }}
-                              className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-300"
+                        <>
+                          {level2OfflineExamSets.map((exam) => (
+                            <div
+                              key={exam.id}
+                              className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
                             >
-                              <FaLockOpen className="w-5 h-5" />
-                              Start Level 2 Exam
-                            </button>
-                          </div>
-                        </div>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
+                                  Level 2 Offline
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  Advanced Level
+                                </span>
+                              </div>
+                              <h4 className="text-xl font-bold text-gray-800 mb-3">
+                                {exam.subject.subject_name} Advanced {exam.name}
+                              </h4>
+                              <div className="space-y-2 text-sm text-gray-600">
+                                <p>
+                                  • {exam.questions.length} Multiple Choice
+                                  Questions
+                                </p>
+                                <p>• {exam.duration} Minute Duration</p>
+                                <p>• {exam.total_marks} Total Marks</p>
+                                <p>• Advanced Problem Solving</p>
+                              </div>
+
+                              <button
+                                onClick={() => {
+                                  if (
+                                    Object.entries(passkeyresponse).length > 0
+                                  ) {
+                                    setShowVerificationCard(true);
+                                  } else {
+                                    setCenterSelectionPopup(true);
+                                    // Show center selection popup
+                                  }
+                                }}
+                                className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
+                              >
+                                <FaLockOpen className="w-5 h-5" />
+                                Start Level 2 Offline Exam
+                              </button>
+                            </div>
+                          ))}
+                        </>
                       )}
                     </div>
                   ) : (
@@ -633,9 +662,9 @@ const handleCategoryChange = (category) => {
                   )}
 
                   {/* Interviews Section */}
-                  {examSet[2] ? (
+                  {level2OfflineExamSets.length > 0 ? (
                     <div className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2">
-                      {!isSubmitted ? (
+                      {!isSubmitted && !interview.length > 0 ? (
                         // Form to select date and time
                         <form onSubmit={handleSubmit}>
                           <div className="flex items-center justify-between mb-4">
@@ -677,71 +706,82 @@ const handleCategoryChange = (category) => {
                             </button>
                           </div>
                         </form>
-                      ) : interview &&
-                          interview.length > 0 ? (
-                        // Pending card after submission
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-500 text-white text-sm font-medium">
-                              Pending Approval
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              Admin Confirmation
-                            </span>
-                          </div>
-                          <h4 className="text-xl font-bold text-gray-800 mb-3">
-                            Interview Request Submitted
-                          </h4>
-                          <div className="space-y-2 text-sm text-gray-600">
-                            <p>
-                              • Your selected date and time: {selectedDateTime}
-                            </p>
-                            <p>• Admin will confirm your request soon.</p>
-                          </div>
-                          <div className="mt-6 text-center">
-                            <p className="text-sm text-gray-500">
-                              Thank you for submitting your request. We will
-                              notify you once it is approved.
-                            </p>
-                          </div>
-                          {/* Simulate admin approval (for demonstration purposes) */}
-                          <button
-                            onClick={simulateAdminApproval}
-                            className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
-                          >
-                            Simulate Admin Approval
-                          </button>
-                        </div>
                       ) : (
-                        // Approved card after admin confirmation
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white text-sm font-medium">
-                              Approved
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              Confirmed
-                            </span>
+                        interview.length > 0 &&
+                        interview.map((item) => (
+                          <div className="flex flex-col items-center mt-10">
+                            <div
+                              key={item.id}
+                              className="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden mb-4 "
+                            >
+                              <div className="px-6 py-4">
+                                <div className="font-bold text-xl mb-2">
+                                  {item.status === false ? (
+                                    <>
+                                      <div className="flex items-center justify-between mb-4">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-500 text-white text-sm font-medium">
+                                          Pending Approval
+                                        </span>
+                                        <span className="text-sm text-gray-500">
+                                          Admin Confirmation
+                                        </span>
+                                      </div>
+                                      <h4 className="text-xl font-bold text-gray-800 mb-3">
+                                        Interview Request Submitted
+                                      </h4>
+                                      <div className="space-y-2 text-sm text-gray-600">
+                                        <p>
+                                          • Your selected date and time:{" "}
+                                          {item.time}
+                                        </p>
+                                        <p>
+                                          • Admin will confirm your request
+                                          soon.
+                                        </p>
+                                      </div>
+                                      <div className="mt-6 text-center">
+                                        <p className="text-sm text-gray-500">
+                                          Thank you for submitting your request.
+                                          We will notify you once it is
+                                          approved.
+                                        </p>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="text-green-600">
+                                        Approved
+                                      </span>
+                                      <p className="text-gray-700 text-base">
+                                        <strong>Subject:</strong>{" "}
+                                        {item.subject_name || "N/A"}
+                                      </p>
+                                      <p className="text-gray-700 text-base">
+                                        <strong>Time:</strong>{" "}
+                                        {new Date(item.time).toLocaleString()}
+                                      </p>
+                                      {item.status !== false && item.link && (
+                                        <div className="px-6 py-4 bg-gray-100">
+                                          <p className="text-blue-600 font-semibold">
+                                            <a
+                                              href={item.link}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                            >
+                                              Join Interview
+                                            </a>
+                                          </p>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+
+                                {/* Additional details can go here */}
+                              </div>
+                            </div>
                           </div>
-                          <h4 className="text-xl font-bold text-gray-800 mb-3">
-                            Interview Scheduled
-                          </h4>
-                          <div className="space-y-2 text-sm text-gray-600">
-                            <p>
-                              • Your approved date and time: {approvedDateTime}
-                            </p>
-                            <p>
-                              • Please ensure you are available at the scheduled
-                              time.
-                            </p>
-                          </div>
-                          <div className="mt-6 text-center">
-                            <p className="text-sm text-gray-500">
-                              Your interview has been confirmed. We look forward
-                              to seeing you!
-                            </p>
-                          </div>
-                        </div>
+                        ))
                       )}
                     </div>
                   ) : (
@@ -775,58 +815,71 @@ const handleCategoryChange = (category) => {
             </div>
           </>
         ) : (
-           
-        <>      
-        {/* Access Level 1 Message */}
-        <div className="mt-6 p-5 bg-yellow-50 rounded-lg border border-yellow-200 text-yellow-700 text-sm">
-          <p>Please complete your profile, and complete your missing details then select a subject to access Level 1.</p>
-        </div>
-      
-        {/* Cards Section */}
-        <div className="flex flex-wrap gap-5 mt-6">
-          {[
-            { title: "Level 1", subtitle: "Beginner Level" },
-            { title: "Level 2", subtitle: "Advanced Level" },
-            { title: "Center", subtitle: "Practice Center" },
-            { title: "Interview", subtitle: "Interview Prep" },
-          ].map((card, index) => (
-            <div
-              key={index}
-              className="relative flex-1 min-w-[250px] sm:min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2"
-            >
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                    {card.title}
-                  </span>
-                  <span className="text-sm text-gray-500">{card.subtitle}</span>
-                </div>
-                <h4 className="text-xl font-bold text-gray-800 mb-3">
-                  {selectedSubject} {card.title}
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600 opacity-75">
-                  <p>• 75 Scenario-based Questions</p>
-                  <p>• 90 Minute Duration</p>
-                  <p>• {card.title === "Level 1" ? "Basic Concepts" : card.title === "Level 2" ? "Complex Problem Solving" : card.title === "Center" ? "Practice Sessions" : "Mock Interviews"}</p>
-                </div>
-                <div className="mt-6 text-center">
-                  <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500">
-                    {card.title === "Level 1"
-                      ? "Complete Profile to unlock"
-                      : card.title === "Level 2"
-                      ? "Complete Level 1 to unlock"
-                      : card.title === "Center"
-                      ? "Unlock with Level 2"
-                      : "Unlock with Interview Prep"}
-                  </p>
-                </div>
-              </div>
+          <>
+            {/* Access Level 1 Message */}
+            <div className="mt-6 p-5 bg-yellow-50 rounded-lg border border-yellow-200 text-yellow-700 text-sm">
+              <p>
+                Please complete your profile, and complete your missing details
+                then select a subject to access Level 1.
+              </p>
             </div>
-          ))}
-        </div>
-      </>
+
+            {/* Cards Section */}
+            <div className="flex flex-wrap gap-5 mt-6">
+              {[
+                { title: "Level 1", subtitle: "Beginner Level" },
+                { title: "Level 2", subtitle: "Advanced Level" },
+                { title: "Center", subtitle: "Practice Center" },
+                { title: "Interview", subtitle: "Interview Prep" },
+              ].map((card, index) => (
+                <div
+                  key={index}
+                  className="relative flex-1 min-w-[250px] sm:min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2"
+                >
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
+                        {card.title}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {card.subtitle}
+                      </span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-800 mb-3">
+                      {selectedSubject} {card.title}
+                    </h4>
+                    <div className="space-y-2 text-sm text-gray-600 opacity-75">
+                      <p>• 75 Scenario-based Questions</p>
+                      <p>• 90 Minute Duration</p>
+                      <p>
+                        •{" "}
+                        {card.title === "Level 1"
+                          ? "Basic Concepts"
+                          : card.title === "Level 2"
+                          ? "Complex Problem Solving"
+                          : card.title === "Center"
+                          ? "Practice Sessions"
+                          : "Mock Interviews"}
+                      </p>
+                    </div>
+                    <div className="mt-6 text-center">
+                      <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500">
+                        {card.title === "Level 1"
+                          ? "Complete Profile to unlock"
+                          : card.title === "Level 2"
+                          ? "Complete Level 1 to unlock"
+                          : card.title === "Center"
+                          ? "Unlock with Level 2"
+                          : "Unlock with Interview Prep"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </>

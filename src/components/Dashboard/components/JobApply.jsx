@@ -51,13 +51,6 @@ const JobApply = () => {
       const class_category = convertToArray(classCategoryId);
 
       const response = await dispatch(postJobApply({ subject, class_category })).unwrap();
-
-      // if (!response.status) {
-      //   setAppliedJobs((prev) =>
-      //     prev.filter((job) => job.subjectId !== subjectId || job.classCategoryId !== classCategoryId)
-      //   ); // Remove from applied list
-      //   toast.info("You will not be notified.");
-      // }
     } catch (error) {
       console.error("Error canceling:", error);
     }

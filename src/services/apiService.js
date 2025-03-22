@@ -27,10 +27,15 @@ axiosInstance.interceptors.request.use(
 
 export const fetchSingleTeacherById = async (teacherId) => {
   try {
-    const response = await axiosInstance.get(`/api/admin/teacher/${teacherId}/`);
+    const response = await axiosInstance.get(
+      `/api/admin/teacher/${teacherId}/`
+    );
     return response.data; // Return the single teacher's data
   } catch (error) {
-    throw new Error(error.response?.data?.message || "An error occurred while fetching the teacher.");
+    throw new Error(
+      error.response?.data?.message ||
+        "An error occurred while fetching the teacher."
+    );
   }
 };
 
@@ -71,6 +76,16 @@ const apiService = {
       return response.data;
     } catch (error) {
       console.error(`Error updating data in ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  patch: async (endpoint, id, data) => {
+    try {
+      const response = await axiosInstance.patch(`${endpoint}/${id}/`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Error patching data in ${endpoint}:`, error);
       throw error;
     }
   },
