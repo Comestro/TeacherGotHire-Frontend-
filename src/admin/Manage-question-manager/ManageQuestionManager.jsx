@@ -193,6 +193,8 @@ const ManageQuestionManager = () => {
     setClassCategorySelectOpen(false);
   };
   // Form submission
+  // Form submission
+  // Form submission
   const handleSave = async () => {
     try {
       setLoadingAction(true);
@@ -208,17 +210,17 @@ const ManageQuestionManager = () => {
         return;
       }
 
-      if (selectedSubjects.length === 0) {
+      if (selectedSubjects.length === 0 || selectedClassCategories.length === 0) {
         setNotification({
           open: true,
-          message: "Please select at least one subject",
+          message: "Please select at least one subject and class category",
           severity: "error",
         });
         setLoadingAction(false);
         return;
       }
 
-      // Prepare payload
+      // Prepare payload with the new structure
       const payload = {
         user: {
           email: userData.email,
@@ -226,6 +228,7 @@ const ManageQuestionManager = () => {
           Lname: userData.Lname,
           ...(isEditMode ? {} : { password: userData.password }), // Include password only for new users
         },
+        class_category: selectedClassCategories, // Add class_category array to the payload
         subject: selectedSubjects,
         status: userData.is_verified, // Include status in the payload
       };
@@ -241,10 +244,10 @@ const ManageQuestionManager = () => {
       }
 
       // Check if the response was successful
-      if (response && response.detail) {
+      if (response && (response.data || response.message)) {
         setNotification({
           open: true,
-          message: response.detail, // Use the success message from the API response
+          message: response.message || "Manager saved successfully!",
           severity: "success",
         });
 
@@ -257,16 +260,40 @@ const ManageQuestionManager = () => {
     } catch (error) {
       console.error("Error saving manager:", error);
 
-      // Extract detailed error message
-      const errorMessage =
-        error.response?.data?.error || // Specific error message from the API
-        error.response?.data?.message || // General message from the API
-        error.message || // Fallback to generic error message
-        "Failed to save changes";
+      // Extract detailed error message for better error handling
+      let errorMessage = "Failed to save changes";
+
+      if (error.response?.data) {
+        const responseData = error.response.data;
+
+        // Check for nested error object structure
+        if (responseData.error) {
+          // Check if error contains field-specific errors
+          if (typeof responseData.error === 'object') {
+            // Extract the first error message from the first field
+            const firstField = Object.keys(responseData.error)[0];
+            if (Array.isArray(responseData.error[firstField]) && responseData.error[firstField].length > 0) {
+              errorMessage = `${firstField}: ${responseData.error[firstField][0]}`;
+            } else {
+              // Fallback if structure is unexpected
+              errorMessage = responseData.message || "Validation error occurred";
+            }
+          } else {
+            // If error is a string
+            errorMessage = responseData.error;
+          }
+        } else if (responseData.message) {
+          // Use message directly if it exists
+          errorMessage = responseData.message;
+        }
+      } else if (error.message) {
+        // Use JavaScript error message if available
+        errorMessage = error.message;
+      }
 
       setNotification({
         open: true,
-        message: `Error: ${errorMessage}`,
+        message: errorMessage,
         severity: "error",
       });
     } finally {
@@ -313,10 +340,14 @@ const ManageQuestionManager = () => {
     }
   };
   // Status toggle functionality
+  // Status toggle functionality
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
       const updatedStatus = !manager.user.is_verified;
+
+      // Get the unique class categories from the manager's subjects
+      const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
 
       // Update the payload structure to match API expectations
       const payload = {
@@ -327,12 +358,14 @@ const ManageQuestionManager = () => {
           Lname: manager.user.Lname,
           is_verified: updatedStatus
         },
-        subject: manager.subject.map(sub => sub.id)
+        class_category: uniqueClassCategories.map(Number), // Add class_category array to the payload
+        subject: manager.subject.map(sub => sub.id),
+        status: updatedStatus // Include status in the payload
       };
 
-      const response = await updateAssignedUserManager(manager.user.id, payload);
+      const response = await updateAssignedUserManager(manager.id, payload);
 
-      if (response && response.status) {
+      if (response && (response.data || response.message)) {
         // Update local state for immediate UI update
         setManagers(prev =>
           prev.map(m =>
@@ -352,9 +385,34 @@ const ManageQuestionManager = () => {
       }
     } catch (error) {
       console.error("Error updating status:", error);
+
+      // Better error handling
+      let errorMessage = "Failed to update status";
+
+      if (error.response?.data) {
+        const responseData = error.response.data;
+
+        if (responseData.error) {
+          if (typeof responseData.error === 'object') {
+            const firstField = Object.keys(responseData.error)[0];
+            if (Array.isArray(responseData.error[firstField]) && responseData.error[firstField].length > 0) {
+              errorMessage = `${firstField}: ${responseData.error[firstField][0]}`;
+            } else {
+              errorMessage = responseData.message || "Validation error occurred";
+            }
+          } else {
+            errorMessage = responseData.error;
+          }
+        } else if (responseData.message) {
+          errorMessage = responseData.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       setNotification({
         open: true,
-        message: `Error: ${error.message || "Failed to update status"}`,
+        message: errorMessage,
         severity: "error"
       });
     } finally {
