@@ -165,7 +165,7 @@ const ManageQuestionManager = () => {
     if (isEdit && manager) {
       setSelectedManager(manager);
       setUserData({
-        id: manager.id, // Use the root-level `id` here
+        id: manager.id,
         email: manager.user.email,
         Fname: manager.user.Fname,
         Lname: manager.user.Lname,
@@ -176,11 +176,27 @@ const ManageQuestionManager = () => {
 
       // For edit mode, get class categories from the manager.class_category array
       if (manager.class_category && Array.isArray(manager.class_category)) {
-        setSelectedClassCategories(manager.class_category.map(cat => cat.id));
+        // Filter to only include categories that have subjects
+        const validCategoryIds = manager.class_category
+          .filter(cat => {
+            // Check if this category has any subjects in the system
+            const categoryInSystem = classCategories.find(c => c.id === cat.id);
+            return categoryInSystem && categoryInSystem.subjects && categoryInSystem.subjects.length > 0;
+          })
+          .map(cat => cat.id);
+
+        setSelectedClassCategories(validCategoryIds);
       } else {
-        // Fallback to the old logic if new format is not available
+        // Fallback to the old logic if new format is not available, still filtering for categories with subjects
         const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
-        setSelectedClassCategories(uniqueClassCategories.map(Number));
+        const validCategoryIds = uniqueClassCategories
+          .filter(catId => {
+            const category = classCategories.find(cat => cat.id === catId);
+            return category && category.subjects && category.subjects.length > 0;
+          })
+          .map(Number);
+
+        setSelectedClassCategories(validCategoryIds);
       }
     } else {
       // Reset form for new manager
@@ -469,6 +485,10 @@ const ManageQuestionManager = () => {
     return classCategories
       .filter(category => selectedClassCategories.includes(category.id))
       .flatMap(category => category.subjects);
+  };
+
+  const getClassCategoriesWithSubjects = () => {
+    return classCategories.filter(category => category.subjects && category.subjects.length > 0);
   };
 
   // Filtering and pagination
@@ -1029,9 +1049,9 @@ const ManageQuestionManager = () => {
                     )}
                     disabled={loadingAction}
                   >
-                    {classCategories.map((category) => (
+                    {getClassCategoriesWithSubjects().map((category) => (
                       <MenuItem key={category.id} value={category.id}>
-                        {category.name}
+                        {category.name} ({category.subjects.length} subjects)
                       </MenuItem>
                     ))}
                   </Select>
