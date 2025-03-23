@@ -71,6 +71,7 @@ const Education = () => {
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
+      console.log("data",data)
       setLoading(true);
       const payload = {
         institution: data.institution,

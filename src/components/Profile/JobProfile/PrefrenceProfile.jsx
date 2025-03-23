@@ -183,7 +183,7 @@ const PrefrenceProfile = () => {
           </button>
         )}
       </div>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {/* {error && <p className="text-red-500 mb-4">{error}</p>} */}
       <div className="mb-4 md:px-2">
         {!isEditingPrefrence ? (
           <div className="">

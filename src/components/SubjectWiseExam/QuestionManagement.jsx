@@ -14,6 +14,8 @@ import {
   getLevels,
 } from "../../features/examQuesSlice";
 import Loader from "../Loader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const QuestionManagement = () => {
   const [selectedExamSet, setSelectedExamSet] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -26,10 +28,12 @@ const QuestionManagement = () => {
     time: "",
   });
   
+
   const dispatch = useDispatch();
   const { setterExamSet, loading, setterUser, levels, error } = useSelector(
     (state) => state.examQues
   );
+  const [showModal, setShowModal] = useState(false);
   console.log("setterUser", setterUser);
   console.log("selectedExamSet", selectedExamSet);
   console.log("levels", levels);
@@ -37,7 +41,7 @@ const QuestionManagement = () => {
   console.log("setterExamSet", setterExamSet);
   console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editingQuestionIndex,setEditingQuestionIndex] = useState(null);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -70,7 +74,7 @@ const QuestionManagement = () => {
   // Fetch exam sets on mount
   useEffect(() => {
     dispatch(getExamSets());
-  }, [dispatch]);
+  }, [dispatch,showModal]);
 
   // Handle Exam Set Submission
   const onSubmit = async (data) => {
@@ -145,70 +149,93 @@ const QuestionManagement = () => {
     console.log("Payload being sent:", payload);
 
     try {
-
-      if (editingQuestionIndex !== null){
+      if (editingQuestionIndex !== null) {
         const response = await dispatch(putQuestionToExamSet(payload)).unwrap(); // Ensure this function returns a prom
         console.log("API Response:", response);
-      }else{
-        const response = await dispatch(postQuestionToExamSet(payload)).unwrap();
+        toast.success("Ques!");
+      } else {
+        const response = await dispatch(
+          postQuestionToExamSet(payload)
+        ).unwrap();
+        toast.success("Question is added successfully!");
+        
       }
     } catch (error) {
       console.error("API Error:", error);
     }
   };
-
-  const handleEditQuestion = (questionId) => {
-    console.log("Editing question:", questionId);
-    
-    // Find the index of the question with the matching id
-    const examSet = setterExamSet[editingIndex]?.questions || [];
-    const questionToEdit = examSet.find((q) => q.id === questionId);
-
-    if (questionToEdit) {
-        console.log("Editing question details:", questionToEdit);
-        
-
-        setCurrentQuestion({
-          text: questionToEdit.text,
-          options: questionToEdit.options,
-          correctAnswer: questionToEdit.correct_option,
-          solution: questionToEdit.solution,
-          language: questionToEdit.language,
-          time: questionToEdit.time.toString(), // Ensure time is a string
-        });
-  
-        // Set the editing question state
-        setEditingQuestionIndex(questionId);
-
-        // Set form values
-        Object.keys(questionToEdit).forEach((key) => setValue(key, questionToEdit[key]));
-    } else {
-        console.log("Question not found!");
-    }
-};
-
-
-  const handleDeleteQuestion = (questionId) => {
-    console.log("Deleting question:", questionId);
-    // Implement your delete logic here
-  };
-  const [selectedLanguage, setSelectedLanguage] = useState("All");
   const languages = [
     ...new Set(selectedExamSet?.questions.map((q) => q.language)),
-  ];
-
-  const filteredQuestions =
-    selectedLanguage === "All"
-      ? selectedExamSet?.questions
-      : selectedExamSet?.questions.filter(
-          (q) => q.language === selectedLanguage
-        );
+  ];        
+          const [filteredQuestions, setFilteredQuestions] = useState([]);
+          const [selectedLanguage, setSelectedLanguage] = useState("All");
+          const [editingQuestionId, setEditingQuestionId] = useState(null);
+        
+          // Update filteredQuestions when selectedLanguage or selectedExamSet changes
+          useEffect(() => {
+            if (selectedExamSet?.questions) {
+              const filtered =
+                selectedLanguage === "All"
+                  ? selectedExamSet.questions
+                  : selectedExamSet.questions.filter(
+                      (q) => q.language === selectedLanguage
+                    );
+              setFilteredQuestions(filtered);
+            }
+          }, [selectedLanguage, selectedExamSet]);
+        
+          const handleQuestionTextChange = (questionId, newText) => {
+            const updatedQuestions = filteredQuestions.map((question) =>
+              question.id === questionId ? { ...question, text: newText } : question
+            );
+            setFilteredQuestions(updatedQuestions);
+          };
+        
+          const handleOptionChange = (questionId, optionIndex, newOption) => {
+            const updatedQuestions = filteredQuestions.map((question) =>
+              question.id === questionId
+                ? {
+                    ...question,
+                    options: question.options.map((option, i) =>
+                      i === optionIndex ? newOption : option
+                    ),
+                  }
+                : question
+            );
+            setFilteredQuestions(updatedQuestions);
+          };
+        
+          const handleEditQuestion = (questionId) => {
+            setEditingQuestionId(questionId);
+          };
+        
+          const handleSaveQuestion = (questionId) => {
+            // Find the updated question
+            const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
+          
+            // Log the updated question (for debugging)
+            console.log("Updated Question:", updatedQuestion);
+          
+            // Dispatch the updated question to the action
+            dispatch(putQuestionToExamSet(updatedQuestion));
+          
+            // Exit edit mode
+            setEditingQuestionId(null);
+          };
+        
+          const handleDeleteQuestion = (questionId) => {
+            const updatedQuestions = filteredQuestions.filter(
+              (q) => q.id !== questionId
+            );
+            setFilteredQuestions(updatedQuestions);
+          };
 
   return (
     <>
       <Helmet>
         <title>PTPI | Subject Expert</title>
       </Helmet>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="min-h-screen">
         <div className="top-0 fixed w-full">
           <CenterHeader name="Exam Management" />
@@ -283,6 +310,18 @@ const QuestionManagement = () => {
                               Add Questions
                             </button>
                           </td>
+                          <td className="py-4 space-x-4 text-center">
+                            <button
+                              onClick={() => {
+                                setSelectedExamSet(examSet); // Set the selected exam set
+                                setShowModal(true); // Open the modal
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              All Questions
+                            </button>
+                          </td>
+
                           <td className="py-4 space-x-4 text-center">
                             <button
                               onClick={() => handleEdit(index)}
@@ -632,14 +671,26 @@ const QuestionManagement = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
 
-                {/* Questions List */}
-
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-6">
-                    Exam Questions ({filteredQuestions.length})
-                  </h2>
-
+            {/* Full-Screen Modal */}
+            {showModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div className="bg-white w-full h-full p-6 overflow-y-auto">
+                  {/* Modal Header */}
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">All Questions</h2>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                    >
+                      Back to Exam Set
+                    </button>
+                    <h2 className="text-xl font-semibold mb-6">
+                      Exam Questions ({filteredQuestions.length})
+                    </h2>
+                  </div>
                   {/* Filter Dropdown */}
                   <div className="mb-4">
                     <label className="font-medium mr-2">
@@ -658,8 +709,8 @@ const QuestionManagement = () => {
                       ))}
                     </select>
                   </div>
-
-                  {filteredQuestions.map((question, index) => (
+                  {/* Render Questions */}
+                  {filteredQuestions?.map((question, index) => (
                     <div
                       key={question.id}
                       className="border-b last:border-0 pb-6 mb-6"
@@ -677,12 +728,21 @@ const QuestionManagement = () => {
                           </p>
                         </div>
                         <div className="space-x-2">
-                          <button
-                            onClick={() => handleEditQuestion(question.id)}
-                            className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
-                          >
-                            Edit
-                          </button>
+                          {editingQuestionId === question.id ? (
+                            <button
+                              onClick={() => handleSaveQuestion(question.id)}
+                              className="px-3 py-1 bg-green-500 text-white rounded-md text-sm"
+                            >
+                              Save
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEditQuestion(question.id)}
+                              className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
+                            >
+                              Edit
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteQuestion(question.id)}
                             className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
@@ -691,22 +751,67 @@ const QuestionManagement = () => {
                           </button>
                         </div>
                       </div>
-                      <p className="mb-4">{question.text}</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        {question.options.map((option, i) => (
-                          <div
-                            key={i}
-                            className={`p-3 rounded-md ${
-                              option === question.correct_option
-                                ? "bg-green-100 border border-green-300"
-                                : "bg-gray-50"
-                            }`}
-                          >
-                            <span className="font-medium mr-2">{i + 1}.</span>
-                            {option}
+
+                      {/* Render editable fields if in edit mode */}
+                      {editingQuestionId === question.id ? (
+                        <>
+                          <textarea
+                            value={question.text}
+                            onChange={(e) =>
+                              handleQuestionTextChange(
+                                question.id,
+                                e.target.value
+                              )
+                            }
+                            className="w-full p-2 border rounded-md mb-4"
+                          />
+                          <div className="grid grid-cols-2 gap-4">
+                            {question.options.map((option, i) => (
+                              <div
+                                key={i}
+                                className="p-3 rounded-md bg-gray-50"
+                              >
+                                <span className="font-medium mr-2">
+                                  {i + 1}.
+                                </span>
+                                <input
+                                  type="text"
+                                  value={option}
+                                  onChange={(e) =>
+                                    handleOptionChange(
+                                      question.id,
+                                      i,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full p-1 border rounded-md"
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </>
+                      ) : (
+                        <>
+                          <p className="mb-4">{question.text}</p>
+                          <div className="grid grid-cols-2 gap-4">
+                            {question.options.map((option, i) => (
+                              <div
+                                key={i}
+                                className={`p-3 rounded-md ${
+                                  option === question.correct_option
+                                    ? "bg-green-100 border border-green-300"
+                                    : "bg-gray-50"
+                                }`}
+                              >
+                                <span className="font-medium mr-2">
+                                  {i + 1}.
+                                </span>
+                                {option}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
