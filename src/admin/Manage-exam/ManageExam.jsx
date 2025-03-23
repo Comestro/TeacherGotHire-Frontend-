@@ -842,14 +842,14 @@ const ExamManagement = () => {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((exam) => (
                     <Grid item xs={12} sm={6} lg={4} key={exam.id}>
-                      <Link to={`/admin/exam/${exam.id}`} >
-                        <ExamCard status={exam.status} elevation={2}>
-                          <StatusChip
-                            label={exam.status ? "Approved" : "Pending"}
-                            status={exam.status}
-                            size="small"
-                          />
-                          <StyledCardContent>
+                      <ExamCard status={exam.status} elevation={2}>
+                        <StatusChip
+                          label={exam.status ? "Approved" : "Pending"}
+                          status={exam.status}
+                          size="small"
+                        />
+                        <StyledCardContent>
+                          <Link to={`/admin/exam/${exam.id}`} >
                             <Typography
                               variant="h6"
                               component="h2"
@@ -903,53 +903,53 @@ const ExamManagement = () => {
                                 </InfoItem>
                               </Grid>
                             </Grid>
-
-                            <Box sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              mt: 2,
-                              pt: 2,
-                              borderTop: '1px solid #eee'
-                            }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Avatar
-                                  sx={{
-                                    width: 24,
-                                    height: 24,
-                                    mr: 1,
-                                    bgcolor: theme.palette.primary.main,
-                                    fontSize: '0.8rem'
-                                  }}
-                                >
-                                  <FaUser size={12} />
-                                </Avatar>
-                                <Typography variant="body2">
-                                  <strong>Added by:</strong> {getAssignedUserName(exam)}
-                                </Typography>
-                              </Box>
-
-                              <Box>
-                                <IconButton
-                                  component={Link}
-                                  to={`/admin/exam/${exam.id}`}
-                                  color="primary"
-                                  size="small"
-                                  title="View Details"
-                                >
-                                  <FaEye />
-                                </IconButton>
-                                <IconButton
-                                  onClick={(e) => handleOpenMenu(e, exam)}
-                                  size="small"
-                                >
-                                  <FaEllipsisV />
-                                </IconButton>
-                              </Box>
+                          </Link>
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 2,
+                            pt: 2,
+                            borderTop: '1px solid #eee'
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  mr: 1,
+                                  bgcolor: theme.palette.primary.main,
+                                  fontSize: '0.8rem'
+                                }}
+                              >
+                                <FaUser size={12} />
+                              </Avatar>
+                              <Typography variant="body2">
+                                <strong>Added by:</strong> {getAssignedUserName(exam)}
+                              </Typography>
                             </Box>
-                          </StyledCardContent>
-                        </ExamCard>
-                      </Link>
+
+                            <Box>
+                              <IconButton
+                                component={Link}
+                                to={`/admin/exam/${exam.id}`}
+                                color="primary"
+                                size="small"
+                                title="View Details"
+                              >
+                                <FaEye />
+                              </IconButton>
+                              <IconButton
+                                onClick={(e) => handleOpenMenu(e, exam)}
+                                size="small"
+                              >
+                                <FaEllipsisV />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        </StyledCardContent>
+                      </ExamCard>
+
                     </Grid>
                   ))}
               </Grid>
@@ -991,7 +991,7 @@ const ExamManagement = () => {
             onClose={handleCloseMenu}
             PaperProps={{
               elevation: 3,
-              sx: { minWidth: 200 }
+              sx: { minWidth: 200 },
             }}
           >
             <MenuItem onClick={handleEdit}>
@@ -1000,13 +1000,19 @@ const ExamManagement = () => {
                 <Typography>Edit Exam</Typography>
               </Box>
             </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('accept')} disabled={menuExam?.status}>
+            <MenuItem
+              onClick={() => handleStatusChange('accept')}
+              disabled={menuExam?.status === true} // Disable if already approved
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#4CAF50' }}>
                 <FaCheck size={14} />
                 <Typography>Accept Exam</Typography>
               </Box>
             </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('reject')} disabled={!menuExam?.status}>
+            <MenuItem
+              onClick={() => handleStatusChange('reject')}
+              disabled={menuExam?.status === false} // Disable if already rejected
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#FF9800' }}>
                 <FaTimes size={14} />
                 <Typography>Reject Exam</Typography>
