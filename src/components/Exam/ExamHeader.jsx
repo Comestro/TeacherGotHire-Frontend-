@@ -2,44 +2,44 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function Subheader() {
-  
+  const { allQuestion } = useSelector((state) => state.examQues);
+  const allques = allQuestion?.questions || [];
 
-   const { allQuestion } = useSelector((state) => state.examQues);
-      
-   const allques = allQuestion?.questions || [];
+  // Extract the duration from allQuestion (in minutes)
+  const examDuration = allQuestion?.duration || 0; // Duration in minutes
 
-   // Initialize totalTime state
-   const  [timeLeft, setTimeLeft] = useState(0);
- 
-   // Calculate totalTime whenever allQuestion changes
-   useEffect(() => {
-     const calculatedTotalTime = allques.reduce((sum, question) => sum + (question.time || 0), 0);
-     setTimeLeft(calculatedTotalTime); // Update the state with the calculated total time
-   }, [allQuestion]); // Dependency array ensures this runs when allQuestion changes
- 
-   console.log("timeLeft",timeLeft); // Log the total time to verify
- 
+  // Convert duration to seconds for the timer
+  const initialTimeLeft = examDuration * 60; // Convert minutes to seconds
 
-  const subject = useSelector((state) => state.examQues.exam);
-  const Language = useSelector((state) => state.examQues);
-  const language = useSelector((state) => state.examQues.language);
+  // Initialize timer state
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
 
+  // Start the timer when the component mounts or when allQuestion changes
+  useEffect(() => {
+    setTimeLeft(initialTimeLeft); // Reset the timer when allQuestion changes
+  }, [allQuestion]); // Dependency array ensures this runs when allQuestion changes
 
+  // Timer logic
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          // alert("Time's up!");
-          // You can trigger any function here, like auto-submitting the exam.
+          handleAutoSubmit(); // Auto-submit the exam when time is up
           return 0;
         }
         return prevTime - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearInterval(timer); // Cleanup the timer on unmount
+  }, [allQuestion]); // Restart the timer when allQuestion changes
+
+  // Function to handle auto-submission
+  const handleAutoSubmit = () => {
+    alert("Time's up! Submitting the exam...");
+    // Add your auto-submit logic here (e.g., dispatch an action to submit the exam)
+  };
 
   // Format the time in MM:SS
   const formatTime = (seconds) => {
@@ -49,6 +49,10 @@ export default function Subheader() {
       .toString()
       .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
+
+  // Subject details from Redux store
+  const subject = useSelector((state) => state.examQues.exam);
+  const language = useSelector((state) => state.examQues.language);
 
   return (
     <div className="w-full bg-white py-4 px-4 sm:px-6 flex flex-wrap md:flex-nowrap justify-between items-center">
@@ -70,7 +74,7 @@ export default function Subheader() {
           Time Left:
         </span>
         <span className="text-base md:text-lg font-bold text-gray-700">
-          {formatTime(timeLeft)} min
+          {formatTime(timeLeft)}
         </span>
       </div>
     </div>
