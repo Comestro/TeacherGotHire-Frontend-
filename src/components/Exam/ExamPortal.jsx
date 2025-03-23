@@ -154,7 +154,7 @@ const ExamPortal = () => {
       {/* Main Content */}
 
       <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
-        <Subheader />
+        <Subheader handleSubmit={handleSubmit} />
         <div className="bg-white md:hidden">
           <ul className="p-2 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto">
             {questions.map((q, index) => (
