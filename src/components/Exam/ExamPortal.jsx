@@ -130,7 +130,7 @@ const ExamPortal = () => {
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-md border-r border-gray-200 p-2">
         <h3 className="text-xl font-bold text-center text-gray-700 py-4 border-b border-gray-300">
-          Level-1 <span className="text-gray-600">Questions</span>
+           <span className="text-gray-600">Questions</span>
         </h3>
         <h3 className="text-center font-semibold text-gray-500 mt-2">
           Total Questions ({questions.length})
