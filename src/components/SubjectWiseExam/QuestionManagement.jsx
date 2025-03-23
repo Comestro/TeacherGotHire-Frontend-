@@ -30,6 +30,11 @@ const QuestionManagement = () => {
   
 
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getSetterInfo());
+    dispatch(getLevels());
+  }, [dispatch]);
+
   const { setterExamSet, loading, setterUser, levels, error } = useSelector(
     (state) => state.examQues
   );
@@ -44,11 +49,7 @@ const QuestionManagement = () => {
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    dispatch(getSetterInfo());
-    dispatch(getLevels());
-  }, [dispatch]);
-
+  
   const subjects = setterUser[0]?.subject;
   console.log("subject", subjects);
 

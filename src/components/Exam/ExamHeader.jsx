@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
-export default function Subheader() {
+export default function Subheader({handleSubmit}) {
   const { allQuestion } = useSelector((state) => state.examQues);
   const allques = allQuestion?.questions || [];
 
@@ -25,7 +25,7 @@ export default function Subheader() {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          handleAutoSubmit(); // Auto-submit the exam when time is up
+          handleSubmit(); // Auto-submit the exam when time is up
           return 0;
         }
         return prevTime - 1;
@@ -35,11 +35,6 @@ export default function Subheader() {
     return () => clearInterval(timer); // Cleanup the timer on unmount
   }, [allQuestion]); // Restart the timer when allQuestion changes
 
-  // Function to handle auto-submission
-  const handleAutoSubmit = () => {
-    alert("Time's up! Submitting the exam...");
-    // Add your auto-submit logic here (e.g., dispatch an action to submit the exam)
-  };
 
   // Format the time in MM:SS
   const formatTime = (seconds) => {
