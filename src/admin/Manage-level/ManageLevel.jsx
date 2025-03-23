@@ -32,7 +32,6 @@ import {
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Visibility as VisibilityIcon,
   Search as SearchIcon,
   Close as CloseIcon
@@ -40,7 +39,6 @@ import {
 import Layout from "../Admin/Layout";
 import {
   getLevel,
-  updateLevel,
   createLevel,
 } from "../../services/adminManageLevel";
 
@@ -51,9 +49,10 @@ const ManageLevel = () => {
 
   const [levels, setLevels] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [openAddEditDialog, setOpenAddEditDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [newLevelData, setNewLevelData] = useState({ name: "", description: "" });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -107,17 +106,17 @@ const ManageLevel = () => {
     });
   };
 
-  const handleOpenAddEditDialog = (level = null) => {
-    setSelectedLevel(level || { name: "", description: "" });
+  const handleOpenAddDialog = () => {
+    setNewLevelData({ name: "", description: "" });
     setFormErrors({});
-    setOpenAddEditDialog(true);
+    setOpenAddDialog(true);
   };
 
-  const handleCloseAddEditDialog = () => {
+  const handleCloseAddDialog = () => {
     if (submitting) return;
-    setSelectedLevel(null);
+    setNewLevelData({ name: "", description: "" });
     setFormErrors({});
-    setOpenAddEditDialog(false);
+    setOpenAddDialog(false);
   };
 
   const handleOpenViewDialog = (level) => {
@@ -133,15 +132,15 @@ const ManageLevel = () => {
   const validateForm = () => {
     const errors = {};
 
-    if (!selectedLevel?.name || selectedLevel.name.trim() === "") {
+    if (!newLevelData?.name || newLevelData.name.trim() === "") {
       errors.name = "Level name is required";
-    } else if (selectedLevel.name.length < 2) {
+    } else if (newLevelData.name.length < 2) {
       errors.name = "Level name must be at least 2 characters";
-    } else if (selectedLevel.name.length > 50) {
+    } else if (newLevelData.name.length > 50) {
       errors.name = "Level name cannot exceed 50 characters";
     }
 
-    if (selectedLevel?.description && selectedLevel.description.length > 200) {
+    if (newLevelData?.description && newLevelData.description.length > 200) {
       errors.description = "Description cannot exceed 200 characters";
     }
 
@@ -151,8 +150,8 @@ const ManageLevel = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSelectedLevel({
-      ...selectedLevel,
+    setNewLevelData({
+      ...newLevelData,
       [name]: value,
     });
 
@@ -170,20 +169,10 @@ const ManageLevel = () => {
 
     try {
       setSubmitting(true);
-      if (selectedLevel.id) {
-        await updateLevel(selectedLevel.id, selectedLevel);
-        setLevels(
-          levels.map((lvl) =>
-            lvl.id === selectedLevel.id ? selectedLevel : lvl
-          )
-        );
-        showSnackbar(`Level "${selectedLevel.name}" updated successfully!`);
-      } else {
-        const newLevel = await createLevel(selectedLevel);
-        setLevels([...levels, newLevel]);
-        showSnackbar(`Level "${selectedLevel.name}" added successfully!`);
-      }
-      handleCloseAddEditDialog();
+      const newLevel = await createLevel(newLevelData);
+      setLevels([...levels, newLevel]);
+      showSnackbar(`Level "${newLevelData.name}" added successfully!`);
+      handleCloseAddDialog();
     } catch (error) {
       console.error("Error saving level:", error);
 
@@ -224,7 +213,7 @@ const ManageLevel = () => {
 
       // Fallback error message
       showSnackbar(
-        `Failed to ${selectedLevel.id ? 'update' : 'create'} level. Please try again.`,
+        "Failed to create level. Please try again.",
         "error"
       );
     } finally {
@@ -274,7 +263,7 @@ const ManageLevel = () => {
                   variant="contained"
                   color="primary"
                   startIcon={<AddIcon />}
-                  onClick={() => handleOpenAddEditDialog()}
+                  onClick={handleOpenAddDialog}
                   fullWidth={isMobile}
                   sx={{
                     py: { xs: 1, sm: 'auto' },
@@ -429,13 +418,7 @@ const ManageLevel = () => {
                                 >
                                   <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
                                 </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleOpenAddEditDialog(level)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
+                                {/* Edit button removed */}
                               </Box>
                             </TableCell>
                           </TableRow>
@@ -468,10 +451,10 @@ const ManageLevel = () => {
           </CardContent>
         </Card>
 
-        {/* Add/Edit Level Dialog */}
+        {/* Add Level Dialog (Edit functionality removed) */}
         <Dialog
-          open={openAddEditDialog}
-          onClose={!submitting ? handleCloseAddEditDialog : undefined}
+          open={openAddDialog}
+          onClose={!submitting ? handleCloseAddDialog : undefined}
           fullWidth
           maxWidth="sm"
           PaperProps={{
@@ -484,13 +467,13 @@ const ManageLevel = () => {
           <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {selectedLevel?.id ? "Edit Experience Level" : "Add Experience Level"}
+                Add Experience Level
               </Typography>
               {!submitting && (
                 <IconButton
                   edge="end"
                   color="inherit"
-                  onClick={handleCloseAddEditDialog}
+                  onClick={handleCloseAddDialog}
                   aria-label="close"
                   size="small"
                 >
@@ -509,7 +492,7 @@ const ManageLevel = () => {
               fullWidth
               margin="normal"
               name="name"
-              value={selectedLevel?.name || ""}
+              value={newLevelData.name}
               onChange={handleInputChange}
               error={Boolean(formErrors.name)}
               helperText={formErrors.name || ""}
@@ -525,7 +508,7 @@ const ManageLevel = () => {
               multiline
               rows={4}
               name="description"
-              value={selectedLevel?.description || ""}
+              value={newLevelData.description}
               onChange={handleInputChange}
               error={Boolean(formErrors.description)}
               helperText={formErrors.description || ""}
@@ -545,7 +528,7 @@ const ManageLevel = () => {
               }}
             >
               <Button
-                onClick={handleCloseAddEditDialog}
+                onClick={handleCloseAddDialog}
                 variant="outlined"
                 color="primary"
                 disabled={submitting}
@@ -571,8 +554,6 @@ const ManageLevel = () => {
               >
                 {submitting ? (
                   <CircularProgress size={24} color="inherit" />
-                ) : selectedLevel?.id ? (
-                  "Update"
                 ) : (
                   "Save"
                 )}
