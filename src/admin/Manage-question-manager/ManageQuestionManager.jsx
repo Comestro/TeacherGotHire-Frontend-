@@ -46,7 +46,8 @@ import {
   PersonAdd as PersonAddIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
-  MoreVert as MoreVertIcon
+  MoreVert as MoreVertIcon,
+  Close as CloseIcon
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import {
@@ -75,6 +76,10 @@ const ManageQuestionManager = () => {
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
   const [subjectSelectOpen, setSubjectSelectOpen] = useState(false);
   const [classCategorySelectOpen, setClassCategorySelectOpen] = useState(false);
+
+  // Add view dialog states
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+  const [viewManager, setViewManager] = useState(null);
 
   // UI states
   const [notification, setNotification] = useState({
@@ -142,6 +147,17 @@ const ManageQuestionManager = () => {
     }
   };
 
+  // View dialog handlers
+  const handleOpenViewDialog = (manager) => {
+    setViewManager(manager);
+    setOpenViewDialog(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setViewManager(null);
+    setOpenViewDialog(false);
+  };
+
   // Modal handlers
   const handleOpenModal = (isEdit = false, manager = null) => {
     setIsEditMode(isEdit);
@@ -158,9 +174,14 @@ const ManageQuestionManager = () => {
       });
       setSelectedSubjects(manager.subject.map(sub => sub.id));
 
-      // For edit mode, determine selected class categories
-      const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
-      setSelectedClassCategories(uniqueClassCategories.map(Number));
+      // For edit mode, get class categories from the manager.class_category array
+      if (manager.class_category && Array.isArray(manager.class_category)) {
+        setSelectedClassCategories(manager.class_category.map(cat => cat.id));
+      } else {
+        // Fallback to the old logic if new format is not available
+        const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
+        setSelectedClassCategories(uniqueClassCategories.map(Number));
+      }
     } else {
       // Reset form for new manager
       setSelectedManager(null);
@@ -192,8 +213,7 @@ const ManageQuestionManager = () => {
     setSelectedSubjects([]);
     setClassCategorySelectOpen(false);
   };
-  // Form submission
-  // Form submission
+
   // Form submission
   const handleSave = async () => {
     try {
@@ -339,26 +359,25 @@ const ManageQuestionManager = () => {
       setManagerToDelete(null);
     }
   };
-  // Status toggle functionality
+
   // Status toggle functionality
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
       const updatedStatus = !manager.user.is_verified;
 
-      // Get the unique class categories from the manager's subjects
-      const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
+      // Prepare class categories IDs from the manager's class_category array
+      const classCategories = manager.class_category?.map(cat => cat.id) || [];
 
       // Update the payload structure to match API expectations
       const payload = {
         user: {
-          id: manager.user.id,
           email: manager.user.email,
           Fname: manager.user.Fname,
           Lname: manager.user.Lname,
           is_verified: updatedStatus
         },
-        class_category: uniqueClassCategories.map(Number), // Add class_category array to the payload
+        class_category: classCategories, // Use the class_category array directly
         subject: manager.subject.map(sub => sub.id),
         status: updatedStatus // Include status in the payload
       };
@@ -369,7 +388,7 @@ const ManageQuestionManager = () => {
         // Update local state for immediate UI update
         setManagers(prev =>
           prev.map(m =>
-            m.user.id === manager.user.id
+            m.id === manager.id
               ? { ...m, user: { ...m.user, is_verified: updatedStatus } }
               : m
           )
@@ -529,19 +548,43 @@ const ManageQuestionManager = () => {
 
                 <Divider sx={{ my: 1 }} />
 
+                {/* Display Class Categories */}
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Assigned Classes:
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
+                  {manager.class_category && manager.class_category.map((cat) => (
+                    <Chip
+                      key={cat.id}
+                      label={cat.name}
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                    />
+                  ))}
+                </Box>
+
+                {/* Display Subjects */}
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Assigned Subjects:
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
-                  {manager.subject.map((sub) => (
-                    <Chip
-                      key={sub.id}
-                      label={`${sub.subject_name} (Class ${sub.class_category})`}
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                    />
-                  ))}
+                  {manager.subject.map((sub) => {
+                    // Find class category name
+                    const categoryId = sub.class_category;
+                    const category = manager.class_category?.find(cat => cat.id === categoryId);
+                    const categoryName = category ? category.name : `Class ${categoryId}`;
+
+                    return (
+                      <Chip
+                        key={sub.id}
+                        label={`${sub.subject_name} (${categoryName})`}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                      />
+                    );
+                  })}
                 </Box>
 
                 <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -566,6 +609,13 @@ const ManageQuestionManager = () => {
               </CardContent>
 
               <CardActions>
+                <Button
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() => handleOpenViewDialog(manager)}
+                >
+                  View
+                </Button>
                 <Button
                   size="small"
                   startIcon={<EditIcon />}
@@ -713,7 +763,7 @@ const ManageQuestionManager = () => {
                   {renderMobileView()}
                 </Box>
               ) : (
-                // Desktop table view
+                // Desktop table view changes
                 <TableContainer>
                   <Table size={isTablet ? "small" : "medium"}>
                     <TableHead sx={{ bgcolor: 'background.default' }}>
@@ -721,7 +771,10 @@ const ManageQuestionManager = () => {
                         <TableCell sx={{ fontWeight: 600 }}>Manager Name</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                         {!isTablet && (
-                          <TableCell sx={{ fontWeight: 600 }}>Assigned Subjects</TableCell>
+                          <>
+                            <TableCell sx={{ fontWeight: 600 }}>Classes</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>Subjects</TableCell>
+                          </>
                         )}
                         <TableCell sx={{ fontWeight: 600 }} align="center">Status</TableCell>
                         <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
@@ -746,20 +799,46 @@ const ManageQuestionManager = () => {
                             <TableCell>{manager.user.email}</TableCell>
 
                             {!isTablet && (
-                              <TableCell>
-                                <Box display="flex" flexWrap="wrap" gap={0.5}>
-                                  {manager.subject.map((sub) => (
-                                    <Chip
-                                      key={sub.id}
-                                      label={`${sub.subject_name} (${sub.class_category})`}
-                                      size="small"
-                                      variant="outlined"
-                                      color="primary"
-                                      sx={{ m: 0.2 }}
-                                    />
-                                  ))}
-                                </Box>
-                              </TableCell>
+                              <>
+                                {/* Class Categories Column */}
+                                <TableCell>
+                                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                                    {manager.class_category && manager.class_category.map((cat) => (
+                                      <Chip
+                                        key={cat.id}
+                                        label={cat.name}
+                                        size="small"
+                                        variant="outlined"
+                                        color="secondary"
+                                        sx={{ m: 0.2 }}
+                                      />
+                                    ))}
+                                  </Box>
+                                </TableCell>
+
+                                {/* Subjects Column */}
+                                <TableCell>
+                                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                                    {manager.subject.map((sub) => {
+                                      // Find class category name
+                                      const categoryId = sub.class_category;
+                                      const category = manager.class_category?.find(cat => cat.id === categoryId);
+                                      const categoryName = category ? category.name : `Class ${categoryId}`;
+
+                                      return (
+                                        <Chip
+                                          key={sub.id}
+                                          label={`${sub.subject_name} (${categoryName})`}
+                                          size="small"
+                                          variant="outlined"
+                                          color="primary"
+                                          sx={{ m: 0.2 }}
+                                        />
+                                      );
+                                    })}
+                                  </Box>
+                                </TableCell>
+                              </>
                             )}
 
                             <TableCell align="center">
@@ -783,6 +862,16 @@ const ManageQuestionManager = () => {
 
                             <TableCell align="center">
                               <Box display="flex" justifyContent="center" gap={1}>
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    size="small"
+                                    color="info"
+                                    onClick={() => handleOpenViewDialog(manager)}
+                                  >
+                                    <VisibilityIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+
                                 <Tooltip title="Edit Manager">
                                   <IconButton
                                     size="small"
@@ -1027,6 +1116,156 @@ const ManageQuestionManager = () => {
               startIcon={loadingAction && <CircularProgress size={20} color="inherit" />}
             >
               {loadingAction ? 'Saving...' : isEditMode ? 'Update' : 'Save'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* View Manager Details Dialog */}
+        <Dialog
+          open={openViewDialog}
+          onClose={handleCloseViewDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            elevation: 3,
+            sx: { borderRadius: 2 }
+          }}
+        >
+          <DialogTitle>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight={600}>
+                Manager Details
+              </Typography>
+              <IconButton size="small" onClick={handleCloseViewDialog}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+
+          <DialogContent dividers>
+            {viewManager && (
+              <Grid container spacing={2}>
+                {/* Personal Information */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
+                    Personal Information
+                  </Typography>
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 1 }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Full Name</Typography>
+                        <Typography variant="body1" fontWeight={500}>
+                          {viewManager.user.Fname} {viewManager.user.Lname}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Email</Typography>
+                        <Typography variant="body1">{viewManager.user.email}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Status</Typography>
+                        <Chip
+                          label={viewManager.user.is_verified ? "Active" : "Inactive"}
+                          color={viewManager.user.is_verified ? "success" : "default"}
+                          size="small"
+                          sx={{ mt: 0.5 }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Manager ID</Typography>
+                        <Typography variant="body1">{viewManager.id}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Grid>
+
+                {/* Class Categories */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
+                    Assigned Class Categories
+                  </Typography>
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 1 }}>
+                    {viewManager.class_category && viewManager.class_category.length > 0 ? (
+                      <Grid container spacing={1}>
+                        {viewManager.class_category.map((cat) => (
+                          <Grid item xs={6} key={cat.id}>
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 1.5,
+                                bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                                borderRadius: 1,
+                                height: '100%'
+                              }}
+                            >
+                              <Typography variant="body2" fontWeight={500}>
+                                {cat.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                ID: {cat.id}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No class categories assigned</Typography>
+                    )}
+                  </Paper>
+                </Grid>
+
+                {/* Subjects */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
+                    Assigned Subjects
+                  </Typography>
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 1 }}>
+                    {viewManager.subject && viewManager.subject.length > 0 ? (
+                      <Grid container spacing={1}>
+                        {viewManager.subject.map((sub) => {
+                          // Find class category name
+                          const categoryId = sub.class_category;
+                          const category = viewManager.class_category?.find(cat => cat.id === categoryId);
+                          const categoryName = category ? category.name : `Class ${categoryId}`;
+
+                          return (
+                            <Grid item xs={6} key={sub.id}>
+                              <Paper
+                                elevation={0}
+                                sx={{
+                                  p: 1.5,
+                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                  borderRadius: 1,
+                                  height: '100%'
+                                }}
+                              >
+                                <Typography variant="body2" fontWeight={500}>
+                                  {sub.subject_name}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {categoryName} • ID: {sub.id}
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No subjects assigned</Typography>
+                    )}
+                  </Paper>
+                </Grid>
+              </Grid>
+            )}
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleCloseViewDialog}
+              sx={{ px: 3 }}
+            >
+              Close
             </Button>
           </DialogActions>
         </Dialog>
