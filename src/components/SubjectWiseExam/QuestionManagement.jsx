@@ -50,7 +50,8 @@ const QuestionManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   
-  const subjects = setterUser[0]?.subject;
+  // const subjects = setterUser?.subject;
+  const subjects = setterUser?.map((user) => user.subject);
   console.log("subject", subjects);
 
   const handleSubjectChange = (e) => {
