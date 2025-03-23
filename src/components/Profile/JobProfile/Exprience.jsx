@@ -212,7 +212,7 @@ const Experience = () => {
 
                 {/* Experience Details */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
+                  {/* <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 truncate">
                         {experience.institution || "N/A"}
@@ -225,13 +225,13 @@ const Experience = () => {
                       {formatDate(experience.start_date)} –{" "}
                       {formatDate(experience.end_date)}
                     </p>
-                  </div>
+                  </div> */}
 
                   {/* Description & Achievements */}
                   <div className="space-y-2">
                     {experience.description && (
                       <p className="text-sm text-gray-600 line-clamp-2">
-                        {experience.description}
+                        {/* {experience.description} */}
                       </p>
                     )}
 
