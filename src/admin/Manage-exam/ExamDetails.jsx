@@ -486,7 +486,7 @@ const ExamDetails = () => {
                             Dashboard
                         </Link>
                         <Link
-                            to="/admin/manage-exams"
+                            to="/admin/manage/exam"
                             style={{
                                 textDecoration: 'none',
                                 color: theme.palette.text.secondary,
@@ -494,7 +494,7 @@ const ExamDetails = () => {
                                 alignItems: 'center'
                             }}
                         >
-                            Exams
+                            Exam set
                         </Link>
                         <Typography color="primary" sx={{ fontWeight: 500 }}>
                             {exam?.subject?.subject_name || "Exam"} Details
