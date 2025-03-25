@@ -19,21 +19,21 @@ export default function Subheader({handleSubmit}) {
     setTimeLeft(initialTimeLeft); // Reset the timer when allQuestion changes
   }, [allQuestion]); // Dependency array ensures this runs when allQuestion changes
 
-  // Timer logic
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          handleSubmit(); // Auto-submit the exam when time is up
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
+  //  Timer logic
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setTimeLeft((prevTime) => {
+  //       if (prevTime <= 1) {
+  //         clearInterval(timer);
+  //         handleSubmit(); // Auto-submit the exam when time is up
+  //         return 0;
+  //       }
+  //       return prevTime - 1;
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(timer); // Cleanup the timer on unmount
-  }, [allQuestion]); // Restart the timer when allQuestion changes
+  //   return () => clearInterval(timer); // Cleanup the timer on unmount
+  // }, [allQuestion]); // Restart the timer when allQuestion changes
 
 
   // Format the time in MM:SS
