@@ -18,6 +18,7 @@ import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import InterviewCard from "./components/InterviewCard";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -219,7 +220,9 @@ function TeacherDashboard() {
             <TeacherDashboardCard />
           </div>
         </div>
-
+       <div className="md:px-6">
+          <InterviewCard />
+        </div>
         <div className="md:px-6">
           <ExamManagement />
         </div>

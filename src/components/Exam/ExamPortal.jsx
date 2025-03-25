@@ -130,7 +130,7 @@ const ExamPortal = () => {
     });
     console.log("Checking results", results);
     console.log("language", language);
-    console.log("sdfghkjljhgfdxghkjhgfdxghkjlgfccghjk")
+    
     dispatch(
       postResult({
         exam,
@@ -141,8 +141,9 @@ const ExamPortal = () => {
       })
     );
     dispatch(attemptsExam());
+    console.log("sdfghkjljhgfdxghkjhgfdxghkjlgfccghjk")
     navigate("/exam/result", {
-      state: { exam, correct_answer, incorrect_answer, is_unanswered },
+      state: { exam, correct_answer, incorrect_answer, is_unanswered,language },
     });
   };
 

@@ -22,7 +22,7 @@ const ProgressBar = ({ progress }) => (
 );
 
 const Steppers = () => {
-  const { attempts } = useSelector((state) => state.examQues);
+  
   const dispatch = useDispatch();
   useEffect(() => {
     try{
@@ -31,6 +31,8 @@ const Steppers = () => {
        throw err;
     }
    }, [dispatch]);
+   
+   const { attempts } = useSelector((state) => state.examQues);
 
   // Filter data to include only attempts where isqualified is true
   const qualifiedAttempts = attempts?.filter((item) => item.isqualified === true);
