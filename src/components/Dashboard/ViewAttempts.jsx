@@ -1,64 +1,44 @@
 import React, { useState, useEffect } from "react";
-// import { apiOutput1, apiOutput2 } from './data';
 import { useDispatch, useSelector } from "react-redux";
 import { attemptsCount, attemptsExam } from "../../features/examQuesSlice";
 import { MdOutlineMenuBook } from "react-icons/md";
 
 function ViewAttempts() {
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [filteredExamResults, setFilteredExamResults] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
   const apiOutput1 = useSelector((state) => state.examQues?.attemptCount);
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
-
-  console.log("apiOutPut2", apiOutput2);
-
   const dispatch = useDispatch();
+
+  // Get unique attempted categories
+  const attemptedCategories = [
+    ...new Set(
+      apiOutput2
+        ?.filter((result) => result.isqualified !== undefined)
+        ?.map((result) => result.exam.class_category_name)
+    ),
+  ] || [];
+
   useEffect(() => {
     dispatch(attemptsCount());
     dispatch(attemptsExam());
-    // Extract categories from apiOutput1
-    const categoryNames = Object.keys(apiOutput1);
-    setCategories(categoryNames);
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
-    if (selectedCategory) {
-      // Filter exam results based on the selected category
-      const results = apiOutput2.filter(
-        (result) => result.exam.class_category_name === selectedCategory
-      );
-      setFilteredExamResults(results);
+    // Filter results based on selected category
+    const results = apiOutput2?.filter((result) => {
+      if (selectedCategory === "All") return true;
+      return result.exam.class_category_name === selectedCategory;
+    }) || [];
 
-      console.log("result", results);
-
-      // Extract subjects
-      const subjectNames = [
-        ...new Set(results.map((result) => result?.exam?.subjet_name)),
-      ];
-      setSubjects(subjectNames);
-    } else {
-      setFilteredExamResults([]);
-      setSubjects([]);
-    }
-  }, [selectedCategory]);
-
-  const attemptedCategories =
-    apiOutput2 && apiOutput2.length > 0
-      ? [
-          ...new Set(
-            apiOutput2
-              .filter((result) => result.isqualified !== undefined) // Check if `is_qualified` exists
-              .map((result) => result.exam.class_category_name)
-          ),
-        ]
-      : [];
-
-  console.log(attemptedCategories);
-
-  console.log("attemptedCategories", attemptedCategories);
+    setFilteredExamResults(results);
+    
+    // Extract unique subjects from filtered results
+    const subjectNames = [...new Set(results.map((result) => result?.exam?.subjet_name))];
+    setSubjects(subjectNames);
+  }, [selectedCategory, apiOutput2]);
 
   return (
     <div className="container mx-auto p-4">
@@ -66,23 +46,17 @@ function ViewAttempts() {
         <MdOutlineMenuBook className="size-7" />
         Exam Attempts
       </h1>
-      {/* Category Selection */}
+
       <div className="mb-6 px-5 ">
-        <label
-          htmlFor="categorySelect"
-          className="block text-gray-700 mb-2 text-lg font-semibold"
-        >
+        <label className="block text-gray-700 mb-2 text-lg font-semibold">
           Select Class Category:
         </label>
         <select
-          id="categorySelect"
           className="border border-gray-300 rounded px-3 py-2 w-full"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          <option value="" disabled>
-            Choose Class Category
-          </option>
+          <option value="All">All Class Categories</option>
           {attemptedCategories.map((category) => (
             <option key={category} value={category}>
               {category}
@@ -91,21 +65,22 @@ function ViewAttempts() {
         </select>
       </div>
 
-      {/* Display Results */}
       {selectedCategory && (
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-[#3E98C7]">
-            Class Category: {selectedCategory}
+          <h2 className="text-xl font-semibold mb-4 text-[#3E98C7] px-5">
+            Showing results for: {selectedCategory === "All" ? "All Categories" : selectedCategory}
           </h2>
 
           {subjects.length === 0 ? (
-            <p>No exam results found for this category.</p>
+            <p className="px-5">No exam results found.</p>
           ) : (
             subjects.map((subject) => (
               <SubjectResults
                 key={subject}
                 subject={subject}
                 examResults={filteredExamResults}
+                apiOutput1={apiOutput1}
+                selectedCategory={selectedCategory}
               />
             ))
           )}
@@ -115,54 +90,63 @@ function ViewAttempts() {
   );
 }
 
-function SubjectResults({ subject, examResults }) {
-  // Filter results for the subject
-  const subjectResults = examResults.filter(
+function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) {
+  const subjectResults = examResults?.filter(
     (result) => result.exam.subjet_name === subject
-  );
+  ) || [];
 
-  // Map data to include required fields
-  const attemptData = subjectResults.map((result, index) => {
+  const attemptData = subjectResults?.map((result) => {
+    const level_id = result.exam.level_id;
+    const levelKey = `level${level_id}`;
+    
+    let attemptCount = 0;
+    if (selectedCategory === "All") {
+      Object.values(apiOutput1 || {}).forEach(category => {
+        attemptCount += category?.[subject]?.[levelKey] || 0;
+      });
+    } else {
+      attemptCount = apiOutput1?.[selectedCategory]?.[subject]?.[levelKey] || 0;
+    }
+
     return {
-      attempt: index + 1,
+      classCategory: result.exam.class_category_name,
+      subject: subject,
+      language: result.language,
       level: result.exam.level_name,
       result: result.isqualified ? "Passed" : "Failed",
       percentage: result.calculate_percentage,
-      date: new Date(result.created_at),
+      attemptCount: attemptCount,
+      date: new Date(result.created_at).toLocaleDateString(),
     };
   });
-  // Sort attemptData in descending order of percentage
-  attemptData.sort((a, b) => b.percentage - a.percentage);
 
   return (
     <div className="mb-8 px-5">
-      <h3 className="text-lg font-medium mb-2 text-gray-700">
-        Subject: {subject}
-      </h3>
-
-      <div className="rounded-lg overflow-hidden border border-gray-300">
-        <table className="w-full ">
+      <div className="rounded-lg overflow-x-scroll md:overflow-hidden border border-gray-300">
+        <table className="w-full">
           <thead>
             <tr className="bg-[#E5F1F9] text-[#3E98C7] text-sm font-semibold">
-              <th className="py-2 px-4 border-b">Attempt</th>
+              <th className="py-2 px-4 border-b">Class Category</th>
+              <th className="py-2 px-4 border-b">Subject</th>
+              <th className="py-2 px-4 border-b">Language</th>
               <th className="py-2 px-4 border-b">Level</th>
               <th className="py-2 px-4 border-b">Result</th>
               <th className="py-2 px-4 border-b">Percentage</th>
+              <th className="py-2 px-4 border-b">Attempt Count</th>
+              <th className="py-2 px-4 border-b">Date</th>
             </tr>
           </thead>
           <tbody>
-            {attemptData.map((data) => (
-              <tr key={data.attempt} className="text-sm text-gray-600">
-                <td className="py-2 px-4 border-b text-center">
-                  {data.attempt}
-                </td>
+            {attemptData?.map((data, index) => (
+              <tr key={index} className="text-sm text-gray-600">
+                <td className="py-2 px-4 border-b text-center">{data.classCategory}</td>
+                <td className="py-2 px-4 border-b text-center">{data.subject}</td>
+                <td className="py-2 px-4 border-b text-center">{data.language}</td>
                 <td className="py-2 px-4 border-b text-center">{data.level}</td>
-                <td className="py-2 px-4 border-b text-center">
-                  {data.result}
-                </td>
-                <td className="py-2 px-4 border-b text-center">
-                  {data.percentage}%
-                </td>
+                <td className="py-2 px-4 border-b text-center">{data.result}</td>
+                <td className="py-2 px-4 border-b text-center">{data.percentage}%</td>
+                <td className="py-2 px-4 border-b text-center">{data.attemptCount}</td>
+                <td className="py-2 px-4 border-b text-center">{data.date}</td>
               </tr>
             ))}
           </tbody>
