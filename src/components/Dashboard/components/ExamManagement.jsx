@@ -35,6 +35,7 @@ function ExamManagement() {
   const { examSet, allcenter, attempts } = useSelector(
     (state) => state.examQues
   );
+  console.log("attempts",attempts)
 
   const level1ExamSets = examSet?.filter(
     (exam) => exam.level.name === "1st Level"
