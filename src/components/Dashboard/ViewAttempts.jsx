@@ -13,7 +13,6 @@ function ViewAttempts() {
   const apiOutput1 = useSelector((state) => state.examQues?.attemptCount);
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
 
-  console.log("apiout1", apiOutput1);
   console.log("apiOutPut2", apiOutput2);
 
   const dispatch = useDispatch();
@@ -33,7 +32,7 @@ function ViewAttempts() {
       );
       setFilteredExamResults(results);
 
-      console.log("result",results)
+      console.log("result", results);
 
       // Extract subjects
       const subjectNames = [
@@ -46,19 +45,20 @@ function ViewAttempts() {
     }
   }, [selectedCategory]);
 
+  const attemptedCategories =
+    apiOutput2 && apiOutput2.length > 0
+      ? [
+          ...new Set(
+            apiOutput2
+              .filter((result) => result.isqualified !== undefined) // Check if `is_qualified` exists
+              .map((result) => result.exam.class_category_name)
+          ),
+        ]
+      : [];
 
-  const attemptedCategories = apiOutput2 && apiOutput2.length > 0
-  ? [...new Set(apiOutput2
-      .filter(result => result.isqualified !== undefined) // Check if `is_qualified` exists
-      .map(result => result.exam.class_category_name)
-    )]
-  : [];
+  console.log(attemptedCategories);
 
-console.log(attemptedCategories);
-
-  
-  console.log("attemptedCategories",attemptedCategories);
-  
+  console.log("attemptedCategories", attemptedCategories);
 
   return (
     <div className="container mx-auto p-4">
@@ -121,13 +121,11 @@ function SubjectResults({ subject, examResults }) {
     (result) => result.exam.subjet_name === subject
   );
 
- 
-
   // Map data to include required fields
   const attemptData = subjectResults.map((result, index) => {
     return {
       attempt: index + 1,
-       level: result.exam.level_name,
+      level: result.exam.level_name,
       result: result.isqualified ? "Passed" : "Failed",
       percentage: result.calculate_percentage,
       date: new Date(result.created_at),
@@ -138,7 +136,9 @@ function SubjectResults({ subject, examResults }) {
 
   return (
     <div className="mb-8 px-5">
-      <h3 className="text-lg font-medium mb-2 text-gray-700">Subject: {subject}</h3>
+      <h3 className="text-lg font-medium mb-2 text-gray-700">
+        Subject: {subject}
+      </h3>
 
       <div className="rounded-lg overflow-hidden border border-gray-300">
         <table className="w-full ">
@@ -173,5 +173,3 @@ function SubjectResults({ subject, examResults }) {
 }
 
 export default ViewAttempts;
-
-
