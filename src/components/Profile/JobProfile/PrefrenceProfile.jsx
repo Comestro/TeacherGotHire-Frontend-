@@ -209,12 +209,18 @@ const PrefrenceProfile = () => {
                 },
                 {
                   title: "Subject",
-                  value:
-                    teacherprefrence?.prefered_subject?.length > 0
-                      ? teacherprefrence.prefered_subject.map(
-                          (subject) => subject.subject_name
-                        )
-                      : ["Not Provided"],
+                  value: teacherprefrence?.prefered_subject?.length > 0
+                    ? (teacherprefrence.class_category || []).map(category => ({
+                        categoryName: category.name,
+                        subjects: teacherprefrence.prefered_subject
+                          .filter(subject => 
+                            category.subjects?.some(catSubject => 
+                              catSubject.id === subject.id
+                            )
+                          )
+                          .map(subject => subject.subject_name)
+                      }))
+                    : [{ categoryName: "No Category", subjects: ["Not Provided"] }],
                 },
                 {
                   title: "Teacher Job Type",
@@ -233,15 +239,37 @@ const PrefrenceProfile = () => {
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
                     {item.title}
                   </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {item.value.map((val, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
-                      >
-                        {val}
-                      </span>
-                    ))}
+                  <div className="flex flex-col gap-2">
+                    {item.title === "Subject" ? (
+                      item.value.map((category, categoryIndex) => (
+                        <div key={categoryIndex} className="mb-2">
+                          <h4 className="text-sm font-medium text-gray-600 mb-1">
+                            {category.categoryName}
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {category.subjects.map((subjectName, subjectIndex) => (
+                              <span
+                                key={subjectIndex}
+                                className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                              >
+                                {subjectName}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {item.value.map((val, i) => (
+                          <span
+                            key={i}
+                            className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                          >
+                            {val}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
