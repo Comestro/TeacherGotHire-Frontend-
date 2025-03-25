@@ -22,7 +22,6 @@ const Skills = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showForm, setShowForm] = useState(false); // State to toggle form visibility
   const dispatch = useDispatch();
-
   const skillsData = useSelector((state) => state.jobProfile.allSkill || []);
   const teacherSkill = useSelector(
     (state) => state.jobProfile.teacherSkill || []

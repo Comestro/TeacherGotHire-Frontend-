@@ -11,6 +11,7 @@ import {
 } from "../../../features/jobProfileSlice";
 import { HiOutlineAcademicCap, HiOutlineTrash, HiPencil } from "react-icons/hi";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import { IoClose } from "react-icons/io5";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,6 +32,7 @@ const Education = () => {
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedQualification, setSelectedQualification] = useState("");
 
   const {
     register,
@@ -39,6 +41,28 @@ const Education = () => {
     reset,
     formState: { errors },
   } = useForm();
+
+  // Add new state for subject selections
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
+
+  // Add handler for adding subject with marks
+  const handleAddSubject = () => {
+    if (subjectInput.name && subjectInput.marks) {
+      setSelectedSubjects(prev => [...prev, { ...subjectInput }]);
+      setSubjectInput({ name: '', marks: '' }); // Reset input
+    }
+  };
+
+  // Fix handleRemoveSubject function syntax
+  const handleRemoveSubject = (index) => {
+    setSelectedSubjects(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleQualificationChange = (e) => {
+    setSelectedQualification(e.target.value);
+  };
+
 
   // Fetch education data on component mount
   useEffect(() => {
@@ -53,26 +77,33 @@ const Education = () => {
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
+      console.log("data",data)
       setLoading(true);
+      const payload = {
+        institution: data.institution,
+        qualification: data.qualification,
+        year_of_passing: data.year_of_passing,
+        grade_or_percentage: data.grade_or_percentage,
+        subjects: selectedSubjects.map(subject => ({
+          name: subject.name,
+          marks: parseFloat(subject.marks)
+        }))
+      };
+
       if (editingIndex !== null) {
         const id = educationData[editingIndex].id;
-        const payload = {
-          institution: data.institution,
-          qualification: data.qualification,
-          year_of_passing: data.year_of_passing,
-          grade_or_percentage: data.grade_or_percentage,
-        };
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
         toast.success("Education details updated successfully!");
       } else {
-        await dispatch(postEducationProfile(data)).unwrap();
+        await dispatch(postEducationProfile(payload)).unwrap();
         fetchProfile();
         toast.success("Education details added successfully!");
       }
 
       setIsEditing(false);
       setEditingIndex(null);
+      setSelectedSubjects([]); // Reset subjects after successful save
       reset();
     } catch (err) {
       console.error("Error:", err);
@@ -82,15 +113,20 @@ const Education = () => {
     }
   };
 
+
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsEditing(true);
-    const experience = educationData[index];
-    Object.keys(experience).forEach((key) => {
-      setValue(key, experience[key]);
+    const education = educationData[index];
+  
+    // Set form values
+    Object.keys(education).forEach((key) => {
+      setValue(key, education[key]);
     });
+  
+    // Populate selectedSubjects with existing subjects
+    setSelectedSubjects(education.subjects || []);
   };
-
   const handleDelete = async (index) => {
     try {
       const id = educationData[index].id;
@@ -199,6 +235,25 @@ const Education = () => {
                       {experience.grade_or_percentage || "N/A"}
                     </p>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    {experience.subjects.map((subject, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full"
+                      >
+                        <span className="text-sm text-teal-800">
+                          {subject.name} ({subject.marks} marks)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSubject(index)}
+                          className="text-teal-600 hover:text-teal-800"
+                        >
+                          <IoClose className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -228,15 +283,13 @@ const Education = () => {
                 </span>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Qualification <span className="text-red-500">*</span>
               </label>
               <select
-                {...register("qualification", {
-                  required: "Qualification is required",
-                })}
+                value={selectedQualification}
+                onChange={handleQualificationChange}
                 className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7] bg-white"
               >
                 <option value="" disabled>
@@ -254,7 +307,6 @@ const Education = () => {
                 </span>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year of Passing <span className="text-red-500">*</span>
@@ -284,9 +336,7 @@ const Education = () => {
                   {errors.year_of_passing.message}
                 </p>
               )}
-              {error && <span className="text-red-500 text-sm">{error}</span>}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Grade/Percentage
@@ -321,7 +371,60 @@ const Education = () => {
               )}
             </div>
           </div>
-
+          {/* Add Subject Selection Section */}
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Add Subjects with Marks</h3>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="Subject Name"
+                  value={subjectInput.name}
+                  onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-[#3E98C7]"
+                />
+                <input
+                  type="number"
+                  placeholder="Marks"
+                  value={subjectInput.marks}
+                  onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
+                  className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-[#3E98C7]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSubject}
+                  disabled={!subjectInput.name || !subjectInput.marks}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                >
+                  Add Subject
+                </button>
+              </div>
+              {/* Selected Subjects List */}
+              {selectedSubjects.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSubjects.map((subject, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full"
+                      >
+                        <span className="text-sm text-teal-800">
+                          {subject.name} ({subject.marks} marks)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSubject(index)}
+                          className="text-teal-600 hover:text-teal-800"
+                        >
+                          <IoClose className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           {/* Form Actions */}
           <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row-reverse sm:justify-start gap-3">
             <button

@@ -590,7 +590,7 @@ function ExamManagement() {
                             >
                               <div className="flex items-center justify-between mb-4">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
-                                  Level 2 Offline
+                                  Level 2 Exam
                                 </span>
                                 <span className="text-sm text-gray-500">
                                   Advanced Level
@@ -623,7 +623,7 @@ function ExamManagement() {
                                 className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
                               >
                                 <FaLockOpen className="w-5 h-5" />
-                                Start Level 2 Offline Exam
+                                Start Level 2 Center Exam
                               </button>
                             </div>
                           ))}

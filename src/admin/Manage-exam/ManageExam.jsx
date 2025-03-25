@@ -46,7 +46,8 @@ import {
   FaLayerGroup,
   FaSchool,
   FaPencilAlt,
-  FaTrash
+  FaTrash,
+  FaListUl
 } from "react-icons/fa";
 import Layout from "../Admin/Layout";
 import {
@@ -192,6 +193,11 @@ const ExamManagement = () => {
   useEffect(() => {
     fetchExams();
   }, []);
+
+  useEffect(() => {
+    // Reset the selected subject when the class category changes
+    setSelectedSubject("");
+  }, [selectedClassCategory]);
 
   useEffect(() => {
     if (exams.length > 0) {
@@ -618,24 +624,6 @@ const ExamManagement = () => {
               mb: 2
             }}>
               <FormControl variant="outlined" fullWidth size="small">
-                <InputLabel>Subject</InputLabel>
-                <Select
-                  label="Subject"
-                  value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>All Subjects</em>
-                  </MenuItem>
-                  {subjects.map((subject) => (
-                    <MenuItem key={subject.id} value={subject.subject_name}>
-                      {subject.subject_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl variant="outlined" fullWidth size="small">
                 <InputLabel>Class Category</InputLabel>
                 <Select
                   label="Class Category"
@@ -650,6 +638,34 @@ const ExamManagement = () => {
                       {classCategory.name}
                     </MenuItem>
                   ))}
+                </Select>
+              </FormControl>
+
+              <FormControl variant="outlined" fullWidth size="small">
+                <InputLabel>Subject</InputLabel>
+                <Select
+                  label="Subject"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>All Subjects</em>
+                  </MenuItem>
+                  {subjects
+                    .filter(subject =>
+                      // If a class category is selected, only show subjects from that category
+                      selectedClassCategory ?
+                        // Find the class category object by name and check if the subject belongs to it
+                        classCategories.find(cat => cat.name === selectedClassCategory)?.subjects
+                          .some(s => s.id === subject.id) :
+                        // Otherwise show all subjects
+                        true
+                    )
+                    .map((subject) => (
+                      <MenuItem key={subject.id} value={subject.subject_name}>
+                        {subject.subject_name}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
 
@@ -842,14 +858,14 @@ const ExamManagement = () => {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((exam) => (
                     <Grid item xs={12} sm={6} lg={4} key={exam.id}>
-                      <Link to={`/admin/exam/${exam.id}`} >
-                        <ExamCard status={exam.status} elevation={2}>
-                          <StatusChip
-                            label={exam.status ? "Approved" : "Pending"}
-                            status={exam.status}
-                            size="small"
-                          />
-                          <StyledCardContent>
+                      <ExamCard status={exam.status} elevation={2}>
+                        <StatusChip
+                          label={exam.status ? "Approved" : "Pending"}
+                          status={exam.status}
+                          size="small"
+                        />
+                        <StyledCardContent>
+                          <Link to={`/admin/exam/${exam.id}`} >
                             <Typography
                               variant="h6"
                               component="h2"
@@ -869,6 +885,7 @@ const ExamManagement = () => {
                               {exam.name}
                             </Typography>
 
+                            {/* // Inside the ExamCard component in the Grid mapping function */}
                             <Grid container spacing={1}>
                               <Grid item xs={12} sm={6}>
                                 <InfoItem>
@@ -904,52 +921,80 @@ const ExamManagement = () => {
                               </Grid>
                             </Grid>
 
-                            <Box sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              mt: 2,
-                              pt: 2,
-                              borderTop: '1px solid #eee'
-                            }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Avatar
-                                  sx={{
-                                    width: 24,
-                                    height: 24,
-                                    mr: 1,
-                                    bgcolor: theme.palette.primary.main,
-                                    fontSize: '0.8rem'
-                                  }}
-                                >
-                                  <FaUser size={12} />
-                                </Avatar>
-                                <Typography variant="body2">
-                                  <strong>Added by:</strong> {getAssignedUserName(exam)}
-                                </Typography>
-                              </Box>
-
-                              <Box>
-                                <IconButton
-                                  component={Link}
-                                  to={`/admin/exam/${exam.id}`}
-                                  color="primary"
-                                  size="small"
-                                  title="View Details"
-                                >
-                                  <FaEye />
-                                </IconButton>
-                                <IconButton
-                                  onClick={(e) => handleOpenMenu(e, exam)}
-                                  size="small"
-                                >
-                                  <FaEllipsisV />
-                                </IconButton>
-                              </Box>
+                            {/* Add the question counts here */}
+                            <Grid container spacing={1} sx={{ mt: 1 }}>
+                              <Grid item xs={12}>
+                                <InfoItem>
+                                  <FaListUl />
+                                  <Typography variant="body2">
+                                    <strong>Questions:</strong> {exam.questions?.length || 0} total
+                                    {exam.questions?.length > 0 && (
+                                      <Box component="span" sx={{ ml: 1 }}>
+                                        (
+                                        <Tooltip title="English Questions">
+                                          <Box component="span" sx={{ color: theme.palette.primary.main }}>
+                                            {exam.questions.filter(q => q.language === "English").length || 0} EN
+                                          </Box>
+                                        </Tooltip>
+                                        {" / "}
+                                        <Tooltip title="Hindi Questions">
+                                          <Box component="span" sx={{ color: theme.palette.secondary.main }}>
+                                            {exam.questions.filter(q => q.language === "Hindi").length || 0} HI
+                                          </Box>
+                                        </Tooltip>
+                                        )
+                                      </Box>
+                                    )}
+                                  </Typography>
+                                </InfoItem>
+                              </Grid>
+                            </Grid>
+                          </Link>
+                          <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mt: 2,
+                            pt: 2,
+                            borderTop: '1px solid #eee'
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  mr: 1,
+                                  bgcolor: theme.palette.primary.main,
+                                  fontSize: '0.8rem'
+                                }}
+                              >
+                                <FaUser size={12} />
+                              </Avatar>
+                              <Typography variant="body2">
+                                <strong>Added by:</strong> {getAssignedUserName(exam)}
+                              </Typography>
                             </Box>
-                          </StyledCardContent>
-                        </ExamCard>
-                      </Link>
+
+                            <Box>
+                              <IconButton
+                                component={Link}
+                                to={`/admin/exam/${exam.id}`}
+                                color="primary"
+                                size="small"
+                                title="View Details"
+                              >
+                                <FaEye />
+                              </IconButton>
+                              <IconButton
+                                onClick={(e) => handleOpenMenu(e, exam)}
+                                size="small"
+                              >
+                                <FaEllipsisV />
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        </StyledCardContent>
+                      </ExamCard>
                     </Grid>
                   ))}
               </Grid>
