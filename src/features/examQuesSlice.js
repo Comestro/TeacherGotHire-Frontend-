@@ -86,14 +86,14 @@ export const getAllQues = createAsyncThunk(
     "postResult",
     async ({ exam,correct_answer,
       incorrect_answer,
-      is_unanswered}, { rejectWithValue }) => {
+      is_unanswered,language}, { rejectWithValue }) => {
       console.log("result",{ correct_answer,
         incorrect_answer,
         is_unanswered,})
       try {
         const data = await addResult({ exam,correct_answer,
           incorrect_answer,
-          is_unanswered,});
+          is_unanswered,language});
          return data; 
       } catch (error) {
         return rejectWithValue({

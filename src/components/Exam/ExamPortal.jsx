@@ -15,6 +15,7 @@ import { postReport } from "../../features/examQuesSlice";
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const toggleModal = () => {
     setIsOpen(true);
@@ -23,9 +24,28 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { allQuestion } = useSelector((state) => state.examQues);
+  // Block browser back button
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      e.preventDefault();
+      setShowExitConfirm(true);
+    };
+
+    window.history.pushState(null, null, window.location.pathname);
+    window.addEventListener("popstate", handleBackButton);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, []);
+
+  const { allQuestion, language } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
+
+  console.log("language", language);
+  console.log("allqustion", allQuestion);
+  console.log("questions", questions);
 
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -52,6 +72,7 @@ const ExamPortal = () => {
   console.log("selectedOption", selectedOption);
 
   const handleSubmits = () => {
+    e?.preventDefault(); // Optional prevention for form submission
     // Process the selected option
     const question = currentQuestion.id;
     const issue_type = selectedOption;
@@ -108,18 +129,26 @@ const ExamPortal = () => {
       is_unanswered,
     });
     console.log("Checking results", results);
+    console.log("language", language);
+    console.log("sdfghkjljhgfdxghkjhgfdxghkjlgfccghjk")
     dispatch(
       postResult({
         exam,
         correct_answer,
         incorrect_answer,
         is_unanswered,
+        language,
       })
     );
     dispatch(attemptsExam());
     navigate("/exam/result", {
       state: { exam, correct_answer, incorrect_answer, is_unanswered },
     });
+  };
+
+  const handleExitExam = () => {
+    setShowExitConfirm(true);
+    navigate("/dashboard");
   };
 
   // if (status === 'loading') return <div>Loading...</div>;
@@ -130,7 +159,7 @@ const ExamPortal = () => {
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-md border-r border-gray-200 p-2">
         <h3 className="text-xl font-bold text-center text-gray-700 py-4 border-b border-gray-300">
-           <span className="text-gray-600">Questions</span>
+          <span className="text-gray-600">Questions</span>
         </h3>
         <h3 className="text-center font-semibold text-gray-500 mt-2">
           Total Questions ({questions.length})
@@ -274,7 +303,7 @@ const ExamPortal = () => {
                 Previous
               </button>
 
-              {currentQuestionIndex < questions.length - 1 && (
+              {/* {currentQuestionIndex < questions.length - 1 && (
                 <button
                   onClick={handleNext}
                   className={`flex px-4 py-2 rounded ${
@@ -295,6 +324,31 @@ const ExamPortal = () => {
                 >
                   Finished..
                 </button>
+              )} */}
+
+              {currentQuestionIndex < questions.length - 1 ? (
+                <button
+                  onClick={handleNext}
+                  className="flex px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
+                >
+                  <span className="text-center">Next</span>
+                  <BsArrowRightShort className="size-6 items-center" />
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleExitExam}
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                  >
+                    Exit Exam
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Submit Exam
+                  </button>
+                </>
               )}
             </div>
           </div>
