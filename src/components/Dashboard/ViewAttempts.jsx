@@ -99,10 +99,8 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
     const level_id = result.exam.level_id;
     const levelKey = `level${level_id}`;
     
-    // Calculate attempt count
     let attemptCount = 0;
     if (selectedCategory === "All") {
-      // Sum attempts across all categories for this subject/level
       Object.values(apiOutput1 || {}).forEach(category => {
         attemptCount += category?.[subject]?.[levelKey] || 0;
       });
@@ -124,7 +122,7 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
 
   return (
     <div className="mb-8 px-5">
-      <div className="rounded-lg overflow-hidden border border-gray-300">
+      <div className="rounded-lg overflow-x-scroll md:overflow-hidden border border-gray-300">
         <table className="w-full">
           <thead>
             <tr className="bg-[#E5F1F9] text-[#3E98C7] text-sm font-semibold">
