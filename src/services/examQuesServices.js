@@ -85,9 +85,10 @@ export const fetchQuestion = async ({ exam_id, language }) => {
   }
 };
 
-export const Attempts = async () => {s
+export const Attempts = async () => {
   try {
     const response = await apiClient.get(`/api/self/teacherexamresult/`);
+    console.log("attempts result from services", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
