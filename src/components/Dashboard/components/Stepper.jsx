@@ -14,14 +14,9 @@ const Steppers = () => {
   const allLevels = ["1st Level", "2nd Level Online", "2nd Level Offline", "Interview"];
 
   useEffect(() => {
-    try{
-      dispatch(attemptsExam());
-    }catch(err){
-       throw err;
-    }
-   }, [dispatch]);
+    dispatch(attemptsExam());
+  }, [dispatch]);
 
-  // Set initial categories
   useEffect(() => {
     if (attempts) {
       const qualified = attempts.filter(item => item.isqualified);
@@ -33,13 +28,13 @@ const Steppers = () => {
     }
   }, [attempts]);
 
-  // Set initial subjects when category changes
   useEffect(() => {
     if (selectedCategory && attempts) {
       const qualified = attempts.filter(item => 
-        item.isqualified && item.exam.class_category_name === selectedCategory
+        item.isqualified && 
+        item.exam.class_category_name === selectedCategory
       );
-      const uniqueSubjects = [...new Set(qualified.map(item => item.exam.subjet_name))];
+      const uniqueSubjects = [...new Set(qualified.map(item => item.exam.subject_name))];
       setSubjects(uniqueSubjects);
       if (uniqueSubjects.length > 0) {
         setSelectedSubject(uniqueSubjects[0]);
@@ -47,14 +42,17 @@ const Steppers = () => {
     }
   }, [selectedCategory, attempts]);
 
-  // Get filtered attempts
+  // Hide component if no categories available
+  if (categories.length === 0) {
+    return null;
+  }
+
   const filteredAttempts = attempts?.filter(item => 
     item.isqualified &&
     item.exam.class_category_name === selectedCategory &&
-    item.exam.subjet_name === selectedSubject
+    item.exam.subject_name === selectedSubject
   ) || [];
 
-  // Calculate progress
   const calculateProgress = () => {
     if (!filteredAttempts.length) return 0;
     const highestLevelIndex = Math.max(
@@ -66,7 +64,7 @@ const Steppers = () => {
   };
 
   return (
-    <div className=" mx-auto p-6 bg-white mb-5 border rounded-md">
+    <div className="mx-auto p-6 bg-white mb-5 border rounded-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Exam Progress Tracker</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -127,11 +125,11 @@ const Steppers = () => {
                      isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}
                   `}>
                     {isCompleted ? (
-                      <FiCheckCircle  className="w-6 h-6" />
+                      <FiCheckCircle className="w-6 h-6" />
                     ) : isActive ? (
-                      <FiUnlock  className="w-6 h-6" />
+                      <FiUnlock className="w-6 h-6" />
                     ) : (
-                      <FiLock  className="w-6 h-6" />
+                      <FiLock className="w-6 h-6" />
                     )}
                   </div>
                   <span className="text-sm text-gray-600 mt-2 text-center">{level}</span>
@@ -143,12 +141,6 @@ const Steppers = () => {
           <div className="text-center text-gray-600 text-sm">
             Completed {Math.floor(calculateProgress() / 25)} of {allLevels.length} stages
           </div>
-        </div>
-      )}
-
-      {!selectedCategory && (
-        <div className="text-center py-8 text-gray-500">
-          Please select a class category and subject to view progress
         </div>
       )}
     </div>
