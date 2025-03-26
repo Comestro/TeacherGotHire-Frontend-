@@ -1,4 +1,3 @@
-// ...existing code...
 import apiService from "./apiService";
 
 const endpoint = "api/examsetter";

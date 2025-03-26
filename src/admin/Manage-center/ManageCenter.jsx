@@ -48,7 +48,7 @@ import {
   Mail as EmailIcon
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
-import { createCenterManager, updateCenterManager, deleteCenterManager, getManageCenter } from "../../services/adminManageCenterApi";
+import { createCenterManager, deleteCenterManager, getManageCenter, updateCenterManager } from "../../services/adminManageCenterApi";
 import axios from 'axios';
 
 const ManageCenter = () => {
@@ -180,39 +180,43 @@ const ManageCenter = () => {
   const handleToggleStatus = async (center) => {
     try {
       const updatedStatus = !center.status;
+      console.log("Current status:", center.status);
+      console.log("Attempting to update to:", updatedStatus);
 
+      // Simple payload with just status
       const payload = {
-        user: {
-          username: center.user?.username,
-          email: center.user?.email,
-          Fname: center.user?.Fname,
-          Lname: center.user?.Lname,
-          // Do not include password in update
-        },
-        exam_center: {
-          center_name: center.center_name,
-          pincode: center.pincode,
-          state: center.state,
-          city: center.city,
-          area: center.area,
-          status: updatedStatus,
-        },
+        status: updatedStatus
       };
+      
+      console.log("Sending payload:", JSON.stringify(payload));
+      
+      const response = await updateCenterManager(center.id, payload);
+      console.log("Response from server:", response);
 
-      await updateCenterManager(center.id, payload);
-
-      // Update local state
-      setExamCenters(prevCenters =>
-        prevCenters.map(c =>
-          c.id === center.id
-            ? { ...c, status: updatedStatus }
-            : c
-        )
-      );
-
-      showSnackbar(`Exam center ${updatedStatus ? 'activated' : 'deactivated'} successfully`, "success");
+      // Verify if the status was actually updated in the response
+      if (response && response.status === updatedStatus) {
+        // Update local state
+        setExamCenters(prevCenters =>
+          prevCenters.map(c =>
+            c.id === center.id
+              ? { ...c, status: updatedStatus }
+              : c
+          )
+        );
+        showSnackbar(`Exam center ${updatedStatus ? 'activated' : 'deactivated'} successfully`, "success");
+      } else {
+        console.error("Status not updated in response:", response);
+        showSnackbar("Server did not update exam center status", "error");
+      }
     } catch (error) {
       console.error("Error updating center status:", error);
+      
+      // Log more detailed error information
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+      }
+      
       showSnackbar("Error updating exam center status", "error");
     }
   };
@@ -242,24 +246,29 @@ const ManageCenter = () => {
 
   const validateForm = () => {
     let errors = {};
-    if (!formData.username) errors.username = "Username is required";
-    if (!formData.email) errors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = "Email is invalid";
-
-    if (!formData.Fname) errors.Fname = "First Name is required";
-    if (!formData.Lname) errors.Lname = "Last Name is required";
+    
+    // Only validate user information if we're adding a new center (not editing)
+    if (!selectedCenter) {
+      if (!formData.username) errors.username = "Username is required";
+      if (!formData.email) errors.email = "Email is required";
+      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = "Email is invalid";
+      if (!formData.Fname) errors.Fname = "First Name is required";
+      if (!formData.Lname) errors.Lname = "Last Name is required";
+      
+      // Only validate password if adding a new center
+      if (!formData.password) {
+        errors.password = "Password is required for new centers";
+      }
+    }
+    
+    // Always validate center information
     if (!formData.center_name) errors.center_name = "Center Name is required";
     if (!formData.area) errors.area = "Area is required";
     if (!formData.pincode) errors.pincode = "Pincode is required";
     else if (!/^\d{6}$/.test(formData.pincode)) errors.pincode = "Pincode must be a 6-digit number";
     if (!formData.city) errors.city = "City is required";
     if (!formData.state) errors.state = "State is required";
-
-    // Only validate password if adding a new center
-    if (!selectedCenter && !formData.password) {
-      errors.password = "Password is required for new centers";
-    }
-
+  
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -273,28 +282,44 @@ const ManageCenter = () => {
 
     try {
       setIsSubmitting(true);
-      const payload = {
-        user: {
-          username: formData.username,
-          email: formData.email,
-          Fname: formData.Fname,
-          Lname: formData.Lname,
-        },
-        exam_center: {
+      
+      // Different payload structure based on whether we're adding or editing
+      let payload;
+      
+      if (selectedCenter) {
+        // For editing existing center, use a flat structure
+        payload = {
+          user: selectedCenter.user?.id,  // Include user ID as per your Postman example
           center_name: formData.center_name,
           pincode: formData.pincode,
           state: formData.state,
           city: formData.city,
           area: formData.area,
-          status: formData.status,
-        },
-      };
-
-      // Only include password for new centers
-      if (!selectedCenter) {
-        payload.user.password = formData.password;
+          status: formData.status
+        };
+      } else {
+        // For new center, include both user and center information
+        payload = {
+          user: {
+            username: formData.username,
+            email: formData.email,
+            Fname: formData.Fname,
+            Lname: formData.Lname,
+            password: formData.password,
+          },
+          exam_center: {
+            center_name: formData.center_name,
+            pincode: formData.pincode,
+            state: formData.state,
+            city: formData.city,
+            area: formData.area,
+            status: formData.status,
+          },
+        };
       }
 
+      console.log("Submitting payload:", JSON.stringify(payload));
+    
       if (selectedCenter) {
         await updateCenterManager(selectedCenter.id, payload);
         showSnackbar("Exam center updated successfully", "success");
@@ -306,6 +331,9 @@ const ManageCenter = () => {
       fetchExamCenters();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+      }
       showSnackbar("Error saving exam center", "error");
     } finally {
       setIsSubmitting(false);
@@ -694,93 +722,96 @@ const ManageCenter = () => {
           <DialogContent dividers>
             <form id="center-form" onSubmit={handleSubmit}>
               <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
-                    User Information
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Username"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.username}
-                    helperText={validationErrors.username}
-                    disabled={isSubmitting}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Email"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.email}
-                    helperText={validationErrors.email}
-                    disabled={isSubmitting}
-                  />
-                </Grid>
-
+                {/* Show user information section only for new centers */}
                 {!selectedCenter && (
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Password"
-                      variant="outlined"
-                      required
-                      fullWidth
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      error={!!validationErrors.password}
-                      helperText={validationErrors.password || "Required for new centers"}
-                      disabled={isSubmitting}
-                    />
-                  </Grid>
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
+                        User Information
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Username"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        name="username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        error={!!validationErrors.username}
+                        helperText={validationErrors.username}
+                        disabled={isSubmitting}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Email"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        error={!!validationErrors.email}
+                        helperText={validationErrors.email}
+                        disabled={isSubmitting}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Password"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        error={!!validationErrors.password}
+                        helperText={validationErrors.password || "Required for new centers"}
+                        disabled={isSubmitting}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="First Name"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        name="Fname"
+                        value={formData.Fname}
+                        onChange={handleInputChange}
+                        error={!!validationErrors.Fname}
+                        helperText={validationErrors.Fname}
+                        disabled={isSubmitting}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Last Name"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        name="Lname"
+                        value={formData.Lname}
+                        onChange={handleInputChange}
+                        error={!!validationErrors.Lname}
+                        helperText={validationErrors.Lname}
+                        disabled={isSubmitting}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Divider />
+                    </Grid>
+                  </>
                 )}
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="First Name"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="Fname"
-                    value={formData.Fname}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.Fname}
-                    helperText={validationErrors.Fname}
-                    disabled={isSubmitting}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Last Name"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="Lname"
-                    value={formData.Lname}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.Lname}
-                    helperText={validationErrors.Lname}
-                    disabled={isSubmitting}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Divider />
-                </Grid>
 
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
