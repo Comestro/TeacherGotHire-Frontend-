@@ -32,6 +32,7 @@ const Education = () => {
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedQualification, setSelectedQualification] = useState("");
 
   const {
     register,
@@ -57,6 +58,11 @@ const Education = () => {
   const handleRemoveSubject = (index) => {
     setSelectedSubjects(prev => prev.filter((_, i) => i !== index));
   };
+
+  const handleQualificationChange = (e) => {
+    setSelectedQualification(e.target.value);
+  };
+
 
   // Fetch education data on component mount
   useEffect(() => {
@@ -107,15 +113,20 @@ const Education = () => {
     }
   };
 
+
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsEditing(true);
-    const experience = educationData[index];
-    Object.keys(experience).forEach((key) => {
-      setValue(key, experience[key]);
+    const education = educationData[index];
+  
+    // Set form values
+    Object.keys(education).forEach((key) => {
+      setValue(key, education[key]);
     });
+  
+    // Populate selectedSubjects with existing subjects
+    setSelectedSubjects(education.subjects || []);
   };
-
   const handleDelete = async (index) => {
     try {
       const id = educationData[index].id;
@@ -224,6 +235,25 @@ const Education = () => {
                       {experience.grade_or_percentage || "N/A"}
                     </p>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    {experience.subjects.map((subject, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full"
+                      >
+                        <span className="text-sm text-teal-800">
+                          {subject.name} ({subject.marks} marks)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSubject(index)}
+                          className="text-teal-600 hover:text-teal-800"
+                        >
+                          <IoClose className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,9 +288,8 @@ const Education = () => {
                 Qualification <span className="text-red-500">*</span>
               </label>
               <select
-                {...register("qualification", {
-                  required: "Qualification is required",
-                })}
+                value={selectedQualification}
+                onChange={handleQualificationChange}
                 className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7] bg-white"
               >
                 <option value="" disabled>

@@ -88,6 +88,7 @@ export const fetchQuestion = async ({ exam_id, language }) => {
 export const Attempts = async () => {
   try {
     const response = await apiClient.get(`/api/self/teacherexamresult/`);
+    console.log("attempts result from services", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
@@ -110,18 +111,21 @@ export const addResult = async({
   correct_answer,
   incorrect_answer,
   is_unanswered,
+  language,
 })=>{
   try{
     console.log("result",{
       correct_answer,
       incorrect_answer,
       is_unanswered,
+      language
     })
      const response = await apiClient.post(`/api/self/teacherexamresult/`,{
       exam,
       correct_answer,
       incorrect_answer,
       is_unanswered,
+      language
     })
           
      return response.data;
@@ -198,7 +202,7 @@ export const AddReport = async ({question,issue_type}) => {
 
 export const AllCenter = async () => {
   try {
-    const response = await apiClient.get(`/api/examcenter/`);
+    const response = await apiClient.get(`/api/admin/examcenter/`);
     console.log("allcenter",response)
     return response.data;
   } catch (err) {
