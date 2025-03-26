@@ -202,7 +202,7 @@ export const AddReport = async ({question,issue_type}) => {
 
 export const AllCenter = async () => {
   try {
-    const response = await apiClient.get(`/api/examcenter/`);
+    const response = await apiClient.get(`/api/admin/examcenter/`);
     console.log("allcenter",response)
     return response.data;
   } catch (err) {

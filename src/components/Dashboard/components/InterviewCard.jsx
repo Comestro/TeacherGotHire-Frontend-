@@ -6,6 +6,8 @@ const InterviewCard = () => {
   const { interview, examSet } = useSelector(
     (state) => state.examQues
   );
+
+  console.log("interview",interview)
   
   const level2OfflineExamSets = examSet?.filter(
     (exam) => exam.level.name === "2nd Level Offline"
