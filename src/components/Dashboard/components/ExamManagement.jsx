@@ -29,13 +29,16 @@ function ExamManagement() {
     (state) => state.jobProfile.prefrence.class_category
   );
 
+  console.log("classCategories",classCategories)
+
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
-  const { examSet, allcenter, attempts } = useSelector(
+  const { examSet, allcenter, attempts,error } = useSelector(
     (state) => state.examQues
   );
   console.log("allcenter", allcenter);
+  console.log("error",error);
 
   const level1ExamSets = examSet?.filter(
     (exam) => exam.level.name === "1st Level"
@@ -99,6 +102,7 @@ function ExamManagement() {
 
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedSubjectName,setSelectedSubjectName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState("");
@@ -147,7 +151,7 @@ function ExamManagement() {
   useEffect(() => {
     if (activeTab !== null) {
       const subject = prefrence?.prefered_subject || [];
-      console.log("prefrence", subject);
+      console.log("subject", subject);
 
       const filteredSubjects = subject.filter(
         (subject) => subject.class_category === activeTab
@@ -158,13 +162,15 @@ function ExamManagement() {
     }
   }, [activeTab]); // Runs on mount and when activeTab changes
 
+
   const handleSubjectChange = (e) => {
     const subjectId = e.target.value;
-    setSelectedSubject(subjectId);
+    setSelectedSubject(subjectId.id);
+    setSelectedSubjectName(subjectId.subject_name)
     console.log("selectedSubject", subjectId);
     dispatch(
       getExamSet({
-        subject_id: subjectId,
+        subject_id: subjectId?.id,
         class_category_id: activeTab,
       })
     );
@@ -174,11 +180,12 @@ function ExamManagement() {
     dispatch(setExam(exam));
     navigate("/exam");
   };
-
+  console.log("selectedSubject",selectedSubject)
   const handleSubmit = (e) => {
     e.preventDefault();
     // Simulate submission (e.g., API call)
     console.log("Selected Date and Time:", selectedDateTime);
+    
     // Update state to show pending card
     dispatch(
       postInterview({
@@ -219,7 +226,7 @@ function ExamManagement() {
   const handleverifyPasskey = (event) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
-    dispatch(setExam(examSet[2]?.id));
+    dispatch(setExam(level2OfflineExamSets[0]?.id));
     dispatch(verifyPasscode({ user_id, exam_id: offlineSet, passcode }));
     dispatch(resetPasskeyResponse());
     navigate("/exam");
@@ -345,7 +352,7 @@ function ExamManagement() {
                                 key={subject.id}
                                 onClick={() =>
                                   handleSubjectChange({
-                                    target: { value: subject.id },
+                                    target: { value: subject },
                                   })
                                 }
                                 className={`p-4 rounded-lg border cursor-pointer transition-all ${
@@ -559,7 +566,7 @@ function ExamManagement() {
                                 onSubmit={(event) =>
                                   handleGeneratePasskey(
                                     event,
-                                    level2OfflineExamSets[0].id
+                                    level2OfflineExamSets[0]?.id
                                   )
                                 }
                                 className="space-y-4"
@@ -718,154 +725,6 @@ function ExamManagement() {
                   )}
 
                   {/* Interviews Section */}
-                  {/* {level2OfflineExamSets.length > 0 ? (
-                    <div className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2">
-                      {!isSubmitted && !interview.length > 0 ? (
-                        
-                        <form onSubmit={handleSubmit}>
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                              Schedule Interview
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              Select Date & Time
-                            </span>
-                          </div>
-                          <h4 className="text-xl font-bold text-gray-800 mb-3">
-                            Choose a Date and Time for Your Interview
-                          </h4>
-                          <div className="space-y-4">
-                            <div>
-                              <label
-                                htmlFor="datetime"
-                                className="block text-sm font-medium text-gray-700"
-                              >
-                                Date and Time
-                              </label>
-                              <input
-                                type="datetime-local"
-                                id="datetime"
-                                name="datetime"
-                                value={selectedDateTime}
-                                onChange={(e) =>
-                                  setSelectedDateTime(e.target.value)
-                                }
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                required
-                              />
-                            </div>
-                            <button
-                              type="submit"
-                              className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors duration-300"
-                            >
-                              Submit Request
-                            </button>
-                          </div>
-                        </form>
-                      ) : (
-                        interview.length > 0 &&
-                        interview.map((item) => (
-                          <div className="flex flex-col items-center mt-10">
-                            <div
-                              key={item.id}
-                              className="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden mb-4 "
-                            >
-                              <div className="px-6 py-4">
-                                <div className="font-bold text-xl mb-2">
-                                  {item.status === false ? (
-                                    <>
-                                      <div className="flex items-center justify-between mb-4">
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-500 text-white text-sm font-medium">
-                                          Pending Approval
-                                        </span>
-                                        <span className="text-sm text-gray-500">
-                                          Admin Confirmation
-                                        </span>
-                                      </div>
-                                      <h4 className="text-xl font-bold text-gray-800 mb-3">
-                                        Interview Request Submitted
-                                      </h4>
-                                      <div className="space-y-2 text-sm text-gray-600">
-                                        <p>
-                                          • Your selected date and time:{" "}
-                                          {item.time}
-                                        </p>
-                                        <p>
-                                          • Admin will confirm your request
-                                          soon.
-                                        </p>
-                                      </div>
-                                      <div className="mt-6 text-center">
-                                        <p className="text-sm text-gray-500">
-                                          Thank you for submitting your request.
-                                          We will notify you once it is
-                                          approved.
-                                        </p>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="text-green-600">
-                                        Approved
-                                      </span>
-                                      <p className="text-gray-700 text-base">
-                                        <strong>Subject:</strong>{" "}
-                                        {item.subject_name || "N/A"}
-                                      </p>
-                                      <p className="text-gray-700 text-base">
-                                        <strong>Time:</strong>{" "}
-                                        {new Date(item.time).toLocaleString()}
-                                      </p>
-                                      {item.status !== false && item.link && (
-                                        <div className="px-6 py-4 bg-gray-100">
-                                          <p className="text-blue-600 font-semibold">
-                                            <a
-                                              href={item.link}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                            >
-                                              Join Interview
-                                            </a>
-                                          </p>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-
-                  
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  ) : (
-                    <div className="min-w-64">
-                     
-                      <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
-                        <div className="flex items-center justify-between mb-4">
-                          <h5 className="font-semibold text-gray-800">
-                            Online Interview
-                          </h5>
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs">
-                            Virtual
-                          </span>
-                        </div>
-                        <div className="text-center py-4">
-                          <FaLock className="mx-auto text-3xl text-gray-400 mb-3" />
-                          <p className="text-sm text-gray-500 mb-4">
-                            Available after completing both exam levels
-                          </p>
-                          <div className="space-y-1 text-sm text-gray-600 text-left">
-                            <p>• Video Conference Setup</p>
-                            <p>• Practical Assessment</p>
-                            <p>• Q&A Session</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )} */}
                   {level2OfflineExamSets.length > 0 ? (
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                       {!isSubmitted && !interview.length > 0 ? (
@@ -958,7 +817,7 @@ function ExamManagement() {
                         interview.length > 0 &&
                         interview.map((item) => (
                           <div key={item.id} className="p-6">
-                            {item.status === false ? (
+                            {item.status === "requested" ? (
                               // Pending Approval Card
                               <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-5">
                                 <div className="flex items-center justify-between mb-4">
@@ -1076,11 +935,17 @@ function ExamManagement() {
                                       />
                                     </svg>
                                     <div>
+                                    <p className="text-gray-700">
+                                        <span className="font-medium">
+                                          Class Category
+                                        </span>{" "}
+                                        {item?.class_category?.name || "N/A"}
+                                      </p>
                                       <p className="text-gray-700">
                                         <span className="font-medium">
                                           Subject:
                                         </span>{" "}
-                                        {item.subject_name || "N/A"}
+                                        {item.subject.subject_name || "N/A"}
                                       </p>
                                       <p className="text-gray-700">
                                         <span className="font-medium">
