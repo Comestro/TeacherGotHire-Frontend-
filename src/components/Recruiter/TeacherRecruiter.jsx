@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { BsBriefcase, BsGeoAlt } from "react-icons/bs";
 import { MdSchool } from "react-icons/md";
 import { FiArrowRight } from "react-icons/fi";
+import { IoReloadOutline } from "react-icons/io5";
 import { fetchTeachers } from "../../features/teacherFilterSlice";
 
 const TeacherFilter = () => {
@@ -14,29 +15,24 @@ const TeacherFilter = () => {
 
   const { data, status, error } = useSelector((state) => state.teachers);
 
-
   useEffect(() => {
     if (data) {
       setTimeout(() => {
         setTeachers(data);
+        setLoading(false);
       }, 1000);
-      setLoading(false);
     }
   }, [data]);
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex justify-center items-center mt-16 ">
-        <div className="h-fit mt-20">
-          <Loader />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow relative">
-      {teachers?.length > 0 ? (
+      {loading ? (
+        <div className="w-full h-full flex justify-center items-center mt-16">
+          <div className="h-fit mt-20">
+            <Loader />
+          </div>
+        </div>
+      ) : teachers?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teachers.map((teacher) => (
             <div
@@ -162,11 +158,24 @@ const TeacherFilter = () => {
           ))}
         </div>
       ) : (
-        <div className="w-full h-full flex justify-center items-center mt-16 ">
-        <div className="h-fit mt-20">
-          <Loader />
+        <div className="w-full h-screen flex flex-col items-center justify-center text-center p-8">
+          <div className="max-w-md mx-auto">
+            <div className="text-6xl text-gray-300 mb-4">🏫</div>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+              No Teachers Found
+            </h3>
+            <p className="text-gray-500 mb-6">
+              We couldn't find any teachers matching your search criteria.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-teal-600 hover:text-teal-700 font-medium flex items-center justify-center gap-2 mx-auto"
+            >
+              <IoReloadOutline className="text-lg" />
+              Refresh Search
+            </button>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
