@@ -10,6 +10,7 @@ const MCQGuidelinePage = () => {
   const examID = exam?.id; 
   const verfyExamId = verifyresponse?.offline_exam?.id;
   const [isChecked, setIsChecked] = useState(false);
+  console.log("exam",exam)
 
   console.log("verfied",verifyresponse)
   
