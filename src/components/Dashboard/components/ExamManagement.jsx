@@ -245,27 +245,7 @@ function ExamManagement() {
   return (
     <>
       <div className=" mx-auto p-6 bg-white rounded-lg border">
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-[#3E98C7] to-gray-800 rounded-xl p-6 shadow">
-            <div className="flex items-center justify-center space-x-4">
-              <FaBookOpen className="text-4xl text-white/90" />
-              <div>
-                <h1 className="text-3xl font-bold text-white tracking-wide">
-                  Exam Management Portal
-                </h1>
-                <p className="text-white/90 text-sm mt-1 font-medium">
-                  Comprehensive Examination Control Panel
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-center space-x-2">
-              <span className="h-1 w-12 bg-white/40 rounded-full"></span>
-              <span className="h-1 w-8 bg-white/40 rounded-full"></span>
-              <span className="h-1 w-4 bg-white/40 rounded-full"></span>
-            </div>
-          </div>
-        </div>
-
+       
         {/* Stepper Component */}
         {attempts && (
           <div className="col-span-3">
