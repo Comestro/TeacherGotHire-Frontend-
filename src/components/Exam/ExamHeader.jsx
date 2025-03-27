@@ -59,9 +59,7 @@ export default function Subheader({ handleSubmit }) {
     );
   };
 
-  const subject = useSelector((state) => state.examQues.exam);
-  const language = useSelector((state) => state.examQues.language);
-
+  
   const handleExitExam = () => {
     setShowExitConfirm(true);
   };
@@ -80,17 +78,17 @@ export default function Subheader({ handleSubmit }) {
         {/* Exam Details */}
         <div className="flex flex-col w-full md:w-auto mb-4 md:mb-0">
           <h1 className="text-lg md:text-xl font-bold text-teal-700 mb-1">
-            {subject?.name || "Exam"}
+            {allQuestion?.subject?.subject_name || "Exam"}
           </h1>
           <div className="flex flex-wrap text-sm text-gray-600">
             <span className="mr-2 bg-blue-50 px-2 py-0.5 rounded-md text-blue-700">
-              Class : {subject?.class_category?.name || ""}
+              Class : {allQuestion?.class_category?.name || ""}
             </span>
             <span className="mr-2 bg-green-50 px-2 py-0.5 rounded-md text-green-700">
-              Subject : {subject?.subject?.subject_name || ""}
+              Subject : {allQuestion?.subject?.subject_name|| ""}
             </span>
             <span className="mr-2 bg-purple-50 px-2 py-0.5 rounded-md text-purple-700">
-              {subject?.level?.name || ""}
+              {allQuestion?.level?.name || ""}
             </span>
            
           </div>
