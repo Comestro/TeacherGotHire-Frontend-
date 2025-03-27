@@ -4,8 +4,9 @@ import { FaUserCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { handleLogout } from "../../../services/authUtils";
 import { getUserData } from "../../../features/authSlice";
+import { FiAlignLeft } from "react-icons/fi";
 
-const TeacherRecruiterHeader = () => {
+const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   
@@ -30,10 +31,20 @@ const TeacherRecruiterHeader = () => {
   return (
     <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-teal-500">
-          Teacher Recruiter
-        </Link>
+        {/* Mobile Menu Button - Move to left */}
+        <div className="flex items-center gap-2">
+          <button
+            className="md:hidden text-gray-700 hover:text-teal-500 focus:outline-none"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <FiAlignLeft size={20} />
+          </button>
+          
+          {/* Logo */}
+          <Link to="/" className="text-2xl font-bold text-teal-500">
+            Teacher Recruiter
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6">
@@ -118,27 +129,6 @@ const TeacherRecruiterHeader = () => {
               </div>
             )}
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-700 hover:text-teal-500 focus:outline-none"
-            onClick={toggleMobileMenu}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </header>
