@@ -311,8 +311,8 @@ const InterviewManagement = () => {
     };
 
     const handleCompleteInterview = async () => {
-        if (!interviewScore.trim() || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 100) {
-            setSnackbarMessage("Please provide a valid score between 0 and 100.");
+        if (!interviewScore.trim() || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10) {
+            setSnackbarMessage("Please provide a valid score between 0 and 10.");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
             return;
@@ -567,12 +567,12 @@ const InterviewManagement = () => {
                                             fontWeight={600}
                                             color={
                                                 teacher.score !== "Not graded" ?
-                                                    (Number(teacher.score) >= 70 ? 'success.main' :
-                                                        Number(teacher.score) >= 40 ? 'warning.main' : 'error.main')
+                                                    (Number(teacher.score) >= 7 ? 'success.main' :
+                                                        Number(teacher.score) >= 4 ? 'warning.main' : 'error.main')
                                                     : 'text.secondary'
                                             }
                                         >
-                                            {teacher.score !== "Not graded" ? `${teacher.score}/100` : "Not graded"}
+                                            {teacher.score !== "Not graded" ? `${teacher.score}/10` : "Not graded"}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12}>
@@ -726,12 +726,12 @@ const InterviewManagement = () => {
                                             fontWeight={teacher.score !== "Not graded" ? 600 : 400}
                                             color={
                                                 teacher.score !== "Not graded" ?
-                                                    (Number(teacher.score) >= 70 ? 'success.main' :
-                                                        Number(teacher.score) >= 40 ? 'warning.main' : 'error.main')
+                                                    (Number(teacher.score) >= 7 ? 'success.main' :
+                                                        Number(teacher.score) >= 4 ? 'warning.main' : 'error.main')
                                                     : 'text.secondary'
                                             }
                                         >
-                                            {teacher.score !== "Not graded" ? `${teacher.score}/100` : "—"}
+                                            {teacher.score !== "Not graded" ? `${teacher.score}/10` : "—"}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="center">
@@ -1168,12 +1168,11 @@ const InterviewManagement = () => {
                                             </Paper>
                                         </Grid>
                                     )}
-
                                     {selectedTeacher.score && selectedTeacher.score !== "Not graded" && (
                                         <Grid item xs={12}>
                                             <Typography variant="subtitle2" color="text.secondary">Interview Score</Typography>
                                             <Typography variant="body1" fontWeight={600}>
-                                                {selectedTeacher.score}/100
+                                                {selectedTeacher.score}/10
                                             </Typography>
                                         </Grid>
                                     )}
@@ -1402,14 +1401,14 @@ const InterviewManagement = () => {
 
                             <TextField
                                 fullWidth
-                                label="Interview Score (0-100)"
+                                label="Interview Score (0-10)"
                                 type="number"
-                                InputProps={{ inputProps: { min: 0, max: 100 } }}
+                                InputProps={{ inputProps: { min: 0, max: 10 } }}
                                 value={interviewScore}
                                 onChange={(e) => setInterviewScore(e.target.value)}
                                 required
-                                error={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 100)}
-                                helperText={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 100) ? "Please enter a valid score between 0 and 100" : ""}
+                                error={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10)}
+                                helperText={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10) ? "Please enter a valid score between 0 and 10" : ""}
                                 sx={{ mb: 2 }}
                             />
 
@@ -1425,7 +1424,7 @@ const InterviewManagement = () => {
                                     variant="contained"
                                     color="success"
                                     onClick={handleCompleteInterview}
-                                    disabled={loading || interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 100}
+                                    disabled={loading || interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10}
                                     startIcon={loading && <CircularProgress size={20} />}
                                 >
                                     {loading ? "Saving..." : "Mark Completed"}

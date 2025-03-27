@@ -39,7 +39,7 @@ const ExamPortal = () => {
     };
   }, []);
 
-  const { allQuestion, language } = useSelector((state) => state.examQues);
+  const { allQuestion, language, loading } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
 
@@ -54,6 +54,8 @@ const ExamPortal = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+
+  
   useEffect(() => {
     dispatch(getReport());
   }, [currentQuestion]);
@@ -141,7 +143,6 @@ const ExamPortal = () => {
       })
     );
     dispatch(attemptsExam());
-    console.log("sdfghkjljhgfdxghkjhgfdxghkjlgfccghjk")
     navigate("/exam/result", {
       state: { exam, correct_answer, incorrect_answer, is_unanswered,language },
     });
@@ -152,7 +153,21 @@ const ExamPortal = () => {
     navigate("/dashboard");
   };
 
-  // if (status === 'loading') return <div>Loading...</div>;
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleNext();
+      }
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrevious();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrevious]);
+
+  if ( loading) return <div>Loading...</div>;
   // // if (error) return <div>Error: {error}</div>;
 
   return (
@@ -303,30 +318,6 @@ const ExamPortal = () => {
                 <BsArrowLeftShort className="size-6" />
                 Previous
               </button>
-
-              {/* {currentQuestionIndex < questions.length - 1 && (
-                <button
-                  onClick={handleNext}
-                  className={`flex px-4 py-2 rounded ${
-                    currentQuestionIndex === questions.length - 1
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-green-500 text-white hover:bg-green-600"
-                  }`}
-                >
-                  <span className="text-center"> Next </span>
-                  <BsArrowRightShort className="size-6 items-center" />
-                </button>
-              )}
-
-              {currentQuestionIndex === questions.length - 1 && (
-                <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  Finished..
-                </button>
-              )} */}
-
               {currentQuestionIndex < questions.length - 1 ? (
                 <button
                   onClick={handleNext}
