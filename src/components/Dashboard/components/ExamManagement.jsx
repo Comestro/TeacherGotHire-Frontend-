@@ -3,6 +3,7 @@ import { FaLock, FaLockOpen, FaBookOpen } from "react-icons/fa";
 import { CiLock } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import Steppers from "./Stepper";
+import Loader from "./Loader"; // Import the Loader component
 import {
   getExamSet,
   setExam,
@@ -23,6 +24,14 @@ import { useNavigate } from "react-router-dom";
 function ExamManagement() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExamLoading, setIsExamLoading] = useState(false);
+  const [isInterviewLoading, setIsInterviewLoading] = useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [isVerifyLoading, setIsVerifyLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Loading your dashboard...");
 
   const { basicData } = useSelector((state) => state.personalProfile);
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -75,17 +84,22 @@ function ExamManagement() {
 
   console.log("isProfileComplete", isProfileComplete);
   const [activeTab, setActiveTab] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(getPrefrence()).unwrap();
-      await dispatch(getEducationProfile()).unwrap();
-      setIsLoading(false); // Data fetching is complete
+      setIsLoading(true);
+      setLoadingMessage("Loading your profile data...");
+      try {
+        await dispatch(getPrefrence()).unwrap();
+        await dispatch(getEducationProfile()).unwrap();
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
-    const subject = prefrence?.prefered_subject;
   }, [dispatch]);
 
   // Set activeTab after prefrence is fetched
@@ -124,7 +138,20 @@ function ExamManagement() {
   }, []);
 
   useEffect(() => {
-    dispatch(getAllCenter());
+    const fetchCenters = async () => {
+      setIsLoading(true);
+      setLoadingMessage("Loading exam centers...");
+      try {
+        await dispatch(getAllCenter());
+      } catch (error) {
+        console.error("Error loading centers:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCenters();
+    
     if (classCategories) {
       setActiveTab(classCategories[0]?.id);
     }
@@ -175,120 +202,42 @@ function ExamManagement() {
   // };
 
   const handleSubjectChange = (e) => {
-    try {
-      const subject = e.target.value;
-
-      // Validate input
-      if (!subject?.id || !subject?.subject_name) {
-        console.error("Invalid subject selection");
-        return;
-      }
-
-      // Update state
-      setSelectedSubject(subject.id);
-      setSelectedSubjectName(subject.subject_name);
-
-      console.log("Selected subject:", {
-        id: subject.id,
-        name: subject.subject_name,
-      });
-
-      // Only dispatch if we have required data
-      if (activeTab) {
-        dispatch(
-          getExamSet({
-            subject_id: subject.id,
-            class_category_id: activeTab,
-          })
-        )
-          .unwrap()
-          .catch((error) => {
-            console.error("Failed to fetch exam sets:", error);
-            // Optionally show error to user
-          });
-      } else {
-        console.warn("Active tab not set - skipping exam set fetch");
-      }
-    } catch (error) {
-      console.error("Error in subject change handler:", error);
-      // Optionally reset subject selection
-      setSelectedSubject(null);
-      setSelectedSubjectName("");
-    }
+    const subjectId = e.target.value;
+    setSelectedSubject(subjectId.id);
+    setSelectedSubjectName(subjectId.subject_name)
+    console.log("selectedSubject", subjectId);
+    dispatch(
+      getExamSet({
+        subject_id: subjectId?.id,
+        class_category_id: activeTab,
+      })
+    );
   };
   const handleExam = (exam) => {
-    dispatch(setExam(exam));
-    navigate("/exam");
+    setIsExamLoading(true);
+    setLoadingMessage("Preparing your exam...");
+    
+    setTimeout(() => {
+      dispatch(setExam(exam));
+      navigate("/exam");
+      setIsExamLoading(false);
+    }, 1000); // Add a slight delay for the loader to be noticeable
   };
-  console.log("selectedSubject", selectedSubject);
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   // Simulate submission (e.g., API call)
-  //   console.log("Selected Date and Time:", selectedDateTime);
-
-  //   // Update state to show pending card
-  //   dispatch(
-  //     postInterview({
-  //       subject: selectedSubject,
-  //       class_category: activeTab,
-  //       time: selectedDateTime,
-  //     })
-  //   );
-  //   setIsSubmitted(true);
-  // };
-
-  const handleSubmit = async (e) => {
+  console.log("selectedSubject",selectedSubject)
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Validate inputs
-    if (!selectedDateTime) {
-      alert("Please select a date and time");
-      return;
-    }
-
-    if (!selectedSubject || !activeTab) {
-      alert("Missing required information");
-      return;
-    }
-
-    try {
-      // Set loading state
-      // setIsSubmitting(true);
-
-      // Dispatch the interview scheduling action
-      const result = await dispatch(
-        postInterview({
-          subject: selectedSubject,
-          class_category: activeTab,
-          time: selectedDateTime,
-        })
-      ).unwrap(); // Using unwrap() to properly handle the Promise
-
-      console.log("Interview scheduled successfully:", result);
-
-      // Only update state if successful
-      setIsSubmitted(true);
-
-      // Optional: Reset form or show success message
-      // setSelectedDateTime('');
-      // alert("Interview scheduled successfully!");
-    } catch (error) {
-      console.error("Failed to schedule interview:", error);
-
-      // Handle specific error cases
-      if (error.message.includes("time slot")) {
-        alert(
-          "This time slot is no longer available. Please choose another time."
-        );
-      } else if (error.message.includes("conflict")) {
-        alert("You already have an interview scheduled at this time.");
-      } else {
-        alert("Failed to schedule interview. Please try again.");
-      }
-
-      // Keep form editable for corrections
-      setIsSubmitted(false);
-    }
+    // Simulate submission (e.g., API call)
+    console.log("Selected Date and Time:", selectedDateTime);
+    
+    // Update state to show pending card
+    dispatch(
+      postInterview({
+        subject: selectedSubject,
+        class_category: activeTab,
+        time: selectedDateTime,
+      })
+    );
+    setIsSubmitted(true);
   };
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
@@ -319,92 +268,36 @@ function ExamManagement() {
   // Handle verification code submission
   const handleGeneratePasskey = async (event, exam) => {
     event.preventDefault();
-
-    try {
-      console.log("Generating passkey for exam:", exam);
-      SetOfflineSet(exam);
-
-      // Validate center selection
-      if (!selectedCenterId) {
-        alert("Please select an exam center before submitting.");
-        return;
-      }
-
-      console.log("Selected center ID:", selectedCenterId);
-      // Dispatch the passkey generation action
-      const result = await dispatch(
-        generatePasskey({
-          user_id,
-          exam_id: exam,
-          center_id: selectedCenterId,
-        })
-      ).unwrap(); // Using unwrap() to properly handle the Promise
-
-      // Only proceed if successful
-      console.log("Passkey generated successfully:", result);
-
-      // Clear reminders and update UI
-      localStorage.removeItem("showReminder");
-      setShowReminderMessage(false);
-      setCenterSelectionPopup(false);
-      setShowVerificationCard(true);
-
-      // Navigate after successful operation
+    console.log("exam", exam);
+    SetOfflineSet(exam);
+    if (selectedCenterId) {
+      console.log("selectedCenterId", selectedCenterId);
+      dispatch(
+        generatePasskey({ user_id, exam_id: exam, center_id: selectedCenterId })
+      );
       navigate("/teacher");
-    } catch (error) {
-      console.error("Passkey generation failed:", error);
-
-      // Handle different error cases
-      if (error.message.includes("network")) {
-        alert("Network error. Please check your connection and try again.");
-      } else if (error.message.includes("center")) {
-        alert(
-          "Invalid exam center selection. Please choose a different center."
-        );
-      } else {
-        alert("Failed to generate passkey. Please try again later.");
-      }
-
-      // Keep the popup open for corrections
-      setCenterSelectionPopup(true);
+      setCenterSelectionPopup(false);
+    } else {
+      alert("Please select a center before submitting.");
     }
+
+    // Clear the reminder flag from localStorage
+    localStorage.removeItem("showReminder");
+    setShowVerificationCard(true);
+    // Hide the reminder message
+    setShowReminderMessage(false);
   };
 
-  const handleverifyPasskey = async (event) => {
+  // Handle verification code submission
+  const handleverifyPasskey = (event) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
-
-    if (!passcode) {
-      alert("Please enter a verification code");
-      return;
-    }
-
-    try {
-      console.log("userid", user_id);
-      // Dispatch the verification action and wait for response
-      const result = await dispatch(
-        verifyPasscode({
-          user_id,
-          exam_id: offlineSet,
-          passcode,
-        })
-      ).unwrap();
-
-      if (result.error) {
-        // If verification failed
-        alert("Wrong passcode! Please try again.");
-        return;
-      }
-
-      // If verification succeeded
-      dispatch(setExam(level2OfflineExamSets[0]?.id));
-      dispatch(resetPasskeyResponse());
-      alert("Verification successful! You can now proceed with the exam.");
-      navigate("/exam");
-    } catch (error) {
-      console.error("Verification failed:", error);
-      alert("An error occurred during verification. Please try again.");
-    }
+    dispatch(setExam(level2OfflineExamSets[0]?.id));
+    dispatch(verifyPasscode({ user_id, exam_id: offlineSet, passcode }));
+    dispatch(resetPasskeyResponse());
+    navigate("/exam");
+    // Add your verification logic here
+    alert("Verification successful! You can now proceed with the exam.");
   };
   // Simulate page refresh behavior
   useEffect(() => {
@@ -417,6 +310,21 @@ function ExamManagement() {
   }, []);
   return (
     <>
+      {/* Main Loader */}
+      <Loader isLoading={isLoading} message={loadingMessage} />
+      
+      {/* Exam Loading */}
+      <Loader isLoading={isExamLoading} message={loadingMessage} />
+      
+      {/* Interview Loading */}
+      <Loader isLoading={isInterviewLoading} message={loadingMessage} />
+      
+      {/* Passkey Loading */}
+      <Loader isLoading={isPasskeyLoading} message={loadingMessage} />
+      
+      {/* Verify Loading */}
+      <Loader isLoading={isVerifyLoading} message={loadingMessage} />
+      
       <div className=" mx-auto p-6 bg-white rounded-lg border">
         {/* Stepper Component */}
         {attempts && (
