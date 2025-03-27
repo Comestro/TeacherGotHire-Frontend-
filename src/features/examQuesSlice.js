@@ -54,13 +54,20 @@ export const getAllQues = createAsyncThunk(
     try {
       const data = await fetchQuestion({ exam_id, language });
       return data;
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
+    }catch (error) {
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
     }
   }
+  
 );
 
   export const getExamSet= createAsyncThunk(
@@ -72,10 +79,16 @@ export const getAllQues = createAsyncThunk(
         console.log("examSet",data)
          return data; 
       } catch (error) {
-        return rejectWithValue({
-          message: error.message, 
-          code: error.code || "UNKNOWN_ERROR", 
-        });
+        console.log('Error in getLevels:', error);
+        let errorMessage = 'An error occurred';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+          
+        } else if (error.message) {
+          errorMessage = error.message;
+         
+        }
+        return rejectWithValue(errorMessage);
       }
     }
   );
@@ -127,12 +140,19 @@ export const getAllQues = createAsyncThunk(
             const data = await Interview();
              return data; 
           } catch (error) {
-            return rejectWithValue({
-              message: error.message, 
-              code: error.code || "UNKNOWN_ERROR", 
-            });
+            console.log('Error in getLevels:', error);
+            let errorMessage = 'An error occurred';
+            if (error.response && error.response.data && error.response.data.message) {
+              errorMessage = error.response.data.message;
+              
+            } else if (error.message) {
+              errorMessage = error.message;
+             
+            }
+            return rejectWithValue(errorMessage);
           }
         }
+        
         );
       
     
@@ -143,11 +163,17 @@ export const attemptsExam = createAsyncThunk(
     try {
       const data = await Attempts();
       return data;
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
+    }catch (error) {
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -159,10 +185,16 @@ export const attemptsCount = createAsyncThunk(
       const data = await AttemptCount();
       return data;
     } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -175,10 +207,16 @@ export const getReport = createAsyncThunk(
       const data = await ReportReason();
       return data;
     } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -190,10 +228,16 @@ export const generatePasskey= createAsyncThunk(
       const data = await GeneratePasskey({ user_id,exam_id,center_id});
        return data; 
     } catch (error) {
-      return rejectWithValue({
-        message: error.message, 
-        code: error.code || "UNKNOWN_ERROR", 
-      });
+      console.log('Error in getLevels:', error);
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+        
+      } else if (error.message) {
+        errorMessage = error.message;
+       
+      }
+      return rejectWithValue(errorMessage);
     }
   }
   );
@@ -206,10 +250,16 @@ export const generatePasskey= createAsyncThunk(
         console.log("data",data);
          return data; 
       } catch (error) {
-        return rejectWithValue({
-          message: error.message, 
-          code: error.code || "UNKNOWN_ERROR", 
-        });
+        console.log('Error in getLevels:', error);
+        let errorMessage = 'An error occurred';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+          
+        } else if (error.message) {
+          errorMessage = error.message;
+         
+        }
+        return rejectWithValue(errorMessage);
       }
     }
     );
@@ -221,10 +271,16 @@ export const generatePasskey= createAsyncThunk(
         const data = await VerifyPasscode({ user_id,exam_id,passcode});
          return data; 
       } catch (error) {
-        return rejectWithValue({
-          message: error.message, 
-          code: error.code || "UNKNOWN_ERROR", 
-        });
+        console.log('Error in getLevels:', error);
+        let errorMessage = 'An error occurred';
+        if (error.response && error.response.data.error ) {
+          errorMessage = error.response.data.error;
+          
+        } else if (error.message) {
+          errorMessage = error.message;
+         
+        }
+        return rejectWithValue(errorMessage);
       }
     }
     );
@@ -236,10 +292,16 @@ export const generatePasskey= createAsyncThunk(
           const data = await Approved({user_id,exam_id});
            return data; 
         } catch (error) {
-          return rejectWithValue({
-            message: error.message, 
-            code: error.code || "UNKNOWN_ERROR", 
-          });
+          console.log('Error in getLevels:', error);
+          let errorMessage = 'An error occurred';
+          if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+            
+          } else if (error.message) {
+            errorMessage = error.message;
+           
+          }
+          return rejectWithValue(errorMessage);
         }
       }
       );
@@ -252,10 +314,16 @@ export const generatePasskey= createAsyncThunk(
           const data = await fetchCenterUser();
            return data; 
         } catch (error) {
-          return rejectWithValue({
-            message: error.message, 
-            code: error.code || "UNKNOWN_ERROR", 
-          });
+          console.log('Error in getLevels:', error);
+          let errorMessage = 'An error occurred';
+          if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+            
+          } else if (error.message) {
+            errorMessage = error.message;
+           
+          }
+          return rejectWithValue(errorMessage);
         }
       }
       );
@@ -269,10 +337,16 @@ export const generatePasskey= createAsyncThunk(
             const data = await createExamSet(payload);
              return data; 
           } catch (error) {
-            return rejectWithValue({
-              message: error.message, 
-              code: error.code || "UNKNOWN_ERROR", 
-            });
+            console.log('Error in getLevels:', error);
+            let errorMessage = 'An error occurred';
+            if (error.response && error.response.data && error.response.data.message) {
+              errorMessage = error.response.data.message;
+              
+            } else if (error.message) {
+              errorMessage = error.message;
+             
+            }
+            return rejectWithValue(errorMessage);
           }
         }
         );
@@ -287,10 +361,16 @@ export const generatePasskey= createAsyncThunk(
               const data = await setterExamSet();
                return data; 
             } catch (error) {
-              return rejectWithValue({
-                message: error.message, 
-                code: error.code || "UNKNOWN_ERROR", 
-              });
+              console.log('Error in getLevels:', error);
+              let errorMessage = 'An error occurred';
+              if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+                
+              } else if (error.message) {
+                errorMessage = error.message;
+               
+              }
+              return rejectWithValue(errorMessage);
             }
           }
           );
@@ -303,10 +383,16 @@ export const generatePasskey= createAsyncThunk(
                 const data = await editExamSet({ payload, id });
                  return data; 
               } catch (error) {
-                return rejectWithValue({
-                  message: error.message, 
-                  code: error.code || "UNKNOWN_ERROR", 
-                });
+                console.log('Error in getLevels:', error);
+                let errorMessage = 'An error occurred';
+                if (error.response && error.response.data && error.response.data.message) {
+                  errorMessage = error.response.data.message;
+                  
+                } else if (error.message) {
+                  errorMessage = error.message;
+                 
+                }
+                return rejectWithValue(errorMessage);
               }
             }
             );
@@ -320,10 +406,16 @@ export const generatePasskey= createAsyncThunk(
                   const data = await delExamSet(id);
                    return data; 
                 } catch (error) {
-                  return rejectWithValue({
-                    message: error.message, 
-                    code: error.code || "UNKNOWN_ERROR", 
-                  });
+                  console.log('Error in getLevels:', error);
+                  let errorMessage = 'An error occurred';
+                  if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                    
+                  } else if (error.message) {
+                    errorMessage = error.message;
+                   
+                  }
+                  return rejectWithValue(errorMessage);
                 }
               }
               );
@@ -337,10 +429,16 @@ export const generatePasskey= createAsyncThunk(
                     const data = await AddReport({question,issue_type});
                      return data; 
                   } catch (error) {
-                    return rejectWithValue({
-                      message: error.message, 
-                      code: error.code || "UNKNOWN_ERROR", 
-                    });
+                    console.log('Error in getLevels:', error);
+                    let errorMessage = 'An error occurred';
+                    if (error.response && error.response.data && error.response.data.message) {
+                      errorMessage = error.response.data.message;
+                      
+                    } else if (error.message) {
+                      errorMessage = error.message;
+                     
+                    }
+                    return rejectWithValue(errorMessage);
                   }
                 }
                 );
@@ -354,10 +452,16 @@ export const generatePasskey= createAsyncThunk(
                       const data = await jobApply({subject, class_category});
                        return data; 
                     } catch (error) {
-                      return rejectWithValue({
-                         
-                        code: error || "UNKNOWN_ERROR", 
-                      });
+                      console.log('Error in getLevels:', error);
+                      let errorMessage = 'An error occurred';
+                      if (error.response && error.response.data && error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                        
+                      } else if (error.message) {
+                        errorMessage = error.message;
+                       
+                      }
+                      return rejectWithValue(errorMessage);
                     }
                   }
                   );
@@ -371,10 +475,16 @@ export const generatePasskey= createAsyncThunk(
                         const data = await addQuestionToExamSet(payload);
                          return data; 
                       } catch (error) {
-                        return rejectWithValue({
-                          message: error.message, 
-                          code: error.code || "UNKNOWN_ERROR", 
-                        });
+                        console.log('Error in getLevels:', error);
+                        let errorMessage = 'An error occurred';
+                        if (error.response && error.response.data && error.response.data.message) {
+                          errorMessage = error.response.data.message;
+                          
+                        } else if (error.message) {
+                          errorMessage = error.message;
+                         
+                        }
+                        return rejectWithValue(errorMessage);
                       }
                     }
                     );
@@ -387,11 +497,17 @@ export const generatePasskey= createAsyncThunk(
                         try {
                           const data = await editQuestionToExamSet(payload);
                            return data; 
-                        } catch (error) {
-                          return rejectWithValue({
-                            message: error.message, 
-                            code: error.code || "UNKNOWN_ERROR", 
-                          });
+                        }catch (error) {
+                          console.log('Error in getLevels:', error);
+                          let errorMessage = 'An error occurred';
+                          if (error.response && error.response.data && error.response.data.message) {
+                            errorMessage = error.response.data.message;
+                            
+                          } else if (error.message) {
+                            errorMessage = error.message;
+                           
+                          }
+                          return rejectWithValue(errorMessage);
                         }
                       }
                       );
@@ -404,10 +520,16 @@ export const generatePasskey= createAsyncThunk(
                           const data = await getAssignUserSubject();
                            return data; 
                         } catch (error) {
-                          return rejectWithValue({
-                            message: error.message, 
-                            code: error.code || "UNKNOWN_ERROR", 
-                          });
+                          console.log('Error in getLevels:', error);
+                          let errorMessage = 'An error occurred';
+                          if (error.response && error.response.data && error.response.data.message) {
+                            errorMessage = error.response.data.message;
+                            
+                          } else if (error.message) {
+                            errorMessage = error.message;
+                           
+                          }
+                          return rejectWithValue(errorMessage);
                         }
                       }
                       );

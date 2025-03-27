@@ -16,7 +16,6 @@ import ExamManagement from "./components/ExamManagement";
 import { Helmet } from "react-helmet-async";
 import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import InterviewCard from "./components/InterviewCard";
 

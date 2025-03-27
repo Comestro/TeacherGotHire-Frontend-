@@ -39,7 +39,7 @@ const ExamPortal = () => {
     };
   }, []);
 
-  const { allQuestion, language } = useSelector((state) => state.examQues);
+  const { allQuestion, language, loading } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
 
@@ -141,7 +141,6 @@ const ExamPortal = () => {
       })
     );
     dispatch(attemptsExam());
-    console.log("sdfghkjljhgfdxghkjhgfdxghkjlgfccghjk")
     navigate("/exam/result", {
       state: { exam, correct_answer, incorrect_answer, is_unanswered,language },
     });
@@ -152,7 +151,7 @@ const ExamPortal = () => {
     navigate("/dashboard");
   };
 
-  // if (status === 'loading') return <div>Loading...</div>;
+  if ( loading) return <div>Loading...</div>;
   // // if (error) return <div>Error: {error}</div>;
 
   return (
