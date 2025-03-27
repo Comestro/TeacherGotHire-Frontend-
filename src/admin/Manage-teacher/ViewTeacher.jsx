@@ -62,7 +62,7 @@ const ViewTeacherAdmin = () => {
       try {
         const response = await getTeacherProfile(id);
         console.log("API Response:", response);
-        
+
         // Map the API field names to the expected property names
         const mappedData = {
           ...response,
@@ -78,9 +78,9 @@ const ViewTeacherAdmin = () => {
           highestQualification: response.qualification || "Not specified",
           bio: response.bio || "No bio information available."
         };
-        
+
         setTeacherData(mappedData);
-        
+
         // Set page title with teacher name if available
         if (response?.Fname && response?.Lname) {
           document.title = `${response.Fname} ${response.Lname} | Profile`;
@@ -98,7 +98,7 @@ const ViewTeacherAdmin = () => {
     };
 
     fetchTeacherData();
-    
+
     // Reset title on unmount
     return () => {
       document.title = "Teacher Management";
@@ -114,16 +114,16 @@ const ViewTeacherAdmin = () => {
       setOpenSnackbar(true);
       return;
     }
-    
+
     console.log("Teacher data for PDF:", teacherData);
-    
+
     // Make sure we have name data - check both mapped and original fields
     const firstName = teacherData.firstName || teacherData.Fname || "Teacher";
     const lastName = teacherData.lastName || teacherData.Lname || "Profile";
-    
+
     setOpenDownloadModal(true);
     setDownloadLoading(true);
-    
+
     // Longer delay to allow modal to fully render
     setTimeout(() => {
       const contentElement = document.getElementById("teacher-pdf-content");
@@ -131,7 +131,7 @@ const ViewTeacherAdmin = () => {
         console.error("PDF content element not found");
         setDownloadLoading(false);
         setOpenDownloadModal(false);
-        
+
         setNotificationMessage({
           type: "error",
           text: "Failed to generate PDF. Please try again."
@@ -139,10 +139,10 @@ const ViewTeacherAdmin = () => {
         setOpenSnackbar(true);
         return;
       }
-    
+
       // Use html2canvas with better settings for quality
-      html2canvas(contentElement, { 
-        scale: 2, 
+      html2canvas(contentElement, {
+        scale: 2,
         useCORS: true,
         logging: true, // Enable logging to debug issues
         backgroundColor: "#ffffff",
@@ -160,7 +160,7 @@ const ViewTeacherAdmin = () => {
             unit: "mm",
             format: "a4",
           });
-    
+
           // Calculate dimensions
           const pdfWidth = pdf.internal.pageSize.getWidth();
           const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -169,26 +169,26 @@ const ViewTeacherAdmin = () => {
           const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
           const imgX = (pdfWidth - imgWidth * ratio) / 2;
           const imgY = 10; // Small margin at top
-    
+
           // Add image and metadata at the bottom
           pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-          
+
           const currentDate = new Date().toLocaleDateString();
           pdf.setFontSize(8);
           pdf.setTextColor(100, 100, 100);
           pdf.text(`Generated on ${currentDate}`, 10, pdfHeight - 10);
-          
+
           // Use our safely-extracted name variables
           pdf.text(`Teacher Profile: ${firstName} ${lastName}`, pdfWidth - 10, pdfHeight - 10, {
             align: "right"
           });
-    
+
           // Generate safe filename
           const safeFileName = `${firstName}_${lastName}_Profile.pdf`.replace(/\s+/g, '_');
-          
+
           // Save with a proper filename
           pdf.save(safeFileName);
-    
+
           setNotificationMessage({
             type: "success",
             text: "Profile downloaded successfully!"
@@ -209,7 +209,7 @@ const ViewTeacherAdmin = () => {
         });
     }, 1000); // Increased delay to 1000ms (1 second)
   };
-  
+
 
   const [notificationMessage, setNotificationMessage] = useState({
     type: "success",
@@ -309,9 +309,9 @@ const ViewTeacherAdmin = () => {
                 fontWeight: 500
               }}
             >
-              {loading ? 'Loading...' : 
-                (teacherData && (teacherData.firstName || teacherData.Fname)) ? 
-                  `${teacherData.firstName || teacherData.Fname} ${teacherData.lastName || teacherData.Lname}` : 
+              {loading ? 'Loading...' :
+                (teacherData && (teacherData.firstName || teacherData.Fname)) ?
+                  `${teacherData.firstName || teacherData.Fname} ${teacherData.lastName || teacherData.Lname}` :
                   'Teacher Profile'}
             </Typography>
           </Breadcrumbs>
@@ -366,7 +366,7 @@ const ViewTeacherAdmin = () => {
                     {teacherData.firstName || teacherData.Fname} {teacherData.lastName || teacherData.Lname} {(teacherData.isActive || teacherData.is_verified) ?
                       <Typography component="span" sx={{ color: 'success.main', fontWeight: 600, fontSize: '0.8rem', ml: 1, border: '1px solid', borderColor: 'success.main', px: 1, py: 0.25, borderRadius: 10 }}>
                         ACTIVE
-                      </Typography> : 
+                      </Typography> :
                       <Typography component="span" sx={{ color: 'error.main', fontWeight: 600, fontSize: '0.8rem', ml: 1, border: '1px solid', borderColor: 'error.main', px: 1, py: 0.25, borderRadius: 10 }}>
                         INACTIVE
                       </Typography>
