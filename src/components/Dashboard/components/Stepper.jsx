@@ -21,6 +21,7 @@ const Steppers = () => {
   const [subjects, setSubjects] = useState([]);
   const [activeTab, setActiveTab] = useState("progress"); // progress or details
 
+  // Updated level progression
   const allLevels = ["1st Level", "2nd Level Online", "2nd Level Offline", "Interview"];
 
   useEffect(() => {
@@ -63,14 +64,51 @@ const Steppers = () => {
     item.exam.subject_name === selectedSubject
   ) || [];
 
+  // Check for interview data in the nested interviews array
+  const findInterviewData = () => {
+    // Look through all attempt items for the selected subject/category
+    for (const attempt of filteredAttempts) {
+      if (attempt.interviews && attempt.interviews.length > 0) {
+        // Find an interview with the correct subject/category and "fulfilled" status
+        const interview = attempt.interviews.find(int => 
+          int.subject === selectedSubject && 
+          int.class_category === selectedCategory &&
+          int.status === "fulfilled" &&
+          int.grade !== null && 
+          int.grade !== undefined
+        );
+        
+        if (interview) {
+          return interview;
+        }
+      }
+    }
+    return null;
+  };
+  
+  const interviewData = findInterviewData();
+  const isInterviewActive = interviewData !== null;
+  const isInterviewCompleted = isInterviewActive && interviewData.status === "fulfilled";
+
   const calculateProgress = () => {
     if (!filteredAttempts.length) return 0;
-    const highestLevelIndex = Math.max(
-      ...filteredAttempts.map(item => 
-        allLevels.findIndex(level => level === item.exam.level_name)
-      )
-    );
-    return ((highestLevelIndex + 1) / allLevels.length) * 100;
+    
+    // Check for completed levels first
+    let completedLevels = 0;
+    
+    // Check exam levels
+    for (const level of allLevels.slice(0, 3)) { // First 3 levels are exams
+      if (filteredAttempts.some(item => item.exam.level_name === level)) {
+        completedLevels++;
+      }
+    }
+    
+    // Check interview level separately
+    if (isInterviewCompleted) {
+      completedLevels++;
+    }
+    
+    return (completedLevels / allLevels.length) * 100;
   };
 
   const getNextStep = () => {
@@ -276,10 +314,16 @@ const Steppers = () => {
               {/* Progress Steps */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {allLevels.map((level, index) => {
-                  const isCompleted = filteredAttempts.some(
-                    item => item.exam.level_name === level
-                  );
-                  const isActive = index <= Math.floor(calculateProgress() / 25);
+                  const isCompleted = level === "Interview" 
+                    ? isInterviewCompleted 
+                    : filteredAttempts.some(item => item.exam.level_name === level);
+                  
+                  // Special handling for interview level
+                  const isInterviewLevel = level === "Interview";
+                  const isActive = isInterviewLevel 
+                    ? (isInterviewActive && !isInterviewCompleted) || index <= Math.floor(calculateProgress() / 25)
+                    : index <= Math.floor(calculateProgress() / 25);
+                    
                   const isNext = index === Math.floor(calculateProgress() / 25) && !isCompleted;
 
                   return (
@@ -299,18 +343,31 @@ const Steppers = () => {
                         </div>
                       )}
                       
+                      {isInterviewLevel && isInterviewActive && !isInterviewCompleted && (
+                        <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                          ACTIVE
+                        </div>
+                      )}
+                      
+                      {isInterviewLevel && isInterviewCompleted && (
+                        <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                          GRADE: {interviewData.grade}
+                        </div>
+                      )}
+                      
                       <div className="p-4">
                         <div className="flex items-center mb-3">
                           <div className={`
                             w-10 h-10 rounded-full flex items-center justify-center mr-3
                             ${isCompleted ? 'bg-green-500 text-white' : 
+                             (isInterviewLevel && isInterviewActive && !isInterviewCompleted) ? 'bg-purple-500 text-white' :
                              isNext ? 'bg-blue-500 text-white' :
                              isActive ? 'bg-indigo-500 text-white' : 
                              'bg-gray-300 text-gray-500'}
                           `}>
                             {isCompleted ? (
                               <FiCheckCircle className="w-5 h-5" />
-                            ) : isNext || isActive ? (
+                            ) : (isInterviewLevel && isInterviewActive && !isInterviewCompleted) || isNext || isActive ? (
                               <FiUnlock className="w-5 h-5" />
                             ) : (
                               <FiLock className="w-5 h-5" />
@@ -320,6 +377,7 @@ const Steppers = () => {
                             <h4 className={`
                               text-sm font-semibold
                               ${isCompleted ? 'text-green-700' : 
+                               (isInterviewLevel && isInterviewActive && !isInterviewCompleted) ? 'text-purple-700' :
                                isNext ? 'text-blue-700' :
                                isActive ? 'text-indigo-700' : 
                                'text-gray-500'}
@@ -335,11 +393,13 @@ const Steppers = () => {
                         <div className={`
                           text-xs px-2 py-1 rounded-full w-full text-center font-medium
                           ${isCompleted ? 'bg-green-100 text-green-700' : 
+                           (isInterviewLevel && isInterviewActive && !isInterviewCompleted) ? 'bg-purple-100 text-purple-700' :
                            isNext ? 'bg-blue-100 text-blue-700' :
                            isActive ? 'bg-indigo-100 text-indigo-700' : 
                            'bg-gray-100 text-gray-500'}
                         `}>
                           {isCompleted ? 'Completed' : 
+                           (isInterviewLevel && isInterviewActive && !isInterviewCompleted) ? 'Active' :
                            isNext ? 'Current' :
                            isActive ? 'Available' : 'Locked'}
                         </div>
@@ -442,32 +502,62 @@ const Steppers = () => {
                   </p>
                   
                   <div className="space-y-4">
-                    {allLevels.map((level, idx) => (
-                      <div key={idx} className="flex">
-                        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
-                          <div className={`w-6 h-6 rounded-full border-2 ${
-                            filteredAttempts.some(a => a.exam.level_name === level)
-                              ? "border-green-500 bg-green-100"
-                              : "border-gray-300 bg-white"
-                          }`}>
-                            {filteredAttempts.some(a => a.exam.level_name === level) && (
-                              <svg className="w-4 h-4 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a 1 1 0 01-1.414 0l-4-4a 1 1 0 011.414-1.414L8 12.586l7.293-7.293a 1 1 0 011.414 0z" clipRule="evenodd"></path>
-                              </svg>
-                            )}
+                    {allLevels.map((level, idx) => {
+                      const isInterviewLevel = level === "Interview";
+                      const isLevelCompleted = isInterviewLevel 
+                        ? isInterviewCompleted
+                        : filteredAttempts.some(a => a.exam.level_name === level);
+                      const isLevelActive = isInterviewLevel && isInterviewActive && !isLevelCompleted;
+                      
+                      return (
+                        <div key={idx} className="flex">
+                          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                            <div className={`w-6 h-6 rounded-full border-2 ${
+                              isLevelCompleted
+                                ? "border-green-500 bg-green-100"
+                                : isLevelActive
+                                ? "border-purple-500 bg-purple-100"
+                                : "border-gray-300 bg-white"
+                            }`}>
+                              {isLevelCompleted && (
+                                <svg className="w-4 h-4 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a 1 1 0 01-1.414 0l-4-4a 1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                                </svg>
+                              )}
+                              {isLevelActive && (
+                                <svg className="w-4 h-4 text-purple-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"></path>
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+                          <div className="ml-3">
+                            <h4 className={`text-sm font-medium ${
+                              isLevelActive ? "text-purple-700" : 
+                              isLevelCompleted ? "text-green-700" : "text-gray-900"
+                            }`}>
+                              {level}
+                              {isLevelActive && (
+                                <span className="ml-2 text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                                  ACTIVE
+                                </span>
+                              )}
+                              {isInterviewLevel && isInterviewCompleted && (
+                                <span className="ml-2 text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                  GRADE: {interviewData.grade}
+                                </span>
+                              )}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {level === "1st Level" && "Basic qualification exam to test fundamental knowledge"}
+                              {level === "2nd Level Online" && "Advanced theoretical knowledge assessment"}
+                              {level === "2nd Level Offline" && "Practical application of teaching skills at an exam center"}
+                              {level === "Interview" && "Final evaluation by expert panel"}
+                            </p>
                           </div>
                         </div>
-                        <div className="ml-3">
-                          <h4 className="text-sm font-medium text-gray-900">{level}</h4>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {level === "1st Level" && "Basic qualification exam to test fundamental knowledge"}
-                            {level === "2nd Level Online" && "Advanced theoretical knowledge assessment"}
-                            {level === "2nd Level Offline" && "Practical application of teaching skills"}
-                            {level === "Interview" && "Final evaluation by expert panel"}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
