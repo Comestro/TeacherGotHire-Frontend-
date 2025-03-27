@@ -36,7 +36,7 @@ const ResultPage = () => {
           numberOfPieces={200}
         />
       )}
-      <div className="w-full max-w-md  p-8 transform transition-all duration-500 hover:scale-105">
+      <div className="w-full max-w-md  p-8 transform transition-all duration-500">
         <div
           className={`relative flex items-center mb-6 justify-center w-56 h-56 mx-auto 
             ${isQualified ? "animate-bounce" : "animate-pulse"}`}
