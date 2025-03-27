@@ -123,8 +123,8 @@ const JobApply = () => {
         </div>
       )}
 
-       
-      <JobPrefrenceLocation/>
+       {passedOfflineAttempt?.length>0 && <JobPrefrenceLocation/> }
+      
     </div>
     
   );
