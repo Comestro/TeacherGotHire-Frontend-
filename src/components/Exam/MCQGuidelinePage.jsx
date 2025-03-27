@@ -59,7 +59,7 @@ const MCQGuidelinePage = () => {
       }
   
       // Dispatch actions
-      await dispatch(setLanguage(selectedLanguage)).unwrap();
+      await dispatch(setLanguage(selectedLanguage));
       const result = await dispatch(
         getAllQues({ exam_id: targetExamId, language: selectedLanguage })
       ).unwrap();
