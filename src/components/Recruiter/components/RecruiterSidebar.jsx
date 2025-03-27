@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   BsGeoAlt,
   BsPersonWorkspace,
-  BsBriefcase,
   BsCode,
 } from "react-icons/bs";
 import { BsCheck } from "react-icons/bs";
@@ -25,7 +24,6 @@ const RecruiterSidebar = () => {
     block: [],
     village: [],
     qualification: [],
-    experience: "",
     skill: [],
     class_category: [],
     subject: [],
@@ -34,11 +32,19 @@ const RecruiterSidebar = () => {
   const { qualification, allSkill, classCategories } = useSelector(
     (state) => state.jobProfile
   );
-
-  const allSubjects = classCategories.flatMap((group) => group.subjects);
-  const uniqueSubjects = [
-    ...new Set(allSubjects.map((sub) => sub.subject_name)),
-  ];
+  const getFilteredSubjects = () => {
+    if (selectedClassCategories.length === 0) return [];
+    
+    const selectedCategories = classCategories.filter(category =>
+      selectedClassCategories.includes(category.name)
+    );
+    
+    const allSubjects = selectedCategories.flatMap(category => 
+      category.subjects.map(sub => sub.subject_name)
+    );
+    
+    return [...new Set(allSubjects)];
+  };
 
   useEffect(() => {
     dispatch(getAllSkills());
@@ -344,7 +350,7 @@ const RecruiterSidebar = () => {
         </button>
         {expandedSections.subjects && (
           <div className="space-y-2 px-4">
-            {uniqueSubjects.map((subject, index) => (
+            {getFilteredSubjects().map((subject, index) => (
               <div key={index} className="flex items-center">
                 <input
                   type="checkbox"
@@ -358,56 +364,11 @@ const RecruiterSidebar = () => {
                 </label>
               </div>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Experience Section */}
-      <div className="mb-6 border-b border-gray-200 pb-4">
-        <button
-          onClick={() => toggleSection("experience")}
-          className="flex items-center justify-between w-full mb-3"
-        >
-          <div className="flex items-center gap-2">
-            <BsBriefcase className="text-teal-600" />
-            <span className="font-semibold text-gray-800">Experience</span>
-          </div>
-          {expandedSections.experience ? <MdExpandLess /> : <MdExpandMore />}
-        </button>
-        {expandedSections.experience && (
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="block text-sm text-gray-600 mb-1">Min</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="15"
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      experience: { ...prev.experience, min: e.target.value },
-                    }))
-                  }
-                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block text-sm text-gray-600 mb-1">Max</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="15"
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      experience: { ...prev.experience, max: e.target.value },
-                    }))
-                  }
-                  className="w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
+            {selectedClassCategories.length === 0 && (
+              <p className="text-sm text-gray-500 text-center mt-2">
+                Select class categories to view subjects
+              </p>
+            )}
           </div>
         )}
       </div>
