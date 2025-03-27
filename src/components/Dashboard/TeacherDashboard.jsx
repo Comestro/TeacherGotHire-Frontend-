@@ -219,11 +219,12 @@ function TeacherDashboard() {
             <TeacherDashboardCard />
           </div>
         </div>
-       <div className="md:px-6">
-          <InterviewCard />
-        </div>
+     
         <div className="md:px-6">
           <ExamManagement />
+        </div>
+        <div className="md:px-6">
+          <InterviewCard />
         </div>
       </div>
     </>
