@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   BsGeoAlt,
   BsPersonWorkspace,
@@ -15,8 +15,9 @@ import {
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
 
-const RecruiterSidebar = () => {
+const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const dispatch = useDispatch();
+  console.log("Sidebar isOpen: ", isOpen);
 
   const [filters, setFilters] = useState({
     district: [],
@@ -66,6 +67,20 @@ const RecruiterSidebar = () => {
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, setIsOpen]);
 
   // Handlers for toggling selections
   const handleSkillToggle = (skillName) => {
@@ -199,7 +214,15 @@ const RecruiterSidebar = () => {
   };
 
   return (
-    <div className="fixed left-0 top-16 h-screen w-72 bg-white shadow-lg overflow-y-auto p-4 hidden md:block">
+    <div 
+    ref={sidebarRef}
+    className={`fixed left-0 top-16 h-screen bg-white shadow-lg overflow-y-auto p-4
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+      transition-transform duration-300 ease-in-out
+      md:translate-x-0 md:block md:w-72
+      w-[280px] z-[100]`}
+    >
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
         <button
