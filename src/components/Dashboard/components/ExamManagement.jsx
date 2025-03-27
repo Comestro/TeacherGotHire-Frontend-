@@ -3,6 +3,7 @@ import { FaLock, FaLockOpen, FaBookOpen } from "react-icons/fa";
 import { CiLock } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import Steppers from "./Stepper";
+import Loader from "./Loader"; // Import the Loader component
 import {
   getExamSet,
   setExam,
@@ -22,6 +23,14 @@ import { useNavigate } from "react-router-dom";
 function ExamManagement() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExamLoading, setIsExamLoading] = useState(false);
+  const [isInterviewLoading, setIsInterviewLoading] = useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [isVerifyLoading, setIsVerifyLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Loading your dashboard...");
 
   const { basicData } = useSelector((state) => state.personalProfile);
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -74,17 +83,22 @@ function ExamManagement() {
 
   console.log("isProfileComplete", isProfileComplete);
   const [activeTab, setActiveTab] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(getPrefrence()).unwrap();
-      await dispatch(getEducationProfile()).unwrap();
-      setIsLoading(false); // Data fetching is complete
+      setIsLoading(true);
+      setLoadingMessage("Loading your profile data...");
+      try {
+        await dispatch(getPrefrence()).unwrap();
+        await dispatch(getEducationProfile()).unwrap();
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
-    const subject = prefrence?.prefered_subject;
   }, [dispatch]);
 
   // Set activeTab after prefrence is fetched
@@ -123,7 +137,20 @@ function ExamManagement() {
   }, []);
 
   useEffect(() => {
-    dispatch(getAllCenter());
+    const fetchCenters = async () => {
+      setIsLoading(true);
+      setLoadingMessage("Loading exam centers...");
+      try {
+        await dispatch(getAllCenter());
+      } catch (error) {
+        console.error("Error loading centers:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCenters();
+    
     if (classCategories) {
       setActiveTab(classCategories[0]?.id);
     }
@@ -163,38 +190,59 @@ function ExamManagement() {
   }, [activeTab]); // Runs on mount and when activeTab changes
 
 
-  const handleSubjectChange = (e) => {
+  const handleSubjectChange = async (e) => {
     const subjectId = e.target.value;
     setSelectedSubject(subjectId.id);
-    setSelectedSubjectName(subjectId.subject_name)
-    console.log("selectedSubject", subjectId);
-    dispatch(
-      getExamSet({
-        subject_id: subjectId?.id,
-        class_category_id: activeTab,
-      })
-    );
+    setSelectedSubjectName(subjectId.subject_name);
+    
+    setIsExamLoading(true);
+    setLoadingMessage("Loading exam sets...");
+    
+    try {
+      await dispatch(
+        getExamSet({
+          subject_id: subjectId?.id,
+          class_category_id: activeTab,
+        })
+      );
+    } catch (error) {
+      console.error("Error loading exam sets:", error);
+    } finally {
+      setIsExamLoading(false);
+    }
   };
 
   const handleExam = (exam) => {
-    dispatch(setExam(exam));
-    navigate("/exam");
+    setIsExamLoading(true);
+    setLoadingMessage("Preparing your exam...");
+    
+    setTimeout(() => {
+      dispatch(setExam(exam));
+      navigate("/exam");
+      setIsExamLoading(false);
+    }, 1000); // Add a slight delay for the loader to be noticeable
   };
   console.log("selectedSubject",selectedSubject)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate submission (e.g., API call)
-    console.log("Selected Date and Time:", selectedDateTime);
     
-    // Update state to show pending card
-    dispatch(
-      postInterview({
-        subject: selectedSubject,
-        class_category: activeTab,
-        time: selectedDateTime,
-      })
-    );
-    setIsSubmitted(true);
+    setIsInterviewLoading(true);
+    setLoadingMessage("Submitting your interview request...");
+    
+    try {
+      await dispatch(
+        postInterview({
+          subject: selectedSubject,
+          class_category: activeTab,
+          time: selectedDateTime,
+        })
+      );
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error submitting interview request:", error);
+    } finally {
+      setIsInterviewLoading(false);
+    }
   };
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
@@ -204,34 +252,54 @@ function ExamManagement() {
     event.preventDefault();
     console.log("exam", exam);
     SetOfflineSet(exam);
+    
     if (selectedCenterId) {
-      console.log("selectedCenterId", selectedCenterId);
-      dispatch(
-        generatePasskey({ user_id, exam_id: exam, center_id: selectedCenterId })
-      );
-      navigate("/teacher");
-      setCenterSelectionPopup(false);
+      setIsPasskeyLoading(true);
+      setLoadingMessage("Generating passkey...");
+      
+      try {
+        await dispatch(
+          generatePasskey({ user_id, exam_id: exam, center_id: selectedCenterId })
+        );
+        navigate("/teacher");
+        setCenterSelectionPopup(false);
+        
+        // Clear the reminder flag from localStorage
+        localStorage.removeItem("showReminder");
+        setShowVerificationCard(true);
+        // Hide the reminder message
+        setShowReminderMessage(false);
+      } catch (error) {
+        console.error("Error generating passkey:", error);
+      } finally {
+        setIsPasskeyLoading(false);
+      }
     } else {
       alert("Please select a center before submitting.");
     }
-
-    // Clear the reminder flag from localStorage
-    localStorage.removeItem("showReminder");
-    setShowVerificationCard(true);
-    // Hide the reminder message
-    setShowReminderMessage(false);
   };
 
   // Handle verification code submission
-  const handleverifyPasskey = (event) => {
+  const handleverifyPasskey = async (event) => {
     event.preventDefault();
-    console.log("Verification code submitted:", passcode);
-    dispatch(setExam(level2OfflineExamSets[0]?.id));
-    dispatch(verifyPasscode({ user_id, exam_id: offlineSet, passcode }));
-    dispatch(resetPasskeyResponse());
-    navigate("/exam");
-    // Add your verification logic here
-    alert("Verification successful! You can now proceed with the exam.");
+    
+    setIsVerifyLoading(true);
+    setLoadingMessage("Verifying your passcode...");
+    
+    try {
+      dispatch(setExam(level2OfflineExamSets[0]?.id));
+      await dispatch(verifyPasscode({ user_id, exam_id: offlineSet, passcode }));
+      dispatch(resetPasskeyResponse());
+      
+      setTimeout(() => {
+        navigate("/exam");
+        setIsVerifyLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error verifying passcode:", error);
+      setIsVerifyLoading(false);
+      alert("Verification failed. Please check your passcode and try again.");
+    }
   };
   // Simulate page refresh behavior
   useEffect(() => {
@@ -244,6 +312,21 @@ function ExamManagement() {
   }, []);
   return (
     <>
+      {/* Main Loader */}
+      <Loader isLoading={isLoading} message={loadingMessage} />
+      
+      {/* Exam Loading */}
+      <Loader isLoading={isExamLoading} message={loadingMessage} />
+      
+      {/* Interview Loading */}
+      <Loader isLoading={isInterviewLoading} message={loadingMessage} />
+      
+      {/* Passkey Loading */}
+      <Loader isLoading={isPasskeyLoading} message={loadingMessage} />
+      
+      {/* Verify Loading */}
+      <Loader isLoading={isVerifyLoading} message={loadingMessage} />
+      
       <div className=" mx-auto p-6 bg-white rounded-lg border">
        
         {/* Stepper Component */}
