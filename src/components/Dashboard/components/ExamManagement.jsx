@@ -66,13 +66,13 @@ function ExamManagement() {
   console.log("allcenter", allcenter);
   console.log("error", error);
 
-  const level1ExamSets = examSet?.filter(
+  const level1ExamSets = examSet?.exams?.filter(
     (exam) => exam.level.name === "1st Level"
   );
-  const level2OnlineExamSets = examSet?.filter(
+  const level2OnlineExamSets = examSet?.exams?.filter(
     (exam) => exam.level.name === "2nd Level Online"
   );
-  const level2OfflineExamSets = examSet?.filter(
+  const level2OfflineExamSets = examSet?.exams?.filter(
     (exam) => exam.level.name === "2nd Level Offline"
   );
 
