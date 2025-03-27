@@ -49,7 +49,18 @@ const QuestionManagement = () => {
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    // Assuming you fetch this data from an API
   
+      const filtered = setterUser[0]?.class_category.map(cat => ({
+        ...cat,
+        subjects: setterUser[0]?.subject.filter(s => s.class_category === cat.id)
+      })).filter(item => item.subjects.length > 0);
+      
+      setData(filtered);
+  console.log("data",data)
+  }, []);
   // const subjects = setterUser?.subject;
   const subjects = setterUser?.map((user) => user.subject);
   console.log("subject", subjects);
