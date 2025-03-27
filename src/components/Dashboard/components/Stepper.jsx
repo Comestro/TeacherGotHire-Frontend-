@@ -93,7 +93,7 @@ const Steppers = () => {
   const nextStep = getNextStep();
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-gray-200">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -142,11 +142,7 @@ const Steppers = () => {
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+             
             </div>
           </div>
 
@@ -163,11 +159,7 @@ const Steppers = () => {
                   <option key={subject} value={subject}>{subject}</option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+             
             </div>
           </div>
         </div>
@@ -294,7 +286,7 @@ const Steppers = () => {
                     <div 
                       key={level} 
                       className={`
-                        relative rounded-lg overflow-hidden shadow-sm transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-md
+                        relative rounded-lg overflow-hidden transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-md
                         ${isCompleted ? 'bg-green-50 border border-green-200' : 
                          isNext ? 'bg-blue-50 border border-blue-200' : 
                          isActive ? 'bg-indigo-50 border border-indigo-200' : 
@@ -395,7 +387,7 @@ const Steppers = () => {
           ) : (
             // Details Tab Content
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div className="border-b border-gray-200">
                   <div className="px-5 py-3">
                     <h3 className="text-lg font-semibold text-gray-800">Exam Attempt Details</h3>
@@ -442,7 +434,7 @@ const Steppers = () => {
                 </div>
               </div>
               
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="bg-white border border-gray-200 rounded-lg">
                 <div className="px-5 py-4">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Qualification Path</h3>
                   <p className="text-sm text-gray-600 mb-4">

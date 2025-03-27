@@ -5,14 +5,12 @@ import {
   getBasic,
   getProfilCompletion,
 } from "../../../features/personalProfileSlice";
-import { Link } from "react-router-dom";
 import AddressProfileCard from "../../Profile/PersonalProfile/AddressProfileCard";
 import PrefrenceProfile from "../../Profile/JobProfile/PrefrenceProfile";
 import Education from "../../Profile/JobProfile/Education";
-import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation";
 import Modal from "./Modal";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiEdit2, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { FiArrowRight, FiCheckCircle, FiAlertCircle, FiUser, FiCalendar, FiList, FiChevronRight } from "react-icons/fi";
 
 const TeacherDashboardCard = () => {
   // Add state for modal and selected detail
@@ -108,313 +106,357 @@ const TeacherDashboardCard = () => {
     return "#10B981";
   };
 
+  // Get background gradient based on progress
+  const getProgressGradient = () => {
+    if (progress < 30) return "from-red-50 to-rose-50";
+    if (progress < 70) return "from-amber-50 to-orange-50";
+    return "from-emerald-50 to-teal-50";
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100"
+      className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
     >
-      {/* Desktop Layout */}
+      {/* Desktop Layout - Compact & Modern */}
       <div className="hidden md:block">
-        <div className="grid grid-cols-3 divide-x divide-gray-100">
+        <div className="flex items-stretch">
           {/* Profile & Progress Section */}
-          <div className="p-6 flex flex-col items-center text-center bg-gradient-to-b from-blue-50 to-white">
+          <div className="w-1/4 bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center border-r border-gray-100 relative overflow-hidden">
+            {/* Decorative circles in background */}
+            <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-blue-100 opacity-30 -mr-8 -mt-8"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-indigo-100 opacity-30 -ml-6 -mb-6"></div>
+            
             <div className="relative">
-              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+              <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
-                  r={radius}
+                  r={40}
                   fill="transparent"
                   stroke="#e2e8f0"
-                  strokeWidth="8"
+                  strokeWidth="6"
                 />
                 <circle
                   cx="50"
                   cy="50"
-                  r={radius}
+                  r={40}
                   fill="transparent"
                   stroke={getProgressColor()}
-                  strokeWidth="8"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
+                  strokeWidth="6"
+                  strokeDasharray={2 * Math.PI * 40}
+                  strokeDashoffset={2 * Math.PI * 40 * (1 - progress / 100)}
                   strokeLinecap="round"
-                  style={{ transition: "stroke-dashoffset 1s ease-out" }}
-                />
+                >
+                  <animate 
+                    attributeName="stroke-dashoffset" 
+                    from={2 * Math.PI * 40} 
+                    to={2 * Math.PI * 40 * (1 - progress / 100)} 
+                    dur="1s" 
+                    fill="freeze" 
+                    calcMode="spline"
+                    keySplines="0.42 0 0.58 1"
+                  />
+                </circle>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <img
-                  src={basicData?.profile_picture || "/images/profile.jpg"}
-                  alt="Profile"
-                  className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-                />
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                  <img
+                    src={basicData?.profile_picture || "/images/profile.jpg"}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
             
-            <div className="mt-4">
-              <h3 className="font-semibold text-gray-800">
+            <div className="mt-2 text-center z-10">
+              <h3 className="font-semibold text-gray-800 text-sm truncate max-w-[150px]">
                 {basicData?.user?.Fname || "User"} {basicData?.user?.Lname}
               </h3>
-              <p className="text-sm text-gray-500 mt-1">{basicData?.user?.email}</p>
-            </div>
-            
-            <div className="mt-4 flex items-center gap-1.5">
-              <span className={`text-xl font-bold ${getStatusColor()}`}>{progress}%</span>
-              <span className="text-sm text-gray-500">Profile Complete</span>
-            </div>
-            
-            <div className="mt-4 w-full">
-              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: getProgressColor() }}
-                  initial={{ width: "0%" }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                />
+              <div className="mt-1 flex items-center justify-center gap-1">
+                <span className={`text-lg font-bold ${getStatusColor()}`}>{progress}%</span>
+                <span className="text-xs text-gray-500 truncate">Complete</span>
               </div>
             </div>
           </div>
 
-          {/* Welcome & Steps Section */}
-          <div className="col-span-2 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
-                Welcome to Your Teacher Dashboard
-              </h2>
+          {/* Middle Section - Progress Steps */}
+          <div className="w-2/5 p-4 flex flex-col justify-center">
+            <div className="flex items-center mb-3">
+              <h2 className="text-base font-bold text-gray-800">Your Progress</h2>
               {missingDetails.length === 0 && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <FiCheckCircle className="w-3.5 h-3.5 mr-1" />
-                  Profile Complete
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <FiCheckCircle className="w-3 h-3 mr-1" />
+                  Complete
                 </span>
               )}
             </div>
             
-            <p className="text-gray-600 mb-6">
-              Follow these steps to start your teaching journey and access opportunities that match your qualifications.
-            </p>
-            
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className={`rounded-lg p-4 ${progress >= 33 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} border`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-sm font-medium ${progress >= 33 ? 'text-green-800' : 'text-gray-500'}`}>Step 1</span>
-                  {progress >= 33 ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                      <FiCheckCircle className="w-3.5 h-3.5" />
-                    </span>
-                  ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-gray-500 text-xs font-bold">
-                      1
-                    </span>
-                  )}
+            <div className="space-y-3">
+              {/* Progress step 1 */}
+              <div className="relative">
+                <div className="flex items-center">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${progress >= 33 ? "bg-gradient-to-br from-green-400 to-green-500 text-white" : "bg-gray-200 text-gray-500"} shadow-sm z-10`}>
+                    {progress >= 33 ? <FiCheckCircle className="w-3 h-3" /> : "1"}
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={`text-xs font-medium ${progress >= 33 ? "text-green-600" : "text-gray-600"}`}>Profile</span>
+                      <span className={`text-xs ${progress >= 33 ? "text-green-500 font-medium" : "text-gray-400"}`}>
+                        {progress >= 33 ? "Completed" : "Pending"}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 rounded-full">
+                      <motion.div 
+                        className={`h-full rounded-full ${progress >= 33 ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-300"}`}
+                        initial={{ width: "0%" }}
+                        animate={{ width: progress >= 33 ? "100%" : `${(progress/33)*100}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <h3 className={`font-medium ${progress >= 33 ? 'text-green-700' : 'text-gray-700'}`}>Complete Profile</h3>
-                <p className="text-xs text-gray-500 mt-1">Build your professional profile</p>
+                {/* Vertical connector line */}
+                <div className="absolute left-[11px] top-6 h-5 w-0.5 bg-gray-200 z-0"></div>
               </div>
               
-              <div className={`rounded-lg p-4 ${progress >= 66 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} border`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-sm font-medium ${progress >= 66 ? 'text-green-800' : 'text-gray-500'}`}>Step 2</span>
-                  {progress >= 66 ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                      <FiCheckCircle className="w-3.5 h-3.5" />
-                    </span>
-                  ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-gray-500 text-xs font-bold">
-                      2
-                    </span>
-                  )}
+              {/* Progress step 2 */}
+              <div className="relative">
+                <div className="flex items-center">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${progress >= 66 ? "bg-gradient-to-br from-green-400 to-green-500 text-white" : "bg-gray-200 text-gray-500"} shadow-sm z-10`}>
+                    {progress >= 66 ? <FiCheckCircle className="w-3 h-3" /> : "2"}
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={`text-xs font-medium ${progress >= 66 ? "text-green-600" : "text-gray-600"}`}>Exams</span>
+                      <span className={`text-xs ${progress >= 66 ? "text-green-500 font-medium" : "text-gray-400"}`}>
+                        {progress >= 66 ? "Completed" : "Pending"}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 rounded-full">
+                      <motion.div 
+                        className={`h-full rounded-full ${progress >= 66 ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-300"}`}
+                        initial={{ width: "0%" }}
+                        animate={{ width: progress >= 66 ? "100%" : progress <= 33 ? "0%" : `${((progress-33)/33)*100}%` }}
+                        transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <h3 className={`font-medium ${progress >= 66 ? 'text-green-700' : 'text-gray-700'}`}>Pass Exams</h3>
-                <p className="text-xs text-gray-500 mt-1">Qualify through assessments</p>
+                {/* Vertical connector line */}
+                <div className="absolute left-[11px] top-6 h-5 w-0.5 bg-gray-200 z-0"></div>
               </div>
               
-              <div className={`rounded-lg p-4 ${progress >= 100 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} border`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-sm font-medium ${progress >= 100 ? 'text-green-800' : 'text-gray-500'}`}>Step 3</span>
-                  {progress >= 100 ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                      <FiCheckCircle className="w-3.5 h-3.5" />
-                    </span>
-                  ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-gray-500 text-xs font-bold">
-                      3
-                    </span>
-                  )}
+              {/* Progress step 3 */}
+              <div className="flex items-center">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${progress >= 100 ? "bg-gradient-to-br from-green-400 to-green-500 text-white" : "bg-gray-200 text-gray-500"} shadow-sm`}>
+                  {progress >= 100 ? <FiCheckCircle className="w-3 h-3" /> : "3"}
                 </div>
-                <h3 className={`font-medium ${progress >= 100 ? 'text-green-700' : 'text-gray-700'}`}>Get Hired</h3>
-                <p className="text-xs text-gray-500 mt-1">Apply for teaching positions</p>
-              </div>
-            </div>
-            
-            {/* Missing Details */}
-            {missingDetails.length > 0 ? (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <FiAlertCircle className="text-amber-500 w-5 h-5 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-amber-800 mb-2">Complete Your Profile</h4>
-                    <ul className="space-y-2">
-                      {missingDetails.map((message, index) => (
-                        <li key={index} className="flex items-center text-sm text-amber-700">
-                          <CiCirclePlus className="w-4 h-4 mr-2 text-amber-600" />
-                          <span>{message}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={handleAddMissingDetails}
-                      className="mt-3 inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 transition-colors"
-                    >
-                      Complete Profile <FiArrowRight className="ml-1.5" />
-                    </button>
+                <div className="ml-3 flex-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-xs font-medium ${progress >= 100 ? "text-green-600" : "text-gray-600"}`}>Hiring</span>
+                    <span className={`text-xs ${progress >= 100 ? "text-green-500 font-medium" : "text-gray-400"}`}>
+                      {progress >= 100 ? "Ready" : "Pending"}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 rounded-full">
+                    <motion.div 
+                      className={`h-full rounded-full ${progress >= 100 ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gray-300"}`}
+                      initial={{ width: "0%" }}
+                      animate={{ width: progress >= 100 ? "100%" : progress <= 66 ? "0%" : `${((progress-66)/34)*100}%` }}
+                      transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+                    />
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Right Section - Action Items */}
+          <div className="w-1/3 bg-gradient-to-br from-gray-50 to-gray-100 p-4 border-l border-gray-100">
+            {missingDetails.length > 0 ? (
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-800 flex items-center">
+                    <FiAlertCircle className="mr-1.5 text-amber-500" />
+                    <span>Complete Your Profile</span>
+                  </h3>
+                  <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                    {missingDetails.length} items
+                  </span>
+                </div>
+                
+                <div className="mt-2 flex-1 overflow-y-auto max-h-28 pr-1 custom-scrollbar">
+                  <ul className="space-y-1.5">
+                    {missingDetails.map((message, index) => (
+                      <li key={index} className="flex items-center text-xs text-gray-600 py-1 px-2 rounded-md hover:bg-white/60 transition-colors">
+                        <CiCirclePlus className="w-3.5 h-3.5 mr-1.5 text-amber-500 flex-shrink-0" />
+                        <span className="truncate">{message}</span>
+                        <div className="ml-auto">
+                          <FiChevronRight className="w-3 h-3 text-amber-400" />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <button
+                  onClick={handleAddMissingDetails}
+                  className="mt-auto w-full flex justify-center items-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-md hover:from-amber-600 hover:to-amber-700 transition-colors shadow-sm"
+                >
+                  Complete Now <FiArrowRight className="ml-1.5" />
+                </button>
+              </div>
             ) : (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
-                <div className="p-2 bg-green-500 rounded-full mr-3">
-                  <CiCircleCheck className="w-6 h-6 text-white" />
+              <div className="h-full flex flex-col justify-center items-center">
+                <div className="p-2.5 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm mb-3">
+                  <CiCircleCheck className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h4 className="font-medium text-green-800">Profile Complete!</h4>
-                  <p className="text-sm text-green-700 mt-1">You've completed all requirements.</p>
-                </div>
+                <h4 className="text-sm font-semibold text-green-800">Profile Complete!</h4>
+                <p className="text-xs text-green-600 mt-1 text-center">You're ready for the next steps</p>
+                
+                <div className="mt-3 w-24 h-1 rounded-full bg-gradient-to-r from-green-200 to-green-300"></div>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Layout */}
+      {/* Mobile Layout - Compact & Stylish */}
       <div className="md:hidden">
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="transparent"
-                  stroke="#e2e8f0"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="transparent"
-                  stroke={getProgressColor()}
-                  strokeWidth="8"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <img
-                src={basicData?.profile_picture || "/images/profile.jpg"}
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover border-2 border-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 flex items-center gap-3 relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -mr-8 -mt-8"></div>
+          <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/10 -ml-6 -mb-6"></div>
+          
+          {/* Profile Image with Progress Ring */}
+          <div className="relative z-10">
+            <svg className="w-14 h-14" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="44"
+                fill="transparent"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="6"
               />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-sm font-bold text-gray-800">
-                {basicData?.user?.Fname || "User"} {basicData?.user?.Lname}
-              </h2>
-              <p className="text-xs text-gray-600 truncate">
-                {basicData?.user?.email || "user@example.com"}
-              </p>
-              <div className="flex items-center mt-1">
-                <span className={`text-sm font-bold ${getStatusColor()}`}>{progress}%</span>
-                <span className="text-xs text-gray-500 ml-1">Complete</span>
+              <circle
+                cx="50"
+                cy="50"
+                r="44"
+                fill="transparent"
+                stroke="white"
+                strokeWidth="6"
+                strokeDasharray={2 * Math.PI * 44}
+                strokeDashoffset={2 * Math.PI * 44 * (1 - progress / 100)}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                <img
+                  src={basicData?.profile_picture || "/images/profile.jpg"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
           
-          <div className="mt-3 h-1.5 w-full bg-white/50 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full rounded-full"
-              style={{ backgroundColor: getProgressColor() }}
-              initial={{ width: "0%" }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
+          {/* User Info & Progress */}
+          <div className="flex-1 text-white z-10">
+            <h2 className="text-sm font-semibold truncate">
+              {basicData?.user?.Fname || "User"} {basicData?.user?.Lname}
+            </h2>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-blue-100 truncate max-w-[140px]">
+                {basicData?.user?.email || "user@example.com"}
+              </p>
+              <span className="text-xs font-bold bg-white/20 rounded-full px-2 py-0.5">
+                {progress}% Complete
+              </span>
+            </div>
           </div>
         </div>
         
-        <div className="p-4">
-          <h3 className="text-base font-semibold text-gray-800 mb-3">Your Progress</h3>
-
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-              <div className="flex items-center">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${progress >= 33 ? "bg-green-500" : "bg-gray-200"}`}>
-                  {progress >= 33 ? "✓" : "1"}
-                </div>
-                <span className="text-sm">Complete Profile</span>
-              </div>
-              <span className={`text-xs font-medium ${progress >= 33 ? "text-green-600" : "text-gray-500"}`}>
-                {progress >= 33 ? "Completed" : "Pending"}
-              </span>
+        {/* Progress Tabs - Stylish Pills */}
+        <div className="flex justify-between p-2 bg-gray-50 border-b border-gray-100">
+          <div className={`flex flex-col items-center ${progress >= 33 ? 'text-green-600' : 'text-gray-400'}`}>
+            <div className={`w-6 h-6 rounded-full mb-0.5 flex items-center justify-center 
+              ${progress >= 33 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+              {progress >= 33 ? <FiCheckCircle className="w-3 h-3" /> : <FiUser className="w-3 h-3" />}
             </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-              <div className="flex items-center">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${progress >= 66 ? "bg-green-500" : "bg-gray-200"}`}>
-                  {progress >= 66 ? "✓" : "2"}
-                </div>
-                <span className="text-sm">Pass Exams</span>
-              </div>
-              <span className={`text-xs font-medium ${progress >= 66 ? "text-green-600" : "text-gray-500"}`}>
-                {progress >= 66 ? "Completed" : "Pending"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-              <div className="flex items-center">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${progress >= 100 ? "bg-green-500" : "bg-gray-200"}`}>
-                  {progress >= 100 ? "✓" : "3"}
-                </div>
-                <span className="text-sm">Start Teaching</span>
-              </div>
-              <span className={`text-xs font-medium ${progress >= 100 ? "text-green-600" : "text-gray-500"}`}>
-                {progress >= 100 ? "Completed" : "Pending"}
-              </span>
-            </div>
+            <span className="text-[10px] font-medium">Profile</span>
           </div>
-
-          {/* Mobile Missing Details */}
-          {missingDetails.length > 0 ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <h4 className="text-sm font-medium text-amber-800 flex items-center mb-2">
-                <FiAlertCircle className="mr-1.5 text-amber-500" />
-                {missingDetails.length} items pending
+          
+          <div className="w-[30%] h-[2px] bg-gray-200 mt-3 relative">
+            <div className={`h-full ${progress >= 33 ? 'bg-green-500' : 'bg-gray-300'}`} 
+              style={{ width: progress >= 33 ? '100%' : `${(progress/33)*100}%` }}></div>
+          </div>
+          
+          <div className={`flex flex-col items-center ${progress >= 66 ? 'text-green-600' : 'text-gray-400'}`}>
+            <div className={`w-6 h-6 rounded-full mb-0.5 flex items-center justify-center 
+              ${progress >= 66 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+              {progress >= 66 ? <FiCheckCircle className="w-3 h-3" /> : <FiCalendar className="w-3 h-3" />}
+            </div>
+            <span className="text-[10px] font-medium">Exams</span>
+          </div>
+          
+          <div className="w-[30%] h-[2px] bg-gray-200 mt-3 relative">
+            <div className={`h-full ${progress >= 66 ? 'bg-green-500' : 'bg-gray-300'}`} 
+              style={{ width: progress >= 66 ? '100%' : progress <= 33 ? '0%' : `${((progress-33)/33)*100}%` }}></div>
+          </div>
+          
+          <div className={`flex flex-col items-center ${progress >= 100 ? 'text-green-600' : 'text-gray-400'}`}>
+            <div className={`w-6 h-6 rounded-full mb-0.5 flex items-center justify-center 
+              ${progress >= 100 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+              {progress >= 100 ? <FiCheckCircle className="w-3 h-3" /> : <FiList className="w-3 h-3" />}
+            </div>
+            <span className="text-[10px] font-medium">Hiring</span>
+          </div>
+        </div>
+        
+        {/* Action Section */}
+        {missingDetails.length > 0 ? (
+          <div className="p-3 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-medium text-amber-800 flex items-center">
+                <FiAlertCircle className="mr-1 text-amber-500 w-3.5 h-3.5" />
+                <span>Complete Your Profile</span>
               </h4>
-              <div className="space-y-1.5 mb-3">
-                {missingDetails.map((detail, index) => (
-                  <div key={index} className="flex items-center gap-2 text-xs text-amber-700">
-                    <CiCirclePlus className="text-amber-600 flex-shrink-0" />
-                    <span>{detail}</span>
-                  </div>
-                ))}
-              </div>
               <button
                 onClick={handleAddMissingDetails}
-                className="w-full flex justify-center items-center px-3 py-2 text-xs font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 transition-colors"
+                className="text-xs px-2.5 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-md hover:from-amber-600 hover:to-amber-700 transition-colors flex items-center shadow-sm"
               >
-                Complete Now
+                Start <FiArrowRight className="ml-1 w-3 h-3" />
               </button>
             </div>
-          ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-              <CiCircleCheck className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <h4 className="text-sm font-medium text-green-800">Profile Complete!</h4>
-              <p className="text-xs text-green-700 mt-1">You're ready for the next steps</p>
+            
+            <div className="mt-2 overflow-hidden">
+              <div className="flex gap-1">
+                {missingDetails.slice(0, 1).map((detail, index) => (
+                  <div key={index} className="flex items-center gap-1 text-[10px] bg-white/50 text-amber-700 rounded-md px-2 py-1 border border-amber-200 flex-shrink-0">
+                    <CiCirclePlus className="text-amber-500 flex-shrink-0 w-3 h-3" />
+                    <span className="truncate max-w-[200px]">{detail}</span>
+                  </div>
+                ))}
+                {missingDetails.length > 1 && (
+                  <div className="text-[10px] text-amber-700 bg-white/50 rounded-md px-2 py-1 border border-amber-200 whitespace-nowrap">
+                    +{missingDetails.length - 1} more
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 p-2 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+            <CiCircleCheck className="w-4 h-4 text-green-500" />
+            <span className="text-xs font-medium text-green-700">Ready for next steps!</span>
+          </div>
+        )}
       </div>
 
       {/* Modal for missing details (same for both views) */}
@@ -426,6 +468,24 @@ const TeacherDashboardCard = () => {
       >
         {getFormComponent()}
       </Modal>
+
+      {/* Custom scrollbar styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.03);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.15);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(0,0,0,0.25);
+        }
+      `}</style>
     </motion.div>
   );
 };
