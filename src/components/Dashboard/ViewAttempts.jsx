@@ -12,6 +12,8 @@ function ViewAttempts() {
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
   const dispatch = useDispatch();
 
+  console.log('attempt count checking', apiOutput2)
+
   // Get unique attempted categories with better null handling
   const attemptedCategories = [
     ...new Set(
@@ -153,7 +155,7 @@ function getLevelOrder(levelName) {
   return 4; // Interview level
 }
 
-function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) {
+function SubjectResults({ subject, examResults, selectedCategory }) {
   const subjectResults = examResults
     ?.filter((result) => {
       const subjectMatch = result?.exam?.subject_name === subject;
@@ -168,14 +170,6 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
     const level_id = result.exam.level_id;
     const levelKey = `level${level_id}`;
     
-    let attemptCount = 0;
-    if (selectedCategory === "All") {
-      Object.values(apiOutput1 || {}).forEach(category => {
-        attemptCount += category?.[subject]?.[levelKey] || 0;
-      });
-    } else {
-      attemptCount = apiOutput1?.[selectedCategory]?.[subject]?.[levelKey] || 0;
-    }
 
     // Add exam result
     examRows.push({
@@ -188,14 +182,14 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
       language: result.language || 'N/A',
       status: result.isqualified ? "Passed" : "Failed",
       score: `${result.calculate_percentage}%`,
-      attemptCount,
+      attemptCount: result.attempt,
       date: new Date(result.created_at).toLocaleDateString(),
     });
 
-    // Add interviews if any
+    // Add interviews if any - only if they have a grade
     if (result.interviews?.length) {
       result.interviews.forEach(interview => {
-        if (interview.subject === subject) { // Only add interviews for matching subject
+        if (interview.subject === subject && interview.grade) { // Only add interviews for matching subject with a grade
           interviewRows.push({
             levelOrder: 4, // Interview is always last
             levelName: "Interview",
@@ -204,7 +198,7 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
             subject: interview.subject,
             level: "Interview",
             language: '-',
-            status: interview.status ? "Completed" : "Pending",
+            status: interview.status,
             score: interview.grade ? `${interview.grade}/10` : 'N/A',
             attemptCount: '-',
             date: new Date(interview.time).toLocaleDateString(),

@@ -33,13 +33,13 @@ const ResultPage = () => {
           width={windowSize.width}
           height={windowSize.height}
           recycle={false}
-          numberOfPieces={200}
+          numberOfPieces={600}
         />
       )}
       <div className="w-full max-w-md  p-8 transform transition-all duration-500">
         <div
           className={`relative flex items-center mb-6 justify-center w-56 h-56 mx-auto 
-            ${isQualified ? "animate-bounce" : "animate-pulse"}`}
+            `}
         >
           <div
             className={`absolute inset-0 ${
