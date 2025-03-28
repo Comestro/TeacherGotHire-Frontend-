@@ -1,24 +1,29 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { handleLogout } from "../../../services/authUtils";
 import { getUserData } from "../../../features/authSlice";
 import { FiAlignLeft } from "react-icons/fi";
+import {
+  fetchTeachers,
+  searchTeachers,
+} from "../../../features/teacherFilterSlice";
 
 const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  
+  const [searchValue, setSearchValue] = useState("");
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const profile = useSelector((state) => state.auth.userData || {});
-    console.log("Profile menu: ", profile);
+  console.log("Profile menu: ", profile);
 
-    useEffect(() => {
-         dispatch(getUserData());
-       }, [dispatch]);
+  useEffect(() => {
+    dispatch(getUserData());
+  }, [dispatch]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -26,6 +31,29 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
+  };
+
+  // search work
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchValue.trim()) {
+        dispatch(searchTeachers(searchValue));
+      } else {
+        dispatch(fetchTeachers());
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchValue, dispatch]);
+
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchValue.trim()) {
+      dispatch(searchTeachers(searchValue));
+    }
   };
 
   return (
@@ -39,7 +67,7 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
           >
             <FiAlignLeft size={20} />
           </button>
-          
+
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold text-teal-500">
             Teacher Recruiter
@@ -55,27 +83,26 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
             Home
           </Link>
           <Link
-            to="/about"
-            className="text-gray-700 hover:text-teal-500 font-medium"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/contact"
+            
             className="text-gray-700 hover:text-teal-500 font-medium"
           >
             Contact
           </Link>
         </nav>
 
-        {/* Search Bar */}
         <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2">
           <input
             type="text"
-            placeholder="Search jobs, schools..."
+            placeholder="Search teachers..."
             className="bg-gray-100 focus:outline-none w-60"
+            value={searchValue}
+            onChange={handleSearchChange}
+            onClick={() => handleSearchSubmit()}
           />
-          <button className="text-teal-500 hover:text-teal-600">
+          <button
+            className="text-teal-500 hover:text-teal-600"
+            onClick={() => alert("Search")}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -102,9 +129,11 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
             >
               <FaUserCircle className="w-8 h-8 text-teal-600" />
               <div className="hidden md:flex flex-col items-start ">
-                <span className="font-medium">{profile?.Fname} {profile?.Lname}</span>
+                <span className="font-medium">
+                  {profile?.Fname} {profile?.Lname}
+                </span>
                 <span className="text-sm text-gray-500 -mt-1">
-                 {profile?.email}
+                  {profile?.email}
                 </span>
               </div>
             </button>
@@ -123,7 +152,10 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
                 >
                   Profile
                 </Link>
-                <button onClick={() => handleLogout(dispatch, navigate)} className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition">
+                <button
+                  onClick={() => handleLogout(dispatch, navigate)}
+                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
+                >
                   Logout
                 </button>
               </div>

@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import {
     FiDownload, FiRefreshCw, FiEye, FiCalendar, FiX, FiThumbsDown,
-    FiCheck, FiFilter, FiSearch, FiChevronDown, FiBarChart2, FiList, FiClock
+    FiCheck, FiFilter, FiSearch, FiChevronDown, FiBarChart2, FiList, FiClock, FiLink
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import { getInterview, updateInterview } from "../../services/adminInterviewApi";
@@ -1206,98 +1206,147 @@ const InterviewManagement = () => {
                     <Modal 
                         open={scheduleModalOpen} 
                         onClose={() => setScheduleModalOpen(false)}
-                        // Use an alternative animation to improve perception of space
-                        closeAfterTransition
                     >
                         <Paper sx={{
                             position: 'absolute',
                             top: '50%',
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
-                            width: { xs: '90%', sm: 'auto', md: 450 },
-                            maxWidth: '95vw',
-                            maxHeight: { xs: '85vh', sm: '90vh' },
+                            width: { xs: '90%', sm: 500 },
+                            maxHeight: '90vh',
                             overflow: 'auto',
-                            p: { xs: 2, sm: 3 },
+                            p: 0,
                             borderRadius: 2,
-                            // Responsive margin to ensure it's not flush with the edge of the screen
-                            m: { xs: 1, sm: 2 }
+                            boxShadow: 24,
                         }}>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                                Schedule Interview
-                            </Typography>
+                            {/* Modal Header */}
+                            <Box sx={{ 
+                                p: 2, 
+                                bgcolor: 'primary.main', 
+                                color: 'white',
+                                borderRadius: '8px 8px 0 0',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <Typography variant="h6" fontWeight={600}>
+                                    Schedule Interview
+                                </Typography>
+                                <IconButton 
+                                    size="small" 
+                                    onClick={() => setScheduleModalOpen(false)}
+                                    sx={{ color: 'white' }}
+                                >
+                                    <FiX />
+                                </IconButton>
+                            </Box>
 
-                            <Divider sx={{ mb: 2 }} />
+                            {/* Modal Content */}
+                            <Box sx={{ p: 3 }}>
+                                {selectedTeacher && (
+                                    <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Avatar
+                                            sx={{
+                                                bgcolor: stringToColor(selectedTeacher.name),
+                                                width: 48,
+                                                height: 48
+                                            }}
+                                        >
+                                            {selectedTeacher.name.charAt(0)}
+                                        </Avatar>
+                                        <Box>
+                                            <Typography variant="subtitle1" fontWeight={600}>
+                                                {selectedTeacher.name}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {selectedTeacher.email}
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                                                <Chip 
+                                                    label={selectedTeacher.subjectName}
+                                                    size="small"
+                                                    sx={{ height: 22, fontSize: '0.75rem' }}
+                                                />
+                                                <Chip 
+                                                    label={selectedTeacher.classCategory}
+                                                    size="small"
+                                                    sx={{ height: 22, fontSize: '0.75rem' }}
+                                                />
+                                            </Box>
+                                        </Box>
+                                    </Box>
+                                )}
 
-                            {selectedTeacher && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Scheduling interview for
+                                <Alert severity="info" sx={{ mb: 3 }}>
+                                    <Typography variant="body2">
+                                        The teacher will be notified via email after scheduling the interview.
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {selectedTeacher.name}
+                                </Alert>
+
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                    Interview Details
+                                </Typography>
+
+                                <Box sx={{ mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), p: 2, borderRadius: 1 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                        Requested Date & Time
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <FiCalendar size="1.2em" color={theme.palette.primary.main} />
+                                        {selectedTeacher && `${selectedTeacher.requestedDate} at ${selectedTeacher.requestedTime}`}
                                     </Typography>
                                 </Box>
-                            )}
 
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DateTimePicker
-                                    label="Select Date & Time"
-                                    value={selectedDateTime}
-                                    onChange={(newValue) => setSelectedDateTime(newValue)}
-                                    minDateTime={dayjs()} // This prevents selection of past dates
-                                    slotProps={{
-                                        textField: {
-                                            fullWidth: true,
-                                            helperText: "Choose a future date and time for the interview",
-                                            size: "medium"
-                                        },
-                                        // Improve the dialog responsiveness
-                                        dialog: {
-                                            sx: {
-                                                '& .MuiPickersLayout-root': {
-                                                    maxWidth: '100%',
-                                                    maxHeight: '85vh',
-                                                    overflowY: 'auto'
-                                                },
-                                                '& .MuiDateCalendar-root': {
-                                                    width: { xs: '260px', sm: '300px' },
-                                                    maxHeight: { xs: '280px', sm: '350px' }
-                                                },
-                                                '& .MuiClockPicker-root': {
-                                                    maxHeight: { xs: '280px', sm: '320px' },
-                                                    width: { xs: '260px', sm: '300px' }
-                                                },
-                                                '& .MuiTabs-root': {
-                                                    minHeight: { xs: '40px', sm: '48px' }
-                                                },
-                                                '& .MuiButtonBase-root': {
-                                                    padding: { xs: '6px', sm: '8px' }
-                                                },
-                                                '& .MuiPickersDay-root': {
-                                                    width: { xs: '32px', sm: '36px' },
-                                                    height: { xs: '32px', sm: '36px' },
-                                                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DateTimePicker
+                                        label="Schedule Interview Date & Time"
+                                        value={selectedDateTime}
+                                        onChange={(newValue) => setSelectedDateTime(newValue)}
+                                        minDateTime={dayjs()}
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                variant: "outlined",
+                                                helperText: "Please select a future date and time",
+                                                InputProps: {
+                                                    startAdornment: (
+                                                        <Box sx={{ mr: 1, color: 'primary.main' }}>
+                                                            <FiClock />
+                                                        </Box>
+                                                    ),
                                                 }
                                             }
-                                        },
-                                        desktopPaper: {
-                                            sx: {
-                                                maxWidth: '95vw',
-                                                overflowX: 'auto'
-                                            }
-                                        }
-                                    }}
-                                    sx={{
-                                        width: '100%',
-                                        '& .MuiInputBase-root': {
-                                            fontSize: { xs: '0.875rem', sm: '1rem' }
-                                        }
-                                    }}
-                                />
-                            </LocalizationProvider>
+                                        }}
+                                        sx={{ mb: 3 }}
+                                    />
+                                </LocalizationProvider>
+                                
+                                {selectedTeacher && selectedTeacher.mode === "Online" && (
+                                    <TextField
+                                        label="Meeting Link (Optional)"
+                                        placeholder="Enter Google Meet or Zoom link"
+                                        fullWidth
+                                        sx={{ mb: 3 }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <Box sx={{ mr: 1, color: 'primary.main' }}>
+                                                    <FiLink />
+                                                </Box>
+                                            ),
+                                        }}
+                                    />
+                                )}
+                            </Box>
 
-                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                            {/* Modal Footer */}
+                            <Box sx={{ 
+                                p: 2, 
+                                bgcolor: alpha(theme.palette.background.default, 0.7),
+                                borderTop: `1px solid ${theme.palette.divider}`,
+                                display: 'flex', 
+                                justifyContent: 'flex-end',
+                                gap: 2
+                            }}>
                                 <Button variant="outlined" onClick={() => setScheduleModalOpen(false)}>
                                     Cancel
                                 </Button>
@@ -1305,9 +1354,9 @@ const InterviewManagement = () => {
                                     variant="contained"
                                     onClick={handleScheduleInterview}
                                     disabled={actionLoading}
-                                    startIcon={actionLoading && <CircularProgress size={20} />}
+                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiCalendar />}
                                 >
-                                    {actionLoading ? "Scheduling..." : "Confirm Schedule"}
+                                    {actionLoading ? "Scheduling..." : "Schedule Interview"}
                                 </Button>
                             </Box>
                         </Paper>
