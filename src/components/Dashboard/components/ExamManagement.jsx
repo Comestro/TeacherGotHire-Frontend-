@@ -293,7 +293,7 @@ function ExamManagement() {
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
   };
-  const user_id = userData.id;
+  const user_id = userData?.id;
   // const handleGeneratePasskey = async (event, exam) => {
   //   event.preventDefault();
   //   console.log("exam", exam);
