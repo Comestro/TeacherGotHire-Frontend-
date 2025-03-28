@@ -32,6 +32,14 @@ import {
   Divider,
   Badge,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Switch,
+  FormControlLabel
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -54,9 +62,12 @@ import {
   FaSync,
   FaTh,
   FaQuestionCircle,
-  FaDatabase
+  FaDatabase,
+  FaTable,
+  FaThLarge,
+  FaLaptop
 } from "react-icons/fa";
-import { MdAdd, MdRefresh, MdFilterList, MdClear, MdAssignment, MdTimeline } from 'react-icons/md';
+import { MdAdd, MdRefresh, MdFilterList, MdClear, MdAssignment, MdTimeline, MdViewList, MdGridView, MdExpandLess, MdExpandMore } from 'react-icons/md';
 import Layout from "../Admin/Layout";
 import {
   getExam,
@@ -146,16 +157,17 @@ const ExamCard = styled(Card)(({ theme, status }) => ({
   height: '100%',
   marginBottom: theme?.spacing(2) || 16,
   transition: "all 0.3s ease",
-  borderRadius: '8px',
+  borderRadius: '12px',
   "&:hover": {
     transform: "translateY(-3px)",
-    boxShadow: "0px 6px 16px rgba(0,0,0,0.08)",
+    boxShadow: "0px 8px 20px rgba(0,0,0,0.08)",
   },
-  border: status ? "1px solid #4CAF50" : "1px solid #e0e0e0",
+  border: status ? "1px solid rgba(76, 175, 80, 0.3)" : "1px solid rgba(255, 152, 0, 0.3)",
   position: "relative",
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
+  backgroundColor: status ? 'rgba(76, 175, 80, 0.02)' : 'rgba(255, 152, 0, 0.02)',
 }));
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
@@ -197,6 +209,70 @@ const InfoItem = styled(Box)(({ theme }) => ({
   }
 }));
 
+const ViewToggleButton = styled(Button)(({ theme, active }) => ({
+  minWidth: '42px',
+  height: '36px',
+  padding: theme.spacing(0.75, 1.25),
+  borderRadius: '6px',
+  color: active ? theme.palette.primary.dark : theme.palette.text.secondary,
+  backgroundColor: active ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+  border: active ? `1px solid ${theme.palette.primary.main}` : '1px solid #e0e0e0',
+  '&:hover': {
+    backgroundColor: active ? 'rgba(25, 118, 210, 0.18)' : 'rgba(0, 0, 0, 0.04)',
+  },
+  transition: 'all 0.2s ease',
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: '12px',
+  boxShadow: 'none',
+  border: '1px solid #e0e0e0',
+  '& .MuiTableCell-head': {
+    backgroundColor: '#f5f5f5',
+    color: theme.palette.text.primary,
+    fontWeight: 600,
+    fontSize: '0.875rem',
+    padding: theme.spacing(1.5),
+  },
+  '& .MuiTableRow-root': {
+    '&:nth-of-type(even)': {
+      backgroundColor: 'rgba(0, 0, 0, 0.01)',
+    },
+    '&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    },
+  },
+  '& .MuiTableCell-body': {
+    fontSize: '0.875rem',
+    padding: theme.spacing(1.5),
+  },
+}));
+
+const CollapsibleFilterContainer = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  transition: 'all 0.3s ease',
+  overflow: 'hidden',
+  width: '100%',
+}));
+
+const MobileFilterButton = styled(Button)(({ theme, isActive }) => ({
+  borderRadius: '8px',
+  padding: theme.spacing(1),
+  textTransform: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  boxShadow: 'none',
+  border: '1px solid #e0e0e0',
+  backgroundColor: isActive ? 'rgba(25, 118, 210, 0.08)' : '#fff',
+  color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
+  fontWeight: 500,
+  '&:hover': {
+    backgroundColor: isActive ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)',
+  }
+}));
+
 const ExamManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -220,7 +296,7 @@ const ExamManagement = () => {
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(9);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [subjects, setSubjects] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -241,6 +317,7 @@ const ExamManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedAddedBy, setSelectedAddedBy] = useState("");
   const [uniqueUsers, setUniqueUsers] = useState([]);
+  const [viewMode, setViewMode] = useState('card');
 
   useEffect(() => {
     fetchExams();
@@ -616,9 +693,9 @@ const ExamManagement = () => {
   return (
     <Layout>
       <Container maxWidth="xl">
-        <Box sx={{ 
+        <Box sx={{
           p: { xs: 2, sm: 3 },
-          backgroundColor: '#FAFAFA', 
+          backgroundColor: '#F9FAFC',
           minHeight: '100vh'
         }}>
           {/* Header Section Redesign */}
@@ -640,7 +717,7 @@ const ExamManagement = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar
                 sx={{
-                  bgcolor: 'primary.main',
+                  bgcolor: theme.palette.primary.dark,
                   width: { xs: 40, md: 48 },
                   height: { xs: 40, md: 48 },
                   boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 6px'
@@ -649,10 +726,10 @@ const ExamManagement = () => {
                 <MdAssignment size={24} />
               </Avatar>
               <Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontWeight: 600, 
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 600,
                     color: '#263238',
                     fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                     lineHeight: 1.2
@@ -660,8 +737,8 @@ const ExamManagement = () => {
                 >
                   Manage Exams
                 </Typography>
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   color="text.secondary"
                   sx={{ mt: 0.5 }}
                 >
@@ -669,8 +746,57 @@ const ExamManagement = () => {
                 </Typography>
               </Box>
             </Box>
-            
-            <Stack direction="row" spacing={1.5}>
+
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              {/* View toggle buttons */}
+              <Box sx={{
+                display: 'flex',
+                mr: { xs: 1, sm: 2 },
+                backgroundColor: '#f3f6f9',
+                borderRadius: '8px',
+                p: 0.5,
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+              }}>
+                <Tooltip title="Card View" arrow placement="top">
+                  <ViewToggleButton
+                    size="small"
+                    onClick={() => setViewMode('card')}
+                    active={viewMode === 'card'}
+                    aria-label="Card View"
+                    sx={{
+                      mr: 0.5,
+                      color: viewMode === 'card' ? theme.palette.primary.main : theme.palette.text.secondary,
+                      '&:hover': {
+                        backgroundColor: viewMode === 'card'
+                          ? 'rgba(25, 118, 210, 0.18)'
+                          : 'rgba(0, 0, 0, 0.04)',
+                      }
+                    }}
+                  >
+                    <MdGridView size={20} />
+                  </ViewToggleButton>
+                </Tooltip>
+                <Tooltip title="Table View" arrow placement="top">
+                  <ViewToggleButton
+                    size="small"
+                    onClick={() => setViewMode('table')}
+                    active={viewMode === 'table'}
+                    aria-label="Table View"
+                    sx={{
+                      color: viewMode === 'table' ? theme.palette.primary.main : theme.palette.text.secondary,
+                      '&:hover': {
+                        backgroundColor: viewMode === 'table'
+                          ? 'rgba(25, 118, 210, 0.18)'
+                          : 'rgba(0, 0, 0, 0.04)',
+                      }
+                    }}
+                  >
+                    <MdViewList size={20} />
+                  </ViewToggleButton>
+                </Tooltip>
+              </Box>
+
               <HeaderActionButton
                 variant="outlined"
                 color="primary"
@@ -678,7 +804,7 @@ const ExamManagement = () => {
                 onClick={refreshData}
                 size={isMobile ? "small" : "medium"}
               >
-                Refresh
+                {isMobile ? "" : "Refresh"}
               </HeaderActionButton>
               <HeaderActionButton
                 variant="contained"
@@ -686,9 +812,9 @@ const ExamManagement = () => {
                 onClick={handleAddNew}
                 size={isMobile ? "small" : "medium"}
                 sx={{
-                  bgcolor: 'primary.main',
+                  bgcolor: theme.palette.primary.dark,
                   '&:hover': {
-                    bgcolor: 'primary.dark',
+                    bgcolor: theme.palette.primary.main,
                   }
                 }}
               >
@@ -708,56 +834,165 @@ const ExamManagement = () => {
               backgroundColor: '#fff'
             }}
           >
-            <Box mb={3}>
-              <TextField
-                label="Search Exams"
-                variant="outlined"
-                fullWidth
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: <FaSearch style={{ marginRight: 8, color: '#757575' }} />,
-                  endAdornment: searchQuery ? (
-                    <IconButton 
-                      size="small" 
+            {/* Search and clear button layout */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  label="Search Exams"
+                  variant="outlined"
+                  fullWidth
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: <FaSearch style={{ marginRight: 8, color: '#757575' }} />,
+                    endAdornment: searchQuery ? (
+                      <IconButton
+                        size="small"
+                        onClick={() => setSearchQuery("")}
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        <MdClear />
+                      </IconButton>
+                    ) : null,
+                    sx: { borderRadius: '8px' }
+                  }}
+                  placeholder="Search by exam name or ID..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#e0e0e0',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#bdbdbd',
+                      },
+                    }
+                  }}
+                />
+              </Grid>
+
+              {/* Clear Filters Button Column */}
+              <Grid item xs={12} md={4}>
+                <Box sx={{ display: 'flex', height: '100%', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<MdClear />}
+                    onClick={() => {
+                      setSelectedSubject("");
+                      setSelectedClassCategory("");
+                      setSelectedLevel("");
+                      setSelectedType("");
+                      setSelectedStatus("");
+                      setSelectedAddedBy("");
+                    }}
+                    disabled={getActiveFilterCount() === 0}
+                    fullWidth
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      height: '100%',
+                      borderColor: getActiveFilterCount() > 0 ? 'primary.main' : '#e0e0e0',
+                      color: getActiveFilterCount() > 0 ? 'primary.main' : 'text.disabled',
+                    }}
+                  >
+                    {getActiveFilterCount() > 0 ? (
+                      <>
+                        Clear Filters
+                        <Chip
+                          size="small"
+                          label={getActiveFilterCount()}
+                          color="primary"
+                          sx={{ ml: 1, height: 22 }}
+                        />
+                      </>
+                    ) : "No Filters Applied"}
+                  </Button>
+
+                  {searchQuery && (
+                    <Button
+                      variant="outlined"
+                      color="secondary"
                       onClick={() => setSearchQuery("")}
-                      sx={{ color: 'text.secondary' }}
+                      sx={{
+                        borderRadius: '8px',
+                        minWidth: 'auto',
+                        width: 'auto',
+                        px: 1.5,
+                        height: '100%'
+                      }}
                     >
                       <MdClear />
-                    </IconButton>
-                  ) : null,
-                  sx: { borderRadius: '8px' }
-                }}
-                placeholder="Search by exam name or ID..."
-                sx={{ 
-                  mb: 3,
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#e0e0e0',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#bdbdbd',
-                    },
-                  }
-                }}
-              />
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
 
-              <FilterContainer>
+            {/* Mobile filter toggle button */}
+            {isMobile && (
+              <Box sx={{ mt: 2 }}>
+                <MobileFilterButton
+                  onClick={() => setShowFilters(!showFilters)}
+                  isActive={showFilters && getActiveFilterCount() > 0}
+                  startIcon={<MdFilterList />}
+                  variant="outlined"
+                >
+                  Filters {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
+                  {getActiveFilterCount() > 0 ? (
+                    <Chip
+                      size="small"
+                      label={getActiveFilterCount()}
+                      color="primary"
+                      sx={{ ml: 1, height: 22 }}
+                    />
+                  ) : (
+                    <IconButton size="small" sx={{ p: 0, ml: 1 }}>
+                      {showFilters ? <MdExpandLess /> : <MdExpandMore />}
+                    </IconButton>
+                  )}
+                </MobileFilterButton>
+              </Box>
+            )}
+
+            <CollapsibleFilterContainer
+              sx={{
+                maxHeight: showFilters ? '1000px' : isMobile ? '0px' : '1000px',
+                visibility: showFilters || !isMobile ? 'visible' : 'hidden',
+                mt: 2,
+                opacity: showFilters || !isMobile ? 1 : 0,
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <Box sx={{
+                p: 2,
+                backgroundColor: '#f8f9fa',
+                borderRadius: '10px',
+                border: '1px solid #e0e0e0',
+              }}>
                 {/* Filter Header */}
                 <Box sx={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mb: 1,
+                  mb: 2,
                   pb: 1.5,
                   borderBottom: '1px solid #eeeeee'
                 }}>
-                  <FilterBadge badgeContent={getActiveFilterCount()} color="primary" showZero={false}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <MdFilterList size={20} /> Filters
-                    </Typography>
-                  </FilterBadge>
-                  
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <MdFilterList /> Filter Options
+                      {getActiveFilterCount() > 0 && (
+                        <Chip
+                          size="small"
+                          label={getActiveFilterCount()}
+                          color="primary"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
+                    </Box>
+                  </Typography>
+
                   {getActiveFilterCount() > 0 && (
                     <Button
                       size="small"
@@ -770,270 +1005,239 @@ const ExamManagement = () => {
                         setSelectedStatus("");
                         setSelectedAddedBy("");
                       }}
-                      sx={{ 
+                      sx={{
                         textTransform: 'none',
-                        color: '#757575',
-                        '&:hover': {
-                          backgroundColor: 'rgba(0,0,0,0.04)'
-                        }
+                        color: theme.palette.grey[700],
+                        fontWeight: 500,
                       }}
                     >
                       Clear All
                     </Button>
                   )}
                 </Box>
-                
-                {/* Main Filters */}
-                <Grid container spacing={3}>
-                  {/* Left Column */}
-                  <Grid item xs={12} md={6}>
-                    <FilterSection>
-                      <Box>
-                        <FilterTitle>
-                          <FaSchool size={14} /> Class and Subject
-                        </FilterTitle>
-                        <Stack spacing={2}>
-                          <FormControl variant="outlined" fullWidth size="small">
-                            <InputLabel>Class Category</InputLabel>
-                            <Select
-                              label="Class Category"
-                              value={selectedClassCategory}
-                              onChange={(e) => setSelectedClassCategory(e.target.value)}
-                              sx={{ borderRadius: '8px' }}
-                            >
-                              <MenuItem value="">
-                                <em>All Categories</em>
-                              </MenuItem>
-                              {classCategories.map((classCategory, index) => (
-                                <MenuItem key={index + 1} value={classCategory.name}>
-                                  {classCategory.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
 
-                          <FormControl variant="outlined" fullWidth size="small">
-                            <InputLabel>Subject</InputLabel>
-                            <Select
-                              label="Subject"
-                              value={selectedSubject}
-                              onChange={(e) => setSelectedSubject(e.target.value)}
-                              sx={{ borderRadius: '8px' }}
-                            >
-                              <MenuItem value="">
-                                <em>All Subjects</em>
-                              </MenuItem>
-                              {subjects
-                                .filter(subject =>
-                                  selectedClassCategory ?
-                                    classCategories.find(cat => cat.name === selectedClassCategory)?.subjects
-                                      .some(s => s.id === subject.id) :
-                                    true
-                                )
-                                .map((subject) => (
-                                  <MenuItem key={subject.id} value={subject.subject_name}>
-                                    {subject.subject_name}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
-                        </Stack>
-                      </Box>
-                      
-                      <Box>
-                        <FilterTitle>
-                          <MdTimeline size={16} /> Exam Properties
-                        </FilterTitle>
-                        <Stack spacing={2}>
-                          <FormControl variant="outlined" fullWidth size="small">
-                            <InputLabel>Level</InputLabel>
-                            <Select
-                              label="Level"
-                              value={selectedLevel}
-                              onChange={(e) => setSelectedLevel(e.target.value)}
-                              sx={{ borderRadius: '8px' }}
-                            >
-                              <MenuItem value="">
-                                <em>All Levels</em>
-                              </MenuItem>
-                              {levels.map((level, index) => (
-                                <MenuItem key={index + 1} value={level.name}>
-                                  {level.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-
-                          <FormControl variant="outlined" fullWidth size="small">
-                            <InputLabel>Type</InputLabel>
-                            <Select
-                              label="Type"
-                              value={selectedType}
-                              onChange={(e) => setSelectedType(e.target.value)}
-                              sx={{ borderRadius: '8px' }}
-                            >
-                              <MenuItem value="">
-                                <em>All Types</em>
-                              </MenuItem>
-                              <MenuItem value="online">Online</MenuItem>
-                              <MenuItem value="offline">Offline</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Stack>
-                      </Box>
-                    </FilterSection>
+                {/* Main Filters - Optimized Layout with Added By & Type */}
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Class Category</InputLabel>
+                      <Select
+                        label="Class Category"
+                        value={selectedClassCategory}
+                        onChange={(e) => setSelectedClassCategory(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Categories</em>
+                        </MenuItem>
+                        {classCategories.map((classCategory, index) => (
+                          <MenuItem key={index + 1} value={classCategory.name}>
+                            {classCategory.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </Grid>
-                  
-                  {/* Right Column */}
-                  <Grid item xs={12} md={6}>
-                    <FilterSection>
-                      <Box>
-                        <FilterTitle>
-                          <FaCheck size={14} /> Status
-                        </FilterTitle>
-                        <FormControl variant="outlined" fullWidth size="small">
-                          <InputLabel>Status</InputLabel>
-                          <Select
-                            label="Status"
-                            value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                            sx={{ borderRadius: '8px' }}
-                            startAdornment={
-                              selectedStatus !== "" ? (
-                                <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                                  {selectedStatus === "true" ? (
-                                    <FaCheck style={{ color: '#4CAF50', fontSize: '0.8rem' }} />
-                                  ) : (
-                                    <FaClock style={{ color: '#FF9800', fontSize: '0.8rem' }} />
-                                  )}
-                                </Box>
-                              ) : null
-                            }
-                          >
-                            <MenuItem value="">
-                              <em>All Status</em>
+
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Subject</InputLabel>
+                      <Select
+                        label="Subject"
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Subjects</em>
+                        </MenuItem>
+                        {subjects
+                          .filter(subject =>
+                            selectedClassCategory ?
+                              classCategories.find(cat => cat.name === selectedClassCategory)?.subjects
+                                .some(s => s.id === subject.id) :
+                              true
+                          )
+                          .map((subject) => (
+                            <MenuItem key={subject.id} value={subject.subject_name}>
+                              {subject.subject_name}
                             </MenuItem>
-                            <MenuItem value="true" sx={{ color: '#4CAF50', fontWeight: 500 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <FaCheck /> Approved
-                              </Box>
-                            </MenuItem>
-                            <MenuItem value="false" sx={{ color: '#FF9800', fontWeight: 500 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <FaClock /> Pending
-                              </Box>
-                            </MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Box>
-                      
-                      <Box>
-                        <FilterTitle>
-                          <FaUser size={14} /> Added By
-                        </FilterTitle>
-                        <FormControl variant="outlined" fullWidth size="small">
-                          <InputLabel>Added By</InputLabel>
-                          <Select
-                            label="Added By"
-                            value={selectedAddedBy}
-                            onChange={(e) => setSelectedAddedBy(e.target.value)}
-                            sx={{ borderRadius: '8px' }}
-                            startAdornment={
-                              selectedAddedBy !== "" ? (
-                                <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                                  <FaUser style={{ fontSize: '0.8rem' }} />
-                                </Box>
-                              ) : null
-                            }
-                          >
-                            <MenuItem value="">
-                              <em>All Users</em>
-                            </MenuItem>
-                            {uniqueUsers.map((user, index) => (
-                              <MenuItem key={`user-${index}`} value={user}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Avatar sx={{ width: 24, height: 24, fontSize: '0.8rem', bgcolor: theme.palette.primary.light }}>
-                                    {user.charAt(0)}
-                                  </Avatar>
-                                  {user}
-                                </Box>
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Box>
-                      
-                      {/* Active Filters */}
-                      {getActiveFilterCount() > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <FilterTitle>
-                            <FaFilter size={14} /> Active Filters
-                          </FilterTitle>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                            {selectedSubject && (
-                              <Chip 
-                                label={`Subject: ${selectedSubject}`} 
-                                onDelete={() => setSelectedSubject("")}
-                                size="small"
-                                sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                              />
-                            )}
-                            {selectedClassCategory && (
-                              <Chip 
-                                label={`Class: ${selectedClassCategory}`} 
-                                onDelete={() => setSelectedClassCategory("")}
-                                size="small"
-                                sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                              />
-                            )}
-                            {selectedLevel && (
-                              <Chip 
-                                label={`Level: ${selectedLevel}`} 
-                                onDelete={() => setSelectedLevel("")}
-                                size="small"
-                                sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                              />
-                            )}
-                            {selectedType && (
-                              <Chip 
-                                label={`Type: ${selectedType}`} 
-                                onDelete={() => setSelectedType("")}
-                                size="small"
-                                sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                              />
-                            )}
-                            {selectedStatus && (
-                              <Chip 
-                                label={`Status: ${selectedStatus === "true" ? "Approved" : "Pending"}`} 
-                                onDelete={() => setSelectedStatus("")}
-                                size="small"
-                                sx={{ 
-                                  bgcolor: selectedStatus === "true" ? '#e8f5e9' : '#fff3e0', 
-                                  color: selectedStatus === "true" ? '#2e7d32' : '#ef6c00' 
-                                }}
-                              />
-                            )}
-                            {selectedAddedBy && (
-                              <Chip 
-                                label={`User: ${selectedAddedBy}`} 
-                                onDelete={() => setSelectedAddedBy("")}
-                                size="small"
-                                sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                                avatar={
-                                  <Avatar sx={{ bgcolor: theme.palette.primary.main, color: 'white' }}>
-                                    {selectedAddedBy.charAt(0)}
-                                  </Avatar>
-                                }
-                              />
-                            )}
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Level</InputLabel>
+                      <Select
+                        label="Level"
+                        value={selectedLevel}
+                        onChange={(e) => setSelectedLevel(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Levels</em>
+                        </MenuItem>
+                        {levels.map((level, index) => (
+                          <MenuItem key={index + 1} value={level.name}>
+                            {level.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        label="Status"
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Status</em>
+                        </MenuItem>
+                        <MenuItem value="true" sx={{ color: '#4CAF50' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FaCheck size={12} /> Approved
                           </Box>
-                        </Box>
-                      )}
-                    </FilterSection>
+                        </MenuItem>
+                        <MenuItem value="false" sx={{ color: '#FF9800' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FaClock size={12} /> Pending
+                          </Box>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  {/* Moved to the filter section for both mobile and desktop */}
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Added By</InputLabel>
+                      <Select
+                        label="Added By"
+                        value={selectedAddedBy}
+                        onChange={(e) => setSelectedAddedBy(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Users</em>
+                        </MenuItem>
+                        {uniqueUsers.map((user) => (
+                          <MenuItem key={user} value={user}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  fontSize: '0.75rem',
+                                  bgcolor: theme.palette.primary.dark
+                                }}
+                              >
+                                {user.charAt(0)}
+                              </Avatar>
+                              {user}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Exam Type</InputLabel>
+                      <Select
+                        label="Exam Type"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                        sx={{ borderRadius: '8px' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Types</em>
+                        </MenuItem>
+                        <MenuItem value="online">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FaLaptop size={12} /> Online
+                          </Box>
+                        </MenuItem>
+                        <MenuItem value="offline">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FaFileAlt size={12} /> Offline
+                          </Box>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
                 </Grid>
-              </FilterContainer>
-            </Box>
+
+                {/* Active Filters */}
+                {getActiveFilterCount() > 0 && (
+                  <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {selectedSubject && (
+                      <Chip
+                        label={`Subject: ${selectedSubject}`}
+                        onDelete={() => setSelectedSubject("")}
+                        size="small"
+                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
+                      />
+                    )}
+                    {selectedClassCategory && (
+                      <Chip
+                        label={`Class: ${selectedClassCategory}`}
+                        onDelete={() => setSelectedClassCategory("")}
+                        size="small"
+                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
+                      />
+                    )}
+                    {selectedLevel && (
+                      <Chip
+                        label={`Level: ${selectedLevel}`}
+                        onDelete={() => setSelectedLevel("")}
+                        size="small"
+                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
+                      />
+                    )}
+                    {selectedType && (
+                      <Chip
+                        label={`Type: ${selectedType === "online" ? "Online" : "Offline"}`}
+                        onDelete={() => setSelectedType("")}
+                        size="small"
+                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
+                      />
+                    )}
+                    {selectedStatus && (
+                      <Chip
+                        label={`Status: ${selectedStatus === "true" ? "Approved" : "Pending"}`}
+                        onDelete={() => setSelectedStatus("")}
+                        size="small"
+                        sx={{
+                          bgcolor: selectedStatus === "true" ? '#e8f5e9' : '#fff3e0',
+                          color: selectedStatus === "true" ? '#2e7d32' : '#ef6c00'
+                        }}
+                      />
+                    )}
+                    {selectedAddedBy && (
+                      <Chip
+                        label={`User: ${selectedAddedBy}`}
+                        onDelete={() => setSelectedAddedBy("")}
+                        size="small"
+                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
+                        avatar={
+                          <Avatar sx={{ bgcolor: theme.palette.primary.main, color: 'white' }}>
+                            {selectedAddedBy.charAt(0)}
+                          </Avatar>
+                        }
+                      />
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </CollapsibleFilterContainer>
           </Paper>
 
           {/* Rest of the component remains unchanged */}
@@ -1073,7 +1277,7 @@ const ExamManagement = () => {
                       setSelectedStatus("");
                       setSelectedAddedBy("");
                     }}
-                    sx={{ 
+                    sx={{
                       borderRadius: '6px',
                       textTransform: 'none',
                       fontWeight: 500
@@ -1088,200 +1292,276 @@ const ExamManagement = () => {
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Showing {filteredExams.length} {filteredExams.length === 1 ? 'exam' : 'exams'}
-                  {(searchQuery || selectedSubject || selectedLevel || selectedClassCategory || 
+                  {(searchQuery || selectedSubject || selectedLevel || selectedClassCategory ||
                     selectedType || selectedStatus || selectedAddedBy) && ' with applied filters'}
                 </Typography>
               </Box>
 
-              <Grid container spacing={2.5}>
-                {filteredExams
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((exam) => (
-                    <Grid item xs={12} sm={6} lg={4} key={exam.id}>
-                      <ExamCard status={exam.status} elevation={0}>
-                        <StatusChip
-                          label={exam.status ? "Approved" : "Pending"}
-                          status={exam.status}
-                          size="small"
-                          icon={exam.status ? <FaCheck size={10} /> : <FaClock size={10} />}
-                        />
-                        <StyledCardContent>
-                          <Link to={`/admin/exam/${exam.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                            <Typography
-                              variant="h6"
-                              component="h2"
-                              sx={{
-                                mb: 2,
-                                fontWeight: 600,
-                                pr: { xs: 11, sm: 9 },
-                                fontSize: { xs: '1rem', sm: '1.125rem' },
-                                lineHeight: 1.3,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                color: '#1a237e',
-                                '&:hover': {
-                                  color: theme.palette.primary.main
-                                },
-                                position: 'relative',
-                                zIndex: 0,
-                              }}
-                            >
-                              {exam.name}
-                            </Typography>
-
-                            <Grid container spacing={1.5} sx={{ mb: 1 }}>
-                              <Grid item xs={12} sm={6}>
-                                <InfoItem>
-                                  <FaBookOpen size={14} />
-                                  <Box>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                      Subject
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {exam.subject.subject_name}
-                                    </Typography>
-                                  </Box>
-                                </InfoItem>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                <InfoItem>
-                                  <FaLayerGroup size={14} />
-                                  <Box>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                      Level
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {exam.level.name}
-                                    </Typography>
-                                  </Box>
-                                </InfoItem>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                <InfoItem>
-                                  <FaSchool size={14} />
-                                  <Box>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                      Class
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {exam.class_category.name}
-                                    </Typography>
-                                  </Box>
-                                </InfoItem>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                <InfoItem>
-                                  <FaClock size={14} />
-                                  <Box>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                      Duration
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {exam.duration} min
-                                    </Typography>
-                                  </Box>
-                                </InfoItem>
-                              </Grid>
-                            </Grid>
-
-                            <Box sx={{ 
-                              mt: 1, 
-                              mb: 2,
-                              p: 1.5, 
-                              borderRadius: '6px', 
-                              backgroundColor: '#f5f5f5',
-                              border: '1px solid #eaeaea'
-                            }}>
-                              <InfoItem sx={{ mb: 0 }}>
-                                <FaListUl size={14} />
-                                <Box sx={{ width: '100%' }}>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 0.5 }}>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                      Questions
-                                    </Typography>
-                                    <Typography variant="caption" fontWeight={600} color="primary">
-                                      {exam.questions?.length || 0} total
-                                    </Typography>
-                                  </Box>
-                                  
-                                  {exam.questions?.length > 0 && (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      justifyContent: 'flex-start', 
-                                      gap: 1.5
-                                    }}>
-                                      <Tooltip title="English Questions">
-                                        <Chip
-                                          size="small"
-                                          label={`${exam.questions.filter(q => q.language === "English").length || 0} EN`}
-                                          sx={{ 
-                                            height: '20px',
-                                            fontSize: '0.7rem',
-                                            fontWeight: 600,
-                                            backgroundColor: theme.palette.primary.light,
-                                            color: theme.palette.primary.dark
-                                          }}
-                                        />
-                                      </Tooltip>
-                                      <Tooltip title="Hindi Questions">
-                                        <Chip
-                                          size="small"
-                                          label={`${exam.questions.filter(q => q.language === "Hindi").length || 0} HI`}
-                                          sx={{ 
-                                            height: '20px',
-                                            fontSize: '0.7rem',
-                                            fontWeight: 600,
-                                            backgroundColor: theme.palette.secondary.light,
-                                            color: theme.palette.secondary.dark
-                                          }}
-                                        />
-                                      </Tooltip>
-                                    </Box>
-                                  )}
-                                </Box>
-                              </InfoItem>
-                            </Box>
-                          </Link>
-                          
-                          <Box sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mt: 'auto',
-                            pt: 2,
-                            borderTop: '1px solid #eaeaea'
-                          }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Tooltip title={`Added by ${getAssignedUserName(exam)}`}>
-                                <Avatar
-                                  sx={{
-                                    width: 28,
-                                    height: 28,
-                                    mr: 1,
-                                    bgcolor: theme.palette.primary.main,
-                                    fontSize: '0.8rem',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                  }}
-                                >
-                                  {getAssignedUserName(exam).charAt(0)}
-                                </Avatar>
-                              </Tooltip>
-                              <Typography variant="body2" noWrap sx={{ maxWidth: '150px' }}>
-                                {getAssignedUserName(exam)}
+              {viewMode === 'card' ? (
+                <Grid container spacing={2.5}>
+                  {filteredExams
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((exam) => (
+                      <Grid item xs={12} sm={6} md={6} lg={6} key={exam.id}>
+                        <ExamCard status={exam.status} elevation={0}>
+                          <StatusChip
+                            label={exam.status ? "Approved" : "Pending"}
+                            status={exam.status}
+                            size="small"
+                            icon={exam.status ? <FaCheck size={10} /> : <FaClock size={10} />}
+                          />
+                          <StyledCardContent>
+                            <Link to={`/admin/exam/${exam.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                              <Typography
+                                variant="h6"
+                                component="h2"
+                                sx={{
+                                  mb: 2,
+                                  fontWeight: 600,
+                                  pr: { xs: 11, sm: 9 },
+                                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                                  lineHeight: 1.3,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
+                                  color: '#1a237e',
+                                  '&:hover': {
+                                    color: theme.palette.primary.main
+                                  },
+                                  position: 'relative',
+                                  zIndex: 0,
+                                }}
+                              >
+                                {exam.name}
                               </Typography>
-                            </Box>
 
-                            <Box>
+                              <Grid container spacing={1.5} sx={{ mb: 1 }}>
+                                <Grid item xs={12} sm={6}>
+                                  <InfoItem>
+                                    <FaBookOpen size={14} />
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                        Subject
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {exam.subject.subject_name}
+                                      </Typography>
+                                    </Box>
+                                  </InfoItem>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <InfoItem>
+                                    <FaLayerGroup size={14} />
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                        Level
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {exam.level.name}
+                                      </Typography>
+                                    </Box>
+                                  </InfoItem>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <InfoItem>
+                                    <FaSchool size={14} />
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                        Class
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {exam.class_category.name}
+                                      </Typography>
+                                    </Box>
+                                  </InfoItem>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <InfoItem>
+                                    <FaClock size={14} />
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                        Duration
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {exam.duration} min
+                                      </Typography>
+                                    </Box>
+                                  </InfoItem>
+                                </Grid>
+                              </Grid>
+
+                              <Box sx={{
+                                mt: 1,
+                                mb: 2,
+                                p: 1.5,
+                                borderRadius: '6px',
+                                backgroundColor: '#f5f5f5',
+                                border: '1px solid #eaeaea'
+                              }}>
+                                <InfoItem sx={{ mb: 0 }}>
+                                  <FaListUl size={14} />
+                                  <Box sx={{ width: '100%' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 0.5 }}>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                        Questions
+                                      </Typography>
+                                      <Typography variant="caption" fontWeight={600} color="primary">
+                                        {exam.questions?.length || 0} total
+                                      </Typography>
+                                    </Box>
+
+                                    {exam.questions?.length > 0 && (
+                                      <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'flex-start',
+                                        gap: 1.5
+                                      }}>
+                                        <Tooltip title="English Questions">
+                                          <Chip
+                                            size="small"
+                                            label={`${exam.questions.filter(q => q.language === "English").length || 0} EN`}
+                                            sx={{
+                                              height: '20px',
+                                              fontSize: '0.7rem',
+                                              fontWeight: 600,
+                                              backgroundColor: theme.palette.primary.light,
+                                              color: theme.palette.primary.dark
+                                            }}
+                                          />
+                                        </Tooltip>
+                                        <Tooltip title="Hindi Questions">
+                                          <Chip
+                                            size="small"
+                                            label={`${exam.questions.filter(q => q.language === "Hindi").length || 0} HI`}
+                                            sx={{
+                                              height: '20px',
+                                              fontSize: '0.7rem',
+                                              fontWeight: 600,
+                                              backgroundColor: theme.palette.secondary.light,
+                                              color: theme.palette.secondary.dark
+                                            }}
+                                          />
+                                        </Tooltip>
+                                      </Box>
+                                    )}
+                                  </Box>
+                                </InfoItem>
+                              </Box>
+                            </Link>
+
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              mt: 'auto',
+                              pt: 2,
+                              borderTop: '1px solid #eaeaea'
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Tooltip title={`Added by ${getAssignedUserName(exam)}`}>
+                                  <Avatar
+                                    sx={{
+                                      width: 28,
+                                      height: 28,
+                                      mr: 1,
+                                      bgcolor: theme.palette.primary.main,
+                                      fontSize: '0.8rem',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}
+                                  >
+                                    {getAssignedUserName(exam).charAt(0)}
+                                  </Avatar>
+                                </Tooltip>
+                                <Typography variant="body2" noWrap sx={{ maxWidth: '150px' }}>
+                                  {getAssignedUserName(exam)}
+                                </Typography>
+                              </Box>
+
+                              <Box>
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    component={Link}
+                                    to={`/admin/exam/${exam.id}`}
+                                    color="primary"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                                      mr: 1,
+                                      '&:hover': {
+                                        backgroundColor: 'rgba(33, 150, 243, 0.15)',
+                                      }
+                                    }}
+                                  >
+                                    <FaEye size={14} />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="More Actions">
+                                  <IconButton
+                                    onClick={(e) => handleOpenMenu(e, exam)}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                      '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                      }
+                                    }}
+                                  >
+                                    <FaEllipsisV size={14} />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </Box>
+                          </StyledCardContent>
+                        </ExamCard>
+                      </Grid>
+                    ))}
+                </Grid>
+              ) : (
+                <StyledTableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ID</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Subject</TableCell>
+                        <TableCell>Level</TableCell>
+                        <TableCell>Class</TableCell>
+                        <TableCell>Duration</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredExams
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((exam) => (
+                          <TableRow key={exam.id}>
+                            <TableCell>{exam.id}</TableCell>
+                            <TableCell>{exam.name}</TableCell>
+                            <TableCell>{exam.subject.subject_name}</TableCell>
+                            <TableCell>{exam.level.name}</TableCell>
+                            <TableCell>{exam.class_category.name}</TableCell>
+                            <TableCell>{exam.duration} min</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={exam.status ? "Approved" : "Pending"}
+                                size="small"
+                                sx={{
+                                  bgcolor: exam.status ? '#e8f5e9' : '#fff3e0',
+                                  color: exam.status ? '#2e7d32' : '#ef6c00',
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
                               <Tooltip title="View Details">
                                 <IconButton
                                   component={Link}
                                   to={`/admin/exam/${exam.id}`}
                                   color="primary"
                                   size="small"
-                                  sx={{ 
+                                  sx={{
                                     backgroundColor: 'rgba(33, 150, 243, 0.08)',
                                     mr: 1,
                                     '&:hover': {
@@ -1296,7 +1576,7 @@ const ExamManagement = () => {
                                 <IconButton
                                   onClick={(e) => handleOpenMenu(e, exam)}
                                   size="small"
-                                  sx={{ 
+                                  sx={{
                                     backgroundColor: 'rgba(0, 0, 0, 0.04)',
                                     '&:hover': {
                                       backgroundColor: 'rgba(0, 0, 0, 0.08)',
@@ -1306,13 +1586,13 @@ const ExamManagement = () => {
                                   <FaEllipsisV size={14} />
                                 </IconButton>
                               </Tooltip>
-                            </Box>
-                          </Box>
-                        </StyledCardContent>
-                      </ExamCard>
-                    </Grid>
-                  ))}
-              </Grid>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </StyledTableContainer>
+              )}
 
               <Paper
                 elevation={0}
@@ -1333,7 +1613,7 @@ const ExamManagement = () => {
                   page={page}
                   onPageChange={handleChangePage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
-                  rowsPerPageOptions={isMobile ? [9, 18] : [9, 18, 36]}
+                  rowsPerPageOptions={isMobile ? [10, 20] : [10, 20, 40]}
                   labelRowsPerPage={isMobile ? "Rows:" : "Exams per page:"}
                   labelDisplayedRows={({ from, to, count }) =>
                     isMobile ? `${from}-${to} of ${count}` : `${from}-${to} of ${count} exams`
@@ -1358,7 +1638,7 @@ const ExamManagement = () => {
             onClose={handleCloseMenu}
             PaperProps={{
               elevation: 3,
-              sx: { 
+              sx: {
                 minWidth: 200,
                 borderRadius: '8px',
                 mt: 1,
@@ -1521,7 +1801,7 @@ const ExamManagement = () => {
                   variant="outlined"
                   onClick={() => setOpenAddModal(false)}
                   disabled={loading}
-                  sx={{ 
+                  sx={{
                     borderRadius: '8px',
                     textTransform: 'none',
                     fontWeight: 500
@@ -1534,7 +1814,7 @@ const ExamManagement = () => {
                   color="primary"
                   onClick={handleSave}
                   disabled={loading}
-                  sx={{ 
+                  sx={{
                     borderRadius: '8px',
                     textTransform: 'none',
                     fontWeight: 500,
@@ -1563,10 +1843,10 @@ const ExamManagement = () => {
               </Typography>
             </DialogContent>
             <DialogActions sx={{ p: 2, pt: 1 }}>
-              <Button 
-                onClick={() => setOpenDeleteModal(false)} 
+              <Button
+                onClick={() => setOpenDeleteModal(false)}
                 disabled={loading}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   fontWeight: 500
                 }}
@@ -1578,7 +1858,7 @@ const ExamManagement = () => {
                 color="error"
                 disabled={loading}
                 variant="contained"
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   fontWeight: 500
                 }}
@@ -1606,10 +1886,10 @@ const ExamManagement = () => {
               </Typography>
             </DialogContent>
             <DialogActions sx={{ p: 2, pt: 1 }}>
-              <Button 
-                onClick={() => setOpenStatusConfirmation(false)} 
+              <Button
+                onClick={() => setOpenStatusConfirmation(false)}
                 disabled={loading}
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   fontWeight: 500
                 }}
@@ -1621,7 +1901,7 @@ const ExamManagement = () => {
                 color={statusAction === 'accept' ? "primary" : "warning"}
                 disabled={loading}
                 variant="contained"
-                sx={{ 
+                sx={{
                   textTransform: 'none',
                   fontWeight: 500
                 }}
@@ -1637,10 +1917,10 @@ const ExamManagement = () => {
             onClose={() => setSnackbar({ ...snackbar, open: false })}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           >
-            <Alert 
+            <Alert
               severity={snackbar.severity}
               variant="filled"
-              sx={{ 
+              sx={{
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 borderRadius: '8px',
                 alignItems: 'center'
