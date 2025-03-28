@@ -16,7 +16,6 @@ import ExamManagement from "./components/ExamManagement";
 import { Helmet } from "react-helmet-async";
 import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import InterviewCard from "./components/InterviewCard";
 
@@ -39,7 +38,7 @@ function TeacherDashboard() {
   const { interview, attempts, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
-  const user_id = userData.id;
+  const user_id = userData?.id;
   const { exam } = useSelector((state) => state.examQues);
 
   const exams = verifyresponse?.offline_exam;
@@ -220,11 +219,12 @@ function TeacherDashboard() {
             <TeacherDashboardCard />
           </div>
         </div>
-       <div className="md:px-6">
-          <InterviewCard />
-        </div>
+     
         <div className="md:px-6">
           <ExamManagement />
+        </div>
+        <div className="md:px-6">
+          <InterviewCard />
         </div>
       </div>
     </>

@@ -6,7 +6,7 @@ import { getAllQues, setLanguage,resetVerifyResponse } from "../../features/exam
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const [selectedLanguage, setSelectedLanguage] = useState(""); 
-  const {exam,verifyresponse}= useSelector((state) => state.examQues);
+  const {exam,verifyresponse,loading}= useSelector((state) => state.examQues);
   const examID = exam?.id; 
   const verfyExamId = verifyresponse?.offline_exam?.id;
   const [isChecked, setIsChecked] = useState(false);
@@ -41,6 +41,47 @@ const MCQGuidelinePage = () => {
       dispatch(getAllQues({ exam_id: examID, language: selectedLanguage })); // Dispatch getAllQues action
     }
   };
+  // const handleProceedClick = async () => {
+  //   try {
+  //     // Show loading state
+      
+  
+  //     // Validate inputs
+  //     if (!selectedLanguage) {
+  //       throw new Error('Please select a language');
+  //     }
+  
+  //     // Determine which exam ID to use
+  //     const targetExamId = Object.entries(verifyresponse).length > 0 ? verfyExamId : examID;
+      
+  //     if (!targetExamId) {
+  //       throw new Error('Exam information is missing');
+  //     }
+  
+  //     // Dispatch actions
+  //     await dispatch(setLanguage(selectedLanguage));
+  //     const result = await dispatch(
+  //       getAllQues({ exam_id: targetExamId, language: selectedLanguage })
+  //     ).unwrap();
+  
+  //     console.log('Proceeding with:', {
+  //       language: selectedLanguage,
+  //       examId: targetExamId,
+  //       result
+  //     });
+  
+  //     // Reset verify response if it was used
+  //     if (Object.entries(verifyresponse).length > 0) {
+  //       await dispatch(resetVerifyResponse());
+  //     }
+  
+  //   } catch (error) {
+  //     console.error('Proceed error:', error);
+  //     // Show error to user (you can use toast/alert)
+  //     alert(error.message || 'Failed to load questions. Please try again.');
+      
+  //   } 
+  // };
 
   return (
     <div className="min-h-screen text-gray-800">

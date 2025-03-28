@@ -9,7 +9,7 @@ const InterviewCard = () => {
     (state) => state.examQues
   );
   
-  const level2OfflineExamSets = examSet?.filter(
+  const level2OfflineExamSets = examSet?.exams?.filter(
     (exam) => exam.level.name === "2nd Level Offline"
   );
 

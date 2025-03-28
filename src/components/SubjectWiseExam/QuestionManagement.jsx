@@ -18,7 +18,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const QuestionManagement = () => {
   const [selectedExamSet, setSelectedExamSet] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({
     text: "",
     options: ["", "", "", ""],
@@ -27,7 +26,6 @@ const QuestionManagement = () => {
     language: [],
     time: "",
   });
-  
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -39,32 +37,48 @@ const QuestionManagement = () => {
     (state) => state.examQues
   );
   const [showModal, setShowModal] = useState(false);
-  console.log("setterUser", setterUser);
-  console.log("selectedExamSet", selectedExamSet);
-  console.log("levels", levels);
-  console.log("currentQuestion", currentQuestion);
-  console.log("setterExamSet", setterExamSet);
-  console.log("selectedSubject", selectedSubject);
+  // console.log("setterUser", setterUser);
+  // console.log("selectedExamSet", selectedExamSet);
+  // console.log("levels", levels);
+  // console.log("currentQuestion", currentQuestion);
+  // console.log("setterExamSet", setterExamSet);
+  // console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  
-  // const subjects = setterUser?.subject;
-  const subjects = setterUser?.map((user) => user.subject);
-  console.log("subject", subjects);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  useEffect(() => {
+    // Assuming you fetch this data from an API
 
-  const handleSubjectChange = (e) => {
-    const selectedId = parseInt(e.target.value, 10);
-    const subject = subjects.find((sub) => sub.id === selectedId);
+    const filtered = setterUser[0]?.class_category
+      .map((cat) => ({
+        ...cat,
+        subjects: setterUser[0]?.subject.filter(
+          (s) => s.class_category === cat.id
+        ),
+      }))
+      .filter((item) => item.subjects.length > 0);
 
-    if (subject) {
-      setSelectedSubject(subject);
-      setValue("subject_id", subject.id);
-      setValue("class_category", subject.class_category);
-    }
+    setCategories(filtered);
+  }, [setterUser]);
+  const handleCategoryChange = (e) => {
+    const categoryId = parseInt(e.target.value);
+    const category = categories.find((cat) => cat.id === categoryId);
+
+    setSelectedCategory(category);
+    setSubjects(category?.subjects || []);
+    setSelectedSubject(null); // Reset subject when category changes
   };
 
+  const handleSubjectChange = (e) => {
+    const subjectId = parseInt(e.target.value);
+    const subject = subjects.find((sub) => sub.id === subjectId);
+    setSelectedSubject(subject);
+  };
   const {
     register,
     handleSubmit,
@@ -76,7 +90,7 @@ const QuestionManagement = () => {
   // Fetch exam sets on mount
   useEffect(() => {
     dispatch(getExamSets());
-  }, [dispatch,showModal]);
+  }, [dispatch, showModal]);
 
   // Handle Exam Set Submission
   const onSubmit = async (data) => {
@@ -160,7 +174,6 @@ const QuestionManagement = () => {
           postQuestionToExamSet(payload)
         ).unwrap();
         toast.success("Question is added successfully!");
-        
       }
     } catch (error) {
       console.error("API Error:", error);
@@ -168,69 +181,69 @@ const QuestionManagement = () => {
   };
   const languages = [
     ...new Set(selectedExamSet?.questions.map((q) => q.language)),
-  ];        
-          const [filteredQuestions, setFilteredQuestions] = useState([]);
-          const [selectedLanguage, setSelectedLanguage] = useState("All");
-          const [editingQuestionId, setEditingQuestionId] = useState(null);
-        
-          // Update filteredQuestions when selectedLanguage or selectedExamSet changes
-          useEffect(() => {
-            if (selectedExamSet?.questions) {
-              const filtered =
-                selectedLanguage === "All"
-                  ? selectedExamSet.questions
-                  : selectedExamSet.questions.filter(
-                      (q) => q.language === selectedLanguage
-                    );
-              setFilteredQuestions(filtered);
-            }
-          }, [selectedLanguage, selectedExamSet]);
-        
-          const handleQuestionTextChange = (questionId, newText) => {
-            const updatedQuestions = filteredQuestions.map((question) =>
-              question.id === questionId ? { ...question, text: newText } : question
+  ];
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState("All");
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+
+  // Update filteredQuestions when selectedLanguage or selectedExamSet changes
+  useEffect(() => {
+    if (selectedExamSet?.questions) {
+      const filtered =
+        selectedLanguage === "All"
+          ? selectedExamSet.questions
+          : selectedExamSet.questions.filter(
+              (q) => q.language === selectedLanguage
             );
-            setFilteredQuestions(updatedQuestions);
-          };
-        
-          const handleOptionChange = (questionId, optionIndex, newOption) => {
-            const updatedQuestions = filteredQuestions.map((question) =>
-              question.id === questionId
-                ? {
-                    ...question,
-                    options: question.options.map((option, i) =>
-                      i === optionIndex ? newOption : option
-                    ),
-                  }
-                : question
-            );
-            setFilteredQuestions(updatedQuestions);
-          };
-        
-          const handleEditQuestion = (questionId) => {
-            setEditingQuestionId(questionId);
-          };
-        
-          const handleSaveQuestion = (questionId) => {
-            // Find the updated question
-            const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
-          
-            // Log the updated question (for debugging)
-            console.log("Updated Question:", updatedQuestion);
-          
-            // Dispatch the updated question to the action
-            dispatch(putQuestionToExamSet(updatedQuestion));
-          
-            // Exit edit mode
-            setEditingQuestionId(null);
-          };
-        
-          const handleDeleteQuestion = (questionId) => {
-            const updatedQuestions = filteredQuestions.filter(
-              (q) => q.id !== questionId
-            );
-            setFilteredQuestions(updatedQuestions);
-          };
+      setFilteredQuestions(filtered);
+    }
+  }, [selectedLanguage, selectedExamSet]);
+
+  const handleQuestionTextChange = (questionId, newText) => {
+    const updatedQuestions = filteredQuestions.map((question) =>
+      question.id === questionId ? { ...question, text: newText } : question
+    );
+    setFilteredQuestions(updatedQuestions);
+  };
+
+  const handleOptionChange = (questionId, optionIndex, newOption) => {
+    const updatedQuestions = filteredQuestions.map((question) =>
+      question.id === questionId
+        ? {
+            ...question,
+            options: question.options.map((option, i) =>
+              i === optionIndex ? newOption : option
+            ),
+          }
+        : question
+    );
+    setFilteredQuestions(updatedQuestions);
+  };
+
+  const handleEditQuestion = (questionId) => {
+    setEditingQuestionId(questionId);
+  };
+
+  const handleSaveQuestion = (questionId) => {
+    // Find the updated question
+    const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
+
+    // Log the updated question (for debugging)
+    console.log("Updated Question:", updatedQuestion);
+
+    // Dispatch the updated question to the action
+    dispatch(putQuestionToExamSet(updatedQuestion));
+
+    // Exit edit mode
+    setEditingQuestionId(null);
+  };
+
+  const handleDeleteQuestion = (questionId) => {
+    const updatedQuestions = filteredQuestions.filter(
+      (q) => q.id !== questionId
+    );
+    setFilteredQuestions(updatedQuestions);
+  };
 
   return (
     <>
@@ -419,36 +432,58 @@ const QuestionManagement = () => {
                     )}
                   </div>
 
-                  <div>
-                    <div className="relative flex-1 w-full">
-                      <label className="block text-sm font-medium mb-1">
-                        Select a Subject
+                  <div className="mb-4">
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Class Category
+                    </label>
+                    <select
+                      {...register("class_category", {
+                        required: "class_category is required",
+                      })}
+                      id="category"
+                      onChange={handleCategoryChange}
+                      value={selectedCategory?.id || ""}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Subject Select (only shows when category is selected) */}
+                  {selectedCategory && (
+                    <div className="mb-4">
+                      <label
+                        htmlFor="subject"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Subject
                       </label>
                       <select
                         {...register("subject", {
                           required: "subject is required",
                         })}
-                        className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg bg-white 
-                       focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none 
-                       transition-all cursor-pointer text-gray-700"
+                        id="subject"
                         onChange={handleSubjectChange}
+                        value={selectedSubject?.id || ""}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="" className="text-gray-400">
-                          Select a Subject
-                        </option>
-                        {setterUser[0]?.subject.map((sub, index) => (
-                          <option key={index} value={sub.id}>
-                            {sub.subject_name}
+                        <option value="">Select a subject</option>
+                        {subjects.map((subject) => (
+                          <option key={subject.id} value={subject.id}>
+                            {subject.subject_name}
                           </option>
                         ))}
                       </select>
-                      <input
-                        type="hidden"
-                        {...register("class_category")}
-                        value={selectedSubject?.class_category || ""}
-                      />
                     </div>
-                  </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
