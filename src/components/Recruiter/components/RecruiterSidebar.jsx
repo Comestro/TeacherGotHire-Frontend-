@@ -1,9 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  BsGeoAlt,
-  BsPersonWorkspace,
-  BsCode,
-} from "react-icons/bs";
+import { BsGeoAlt, BsPersonWorkspace, BsCode } from "react-icons/bs";
 import { BsCheck } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { MdExpandMore, MdExpandLess, MdSchool } from "react-icons/md";
@@ -17,7 +13,6 @@ import { fetchTeachers } from "../../../features/teacherFilterSlice";
 
 const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const dispatch = useDispatch();
-  console.log("Sidebar isOpen: ", isOpen);
 
   const [filters, setFilters] = useState({
     district: [],
@@ -33,18 +28,18 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const { qualification, allSkill, classCategories } = useSelector(
     (state) => state.jobProfile
   );
+
   const getFilteredSubjects = () => {
     if (selectedClassCategories.length === 0) return [];
-    
-    const selectedCategories = classCategories.filter(category =>
-      selectedClassCategories.includes(category.name)
-    );
-    
-    const allSubjects = selectedCategories.flatMap(category => 
-      category.subjects.map(sub => sub.subject_name)
-    );
-    
-    return [...new Set(allSubjects)];
+
+    return classCategories
+      .filter((category) => selectedClassCategories.includes(category.name))
+      .map((category) => ({
+        categoryName: category.name,
+        subjects: [
+          ...new Set(category.subjects.map((sub) => sub.subject_name)),
+        ],
+      }));
   };
 
   useEffect(() => {
@@ -66,12 +61,16 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState({});
   const sidebarRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+      if (
+        isOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -107,15 +106,18 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     );
   };
 
-  const handleSubjectToggle = (subjectName) => {
-    setSelectedSubjects((prev) =>
-      prev.includes(subjectName)
-        ? prev.filter((subject) => subject !== subjectName)
-        : [...prev, subjectName]
-    );
+  const handleSubjectToggle = (categoryName, subjectName) => {
+    setSelectedSubjects((prev) => {
+      const categorySubjects = prev[categoryName] || [];
+      return {
+        ...prev,
+        [categoryName]: categorySubjects.includes(subjectName)
+          ? categorySubjects.filter((sub) => sub !== subjectName)
+          : [...categorySubjects, subjectName],
+      };
+    });
   };
 
-  // Update filters when selections change
   useEffect(() => {
     setFilters((prev) => ({ ...prev, skill: selectedSkills }));
   }, [selectedSkills]);
@@ -128,8 +130,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       class_category: selectedClassCategories,
     }));
   }, [selectedClassCategories]);
+
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, subject: selectedSubjects }));
+    const allSubjects = Object.values(selectedSubjects).flat();
+    setFilters((prev) => ({ ...prev, subject: allSubjects }));
   }, [selectedSubjects]);
 
   // Location handling
@@ -214,15 +218,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   };
 
   return (
-    <div 
-    ref={sidebarRef}
-    className={`fixed left-0 top-16 h-screen bg-white shadow-lg overflow-y-auto p-4
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+    <div
+      ref={sidebarRef}
+      className={`fixed left-0 top-16 h-screen bg-white shadow-lg overflow-y-auto p-4
+      ${isOpen ? "translate-x-0" : "-translate-x-full"} 
       transition-transform duration-300 ease-in-out
       md:translate-x-0 md:block md:w-72
       w-[280px] z-[100]`}
     >
-
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-800">Filters</h2>
         <button
@@ -361,40 +364,52 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
       {/* Subjects Section */}
       <div className="mb-6 border-b border-gray-200 pb-4">
-        <button
-          onClick={() => toggleSection("subjects")}
-          className="flex items-center justify-between w-full mb-3"
-        >
-          <div className="flex items-center gap-2">
-            <BsPersonWorkspace className="text-teal-600" />
-            <span className="font-semibold text-gray-800">Subjects</span>
-          </div>
-          {expandedSections.subjects ? <MdExpandLess /> : <MdExpandMore />}
-        </button>
-        {expandedSections.subjects && (
-          <div className="space-y-2 px-4">
-            {getFilteredSubjects().map((subject, index) => (
-              <div key={index} className="flex items-center">
+  <button
+    onClick={() => toggleSection("subjects")}
+    className="flex items-center justify-between w-full mb-3"
+  >
+    <div className="flex items-center gap-2">
+      <BsPersonWorkspace className="text-teal-600" />
+      <span className="font-semibold text-gray-800">Subjects</span>
+    </div>
+    {expandedSections.subjects ? <MdExpandLess /> : <MdExpandMore />}
+  </button>
+  {expandedSections.subjects && (
+    <div className="space-y-4 px-4">
+      {getFilteredSubjects().map((categoryGroup, index) => (
+        <div key={index} className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2 bg-gray-100 p-2 rounded">
+            {categoryGroup.categoryName}
+          </h4>
+          <div className="space-y-2 ml-2">
+            {categoryGroup.subjects.map((subject, subIndex) => (
+              <div key={subIndex} className="flex items-center">
                 <input
                   type="checkbox"
-                  id={`subject-${index}`}
+                  id={`subject-${index}-${subIndex}`}
                   value={subject}
-                  checked={selectedSubjects.includes(subject)}
-                  onChange={() => handleSubjectToggle(subject)}
+                  checked={(selectedSubjects[categoryGroup.categoryName] || []).includes(subject)}
+                  onChange={() => handleSubjectToggle(categoryGroup.categoryName, subject)}
                 />
-                <label htmlFor={`subject-${index}`} className="ml-2">
+                <label 
+                  htmlFor={`subject-${index}-${subIndex}`} 
+                  className="ml-2 text-sm"
+                >
                   {subject}
                 </label>
               </div>
             ))}
-            {selectedClassCategories.length === 0 && (
-              <p className="text-sm text-gray-500 text-center mt-2">
-                Select class categories to view subjects
-              </p>
-            )}
           </div>
-        )}
-      </div>
+        </div>
+      ))}
+      {selectedClassCategories.length === 0 && (
+        <p className="text-sm text-gray-500 text-center mt-2">
+          Select class categories to view subjects
+        </p>
+      )}
+    </div>
+  )}
+</div>
 
       {/* Skills Section */}
       <div className="mb-6">

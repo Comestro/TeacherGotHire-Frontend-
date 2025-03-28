@@ -17,16 +17,13 @@ const TeacherFilter = () => {
 
   useEffect(() => {
     if (data) {
-      setTimeout(() => {
-        setTeachers(data);
-        setLoading(false);
-      }, 1000);
+      setTeachers(data);
     }
   }, [data]);
 
   return (
     <div className="w-full min-h-screen bg-gray-100 p-4 rounded shadow relative">
-      {loading ? (
+      {status === 'loading' ? (
         <div className="w-full h-full flex justify-center items-center mt-16">
           <div className="h-fit mt-20">
             <Loader />
