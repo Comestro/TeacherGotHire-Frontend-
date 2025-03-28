@@ -23,6 +23,28 @@ const Steppers = () => {
 
   const allLevels = ["1st Level", "2nd Level Online", "2nd Level Offline", "Interview"];
 
+  // Check if an interview is completed (has grade or fulfilled status)
+  const isInterviewCompleted = (interviews) => {
+    if (!interviews || !interviews.length) return false;
+    return interviews.some(interview => 
+      interview.grade || interview.status === "fulfilled"
+    );
+  };
+
+  // Get the latest interview grade
+  const getLatestInterviewGrade = (interviews) => {
+    if (!interviews || !interviews.length) return null;
+    const completedInterviews = interviews.filter(
+      interview => interview.grade || interview.status === "fulfilled"
+    );
+    if (!completedInterviews.length) return null;
+    
+    // Sort by created_at in descending order and get the most recent
+    return completedInterviews.sort((a, b) => 
+      new Date(b.created_at) - new Date(a.created_at)
+    )[0].grade;
+  };
+
   useEffect(() => {
     dispatch(attemptsExam());
   }, [dispatch]);
@@ -65,12 +87,27 @@ const Steppers = () => {
 
   const calculateProgress = () => {
     if (!filteredAttempts.length) return 0;
+    
+    // Find highest completed level index
     const highestLevelIndex = Math.max(
       ...filteredAttempts.map(item => 
         allLevels.findIndex(level => level === item.exam.level_name)
       )
     );
-    return ((highestLevelIndex + 1) / allLevels.length) * 100;
+    
+    // Check if interview is completed
+    let progressValue = ((highestLevelIndex + 1) / allLevels.length) * 100;
+    
+    // Check if we have interview data and if it's completed (final step)
+    const hasInterviewData = filteredAttempts.some(item => item.interviews && item.interviews.length > 0);
+    if (hasInterviewData) {
+      const interviewCompleted = filteredAttempts.some(item => isInterviewCompleted(item.interviews));
+      if (interviewCompleted) {
+        progressValue = 100; // Interview completed, so progress is 100%
+      }
+    }
+    
+    return progressValue;
   };
 
   const getNextStep = () => {
@@ -85,12 +122,14 @@ const Steppers = () => {
     if (progress < 25) return "text-orange-600";
     if (progress < 50) return "text-blue-600";
     if (progress < 75) return "text-indigo-600";
-    return "text-green-600";
+    return "text-cyan-600";
   };
 
   const statusColor = getStatusColor(calculateProgress());
   const progressValue = Math.round(calculateProgress());
   const nextStep = getNextStep();
+
+  console.log("Filtered Attempts:", filteredAttempts);
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
@@ -98,7 +137,7 @@ const Steppers = () => {
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-gray-200">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="flex items-center space-x-3">
-            <div className="bg-blue-600 text-white p-2 rounded-lg">
+            <div className="bg-cyan-700 text-white p-2 rounded-lg">
               <FiBarChart2 className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-bold text-gray-800">Job Qualification Progress</h2>
@@ -109,7 +148,7 @@ const Steppers = () => {
               onClick={() => setActiveTab("progress")}
               className={`px-4 py-2 text-sm font-medium rounded-l-md 
                 ${activeTab === "progress" 
-                  ? "bg-blue-600 text-white" 
+                  ? "bg-cyan-600 text-white" 
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
             >
               Progress
@@ -118,7 +157,7 @@ const Steppers = () => {
               onClick={() => setActiveTab("details")}
               className={`px-4 py-2 text-sm font-medium rounded-r-md 
                 ${activeTab === "details" 
-                  ? "bg-blue-600 text-white" 
+                  ? "bg-cyan-600 text-white" 
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
             >
               Details
@@ -259,7 +298,7 @@ const Steppers = () => {
                             : progressValue < 50 ? "In Progress" 
                             : progressValue < 75 ? "Almost There" 
                             : progressValue < 100 ? "Nearly Complete" 
-                            : "Certification Completed"}
+                            : "Qualified"}
                         </div>
                       </div>
                       
@@ -289,13 +328,20 @@ const Steppers = () => {
                   );
                   const isActive = index <= Math.floor(calculateProgress() / 25);
                   const isNext = index === Math.floor(calculateProgress() / 25) && !isCompleted;
+                  
+                  // Get interview grade if this level is "Interview" and we have interviews
+                  const interviewGrade = level === "Interview" ? 
+                    filteredAttempts.flatMap(item => item.interviews || [])
+                      .filter(interview => interview.grade !== null || interview.status === "fulfilled")
+                      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.grade
+                    : null;
 
                   return (
                     <div 
                       key={level} 
                       className={`
                         relative rounded-lg overflow-hidden shadow-sm transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-md
-                        ${isCompleted ? 'bg-green-50 border border-green-200' : 
+                        ${isCompleted ? 'bg-[#EBF5FA] border border-[#3E98C7]/30' : 
                          isNext ? 'bg-blue-50 border border-blue-200' : 
                          isActive ? 'bg-indigo-50 border border-indigo-200' : 
                          'bg-gray-50 border border-gray-200'}
@@ -311,8 +357,8 @@ const Steppers = () => {
                         <div className="flex items-center mb-3">
                           <div className={`
                             w-10 h-10 rounded-full flex items-center justify-center mr-3
-                            ${isCompleted ? 'bg-green-500 text-white' : 
-                             isNext ? 'bg-blue-500 text-white' :
+                            ${isCompleted ? 'bg-[#3E98C7] text-white' : 
+                             isNext ? 'bg-cyan-500 text-white' :
                              isActive ? 'bg-indigo-500 text-white' : 
                              'bg-gray-300 text-gray-500'}
                           `}>
@@ -327,7 +373,7 @@ const Steppers = () => {
                           <div>
                             <h4 className={`
                               text-sm font-semibold
-                              ${isCompleted ? 'text-green-700' : 
+                              ${isCompleted ? 'text-[#2A6F97]' : 
                                isNext ? 'text-blue-700' :
                                isActive ? 'text-indigo-700' : 
                                'text-gray-500'}
@@ -340,16 +386,25 @@ const Steppers = () => {
                           </div>
                         </div>
                         
-                        <div className={`
-                          text-xs px-2 py-1 rounded-full w-full text-center font-medium
-                          ${isCompleted ? 'bg-green-100 text-green-700' : 
-                           isNext ? 'bg-blue-100 text-blue-700' :
-                           isActive ? 'bg-indigo-100 text-indigo-700' : 
-                           'bg-gray-100 text-gray-500'}
-                        `}>
-                          {isCompleted ? 'Completed' : 
-                           isNext ? 'Current' :
-                           isActive ? 'Available' : 'Locked'}
+                        <div className="flex justify-between items-center">
+                          <div className={`
+                            text-xs px-2 py-1 rounded-full text-center font-medium
+                            ${isCompleted ? 'bg-[#3E98C7]/20 text-[#2A6F97]' : 'bg-blue-100 text-blue-700'}
+                          `}>
+                            {isCompleted ? 'Completed' : 
+                             isNext ? 'Current' :
+                             isActive ? (interviewGrade !== null && interviewGrade !== undefined) ? "Qualified": 'Available' : 'Locked'}
+                          </div>
+                          
+                          {/* Show interview grade if available */}
+                          {interviewGrade !== null && interviewGrade !== undefined && (
+                            <div className="ml-2 flex items-center">
+                              <div className="bg-[#3E98C7]/20 text-[#2A6F97] text-xs font-semibold px-2 py-1 rounded-full flex items-center">
+                                <FiAward className="w-3 h-3 mr-1" />
+                                <span>{interviewGrade}/10</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -376,9 +431,9 @@ const Steppers = () => {
               )}
               
               {progressValue === 100 && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+                <div className="bg-[#EBF5FA] border border-cyan-200 rounded-lg p-4 flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="bg-green-500 text-white p-2 rounded-full mr-3">
+                    <div className="bg-cyan-600 text-white p-2 rounded-full mr-3">
                       <FiAward className="w-5 h-5" />
                     </div>
                     <div>
@@ -386,7 +441,7 @@ const Steppers = () => {
                       <p className="text-sm text-gray-600">You've successfully completed all qualification stages</p>
                     </div>
                   </div>
-                  <button className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                  <button className="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
                     View Details
                   </button>
                 </div>
@@ -479,6 +534,70 @@ const Steppers = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Interview Details Card (if interview exists) */}
+              {filteredAttempts.some(item => item.interviews && item.interviews.length > 0) && (
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                  <div className="border-b border-gray-200">
+                    <div className="px-5 py-3">
+                      <h3 className="text-lg font-semibold text-gray-800">Interview Status</h3>
+                    </div>
+                  </div>
+                  
+                  <div className="px-5 py-4">
+                    {filteredAttempts.flatMap(item => item.interviews).map((interview, idx) => {
+                      const hasGrade = interview.grade !== null;
+                      const isFulfilled = interview.status === "fulfilled";
+                      const isCompleted = hasGrade || isFulfilled;
+                      
+                      return (
+                        <div key={idx} className={`
+                          mb-3 last:mb-0 p-4 rounded-lg border 
+                          ${isCompleted ? 'bg-[#EBF5FA] border-[#3E98C7]/30' : 'bg-blue-50 border-blue-200'}
+                        `}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center">
+                              <div className={`
+                                w-10 h-10 rounded-full flex items-center justify-center mr-3
+                                ${isCompleted ? 'bg-[#3E98C7] text-white' : 'bg-blue-500 text-white'}
+                              `}>
+                                {isCompleted ? (
+                                  <FiCheckCircle className="w-5 h-5" />
+                                ) : (
+                                  <FiUnlock className="w-5 h-5" />
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-800">{interview.subject} Interview</h4>
+                                <p className="text-sm text-gray-600">Class Category: {interview.class_category}</p>
+                                <p className="text-sm text-gray-600">
+                                  Scheduled: {new Date(interview.time).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="text-right">
+                              <div className={`
+                                text-sm px-3 py-1 rounded-full font-medium
+                                ${isCompleted ? 'bg-[#3E98C7]/20 text-[#2A6F97]' : 'bg-blue-100 text-blue-700'}
+                              `}>
+                                {isCompleted ? 'Completed' : 'Scheduled'}
+                              </div>
+                              
+                              {hasGrade && (
+                                <div className="mt-2 flex flex-col items-end">
+                                  <span className="text-xs text-gray-500">Grade</span>
+                                  <span className="text-2xl font-bold text-[#2A6F97]">{interview.grade}/10</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
