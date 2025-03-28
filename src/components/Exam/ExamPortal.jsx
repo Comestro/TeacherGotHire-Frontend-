@@ -24,21 +24,7 @@ const ExamPortal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Block browser back button
-  useEffect(() => {
-    const handleBackButton = (e) => {
-      e.preventDefault();
-      setShowExitConfirm(true);
-    };
-
-    window.history.pushState(null, null, window.location.pathname);
-    window.addEventListener("popstate", handleBackButton);
-
-    return () => {
-      window.removeEventListener("popstate", handleBackButton);
-    };
-  }, []);
-
+  
   const { allQuestion, language, loading } = useSelector((state) => state.examQues);
   const questions = allQuestion.questions || [];
   const exam = allQuestion.id;
@@ -53,6 +39,7 @@ const ExamPortal = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const currentQuestion = questions[currentQuestionIndex];
+  const [isNavigating, setIsNavigating] = useState(false);
 
 
   
@@ -106,6 +93,36 @@ const ExamPortal = () => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Prevent default behavior that causes auto-selection
+      if (["Enter", "ArrowRight", "ArrowLeft"].includes(e.key)) {
+        e.preventDefault();
+      }
+  
+      if (e.key === "Enter" || e.key === "ArrowRight") {
+        handleNext();
+        
+        // Remove focus from the radio button after moving to the next question
+        setTimeout(() => {
+          document.activeElement?.blur();
+        }, 0);
+      }
+      
+      if (e.key === "ArrowLeft") {
+        handlePrevious();
+        
+        // Also remove focus when navigating backward
+        setTimeout(() => {
+          document.activeElement?.blur();
+        }, 0);
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleNext, handlePrevious]);
+  
   const handleSubmit = () => {
     let correct_answer = 0;
     let incorrect_answer = 0;
@@ -153,22 +170,8 @@ const ExamPortal = () => {
     navigate("/dashboard");
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleNext();
-      }
-      if (e.key === 'ArrowRight') handleNext();
-      if (e.key === 'ArrowLeft') handlePrevious();
-    };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrevious]);
-
-  if ( loading) return <div>Loading...</div>;
-  // // if (error) return <div>Error: {error}</div>;
+  
 
   return (
     <div className="flex h-screen bg-gray-100 w-full">
@@ -321,19 +324,15 @@ const ExamPortal = () => {
               {currentQuestionIndex < questions.length - 1 ? (
                 <button
                   onClick={handleNext}
-                  className="flex px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
+                  className={`flex px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 ${
+                    isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
+                  }`}
                 >
                   <span className="text-center">Next</span>
                   <BsArrowRightShort className="size-6 items-center" />
                 </button>
               ) : (
                 <>
-                  <button
-                    onClick={handleExitExam}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  >
-                    Exit Exam
-                  </button>
                   <button
                     onClick={handleSubmit}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

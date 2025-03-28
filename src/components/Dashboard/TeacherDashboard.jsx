@@ -38,7 +38,7 @@ function TeacherDashboard() {
   const { interview, attempts, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
-  const user_id = userData.id;
+  const user_id = userData?.id;
   const { exam } = useSelector((state) => state.examQues);
 
   const exams = verifyresponse?.offline_exam;
@@ -219,11 +219,12 @@ function TeacherDashboard() {
             <TeacherDashboardCard />
           </div>
         </div>
-       <div className="md:px-6">
-          <InterviewCard />
-        </div>
+     
         <div className="md:px-6">
           <ExamManagement />
+        </div>
+        <div className="md:px-6">
+          <InterviewCard />
         </div>
       </div>
     </>

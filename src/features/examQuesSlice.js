@@ -73,7 +73,7 @@ export const getAllQues = createAsyncThunk(
   export const getExamSet= createAsyncThunk(
     "getExamSet",
     async ({ level_id, subject_id,type,class_category_id }, { rejectWithValue }) => {
-      console.log("exa",{ level_id, subject_id,class_category_id })
+      console.error("exa",{ level_id, subject_id,class_category_id })
       try {
         const data = await fetchExam({ level_id, subject_id,type,class_category_id });
         console.log("examSet",data)
