@@ -155,7 +155,7 @@ function getLevelOrder(levelName) {
   return 4; // Interview level
 }
 
-function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) {
+function SubjectResults({ subject, examResults, selectedCategory }) {
   const subjectResults = examResults
     ?.filter((result) => {
       const subjectMatch = result?.exam?.subject_name === subject;
@@ -186,10 +186,10 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
       date: new Date(result.created_at).toLocaleDateString(),
     });
 
-    // Add interviews if any
+    // Add interviews if any - only if they have a grade
     if (result.interviews?.length) {
       result.interviews.forEach(interview => {
-        if (interview.subject === subject) { // Only add interviews for matching subject
+        if (interview.subject === subject && interview.grade) { // Only add interviews for matching subject with a grade
           interviewRows.push({
             levelOrder: 4, // Interview is always last
             levelName: "Interview",
@@ -198,7 +198,7 @@ function SubjectResults({ subject, examResults, apiOutput1, selectedCategory }) 
             subject: interview.subject,
             level: "Interview",
             language: '-',
-            status: interview.status ? "Completed" : "Pending",
+            status: interview.status,
             score: interview.grade ? `${interview.grade}/10` : 'N/A',
             attemptCount: '-',
             date: new Date(interview.time).toLocaleDateString(),
