@@ -11,35 +11,59 @@ import {
   getAllCenter,
   resetPasskeyResponse,
   verifyPasscode,
+  resetInterview,
 } from "../../../features/examQuesSlice";
 import {
   getPrefrence,
   getEducationProfile,
 } from "../../../features/jobProfileSlice";
-import InterviewCard from "../components/InterviewCard";
-
 import { useNavigate } from "react-router-dom";
 
 function ExamManagement() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { basicData } = useSelector((state) => state.personalProfile);
   const { prefrence } = useSelector((state) => state.jobProfile);
   const classCategories = useSelector(
     (state) => state.jobProfile.prefrence.class_category
   );
-
-  console.log("classCategories", classCategories);
-
   const subjects = useSelector(
     (state) => state.jobProfile.prefrence.prefered_subject
   );
   const { examSet, allcenter, attempts, error } = useSelector(
     (state) => state.examQues
   );
-  console.log("allcenter", allcenter);
-  console.log("error", error);
+  console.log("attempts",attempts);
+
+  const getFirstQualifiedOccurrences = () => {
+    const seenPairs = new Set(); // Track seen subject-category pairs
+    const result = [];
+  
+    for (const item of attempts) {
+      if (
+        item.exam.level_name === "2nd Level Online" &&
+        item.isqualified === true
+      ) {
+        const pairKey = `${item.exam.subject_id}-${item.exam.class_category_id}`;
+        
+        if (!seenPairs.has(pairKey)) {
+          seenPairs.add(pairKey);
+          result.push({
+            subjectId: item.exam.subject_id,
+            classCategoryId: item.exam.class_category_id,
+            subjectName: item.exam.subject_name,
+            classCategoryName: item.exam.class_category_name,
+            examName: item.exam.name
+          });
+        }
+      }
+    }
+  
+    return result;
+  };
+  
+  const firstQualifiedExams = getFirstQualifiedOccurrences();
+  console.log("firstQualifiedExams",firstQualifiedExams);
 
   const level1ExamSets = examSet?.filter(
     (exam) => exam.level.name === "1st Level"
@@ -76,6 +100,7 @@ function ExamManagement() {
   console.log("isProfileComplete", isProfileComplete);
   const [activeTab, setActiveTab] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [interviewEligible,setInterviewEligible] = useState(null);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -160,20 +185,6 @@ function ExamManagement() {
       console.log("filteredSubjects", filteredSubjects);
     }
   }, [activeTab]); // Runs on mount and when activeTab changes
-
-  // const handleSubjectChange = (e) => {
-  //   const subjectId = e.target.value;
-  //   setSelectedSubject(subjectId.id);
-  //   setSelectedSubjectName(subjectId.subject_name);
-  //   console.log("selectedSubject", subjectId);
-  //   dispatch(
-  //     getExamSet({
-  //       subject_id: subjectId?.id,
-  //       class_category_id: activeTab,
-  //     })
-  //   );
-  // };
-
   const handleSubjectChange = (e) => {
     try {
       const subject = e.target.value;
@@ -193,22 +204,26 @@ function ExamManagement() {
         name: subject.subject_name,
       });
 
-      // Only dispatch if we have required data
-      if (activeTab) {
-        dispatch(
-          getExamSet({
-            subject_id: subject.id,
-            class_category_id: activeTab,
-          })
-        )
+        if (activeTab) {
+          dispatch(
+            getExamSet({
+              subject_id: subject.id,
+              class_category_id: activeTab,
+            })
+          )
           .unwrap()
+          .then(() => {
+            console.log("Exam set fetched successfully");
+            return true;
+          })
           .catch((error) => {
             console.error("Failed to fetch exam sets:", error);
-            // Optionally show error to user
+            return false;
           });
-      } else {
-        console.warn("Active tab not set - skipping exam set fetch");
-      }
+        } else {
+          console.log("Not qualified - skipping dispatch");
+          return false;
+        }
     } catch (error) {
       console.error("Error in subject change handler:", error);
       // Optionally reset subject selection
@@ -216,27 +231,28 @@ function ExamManagement() {
       setSelectedSubjectName("");
     }
   };
+  useEffect(() => {
+    console.log(" interviewEligible state:", interviewEligible);
+  }, [interviewEligible]);
+
+  useEffect(() => {
+    const checkEligibility = () => {
+      if (activeTab && selectedSubject) {
+        const isQualified = firstQualifiedExams.some(
+          exam => exam.classCategoryId === activeTab && exam.subjectId === selectedSubject
+        );
+        setInterviewEligible(isQualified);
+        console.log('Eligibility updated:', isQualified);
+      }
+    };
+    console.log("ACTUAL interviewEligible state:", interviewEligible);
+    checkEligibility();
+  }, [activeTab, selectedSubject, firstQualifiedExams]);
+
   const handleExam = (exam) => {
     dispatch(setExam(exam));
     navigate("/exam");
   };
-  console.log("selectedSubject", selectedSubject);
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   // Simulate submission (e.g., API call)
-  //   console.log("Selected Date and Time:", selectedDateTime);
-
-  //   // Update state to show pending card
-  //   dispatch(
-  //     postInterview({
-  //       subject: selectedSubject,
-  //       class_category: activeTab,
-  //       time: selectedDateTime,
-  //     })
-  //   );
-  //   setIsSubmitted(true);
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -268,6 +284,7 @@ function ExamManagement() {
 
       // Only update state if successful
       setIsSubmitted(true);
+      dispatch(resetInterview());
 
       // Optional: Reset form or show success message
       // setSelectedDateTime('');
@@ -294,27 +311,6 @@ function ExamManagement() {
     setSelectedCenterId(e.target.value); // Update the selected center ID
   };
   const user_id = userData?.id;
-  // const handleGeneratePasskey = async (event, exam) => {
-  //   event.preventDefault();
-  //   console.log("exam", exam);
-  //   SetOfflineSet(exam);
-  //   if (selectedCenterId) {
-  //     console.log("selectedCenterId", selectedCenterId);
-  //     dispatch(
-  //       generatePasskey({ user_id, exam_id: exam, center_id: selectedCenterId })
-  //     );
-  //     navigate("/teacher");
-  //     setCenterSelectionPopup(false);
-  //   } else {
-  //     alert("Please select a center before submitting.");
-  //   }
-
-  //   // Clear the reminder flag from localStorage
-  //   localStorage.removeItem("showReminder");
-  //   setShowVerificationCard(true);
-  //   // Hide the reminder message
-  //   setShowReminderMessage(false);
-  // };
 
   // Handle verification code submission
   const handleGeneratePasskey = async (event, exam) => {
@@ -1004,11 +1000,86 @@ function ExamManagement() {
                     </>
                   )}
                   {/* Interviews Section */}
-                  {level2OfflineExamSets.length > 0 ? (
+                  {interviewEligible ? (
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      {!isSubmitted && !interview.length > 0 ? (
+                      {(!isSubmitted && !interview.length) || (isSubmitted && !interview.length)? (
                         // Scheduling Form
-                        <form onSubmit={handleSubmit} className="p-6">
+                        isSubmitted ? (// Immediately show requested card after submission (before API response)
+                          <div className="p-6">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-5">
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  Pending Approval
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  Admin Confirmation
+                                </span>
+                              </div>
+                  
+                              <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                                Interview Request Submitted
+                              </h4>
+                  
+                              <div className="space-y-3 text-sm text-gray-700">
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  <span>
+                                    Your selected date and time:{" "}
+                                    <span className="font-medium">
+                                      {selectedDateTime}
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  <span>
+                                    Admin will confirm your request soon
+                                  </span>
+                                </div>
+                              </div>
+                  
+                              <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
+                                <p className="text-sm text-yellow-800 text-center">
+                                  Thank you for submitting your request. We
+                                  will notify you once it is approved.
+                                </p>
+                              </div>
+                            </div>
+                          </div>):(<form onSubmit={handleSubmit} className="p-6">
                           <div className="flex items-center justify-between mb-6">
                             <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
                               <svg
@@ -1090,7 +1161,9 @@ function ExamManagement() {
                               Submit Request
                             </button>
                           </div>
-                        </form>
+                         
+                        </form>)
+                        
                       ) : (
                         // Interview Status Cards
                         interview.length > 0 &&
