@@ -56,6 +56,7 @@ const InterviewManagement = () => {
     const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
     const [rejectionReason, setRejectionReason] = useState("");
     const [interviewScore, setInterviewScore] = useState("");
+    const [meetingLink, setMeetingLink] = useState("");
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -157,9 +158,7 @@ const InterviewManagement = () => {
 
     // Function to determine the correct status based on API data
     const determineStatus = (interview) => {
-        // Return the status directly if it's already a string like "fulfilled", "requested"
         if (typeof interview.status === 'string') {
-            // Map API status to display status
             switch (interview.status) {
                 case 'fulfilled':
                     return "Completed";
@@ -183,7 +182,6 @@ const InterviewManagement = () => {
         }
     };
 
-    // Modify the fetchInterviews function to properly map the data
     const fetchInterviews = async () => {
         setLoading(true);
         try {
@@ -191,8 +189,8 @@ const InterviewManagement = () => {
             console.log("API response:", response);
 
             const data = response.map(item => {
-                // Determine the correct status from the API response
                 const status = determineStatus(item);
+                const mode = item.class_category?.id === 1 ? "Online" : "Offline";
 
                 return {
                     id: item.id,
@@ -201,13 +199,16 @@ const InterviewManagement = () => {
                     classCategoryId: item.class_category?.id || null,
                     subjectName: item.subject?.subject_name || "Unknown",
                     subjectId: item.subject?.id || null,
+                    mergedSubject: `${item.subject?.subject_name || "Unknown"} (${item.class_category?.name || "Unknown"})`,
                     examName: `${item.subject?.subject_name || ""} (${item.class_category?.name || ""})`,
                     score: item.grade !== null && item.grade !== undefined && item.grade > 0 ? item.grade : "Not graded",
-                    mode: item.class_category?.id === 1 ? "Online" : "Offline",
-                    requestedDate: dayjs(item.time).format("YYYY-MM-DD"),
-                    requestedTime: dayjs(item.time).format("HH:mm"),
+                    mode: mode,
+                    statusWithMode: `${status} (${mode})`,
+                    requestedDate: item.time ? dayjs(item.time).format("YYYY-MM-DD") : "—",
+                    requestedTime: item.time ? dayjs(item.time).format("HH:mm") : "—",
+                    desiredDateTime: item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : "—",
                     status: status,
-                    apiStatus: item.status, // Store original API status
+                    apiStatus: item.status,
                     scheduledDate: (item.status === "scheduled" || item.status === "fulfilled") ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : null,
                     rejectionReason: item.rejectionReason || null,
                     link: item.link,
@@ -240,9 +241,15 @@ const InterviewManagement = () => {
     };
 
     const handleScheduleInterview = async () => {
-        // Validate that selected date is in the future
         if (selectedDateTime.isBefore(dayjs())) {
             setSnackbarMessage("Please select a future date and time.");
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        if (selectedTeacher.mode === "Online" && !meetingLink.trim()) {
+            setSnackbarMessage("Meeting link is required for online interviews.");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
             return;
@@ -251,13 +258,13 @@ const InterviewManagement = () => {
         try {
             setActionLoading(true);
             const response = await updateInterview(selectedTeacher.id, {
-                status: "scheduled", // Use string status 
-                time: selectedDateTime && selectedDateTime.toISOString()
+                status: "scheduled",
+                time: selectedDateTime && selectedDateTime.toISOString(),
+                link: meetingLink.trim()
             });
 
             console.log("Schedule response:", response);
 
-            // Refresh data to get updated interview data
             await fetchInterviews();
 
             setScheduleModalOpen(false);
@@ -274,7 +281,6 @@ const InterviewManagement = () => {
         }
     };
 
-    // Update handleRejectInterview function
     const handleRejectInterview = async () => {
         if (!rejectionReason.trim()) {
             setSnackbarMessage("Please provide a reason for rejection.");
@@ -286,13 +292,12 @@ const InterviewManagement = () => {
         try {
             setActionLoading(true);
             const response = await updateInterview(selectedTeacher.id, {
-                status: "rejected", // Use string status
+                status: "rejected",
                 rejectionReason
             });
 
             console.log("Reject response:", response);
 
-            // Refresh data to get updated interview data
             await fetchInterviews();
 
             setRejectModalOpen(false);
@@ -320,7 +325,6 @@ const InterviewManagement = () => {
 
         try {
             setActionLoading(true);
-            // Send "fulfilled" as the status instead of boolean
             const response = await updateInterview(selectedTeacher.id, {
                 grade: Number(interviewScore),
                 status: "fulfilled"
@@ -328,7 +332,6 @@ const InterviewManagement = () => {
 
             console.log("Complete response:", response);
 
-            // Update the local data immediately
             setInterviewData(prev => prev.map(interview => {
                 if (interview.id === selectedTeacher.id) {
                     return {
@@ -346,7 +349,6 @@ const InterviewManagement = () => {
                 return interview;
             }));
 
-            // Also refresh from server to ensure sync
             await fetchInterviews();
 
             setCompleteModalOpen(false);
@@ -371,13 +373,13 @@ const InterviewManagement = () => {
 
     const handleOpenSchedule = (teacher) => {
         setSelectedTeacher(teacher);
-        // Set initial date time from teacher's requested time if available
         if (teacher.requestedDate && teacher.requestedTime) {
             const initialDateTime = dayjs(`${teacher.requestedDate} ${teacher.requestedTime}`);
             setSelectedDateTime(initialDateTime);
         } else {
             setSelectedDateTime(dayjs());
         }
+        setMeetingLink(teacher.link || "");
         setScheduleModalOpen(true);
     };
 
@@ -409,19 +411,16 @@ const InterviewManagement = () => {
     const applyFilters = () => {
         let filtered = [...interviewData];
 
-        // Apply status filter
         if (filters.status) {
             filtered = filtered.filter(teacher => teacher.status === filters.status);
         }
 
-        // Apply teacher name filter
         if (filters.teacherName) {
             filtered = filtered.filter(teacher =>
                 teacher.name.toLowerCase().includes(filters.teacherName.toLowerCase())
             );
         }
 
-        // Apply search term filter
         if (filters.searchTerm) {
             filtered = filtered.filter(teacher =>
                 Object.entries(teacher).some(([key, value]) =>
@@ -433,7 +432,6 @@ const InterviewManagement = () => {
             );
         }
 
-        // Apply date range filter
         if (filters.dateRange[0] && filters.dateRange[1]) {
             filtered = filtered.filter(teacher =>
                 dayjs(teacher.requestedDate).isAfter(filters.dateRange[0], 'day') ||
@@ -451,13 +449,10 @@ const InterviewManagement = () => {
         const headers = [
             "Teacher Name",
             "Email",
-            "Class Category",
-            "Subject",
-            "Mode",
+            "Subject (Class)",
+            "Status (Mode)",
             "Score",
-            "Requested Date",
-            "Requested Time",
-            "Status",
+            "Desired Date/Time", 
             "Scheduled Date"
         ];
 
@@ -466,13 +461,10 @@ const InterviewManagement = () => {
             + filteredTeachers.map(teacher => [
                 teacher.name,
                 teacher.email,
-                teacher.classCategory,
-                teacher.subjectName,
-                teacher.mode,
+                teacher.mergedSubject,
+                teacher.statusWithMode,
                 teacher.score,
-                teacher.requestedDate,
-                teacher.requestedTime,
-                teacher.status,
+                teacher.desiredDateTime,
                 teacher.scheduledDate || "Not scheduled"
             ].join(",")).join("\n");
 
@@ -485,12 +477,10 @@ const InterviewManagement = () => {
         document.body.removeChild(link);
     };
 
-    // Get statistics for dashboard summary
     const getStatusCount = (status) => {
         return interviewData.filter(teacher => teacher.status === status).length;
     };
 
-    // Pagination handlers
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -500,7 +490,6 @@ const InterviewManagement = () => {
         setPage(0);
     };
 
-    // Render card view for mobile
     const renderCardView = () => {
         return (
             <Stack spacing={2}>
@@ -530,7 +519,7 @@ const InterviewManagement = () => {
                                         </Box>
                                     </Box>
                                     <Chip
-                                        label={teacher.status}
+                                        label={teacher.statusWithMode}
                                         size="small"
                                         color={
                                             teacher.status === "Pending" ? "warning" :
@@ -543,24 +532,22 @@ const InterviewManagement = () => {
                                 </Box>
 
                                 <Grid container spacing={1} sx={{ mb: 2 }}>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2" color="text.secondary">Subject</Typography>
-                                        <Typography variant="body2" fontWeight={500}>{teacher.subjectName}</Typography>
+                                    <Grid item xs={12}>
+                                        <Typography variant="body2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body2" fontWeight={500}>{teacher.mergedSubject}</Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2" color="text.secondary">Class</Typography>
-                                        <Typography variant="body2" fontWeight={500}>{teacher.classCategory}</Typography>
+                                    <Grid item xs={12}>
+                                        <Typography variant="body2" color="text.secondary">Desired Date/Time</Typography>
+                                        <Typography variant="body2" fontWeight={500} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            {teacher.desiredDateTime !== "—" ? (
+                                                <>
+                                                    <FiCalendar size="14px" />
+                                                    {teacher.desiredDateTime}
+                                                </>
+                                            ) : "—"}
+                                        </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2" color="text.secondary">Mode</Typography>
-                                        <Chip
-                                            label={teacher.mode}
-                                            size="small"
-                                            variant="outlined"
-                                            color={teacher.mode === "Online" ? "primary" : "secondary"}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12}>
                                         <Typography variant="body2" color="text.secondary">Grade</Typography>
                                         <Typography
                                             variant="body2"
@@ -602,7 +589,7 @@ const InterviewManagement = () => {
                                                         size="small"
                                                         color="primary"
                                                     >
-                                                        <FiClock /> {/* Or use another library like MdSchedule from react-icons/md */}
+                                                        <FiClock />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Reject Request">
@@ -611,7 +598,7 @@ const InterviewManagement = () => {
                                                         size="small"
                                                         color="error"
                                                     >
-                                                        <FiX /> {/* Or use MdCancel from react-icons/md */}
+                                                        <FiX />
                                                     </IconButton>
                                                 </Tooltip>
                                             </>
@@ -648,7 +635,6 @@ const InterviewManagement = () => {
         );
     };
 
-    // Render table view for larger screens
     const renderTableView = () => {
         return (
             <TableContainer>
@@ -656,11 +642,10 @@ const InterviewManagement = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell>Teacher Name</TableCell>
-                            <TableCell>Subject</TableCell>
-                            <TableCell>Class Category</TableCell>
-                            <TableCell>Mode</TableCell>
+                            <TableCell>Subject (Class)</TableCell>
+                            <TableCell>Desired Date/Time</TableCell>
                             <TableCell>Grade</TableCell>
-                            <TableCell align="center">Status</TableCell>
+                            <TableCell align="center">Status (Mode)</TableCell>
                             <TableCell>Schedule</TableCell>
                             <TableCell align="center">Actions</TableCell>
                         </TableRow>
@@ -704,21 +689,18 @@ const InterviewManagement = () => {
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2">
-                                            {teacher.subjectName}
+                                            {teacher.mergedSubject}
                                         </Typography>
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2">
-                                            {teacher.classCategory}
+                                            {teacher.desiredDateTime !== "—" ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <FiCalendar size="14px" />
+                                                    {teacher.desiredDateTime}
+                                                </Box>
+                                            ) : "—"}
                                         </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={teacher.mode}
-                                            variant="outlined"
-                                            size="small"
-                                            color={teacher.mode === "Online" ? "primary" : "secondary"}
-                                        />
                                     </TableCell>
                                     <TableCell>
                                         <Typography
@@ -737,7 +719,7 @@ const InterviewManagement = () => {
                                     <TableCell align="center">
                                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                             <Chip
-                                                label={teacher.status}
+                                                label={teacher.statusWithMode}
                                                 size="small"
                                                 color={
                                                     teacher.status === "Pending" ? "warning" :
@@ -747,7 +729,7 @@ const InterviewManagement = () => {
                                                 }
                                                 sx={{
                                                     fontWeight: 500,
-                                                    minWidth: '90px'
+                                                    minWidth: '140px'
                                                 }}
                                             />
                                         </Box>
@@ -777,7 +759,7 @@ const InterviewManagement = () => {
                                                             size="small"
                                                             color="primary"
                                                         >
-                                                            <FiClock /> {/* Or use another library like MdSchedule from react-icons/md */}
+                                                            <FiClock />
                                                         </IconButton>
                                                     </Tooltip>
                                                     <Tooltip title="Reject Request">
@@ -786,7 +768,7 @@ const InterviewManagement = () => {
                                                             size="small"
                                                             color="error"
                                                         >
-                                                            <FiX /> {/* Or use MdCancel from react-icons/md */}
+                                                            <FiX />
                                                         </IconButton>
                                                     </Tooltip>
                                                 </>
@@ -862,7 +844,6 @@ const InterviewManagement = () => {
                     py: { xs: 2, sm: 4 },
                     px: { xs: 1, sm: 3 },
                 }}>
-                    {/* Header */}
                     <Box sx={{
                         mb: 3,
                         display: "flex",
@@ -924,7 +905,6 @@ const InterviewManagement = () => {
                         </Box>
                     </Box>
 
-                    {/* Filter Box */}
                     {(filtersOpen || !isTablet) && (
                         <Paper sx={{
                             p: { xs: 2, sm: 3 },
@@ -1040,7 +1020,6 @@ const InterviewManagement = () => {
                         </Paper>
                     )}
 
-                    {/* Data Table */}
                     <Paper sx={{
                         width: '100%',
                         borderRadius: 2,
@@ -1084,7 +1063,6 @@ const InterviewManagement = () => {
                         )}
                     </Paper>
 
-                    {/* View Details Modal */}
                     <Modal
                         open={openModal}
                         onClose={() => setOpenModal(false)}
@@ -1117,21 +1095,13 @@ const InterviewManagement = () => {
                                         <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Qualified Exam</Typography>
-                                        <Typography variant="body1">{selectedTeacher.exam}</Typography>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Interview Mode</Typography>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Status & Mode</Typography>
                                         <Chip
-                                            label={selectedTeacher.mode}
-                                            color={selectedTeacher.mode === "Online" ? "primary" : "secondary"}
-                                            size="small"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Status</Typography>
-                                        <Chip
-                                            label={selectedTeacher.status}
+                                            label={selectedTeacher.statusWithMode}
                                             color={
                                                 selectedTeacher.status === "Pending" ? "warning" :
                                                     selectedTeacher.status === "Scheduled" ? "info" :
@@ -1141,13 +1111,9 @@ const InterviewManagement = () => {
                                             size="small"
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Requested Date</Typography>
-                                        <Typography variant="body1">{selectedTeacher.requestedDate}</Typography>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Requested Time</Typography>
-                                        <Typography variant="body1">{selectedTeacher.requestedTime}</Typography>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Desired Date & Time</Typography>
+                                        <Typography variant="body1">{selectedTeacher.desiredDateTime}</Typography>
                                     </Grid>
 
                                     {selectedTeacher.scheduledDate && (
@@ -1202,7 +1168,6 @@ const InterviewManagement = () => {
                         </Paper>
                     </Modal>
 
-                    {/* Schedule Modal */}
                     <Modal 
                         open={scheduleModalOpen} 
                         onClose={() => setScheduleModalOpen(false)}
@@ -1219,7 +1184,6 @@ const InterviewManagement = () => {
                             borderRadius: 2,
                             boxShadow: 24,
                         }}>
-                            {/* Modal Header */}
                             <Box sx={{ 
                                 p: 2, 
                                 bgcolor: 'primary.main', 
@@ -1241,7 +1205,6 @@ const InterviewManagement = () => {
                                 </IconButton>
                             </Box>
 
-                            {/* Modal Content */}
                             <Box sx={{ p: 3 }}>
                                 {selectedTeacher && (
                                     <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1280,6 +1243,8 @@ const InterviewManagement = () => {
                                 <Alert severity="info" sx={{ mb: 3 }}>
                                     <Typography variant="body2">
                                         The teacher will be notified via email after scheduling the interview.
+                                        {selectedTeacher && selectedTeacher.mode === "Online" && 
+                                         " Meeting link is required for online interviews."}
                                     </Typography>
                                 </Alert>
 
@@ -1321,24 +1286,28 @@ const InterviewManagement = () => {
                                     />
                                 </LocalizationProvider>
                                 
-                                {selectedTeacher && selectedTeacher.mode === "Online" && (
-                                    <TextField
-                                        label="Meeting Link (Optional)"
-                                        placeholder="Enter Google Meet or Zoom link"
-                                        fullWidth
-                                        sx={{ mb: 3 }}
-                                        InputProps={{
-                                            startAdornment: (
-                                                <Box sx={{ mr: 1, color: 'primary.main' }}>
-                                                    <FiLink />
-                                                </Box>
-                                            ),
-                                        }}
-                                    />
-                                )}
+                                <TextField
+                                    label="Meeting Link"
+                                    placeholder="Enter Google Meet or Zoom link"
+                                    fullWidth
+                                    sx={{ mb: 3 }}
+                                    value={meetingLink}
+                                    onChange={(e) => setMeetingLink(e.target.value)}
+                                    required={selectedTeacher && selectedTeacher.mode === "Online"}
+                                    error={selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim()}
+                                    helperText={selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim() 
+                                        ? "Meeting link is required for online interviews"
+                                        : ""}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <Box sx={{ mr: 1, color: 'primary.main' }}>
+                                                <FiLink />
+                                            </Box>
+                                        ),
+                                    }}
+                                />
                             </Box>
 
-                            {/* Modal Footer */}
                             <Box sx={{ 
                                 p: 2, 
                                 bgcolor: alpha(theme.palette.background.default, 0.7),
@@ -1353,7 +1322,7 @@ const InterviewManagement = () => {
                                 <Button
                                     variant="contained"
                                     onClick={handleScheduleInterview}
-                                    disabled={actionLoading}
+                                    disabled={actionLoading || (selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim())}
                                     startIcon={actionLoading ? <CircularProgress size={20} /> : <FiCalendar />}
                                 >
                                     {actionLoading ? "Scheduling..." : "Schedule Interview"}
@@ -1362,7 +1331,6 @@ const InterviewManagement = () => {
                         </Paper>
                     </Modal>
 
-                    {/* Rejection Modal */}
                     <Modal open={rejectModalOpen} onClose={() => setRejectModalOpen(false)}>
                         <Paper sx={{
                             position: 'absolute',
@@ -1420,7 +1388,6 @@ const InterviewManagement = () => {
                         </Paper>
                     </Modal>
 
-                    {/* Complete Interview Modal */}
                     <Modal open={completeModalOpen} onClose={() => setCompleteModalOpen(false)}>
                         <Paper sx={{
                             position: 'absolute',
@@ -1482,7 +1449,6 @@ const InterviewManagement = () => {
                         </Paper>
                     </Modal>
 
-                    {/* Snackbar for success/error messages */}
                     <Snackbar
                         open={snackbarOpen}
                         autoHideDuration={6000}
