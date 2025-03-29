@@ -22,6 +22,8 @@ const Navbar = ({ links }) => {
   const profile = useSelector((state) => state.auth.userData || {});
 
   console.log("Profile menu: ", profile);
+  const role = profile.role; 
+  console.log("Role: ", role);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);
 
@@ -53,7 +55,7 @@ const Navbar = ({ links }) => {
       } bg-white z-50`}
     >
       <Link
-        to="/teacher"
+        to={role === "teacher" ? "/teacher" : "/recruiter"}
         className="flex items-center px-2 py-3 hover:bg-gray-50"
         onClick={() => setIsProfileOpen(false)}
       >
