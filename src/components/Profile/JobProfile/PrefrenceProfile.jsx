@@ -11,7 +11,6 @@ import {
 } from "../../../features/jobProfileSlice";
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
 import { HiExclamationCircle, HiPencil } from "react-icons/hi";
-import { IoMdAddCircleOutline } from "react-icons/io";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,34 +19,20 @@ const PrefrenceProfile = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch Data on Component Mount
   useEffect(() => {
     dispatch(getClassCategory());
     dispatch(getJob());
-    // dispatch(getSubject());
     dispatch(getTeacherjobType());
     dispatch(getPrefrence());
   }, [dispatch]);
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  // const subject = useSelector((state) => state?.jobProfile?.subject);
-  const teacherjobRole = useSelector(
-    (state) => state.jobProfile.teacherjobRole
-  );
+  const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const { error } = useSelector((state) => state.jobProfile);
-  console.log("teacher preference value", teacherprefrence);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(false);
-
-  const [errorState, setError] = useState("");
-
-  console.log("category", category);
-
-  category.map((cat) => {
-    console.log("subject of each category", cat.name);
-  });
 
   const {
     register,
@@ -55,18 +40,46 @@ const PrefrenceProfile = () => {
     setValue,
     watch,
     getValues,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
       class_category: [],
-      job_role: [],
+      job_role: ["4"], // Teacher ID as string
       prefered_subject: [],
       teacher_job_type: [],
     },
-    mode: "onChange"
+    mode: "onChange",
   });
 
-  // Show form validation errors as toasts
+  // Ensure Teacher is always included when form values change
+  const jobRoles = watch("job_role");
+  useEffect(() => {
+    const teacherId = "4";
+    if (!jobRoles.includes(teacherId)) {
+      setValue("job_role", [...jobRoles, teacherId]);
+    }
+  }, [jobRoles, setValue]);
+
+  // Update form with fetched preferences
+  useEffect(() => {
+    if (teacherprefrence) {
+      const previousJobRoles = (teacherprefrence.job_role || []).map(item => String(item.id));
+      // Ensure Teacher (ID: 4) is always included
+      const updatedJobRoles = previousJobRoles.includes("4") 
+        ? previousJobRoles 
+        : [...previousJobRoles, "4"];
+
+      reset({
+        class_category: (teacherprefrence.class_category || []).map(item => String(item.id)),
+        job_role: updatedJobRoles,
+        prefered_subject: (teacherprefrence.prefered_subject || []).map(item => String(item.id)),
+        teacher_job_type: (teacherprefrence.teacher_job_type || []).map(item => String(item.id)),
+      });
+    }
+  }, [teacherprefrence, reset]);
+
+  // Show validation errors
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       Object.values(errors).forEach((error) => {
@@ -77,54 +90,20 @@ const PrefrenceProfile = () => {
     }
   }, [errors]);
 
+  // Handle subjects based on selected categories
   const selectedClassCategories = watch("class_category") || [];
   const filteredSubjects = selectedClassCategories.flatMap((catId) => {
     const categoryObj = category?.find((cat) => cat?.id === Number(catId));
     return categoryObj ? categoryObj.subjects : [];
   });
 
-  console.log("selectedClassCategories",selectedClassCategories)
-
   useEffect(() => {
     const currentSubjects = getValues("prefered_subject");
-    const safeSubjects = Array.isArray(currentSubjects) ? currentSubjects : [];
-
-    const validSubjects = safeSubjects.filter((subId) =>
+    const validSubjects = currentSubjects.filter((subId) =>
       filteredSubjects.some((sub) => sub?.id === Number(subId))
     );
-
     setValue("prefered_subject", validSubjects);
   }, [filteredSubjects, getValues, setValue]);
-
-  useEffect(() => {
-    if (teacherprefrence) {
-      const initialValues = {
-        class_category: [],
-        job_role: [],
-        prefered_subject: [],
-        teacher_job_type: [],
-        ...teacherprefrence,
-      };
-
-      Object.entries(initialValues).forEach(([key, value]) => {
-        if (
-          [
-            "job_role",
-            "prefered_subject",
-            "teacher_job_type",
-            "class_category",
-          ].includes(key)
-        ) {
-          setValue(
-            key,
-            (value || []).map((item) => item?.id || item)
-          );
-        } else {
-          setValue(key, value?.id || value);
-        }
-      });
-    }
-  }, [teacherprefrence, setValue]);
 
   useEffect(() => {
     if (error) {
@@ -139,13 +118,24 @@ const PrefrenceProfile = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await updateTeacherPrefrence(data);
-      dispatch(postPrefrence(data));
+      const teacherId = "4";
+      const submitData = {
+        ...data,
+        job_role: data.job_role.includes(teacherId) 
+          ? data.job_role 
+          : [...data.job_role, teacherId], // Ensure Teacher is always included
+      };
+
+      await updateTeacherPrefrence(submitData);
+      dispatch(postPrefrence(submitData));
       fetchPreferences();
       setIsEditingPrefrence(false);
       toast.success("Job preferences updated successfully!");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "Failed to update preferences";
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to update preferences";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -174,16 +164,14 @@ const PrefrenceProfile = () => {
           </button>
         ) : (
           <button
-            onClick={() => {
-              setIsEditingPrefrence(false);
-            }}
+            onClick={() => setIsEditingPrefrence(false)}
             className="text-md px-4 py-2 border border-gray-300 rounded-lg"
           >
             close
           </button>
         )}
       </div>
-      {/* {error && <p className="text-red-500 mb-4">{error}</p>} */}
+
       <div className="mb-4 md:px-2">
         {!isEditingPrefrence ? (
           <div className="">
@@ -205,22 +193,30 @@ const PrefrenceProfile = () => {
                       ? teacherprefrence.job_role.map(
                           (jobrole) => jobrole.jobrole_name
                         )
-                      : ["Not Provided"],
+                      : ["Teacher"],
                 },
                 {
                   title: "Subject",
-                  value: teacherprefrence?.prefered_subject?.length > 0
-                    ? (teacherprefrence.class_category || []).map(category => ({
-                        categoryName: category.name,
-                        subjects: teacherprefrence.prefered_subject
-                          .filter(subject => 
-                            category.subjects?.some(catSubject => 
-                              catSubject.id === subject.id
-                            )
-                          )
-                          .map(subject => subject.subject_name)
-                      }))
-                    : [{ categoryName: "No Category", subjects: ["Not Provided"] }],
+                  value:
+                    teacherprefrence?.prefered_subject?.length > 0
+                      ? (teacherprefrence.class_category || []).map(
+                          (category) => ({
+                            categoryName: category.name,
+                            subjects: teacherprefrence.prefered_subject
+                              .filter((subject) =>
+                                category.subjects?.some(
+                                  (catSubject) => catSubject.id === subject.id
+                                )
+                              )
+                              .map((subject) => subject.subject_name),
+                          })
+                        )
+                      : [
+                          {
+                            categoryName: "No Category",
+                            subjects: ["Not Provided"],
+                          },
+                        ],
                 },
                 {
                   title: "Teacher Job Type",
@@ -247,14 +243,16 @@ const PrefrenceProfile = () => {
                             {category.categoryName}
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            {category.subjects.map((subjectName, subjectIndex) => (
-                              <span
-                                key={subjectIndex}
-                                className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
-                              >
-                                {subjectName}
-                              </span>
-                            ))}
+                            {category.subjects.map(
+                              (subjectName, subjectIndex) => (
+                                <span
+                                  key={subjectIndex}
+                                  className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                                >
+                                  {subjectName}
+                                </span>
+                              )
+                            )}
                           </div>
                         </div>
                       ))
@@ -281,7 +279,6 @@ const PrefrenceProfile = () => {
               onSubmit={handleSubmit(onSubmit)}
               className="space-y-8 bg-white p-8 rounded-lg border border-gray-300"
             >
-              {/* Form Header */}
               <div className="pb-4 border-b border-gray-200">
                 <p className="mt-2 text-sm text-gray-600">
                   Please update your teaching preferences below. This
@@ -303,7 +300,7 @@ const PrefrenceProfile = () => {
                       Select the educational levels you're comfortable teaching
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 gap-3  h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                  <div className="grid grid-cols-1 gap-3 h-44 max-h-44 overflow-y-auto p-4 border border-gray-200 rounded-lg">
                     {category?.map((cat) => (
                       <label
                         key={cat.id}
@@ -311,12 +308,11 @@ const PrefrenceProfile = () => {
                       >
                         <input
                           type="checkbox"
-                          {...register("class_category", { required: true })}
+                          {...register("class_category", {
+                            required: "Please select at least one category",
+                          })}
                           value={cat.id}
                           className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
-                          defaultChecked={teacherprefrence?.class_category?.some(
-                            (item) => item.id === cat.id
-                          )}
                         />
                         <span className="text-sm text-gray-700">
                           {cat.name}
@@ -327,7 +323,7 @@ const PrefrenceProfile = () => {
                   {errors.class_category && (
                     <div className="text-red-500 text-sm flex items-center mt-2">
                       <HiExclamationCircle className="mr-1.5 h-4 w-4" />
-                      Please select at least one category
+                      {errors.class_category.message}
                     </div>
                   )}
                 </div>
@@ -340,8 +336,8 @@ const PrefrenceProfile = () => {
                       <span className="text-red-500 ml-1">*</span>
                     </label>
                     <p className="text-xs text-gray-500 mt-1">
-                      Choose positions you're interested in (sorted
-                      alphabetically)
+                      "Teacher" is required. Add additional roles if desired
+                      (sorted alphabetically)
                     </p>
                   </div>
                   <div className="grid grid-cols-1 gap-3 h-44 max-h-44 p-4 overflow-y-auto border border-gray-200 rounded-lg">
@@ -353,29 +349,28 @@ const PrefrenceProfile = () => {
                       ?.map((role) => (
                         <label
                           key={role.id}
-                          className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                          className={`flex items-center space-x-3 p-2 bg-gray-50 rounded-md ${
+                            role.id === 4 ? "" : "hover:bg-gray-100"
+                          } transition-colors cursor-pointer`}
                         >
                           <input
                             type="checkbox"
-                            {...register("job_role", { required: true })}
+                            {...register("job_role")}
                             value={role.id}
                             className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
-                            defaultChecked={teacherprefrence?.job_role?.some(
-                              (item) => item.id === role.id
-                            )}
+                            disabled={role.id === 4} // Teacher can't be unchecked
                           />
                           <span className="text-sm text-gray-700">
                             {role.jobrole_name}
+                            {role.id === 4 && (
+                              <span className="ml-2 text-xs text-gray-500">
+                                (Required)
+                              </span>
+                            )}
                           </span>
                         </label>
                       ))}
                   </div>
-                  {errors.job_role && (
-                    <div className="text-red-500 text-sm flex items-center mt-2">
-                      <HiExclamationCircle className="mr-1.5 h-4 w-4" />
-                      Please select at least one role
-                    </div>
-                  )}
                 </div>
 
                 {/* Preferred Subjects Section */}
@@ -416,13 +411,10 @@ const PrefrenceProfile = () => {
                                 <input
                                   type="checkbox"
                                   {...register("prefered_subject", {
-                                    required: true,
+                                    required: "Please select at least one subject",
                                   })}
                                   value={sub.id}
                                   className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
-                                  defaultChecked={teacherprefrence?.prefered_subject?.some(
-                                    (item) => item.id === sub.id
-                                  )}
                                 />
                                 <span className="text-sm text-gray-700">
                                   {sub.subject_name}
@@ -437,7 +429,7 @@ const PrefrenceProfile = () => {
                   {errors.prefered_subject && (
                     <div className="text-red-500 text-sm flex items-center mt-2">
                       <HiExclamationCircle className="mr-1.5 h-4 w-4" />
-                      Please select at least one subject
+                      {errors.prefered_subject.message}
                     </div>
                   )}
                 </div>
@@ -461,12 +453,11 @@ const PrefrenceProfile = () => {
                       >
                         <input
                           type="checkbox"
-                          {...register("teacher_job_type", { required: true })}
+                          {...register("teacher_job_type", {
+                            required: "Please select at least one job type",
+                          })}
                           value={role.id}
                           className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
-                          defaultChecked={teacherprefrence?.teacher_job_type?.some(
-                            (item) => item.id === role.id
-                          )}
                         />
                         <span className="text-sm text-gray-700">
                           {role.teacher_job_name}
@@ -477,13 +468,12 @@ const PrefrenceProfile = () => {
                   {errors.teacher_job_type && (
                     <div className="text-red-500 text-sm flex items-center mt-2">
                       <HiExclamationCircle className="mr-1.5 h-4 w-4" />
-                      Please select at least one job type
+                      {errors.teacher_job_type.message}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Enhanced Action Buttons Section */}
               <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-4 mt-8 pt-6 border-t border-gray-100">
                 <div className="sm:mr-auto">
                   <p className="text-xs text-gray-500">
@@ -497,13 +487,13 @@ const PrefrenceProfile = () => {
                     setIsEditingPrefrence(false);
                     fetchPreferences();
                   }}
-                  className="px-6 py-2.5 text-sm font-medium text-[#3E98C7]  transition-colors rounded-lg hover:bg-gray-50"
+                  className="px-6 py-2.5 text-sm font-medium text-[#3E98C7] transition-colors rounded-lg hover:bg-gray-50"
                 >
                   Discard Changes
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 text-sm font-medium text-white bg-[#3E98C7]  rounded-lg shadow-sm transform transition-transform duration-200"
+                  className="px-6 py-2.5 text-sm font-medium text-white bg-[#3E98C7] rounded-lg shadow-sm transform transition-transform duration-200"
                 >
                   Save Preferences
                 </button>
