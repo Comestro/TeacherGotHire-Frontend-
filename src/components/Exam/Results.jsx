@@ -17,7 +17,7 @@ const ResultPage = () => {
   const fireConfetti = () => {
     const count = 200;
     const defaults = {
-      origin: { y: 1 }, // Changed from 0.7 to 1 (bottom of screen)
+      origin: { y: 1 }, 
       ticks: 300,
       startVelocity: 30,
       gravity: 0.8,

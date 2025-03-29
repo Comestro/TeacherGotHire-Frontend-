@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { getAllQues, setLanguage,resetVerifyResponse } from "../../features/examQuesSlice";
@@ -12,15 +12,20 @@ const MCQGuidelinePage = () => {
   const [isChecked, setIsChecked] = useState(false);
   console.log("exam",exam)
 
-  console.log("verfied",verifyresponse)
+  const subjectName = exam?.subject?.subject_name;
   
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
 
+  useEffect(() => {
+    if (subjectName === "English") {
+      setSelectedLanguage("English");
+    } else if (subjectName === "Hindi") {
+      setSelectedLanguage("Hindi");
+    }
+  }, [subjectName]);
 
- 
-  console.log("exam",examID)
 
   // Handle language change
   const handleLanguageChange = (event) => {
@@ -41,48 +46,7 @@ const MCQGuidelinePage = () => {
       dispatch(getAllQues({ exam_id: examID, language: selectedLanguage })); // Dispatch getAllQues action
     }
   };
-  // const handleProceedClick = async () => {
-  //   try {
-  //     // Show loading state
-      
   
-  //     // Validate inputs
-  //     if (!selectedLanguage) {
-  //       throw new Error('Please select a language');
-  //     }
-  
-  //     // Determine which exam ID to use
-  //     const targetExamId = Object.entries(verifyresponse).length > 0 ? verfyExamId : examID;
-      
-  //     if (!targetExamId) {
-  //       throw new Error('Exam information is missing');
-  //     }
-  
-  //     // Dispatch actions
-  //     await dispatch(setLanguage(selectedLanguage));
-  //     const result = await dispatch(
-  //       getAllQues({ exam_id: targetExamId, language: selectedLanguage })
-  //     ).unwrap();
-  
-  //     console.log('Proceeding with:', {
-  //       language: selectedLanguage,
-  //       examId: targetExamId,
-  //       result
-  //     });
-  
-  //     // Reset verify response if it was used
-  //     if (Object.entries(verifyresponse).length > 0) {
-  //       await dispatch(resetVerifyResponse());
-  //     }
-  
-  //   } catch (error) {
-  //     console.error('Proceed error:', error);
-  //     // Show error to user (you can use toast/alert)
-  //     alert(error.message || 'Failed to load questions. Please try again.');
-      
-  //   } 
-  // };
-
   return (
     <div className="min-h-screen text-gray-800">
       {/* Header */}
@@ -127,8 +91,8 @@ const MCQGuidelinePage = () => {
               <option value="" disabled>
                 Select Language / भाषा चुनें
               </option>
-              <option value="Hindi">हिन्दी</option>
-              <option value="English">English</option>
+              <option value="Hindi"  disabled={subjectName === "English"}>हिन्दी</option>
+              <option value="English" disabled={subjectName === "Hindi"}>English</option>
             </select>
           </div>
 
