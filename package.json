@@ -21,6 +21,7 @@
     "@reduxjs/toolkit": "^2.3.0",
     "axios": "^1.7.9",
     "babel-runtime": "^6.26.0",
+    "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
     "dayjs": "^1.11.13",
     "framer-motion": "^12.6.2",

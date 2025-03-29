@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Confetti from "react-confetti";
+import confetti from 'canvas-confetti';
 
 const ResultPage = () => {
   const location = useLocation();
@@ -13,6 +13,71 @@ const ResultPage = () => {
   const totalQuestion = correct_answer + incorrect_answer + is_unanswered;
   const percentage = ((correct_answer / totalQuestion) * 100).toFixed(1);
   const isQualified = percentage >= 60;
+
+  const fireConfetti = () => {
+    const count = 200;
+    const defaults = {
+      origin: { y: 1 }, // Changed from 0.7 to 1 (bottom of screen)
+      ticks: 300,
+      startVelocity: 30,
+      gravity: 0.8,
+      shapes: ['square', 'circle'],
+      colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+    };
+
+    function fire(particleRatio, opts) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio),
+        scalar: 1.2
+      });
+    }
+
+    // Left side burst
+    fire(0.25, {
+      spread: 40,
+      startVelocity: 45,
+      decay: 0.94,
+      origin: { x: 0.1, y: 1 }  // Bottom left
+    });
+
+    // Right side burst
+    fire(0.25, {
+      spread: 40,
+      startVelocity: 45,
+      decay: 0.94,
+      origin: { x: 0.9, y: 1 }  // Bottom right
+    });
+
+    // Middle bursts with delay
+    setTimeout(() => {
+      fire(0.2, {
+        spread: 60,
+        decay: 0.92,
+        scalar: 1,
+        origin: { x: 0.3, y: 1 }  // Bottom left-center
+      });
+      fire(0.2, {
+        spread: 60,
+        decay: 0.92,
+        scalar: 1,
+        origin: { x: 0.7, y: 1 }  // Bottom right-center
+      });
+    }, 200);
+  };
+
+  useEffect(() => {
+    if (isQualified) {
+      fireConfetti();
+      
+      const timer = setTimeout(() => {
+        fireConfetti();
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isQualified]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -28,14 +93,6 @@ const ResultPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
-      {isQualified && (
-        <Confetti
-          width={windowSize.width}
-          height={windowSize.height}
-          recycle={false}
-          numberOfPieces={600}
-        />
-      )}
       <div className="w-full max-w-md  p-8 transform transition-all duration-500">
         <div
           className={`relative flex items-center mb-6 justify-center w-56 h-56 mx-auto 

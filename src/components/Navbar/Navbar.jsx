@@ -22,7 +22,7 @@ const Navbar = ({ links }) => {
   const profile = useSelector((state) => state.auth.userData || {});
 
   console.log("Profile menu: ", profile);
-  const role = profile.role; 
+  const role = profile.role;
   console.log("Role: ", role);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);
@@ -61,13 +61,16 @@ const Navbar = ({ links }) => {
       >
         <FiUser className="mr-2" /> Dashboard
       </Link>
-      <Link
-        to="/teacher/setting"
-        className="flex items-center px-2 py-3 hover:bg-gray-50"
-        onClick={() => setIsProfileOpen(false)}
-      >
-        <FiSettings className="mr-2" /> Settings
-      </Link>
+      {role === "teacher" && (
+        <Link
+          to="/teacher/setting"
+          
+          className="flex items-center px-2 py-3 hover:bg-gray-50"
+          onClick={() => setIsProfileOpen(false)}
+        >
+          <FiSettings className="mr-2" /> Settings
+        </Link>
+      )}
       <button
         onClick={handleLogout}
         className="w-full flex items-center px-2 py-3 hover:bg-gray-50 rounded-b-lg"
