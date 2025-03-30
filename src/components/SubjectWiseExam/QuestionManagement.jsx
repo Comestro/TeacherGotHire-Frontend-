@@ -149,12 +149,12 @@ const QuestionManagement = () => {
     e.preventDefault();
     console.log("Form Data being sent:", currentQuestion);
 
-    setIsSubmitting(true); // Start loading
+    setIsSubmitting(true);
 
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
-      solution: currentQuestion.solution,
+      solution: currentQuestion.solution || "",
       correctoption: currentQuestion.correctAnswer,
       exam: selectedExamSet.id,
       language: currentQuestion.language,
@@ -174,7 +174,7 @@ const QuestionManagement = () => {
         ).unwrap();
         toast.success("Question is added successfully!");
       }
-      // Reset form after successful submission
+
       setCurrentQuestion({
         text: "",
         options: ["", "", "", ""],
@@ -188,7 +188,7 @@ const QuestionManagement = () => {
       console.error("API Error:", error);
       toast.error("Failed to submit question");
     } finally {
-      setIsSubmitting(false); // Stop loading
+      setIsSubmitting(false);
     }
   };
 
@@ -327,9 +327,7 @@ const QuestionManagement = () => {
                         <td className="px-6 py-4">
                           {examSet.class_category.name}
                         </td>
-                        <td className="px-6 py-4">
-                          {examSet.level.name}
-                        </td>
+                        <td className="px-6 py-4">{examSet.level.name}</td>
                         <td className="px-6 py-4 capitalize">{examSet.type}</td>
                         <td className="py-4 space-x-4 text-center">
                           <button
@@ -573,22 +571,23 @@ const QuestionManagement = () => {
 
           {/* Question Management Section */}
           {selectedExamSet && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center mb-8">
-                <div>
+            <div className="space-y-6 mt-5">
+              <div className="flex justify-between items-center">
+                <div className="pl-4">
                   <p className="text-xl font-mono text-gray-800">
-                    {selectedExamSet.subject_name}
+                    {selectedExamSet.subject.subject_name}
                   </p>
                   <div className="text-gray-500 mt-2">
-                    {selectedExamSet.class_category_name} |{" "}
+                    {selectedExamSet.class_category.name} |{" "}
+                    {selectedExamSet.level.name} | {selectedExamSet.type}
                   </div>
                 </div>
-                <button
+                {/* <button
                   onClick={() => setSelectedExamSet(null)}
                   className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
                 >
                   Back to Exam Sets
-                </button>
+                </button> */}
               </div>
 
               {/* Question Form */}
@@ -597,9 +596,26 @@ const QuestionManagement = () => {
                 className="bg-white p-8 rounded-xl shadow-lg border border-gray-100"
               >
                 <div className="border-b border-gray-100 pb-6 mb-8">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Add New Question
-                  </h2>
+                  <div className="flex justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      Add New Question
+                    </h2>
+                    <button
+                      onClick={() => setSelectedExamSet(null)}
+                      className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <p className="text-gray-600 mt-1 text-sm">
+                    Exam Set: {selectedExamSet.subject.subject_name}
+                    <span className="mx-2">•</span>
+                    Class: {selectedExamSet.class_category.name}
+                    <span className="mx-2">•</span>
+                    Level: {selectedExamSet.level.name}
+                    <span className="mx-2">•</span>
+                    Type: {selectedExamSet.type}
+                  </p>
                   <p className="text-gray-500 mt-1 text-sm">
                     Fill in the question details below
                   </p>
@@ -662,6 +678,7 @@ const QuestionManagement = () => {
                         Correct Answer <span className="text-red-500">*</span>
                       </label>
                       <select
+                        value={currentQuestion.correctAnswer}
                         onChange={(e) =>
                           setCurrentQuestion({
                             ...currentQuestion,
@@ -721,7 +738,8 @@ const QuestionManagement = () => {
                         }
                         className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 min-h-[80px] transition-all duration-200"
                         placeholder="Enter solution explanation..."
-                      />
+                      />{" "}
+                      {/* Removed required attribute */}
                     </div>
 
                     <div>
@@ -766,7 +784,7 @@ const QuestionManagement = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={isSubmitting} // Disable button while submitting
+                      disabled={isSubmitting}
                       className={`px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-sm hover:from-teal-600 hover:to-teal-700 transition-all duration-200 flex items-center gap-2 ${
                         isSubmitting ? "opacity-75 cursor-not-allowed" : ""
                       }`}
