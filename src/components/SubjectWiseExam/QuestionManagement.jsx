@@ -69,6 +69,8 @@ const QuestionManagement = () => {
     setSelectedSubject(null); // Reset subject when category changes
   };
 
+  console.log("exam set value", setterExamSet);
+
   const handleSubjectChange = (e) => {
     const subjectId = parseInt(e.target.value);
     const subject = subjects.find((sub) => sub.id === subjectId);
@@ -299,6 +301,9 @@ const QuestionManagement = () => {
                       Class Category
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
+                      Level
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
                       Type
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
@@ -321,6 +326,9 @@ const QuestionManagement = () => {
                         </td>
                         <td className="px-6 py-4">
                           {examSet.class_category.name}
+                        </td>
+                        <td className="px-6 py-4">
+                          {examSet.level.name}
                         </td>
                         <td className="px-6 py-4 capitalize">{examSet.type}</td>
                         <td className="py-4 space-x-4 text-center">
