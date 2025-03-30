@@ -37,12 +37,6 @@ const QuestionManagement = () => {
     (state) => state.examQues
   );
   const [showModal, setShowModal] = useState(false);
-  // console.log("setterUser", setterUser);
-  // console.log("selectedExamSet", selectedExamSet);
-  // console.log("levels", levels);
-  // console.log("currentQuestion", currentQuestion);
-  // console.log("setterExamSet", setterExamSet);
-  // console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -274,9 +268,6 @@ const QuestionManagement = () => {
               )}
             </div>
 
-            {/* Error Message */}
-            {/* {error && <div className="text-red-500 text-center">{error}</div>} */}
-
             {/* Exam Sets List */}
             {setterExamSet && setterExamSet.length === 0 && !isEditing ? (
               <p className="text-gray-600 text-center">
@@ -291,13 +282,16 @@ const QuestionManagement = () => {
                         Exam Name
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                        Subject
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                        Class
+                        Class Category
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
                         Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
+                        Question
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
+                        View 
                       </th>
                       <th className="px-6 py-3 text-center text-sm font-medium text-gray-500">
                         Actions
@@ -362,91 +356,31 @@ const QuestionManagement = () => {
             {isEditing && (
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="bg-white p-6 rounded-lg shadow-md mt-6"
+                className="bg-white p-8 rounded-lg shadow-sm mt-6 border"
               >
-                <h2 className="text-xl font-semibold mb-4">
-                  {editingIndex !== null ? "Edit" : "Create"} Exam Set
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Description
-                    </label>
-                    <input
-                      type="text"
-                      {...register("description", {
-                        required: "Description is required",
-                      })}
-                      className="w-full p-2 border rounded-md"
-                    />
-                    {errors.description && (
-                      <span className="text-red-500 text-sm">
-                        {errors.description.message}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Level
-                    </label>
-                    <select
-                      {...register("level", {
-                        required: "Level is required",
-                      })}
-                      className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg bg-white 
-                       focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none 
-                       transition-all cursor-pointer text-gray-700"
-                    >
-                      <option value="" className="text-gray-400">
-                        Select a Level
-                      </option>
-                      {levels.map((lev, index) => (
-                        <option key={index} value={lev.id}>
-                          {lev.name}
-                        </option>
-                      ))}
-                    </select>
+                <div className="border-b border-gray-200 pb-6 mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingIndex !== null ? "Edit" : "Create"} Exam Set
+                  </h2>
+                  <p className="text-gray-500 mt-1 text-sm">
+                    Fill in the details below to {editingIndex !== null ? "update" : "create"} your exam set
+                  </p>
+                </div>
 
-                    {errors.level && (
-                      <span className="text-red-500 text-sm">
-                        {errors.level.message}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Type
-                    </label>
-                    <select
-                      {...register("type", { required: "Type is required" })}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="online">Online</option>
-                      <option value="offline">Offline</option>
-                    </select>
-                    {errors.type && (
-                      <span className="text-red-500 text-sm">
-                        {errors.type.message}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <label
-                      htmlFor="category"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Class Category
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Class Category - First Field */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="category" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Class Category <span className="text-red-500">*</span>
                     </label>
                     <select
                       {...register("class_category", {
-                        required: "class_category is required",
+                        required: "Class category is required",
                       })}
                       id="category"
                       onChange={handleCategoryChange}
                       value={selectedCategory?.id || ""}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
                     >
                       <option value="">Select a category</option>
                       {categories.map((category) => (
@@ -455,25 +389,23 @@ const QuestionManagement = () => {
                         </option>
                       ))}
                     </select>
+                    {errors.class_category && (
+                      <p className="mt-1 text-sm text-red-500">{errors.class_category.message}</p>
+                    )}
                   </div>
 
-                  {/* Subject Select (only shows when category is selected) */}
+                  {/* Subject Select */}
                   {selectedCategory && (
-                    <div className="mb-4">
-                      <label
-                        htmlFor="subject"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Subject
+                    <div className="md:col-span-2">
+                      <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Subject <span className="text-red-500">*</span>
                       </label>
                       <select
-                        {...register("subject", {
-                          required: "subject is required",
-                        })}
+                        {...register("subject", { required: "Subject is required" })}
                         id="subject"
                         onChange={handleSubjectChange}
                         value={selectedSubject?.id || ""}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
                       >
                         <option value="">Select a subject</option>
                         {subjects.map((subject) => (
@@ -482,57 +414,108 @@ const QuestionManagement = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.subject && (
+                        <p className="mt-1 text-sm text-red-500">{errors.subject.message}</p>
+                      )}
                     </div>
                   )}
 
+                  {/* Level */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Total Marks
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Level <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      {...register("total_marks", {
-                        required: "Total Marks is required",
-                      })}
-                      className="w-full p-2 border rounded-md"
-                    />
-                    {errors.total_marks && (
-                      <span className="text-red-500 text-sm">
-                        {errors.total_marks.message}
-                      </span>
+                    <select
+                      {...register("level", { required: "Level is required" })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
+                    >
+                      <option value="">Select a Level</option>
+                      {levels.map((lev) => (
+                        <option key={lev.id} value={lev.id}>
+                          {lev.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.level && (
+                      <p className="mt-1 text-sm text-red-500">{errors.level.message}</p>
                     )}
                   </div>
 
+                  {/* Type */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Duration (minutes)
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      {...register("type", { required: "Type is required" })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
+                    >
+                      <option value="online">Online</option>
+                      <option value="offline">Offline</option>
+                    </select>
+                    {errors.type && (
+                      <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>
+                    )}
+                  </div>
+
+                  {/* Total Marks */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Total Marks <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
-                      {...register("duration", {
-                        required: "Duration is required",
-                      })}
-                      className="w-full p-2 border rounded-md"
+                      type="number"
+                      {...register("total_marks", { required: "Total marks is required" })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
+                    />
+                    {errors.total_marks && (
+                      <p className="mt-1 text-sm text-red-500">{errors.total_marks.message}</p>
+                    )}
+                  </div>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Duration (minutes) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      {...register("duration", { required: "Duration is required" })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
                     />
                     {errors.duration && (
-                      <span className="text-red-500 text-sm">
-                        {errors.duration.message}
-                      </span>
+                      <p className="mt-1 text-sm text-red-500">{errors.duration.message}</p>
+                    )}
+                  </div>
+
+                  {/* Description - Last Field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Description <span className="text-gray-500">(optional)</span>
+                    </label>
+                    <textarea
+                      {...register("description",)}
+                      rows="3"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-200"
+                      placeholder="Enter exam set description..."
+                    />
+                    {errors.description && (
+                      <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-4 mt-6">
+                <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 border rounded-md"
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700"
+                    className="px-6 py-2.5 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-all duration-200"
                   >
                     {editingIndex !== null ? "Save Changes" : "Create Exam Set"}
                   </button>
@@ -563,15 +546,18 @@ const QuestionManagement = () => {
                 {/* Question Form */}
                 <form
                   onSubmit={handleQuestionSubmit}
-                  className="bg-white p-6 rounded-lg shadow-md"
+                  className="bg-white p-8 rounded-xl shadow-lg border border-gray-100"
                 >
-                  <h2 className="text-xl font-semibold mb-6">
-                    Add New Question
-                  </h2>
-                  <div className="space-y-4">
+                  <div className="border-b border-gray-100 pb-6 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-800">Add New Question</h2>
+                    <p className="text-gray-500 mt-1 text-sm">Fill in the question details below</p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Question Input */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Question
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Question <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         value={currentQuestion.text}
@@ -581,16 +567,21 @@ const QuestionManagement = () => {
                             text: e.target.value,
                           })
                         }
-                        className="w-full p-2 border rounded-md h-12"
+                        className="w-full p-4 border rounded-lg resize-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 min-h-[100px] transition-all duration-200"
+                        placeholder="Enter your question here..."
                         required
                       />
                     </div>
-                    {/* Options Input */}
-                    <div className="grid grid-cols-2 gap-4">
+
+                    {/* Options Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {currentQuestion.options.map((option, index) => (
-                        <div key={index}>
-                          <label className="block text-sm font-medium mb-1">
-                            Option {index + 1}
+                        <div 
+                          key={index}
+                          className="bg-gray-50 p-6 rounded-lg border border-gray-200 hover:border-teal-500 transition-all duration-200"
+                        >
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Option {index + 1} <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
@@ -603,28 +594,28 @@ const QuestionManagement = () => {
                                 options: newOptions,
                               });
                             }}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all duration-200"
+                            placeholder={`Enter option ${index + 1}`}
                             required
                           />
                         </div>
                       ))}
                     </div>
 
-                    {/* Correct Answer and Marks Input */}
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Correct Answer and Language */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Correct Answer
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Correct Answer <span className="text-red-500">*</span>
                         </label>
                         <select
-                          // value={currentQuestion.correctAnswer}
                           onChange={(e) =>
                             setCurrentQuestion({
                               ...currentQuestion,
                               correctAnswer: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md"
+                          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all duration-200 bg-white"
                           required
                         >
                           <option value="">Select Correct Answer</option>
@@ -639,23 +630,20 @@ const QuestionManagement = () => {
                           ))}
                         </select>
                       </div>
-                    </div>
 
-                    {/* Languages */}
-                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Choose Language
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Language <span className="text-red-500">*</span>
                         </label>
                         <select
-                          value={currentQuestion.language} // Corrected attribute name
+                          value={currentQuestion.language}
                           onChange={(e) =>
                             setCurrentQuestion({
                               ...currentQuestion,
-                              language: e.target.value, // Corrected attribute name
+                              language: e.target.value,
                             })
                           }
-                          className="w-full p-2 border rounded-md"
+                          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all duration-200 bg-white"
                           required
                         >
                           <option value="">Select Language</option>
@@ -664,48 +652,76 @@ const QuestionManagement = () => {
                         </select>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Solution
-                      </label>
-                      <textarea
-                        value={currentQuestion.solution}
-                        onChange={(e) =>
-                          setCurrentQuestion({
-                            ...currentQuestion,
-                            solution: e.target.value,
-                          })
-                        }
-                        className="w-full p-2 border rounded-md h-12"
-                        required
-                      />
+
+                    {/* Solution and Time */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Solution <span className="text-gray-400 text-xs">(optional)</span>
+                        </label>
+                        <textarea
+                          value={currentQuestion.solution}
+                          onChange={(e) =>
+                            setCurrentQuestion({
+                              ...currentQuestion,
+                              solution: e.target.value,
+                            })
+                          }
+                          className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 min-h-[80px] transition-all duration-200"
+                          placeholder="Enter solution explanation..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Time (minutes) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={currentQuestion.time}
+                          onChange={(e) =>
+                            setCurrentQuestion({
+                              ...currentQuestion,
+                              time: parseFloat(e.target.value),
+                            })
+                          }
+                          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all duration-200"
+                          placeholder="Enter time in minutes"
+                          required
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Time (in hours)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.1" // Allows decimal values (e.g., 1.5 for 1 hour and 30 minutes)
-                        value={currentQuestion.time}
-                        onChange={(e) =>
+                    {/* Question Form Buttons */}
+                    <div className="flex justify-end items-center gap-4 pt-6 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedExamSet(null);
                           setCurrentQuestion({
-                            ...currentQuestion,
-                            time: parseFloat(e.target.value), // Convert the input value to a float
-                          })
-                        }
-                        className="w-full p-2 border rounded-md h-12"
-                        required
-                      />
+                            text: "",
+                            options: ["", "", "", ""],
+                            correctAnswer: "",
+                            solution: "",
+                            language: [],
+                            time: "",
+                          });
+                        }}
+                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-2"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-sm hover:from-teal-600 hover:to-teal-700 transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Question
+                      </button>
                     </div>
-
-                    <button
-                      type="submit"
-                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                    >
-                      Add Question
-                    </button>
                   </div>
                 </form>
               </div>
