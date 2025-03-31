@@ -133,12 +133,12 @@ const QuestionManagement = () => {
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+   console.log("correctAnswer",currentQuestion)
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
       solution: currentQuestion.solution || "",
-      correctoption: currentQuestion.options[parseInt(currentQuestion.correctAnswer)],
+      correct_option: currentQuestion.correctAnswer,
       exam: selectedExamSet.id,
       language: currentQuestion.language,
       time: parseInt(currentQuestion.time),
@@ -721,7 +721,7 @@ const QuestionManagement = () => {
                       >
                         <option value="">Select Correct Answer</option>
                         {currentQuestion.options.map((_, index) => (
-                          <option key={index} value={index}>
+                          <option key={index} value={index+1}>
                             Option {index + 1}
                           </option>
                         ))}
