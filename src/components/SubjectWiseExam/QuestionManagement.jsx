@@ -16,6 +16,7 @@ import {
 import Loader from "../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const QuestionManagement = () => {
   const [selectedExamSet, setSelectedExamSet] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({
@@ -23,7 +24,7 @@ const QuestionManagement = () => {
     options: ["", "", "", ""],
     correctAnswer: "",
     solution: "",
-    language: [],
+    language: "",
     time: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,8 +48,6 @@ const QuestionManagement = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [subjects, setSubjects] = useState([]);
   useEffect(() => {
-    // Assuming you fetch this data from an API
-
     const filtered = setterUser[0]?.class_category
       .map((cat) => ({
         ...cat,
@@ -60,22 +59,21 @@ const QuestionManagement = () => {
 
     setCategories(filtered);
   }, [setterUser]);
+
   const handleCategoryChange = (e) => {
     const categoryId = parseInt(e.target.value);
     const category = categories.find((cat) => cat.id === categoryId);
-
     setSelectedCategory(category);
     setSubjects(category?.subjects || []);
-    setSelectedSubject(null); // Reset subject when category changes
+    setSelectedSubject(null);
   };
-
-  console.log("exam set value", setterExamSet);
 
   const handleSubjectChange = (e) => {
     const subjectId = parseInt(e.target.value);
     const subject = subjects.find((sub) => sub.id === subjectId);
     setSelectedSubject(subject);
   };
+
   const {
     register,
     handleSubmit,
@@ -84,15 +82,11 @@ const QuestionManagement = () => {
     formState: { errors },
   } = useForm();
 
-  // Fetch exam sets on mount
   useEffect(() => {
     dispatch(getExamSets());
   }, [dispatch, showModal]);
 
-  // Handle Exam Set Submission
   const onSubmit = async (data) => {
-    console.log("data", data);
-
     try {
       const payload = {
         name: data.name,
@@ -104,18 +98,13 @@ const QuestionManagement = () => {
         duration: parseInt(data.duration),
         type: data.type,
       };
-      console.log("payload", payload);
-
       if (editingIndex !== null) {
-        console.log("editingIndex", editingIndex);
         const id = setterExamSet[editingIndex].id;
-        console.log("id");
         await dispatch(putExamSet({ payload, id })).unwrap();
       } else {
-        console.log("cghbjn");
         await dispatch(postExamSet(payload)).unwrap();
       }
-      dispatch(getExamSets()); // Refresh exam sets
+      dispatch(getExamSets());
       reset();
       setIsEditing(false);
       setEditingIndex(null);
@@ -124,16 +113,13 @@ const QuestionManagement = () => {
     }
   };
 
-  // Handle Edit
   const handleEdit = (index) => {
     setEditingIndex(index);
-    console.log("editingIndex", editingIndex);
     setIsEditing(true);
     const examSet = setterExamSet[index];
     Object.keys(examSet).forEach((key) => setValue(key, examSet[key]));
   };
 
-  // Handle Delete
   const handleDelete = async (index) => {
     try {
       const id = setterExamSet[index].id;
@@ -144,35 +130,41 @@ const QuestionManagement = () => {
     }
   };
 
-  // handle Question Sumbtion
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data being sent:", currentQuestion);
-
     setIsSubmitting(true);
 
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
       solution: currentQuestion.solution || "",
-      correctoption: currentQuestion.correctAnswer,
+      correctoption: currentQuestion.options[parseInt(currentQuestion.correctAnswer)],
       exam: selectedExamSet.id,
       language: currentQuestion.language,
       time: parseInt(currentQuestion.time),
     };
 
-    console.log("Payload being sent:", payload);
-
     try {
       if (editingQuestionIndex !== null) {
-        const response = await dispatch(putQuestionToExamSet(payload)).unwrap();
-        console.log("API Response:", response);
+        const questionId = selectedExamSet.questions[editingQuestionIndex].id;
+        const response = await dispatch(
+          putQuestionToExamSet({ questionId, payload })
+        ).unwrap();
+
+        setSelectedExamSet((prev) => ({
+          ...prev,
+          questions: prev.questions.map((q) =>
+            q.id === questionId ? response : q
+          ),
+        }));
         toast.success("Question updated successfully!");
       } else {
-        const response = await dispatch(
-          postQuestionToExamSet(payload)
-        ).unwrap();
-        toast.success("Question is added successfully!");
+        const response = await dispatch(postQuestionToExamSet(payload)).unwrap();
+        setSelectedExamSet((prev) => ({
+          ...prev,
+          questions: [...(prev.questions || []), response],
+        }));
+        toast.success("Question added successfully!");
       }
 
       setCurrentQuestion({
@@ -180,26 +172,25 @@ const QuestionManagement = () => {
         options: ["", "", "", ""],
         correctAnswer: "",
         solution: "",
-        language: [],
+        language: "",
         time: "",
       });
       setEditingQuestionIndex(null);
     } catch (error) {
       console.error("API Error:", error);
-      toast.error("Failed to submit question");
+      toast.error(error.message || "Failed to submit question");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const languages = [
-    ...new Set(selectedExamSet?.questions.map((q) => q.language)),
+    ...new Set(selectedExamSet?.questions?.map((q) => q.language) || []),
   ];
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState("All");
   const [editingQuestionId, setEditingQuestionId] = useState(null);
 
-  // Update filteredQuestions when selectedLanguage or selectedExamSet changes
   useEffect(() => {
     if (selectedExamSet?.questions) {
       const filtered =
@@ -234,21 +225,64 @@ const QuestionManagement = () => {
   };
 
   const handleEditQuestion = (questionId) => {
-    setEditingQuestionId(questionId);
+    const questionToEdit = selectedExamSet.questions.find(
+      (q) => q.id === questionId
+    );
+    if (questionToEdit) {
+      const index = selectedExamSet.questions.findIndex(
+        (q) => q.id === questionId
+      );
+      setEditingQuestionIndex(index);
+      const correctAnswerIndex = questionToEdit.options.indexOf(
+        questionToEdit.correct_option
+      ).toString();
+      setCurrentQuestion({
+        text: questionToEdit.text,
+        options: questionToEdit.options,
+        correctAnswer: correctAnswerIndex === "-1" ? "" : correctAnswerIndex,
+        solution: questionToEdit.solution || "",
+        language: questionToEdit.language,
+        time: questionToEdit.time.toString(),
+      });
+      setEditingQuestionId(questionId);
+    } else {
+      console.error("Question not found with ID:", questionId);
+      toast.error("Question not found!");
+    }
   };
 
   const handleSaveQuestion = (questionId) => {
-    // Find the updated question
     const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
 
-    // Log the updated question (for debugging)
-    console.log("Updated Question:", updatedQuestion);
+    const payload = {
+      text: updatedQuestion.text,
+      options: updatedQuestion.options,
+      solution: updatedQuestion.solution || "",
+      correctoption: updatedQuestion.options[parseInt(updatedQuestion.correct_option)],
+      exam: selectedExamSet.id,
+      language: updatedQuestion.language,
+      time: parseInt(updatedQuestion.time),
+    };
 
-    // Dispatch the updated question to the action
-    dispatch(putQuestionToExamSet(updatedQuestion));
-
-    // Exit edit mode
-    setEditingQuestionId(null);
+    dispatch(putQuestionToExamSet({ questionId, payload }))
+      .unwrap()
+      .then((response) => {
+        setSelectedExamSet((prev) => ({
+          ...prev,
+          questions: prev.questions.map((q) =>
+            q.id === questionId ? response : q
+          ),
+        }));
+        setFilteredQuestions((prev) =>
+          prev.map((q) => (q.id === questionId ? response : q))
+        );
+        setEditingQuestionId(null);
+        toast.success("Question updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error updating question:", error);
+        toast.error(error.message || "Failed to update question");
+      });
   };
 
   const handleDeleteQuestion = (questionId) => {
@@ -256,6 +290,23 @@ const QuestionManagement = () => {
       (q) => q.id !== questionId
     );
     setFilteredQuestions(updatedQuestions);
+    setSelectedExamSet((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((q) => q.id !== questionId),
+    }));
+  };
+
+  const resetQuestionForm = () => {
+    setCurrentQuestion({
+      text: "",
+      options: ["", "", "", ""],
+      correctAnswer: "",
+      solution: "",
+      language: "",
+      time: "",
+    });
+    setEditingQuestionIndex(null);
+    setSelectedExamSet(null);
   };
 
   return (
@@ -286,7 +337,6 @@ const QuestionManagement = () => {
             )}
           </div>
 
-          {/* Exam Sets List */}
           {setterExamSet && setterExamSet.length === 0 && !isEditing ? (
             <p className="text-gray-600 text-center">No exam sets available</p>
           ) : (
@@ -340,15 +390,14 @@ const QuestionManagement = () => {
                         <td className="py-4 space-x-4 text-center">
                           <button
                             onClick={() => {
-                              setSelectedExamSet(examSet); // Set the selected exam set
-                              setShowModal(true); // Open the modal
+                              setSelectedExamSet(examSet);
+                              setShowModal(true);
                             }}
                             className="text-blue-600 hover:text-blue-800"
                           >
                             All Questions
                           </button>
                         </td>
-
                         <td className="py-4 space-x-4 text-center">
                           <button
                             onClick={() => handleEdit(index)}
@@ -370,7 +419,6 @@ const QuestionManagement = () => {
             </div>
           )}
 
-          {/* Exam Set Form */}
           {isEditing && (
             <form
               onSubmit={handleSubmit(onSubmit)}
@@ -387,7 +435,6 @@ const QuestionManagement = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Class Category - First Field */}
                 <div className="md:col-span-2">
                   <label
                     htmlFor="category"
@@ -418,7 +465,6 @@ const QuestionManagement = () => {
                   )}
                 </div>
 
-                {/* Subject Select */}
                 {selectedCategory && (
                   <div className="md:col-span-2">
                     <label
@@ -451,7 +497,6 @@ const QuestionManagement = () => {
                   </div>
                 )}
 
-                {/* Level */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Level <span className="text-red-500">*</span>
@@ -474,7 +519,6 @@ const QuestionManagement = () => {
                   )}
                 </div>
 
-                {/* Type */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Type <span className="text-red-500">*</span>
@@ -493,7 +537,6 @@ const QuestionManagement = () => {
                   )}
                 </div>
 
-                {/* Total Marks */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Total Marks <span className="text-red-500">*</span>
@@ -512,7 +555,6 @@ const QuestionManagement = () => {
                   )}
                 </div>
 
-                {/* Duration */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Duration (minutes) <span className="text-red-500">*</span>
@@ -531,7 +573,6 @@ const QuestionManagement = () => {
                   )}
                 </div>
 
-                {/* Description - Last Field */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Description{" "}
@@ -569,7 +610,6 @@ const QuestionManagement = () => {
             </form>
           )}
 
-          {/* Question Management Section */}
           {selectedExamSet && (
             <div className="space-y-6 mt-5">
               <div className="flex justify-between items-center">
@@ -582,15 +622,8 @@ const QuestionManagement = () => {
                     {selectedExamSet.level.name} | {selectedExamSet.type}
                   </div>
                 </div>
-                {/* <button
-                  onClick={() => setSelectedExamSet(null)}
-                  className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
-                >
-                  Back to Exam Sets
-                </button> */}
               </div>
 
-              {/* Question Form */}
               <form
                 onSubmit={handleQuestionSubmit}
                 className="bg-white p-8 rounded-xl shadow-lg border border-gray-100"
@@ -598,10 +631,11 @@ const QuestionManagement = () => {
                 <div className="border-b border-gray-100 pb-6 mb-8">
                   <div className="flex justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
-                      Add New Question
+                      {editingQuestionIndex !== null ? "Edit Question" : "Add New Question"}
                     </h2>
                     <button
-                      onClick={() => setSelectedExamSet(null)}
+                      type="button"
+                      onClick={resetQuestionForm}
                       className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300"
                     >
                       Close
@@ -622,7 +656,6 @@ const QuestionManagement = () => {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Question Input */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Question <span className="text-red-500">*</span>
@@ -641,7 +674,6 @@ const QuestionManagement = () => {
                     />
                   </div>
 
-                  {/* Options Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {currentQuestion.options.map((option, index) => (
                       <div
@@ -671,7 +703,6 @@ const QuestionManagement = () => {
                     ))}
                   </div>
 
-                  {/* Correct Answer and Language */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -689,8 +720,8 @@ const QuestionManagement = () => {
                         required
                       >
                         <option value="">Select Correct Answer</option>
-                        {currentQuestion.options.map((option, index) => (
-                          <option key={index} value={option} disabled={!option}>
+                        {currentQuestion.options.map((_, index) => (
+                          <option key={index} value={index}>
                             Option {index + 1}
                           </option>
                         ))}
@@ -719,14 +750,11 @@ const QuestionManagement = () => {
                     </div>
                   </div>
 
-                  {/* Solution and Time */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Solution{" "}
-                        <span className="text-gray-400 text-xs">
-                          (optional)
-                        </span>
+                        <span className="text-gray-400 text-xs">(optional)</span>
                       </label>
                       <textarea
                         value={currentQuestion.solution}
@@ -738,8 +766,7 @@ const QuestionManagement = () => {
                         }
                         className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 min-h-[80px] transition-all duration-200"
                         placeholder="Enter solution explanation..."
-                      />{" "}
-                      {/* Removed required attribute */}
+                      />
                     </div>
 
                     <div>
@@ -753,7 +780,7 @@ const QuestionManagement = () => {
                         onChange={(e) =>
                           setCurrentQuestion({
                             ...currentQuestion,
-                            time: parseFloat(e.target.value),
+                            time: e.target.value,
                           })
                         }
                         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all duration-200"
@@ -763,21 +790,10 @@ const QuestionManagement = () => {
                     </div>
                   </div>
 
-                  {/* Question Form Buttons */}
                   <div className="flex justify-end items-center gap-4 pt-6 border-t border-gray-100">
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedExamSet(null);
-                        setCurrentQuestion({
-                          text: "",
-                          options: ["", "", "", ""],
-                          correctAnswer: "",
-                          solution: "",
-                          language: [],
-                          time: "",
-                        });
-                      }}
+                      onClick={resetQuestionForm}
                       className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-2"
                     >
                       Cancel
@@ -811,6 +827,8 @@ const QuestionManagement = () => {
                           </svg>
                           Submitting...
                         </>
+                      ) : editingQuestionIndex !== null ? (
+                        "Update Question"
                       ) : (
                         <>
                           <svg
@@ -836,15 +854,16 @@ const QuestionManagement = () => {
             </div>
           )}
 
-          {/* Full-Screen Modal */}
           {showModal && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
               <div className="bg-white w-full h-full p-6 overflow-y-auto">
-                {/* Modal Header */}
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">All Questions</h2>
                   <button
-                    onClick={() => setShowModal(false)}
+                    onClick={() => {
+                      setShowModal(false);
+                      resetQuestionForm();
+                    }}
                     className="px-4 py-2 bg-gray-500 text-white rounded-md"
                   >
                     Back to Exam Set
@@ -853,11 +872,19 @@ const QuestionManagement = () => {
                     Exam Questions ({filteredQuestions.length})
                   </h2>
                 </div>
-                {/* Filter Dropdown */}
+
+                <div className="mb-6 p-4 bg-gray-100 rounded-md">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Exam Set: {selectedExamSet.subject.subject_name}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Class: {selectedExamSet.class_category.name} | Level:{" "}
+                    {selectedExamSet.level.name} | Type: {selectedExamSet.type}
+                  </p>
+                </div>
+
                 <div className="mb-4">
-                  <label className="font-medium mr-2">
-                    Filter by Language:
-                  </label>
+                  <label className="font-medium mr-2">Filter by Language:</label>
                   <select
                     className="border rounded px-3 py-2"
                     value={selectedLanguage}
@@ -871,7 +898,7 @@ const QuestionManagement = () => {
                     ))}
                   </select>
                 </div>
-                {/* Render Questions */}
+
                 {filteredQuestions?.map((question, index) => (
                   <div
                     key={question.id}
@@ -882,21 +909,26 @@ const QuestionManagement = () => {
                         <h3 className="font-medium text-lg">
                           Question {index + 1}
                         </h3>
-                        <p className="text-gray-500">
-                          Marks: {question.total_marks}
-                        </p>
                         <p className="text-gray-400 text-sm">
                           Language: {question.language}
                         </p>
                       </div>
                       <div className="space-x-2">
                         {editingQuestionId === question.id ? (
-                          <button
-                            onClick={() => handleSaveQuestion(question.id)}
-                            className="px-3 py-1 bg-green-500 text-white rounded-md text-sm"
-                          >
-                            Save
-                          </button>
+                          <>
+                            <button
+                              onClick={() => setEditingQuestionId(null)}
+                              className="px-3 py-1 bg-gray-500 text-white rounded-md text-sm"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleSaveQuestion(question.id)}
+                              className="px-3 py-1 bg-green-500 text-white rounded-md text-sm"
+                            >
+                              Save
+                            </button>
+                          </>
                         ) : (
                           <button
                             onClick={() => handleEditQuestion(question.id)}
@@ -905,58 +937,73 @@ const QuestionManagement = () => {
                             Edit
                           </button>
                         )}
-                        {/* <button
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="px-3 py-1 bg-red-500 text-white rounded-md text-sm"
-                        >
-                          Delete
-                        </button> */}
                       </div>
                     </div>
 
-                    {/* Render editable fields if in edit mode */}
                     {editingQuestionId === question.id ? (
                       <>
                         <textarea
                           value={question.text}
                           onChange={(e) =>
-                            handleQuestionTextChange(
-                              question.id,
-                              e.target.value
-                            )
+                            handleQuestionTextChange(question.id, e.target.value)
                           }
                           className="w-full p-2 border rounded-md mb-4"
                         />
                         <div className="grid grid-cols-2 gap-4">
                           {question.options.map((option, i) => (
-                            <div key={i} className="p-3 rounded-md bg-gray-50">
+                            <div
+                              key={i}
+                              className={`p-3 rounded-md ${
+                                i === parseInt(question.correct_option)
+                                  ? "bg-green-100 border border-green-400"
+                                  : "bg-gray-50"
+                              }`}
+                            >
                               <span className="font-medium mr-2">{i + 1}.</span>
                               <input
                                 type="text"
                                 value={option}
                                 onChange={(e) =>
-                                  handleOptionChange(
-                                    question.id,
-                                    i,
-                                    e.target.value
-                                  )
+                                  handleOptionChange(question.id, i, e.target.value)
                                 }
                                 className="w-full p-1 border rounded-md"
                               />
                             </div>
                           ))}
                         </div>
+                        <div className="mt-4">
+                          <label className="font-medium mr-2">Correct Answer:</label>
+                          <select
+                            value={question.correct_option}
+                            onChange={(e) => {
+                              const updatedQuestions = filteredQuestions.map((q) =>
+                                q.id === question.id
+                                  ? { ...q, correct_option: e.target.value }
+                                  : q
+                              );
+                              setFilteredQuestions(updatedQuestions);
+                            }}
+                            className="border rounded px-3 py-2"
+                          >
+                            <option value="">Select Correct Answer</option>
+                            {question.options.map((_, index) => (
+                              <option key={index} value={index}>
+                                Option {index + 1}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </>
                     ) : (
                       <>
                         <p className="mb-4">{question.text}</p>
                         <div className="grid grid-cols-2 gap-4">
-                          {question.options.map((option, i) => (
+                          {question.options?.map((option, i) => (
                             <div
                               key={i}
                               className={`p-3 rounded-md ${
                                 option === question.correct_option
-                                  ? "bg-green-100 border border-green-300"
+                                  ? "bg-green-100 border border-green-400 font-semibold text-green-800"
                                   : "bg-gray-50"
                               }`}
                             >

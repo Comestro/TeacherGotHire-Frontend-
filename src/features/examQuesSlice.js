@@ -492,10 +492,10 @@ export const generatePasskey= createAsyncThunk(
                     export const putQuestionToExamSet= createAsyncThunk(
                       "putQuestionToExamSet",
                       
-                      async (payload, { rejectWithValue }) => {
-                       console.log("setter",payload) 
+                      async ({ questionId, payload}, { rejectWithValue }) => {
+                       console.log(" question update in slice",payload) 
                         try {
-                          const data = await editQuestionToExamSet(payload);
+                          const data = await editQuestionToExamSet(questionId, payload);
                            return data; 
                         }catch (error) {
                           console.log('Error in getLevels:', error);
