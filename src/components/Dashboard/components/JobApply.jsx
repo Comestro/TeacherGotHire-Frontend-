@@ -84,7 +84,7 @@ const JobApply = () => {
                     key={index}
                     className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-colors`}
                   >
-                    <td className="py-4 px-6 border-b border-gray-200">{attempt.exam.subjet_name}</td>
+                    <td className="py-4 px-6 border-b border-gray-200">{attempt.exam.subject_name}</td>
                     <td className="py-4 px-6 border-b border-gray-200">{attempt.exam.class_category_name}</td>
                     <td className="py-4 px-6 border-b border-gray-200">
                       {isApplied ? (
@@ -113,7 +113,7 @@ const JobApply = () => {
               })}
             </tbody>
             {error && (
-                    <p className="text-red-600 text-center mb-4">{error.code.response.data.error}</p>
+                    <p className="text-red-600 text-center mb-4">{error}</p>
                   )} 
           </table>
         </>

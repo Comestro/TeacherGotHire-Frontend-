@@ -6,7 +6,7 @@ import { getAllQues, setLanguage,resetVerifyResponse } from "../../features/exam
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const [selectedLanguage, setSelectedLanguage] = useState(""); 
-  const {exam,verifyresponse,loading}= useSelector((state) => state.examQues);
+  const {exam,verifyresponse}= useSelector((state) => state.examQues);
   const examID = exam?.id; 
   const verfyExamId = verifyresponse?.offline_exam?.id;
   const [isChecked, setIsChecked] = useState(false);

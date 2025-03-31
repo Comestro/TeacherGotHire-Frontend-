@@ -37,12 +37,6 @@ const QuestionManagement = () => {
     (state) => state.examQues
   );
   const [showModal, setShowModal] = useState(false);
-  // console.log("setterUser", setterUser);
-  // console.log("selectedExamSet", selectedExamSet);
-  // console.log("levels", levels);
-  // console.log("currentQuestion", currentQuestion);
-  // console.log("setterExamSet", setterExamSet);
-  // console.log("selectedSubject", selectedSubject);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);

@@ -454,8 +454,8 @@ export const generatePasskey= createAsyncThunk(
                     } catch (error) {
                       console.log('Error in getLevels:', error);
                       let errorMessage = 'An error occurred';
-                      if (error.response && error.response.data && error.response.data.message) {
-                        errorMessage = error.response.data.message;
+                      if ( error.response.data.error) {
+                        errorMessage = error.response.data.error;
                         
                       } else if (error.message) {
                         errorMessage = error.message;
