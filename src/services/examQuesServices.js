@@ -285,7 +285,7 @@ export const addQuestionToExamSet= async (payload) => {
 };
 
 export const editQuestionToExamSet= async ( questionId, payload) => {
-  console.log("payload in service for update question",payload)
+  console.log("payload in service for update question", payload)
   try {
     const response = await apiClient.put(`/api/examsetter/question/${questionId}/`, payload);
     console.log("ExamSetter",response)

@@ -133,7 +133,7 @@ const QuestionManagement = () => {
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-   console.log("correctAnswer",currentQuestion)
+    console.log("correctAnswer", currentQuestion);
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
@@ -159,7 +159,9 @@ const QuestionManagement = () => {
         }));
         toast.success("Question updated successfully!");
       } else {
-        const response = await dispatch(postQuestionToExamSet(payload)).unwrap();
+        const response = await dispatch(
+          postQuestionToExamSet(payload)
+        ).unwrap();
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: [...(prev.questions || []), response],
@@ -233,13 +235,16 @@ const QuestionManagement = () => {
         (q) => q.id === questionId
       );
       setEditingQuestionIndex(index);
+
+      // Convert correct option text to 1-based index
       const correctAnswerIndex = questionToEdit.options.indexOf(
         questionToEdit.correct_option
-      ).toString();
+      );
       setCurrentQuestion({
         text: questionToEdit.text,
         options: questionToEdit.options,
-        correctAnswer: correctAnswerIndex === "-1" ? "" : correctAnswerIndex,
+        correctAnswer:
+          correctAnswerIndex === -1 ? "" : (correctAnswerIndex + 1).toString(),
         solution: questionToEdit.solution || "",
         language: questionToEdit.language,
         time: questionToEdit.time.toString(),
@@ -258,7 +263,7 @@ const QuestionManagement = () => {
       text: updatedQuestion.text,
       options: updatedQuestion.options,
       solution: updatedQuestion.solution || "",
-      correctoption: updatedQuestion.options[parseInt(updatedQuestion.correct_option)],
+      correctoption: parseInt(updatedQuestion.correct_option) + 1,
       exam: selectedExamSet.id,
       language: updatedQuestion.language,
       time: parseInt(updatedQuestion.time),
@@ -631,7 +636,9 @@ const QuestionManagement = () => {
                 <div className="border-b border-gray-100 pb-6 mb-8">
                   <div className="flex justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
-                      {editingQuestionIndex !== null ? "Edit Question" : "Add New Question"}
+                      {editingQuestionIndex !== null
+                        ? "Edit Question"
+                        : "Add New Question"}
                     </h2>
                     <button
                       type="button"
@@ -721,7 +728,7 @@ const QuestionManagement = () => {
                       >
                         <option value="">Select Correct Answer</option>
                         {currentQuestion.options.map((_, index) => (
-                          <option key={index} value={index+1}>
+                          <option key={index} value={index + 1}>
                             Option {index + 1}
                           </option>
                         ))}
@@ -754,7 +761,9 @@ const QuestionManagement = () => {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Solution{" "}
-                        <span className="text-gray-400 text-xs">(optional)</span>
+                        <span className="text-gray-400 text-xs">
+                          (optional)
+                        </span>
                       </label>
                       <textarea
                         value={currentQuestion.solution}
@@ -884,7 +893,9 @@ const QuestionManagement = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="font-medium mr-2">Filter by Language:</label>
+                  <label className="font-medium mr-2">
+                    Filter by Language:
+                  </label>
                   <select
                     className="border rounded px-3 py-2"
                     value={selectedLanguage}
@@ -945,7 +956,10 @@ const QuestionManagement = () => {
                         <textarea
                           value={question.text}
                           onChange={(e) =>
-                            handleQuestionTextChange(question.id, e.target.value)
+                            handleQuestionTextChange(
+                              question.id,
+                              e.target.value
+                            )
                           }
                           className="w-full p-2 border rounded-md mb-4"
                         />
@@ -964,7 +978,11 @@ const QuestionManagement = () => {
                                 type="text"
                                 value={option}
                                 onChange={(e) =>
-                                  handleOptionChange(question.id, i, e.target.value)
+                                  handleOptionChange(
+                                    question.id,
+                                    i,
+                                    e.target.value
+                                  )
                                 }
                                 className="w-full p-1 border rounded-md"
                               />
@@ -972,14 +990,17 @@ const QuestionManagement = () => {
                           ))}
                         </div>
                         <div className="mt-4">
-                          <label className="font-medium mr-2">Correct Answer:</label>
+                          <label className="font-medium mr-2">
+                            Correct Answer:
+                          </label>
                           <select
                             value={question.correct_option}
                             onChange={(e) => {
-                              const updatedQuestions = filteredQuestions.map((q) =>
-                                q.id === question.id
-                                  ? { ...q, correct_option: e.target.value }
-                                  : q
+                              const updatedQuestions = filteredQuestions.map(
+                                (q) =>
+                                  q.id === question.id
+                                    ? { ...q, correct_option: e.target.value }
+                                    : q
                               );
                               setFilteredQuestions(updatedQuestions);
                             }}

@@ -11,7 +11,6 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("Profile menu: ", profile);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
