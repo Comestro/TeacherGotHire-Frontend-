@@ -454,8 +454,8 @@ export const generatePasskey= createAsyncThunk(
                     } catch (error) {
                       console.log('Error in getLevels:', error);
                       let errorMessage = 'An error occurred';
-                      if (error.response && error.response.data && error.response.data.message) {
-                        errorMessage = error.response.data.message;
+                      if ( error.response.data.error) {
+                        errorMessage = error.response.data.error;
                         
                       } else if (error.message) {
                         errorMessage = error.message;
@@ -492,10 +492,10 @@ export const generatePasskey= createAsyncThunk(
                     export const putQuestionToExamSet= createAsyncThunk(
                       "putQuestionToExamSet",
                       
-                      async (payload, { rejectWithValue }) => {
-                       console.log("setter",payload) 
+                      async ({ questionId, payload}, { rejectWithValue }) => {
+                       console.log(" question update in slice",payload) 
                         try {
-                          const data = await editQuestionToExamSet(payload);
+                          const data = await editQuestionToExamSet(questionId, payload);
                            return data; 
                         }catch (error) {
                           console.log('Error in getLevels:', error);

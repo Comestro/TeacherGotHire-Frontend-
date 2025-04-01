@@ -11,7 +11,6 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("Profile menu: ", profile);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -28,7 +27,7 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
   };
 
   return (
-    <header className="bg-white shadow-sm fixed w-full z-50">
+    <header className="bg-white shadow-sm fixed w-full z-50 top-0">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link
           to="#"
