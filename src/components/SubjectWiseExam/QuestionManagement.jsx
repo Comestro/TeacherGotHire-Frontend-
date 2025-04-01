@@ -889,7 +889,7 @@ const QuestionManagement = () => {
                     Exam Set: {selectedExamSet.subject.subject_name}
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Class: {selectedExamSet.class_category.name} | Level:{" "}
+                    Class: {selectedExamSet.class_category.name} | Subject: {selectedExamSet.subject.subject_name} | Level:{" "}
                     {selectedExamSet.level.name} | Type: {selectedExamSet.type}
                   </p>
                 </div>
