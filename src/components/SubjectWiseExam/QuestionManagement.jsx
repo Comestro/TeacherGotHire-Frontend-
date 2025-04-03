@@ -137,11 +137,12 @@ const QuestionManagement = () => {
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
-      solution: currentQuestion.solution || "",
+      // solution: currentQuestion.solution || "",
       correct_option: currentQuestion.correctAnswer,
       exam: selectedExamSet.id,
       language: currentQuestion.language,
       time: parseInt(currentQuestion.time),
+      ...(currentQuestion.solution && { solution: currentQuestion.solution })
     };
 
     try {
@@ -262,11 +263,12 @@ const QuestionManagement = () => {
     const payload = {
       text: updatedQuestion.text,
       options: updatedQuestion.options,
-      solution: updatedQuestion.solution || "",
+      // solution: updatedQuestion.solution || "",
       correctoption: parseInt(updatedQuestion.correct_option) + 1,
       exam: selectedExamSet.id,
       language: updatedQuestion.language,
       time: parseInt(updatedQuestion.time),
+      ...(updatedQuestion.solution && { solution: updatedQuestion.solution }),
     };
 
     dispatch(putQuestionToExamSet({ questionId, payload }))
@@ -887,7 +889,7 @@ const QuestionManagement = () => {
                     Exam Set: {selectedExamSet.subject.subject_name}
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Class: {selectedExamSet.class_category.name} | Level:{" "}
+                    Class: {selectedExamSet.class_category.name} | Subject: {selectedExamSet.subject.subject_name} | Level:{" "}
                     {selectedExamSet.level.name} | Type: {selectedExamSet.type}
                   </p>
                 </div>
