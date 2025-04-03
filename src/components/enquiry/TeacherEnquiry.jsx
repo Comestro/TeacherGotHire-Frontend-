@@ -287,7 +287,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
                   {currentStep === 1 && (
                     <div className="animate-slide-in">
                       <h3 className="text-lg font-medium mb-4">
-                        Select Subjects You Teach
+                        Select Subjects
                       </h3>
                       <div className="mb-5 max-h-[350px] overflow-y-auto">
                         {subject &&
