@@ -30,6 +30,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [teacherType, setTeacherType] = useState("");
+  const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [pincode, setPincode] = useState("");
   const [email, setEmail] = useState("");
@@ -136,6 +137,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
     setCurrentStep(0);
     setTeacherType("");
     setSelectedSubjects([]);
+    setSelectedClassCategory("");
     setContactNumber("");
     setPincode("");
     setEmail("");
@@ -289,51 +291,80 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
                       <h3 className="text-lg font-medium mb-4">
                         Select Subjects
                       </h3>
-                      <div className="mb-5 max-h-[350px] overflow-y-auto">
-                        {subject &&
-                          subject.map((category) => {
-                            if (
-                              !category.subjects ||
-                              category.subjects.length === 0
-                            )
-                              return null;
-
-                            return (
-                              <div key={category.id} className="mb-6">
-                                <h4 className="text-sm font-medium mb-3 text-gray-600">
-                                  {category.name}
-                                </h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                  {category.subjects.map((subject) => (
-                                    <button
-                                      key={subject.id}
-                                      onClick={() =>
-                                        handleSubjectToggle(subject.id)
-                                      }
-                                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                                        selectedSubjects.includes(subject.id)
-                                          ? "border-teal-500 bg-teal-50"
-                                          : "border-gray-200 hover:border-teal-300"
-                                      }`}
-                                    >
-                                      <span className="text-sm">
-                                        {subject.subject_name}
-                                      </span>
-                                      {selectedSubjects.includes(
-                                        subject.id
-                                      ) && (
-                                        <FiCheck className="text-teal-500" />
-                                      )}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })}
+                      
+                      {/* Add Class Category Dropdown */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium mb-2 text-gray-600">
+                          Select Class Category
+                        </label>
+                        <select
+                          value={selectedClassCategory}
+                          onChange={(e) => setSelectedClassCategory(e.target.value)}
+                          className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        >
+                          <option value="">Select Class Category</option>
+                          {subject && subject.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
+
+                      {/* Show subjects only if class category is selected */}
+                      <div className="mb-5 max-h-[350px] overflow-y-auto">
+                        {subject && selectedClassCategory && 
+                          subject
+                            .filter(category => category.id === parseInt(selectedClassCategory))
+                            .map((category) => {
+                              if (!category.subjects || category.subjects.length === 0) return null;
+
+                              return (
+                                <div key={category.id} className="mb-6">
+                                  <h4 className="text-sm font-medium mb-3 text-gray-600">
+                                    {category.name}
+                                  </h4>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {category.subjects.map((subject) => (
+                                      <button
+                                        key={subject.id}
+                                        onClick={() => handleSubjectToggle(subject.id)}
+                                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                          selectedSubjects.includes(subject.id)
+                                            ? "border-teal-500 bg-teal-50"
+                                            : "border-gray-200 hover:border-teal-300"
+                                        }`}
+                                      >
+                                        <span className="text-sm">
+                                          {subject.subject_name}
+                                        </span>
+                                        {selectedSubjects.includes(subject.id) && (
+                                          <FiCheck className="text-teal-500" />
+                                        )}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })
+                        }
+                        
+                        {selectedClassCategory && subject
+                          .filter(category => category.id === parseInt(selectedClassCategory))
+                          .some(category => !category.subjects?.length) && (
+                          <p className="text-gray-500 text-center py-4">
+                            No subjects available for this class category
+                          </p>
+                        )}
+                      </div>
+
                       <div className="flex justify-between px-2">
                         <button
-                          onClick={() => setCurrentStep(0)}
+                          onClick={() => {
+                            setCurrentStep(0);
+                            setSelectedClassCategory("");
+                            setSelectedSubjects([]);
+                          }}
                           className="text-gray-600 hover:text-gray-800 flex items-center"
                         >
                           <FiArrowLeft className="mr-2" /> Back
@@ -341,7 +372,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
                         <button
                           onClick={() => setCurrentStep(2)}
                           className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
-                          disabled={!selectedSubjects.length}
+                          disabled={!selectedSubjects.length || !selectedClassCategory}
                         >
                           Continue
                         </button>
