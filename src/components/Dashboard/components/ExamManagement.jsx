@@ -1002,102 +1002,102 @@ function ExamManagement() {
                       {(!isSubmitted && !interview.length) ||
                       (isSubmitted && !interview.length) ? (
                         // Scheduling Form
-                        isSubmitted ? ( // Immediately show requested card after submission (before API response)
-                          <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-5">
-                            <div className="flex items-center justify-between mb-4">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4 mr-1"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                Pending Approval
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                Admin Confirmation
-                              </span>
-                            </div>
-
-                            <h4 className="text-lg font-semibold text-gray-800 mb-3">
-                              Interview Request Submitted
-                            </h4>
-
-                            <div className="space-y-3 text-sm text-gray-700">
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                <span>
-                                  Your selected date and time:{" "}
-                                  <span className="font-medium">
-                                    {selectedDateTime}
+                        isSubmitted ? (// Immediately show requested card after submission (before API response)
+                          <div className="p-6">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-5">
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  Pending Approval
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  Admin Confirmation
+                                </span>
+                              </div>
+                  
+                              <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                                Interview Request Submitted
+                              </h4>
+                  
+                              <div className="space-y-3 text-sm text-gray-700">
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  <span>
+                                    Your selected date and time:{" "}
+                                    <span className="font-medium">
+                                      {selectedDateTime}
+                                    </span>
                                   </span>
-                                </span>
+                                </div>
+                                <div className="flex items-start">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  <span>
+                                    Admin will confirm your request soon
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-start">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                <span>
-                                  Admin will confirm your request soon
-                                </span>
+                  
+                              <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
+                                <p className="text-sm text-yellow-800 text-center">
+                                  Thank you for submitting your request. We
+                                  will notify you once it is approved.
+                                </p>
                               </div>
                             </div>
-
-                            <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
-                              <p className="text-sm text-yellow-800 text-center">
-                                Thank you for submitting your request. We will
-                                notify you once it is approved.
-                              </p>
-                            </div>
+                          </div>):(<form onSubmit={handleSubmit} className="p-6">
+                          <div className="flex items-center justify-between mb-6">
+                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              Schedule Interview
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              Select Date & Time
+                            </span>
                           </div>
-                        ) : (
-                          <form onSubmit={handleSubmit} className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                              <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4 mr-2"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                                Schedule Interview
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                Select Date & Time
-                              </span>
-                            </div>
 
                             <h4 className="text-xl font-semibold text-gray-800 mb-5">
                               Choose a Date and Time for Your Interview

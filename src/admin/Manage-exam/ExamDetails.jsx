@@ -377,11 +377,19 @@ const ExamDetails = () => {
         setFormSubmitting(true);
 
         try {
+            // Create a copy of newQuestion without the solution field
+            const questionData = { ...newQuestion };
+            
+            // Only include solution if it's not empty
+            if (!questionData.solution.trim()) {
+                delete questionData.solution;
+            }
+
             if (editQuestion) {
-                await updateQuestion(editQuestion.id, newQuestion);
+                await updateQuestion(editQuestion.id, questionData);
                 setSnackbarMessage("Question updated successfully!");
             } else {
-                await createQuestion({ ...newQuestion, exam: examId });
+                await createQuestion({ ...questionData, exam: examId });
                 setSnackbarMessage("Question added successfully!");
             }
             setSnackbarSeverity("success");
