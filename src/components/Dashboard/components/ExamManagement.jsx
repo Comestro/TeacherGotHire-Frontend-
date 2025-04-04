@@ -596,7 +596,7 @@ function ExamManagement() {
                         >
                           <div className="flex items-center justify-between mb-4">
                             <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                              Level 1
+                             {exam?.level?.name}
                             </span>
                             <span className="text-sm text-gray-500">
                               Basic Level
@@ -658,7 +658,7 @@ function ExamManagement() {
                           <div className="relative z-10">
                             <div className="flex items-center justify-between mb-4">
                               <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                                Level 1
+                              {exam?.level?.name}
                               </span>
                               <span className="text-sm text-gray-500">
                                 Basic Level
@@ -691,7 +691,7 @@ function ExamManagement() {
                           >
                             <div className="flex items-center justify-between mb-4">
                               <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
-                                Level 2 Online
+                              {exam?.level?.name}
                               </span>
                               <span className="text-sm text-gray-500">
                                 Advanced Level
@@ -742,7 +742,7 @@ function ExamManagement() {
                               className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
                             >
                               <FaLockOpen className="w-5 h-5" />
-                              Start Level 2 Online Exam
+                              {exam?.level?.name}
                             </button>
                           </div>
                         ))}
@@ -755,7 +755,7 @@ function ExamManagement() {
                             <div className="relative z-10">
                               <div className="flex items-center justify-between mb-4">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                                  Level 2
+                                {exam?.level?.name}
                                 </span>
                                 <span className="text-sm text-gray-500">
                                   Advanced Level
@@ -894,7 +894,7 @@ function ExamManagement() {
                                 >
                                   <div className="flex items-center justify-between mb-4">
                                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
-                                      Level 2 Exam
+                                    {exam?.level?.name}
                                     </span>
                                     <span className="text-sm text-gray-500">
                                       Advanced Level
@@ -957,7 +957,7 @@ function ExamManagement() {
                                     className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors duration-300"
                                   >
                                     <FaLockOpen className="w-5 h-5" />
-                                    Start Level 2 Center Exam
+                                    {exam?.level?.name}
                                   </button>
                                 </div>
                               ))}
