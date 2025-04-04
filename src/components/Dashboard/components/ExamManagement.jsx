@@ -315,7 +315,7 @@ function ExamManagement() {
 
     try {
       console.log("Generating passkey for exam:", exam);
-      SetOfflineSet(exam);
+     setExam(exam);
 
       // Validate center selection
       if (!selectedCenterId) {
@@ -378,7 +378,7 @@ function ExamManagement() {
       const result = await dispatch(
         verifyPasscode({
           user_id,
-          exam_id: offlineSet,
+          exam_id:exam_id,
           passcode,
         })
       ).unwrap();
