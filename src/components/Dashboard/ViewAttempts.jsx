@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { attemptsCount, attemptsExam } from "../../features/examQuesSlice";
+import { attemptsExam } from "../../features/examQuesSlice";
 import { MdOutlineMenuBook } from "react-icons/md";
 
 function ViewAttempts() {
@@ -28,7 +28,6 @@ function ViewAttempts() {
   ] || [];
 
   useEffect(() => {
-    dispatch(attemptsCount());
     dispatch(attemptsExam());
   }, [dispatch]);
 

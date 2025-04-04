@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,AttemptCount,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject,editExamSet,editQuestionToExamSet} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject,editExamSet,editQuestionToExamSet} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
@@ -9,7 +9,6 @@ const initialState = {
   exam: "",
   attempts: [],
   allcenter:[],
-  attemptCount: [],
   levels:[],
   reportReason:[],
   passkeyresponse:{},
@@ -177,29 +176,6 @@ export const attemptsExam = createAsyncThunk(
     }
   }
 );
-
-export const attemptsCount = createAsyncThunk(
-  "attemptCount",
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await AttemptCount();
-      return data;
-    } catch (error) {
-      console.log('Error in getLevels:', error);
-      let errorMessage = 'An error occurred';
-      if (error.response && error.response.data && error.response.data.message) {
-        errorMessage = error.response.data.message;
-        
-      } else if (error.message) {
-        errorMessage = error.message;
-       
-      }
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-
 export const getReport = createAsyncThunk(
   "getReport",
   async (_, { rejectWithValue }) => {
@@ -607,24 +583,6 @@ const examQuesSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       });
-    
-    
-    builder
-      // for get data handeling
-      .addCase(attemptsCount.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(attemptsCount.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.attemptCount = action.payload;
-        console.log("action", action.payload);
-      })
-      .addCase(attemptsCount.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
-
     builder
       // for get data handeling
       .addCase(getExamSet.pending, (state) => {

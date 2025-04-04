@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import CenterHeader from "../ExamCenter/CenterHeader";
@@ -82,9 +82,9 @@ const QuestionManagement = () => {
     formState: { errors },
   } = useForm();
 
-  useEffect(() => {
-    dispatch(getExamSets());
-  }, [dispatch, showModal]);
+  // useEffect(() => {
+  //   dispatch(getExamSets());
+  // }, [dispatch, showModal]);
 
   const onSubmit = async (data) => {
     try {
@@ -256,9 +256,42 @@ const QuestionManagement = () => {
     }
   };
 
-  const handleSaveQuestion = (questionId) => {
-    const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
+  // const handleSaveQuestion = (questionId) => {
+  //   const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
 
+  //   const payload = {
+  //     text: updatedQuestion.text,
+  //     options: updatedQuestion.options,
+  //     solution: updatedQuestion.solution || "",
+  //     correctoption: parseInt(updatedQuestion.correct_option) + 1,
+  //     exam: selectedExamSet.id,
+  //     language: updatedQuestion.language,
+  //     time: parseInt(updatedQuestion.time),
+  //   };
+
+  //   dispatch(putQuestionToExamSet({ questionId, payload }))
+  //     .unwrap()
+  //     .then((response) => {
+  //       setSelectedExamSet((prev) => ({
+  //         ...prev,
+  //         questions: prev.questions.map((q) =>
+  //           q.id === questionId ? response : q
+  //         ),
+  //       }));
+  //       setFilteredQuestions((prev) =>
+  //         prev.map((q) => (q.id === questionId ? response : q))
+  //       );
+  //       setEditingQuestionId(null);
+  //       toast.success("Question updated successfully!");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error updating question:", error);
+  //       toast.error(error.message || "Failed to update question");
+  //     });
+  // };
+  const handleSaveQuestion = useCallback((questionId) => {
+    const updatedQuestion = filteredQuestions.find((q) => q.id === questionId);
+  
     const payload = {
       text: updatedQuestion.text,
       options: updatedQuestion.options,
@@ -268,7 +301,7 @@ const QuestionManagement = () => {
       language: updatedQuestion.language,
       time: parseInt(updatedQuestion.time),
     };
-
+  
     dispatch(putQuestionToExamSet({ questionId, payload }))
       .unwrap()
       .then((response) => {
@@ -288,8 +321,12 @@ const QuestionManagement = () => {
         console.error("Error updating question:", error);
         toast.error(error.message || "Failed to update question");
       });
-  };
-
+  }, [dispatch, filteredQuestions]); // Add all dependencies used inside
+  
+  // Then use it in useEffect
+  useEffect(() => {
+    dispatch(getExamSets());
+  }, [dispatch, showModal, handleSaveQuestion]); // Now safe to include
   const handleDeleteQuestion = (questionId) => {
     const updatedQuestions = filteredQuestions.filter(
       (q) => q.id !== questionId
