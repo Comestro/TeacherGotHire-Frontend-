@@ -31,41 +31,7 @@ function TeacherDashboard() {
   const inputRef = useRef(null);
 
   const { basicData } = useSelector((state) => state.personalProfile);
-  const percentage = useSelector(
-    (state) => state.personalProfile?.completionData?.profile_completed
-  );
-  const { userData } = useSelector((state) => state?.auth);
-  const { interview, attempts, passkeyresponse, verifyresponse } = useSelector(
-    (state) => state.examQues
-  );
-  const user_id = userData?.id;
-  const { exam } = useSelector((state) => state.examQues);
-
-  const exams = verifyresponse?.offline_exam;
-  const exam_id = passkeyresponse?.exam?.id;
-  console.log("examid",exam_id)
-
-  //const exam_id = exam?.id;
-
-
-  const passedOfflineAttempt = attempts?.filter(
-    (attempt) =>
-      attempt.isqualified &&
-      attempt.exam?.level_name === "2nd Level Offline"&&
-      attempt.exam?.level_id === 3
-  );
-  const isPassedOfflineAttemptNext = attempts?.some(
-    (attempt) =>
-      attempt.isqualified &&
-      attempt.exam?.level_name === "2nd Level Offline" &&
-      attempt.exam?.level_id === 3 
-  );
-  console.log("passkeyresponse",passkeyresponse);
-  console.log("isPassedOfflineAttemptNext",isPassedOfflineAttemptNext);
-  console.log("passedOfflineAttempt",passedOfflineAttempt);
-
-  // Check if the user has passed the Offline Exam
-  const passedOfflineExam = !!passedOfflineAttempt;
+  
   useEffect(() => {
     dispatch(getInterview());
     dispatch(getSubjects());
@@ -115,23 +81,6 @@ function TeacherDashboard() {
       "Add mobile number",
       "Add education details",
     ],
-  };
-
-  const handleverifyPasskey = (event) => {
-    event.preventDefault();
-
-    dispatch(verifyPasscode({ user_id, exam_id, passcode })).then(() => {
-      // Show the alert immediately after successful verification
-      alert("You are verified successfully!");
-
-      // Delay the timer-related action by 1 second
-      setTimeout(() => {
-        const exams = verifyresponse.offline_exam;
-        console.log("exams", exams);
-        dispatch(setExam(exams));
-        navigate("/exam"); // Navigate to the exam page after dispatching the action
-      }, 2000);
-    });
   };
 
   const PhoneNumberModal = () => {

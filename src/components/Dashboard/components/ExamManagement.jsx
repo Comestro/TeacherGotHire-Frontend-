@@ -51,6 +51,7 @@ function ExamManagement() {
             subjectName: item.exam.subject_name,
             classCategoryName: item.exam.class_category_name,
             examName: item.exam.name,
+            level_code:item.exam.level_code
           });
         }
       }
@@ -60,7 +61,7 @@ function ExamManagement() {
   };
 
   const firstQualifiedExams = getFirstQualifiedOccurrences();
-  console.log("firstQualifiedExams", firstQualifiedExams);
+  console.log("firstQualifiedExam", firstQualifiedExams);
 
   const level1ExamSets = examSet?.filter((exam) => exam.level.level_code == 1.0);
   const level2OnlineExamSets = examSet?.filter(
@@ -69,6 +70,7 @@ function ExamManagement() {
   const level2OfflineExamSets = examSet?.filter(
     (exam) => exam?.level?.level_code == 2.5
   );
+  
 
   console.log("level2OfflineExamSets", level2OfflineExamSets);
   console.log("level2OnlineExamSets", level2OnlineExamSets);
@@ -120,6 +122,7 @@ function ExamManagement() {
   // }
 
   const exam_id = passkeyresponse?.exam?.id;
+  const level_code = firstQualifiedExams[0].level_code;
 
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -198,6 +201,8 @@ function ExamManagement() {
         id: subject.id,
         name: subject.subject_name,
       });
+      console.log("centerSelectionPopup",centerSelectionPopup)
+
 
       if (activeTab) {
         dispatch(
@@ -274,6 +279,7 @@ function ExamManagement() {
           subject: selectedSubject,
           class_category: activeTab,
           time: selectedDateTime,
+          level:level_code,
         })
       ).unwrap(); // Using unwrap() to properly handle the Promise
 
@@ -316,6 +322,7 @@ function ExamManagement() {
     try {
       console.log("Generating passkey for exam:", exam);
      setExam(exam);
+
 
       // Validate center selection
       if (!selectedCenterId) {
@@ -363,7 +370,7 @@ function ExamManagement() {
     }
   };
 
-  const handleverifyPasskey = async (event) => {
+    const handleverifyPasskey = async (event) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
 
@@ -390,7 +397,7 @@ function ExamManagement() {
       }
 
       // If verification succeeded
-      dispatch(setExam(level2OfflineExamSets[0]?.id));
+      // dispatch(setExam(level2OfflineExamSets[0]?.id));
       dispatch(resetPasskeyResponse());
       alert("Verification successful! You can now proceed with the exam.");
       navigate("/exam");
@@ -779,7 +786,7 @@ function ExamManagement() {
                           </div>
                         )}
 
-                      {level2OfflineExamSets ? (
+                      { level2OfflineExamSets.length>0 ? (
                         <div>
                           {centerSelectionPopup ? (
                             <>
@@ -1214,7 +1221,7 @@ function ExamManagement() {
                                           <span className="font-medium">
                                             Requested time:
                                           </span>{" "}
-                                          {item.time}
+                                          {item?.time}
                                         </p>
                                       </div>
 
@@ -1251,7 +1258,7 @@ function ExamManagement() {
                                           <span className="font-medium">
                                             Class Category:
                                           </span>{" "}
-                                          {item.class_category?.name ||
+                                          {item?.class_category?.name ||
                                             "Not specified"}
                                         </p>
                                       </div>
@@ -1274,7 +1281,7 @@ function ExamManagement() {
                                           <span className="font-medium">
                                             Level:
                                           </span>{" "}
-                                          {item.level || "Not specified"}
+                                          {item?.level?.name || "Not specified"}
                                         </p>
                                       </div>
 
