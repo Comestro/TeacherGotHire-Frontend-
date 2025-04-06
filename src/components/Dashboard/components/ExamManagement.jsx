@@ -18,6 +18,9 @@ import {
   getEducationProfile,
 } from "../../../features/jobProfileSlice";
 import { useNavigate } from "react-router-dom";
+import Loader from "../../Loader";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ExamManagement() {
   const dispatch = useDispatch();
@@ -122,7 +125,7 @@ function ExamManagement() {
   // }
 
   const exam_id = passkeyresponse?.exam?.id;
-  const level_code = firstQualifiedExams[0].level_code;
+  const level_code = firstQualifiedExams[0]?.level_code;
 
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -137,6 +140,7 @@ function ExamManagement() {
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [offlineSet, SetOfflineSet] = useState("");
+  const [loading,setLoading]= useState(false)
 
   // Check localStorage on component mount to see if a reminder is needed
   useEffect(() => {
@@ -202,7 +206,7 @@ function ExamManagement() {
         name: subject.subject_name,
       });
       console.log("centerSelectionPopup",centerSelectionPopup)
-
+      setLoading(true)
 
       if (activeTab) {
         dispatch(
@@ -214,6 +218,7 @@ function ExamManagement() {
           .unwrap()
           .then(() => {
             console.log("Exam set fetched successfully");
+            setLoading(false)
             return true;
           })
           .catch((error) => {
@@ -561,6 +566,7 @@ function ExamManagement() {
 
               {selectedSubject && examSet && (
                 <>
+      {loading && <Loader />}
                   {error && (
                     <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
                       <div className="flex items-center">
@@ -786,7 +792,7 @@ function ExamManagement() {
                           </div>
                         )}
 
-                      { level2OfflineExamSets.length>0 ? (
+                      { level2OfflineExamSets.length > 0 ? (
                         <div>
                           {centerSelectionPopup ? (
                             <>
@@ -972,34 +978,7 @@ function ExamManagement() {
                           )}
                         </div>
                       ) : (
-                        // Level 2 Locked Card
-                        <div className="relative bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
-                          <div className="relative z-10 p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                                Level 2
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                Advanced Level
-                              </span>
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-800 mb-3">
-                              {selectedSubject} Advanced
-                            </h4>
-                            <div className="space-y-2 text-sm text-gray-600 opacity-75">
-                              <p>• 75 Scenario-based Questions</p>
-                              <p>• 90 Minute Duration</p>
-                              <p>• Complex Problem Solving</p>
-                            </div>
-                            <div className="mt-6 text-center">
-                              <FaLock className="mx-auto text-3xl text-gray-400 mb-2" />
-                              <p className="text-sm text-gray-500">
-                                Complete Level 1 to unlock
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                       null
                       )}
                     </>
                   )}
