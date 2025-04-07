@@ -1,8 +1,9 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject,editExamSet,editQuestionToExamSet} from "../services/examQuesServices";
+import { fetchQuestion,fetchExam,addResult,Attempts, fetchLevel,GeneratePasskey,VerifyPasscode, AddInterview,Interview,ReportReason,AllCenter,fetchCenterUser,Approved,createExamSet,setterExamSet,AddReport,jobApply,delExamSet,addQuestionToExamSet,getAssignUserSubject,editExamSet,editQuestionToExamSet,getQuestionForExamSet} from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
+  question:{},
   examSet: [],
   setterExamSet:[],
   interview:{},
@@ -487,6 +488,29 @@ export const generatePasskey= createAsyncThunk(
                         }
                       }
                       );
+
+                      export const getQuestionToExamSet= createAsyncThunk(
+                        "getQuestionToExamSet",
+                        
+                        async ( questionId, { rejectWithValue }) => {
+                         console.log(" question update in slice",payload) 
+                          try {
+                            const data = await getQuestionForExamSet(questionId);
+                             return data; 
+                          }catch (error) {
+                            console.log('Error in getLevels:', error);
+                            let errorMessage = 'An error occurred';
+                            if (error.response && error.response.data && error.response.data.message) {
+                              errorMessage = error.response.data.message;
+                              
+                            } else if (error.message) {
+                              errorMessage = error.message;
+                             
+                            }
+                            return rejectWithValue(errorMessage);
+                          }
+                        }
+                        );
             
                     export const getSetterInfo= createAsyncThunk(
                       "getSetterInfo",
@@ -751,10 +775,22 @@ const examQuesSlice = createSlice({
       .addCase(getSetterInfo.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
-      });
-
-
-      
+      });  
+      builder
+      // for get data handeling
+      .addCase(getQuestionToExamSet.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getQuestionToExamSet.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.question = action.payload;
+        console.log("question",action.payload)
+      })
+      .addCase(getQuestionToExamSet.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });  
   },
   resetState: () => initialState,
 });

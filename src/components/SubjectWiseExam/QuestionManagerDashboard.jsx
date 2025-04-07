@@ -10,6 +10,7 @@ import {
   deleteExamSet,
   postQuestionToExamSet,
   putQuestionToExamSet,
+  getQuestionToExamSet,
   getSetterInfo,
   getLevels
 } from "../../features/examQuesSlice";
@@ -59,6 +60,9 @@ const QuestionManagerDashboard = () => {
 
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
 
+  const {question} = useSelector((state)=>state.examQues);
+  console.log("question",question)
+
   // Responsive design handler
   useEffect(() => {
     const handleResize = () => {
@@ -73,6 +77,7 @@ const QuestionManagerDashboard = () => {
     dispatch(getSetterInfo());
     dispatch(getLevels());
     dispatch(getExamSets());
+    
   }, [dispatch]);
 
   // Process categories and subjects
@@ -203,6 +208,7 @@ const QuestionManagerDashboard = () => {
     }
   };
 
+
   // Question management
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
@@ -225,7 +231,7 @@ const QuestionManagerDashboard = () => {
         const response = await dispatch(
           putQuestionToExamSet({ questionId, payload })
         ).unwrap();
-
+        dispatch(getQuestionToExamSet(questionId));
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: prev.questions.map((q) =>
@@ -237,6 +243,7 @@ const QuestionManagerDashboard = () => {
         const response = await dispatch(
           postQuestionToExamSet(payload)
         ).unwrap();
+        
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: [...(prev.questions || []), response],
@@ -1265,7 +1272,7 @@ const QuestionManagerDashboard = () => {
                             <div className="p-4">
                               <p className="text-gray-700">{question.text}</p>
                               <div className="mt-2">
-                                {question.options.map((option, idx) => (
+                                {question?.options?.map((option, idx) => (
                                   <div key={idx} className="flex items-center space-x-2">
                                     <span>{String.fromCharCode(65 + idx)}. {option}</span>
                                   </div>

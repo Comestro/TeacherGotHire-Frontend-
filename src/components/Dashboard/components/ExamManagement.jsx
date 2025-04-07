@@ -66,15 +66,15 @@ function ExamManagement() {
   const firstQualifiedExams = getFirstQualifiedOccurrences();
   console.log("firstQualifiedExam", firstQualifiedExams);
 
-  const level1ExamSets = examSet?.filter((exam) => exam.level.level_code == 1.0);
-  const level2OnlineExamSets = examSet?.filter(
+  const level1ExamSets = examSet?.exams?.filter((exam) => exam.level.level_code == 1.0);
+  const level2OnlineExamSets = examSet?.exams?.filter(
     (exam) => exam?.level?.level_code == 2.0
   );
-  const level2OfflineExamSets = examSet?.filter(
+  const level2OfflineExamSets = examSet?.exams?.filter(
     (exam) => exam?.level?.level_code == 2.5
   );
   
-
+  console.log(" level1ExamSets",  level1ExamSets);
   console.log("level2OfflineExamSets", level2OfflineExamSets);
   console.log("level2OnlineExamSets", level2OnlineExamSets);
   const { userData } = useSelector((state) => state?.auth);
@@ -223,6 +223,7 @@ function ExamManagement() {
           })
           .catch((error) => {
             console.error("Failed to fetch exam sets:", error);
+            setLoading(false)
             return false;
           });
       } else {
@@ -602,7 +603,7 @@ function ExamManagement() {
                   {!error && (
                     <>
                       {/* Level 1 Exam Card */}
-                      {level1ExamSets.map((exam) => (
+                      {level1ExamSets?.map((exam) => (
                         <div
                           key={exam.id}
                           className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
@@ -665,7 +666,7 @@ function ExamManagement() {
                         </div>
                       ))}
 
-                      {level1ExamSets.length === 0 && (
+                      {level1ExamSets?.length === 0 && (
                         <div className="relative min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2">
                           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
                           <div className="relative z-10">
@@ -696,8 +697,8 @@ function ExamManagement() {
                       )}
 
                       {/* Level 2 Online Exam Sets */}
-                      {level2OnlineExamSets.length > 0 &&
-                        level2OnlineExamSets.map((exam) => (
+                      {level2OnlineExamSets?.length > 0 &&
+                        level2OnlineExamSets?.map((exam) => (
                           <div
                             key={exam.id}
                             className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
@@ -761,8 +762,8 @@ function ExamManagement() {
                         ))}
 
                       {/* Locked Level 2 Card (if no Level 2 exams are available) */}
-                      {level2OnlineExamSets.length === 0 &&
-                        level2OfflineExamSets.length === 0 && (
+                      {level2OnlineExamSets?.length === 0 &&
+                        level2OfflineExamSets?.length === 0 && (
                           <div className="relative min-w-64 bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-2">
                             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl" />
                             <div className="relative z-10">
@@ -792,7 +793,7 @@ function ExamManagement() {
                           </div>
                         )}
 
-                      { level2OfflineExamSets.length > 0 ? (
+                      { level2OfflineExamSets?.length > 0 ? (
                         <div>
                           {centerSelectionPopup ? (
                             <>
@@ -900,7 +901,7 @@ function ExamManagement() {
                             </div>
                           ) : (
                             <>
-                              {level2OfflineExamSets.map((exam) => (
+                              {level2OfflineExamSets?.map((exam) => (
                                 <div
                                   key={exam.id}
                                   className="bg-white min-w-64 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 mb-2"
