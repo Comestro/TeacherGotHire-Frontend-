@@ -119,10 +119,10 @@ export const getAllQues = createAsyncThunk(
 
     export const postInterview= createAsyncThunk(
       "postInterview",
-      async ({ subject,time,class_category}, { rejectWithValue }) => {
+      async ({ subject,time,class_category,level}, { rejectWithValue }) => {
         console.log("interview",{ subject,time,class_category})
         try {
-          const data = await AddInterview({ subject,time,class_category});
+          const data = await AddInterview({ subject,time,class_category,level});
            return data; 
         } catch (error) {
           return rejectWithValue({

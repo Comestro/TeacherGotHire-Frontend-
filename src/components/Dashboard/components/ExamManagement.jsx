@@ -21,6 +21,8 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 
 function ExamManagement() {
   const dispatch = useDispatch();
@@ -54,7 +56,7 @@ function ExamManagement() {
             subjectName: item.exam.subject_name,
             classCategoryName: item.exam.class_category_name,
             examName: item.exam.name,
-            level_code:item.exam.level_code
+            level_code: item.exam.level_code,
           });
         }
       }
@@ -66,15 +68,19 @@ function ExamManagement() {
   const firstQualifiedExams = getFirstQualifiedOccurrences();
   console.log("firstQualifiedExam", firstQualifiedExams);
 
-  const level1ExamSets = examSet?.exams?.filter((exam) => exam.level.level_code == 1.0);
+  const level1ExamSets = examSet?.exams?.filter(
+    (exam) => exam.level.level_code == 1.0
+  );
   const level2OnlineExamSets = examSet?.exams?.filter(
     (exam) => exam?.level?.level_code == 2.0
   );
   const level2OfflineExamSets = examSet?.exams?.filter(
     (exam) => exam?.level?.level_code == 2.5
   );
-  
-  console.log(" level1ExamSets",  level1ExamSets);
+
+  const interviewEligible = examSet?.interview_details;
+
+  console.log(" level1ExamSets", level1ExamSets);
   console.log("level2OfflineExamSets", level2OfflineExamSets);
   console.log("level2OnlineExamSets", level2OnlineExamSets);
   const { userData } = useSelector((state) => state?.auth);
@@ -82,6 +88,7 @@ function ExamManagement() {
     (state) => state.examQues
   );
   console.log("interview", interview);
+  console.log("passkeyrespone", passkeyresponse);
   console.log("examSet", examSet);
   const exams = verifyresponse?.offline_exam;
   const isProfileComplete =
@@ -100,7 +107,6 @@ function ExamManagement() {
   console.log("isProfileComplete", isProfileComplete);
   const [activeTab, setActiveTab] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [interviewEligible, setInterviewEligible] = useState(null);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -120,13 +126,7 @@ function ExamManagement() {
     }
   }, [isLoading, prefrence]);
 
-  // if (isLoading) {
-  //   return <div>Loading...</div>; // Show a loading spinner or message
-  // }
-
   const exam_id = passkeyresponse?.exam?.id;
-  const level_code = firstQualifiedExams[0]?.level_code;
-
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedSubjectName, setSelectedSubjectName] = useState("");
@@ -139,8 +139,7 @@ function ExamManagement() {
   const [showReminderMessage, setShowReminderMessage] = useState(false);
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [passcode, setPasscode] = useState("");
-  const [offlineSet, SetOfflineSet] = useState("");
-  const [loading,setLoading]= useState(false)
+  const [loading, setLoading] = useState(false);
 
   // Check localStorage on component mount to see if a reminder is needed
   useEffect(() => {
@@ -205,8 +204,8 @@ function ExamManagement() {
         id: subject.id,
         name: subject.subject_name,
       });
-      console.log("centerSelectionPopup",centerSelectionPopup)
-      setLoading(true)
+      console.log("centerSelectionPopup", centerSelectionPopup);
+      setLoading(true);
 
       if (activeTab) {
         dispatch(
@@ -218,12 +217,12 @@ function ExamManagement() {
           .unwrap()
           .then(() => {
             console.log("Exam set fetched successfully");
-            setLoading(false)
+            setLoading(false);
             return true;
           })
           .catch((error) => {
             console.error("Failed to fetch exam sets:", error);
-            setLoading(false)
+            setLoading(false);
             return false;
           });
       } else {
@@ -237,25 +236,25 @@ function ExamManagement() {
       setSelectedSubjectName("");
     }
   };
-  useEffect(() => {
-    console.log(" interviewEligible state:", interviewEligible);
-  }, [interviewEligible]);
+  // useEffect(() => {
+  //   console.log(" interviewEligible state:", interviewEligible);
+  // }, [interviewEligible]);
 
-  useEffect(() => {
-    const checkEligibility = () => {
-      if (activeTab && selectedSubject) {
-        const isQualified = firstQualifiedExams.some(
-          (exam) =>
-            exam.classCategoryId === activeTab &&
-            exam.subjectId === selectedSubject
-        );
-        setInterviewEligible(isQualified);
-        console.log("Eligibility updated:", isQualified);
-      }
-    };
-    console.log("ACTUAL interviewEligible state:", interviewEligible);
-    checkEligibility();
-  }, [activeTab, selectedSubject, firstQualifiedExams]);
+  // useEffect(() => {
+  //   const checkEligibility = () => {
+  //     if (activeTab && selectedSubject) {
+  //       const isQualified = firstQualifiedExams.some(
+  //         (exam) =>
+  //           exam.classCategoryId === activeTab &&
+  //           exam.subjectId === selectedSubject
+  //       );
+  //       setInterviewEligible(isQualified);
+  //       console.log("Eligibility updated:", isQualified);
+  //     }
+  //   };
+  //   console.log("ACTUAL interviewEligible state:", interviewEligible);
+  //   checkEligibility();
+  // }, [activeTab, selectedSubject, firstQualifiedExams]);
 
   const handleExam = (exam) => {
     dispatch(setExam(exam));
@@ -285,12 +284,17 @@ function ExamManagement() {
           subject: selectedSubject,
           class_category: activeTab,
           time: selectedDateTime,
-          level:level_code,
+          level: interviewEligible?.interview?.level?.level_code,
         })
       ).unwrap(); // Using unwrap() to properly handle the Promise
 
       console.log("Interview scheduled successfully:", result);
-
+      dispatch(
+        getExamSet({
+          subject_id: selectedSubject,
+          class_category_id: activeTab,
+        })
+      );
       // Only update state if successful
       setIsSubmitted(true);
       dispatch(resetInterview());
@@ -327,8 +331,7 @@ function ExamManagement() {
 
     try {
       console.log("Generating passkey for exam:", exam);
-     setExam(exam);
-
+      setExam(exam);
 
       // Validate center selection
       if (!selectedCenterId) {
@@ -376,7 +379,7 @@ function ExamManagement() {
     }
   };
 
-    const handleverifyPasskey = async (event) => {
+  const handleverifyPasskey = async (event) => {
     event.preventDefault();
     console.log("Verification code submitted:", passcode);
 
@@ -391,7 +394,7 @@ function ExamManagement() {
       const result = await dispatch(
         verifyPasscode({
           user_id,
-          exam_id:exam_id,
+          exam_id: exam_id,
           passcode,
         })
       ).unwrap();
@@ -567,7 +570,7 @@ function ExamManagement() {
 
               {selectedSubject && examSet && (
                 <>
-      {loading && <Loader />}
+                  {loading && <Loader />}
                   {error && (
                     <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
                       <div className="flex items-center">
@@ -610,7 +613,7 @@ function ExamManagement() {
                         >
                           <div className="flex items-center justify-between mb-4">
                             <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-medium">
-                             {exam?.level?.name}
+                              {exam?.level?.name}
                             </span>
                             <span className="text-sm text-gray-500">
                               Basic Level
@@ -672,7 +675,7 @@ function ExamManagement() {
                           <div className="relative z-10">
                             <div className="flex items-center justify-between mb-4">
                               <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                              {exam?.level?.name}
+                                {exam?.level?.name}
                               </span>
                               <span className="text-sm text-gray-500">
                                 Basic Level
@@ -705,7 +708,7 @@ function ExamManagement() {
                           >
                             <div className="flex items-center justify-between mb-4">
                               <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
-                              {exam?.level?.name}
+                                {exam?.level?.name}
                               </span>
                               <span className="text-sm text-gray-500">
                                 Advanced Level
@@ -769,7 +772,7 @@ function ExamManagement() {
                             <div className="relative z-10">
                               <div className="flex items-center justify-between mb-4">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-300 text-gray-700 text-sm font-medium">
-                                {exam?.level?.name}
+                                  {exam?.level?.name}
                                 </span>
                                 <span className="text-sm text-gray-500">
                                   Advanced Level
@@ -793,7 +796,7 @@ function ExamManagement() {
                           </div>
                         )}
 
-                      { level2OfflineExamSets?.length > 0 ? (
+                      {level2OfflineExamSets?.length > 0 ? (
                         <div>
                           {centerSelectionPopup ? (
                             <>
@@ -908,7 +911,7 @@ function ExamManagement() {
                                 >
                                   <div className="flex items-center justify-between mb-4">
                                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 text-white text-sm font-medium">
-                                    {exam?.level?.name}
+                                      {exam?.level?.name}
                                     </span>
                                     <span className="text-sm text-gray-500">
                                       Advanced Level
@@ -978,93 +981,15 @@ function ExamManagement() {
                             </>
                           )}
                         </div>
-                      ) : (
-                       null
-                      )}
+                      ) : null}
                     </>
                   )}
                   {/* Interviews Section */}
-                  {interviewEligible ? (
+                  {interviewEligible && (
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      {(!isSubmitted && !interview.length) ||
-                      (isSubmitted && !interview.length) ? (
-                        // Scheduling Form
-                        isSubmitted ? (// Immediately show requested card after submission (before API response)
-                          <div className="p-6">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-5">
-                              <div className="flex items-center justify-between mb-4">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 mr-1"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  Pending Approval
-                                </span>
-                                <span className="text-sm text-gray-600">
-                                  Admin Confirmation
-                                </span>
-                              </div>
-                  
-                              <h4 className="text-lg font-semibold text-gray-800 mb-3">
-                                Interview Request Submitted
-                              </h4>
-                  
-                              <div className="space-y-3 text-sm text-gray-700">
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  <span>
-                                    Your selected date and time:{" "}
-                                    <span className="font-medium">
-                                      {selectedDateTime}
-                                    </span>
-                                  </span>
-                                </div>
-                                <div className="flex items-start">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  <span>
-                                    Admin will confirm your request soon
-                                  </span>
-                                </div>
-                              </div>
-                  
-                              <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
-                                <p className="text-sm text-yellow-800 text-center">
-                                  Thank you for submitting your request. We
-                                  will notify you once it is approved.
-                                </p>
-                              </div>
-                            </div>
-                          </div>):(<form onSubmit={handleSubmit} className="p-6">
+                      {/* Pending - Show Scheduling Form */}
+                      {interviewEligible.interview.status === "pending" && (
+                        <form onSubmit={handleSubmit} className="p-6">
                           <div className="flex items-center justify-between mb-6">
                             <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
                               <svg
@@ -1086,36 +1011,113 @@ function ExamManagement() {
                             </span>
                           </div>
 
-                            <h4 className="text-xl font-semibold text-gray-800 mb-5">
-                              Choose a Date and Time for Your Interview
-                            </h4>
+                          <h4 className="text-xl font-semibold text-gray-800 mb-5">
+                            Choose a Date and Time for Your Interview{" "}
+                            {interviewEligible?.interview?.level?.name}
+                          </h4>
 
-                            <div className="space-y-5">
-                              <div>
-                                <label
-                                  htmlFor="datetime"
-                                  className="block text-sm font-medium text-gray-700 mb-2"
+                          <div className="space-y-5">
+                            <div>
+                              <label
+                                htmlFor="datetime"
+                                className="block text-sm font-medium text-gray-700 mb-2"
+                              >
+                                Date and Time
+                              </label>
+                              <div className="relative">
+                                <Flatpickr
+                                  options={{
+                                    enableTime: true,
+                                    dateFormat: "Y-m-d H:i:S",
+                                    time_24hr: true,
+                                    minDate: "today",
+                                  }}
+                                  value={selectedDateTime}
+                                  onChange={([date]) => {
+                                    const formatted = date
+                                      .toISOString()
+                                      .replace("T", " ")
+                                      .replace(/\.\d+Z/, "");
+                                    setSelectedDateTime(formatted);
+                                  }}
+                                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                  <svg
+                                    className="h-5 w-5 text-gray-400"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              type="submit"
+                              className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              Submit Request
+                            </button>
+                          </div>
+                        </form>
+                      )}
+
+                      {/* Requested - Show Pending Card */}
+                      {interviewEligible?.interview?.status === "requested" && (
+                        <div className="p-6">
+                          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-xs hover:shadow-sm transition-all">
+                            <div className="flex items-start gap-4">
+                              <div className="bg-blue-50 p-2.5 rounded-lg">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-6 w-6 text-blue-600"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
                                 >
-                                  Date and Time
-                                </label>
-                                <div className="relative">
-                                  <input
-                                    type="datetime-local"
-                                    id="datetime"
-                                    name="datetime"
-                                    value={selectedDateTime}
-                                    onChange={(e) =>
-                                      setSelectedDateTime(e.target.value)
-                                    }
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                    min={new Date().toISOString().slice(0, 16)}
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                    clipRule="evenodd"
                                   />
-                                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                </svg>
+                              </div>
+
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    Interview Request
+                                  </h3>
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Pending
+                                  </span>
+                                </div>
+
+                                <div className="mt-3 space-y-2.5">
+                                  {/* Requested Time */}
+                                  <div className="flex items-start gap-2">
                                     <svg
-                                      className="h-5 w-5 text-gray-400"
-                                      fill="currentColor"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
                                       viewBox="0 0 20 20"
+                                      fill="currentColor"
                                     >
                                       <path
                                         fillRule="evenodd"
@@ -1123,17 +1125,134 @@ function ExamManagement() {
                                         clipRule="evenodd"
                                       />
                                     </svg>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">
+                                        Requested time:
+                                      </span>{" "}
+                                      {interviewEligible?.interview?.time}
+                                    </p>
+                                  </div>
+
+                                  {/* Subject */}
+                                  <div className="flex items-start gap-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                                    </svg>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">
+                                        Subject:
+                                      </span>{" "}
+                                      {interviewEligible?.interview?.subject
+                                        ?.subject_name || "Not specified"}
+                                    </p>
+                                  </div>
+
+                                  {/* Class Category */}
+                                  <div className="flex items-start gap-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
+                                    </svg>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">
+                                        Class Category:
+                                      </span>{" "}
+                                      {interviewEligible?.interview
+                                        ?.class_category?.name ||
+                                        "Not specified"}
+                                    </p>
+                                  </div>
+
+                                  {/* Level */}
+                                  <div className="flex items-start gap-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">
+                                        Level:
+                                      </span>{" "}
+                                      {interviewEligible?.interview?.level
+                                        ?.name || "Not specified"}
+                                    </p>
+                                  </div>
+
+                                  {/* Status */}
+                                  <div className="flex items-start gap-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">
+                                        Status:
+                                      </span>{" "}
+                                      Under admin review
+                                    </p>
                                   </div>
                                 </div>
-                              </div>
 
-                              <button
-                                type="submit"
-                                className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                              >
+                                <div className="mt-4 pt-3 border-t border-gray-100">
+                                  <p className="flex items-start gap-2 text-sm text-blue-600">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 flex-shrink-0"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    <span>
+                                      We'll email you once approved. Usually
+                                      within 24 hours.
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Approved - Show Approved Card */}
+                      {interviewEligible?.interview?.status === "scheduled" && (
+                        <div className="p-6">
+                          <div className="bg-green-50 border-l-4 border-green-400 rounded-lg p-5">
+                            <div className="flex items-center justify-between mb-4">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5 mr-2"
+                                  className="h-4 w-4 mr-1"
                                   viewBox="0 0 20 20"
                                   fill="currentColor"
                                 >
@@ -1143,268 +1262,86 @@ function ExamManagement() {
                                     clipRule="evenodd"
                                   />
                                 </svg>
-                                Submit Request
-                              </button>
+                                Approved
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                Ready to Join
+                              </span>
                             </div>
-                          </form>
-                        )
-                      ) : (
-                        // Interview Status Cards
-                        interview.length > 0 &&
-                        interview.map((item) => (
-                          <div key={item.id} className="p-6">
-                            {item.status === "requested" ? (
-                              // Pending Approval Card
-                              <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-xs hover:shadow-sm transition-all">
-                                <div className="flex items-start gap-4">
-                                  <div className="bg-blue-50 p-2.5 rounded-lg">
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-6 w-6 text-blue-600"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </div>
 
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between">
-                                      <h3 className="text-lg font-semibold text-gray-900">
-                                        Interview Request
-                                      </h3>
-                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        Pending
-                                      </span>
-                                    </div>
+                            <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                              Interview Scheduled
+                            </h4>
 
-                                    <div className="mt-3 space-y-2.5">
-                                      {/* Requested Time */}
-                                      <div className="flex items-start gap-2">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path
-                                            fillRule="evenodd"
-                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                            clipRule="evenodd"
-                                          />
-                                        </svg>
-                                        <p className="text-sm text-gray-700">
-                                          <span className="font-medium">
-                                            Requested time:
-                                          </span>{" "}
-                                          {item?.time}
-                                        </p>
-                                      </div>
-
-                                      {/* Subject */}
-                                      <div className="flex items-start gap-2">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                                        </svg>
-                                        <p className="text-sm text-gray-700">
-                                          <span className="font-medium">
-                                            Subject:
-                                          </span>{" "}
-                                          {item.subject?.subject_name ||
-                                            "Not specified"}
-                                        </p>
-                                      </div>
-
-                                      {/* Class Category */}
-                                      <div className="flex items-start gap-2">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
-                                        </svg>
-                                        <p className="text-sm text-gray-700">
-                                          <span className="font-medium">
-                                            Class Category:
-                                          </span>{" "}
-                                          {item?.class_category?.name ||
-                                            "Not specified"}
-                                        </p>
-                                      </div>
-
-                                      {/* Level */}
-                                      <div className="flex items-start gap-2">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path
-                                            fillRule="evenodd"
-                                            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                            clipRule="evenodd"
-                                          />
-                                        </svg>
-                                        <p className="text-sm text-gray-700">
-                                          <span className="font-medium">
-                                            Level:
-                                          </span>{" "}
-                                          {item?.level?.name || "Not specified"}
-                                        </p>
-                                      </div>
-
-                                      {/* Status */}
-                                      <div className="flex items-start gap-2">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path
-                                            fillRule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
-                                            clipRule="evenodd"
-                                          />
-                                        </svg>
-                                        <p className="text-sm text-gray-700">
-                                          <span className="font-medium">
-                                            Status:
-                                          </span>{" "}
-                                          Under admin review
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    <div className="mt-4 pt-3 border-t border-gray-100">
-                                      <p className="flex items-start gap-2 text-sm text-blue-600">
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-4 w-4 flex-shrink-0"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path
-                                            fillRule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
-                                            clipRule="evenodd"
-                                          />
-                                        </svg>
-                                        <span>
-                                          We'll email you once approved. Usually
-                                          within 24 hours.
-                                        </span>
-                                      </p>
-                                    </div>
-                                  </div>
+                            <div className="space-y-3">
+                              <div className="flex items-start">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <div>
+                                  <p className="text-gray-700">
+                                    <span className="font-medium">
+                                      Class Category
+                                    </span>{" "}
+                                    {interviewEligible?.interview
+                                        ?.class_category?.name || "N/A"}
+                                  </p>
+                                  <p className="text-gray-700">
+                                    <span className="font-medium">
+                                      Subject:
+                                    </span>{" "}
+                                    {interviewEligible?.interview?.subject?.subject_name || "N/A"}
+                                  </p>
+                                  <p className="text-gray-700">
+                                    <span className="font-medium">
+                                     Level
+                                    </span>{" "}
+                                    {interviewEligible?.interview
+                                        ?.level?.name || "N/A"}
+                                  </p>
+                                  <p className="text-gray-700">
+                                    <span className="font-medium">Time:</span>{" "}
+                                    {new Date(interviewEligible?.interview?.time).toLocaleString()}
+                                  </p>
                                 </div>
                               </div>
-                            ) : (
-                              // Approved Interview Card
-                              <div className="bg-green-50 border-l-4 border-green-400 rounded-lg p-5">
-                                <div className="flex items-center justify-between mb-4">
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+
+                              {interviewEligible?.interview?.link && (
+                                <div className="mt-4 text-center">
+                                  <a
+                                    href={interviewEligible?.interview?.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
+                                  >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4 mr-1"
+                                      className="h-5 w-5 mr-2"
                                       viewBox="0 0 20 20"
                                       fill="currentColor"
                                     >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clipRule="evenodd"
-                                      />
+                                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
                                     </svg>
-                                    Approved
-                                  </span>
-                                  <span className="text-sm text-gray-600">
-                                    Ready to Join
-                                  </span>
+                                    Join Interview
+                                  </a>
                                 </div>
-
-                                <h4 className="text-lg font-semibold text-gray-800 mb-3">
-                                  Interview Scheduled
-                                </h4>
-
-                                <div className="space-y-3">
-                                  <div className="flex items-start">
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                    <div>
-                                      <p className="text-gray-700">
-                                        <span className="font-medium">
-                                          Class Category
-                                        </span>{" "}
-                                        {item?.class_category?.name || "N/A"}
-                                      </p>
-                                      <p className="text-gray-700">
-                                        <span className="font-medium">
-                                          Subject:
-                                        </span>{" "}
-                                        {item.subject.subject_name || "N/A"}
-                                      </p>
-                                      <p className="text-gray-700">
-                                        <span className="font-medium">
-                                          Time:
-                                        </span>{" "}
-                                        {new Date(item.time).toLocaleString()}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {item.link && (
-                                    <div className="mt-4 text-center">
-                                      <a
-                                        href={item.link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-5 w-5 mr-2"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
-                                        >
-                                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                                        </svg>
-                                        Join Interview
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        ))
+                        </div>
                       )}
                     </div>
-                  ) : // Online Interview Card
-                  null}
+                  )}
                 </>
               )}
             </div>
