@@ -62,6 +62,7 @@ const InterviewManagement = () => {
     const [rejectionReason, setRejectionReason] = useState("");
     const [interviewScore, setInterviewScore] = useState("");
     const [meetingLink, setMeetingLink] = useState("");
+    const [meetingLinkError, setMeetingLinkError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -392,6 +393,44 @@ const InterviewManagement = () => {
     const handleViewDetails = (teacher) => {
         setSelectedTeacher(teacher);
         setOpenModal(true);
+    };
+
+    const handleOpenSchedule = (teacher) => {
+        setSelectedTeacher(teacher);
+        setSelectedDateTime(dayjs(teacher.desiredDateTime !== "—" ? teacher.desiredDateTime : null));
+        setMeetingLink("");
+        setMeetingLinkError(false);
+        setScheduleModalOpen(true);
+    };
+
+    const handleScheduleInterview = async () => {
+        if (!meetingLink.trim()) {
+            setMeetingLinkError(true);
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            const response = await updateInterview({
+                id: selectedTeacher.id,
+                status: "scheduled",
+                time: selectedDateTime.format("YYYY-MM-DD HH:mm:ss"),
+                link: meetingLink
+            });
+
+            setSnackbarMessage("Interview scheduled successfully");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setScheduleModalOpen(false);
+            
+            fetchInterviews();
+        } catch (err) {
+            setSnackbarMessage("Failed to schedule interview: " + (err.message || "Unknown error"));
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const renderCardView = () => {
@@ -1176,6 +1215,109 @@ const InterviewManagement = () => {
                             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                                 <Button variant="contained" onClick={() => setOpenModal(false)}>
                                     Close
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Modal>
+
+                    <Modal
+                        open={scheduleModalOpen}
+                        onClose={() => setScheduleModalOpen(false)}
+                        aria-labelledby="schedule-interview-modal"
+                    >
+                        <Paper sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: { xs: '90%', sm: 500 },
+                            p: 3,
+                            borderRadius: 2,
+                            maxHeight: '90vh',
+                            overflow: 'auto'
+                        }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                <Typography variant="h6" fontWeight={600}>Schedule Interview</Typography>
+                                <IconButton onClick={() => setScheduleModalOpen(false)} size="small">
+                                    <FiX />
+                                </IconButton>
+                            </Box>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            {selectedTeacher && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Teacher Name</Typography>
+                                        <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DateTimePicker
+                                                label="Schedule Date & Time"
+                                                value={selectedDateTime}
+                                                onChange={setSelectedDateTime}
+                                                slotProps={{
+                                                    textField: {
+                                                        fullWidth: true,
+                                                        margin: 'normal',
+                                                        required: true
+                                                    }
+                                                }}
+                                            />
+                                        </LocalizationProvider>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Interview Meeting Link"
+                                            variant="outlined"
+                                            value={meetingLink}
+                                            onChange={(e) => {
+                                                setMeetingLink(e.target.value);
+                                                if (e.target.value.trim()) {
+                                                    setMeetingLinkError(false);
+                                                }
+                                            }}
+                                            placeholder="Enter meeting URL (Google Meet, Zoom, etc.)"
+                                            required
+                                            error={meetingLinkError}
+                                            helperText={meetingLinkError ? "Meeting link is required" : ""}
+                                            margin="normal"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <FiLink style={{ marginRight: '8px', color: '#999' }} />
+                                                ),
+                                            }}
+                                        />
+                                        {meetingLinkError && (
+                                            <Alert severity="error" sx={{ mt: 1 }}>
+                                                Please provide a meeting link before scheduling the interview.
+                                            </Alert>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            )}
+
+                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => setScheduleModalOpen(false)}
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={handleScheduleInterview}
+                                    disabled={actionLoading}
+                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiClock />}
+                                >
+                                    {actionLoading ? "Scheduling..." : "Schedule Interview"}
                                 </Button>
                             </Box>
                         </Paper>
