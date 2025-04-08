@@ -243,6 +243,18 @@ const BasicInformation = () => {
       ],
     },
     {
+      label: "Gender",
+      field: "gender",
+      value: basicData.gender,
+      inputType: "select",
+      options: [
+        { label: "Select Gender", value: "" },
+        { label: "Male", value: "male" },
+        { label: "Female", value: "female" },
+        { label: "Other", value: "other" },
+      ],
+    },
+    {
       label: "Marital Status",
       field: "marital_status",
       value: basicData.marital_status,
