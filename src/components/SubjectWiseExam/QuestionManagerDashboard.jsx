@@ -153,6 +153,10 @@ const QuestionManagerDashboard = () => {
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [examSetSearchQuery, setExamSetSearchQuery] = useState("");
+  const [examSetFilterType, setExamSetFilterType] = useState("All");
+  const [examSetFilterClass, setExamSetFilterClass] = useState("All");
+  const [examSetFilterLevel, setExamSetFilterLevel] = useState("All");
 
   // Fix the setEditingExamSet function to properly handle categories and subjects
   const setEditingExamSet = (examSet) => {
@@ -335,6 +339,40 @@ const QuestionManagerDashboard = () => {
     }
   };
 
+  // Add a function to filter exam sets
+  const filterExamSets = () => {
+    if (!setterExamSet) return [];
+    
+    let filtered = [...setterExamSet];
+    
+    // Apply search filter
+    if (examSetSearchQuery) {
+      const query = examSetSearchQuery.toLowerCase();
+      filtered = filtered.filter(
+        set => 
+          set.name?.toLowerCase().includes(query) || 
+          set.description?.toLowerCase().includes(query) ||
+          set.subject?.subject_name?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply type filter
+    if (examSetFilterType !== "All") {
+      filtered = filtered.filter(set => set.type === examSetFilterType);
+    }
+    
+    // Apply class filter
+    if (examSetFilterClass !== "All") {
+      filtered = filtered.filter(set => set.class_category.id === parseInt(examSetFilterClass));
+    }
+    
+    // Apply level filter
+    if (examSetFilterLevel !== "All") {
+      filtered = filtered.filter(set => set.level.id === parseInt(examSetFilterLevel));
+    }
+    
+    return filtered;
+  };
 
   // Question management
   const handleQuestionModalSubmit = async (e) => {
@@ -781,12 +819,12 @@ const QuestionManagerDashboard = () => {
             </div>
           </div>
 
-          {/* Search and filter bar for desktop */}
+          {/* Add Search and filter bar for Exam Sets (Only show when not viewing an exam set) */}
           {!isEditing && !selectedExamSet && (
-            <div className="hidden md:block mb-6">
+            <div className="mb-6">
               <div className="bg-white p-4 rounded-lg shadow-sm border">
                 <div className="flex flex-wrap gap-4 items-center">
-                  {/* Search input */}
+                  {/* Search input for exam sets */}
                   <div className="flex-grow max-w-md">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -796,50 +834,51 @@ const QuestionManagerDashboard = () => {
                       </div>
                       <input
                         type="text"
-                        placeholder="Search questions..."
+                        placeholder="Search exam sets..."
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={examSetSearchQuery}
+                        onChange={(e) => setExamSetSearchQuery(e.target.value)}
                       />
                     </div>
                   </div>
 
-                  {/* Filter dropdowns */}
+                  {/* Filter dropdowns for exam sets */}
                   <div className="flex items-center space-x-4">
                     <div>
                       <select
                         className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                        value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        value={examSetFilterType}
+                        onChange={(e) => setExamSetFilterType(e.target.value)}
                       >
-                        <option value="All">All Statuses</option>
-                        <option value="draft">Draft</option>
-                        <option value="review">Under Review</option>
-                        <option value="published">Published</option>
+                        <option value="All">All Types</option>
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
                       </select>
                     </div>
 
                     <div>
                       <select
                         className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                        value={selectedLanguage}
-                        onChange={(e) => setSelectedLanguage(e.target.value)}
+                        value={examSetFilterClass}
+                        onChange={(e) => setExamSetFilterClass(e.target.value)}
                       >
-                        <option value="All">All Languages</option>
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
+                        <option value="All">All Classes</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
                       <select
                         className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
+                        value={examSetFilterLevel}
+                        onChange={(e) => setExamSetFilterLevel(e.target.value)}
                       >
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="status">By Status</option>
+                        <option value="All">All Levels</option>
+                        {levels.map(level => (
+                          <option key={level.id} value={level.id}>{level.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -848,8 +887,7 @@ const QuestionManagerDashboard = () => {
             </div>
           )}
 
-          {/* Section 2: Exam Sets & Questions */}
-          {/* Responsive Exam Sets List */}
+          {/* Replace the existing exam set listing with filtered results */}
           {!isEditing && !selectedExamSet ? (
             <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
@@ -874,7 +912,7 @@ const QuestionManagerDashboard = () => {
                 </button>
               </div>
 
-              {setterExamSet && setterExamSet.length === 0 ? (
+              {filterExamSets().length === 0 ? (
                 <div className="p-6 text-center">
                   <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -901,10 +939,10 @@ const QuestionManagerDashboard = () => {
                 </div>
               ) : (
                 <>
-                  {/* Mobile List View */}
+                  {/* Mobile List View - Update to use filterExamSets() */}
                   <div className="md:hidden">
                     <ul className="divide-y divide-gray-200">
-                      {setterExamSet.map((examSet, index) => (
+                      {filterExamSets().map((examSet, index) => (
                         <li key={examSet.id} className="px-4 py-4">
                           <div className="flex justify-between items-start">
                             <div>
@@ -961,7 +999,7 @@ const QuestionManagerDashboard = () => {
                     </ul>
                   </div>
 
-                  {/* Desktop Table View */}
+                  {/* Desktop Table View - Update to use filterExamSets() */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -987,48 +1025,56 @@ const QuestionManagerDashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {setterExamSet.map((examSet, index) => (
-                          <tr key={examSet.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="font-medium text-gray-900">{examSet.subject.subject_name}</div>
-                              <div className="text-sm text-gray-500">{examSet.description}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{examSet.class_category.name}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{examSet.level.name}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {examSet.type}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {examSet.questions?.length || 0} Questions
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                              <button
-                                onClick={() => setSelectedExamSet(examSet)}
-                                className="text-teal-600 hover:text-teal-900 mr-3"
-                              >
-                                Manage Questions
-                              </button>
-                              <button
-                                onClick={() => handleEdit(index)}
-                                className="text-indigo-600 hover:text-indigo-900 mr-3"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDelete(index)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete
-                              </button>
+                        {filterExamSets().length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                              No exam sets found matching your search criteria.
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          filterExamSets().map((examSet, index) => (
+                            <tr key={examSet.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="font-medium text-gray-900">{examSet.subject.subject_name}</div>
+                                <div className="text-sm text-gray-500">{examSet.description}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{examSet.class_category.name}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{examSet.level.name}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {examSet.type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {examSet.questions?.length || 0} Questions
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button
+                                  onClick={() => setSelectedExamSet(examSet)}
+                                  className="text-teal-600 hover:text-teal-900 mr-3"
+                                >
+                                  Manage Questions
+                                </button>
+                                <button
+                                  onClick={() => handleEdit(index)}
+                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(index)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -1429,13 +1475,282 @@ const QuestionManagerDashboard = () => {
                 </div>
               )}
 
+              {/* When viewing questions for an exam set, show the question search/filter */}
+              {selectedExamSet && selectedExamSet.questions && selectedExamSet.questions.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-4">
+                  <div className="px-4 sm:px-6 py-4">
+                    {/* Desktop: Full search bar and filters in one row */}
+                    <div className="hidden md:flex items-center justify-between">
+                      <div className="relative flex-grow max-w-md">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Search questions..."
+                          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm transition-colors duration-200"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                          <button 
+                            onClick={() => setSearchQuery("")}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Desktop filter controls */}
+                      <div className="flex items-center space-x-3">
+                        <div className="relative inline-block text-left">
+                          <select
+                            className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700"
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                          >
+                            <option value="All">All Languages</option>
+                            {["English", "Hindi"].map(lang => (
+                              <option key={lang} value={lang}>{lang}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        <div className="relative inline-block text-left">
+                          <select
+                            className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700"
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                          >
+                            <option value="All">All Statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="review">Under Review</option>
+                            <option value="published">Published</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        <div className="relative inline-block text-left">
+                          <select
+                            className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700"
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                          >
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="status">By Status</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Mobile: Search and filter toggle */}
+                    <div className="md:hidden">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="relative flex-grow">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Search questions..."
+                            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                          {searchQuery && (
+                            <button 
+                              onClick={() => setSearchQuery("")}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={() => setShowFilters(!showFilters)}
+                          className="ml-3 inline-flex items-center px-3 py-3 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                          </svg>
+                          Filter
+                        </button>
+                      </div>
+                      
+                      {/* Mobile filters - collapsible */}
+                      <AnimatePresence>
+                        {showFilters && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-2 pb-3 space-y-3 border-t border-gray-200">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {["All", "English", "Hindi"].map(lang => (
+                                    <button
+                                      key={lang}
+                                      onClick={() => setSelectedLanguage(lang)}
+                                      className={`px-3 py-2 rounded-full text-sm ${selectedLanguage === lang
+                                        ? "bg-teal-100 text-teal-800 border border-teal-300 font-medium"
+                                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                        }`}
+                                    >
+                                      {lang}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {[
+                                    { value: "All", label: "All" },
+                                    { value: "draft", label: "Draft" },
+                                    { value: "review", label: "Under Review" },
+                                    { value: "published", label: "Published" }
+                                  ].map(status => (
+                                    <button
+                                      key={status.value}
+                                      onClick={() => setSelectedStatus(status.value)}
+                                      className={`px-3 py-2 rounded-full text-sm ${selectedStatus === status.value
+                                        ? "bg-teal-100 text-teal-800 border border-teal-300 font-medium"
+                                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                        }`}
+                                    >
+                                      {status.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {[
+                                    { value: "newest", label: "Newest First" },
+                                    { value: "oldest", label: "Oldest First" },
+                                    { value: "status", label: "By Status" }
+                                  ].map(option => (
+                                    <button
+                                      key={option.value}
+                                      onClick={() => setSortOrder(option.value)}
+                                      className={`px-3 py-2 rounded-full text-sm ${sortOrder === option.value
+                                        ? "bg-teal-100 text-teal-800 border border-teal-300 font-medium"
+                                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                        }`}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    
+                    {/* Active filters display - both mobile and desktop */}
+                    {(selectedLanguage !== "All" || selectedStatus !== "All" || searchQuery) && (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="text-sm text-gray-500 mr-1">Active filters:</span>
+                        
+                        {searchQuery && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Search: {searchQuery.length > 15 ? searchQuery.substring(0, 15) + '...' : searchQuery}
+                            <button 
+                              onClick={() => setSearchQuery("")}
+                              className="ml-1 text-gray-500 hover:text-gray-700"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        )}
+                        
+                        {selectedLanguage !== "All" && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                            Language: {selectedLanguage}
+                            <button 
+                              onClick={() => setSelectedLanguage("All")}
+                              className="ml-1 text-teal-600 hover:text-teal-800"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        )}
+                        
+                        {selectedStatus !== "All" && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                            Status: {selectedStatus === "draft" ? "Draft" : selectedStatus === "review" ? "Under Review" : "Published"}
+                            <button 
+                              onClick={() => setSelectedStatus("All")}
+                              className="ml-1 text-teal-600 hover:text-teal-800"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        )}
+                        
+                        <button 
+                          onClick={() => {
+                            setSearchQuery("");
+                            setSelectedLanguage("All");
+                            setSelectedStatus("All");
+                          }}
+                          className="text-xs text-teal-600 hover:text-teal-800 hover:underline"
+                        >
+                          Clear all
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Questions List */}
               {selectedExamSet.questions && selectedExamSet.questions.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
                   <div className="px-6 py-4 border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <h3 className="text-lg font-medium text-gray-900">
-                        Questions ({selectedExamSet.questions.length})
+                        Questions ({applyFilters().length}/{selectedExamSet.questions.length})
                       </h3>
 
                       <div className="flex flex-wrap items-center gap-3">

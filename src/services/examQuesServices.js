@@ -323,3 +323,13 @@ export const jobApply= async ({subject, class_category}) => {
     throw err;
   }
 };
+
+export const fetchQuestionsByExamSet = async (examSetId) => {
+  try {
+    const response = await axios.get(`${API_URL}/exam/questions/${examSetId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching questions by exam set:", error);
+    throw error;
+  }
+};

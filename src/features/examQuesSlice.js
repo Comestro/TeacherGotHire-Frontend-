@@ -22,11 +22,12 @@ import {
   getAssignUserSubject,
   editExamSet,
   editQuestionToExamSet,
+  fetchQuestionsByExamSet,
 } from "../services/examQuesServices";
 
 const initialState = {
   allQuestion: [],
-  question:{},
+  question: {},
   examSet: [],
   setterExamSet: [],
   interview: {},
@@ -536,6 +537,29 @@ export const putQuestionToExamSet = createAsyncThunk(
   }
 );
 
+export const getQuestionToExamSet = createAsyncThunk(
+  "getQuestionToExamSet",
+  async (examSetId, { rejectWithValue }) => {
+    try {
+      const data = await fetchQuestionsByExamSet(examSetId);
+      return data;
+    } catch (error) {
+      console.log("Error in getQuestionToExamSet:", error);
+      let errorMessage = "An error occurred";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 export const getSetterInfo = createAsyncThunk(
   "getSetterInfo",
   async (_, { rejectWithValue }) => {
@@ -799,6 +823,23 @@ const examQuesSlice = createSlice({
         console.log("setterInfo updated in Redux store:", action.payload);
       })
       .addCase(getSetterInfo.rejected, (state, action) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+    builder
+      .addCase(getQuestionToExamSet.pending, (state) => {
+        state.loading = true;
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getQuestionToExamSet.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.question = action.payload;
+      })
+      .addCase(getQuestionToExamSet.rejected, (state, action) => {
         state.loading = false;
         state.status = "failed";
         state.error = action.payload;
