@@ -342,35 +342,35 @@ const QuestionManagerDashboard = () => {
   // Add a function to filter exam sets
   const filterExamSets = () => {
     if (!setterExamSet) return [];
-    
+
     let filtered = [...setterExamSet];
-    
+
     // Apply search filter
     if (examSetSearchQuery) {
       const query = examSetSearchQuery.toLowerCase();
       filtered = filtered.filter(
-        set => 
-          set.name?.toLowerCase().includes(query) || 
+        set =>
+          set.name?.toLowerCase().includes(query) ||
           set.description?.toLowerCase().includes(query) ||
           set.subject?.subject_name?.toLowerCase().includes(query)
       );
     }
-    
+
     // Apply type filter
     if (examSetFilterType !== "All") {
       filtered = filtered.filter(set => set.type === examSetFilterType);
     }
-    
+
     // Apply class filter
     if (examSetFilterClass !== "All") {
       filtered = filtered.filter(set => set.class_category.id === parseInt(examSetFilterClass));
     }
-    
+
     // Apply level filter
     if (examSetFilterLevel !== "All") {
       filtered = filtered.filter(set => set.level.id === parseInt(examSetFilterLevel));
     }
-    
+
     return filtered;
   };
 
@@ -408,7 +408,7 @@ const QuestionManagerDashboard = () => {
         const response = await dispatch(
           postQuestionToExamSet(payload)
         ).unwrap();
-        
+
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: [...(prev.questions || []), response],
@@ -1495,7 +1495,7 @@ const QuestionManagerDashboard = () => {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
-                          <button 
+                          <button
                             onClick={() => setSearchQuery("")}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
@@ -1505,7 +1505,7 @@ const QuestionManagerDashboard = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       {/* Desktop filter controls */}
                       <div className="flex items-center space-x-3">
                         <div className="relative inline-block text-left">
@@ -1525,7 +1525,7 @@ const QuestionManagerDashboard = () => {
                             </svg>
                           </div>
                         </div>
-                        
+
                         <div className="relative inline-block text-left">
                           <select
                             className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700"
@@ -1543,7 +1543,7 @@ const QuestionManagerDashboard = () => {
                             </svg>
                           </div>
                         </div>
-                        
+
                         <div className="relative inline-block text-left">
                           <select
                             className="appearance-none pl-3 pr-8 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700"
@@ -1562,7 +1562,7 @@ const QuestionManagerDashboard = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Mobile: Search and filter toggle */}
                     <div className="md:hidden">
                       <div className="flex items-center justify-between mb-3">
@@ -1580,7 +1580,7 @@ const QuestionManagerDashboard = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                           />
                           {searchQuery && (
-                            <button 
+                            <button
                               onClick={() => setSearchQuery("")}
                               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                             >
@@ -1590,7 +1590,7 @@ const QuestionManagerDashboard = () => {
                             </button>
                           )}
                         </div>
-                        
+
                         <button
                           onClick={() => setShowFilters(!showFilters)}
                           className="ml-3 inline-flex items-center px-3 py-3 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
@@ -1601,7 +1601,7 @@ const QuestionManagerDashboard = () => {
                           Filter
                         </button>
                       </div>
-                      
+
                       {/* Mobile filters - collapsible */}
                       <AnimatePresence>
                         {showFilters && (
@@ -1630,7 +1630,7 @@ const QuestionManagerDashboard = () => {
                                   ))}
                                 </div>
                               </div>
-                              
+
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                 <div className="flex flex-wrap gap-2">
@@ -1653,7 +1653,7 @@ const QuestionManagerDashboard = () => {
                                   ))}
                                 </div>
                               </div>
-                              
+
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
                                 <div className="flex flex-wrap gap-2">
@@ -1680,16 +1680,16 @@ const QuestionManagerDashboard = () => {
                         )}
                       </AnimatePresence>
                     </div>
-                    
+
                     {/* Active filters display - both mobile and desktop */}
                     {(selectedLanguage !== "All" || selectedStatus !== "All" || searchQuery) && (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="text-sm text-gray-500 mr-1">Active filters:</span>
-                        
+
                         {searchQuery && (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             Search: {searchQuery.length > 15 ? searchQuery.substring(0, 15) + '...' : searchQuery}
-                            <button 
+                            <button
                               onClick={() => setSearchQuery("")}
                               className="ml-1 text-gray-500 hover:text-gray-700"
                             >
@@ -1699,11 +1699,11 @@ const QuestionManagerDashboard = () => {
                             </button>
                           </span>
                         )}
-                        
+
                         {selectedLanguage !== "All" && (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
                             Language: {selectedLanguage}
-                            <button 
+                            <button
                               onClick={() => setSelectedLanguage("All")}
                               className="ml-1 text-teal-600 hover:text-teal-800"
                             >
@@ -1713,11 +1713,11 @@ const QuestionManagerDashboard = () => {
                             </button>
                           </span>
                         )}
-                        
+
                         {selectedStatus !== "All" && (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
                             Status: {selectedStatus === "draft" ? "Draft" : selectedStatus === "review" ? "Under Review" : "Published"}
-                            <button 
+                            <button
                               onClick={() => setSelectedStatus("All")}
                               className="ml-1 text-teal-600 hover:text-teal-800"
                             >
@@ -1727,8 +1727,8 @@ const QuestionManagerDashboard = () => {
                             </button>
                           </span>
                         )}
-                        
-                        <button 
+
+                        <button
                           onClick={() => {
                             setSearchQuery("");
                             setSelectedLanguage("All");

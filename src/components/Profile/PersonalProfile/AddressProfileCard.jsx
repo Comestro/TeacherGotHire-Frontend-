@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -179,6 +179,7 @@ const AddressCard = ({
   onEdit,
   onCopy,
   hasCurrentAddress,
+  addressesMatch,
   variant = "active",
 }) => (
   <div
@@ -194,7 +195,7 @@ const AddressCard = ({
         <h3 className="text-lg  font-semibold text-gray-600">{title}</h3>
       </div>
       <div className="flex items-center gap-2">
-        {onCopy && !hasCurrentAddress && (
+        {onCopy && hasCurrentAddress && !addressesMatch && (
           <button
             onClick={onCopy}
             className="flex items-center space-x-1 px-2 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all"
@@ -270,8 +271,27 @@ const AddressProfileCard = () => {
     (state) => state.personalProfile.address || {}
   );
 
-  const hasCurrentAddress = !!personalProfile.permanent_address;
-  console.log("current address has or not", hasCurrentAddress);
+  const hasCurrentAddressData = !!(
+    personalProfile.current_address &&
+    (personalProfile.current_address.area ||
+      personalProfile.current_address.district ||
+      personalProfile.current_address.state ||
+      personalProfile.current_address.pincode)
+  );
+
+  const addressesMatch = useMemo(() => {
+    if (!personalProfile.current_address || !personalProfile.permanent_address) {
+      return false;
+    }
+
+    const fieldsToCompare = ["area", "district", "state", "pincode", "postoffice"];
+    return fieldsToCompare.every(
+      (field) =>
+        personalProfile.current_address[field] ===
+        personalProfile.permanent_address[field]
+    );
+  }, [personalProfile.current_address, personalProfile.permanent_address]);
+
   const [isEditingType, setIsEditingType] = useState(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
@@ -396,7 +416,8 @@ const AddressProfileCard = () => {
                 data={personalProfile.permanent_address || {}}
                 onEdit={() => setIsEditingType("permanent")}
                 onCopy={handleCopyCurrentAddress}
-                hasCurrentAddress={hasCurrentAddress}
+                hasCurrentAddress={hasCurrentAddressData}
+                addressesMatch={addressesMatch}
                 variant={isEditingType === "current" ? "inactive" : "active"}
               />
             )}
