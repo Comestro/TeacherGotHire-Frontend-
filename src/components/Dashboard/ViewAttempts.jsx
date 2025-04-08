@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { attemptsCount, attemptsExam } from "../../features/examQuesSlice";
+import { attemptsExam } from "../../features/examQuesSlice";
 import { MdOutlineMenuBook } from "react-icons/md";
 
 function ViewAttempts() {
@@ -182,7 +182,6 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       language: result.language || 'N/A',
       status: result.isqualified ? "Passed" : "Failed",
       score: `${result.calculate_percentage}%`,
-      attemptCount: result.attempt,
       date: new Date(result.created_at).toLocaleDateString(),
     });
 

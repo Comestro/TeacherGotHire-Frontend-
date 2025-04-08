@@ -434,7 +434,8 @@ const ExamManagement = () => {
       errors.duration = "Duration must be a positive number";
     }
 
-    if (parseInt(formData.level) >= 2 && !formData.type) {
+    const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
+    if (selectedLevel && selectedLevel.level_code >= 2.0 && !formData.type) {
       errors.type = "Type is required for this level";
     }
 
@@ -446,8 +447,11 @@ const ExamManagement = () => {
     const { name, value } = e.target;
     const newFormData = { ...formData, [name]: value };
 
-    if (name === "level" && parseInt(value) < 2) {
-      newFormData.type = "";
+    if (name === "level") {
+      const selectedLevel = levels.find(level => level.id === parseInt(value));
+      if (selectedLevel && selectedLevel.level_code < 2.0) {
+        newFormData.type = "";
+      }
     }
 
     if (name === "class_category") {
@@ -476,8 +480,13 @@ const ExamManagement = () => {
       } else {
         delete newErrors.duration;
       }
-    } else if (name === 'type' && parseInt(formData.level) >= 2 && !value) {
-      newErrors.type = "Type is required for this level";
+    } else if (name === 'type') {
+      const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
+      if (selectedLevel && selectedLevel.level_code >= 2.0 && !value) {
+        newErrors.type = "Type is required for this level";
+      } else {
+        delete newErrors.type;
+      }
     } else {
       delete newErrors[name];
     }
@@ -523,8 +532,13 @@ const ExamManagement = () => {
         level: formData.level,
         total_marks: formData.total_marks,
         duration: formData.duration,
-        type: parseInt(formData.level) >= 2 ? formData.type : undefined
+        type: undefined
       };
+      
+      const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
+      if (selectedLevel && selectedLevel.level_code >= 2.0) {
+        payload.type = formData.type;
+      }
 
       if (selectedExam) {
         const response = await updateExam(selectedExam.id, payload);
@@ -591,7 +605,7 @@ const ExamManagement = () => {
       level: menuExam.level.id,
       total_marks: menuExam.total_marks,
       duration: menuExam.duration,
-      type: menuExam.level.id >= 2 ? menuExam.type : "",
+      type: menuExam.level.level_code >= 2.0 ? menuExam.type : "",
     });
     setFormErrors({});
     setOpenAddModal(true);
@@ -1775,7 +1789,7 @@ const ExamManagement = () => {
                     InputProps={{ sx: { borderRadius: '8px' } }}
                   />
                 </Grid>
-                {parseInt(formData.level) >= 2 && (
+                {formData.level && levels.find(level => level.id === parseInt(formData.level))?.level_code >= 2.0 && (
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth error={!!formErrors.type}>
                       <InputLabel>Type *</InputLabel>
