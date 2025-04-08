@@ -151,9 +151,9 @@ export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
 };
 
 
-export const AddInterview = async ({subject,time,class_category}) => {
+export const AddInterview = async ({subject,time,class_category,level}) => {
   try {
-    const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category});
+    const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category,level});
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

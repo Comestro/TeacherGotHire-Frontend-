@@ -155,43 +155,45 @@ export const postResult = createAsyncThunk(
   }
 );
 
-export const postInterview = createAsyncThunk(
-  "postInterview",
-  async ({ subject, time, class_category }, { rejectWithValue }) => {
-    console.log("interview", { subject, time, class_category });
-    try {
-      const data = await AddInterview({ subject, time, class_category });
-      return data;
-    } catch (error) {
-      return rejectWithValue({
-        message: error.message,
-        code: error.code || "UNKNOWN_ERROR",
-      });
-    }
-  }
-);
-export const getInterview = createAsyncThunk(
-  "getInterview",
-  async ({ rejectWithValue }) => {
-    try {
-      const data = await Interview();
-      return data;
-    } catch (error) {
-      console.log("Error in getLevels:", error);
-      let errorMessage = "An error occurred";
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
+    export const postInterview= createAsyncThunk(
+      "postInterview",
+      async ({ subject,time,class_category,level}, { rejectWithValue }) => {
+        console.log("interview",{ subject,time,class_category})
+        try {
+          const data = await AddInterview({ subject,time,class_category,level});
+           return data; 
+        } catch (error) {
+          return rejectWithValue({
+            message: error.message, 
+            code: error.code || "UNKNOWN_ERROR", 
+          });
+        }
       }
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
+      );
+      export const getInterview= createAsyncThunk(
+        "getInterview",
+        async (__, { rejectWithValue }) => {
+          
+          try {
+            const data = await Interview();
+             return data; 
+          } catch (error) {
+            console.log('Error in getLevels:', error);
+            let errorMessage = 'An error occurred';
+            if (error.response && error.response.data && error.response.data.message) {
+              errorMessage = error.response.data.message;
+              
+            } else if (error.message) {
+              errorMessage = error.message;
+             
+            }
+            return rejectWithValue(errorMessage);
+          }
+        }
+        
+        );
+      
+    
 
 export const attemptsExam = createAsyncThunk(
   "attemptExam",
