@@ -10,6 +10,7 @@ import {
   deleteExamSet,
   postQuestionToExamSet,
   putQuestionToExamSet,
+  getQuestionToExamSet,
   getSetterInfo,
   getLevels
 } from "../../features/examQuesSlice";
@@ -334,6 +335,7 @@ const QuestionManagerDashboard = () => {
     }
   };
 
+
   // Question management
   const handleQuestionModalSubmit = async (e) => {
     e.preventDefault();
@@ -356,7 +358,7 @@ const QuestionManagerDashboard = () => {
         const response = await dispatch(
           putQuestionToExamSet({ questionId, payload })
         ).unwrap();
-
+        dispatch(getQuestionToExamSet(questionId));
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: prev.questions.map((q) =>
@@ -368,6 +370,7 @@ const QuestionManagerDashboard = () => {
         const response = await dispatch(
           postQuestionToExamSet(payload)
         ).unwrap();
+        
         setSelectedExamSet((prev) => ({
           ...prev,
           questions: [...(prev.questions || []), response],

@@ -26,6 +26,7 @@ import {
 
 const initialState = {
   allQuestion: [],
+  question:{},
   examSet: [],
   setterExamSet: [],
   interview: {},

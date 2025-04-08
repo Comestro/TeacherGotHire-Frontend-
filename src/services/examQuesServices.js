@@ -96,15 +96,6 @@ export const Attempts = async () => {
   }
 };
 
-export const AttemptCount = async () => {
-  try {
-    const response = await apiClient.get(`/api/self/teacherexamresult/count/`);
-    return response.data;
-  } catch (err) {
-    console.error("error:", err.response?.data || err);
-    throw err;
-  }
-};
 
 export const addResult = async({
   exam,
@@ -288,6 +279,19 @@ export const editQuestionToExamSet= async ( questionId, payload) => {
   console.log("payload in service for update question", payload)
   try {
     const response = await apiClient.put(`/api/examsetter/question/${questionId}/`, payload);
+    console.log("ExamSetter",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+export const getQuestionForExamSet= async ( questionId) => {
+  console.log("payload in service for update question", payload)
+  try {
+    const response = await apiClient.get(`/api/examsetter/question/${questionId}/`);
     console.log("ExamSetter",response)
     return response.data;
     

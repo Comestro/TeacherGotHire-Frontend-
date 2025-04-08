@@ -28,7 +28,6 @@ function ViewAttempts() {
   ] || [];
 
   useEffect(() => {
-    dispatch(attemptsCount());
     dispatch(attemptsExam());
   }, [dispatch]);
 

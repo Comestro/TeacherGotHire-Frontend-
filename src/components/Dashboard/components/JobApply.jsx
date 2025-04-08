@@ -17,10 +17,16 @@ const JobApply = () => {
     dispatch(attemptsExam());
   }, [dispatch]);
 
+  console.log("attempts",attempts);
+
   const passedOfflineAttempt = attempts?.filter(
     (attempt) =>
-      attempt.isqualified &&
-      attempt.exam?.level_name === "2nd Level Offline" 
+    {
+      const isSecondLevelQualified = attempt?.exam?.level_code == 2 && attempt?.isqualified;
+      const hasInterviews = attempt.interviews && attempt.interviews.length > 0  && attempt.isqualified;;
+  
+  return isSecondLevelQualified || hasInterviews;
+    }
      
   );
 
