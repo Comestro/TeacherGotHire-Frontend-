@@ -454,7 +454,7 @@ const PrefrenceProfile = () => {
                         <input
                           type="checkbox"
                           {...register("teacher_job_type", {
-                            required: "Please select at least one job type",
+                            
                           })}
                           value={role.id}
                           className="h-5 w-5 text-teal-600 border-2 border-gray-300 rounded-md focus:ring-teal-500"
