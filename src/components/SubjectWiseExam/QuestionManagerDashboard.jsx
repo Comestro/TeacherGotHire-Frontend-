@@ -1104,7 +1104,7 @@ const QuestionManagerDashboard = () => {
                     id="category"
                     onChange={handleCategoryChange}
                     value={selectedCategory?.id || ""}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   >
                     <option value="">Select a category</option>
                     {categories.map((category) => (
@@ -1128,7 +1128,7 @@ const QuestionManagerDashboard = () => {
                       id="subject"
                       onChange={handleSubjectChange}
                       value={selectedSubject?.id || ""}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                      className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                     >
                       <option value="">Select a subject</option>
                       {subjects.map((subject) => (
@@ -1149,7 +1149,7 @@ const QuestionManagerDashboard = () => {
                   </label>
                   <select
                     {...register("level", { required: "Level is required" })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   >
                     <option value="">Select a Level</option>
                     {levels.map((lev) => (
@@ -1169,7 +1169,7 @@ const QuestionManagerDashboard = () => {
                   </label>
                   <select
                     {...register("type", { required: "Type is required" })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   >
                     <option value="online">Online</option>
                     <option value="offline">Offline</option>
@@ -1186,7 +1186,7 @@ const QuestionManagerDashboard = () => {
                   <input
                     type="number"
                     {...register("total_marks", { required: "Total marks is required" })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   />
                   {errors.total_marks && (
                     <p className="mt-1 text-sm text-red-600">{errors.total_marks.message}</p>
@@ -1200,7 +1200,7 @@ const QuestionManagerDashboard = () => {
                   <input
                     type="number"
                     {...register("duration", { required: "Duration is required" })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   />
                   {errors.duration && (
                     <p className="mt-1 text-sm text-red-600">{errors.duration.message}</p>
@@ -1214,7 +1214,7 @@ const QuestionManagerDashboard = () => {
                   <textarea
                     {...register("description")}
                     rows="3"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                     placeholder="Enter exam set description..."
                   />
                 </div>
@@ -1259,7 +1259,7 @@ const QuestionManagerDashboard = () => {
                 <textarea
                   value={currentQuestion.text}
                   onChange={(e) => setCurrentQuestion({ ...currentQuestion, text: e.target.value })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                  className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   rows="4"
                   placeholder="Enter your question here..."
                   required
@@ -1298,7 +1298,7 @@ const QuestionManagerDashboard = () => {
                         newOptions[index] = e.target.value;
                         setCurrentQuestion({ ...currentQuestion, options: newOptions });
                       }}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                      className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                       placeholder={`Enter option ${index + 1}`}
                       required
                     />
@@ -1314,7 +1314,7 @@ const QuestionManagerDashboard = () => {
                   <select
                     value={currentQuestion.language}
                     onChange={(e) => setCurrentQuestion({ ...currentQuestion, language: e.target.value })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                     required
                   >
                     <option value="">Select Language</option>
@@ -1332,7 +1332,7 @@ const QuestionManagerDashboard = () => {
                     step="0.1"
                     value={currentQuestion.time}
                     onChange={(e) => setCurrentQuestion({ ...currentQuestion, time: e.target.value })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                     placeholder="Enter time in minutes"
                     required
                   />
@@ -1345,7 +1345,7 @@ const QuestionManagerDashboard = () => {
                   <select
                     value={currentQuestion.status || "draft"}
                     onChange={(e) => setCurrentQuestion({ ...currentQuestion, status: e.target.value })}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                     required
                   >
                     <option value="draft">Draft</option>
@@ -1362,7 +1362,7 @@ const QuestionManagerDashboard = () => {
                 <textarea
                   value={currentQuestion.solution}
                   onChange={(e) => setCurrentQuestion({ ...currentQuestion, solution: e.target.value })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                  className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   rows="3"
                   placeholder="Enter solution explanation..."
                 />
