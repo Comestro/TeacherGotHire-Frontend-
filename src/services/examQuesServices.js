@@ -288,6 +288,19 @@ export const editQuestionToExamSet= async ( questionId, payload) => {
   }
 };
 
+export const getQuestionForExamSet= async ( questionId) => {
+  console.log("payload in service for update question", payload)
+  try {
+    const response = await apiClient.get(`/api/examsetter/question/${questionId}/`);
+    console.log("ExamSetter",response)
+    return response.data;
+    
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
+
 export const getAssignUserSubject= async () => {
   try {
     const response = await apiClient.get(`/api/self/assigneduser/`);
