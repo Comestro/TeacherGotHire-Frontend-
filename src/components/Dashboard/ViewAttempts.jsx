@@ -181,7 +181,6 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       language: result.language || 'N/A',
       status: result.isqualified ? "Passed" : "Failed",
       score: `${result.calculate_percentage}%`,
-      attemptCount: result.attempt,
       date: new Date(result.created_at).toLocaleDateString(),
     });
 

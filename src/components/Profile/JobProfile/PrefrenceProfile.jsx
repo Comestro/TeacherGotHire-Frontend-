@@ -247,7 +247,7 @@ const PrefrenceProfile = () => {
                               (subjectName, subjectIndex) => (
                                 <span
                                   key={subjectIndex}
-                                  className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                                  className="px-3 py-1 bg-green-100 text-green-500 border border-green-400 rounded-full text-sm"
                                 >
                                   {subjectName}
                                 </span>
@@ -261,7 +261,7 @@ const PrefrenceProfile = () => {
                         {item.value.map((val, i) => (
                           <span
                             key={i}
-                            className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
+                            className="px-3 py-1 bg-green-100 text-green-600 border border-green-400 rounded-full text-sm"
                           >
                             {val}
                           </span>

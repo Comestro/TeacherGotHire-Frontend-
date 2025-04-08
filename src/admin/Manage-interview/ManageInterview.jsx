@@ -43,7 +43,12 @@ const InterviewManagement = () => {
         status: "",
         teacherName: "",
         dateRange: [null, null],
-        searchTerm: ""
+        searchTerm: "",
+        classCategory: "",
+        subject: "",
+        level: "",
+        creationDateRange: [null, null],
+        attempt: ""
     });
 
     const [openModal, setOpenModal] = useState(false);
@@ -195,10 +200,19 @@ const InterviewManagement = () => {
                 return {
                     id: item.id,
                     name: `${item.user.Fname} ${item.user.Lname}`,
+                    userId: item.user.id,
+                    firstName: item.user.Fname,
+                    lastName: item.user.Lname,
+                    email: item.user.email,
+                    isVerified: item.user.is_verified,
                     classCategory: item.class_category?.name || "Unknown",
                     classCategoryId: item.class_category?.id || null,
                     subjectName: item.subject?.subject_name || "Unknown",
                     subjectId: item.subject?.id || null,
+                    level: item.level?.name || "Unknown",
+                    levelId: item.level?.id || null,
+                    levelCode: item.level?.level_code || null,
+                    levelDescription: item.level?.description || null,
                     mergedSubject: `${item.subject?.subject_name || "Unknown"} (${item.class_category?.name || "Unknown"})`,
                     examName: `${item.subject?.subject_name || ""} (${item.class_category?.name || ""})`,
                     score: item.grade !== null && item.grade !== undefined && item.grade > 0 ? item.grade : "Not graded",
@@ -212,7 +226,8 @@ const InterviewManagement = () => {
                     scheduledDate: (item.status === "scheduled" || item.status === "fulfilled") ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : null,
                     rejectionReason: item.rejectionReason || null,
                     link: item.link,
-                    email: item.user.email,
+                    attempt: item.attempt,
+                    createdAt: item.created_at ? dayjs(item.created_at).format("YYYY-MM-DD HH:mm") : "—",
                     originalData: item
                 };
             });
@@ -238,174 +253,6 @@ const InterviewManagement = () => {
 
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
-    };
-
-    const handleScheduleInterview = async () => {
-        if (selectedDateTime.isBefore(dayjs())) {
-            setSnackbarMessage("Please select a future date and time.");
-            setSnackbarSeverity("warning");
-            setSnackbarOpen(true);
-            return;
-        }
-
-        if (selectedTeacher.mode === "Online" && !meetingLink.trim()) {
-            setSnackbarMessage("Meeting link is required for online interviews.");
-            setSnackbarSeverity("warning");
-            setSnackbarOpen(true);
-            return;
-        }
-
-        try {
-            setActionLoading(true);
-            const response = await updateInterview(selectedTeacher.id, {
-                status: "scheduled",
-                time: selectedDateTime && selectedDateTime.toISOString(),
-                link: meetingLink.trim()
-            });
-
-            console.log("Schedule response:", response);
-
-            await fetchInterviews();
-
-            setScheduleModalOpen(false);
-            setSnackbarMessage("Interview scheduled successfully!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-        } catch (err) {
-            console.error("Error scheduling interview:", err);
-            setSnackbarMessage("Failed to schedule interview.");
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleRejectInterview = async () => {
-        if (!rejectionReason.trim()) {
-            setSnackbarMessage("Please provide a reason for rejection.");
-            setSnackbarSeverity("warning");
-            setSnackbarOpen(true);
-            return;
-        }
-
-        try {
-            setActionLoading(true);
-            const response = await updateInterview(selectedTeacher.id, {
-                status: "rejected",
-                rejectionReason
-            });
-
-            console.log("Reject response:", response);
-
-            await fetchInterviews();
-
-            setRejectModalOpen(false);
-            setRejectionReason("");
-            setSnackbarMessage("Interview rejected successfully!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-        } catch (err) {
-            console.error("Error rejecting interview:", err);
-            setSnackbarMessage("Failed to reject interview.");
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleCompleteInterview = async () => {
-        if (!interviewScore.trim() || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10) {
-            setSnackbarMessage("Please provide a valid score between 0 and 10.");
-            setSnackbarSeverity("warning");
-            setSnackbarOpen(true);
-            return;
-        }
-
-        try {
-            setActionLoading(true);
-            const response = await updateInterview(selectedTeacher.id, {
-                grade: Number(interviewScore),
-                status: "fulfilled"
-            });
-
-            console.log("Complete response:", response);
-
-            setInterviewData(prev => prev.map(interview => {
-                if (interview.id === selectedTeacher.id) {
-                    return {
-                        ...interview,
-                        score: interviewScore,
-                        status: "Completed",
-                        apiStatus: "fulfilled",
-                        originalData: {
-                            ...interview.originalData,
-                            grade: Number(interviewScore),
-                            status: "fulfilled"
-                        }
-                    };
-                }
-                return interview;
-            }));
-
-            await fetchInterviews();
-
-            setCompleteModalOpen(false);
-            setInterviewScore("");
-            setSnackbarMessage("Interview completed successfully!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-        } catch (err) {
-            console.error("Error completing interview:", err);
-            setSnackbarMessage("Failed to complete interview.");
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleViewDetails = (teacher) => {
-        setSelectedTeacher(teacher);
-        setOpenModal(true);
-    };
-
-    const handleOpenSchedule = (teacher) => {
-        setSelectedTeacher(teacher);
-        if (teacher.requestedDate && teacher.requestedTime) {
-            const initialDateTime = dayjs(`${teacher.requestedDate} ${teacher.requestedTime}`);
-            setSelectedDateTime(initialDateTime);
-        } else {
-            setSelectedDateTime(dayjs());
-        }
-        setMeetingLink(teacher.link || "");
-        setScheduleModalOpen(true);
-    };
-
-    const handleOpenReject = (teacher) => {
-        setSelectedTeacher(teacher);
-        setRejectionReason("");
-        setRejectModalOpen(true);
-    };
-
-    const handleOpenComplete = (teacher) => {
-        setSelectedTeacher(teacher);
-        setInterviewScore(teacher.score !== "Not graded" ? teacher.score.toString() : "");
-        setCompleteModalOpen(true);
-    };
-
-    const handleResetFilters = () => {
-        setFilters({
-            status: "",
-            teacherName: "",
-            dateRange: [null, null],
-            searchTerm: ""
-        });
-    };
-
-    const handleRefreshData = () => {
-        fetchInterviews();
     };
 
     const applyFilters = () => {
@@ -442,7 +289,59 @@ const InterviewManagement = () => {
             );
         }
 
+        if (filters.classCategory) {
+            filtered = filtered.filter(teacher =>
+                teacher.classCategory === filters.classCategory
+            );
+        }
+
+        if (filters.subject) {
+            filtered = filtered.filter(teacher =>
+                teacher.subjectName === filters.subject
+            );
+        }
+
+        if (filters.level) {
+            filtered = filtered.filter(teacher =>
+                teacher.level === filters.level
+            );
+        }
+
+        if (filters.creationDateRange[0] && filters.creationDateRange[1]) {
+            filtered = filtered.filter(teacher =>
+                dayjs(teacher.createdAt).isAfter(filters.creationDateRange[0], 'day') ||
+                dayjs(teacher.createdAt).isSame(filters.creationDateRange[0], 'day')
+            ).filter(teacher =>
+                dayjs(teacher.createdAt).isBefore(filters.creationDateRange[1], 'day') ||
+                dayjs(teacher.createdAt).isSame(filters.creationDateRange[1], 'day')
+            );
+        }
+
+        if (filters.attempt) {
+            filtered = filtered.filter(teacher =>
+                teacher.attempt === Number(filters.attempt)
+            );
+        }
+
         setFilteredTeachers(filtered);
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            status: "",
+            teacherName: "",
+            dateRange: [null, null],
+            searchTerm: "",
+            classCategory: "",
+            subject: "",
+            level: "",
+            creationDateRange: [null, null],
+            attempt: ""
+        });
+    };
+
+    const handleRefreshData = () => {
+        fetchInterviews();
     };
 
     const handleExport = () => {
@@ -452,7 +351,7 @@ const InterviewManagement = () => {
             "Subject (Class)",
             "Status (Mode)",
             "Score",
-            "Desired Date/Time", 
+            "Desired Date/Time",
             "Scheduled Date"
         ];
 
@@ -488,6 +387,11 @@ const InterviewManagement = () => {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
+    };
+
+    const handleViewDetails = (teacher) => {
+        setSelectedTeacher(teacher);
+        setOpenModal(true);
     };
 
     const renderCardView = () => {
@@ -972,7 +876,7 @@ const InterviewManagement = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid item xs={12} sm={6} md={2}>
+                                <Grid item xs={12} sm={6} md={3}>
                                     <Autocomplete
                                         options={Array.from(new Set(interviewData.map(t => t.name)))}
                                         value={filters.teacherName || null}
@@ -986,10 +890,68 @@ const InterviewManagement = () => {
                                         )}
                                     />
                                 </Grid>
-                                <Grid item xs={12} sm={6} md={2}>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Autocomplete
+                                        options={Array.from(new Set(interviewData.map(t => t.classCategory))).filter(Boolean)}
+                                        value={filters.classCategory || null}
+                                        onChange={(_, newValue) => setFilters({ ...filters, classCategory: newValue || "" })}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Class Category"
+                                                size="small"
+                                            />
+                                        )}
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Autocomplete
+                                        options={Array.from(new Set(interviewData.map(t => t.subjectName))).filter(Boolean)}
+                                        value={filters.subject || null}
+                                        onChange={(_, newValue) => setFilters({ ...filters, subject: newValue || "" })}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Subject"
+                                                size="small"
+                                            />
+                                        )}
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Autocomplete
+                                        options={Array.from(new Set(interviewData.map(t => t.level))).filter(Boolean)}
+                                        value={filters.level || null}
+                                        onChange={(_, newValue) => setFilters({ ...filters, level: newValue || "" })}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Level"
+                                                size="small"
+                                            />
+                                        )}
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <TextField
+                                        fullWidth
+                                        label="Attempt"
+                                        variant="outlined"
+                                        size="small"
+                                        type="number"
+                                        value={filters.attempt}
+                                        onChange={(e) => setFilters({ ...filters, attempt: e.target.value })}
+                                        InputProps={{ inputProps: { min: 1 } }}
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
-                                            label="From Date"
+                                            label="From Date (Request)"
                                             value={filters.dateRange[0]}
                                             onChange={(newValue) => setFilters({ ...filters, dateRange: [newValue, filters.dateRange[1]] })}
                                             slotProps={{
@@ -1001,12 +963,43 @@ const InterviewManagement = () => {
                                         />
                                     </LocalizationProvider>
                                 </Grid>
-                                <Grid item xs={12} sm={6} md={2}>
+                                <Grid item xs={12} sm={6} md={3}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
-                                            label="To Date"
+                                            label="To Date (Request)"
                                             value={filters.dateRange[1]}
                                             onChange={(newValue) => setFilters({ ...filters, dateRange: [filters.dateRange[0], newValue] })}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    size: 'small'
+                                                }
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="From Date (Created)"
+                                            value={filters.creationDateRange[0]}
+                                            onChange={(newValue) => setFilters({ ...filters, creationDateRange: [newValue, filters.creationDateRange[1]] })}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    size: 'small'
+                                                }
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="To Date (Created)"
+                                            value={filters.creationDateRange[1]}
+                                            onChange={(newValue) => setFilters({ ...filters, creationDateRange: [filters.creationDateRange[0], newValue] })}
                                             slotProps={{
                                                 textField: {
                                                     fullWidth: true,
@@ -1095,8 +1088,28 @@ const InterviewManagement = () => {
                                         <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
-                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
+                                        <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                                        <Typography variant="body1">{selectedTeacher.email}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject</Typography>
+                                        <Typography variant="body1">{selectedTeacher.subjectName}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" color="text.secondary">Class Category</Typography>
+                                        <Typography variant="body1">{selectedTeacher.classCategory}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" color="text.secondary">Level</Typography>
+                                        <Typography variant="body1">{selectedTeacher.level}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" color="text.secondary">Attempt</Typography>
+                                        <Typography variant="body1">{selectedTeacher.attempt}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Created At</Typography>
+                                        <Typography variant="body1">{selectedTeacher.createdAt}</Typography>
                                     </Grid>
                                     <Grid item xs={12}>
                                         <Typography variant="subtitle2" color="text.secondary">Status & Mode</Typography>
@@ -1163,287 +1176,6 @@ const InterviewManagement = () => {
                             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                                 <Button variant="contained" onClick={() => setOpenModal(false)}>
                                     Close
-                                </Button>
-                            </Box>
-                        </Paper>
-                    </Modal>
-
-                    <Modal 
-                        open={scheduleModalOpen} 
-                        onClose={() => setScheduleModalOpen(false)}
-                    >
-                        <Paper sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: { xs: '90%', sm: 500 },
-                            maxHeight: '90vh',
-                            overflow: 'auto',
-                            p: 0,
-                            borderRadius: 2,
-                            boxShadow: 24,
-                        }}>
-                            <Box sx={{ 
-                                p: 2, 
-                                bgcolor: 'primary.main', 
-                                color: 'white',
-                                borderRadius: '8px 8px 0 0',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                                <Typography variant="h6" fontWeight={600}>
-                                    Schedule Interview
-                                </Typography>
-                                <IconButton 
-                                    size="small" 
-                                    onClick={() => setScheduleModalOpen(false)}
-                                    sx={{ color: 'white' }}
-                                >
-                                    <FiX />
-                                </IconButton>
-                            </Box>
-
-                            <Box sx={{ p: 3 }}>
-                                {selectedTeacher && (
-                                    <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <Avatar
-                                            sx={{
-                                                bgcolor: stringToColor(selectedTeacher.name),
-                                                width: 48,
-                                                height: 48
-                                            }}
-                                        >
-                                            {selectedTeacher.name.charAt(0)}
-                                        </Avatar>
-                                        <Box>
-                                            <Typography variant="subtitle1" fontWeight={600}>
-                                                {selectedTeacher.name}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {selectedTeacher.email}
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                                                <Chip 
-                                                    label={selectedTeacher.subjectName}
-                                                    size="small"
-                                                    sx={{ height: 22, fontSize: '0.75rem' }}
-                                                />
-                                                <Chip 
-                                                    label={selectedTeacher.classCategory}
-                                                    size="small"
-                                                    sx={{ height: 22, fontSize: '0.75rem' }}
-                                                />
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                )}
-
-                                <Alert severity="info" sx={{ mb: 3 }}>
-                                    <Typography variant="body2">
-                                        The teacher will be notified via email after scheduling the interview.
-                                        {selectedTeacher && selectedTeacher.mode === "Online" && 
-                                         " Meeting link is required for online interviews."}
-                                    </Typography>
-                                </Alert>
-
-                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                                    Interview Details
-                                </Typography>
-
-                                <Box sx={{ mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), p: 2, borderRadius: 1 }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                        Requested Date & Time
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <FiCalendar size="1.2em" color={theme.palette.primary.main} />
-                                        {selectedTeacher && `${selectedTeacher.requestedDate} at ${selectedTeacher.requestedTime}`}
-                                    </Typography>
-                                </Box>
-
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DateTimePicker
-                                        label="Schedule Interview Date & Time"
-                                        value={selectedDateTime}
-                                        onChange={(newValue) => setSelectedDateTime(newValue)}
-                                        minDateTime={dayjs()}
-                                        slotProps={{
-                                            textField: {
-                                                fullWidth: true,
-                                                variant: "outlined",
-                                                helperText: "Please select a future date and time",
-                                                InputProps: {
-                                                    startAdornment: (
-                                                        <Box sx={{ mr: 1, color: 'primary.main' }}>
-                                                            <FiClock />
-                                                        </Box>
-                                                    ),
-                                                }
-                                            }
-                                        }}
-                                        sx={{ mb: 3 }}
-                                    />
-                                </LocalizationProvider>
-                                
-                                <TextField
-                                    label="Meeting Link"
-                                    placeholder="Enter Google Meet or Zoom link"
-                                    fullWidth
-                                    sx={{ mb: 3 }}
-                                    value={meetingLink}
-                                    onChange={(e) => setMeetingLink(e.target.value)}
-                                    required={selectedTeacher && selectedTeacher.mode === "Online"}
-                                    error={selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim()}
-                                    helperText={selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim() 
-                                        ? "Meeting link is required for online interviews"
-                                        : ""}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <Box sx={{ mr: 1, color: 'primary.main' }}>
-                                                <FiLink />
-                                            </Box>
-                                        ),
-                                    }}
-                                />
-                            </Box>
-
-                            <Box sx={{ 
-                                p: 2, 
-                                bgcolor: alpha(theme.palette.background.default, 0.7),
-                                borderTop: `1px solid ${theme.palette.divider}`,
-                                display: 'flex', 
-                                justifyContent: 'flex-end',
-                                gap: 2
-                            }}>
-                                <Button variant="outlined" onClick={() => setScheduleModalOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    onClick={handleScheduleInterview}
-                                    disabled={actionLoading || (selectedTeacher && selectedTeacher.mode === "Online" && !meetingLink.trim())}
-                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiCalendar />}
-                                >
-                                    {actionLoading ? "Scheduling..." : "Schedule Interview"}
-                                </Button>
-                            </Box>
-                        </Paper>
-                    </Modal>
-
-                    <Modal open={rejectModalOpen} onClose={() => setRejectModalOpen(false)}>
-                        <Paper sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: { xs: '90%', sm: 450 },
-                            p: 3,
-                            borderRadius: 2
-                        }}>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                                Reject Interview Request
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            {selectedTeacher && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Rejecting interview request for
-                                    </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {selectedTeacher.name}
-                                    </Typography>
-                                </Box>
-                            )}
-
-                            <TextField
-                                label="Rejection Reason"
-                                multiline
-                                rows={4}
-                                placeholder="Please provide a reason for rejection"
-                                fullWidth
-                                value={rejectionReason}
-                                onChange={(e) => setRejectionReason(e.target.value)}
-                                required
-                                error={rejectModalOpen && rejectionReason.trim() === ""}
-                                helperText={rejectModalOpen && rejectionReason.trim() === "" ? "Rejection reason is required" : ""}
-                            />
-
-                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-                                <Button variant="outlined" onClick={() => setRejectModalOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={handleRejectInterview}
-                                    disabled={loading || rejectionReason.trim() === ""}
-                                    startIcon={loading && <CircularProgress size={20} />}
-                                >
-                                    {loading ? "Rejecting..." : "Confirm Rejection"}
-                                </Button>
-                            </Box>
-                        </Paper>
-                    </Modal>
-
-                    <Modal open={completeModalOpen} onClose={() => setCompleteModalOpen(false)}>
-                        <Paper sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: { xs: '90%', sm: 450 },
-                            p: 3,
-                            borderRadius: 2
-                        }}>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                                Complete Interview
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            {selectedTeacher && (
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Completing interview for
-                                    </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {selectedTeacher.name}
-                                    </Typography>
-                                </Box>
-                            )}
-
-                            <TextField
-                                fullWidth
-                                label="Interview Score (0-10)"
-                                type="number"
-                                InputProps={{ inputProps: { min: 0, max: 10 } }}
-                                value={interviewScore}
-                                onChange={(e) => setInterviewScore(e.target.value)}
-                                required
-                                error={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10)}
-                                helperText={completeModalOpen && (interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10) ? "Please enter a valid score between 0 and 10" : ""}
-                                sx={{ mb: 2 }}
-                            />
-
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                Completing this interview will mark it as finished and the score will be recorded.
-                            </Alert>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Button variant="outlined" onClick={() => setCompleteModalOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    onClick={handleCompleteInterview}
-                                    disabled={loading || interviewScore.trim() === "" || isNaN(interviewScore) || Number(interviewScore) < 0 || Number(interviewScore) > 10}
-                                    startIcon={loading && <CircularProgress size={20} />}
-                                >
-                                    {loading ? "Saving..." : "Mark Completed"}
                                 </Button>
                             </Box>
                         </Paper>

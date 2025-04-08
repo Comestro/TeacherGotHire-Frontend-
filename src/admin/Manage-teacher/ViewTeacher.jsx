@@ -19,6 +19,22 @@ import {
   Card,
   Link as MuiLink,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  TextField,
+  Grid,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  OutlinedInput,
+  ListItemText,
+  Slider,
 } from "@mui/material";
 import {
   GetApp as ExportIcon,
@@ -26,6 +42,10 @@ import {
   Close as CloseIcon,
   ArrowBack as ArrowBackIcon,
   Info as InfoIcon,
+  FilterList as FilterListIcon,
+  Search as SearchIcon,
+  ExpandMore as ExpandMoreIcon,
+  Clear as ClearIcon,
 } from "@mui/icons-material";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -54,7 +74,115 @@ const ViewTeacherAdmin = () => {
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // New filter states
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filters, setFilters] = useState({
+    classCategory: '',
+    subjects: [],
+    gender: '',
+    state: '',
+    district: '',
+    skills: [],
+    qualifications: [],
+    experience: [0, 20], // Years range
+    status: 'all', // 'all', 'active', 'inactive'
+    minTestScore: 0,
+    searchQuery: '',
+  });
+  
+  // Mock data for dropdowns - in a real app these would come from API
+  const [filterOptions, setFilterOptions] = useState({
+    classCategories: ['Primary', 'Middle School', 'High School', 'College'],
+    subjects: ['Mathematics', 'Science', 'English', 'History', 'Computer Science'],
+    states: ['Delhi', 'Maharashtra', 'Karnataka', 'Tamil Nadu'],
+    districts: {
+      'Delhi': ['New Delhi', 'North Delhi', 'South Delhi'],
+      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur'],
+      'Karnataka': ['Bangalore', 'Mysore', 'Hubli'],
+      'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai'],
+    },
+    skills: ['Communication', 'Leadership', 'Technology', 'Classroom Management'],
+    qualifications: ['Matric', 'Bachelor', 'Master', 'PhD', 'B.Ed'],
+    genders: ['Male', 'Female', 'Other'],
+  });
+  
+  // Handle filter changes
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters({
+      ...filters,
+      [name]: value,
+    });
+  };
+  
+  // Handle multi-select filters
+  const handleMultiFilterChange = (event, filterName) => {
+    const { value } = event.target;
+    setFilters({
+      ...filters,
+      [filterName]: typeof value === 'string' ? value.split(',') : value,
+    });
+  };
+  
+  // Handle slider filters (experience range)
+  const handleSliderChange = (event, newValue) => {
+    setFilters({
+      ...filters,
+      experience: newValue,
+    });
+  };
+  
+  // Reset all filters
+  const handleResetFilters = () => {
+    setFilters({
+      classCategory: '',
+      subjects: [],
+      gender: '',
+      state: '',
+      district: '',
+      skills: [],
+      qualifications: [],
+      experience: [0, 20],
+      status: 'all',
+      minTestScore: 0,
+      searchQuery: '',
+    });
+  };
 
+  // Use effect to update available subjects based on class category
+  useEffect(() => {
+    if (filters.classCategory) {
+      // In a real app, you would fetch subjects based on the selected class category
+      // For now, we'll use mock data filtering
+      const filteredSubjects = filterOptions.subjects.filter(subject => {
+        if (filters.classCategory === 'Primary') return ['Mathematics', 'English'].includes(subject);
+        if (filters.classCategory === 'Middle School') return ['Mathematics', 'Science', 'English', 'History'].includes(subject);
+        if (filters.classCategory === 'High School') return ['Mathematics', 'Science', 'English', 'History', 'Computer Science'].includes(subject);
+        return true; // For College or if no filtering needed
+      });
+      
+      // Update the available subjects
+      setFilterOptions(prev => ({
+        ...prev,
+        availableSubjects: filteredSubjects
+      }));
+    }
+  }, [filters.classCategory]);
+  
+  // Use effect to update available districts based on selected state
+  useEffect(() => {
+    if (filters.state && filterOptions.districts[filters.state]) {
+      // Clear district selection if state changes
+      if (filters.district && !filterOptions.districts[filters.state].includes(filters.district)) {
+        setFilters(prev => ({
+          ...prev,
+          district: ''
+        }));
+      }
+    }
+  }, [filters.state, filterOptions.districts]);
+  
   useEffect(() => {
     const fetchTeacherData = async () => {
       setLoading(true);
@@ -234,6 +362,344 @@ const ViewTeacherAdmin = () => {
     navigate("/admin/manage/teacher");
   };
 
+  // Create a FilterPanel component
+  const FilterPanel = () => (
+    <Card
+      elevation={2}
+      sx={{
+        borderRadius: 2,
+        overflow: 'hidden',
+        mb: 3,
+        backgroundColor: 'white',
+        transition: 'all 0.3s ease',
+      }}
+    >
+      <Accordion 
+        expanded={filtersExpanded} 
+        onChange={() => setFiltersExpanded(!filtersExpanded)}
+        disableGutters
+        elevation={0}
+        sx={{ 
+          '&:before': { display: 'none' },
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          sx={{
+            backgroundColor: '#f5f7fa',
+            borderBottom: filtersExpanded ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
+          }}
+        >
+          <Box display="flex" alignItems="center">
+            <FilterListIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Teacher Filters
+            </Typography>
+            {Object.values(filters).some(value => 
+              (Array.isArray(value) && value.length > 0) || 
+              (!Array.isArray(value) && value && value !== 'all' && value !== 0)
+            ) && (
+              <Chip 
+                label="Filters Active" 
+                size="small" 
+                color="primary" 
+                sx={{ ml: 2 }} 
+              />
+            )}
+          </Box>
+        </AccordionSummary>
+        
+        <AccordionDetails sx={{ p: 3 }}>
+          <Grid container spacing={3}>
+            {/* Search query */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search Teachers"
+                name="searchQuery"
+                value={filters.searchQuery}
+                onChange={handleFilterChange}
+                placeholder="Search by name, email, or ID"
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
+                }}
+                size="small"
+              />
+            </Grid>
+            
+            {/* Class Category Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Class Category</InputLabel>
+                <Select
+                  name="classCategory"
+                  value={filters.classCategory}
+                  onChange={handleFilterChange}
+                  label="Class Category"
+                >
+                  <MenuItem value="">All Categories</MenuItem>
+                  {filterOptions.classCategories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Subject Filter - Shows subjects based on class category */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Subjects</InputLabel>
+                <Select
+                  multiple
+                  name="subjects"
+                  value={filters.subjects}
+                  onChange={(e) => handleMultiFilterChange(e, 'subjects')}
+                  input={<OutlinedInput label="Subjects" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} size="small" />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {(filterOptions.availableSubjects || filterOptions.subjects).map((subject) => (
+                    <MenuItem key={subject} value={subject}>
+                      <Checkbox checked={filters.subjects.indexOf(subject) > -1} />
+                      <ListItemText primary={subject} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Gender Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  name="gender"
+                  value={filters.gender}
+                  onChange={handleFilterChange}
+                  label="Gender"
+                >
+                  <MenuItem value="">All Genders</MenuItem>
+                  {filterOptions.genders.map((gender) => (
+                    <MenuItem key={gender} value={gender}>
+                      {gender}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* State Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>State</InputLabel>
+                <Select
+                  name="state"
+                  value={filters.state}
+                  onChange={handleFilterChange}
+                  label="State"
+                >
+                  <MenuItem value="">All States</MenuItem>
+                  {filterOptions.states.map((state) => (
+                    <MenuItem key={state} value={state}>
+                      {state}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* District Filter - Shows districts based on selected state */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl 
+                fullWidth 
+                size="small"
+                disabled={!filters.state}
+              >
+                <InputLabel>District</InputLabel>
+                <Select
+                  name="district"
+                  value={filters.district}
+                  onChange={handleFilterChange}
+                  label="District"
+                >
+                  <MenuItem value="">All Districts</MenuItem>
+                  {filters.state && filterOptions.districts[filters.state]?.map((district) => (
+                    <MenuItem key={district} value={district}>
+                      {district}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Skills Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Skills</InputLabel>
+                <Select
+                  multiple
+                  name="skills"
+                  value={filters.skills}
+                  onChange={(e) => handleMultiFilterChange(e, 'skills')}
+                  input={<OutlinedInput label="Skills" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} size="small" />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {filterOptions.skills.map((skill) => (
+                    <MenuItem key={skill} value={skill}>
+                      <Checkbox checked={filters.skills.indexOf(skill) > -1} />
+                      <ListItemText primary={skill} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Qualifications Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Qualifications</InputLabel>
+                <Select
+                  multiple
+                  name="qualifications"
+                  value={filters.qualifications}
+                  onChange={(e) => handleMultiFilterChange(e, 'qualifications')}
+                  input={<OutlinedInput label="Qualifications" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} size="small" />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {filterOptions.qualifications.map((qualification) => (
+                    <MenuItem key={qualification} value={qualification}>
+                      <Checkbox checked={filters.qualifications.indexOf(qualification) > -1} />
+                      <ListItemText primary={qualification} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Status Filter */}
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Account Status</InputLabel>
+                <Select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  label="Account Status"
+                >
+                  <MenuItem value="all">All Status</MenuItem>
+                  <MenuItem value="active">Active Only</MenuItem>
+                  <MenuItem value="inactive">Inactive Only</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            {/* Experience Range Slider */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography gutterBottom>
+                Experience (Years): {filters.experience[0]} - {filters.experience[1]}
+              </Typography>
+              <Slider
+                value={filters.experience}
+                onChange={handleSliderChange}
+                valueLabelDisplay="auto"
+                min={0}
+                max={20}
+                step={1}
+                marks={[
+                  { value: 0, label: '0' },
+                  { value: 5, label: '5' },
+                  { value: 10, label: '10' },
+                  { value: 15, label: '15' },
+                  { value: 20, label: '20+' },
+                ]}
+              />
+            </Grid>
+            
+            {/* Test Score Minimum */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography gutterBottom>
+                Minimum Test Score: {filters.minTestScore}
+              </Typography>
+              <Slider
+                value={filters.minTestScore}
+                onChange={(e, newValue) => setFilters({...filters, minTestScore: newValue})}
+                valueLabelDisplay="auto"
+                min={0}
+                max={100}
+                step={5}
+                marks={[
+                  { value: 0, label: '0' },
+                  { value: 50, label: '50' },
+                  { value: 100, label: '100' },
+                ]}
+              />
+            </Grid>
+          </Grid>
+          
+          {/* Filter Action Buttons */}
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              mt: 3,
+              gap: 2 
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<ClearIcon />}
+              onClick={handleResetFilters}
+              size="medium"
+              sx={{ 
+                borderRadius: 1.5, 
+                textTransform: 'none',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              }}
+            >
+              Reset Filters
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<FilterListIcon />}
+              size="medium"
+              sx={{ 
+                borderRadius: 1.5, 
+                textTransform: 'none',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              }}
+            >
+              Apply Filters
+            </Button>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+    </Card>
+  );
+
   return (
     <Layout>
       <Box
@@ -316,6 +782,9 @@ const ViewTeacherAdmin = () => {
             </Typography>
           </Breadcrumbs>
         </Box>
+
+        {/* New Filter Panel */}
+        <FilterPanel />
 
         {/* Main content card */}
         <Card
