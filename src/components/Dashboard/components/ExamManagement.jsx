@@ -988,7 +988,7 @@ function ExamManagement() {
                   {interviewEligible && (
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                       {/* Pending - Show Scheduling Form */}
-                      {interviewEligible.interview.status === "pending" && (
+                      {interviewEligible?.interview?.status === "pending" && (
                         <form onSubmit={handleSubmit} className="p-6">
                           <div className="flex items-center justify-between mb-6">
                             <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
