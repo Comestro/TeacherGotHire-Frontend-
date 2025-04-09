@@ -132,7 +132,7 @@ const Steppers = () => {
   console.log("Filtered Attempts:", filteredAttempts);
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+    <div className="bg-white rounded shadow-sm overflow-hidden mb-4">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-gray-200">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -167,7 +167,7 @@ const Steppers = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="p-5 bg-white">
+      <div className="py-5 px-4 bg-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Class Category</label>
@@ -181,11 +181,6 @@ const Steppers = () => {
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
             </div>
           </div>
 
@@ -202,18 +197,13 @@ const Steppers = () => {
                   <option key={subject} value={subject}>{subject}</option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
       {selectedCategory && selectedSubject && (
-        <div className="p-5 bg-white">
+        <div className="p-4 bg-white">
           {activeTab === "progress" ? (
             <div className="space-y-6">
               {/* Progress Summary Card */}

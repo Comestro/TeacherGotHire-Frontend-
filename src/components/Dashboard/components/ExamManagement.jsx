@@ -426,7 +426,7 @@ function ExamManagement() {
   }, []);
   return (
     <>
-      <div className=" mx-auto p-6 bg-white rounded-lg border">
+      <div className=" mx-auto p-4 shadow">
         {/* Stepper Component */}
         {attempts && (
           <div className="col-span-3">
@@ -438,9 +438,9 @@ function ExamManagement() {
             {" "}
             {/* Modern Tab Switching */}
             {classCategories && (
-              <div className="space-y-6">
+              <div className="md:space-y-6 space-y-4 p-2">
                 {/* Category Selection Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 ">
                   <h3 className="col-span-full text-lg font-semibold text-gray-800 mb-1">
                     Choose a Class Category
                   </h3>
@@ -554,7 +554,7 @@ function ExamManagement() {
                 )}
               </div>
             )}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 ">
+            <div className="mt-4 md:mt-5 grid grid-cols-1 md:grid-cols-3 gap-6 ">
               {classCategories && !selectedSubject && (
                 <div className="col-span-3 bg-blue-50 p-8 rounded-2xl border border-dashed border-blue-200 text-center">
                   <CiLock className="mx-auto text-4xl text-teal-500 mb-2 size-14" />

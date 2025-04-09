@@ -27,6 +27,8 @@ const Skills = () => {
     (state) => state.jobProfile.teacherSkill || []
   );
 
+  console.log("teacherSkill", teacherSkill);
+
   const { handleSubmit, register, watch, setValue } = useForm();
   const inputValue = watch("skillInput", "");
 

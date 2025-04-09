@@ -118,7 +118,7 @@ const TeacherDashboardCard = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
+      className="bg-white border overflow-hidden"
     >
       {/* Desktop Layout - Compact & Modern */}
       <div className="hidden md:block">
@@ -195,7 +195,7 @@ const TeacherDashboardCard = () => {
               )}
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-3 ">
               {/* Progress step 1 */}
               <div className="relative">
                 <div className="flex items-center">
@@ -326,8 +326,8 @@ const TeacherDashboardCard = () => {
       </div>
 
       {/* Mobile Layout - Compact & Stylish */}
-      <div className="md:hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 flex items-center gap-3 relative overflow-hidden">
+      <div className="md:hidden p-4 outline-none">
+        <div className="bg-gradient-to-r from-teal-500 to-[#3E98C7] p-3 rounded-t-md flex items-center gap-3 relative overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -mr-8 -mt-8"></div>
           <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/10 -ml-6 -mb-6"></div>
@@ -383,7 +383,7 @@ const TeacherDashboardCard = () => {
         </div>
         
         {/* Progress Tabs - Stylish Pills */}
-        <div className="flex justify-between p-2 bg-gray-50 border-b border-gray-100">
+        <div className="flex justify-between p-2 bg-gray-50 mb-2">
           <div className={`flex flex-col items-center ${progress >= 33 ? 'text-green-600' : 'text-gray-400'}`}>
             <div className={`w-6 h-6 rounded-full mb-0.5 flex items-center justify-center 
               ${progress >= 33 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>

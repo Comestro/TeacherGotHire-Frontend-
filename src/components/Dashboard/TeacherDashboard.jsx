@@ -162,11 +162,9 @@ function TeacherDashboard() {
       <ToastContainer position="top-right" autoClose={3000} />
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
 
-      <div className="min-h-screen bg-white">
-        <div className="md:px-6 py-5">
-          <div className="">
+      <div className="min-h-screen">
+        <div className="md:px-6 md:py-5">
             <TeacherDashboardCard />
-          </div>
         </div>
      
         <div className="md:px-6">
