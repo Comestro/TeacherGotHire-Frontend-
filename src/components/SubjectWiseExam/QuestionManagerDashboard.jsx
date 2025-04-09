@@ -17,6 +17,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader";
+import SubjectExpertHeader from "./components/SubjectExpertHeader";
 
 // Component to add at the top of your file after imports
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -91,6 +92,8 @@ const QuestionManagerDashboard = () => {
   const { loading, setterExamSet } = useSelector((state) => state.examQues || {});
   const setterUser = useSelector((state) => state.examQues.setterInfo);
   const levels = useSelector((state) => state.examQues.levels || []);
+
+  console.log("setter user", setterUser);
 
   // Update these console logs to avoid undefined errors
   useEffect(() => {
@@ -540,8 +543,10 @@ const QuestionManagerDashboard = () => {
 
       <ToastContainer position="top-right" autoClose={3000} />
 
+      <SubjectExpertHeader />
+
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <div className="bg-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 md:py-6">
             <div>
