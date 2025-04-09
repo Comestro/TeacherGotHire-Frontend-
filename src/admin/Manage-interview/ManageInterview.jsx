@@ -411,21 +411,24 @@ const InterviewManagement = () => {
 
         setActionLoading(true);
         try {
-            const response = await updateInterview({
-                id: selectedTeacher.id,
-                status: "scheduled",
-                time: selectedDateTime.format("YYYY-MM-DD HH:mm:ss"),
-                link: meetingLink
-            });
+            // Fix: Send the interview ID as a number, not the entire object
+            const response = await updateInterview(
+                selectedTeacher.id, 
+                {
+                    status: "scheduled",
+                    time: selectedDateTime.format("YYYY-MM-DD HH:mm:ss"),
+                    link: meetingLink,
+                }
+            );
 
             setSnackbarMessage("Interview scheduled successfully");
             setSnackbarSeverity("success");
             setSnackbarOpen(true);
             setScheduleModalOpen(false);
-            
+
             fetchInterviews();
         } catch (err) {
-            setSnackbarMessage("Failed to schedule interview: " + (err.message || "Unknown error"));
+            setSnackbarMessage("Failed to schedule interview: " + (err.response?.data?.message || err.message || "Unknown error"));
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
         } finally {
