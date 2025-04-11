@@ -382,7 +382,7 @@ const QuestionManagerDashboard = () => {
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
-      correct_option: currentQuestion.correctAnswer,
+      correct_option: parseInt(currentQuestion.correctAnswer) + 1, // Add 1 to convert from 0-based to 1-based
       exam: selectedExamSet.id,
       language: currentQuestion.language,
       time: parseInt(currentQuestion.time),
@@ -396,7 +396,7 @@ const QuestionManagerDashboard = () => {
         const questionId = selectedExamSet.questions[editingQuestionIndex].id;
         const response = await updateQuestion(questionId, payload);
         
-        // Update UI directly
+        // Update UI directly with the response
         setSelectedExamSet(prev => ({
           ...prev,
           questions: prev.questions.map(q => 
@@ -414,15 +414,26 @@ const QuestionManagerDashboard = () => {
             ...prev,
             questions: [
               ...(prev.questions || []),
-              response.english_data,
-              response.hindi_data
+              {
+                ...response.english_data,
+                correct_option: parseInt(currentQuestion.correctAnswer) + 1
+              },
+              {
+                ...response.hindi_data,
+                correct_option: parseInt(currentQuestion.correctAnswer) + 1
+              }
             ]
           }));
         } else {
-          // Handle single question response
           setSelectedExamSet(prev => ({
             ...prev,
-            questions: [...(prev.questions || []), response]
+            questions: [
+              ...(prev.questions || []),
+              {
+                ...response,
+                correct_option: parseInt(currentQuestion.correctAnswer) + 1
+              }
+            ]
           }));
         }
 
@@ -441,35 +452,18 @@ const QuestionManagerDashboard = () => {
 
   const handleEditQuestion = (question, index) => {
     setEditingQuestionIndex(index);
-
-    // Find the correct answer index (1-based)
-    let correctAnswerIndex = 0;
-    if (question.correct_option) {
-      const foundIndex = question.options.findIndex(
-        opt => opt === question.correct_option
-      );
-      correctAnswerIndex = foundIndex >= 0 ? foundIndex + 1 : 1;
-    }
-
-    // Set current question with all required fields
+    
     setCurrentQuestion({
       text: question.text || "",
       options: Array.isArray(question.options) ? [...question.options] : ["", "", "", ""],
-      correctAnswer: correctAnswerIndex.toString(),
+      correctAnswer: (question.correct_option - 1).toString(), // Subtract 1 to convert from 1-based to 0-based
       solution: question.solution || "",
       language: question.language || "English",
       time: question.time || 0,
       status: question.status || "draft",
     });
 
-    // Log for debugging
-    console.log("Editing question:", question);
-    console.log("Correct answer index:", correctAnswerIndex);
-
-    // Short delay to ensure state is updated before modal opens
-    setTimeout(() => {
-      setQuestionModalOpen(true);
-    }, 100);
+    setQuestionModalOpen(true);
   };
 
   // Handle question deletion
@@ -1312,26 +1306,13 @@ const QuestionManagerDashboard = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
-                  <div key={index} className={`border rounded-lg p-4 ${currentQuestion.correctAnswer === (index + 1).toString() ? 'bg-green-50 border-green-200' : 'bg-gray-50'}`}>
+                  <div key={index} 
+                    className={`border rounded-lg p-4 ${parseInt(currentQuestion.correctAnswer) === index ? 'bg-green-50 border-green-200' : 'bg-gray-50'}`}
+                  >
                     <div className="flex justify-between items-center mb-2">
                       <label className="block text-sm font-medium text-gray-700">
                         Option {index + 1} <span className="text-red-500">*</span>
                       </label>
-
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`correct-option-${index}`}
-                          name="correctAnswer"
-                          value={index + 1}
-                          checked={currentQuestion.correctAnswer === (index + 1).toString()}
-                          onChange={(e) => setCurrentQuestion({ ...currentQuestion, correctAnswer: e.target.value })}
-                          className="focus:ring-teal-500 h-4 w-4 text-teal-600 border-gray-300"
-                        />
-                        <label htmlFor={`correct-option-${index}`} className="ml-2 block text-sm text-gray-700">
-                          Correct
-                        </label>
-                      </div>
                     </div>
 
                     <input
@@ -1348,6 +1329,25 @@ const QuestionManagerDashboard = () => {
                     />
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Correct Option <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={currentQuestion.correctAnswer}
+                  onChange={(e) => setCurrentQuestion({ ...currentQuestion, correctAnswer: e.target.value })}
+                  className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                  required
+                >
+                  <option value="">Select correct option</option>
+                  {currentQuestion.options.map((option, index) => (
+                    <option key={index} value={index}>
+                      Option {index + 1}: {option}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
