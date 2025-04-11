@@ -140,18 +140,10 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
             {isProfileMenuOpen && (
               <div className="absolute right-0 top-14 w-56 bg-white border border-gray-200 shadow-lg rounded-md py-2 animate-fade-in">
-                <Link
-                  to="/settings"
-                  className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
-                >
-                  Settings
-                </Link>
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
-                >
-                  Profile
-                </Link>
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <p className="text-sm text-gray-500">Recruiter Code</p>
+                  <p className="text-sm font-medium text-gray-700">{profile?.user_code}</p>
+                </div>
                 <button
                   onClick={() => handleLogout(dispatch, navigate)}
                   className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
