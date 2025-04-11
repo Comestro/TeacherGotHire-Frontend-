@@ -18,6 +18,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader";
 import SubjectExpertHeader from "./components/SubjectExpertHeader";
+import { deleteQuestion } from "../../services/adminManageExam";
 
 // Component to add at the top of your file after imports
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -93,8 +94,7 @@ const QuestionManagerDashboard = () => {
   const setterUser = useSelector((state) => state.examQues.setterInfo);
   const levels = useSelector((state) => state.examQues.levels || []);
 
-  console.log("setter user", setterUser);
-
+  console.log("Levels:", levels);
   // Update these console logs to avoid undefined errors
   useEffect(() => {
     if (setterUser) {
@@ -466,6 +466,8 @@ const QuestionManagerDashboard = () => {
   const handleDeleteQuestion = async (questionId) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
+        console.log("Deleting question with ID:", questionId);
+        await deleteQuestion(questionId);
         setSelectedExamSet(prev => ({
           ...prev,
           questions: prev.questions.filter(q => q.id !== questionId)

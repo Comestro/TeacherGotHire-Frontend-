@@ -129,7 +129,7 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
             >
               <FaUserCircle className="w-8 h-8 text-teal-600" />
               <div className="hidden md:flex flex-col items-start ">
-                <span className="font-medium">
+                <span className="text-sm font-medium text-gray-600">
                   {profile?.Fname} {profile?.Lname}
                 </span>
                 <span className="text-sm text-gray-500 -mt-1">
