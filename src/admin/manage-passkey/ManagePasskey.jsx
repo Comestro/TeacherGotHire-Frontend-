@@ -4,12 +4,6 @@ import {
   Typography,
   TextField,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Modal,
   FormControl,
@@ -17,7 +11,6 @@ import {
   Select,
   MenuItem,
   Chip,
-  TablePagination,
   Grid,
   Snackbar,
   Alert,
@@ -35,6 +28,7 @@ import {
   OutlinedInput,
   InputAdornment,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/system";
 import {
   FaCheck,
@@ -141,8 +135,10 @@ const PasskeyManagement = () => {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: isMobile ? 5 : 10,
+    page: 0
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [detailsModal, setDetailsModal] = useState({ open: false, data: null });
@@ -164,7 +160,16 @@ const PasskeyManagement = () => {
     setLoading(true);
     try {
       const response = await getPasskey();
-      setData(response);
+      // Process data to include all required fields explicitly
+      const processedData = (Array.isArray(response) ? response : []).map(item => ({
+        ...item,
+        id: item.id,
+        userEmail: item.user?.email || 'N/A',
+        examName: item.exam?.name || 'N/A',
+        centerName: item.center?.name || 'N/A',
+        requestDate: item.created_at || ''
+      }));
+      setData(processedData);
     } catch (error) {
       console.error("Error fetching passkey data:", error);
       setSnackbar({
@@ -183,12 +188,12 @@ const PasskeyManagement = () => {
 
   // Reset page when filtering changes
   useEffect(() => {
-    setPage(0);
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, [searchTerm, statusFilter]);
 
   // Adjust rows per page based on screen size
   useEffect(() => {
-    setRowsPerPage(isMobile ? 5 : 10);
+    setPaginationModel((prev) => ({ ...prev, pageSize: isMobile ? 5 : 10 }));
   }, [isMobile]);
 
   const handleSearch = useCallback(
@@ -212,10 +217,6 @@ const PasskeyManagement = () => {
       return matchesSearch && matchesStatus;
     });
   }, [data, searchTerm, statusFilter]);
-
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  }, [filteredData, page, rowsPerPage]);
 
   const getStatusCount = (status) => {
     return data.filter(item => item.status === status).length;
@@ -296,148 +297,172 @@ const PasskeyManagement = () => {
     }
   };
 
-  // Render mobile card view with enhanced design
-  const renderMobileCard = (row) => {
-    return (
-      <StyledCard
-        key={row.id}
-        variant="outlined"
-        status={row.status}
-        sx={{ mb: 2 }}
-      >
-        <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FaUser color={theme?.palette?.primary?.main || '#1976d2'} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {row.user?.email || "N/A"}
-              </Typography>
-            </Stack>
-            <StatusChip
-              size="small"
-              label={
-                row.status === "fulfilled" ? "Fulfilled" :
-                  row.status === "rejected" ? "Rejected" : "Requested"
-              }
-              status={row.status}
-            />
+  // Define columns for DataGrid
+  const columns = [
+    { 
+      field: 'userEmail', 
+      headerName: 'User Email', 
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <FaUser color={theme?.palette?.primary?.main || '#1976d2'} size={14} />
+          <Typography fontWeight={500}>
+            {params.value || "N/A"}
+          </Typography>
+        </Stack>
+      )
+    },
+    { 
+      field: 'examName', 
+      headerName: 'Exam Name', 
+      flex: 1, 
+      minWidth: 180,
+    },
+    { 
+      field: 'centerName', 
+      headerName: 'Exam Center', 
+      flex: 1, 
+      minWidth: 180,
+    },
+    {
+      field: 'code',
+      headerName: 'Passkey',
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => {
+        const status = params.row?.status;
+        
+        return status === "fulfilled" ? (
+          <Box sx={{
+            fontFamily: 'monospace',
+            fontWeight: 600,
+            display: 'inline-block',
+            backgroundColor: theme?.palette?.action?.hover || '#f5f5f5',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}>
+            {params.value || "N/A"}
           </Box>
-
-          <Divider sx={{ my: 1.5 }} />
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FaBook size={14} color={theme?.palette?.text?.secondary || '#757575'} />
-                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500 }}>
-                  Exam
-                </Typography>
-              </Stack>
-              <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 500 }}>
-                {row.exam?.name || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FaBuilding size={14} color={theme?.palette?.text?.secondary || '#757575'} />
-                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500 }}>
-                  Center
-                </Typography>
-              </Stack>
-              <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 500 }}>
-                {row.center?.name || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FaKey size={14} color={theme?.palette?.text?.secondary || '#757575'} />
-                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500 }}>
-                  Passkey
-                </Typography>
-              </Stack>
-              <Typography
-                variant="body2"
-                sx={{
-                  mt: 0.5,
-                  fontFamily: row.status === "fulfilled" ? 'monospace' : 'inherit',
-                  fontWeight: row.status === "fulfilled" ? 600 : 400,
-                  fontStyle: row.status !== "fulfilled" ? 'italic' : 'normal',
-                  color: row.status === "fulfilled" ? 'text.primary' : 'text.secondary',
-                  bgcolor: row.status === "fulfilled" ? 'action.hover' : 'transparent',
-                  p: row.status === "fulfilled" ? 0.5 : 0,
-                  borderRadius: 1,
-                  display: 'inline-block'
-                }}
-              >
-                {row.status === "fulfilled"
-                  ? row.code || "N/A"
-                  : row.status === "rejected" ? "Access denied" : "Pending approval"
-                }
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FaCalendarAlt size={14} color={theme?.palette?.text?.secondary || '#757575'} />
-                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500 }}>
-                  Date
-                </Typography>
-              </Stack>
-              <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 500 }}>
-                {row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}
-              </Typography>
-            </Grid>
-          </Grid>
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
-            <Tooltip title="View Details">
-              <ActionButton
-                size="small"
-                onClick={() => setDetailsModal({ open: true, data: row })}
-                color="primary"
-              >
-                <FaEye />
-              </ActionButton>
-            </Tooltip>
-
-            {row.status === "requested" && (
+        ) : (
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{
+              fontStyle: 'italic',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5
+            }}
+          >
+            {status === "rejected" ? (
               <>
-                <Tooltip title="Approve">
-                  <ActionButton
-                    size="small"
-                    color="success"
-                    onClick={() =>
-                      setConfirmModal({
-                        open: true,
-                        type: "approve",
-                        data: row,
-                      })
-                    }
-                  >
-                    <FaCheck />
-                  </ActionButton>
-                </Tooltip>
-                <Tooltip title="Reject">
-                  <ActionButton
-                    size="small"
-                    color="error"
-                    onClick={() =>
-                      setConfirmModal({
-                        open: true,
-                        type: "reject",
-                        data: row,
-                      })
-                    }
-                  >
-                    <FaTimes />
-                  </ActionButton>
-                </Tooltip>
+                <MdCancel color={theme?.palette?.error?.main || '#f44336'} />
+                Access denied
+              </>
+            ) : (
+              <>
+                <MdAccessTime color={theme?.palette?.warning?.main || '#ff9800'} />
+                Pending approval
               </>
             )}
-          </Box>
-        </CardContent>
-      </StyledCard>
-    );
-  };
+          </Typography>
+        );
+      }
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 130,
+      renderCell: (params) => (
+        <StatusChip
+          label={
+            params.value === "fulfilled" ? "Fulfilled" :
+              params.value === "rejected" ? "Rejected" : "Requested"
+          }
+          status={params.value}
+          size="small"
+        />
+      )
+    },
+    {
+      field: 'requestDate',
+      headerName: 'Request Date',
+      width: 160,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <FaCalendarAlt size={12} color={theme?.palette?.text?.secondary || '#757575'} />
+          {params.value
+            ? new Date(params.value).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })
+            : "N/A"}
+        </Box>
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="View Details">
+            <ActionButton
+              onClick={(e) => {
+                e.stopPropagation();
+                setDetailsModal({ open: true, data: params.row });
+              }}
+              size="small"
+              color="primary"
+            >
+              <FaEye />
+            </ActionButton>
+          </Tooltip>
+
+          {params.row?.status === "requested" && (
+            <>
+              <Tooltip title="Approve Request">
+                <ActionButton
+                  color="success"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmModal({
+                      open: true,
+                      type: "approve",
+                      data: params.row,
+                    });
+                  }}
+                  size="small"
+                >
+                  <FaCheck />
+                </ActionButton>
+              </Tooltip>
+              <Tooltip title="Reject Request">
+                <ActionButton
+                  color="error"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmModal({
+                      open: true,
+                      type: "reject",
+                      data: params.row,
+                    });
+                  }}
+                  size="small"
+                >
+                  <FaTimes />
+                </ActionButton>
+              </Tooltip>
+            </>
+          )}
+        </Box>
+      )
+    }
+  ];
 
   return (
     <Layout>
@@ -699,194 +724,74 @@ const PasskeyManagement = () => {
               )}
             </Box>
             <Box>
-              {paginatedData.map(renderMobileCard)}
+              {filteredData.map(renderMobileCard)}
             </Box>
           </>
         ) : (
-          // Desktop table view with enhanced appearance
-          <TableContainer
-            component={Paper}
+          // Desktop DataGrid view with enhanced appearance
+          <Paper
+            elevation={0}
             sx={{
               borderRadius: 2,
               overflow: 'hidden',
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid rgba(0,0,0,0.04)'
+              border: '1px solid rgba(0,0,0,0.04)',
+              height: 500,
+              width: '100%'
             }}
           >
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: theme?.palette?.grey?.[50] || '#f5f5f5' }}>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>User Email</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Exam Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Exam Center</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Passkey</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Request Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedData.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    hover
-                    sx={{
-                      '&:nth-of-type(odd)': {
-                        backgroundColor: theme?.palette?.action?.hover || '#f5f5f5'
-                      },
-                      borderLeft: `4px solid ${row.status === "fulfilled"
-                          ? theme?.palette?.success?.main || '#4caf50'
-                          : row.status === "rejected"
-                            ? theme?.palette?.error?.main || '#f44336'
-                            : theme?.palette?.warning?.main || '#ff9800'
-                        }`,
-                    }}
-                  >
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <FaUser color={theme?.palette?.primary?.main || '#1976d2'} size={14} />
-                        <Typography fontWeight={500}>{row.user?.email || "N/A"}</Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>{row.exam?.name || "N/A"}</TableCell>
-                    <TableCell>{row.center?.name || "N/A"}</TableCell>
-                    <TableCell>
-                      {row.status === "fulfilled" ? (
-                        <Box sx={{
-                          fontFamily: 'monospace',
-                          fontWeight: 600,
-                          display: 'inline-block',
-                          backgroundColor: theme?.palette?.action?.hover || '#f5f5f5',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: '1px solid rgba(0,0,0,0.08)'
-                        }}>
-                          {row.code || "N/A"}
-                        </Box>
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          sx={{
-                            fontStyle: 'italic',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5
-                          }}
-                        >
-                          {row.status === "rejected" ? (
-                            <>
-                              <MdCancel color={theme?.palette?.error?.main || '#f44336'} />
-                              Access denied
-                            </>
-                          ) : (
-                            <>
-                              <MdAccessTime color={theme?.palette?.warning?.main || '#ff9800'} />
-                              Pending approval
-                            </>
-                          )}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip
-                        label={
-                          row.status === "fulfilled" ? "Fulfilled" :
-                            row.status === "rejected" ? "Rejected" : "Requested"
-                        }
-                        status={row.status}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <FaCalendarAlt size={12} color={theme?.palette?.text?.secondary || '#757575'} />
-                        {row.created_at
-                          ? new Date(row.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })
-                          : "N/A"}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="View Details">
-                          <ActionButton
-                            onClick={() => setDetailsModal({ open: true, data: row })}
-                            size="small"
-                            color="primary"
-                          >
-                            <FaEye />
-                          </ActionButton>
-                        </Tooltip>
-
-                        {row.status === "requested" && (
-                          <>
-                            <Tooltip title="Approve Request">
-                              <ActionButton
-                                color="success"
-                                onClick={() =>
-                                  setConfirmModal({
-                                    open: true,
-                                    type: "approve",
-                                    data: row,
-                                  })
-                                }
-                                size="small"
-                              >
-                                <FaCheck />
-                              </ActionButton>
-                            </Tooltip>
-                            <Tooltip title="Reject Request">
-                              <ActionButton
-                                color="error"
-                                onClick={() =>
-                                  setConfirmModal({
-                                    open: true,
-                                    type: "reject",
-                                    data: row,
-                                  })
-                                }
-                                size="small"
-                              >
-                                <FaTimes />
-                              </ActionButton>
-                            </Tooltip>
-                          </>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+            <DataGrid
+              rows={filteredData}
+              columns={columns}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[5, 10, 25, 50]}
+              loading={loading}
+              disableRowSelectionOnClick
+              onRowClick={(params) => setDetailsModal({ open: true, data: params.row })}
+              getRowId={(row) => row.id}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: paginationModel.pageSize },
+                },
+              }}
+              sx={{
+                '& .MuiDataGrid-columnHeader': {
+                  backgroundColor: theme?.palette?.grey?.[50] || '#f5f5f5',
+                  fontWeight: 700,
+                  py: 2
+                },
+                '& .MuiDataGrid-row': {
+                  '&:nth-of-type(odd)': {
+                    backgroundColor: theme?.palette?.action?.hover || '#f5f5f5'
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                },
+                '& .MuiDataGrid-cell:focus': {
+                  outline: 'none'
+                },
+                '& .MuiDataGrid-cell': {
+                  borderColor: 'rgba(0, 0, 0, 0.05)'
+                },
+                border: 'none',
+                '& .MuiDataGrid-row--status-fulfilled': {
+                  borderLeft: `4px solid ${theme?.palette?.success?.main || '#4caf50'}`
+                },
+                '& .MuiDataGrid-row--status-rejected': {
+                  borderLeft: `4px solid ${theme?.palette?.error?.main || '#f44336'}`
+                },
+                '& .MuiDataGrid-row--status-requested': {
+                  borderLeft: `4px solid ${theme?.palette?.warning?.main || '#ff9800'}`
+                }
+              }}
+              getRowClassName={(params) => {
+                return params.row ? `MuiDataGrid-row--status-${params.row.status}` : '';
+              }}
+            />
+          </Paper>
         )}
-
-        {/* Pagination control */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          <TablePagination
-            component={Paper}
-            elevation={1}
-            sx={{
-              borderRadius: '8px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-              overflow: 'hidden'
-            }}
-            count={filteredData.length}
-            page={page}
-            onPageChange={(e, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-            rowsPerPageOptions={isMobile ? [5, 10] : [10, 25, 50]}
-            labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
-          />
-        </Box>
 
         {/* Details Modal with enhanced styling */}
         <StyledModal

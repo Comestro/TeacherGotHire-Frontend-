@@ -4,20 +4,12 @@ import {
   Card,
   CardContent,
   Typography,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   IconButton,
   Modal,
   Button,
   TextField,
   Tooltip,
   Snackbar,
-  Pagination,
-  Checkbox,
   Grid,
   useMediaQuery,
   useTheme,
@@ -27,6 +19,8 @@ import {
   Backdrop,
   FormHelperText,
   InputAdornment,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -34,8 +28,12 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Close as CloseIcon,
+  MoreVert as MoreIcon,
+  FilterList as FilterIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { Alert } from "@mui/material";
+import { DataGrid } from '@mui/x-data-grid';
 import Layout from "../Admin/Layout";
 import {
   getClassCategory,
@@ -60,31 +58,49 @@ const ManageClassCategory = () => {
     message: "",
     severity: "success",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : 10;
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  
+  // DataGrid specific state
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 10,
+    page: 0,
+  });
+  const [rowCount, setRowCount] = useState(0);
+  const [sortModel, setSortModel] = useState([
+    {
+      field: 'name',
+      sort: 'asc',
+    },
+  ]);
+  const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
+  const [actionMenuRow, setActionMenuRow] = useState(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const data = await getClassCategory();
-        setCategories(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        const errorMessage = error.response?.data?.message || "Failed to fetch class categories";
-        setError(errorMessage);
-        showSnackbar(errorMessage, "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await getClassCategory();
+      const processedData = Array.isArray(data) ? data.map(cat => ({
+        ...cat,
+        id: cat.id, // Ensure ID is available for DataGrid
+      })) : [];
+      setCategories(processedData);
+      setRowCount(processedData.length);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      const errorMessage = error.response?.data?.message || "Failed to fetch class categories";
+      setError(errorMessage);
+      showSnackbar(errorMessage, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Updated form validation with duplicate name check
   const validateForm = () => {
@@ -110,13 +126,17 @@ const ManageClassCategory = () => {
       }
     }
 
+    // Description validation (only if provided)
+    if (selectedCategory?.description && selectedCategory.description.length > 500) {
+      errors.description = "Description cannot exceed 500 characters";
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   // Enhanced showSnackbar function
   const showSnackbar = (message, severity = "success") => {
-    // Clean up the message if it's an array (sometimes the server returns arrays)
     const cleanMessage = Array.isArray(message) ? message[0] : message;
 
     setSnackbar({
@@ -127,7 +147,7 @@ const ManageClassCategory = () => {
   };
 
   const handleOpenAddEditModal = (category = null) => {
-    setSelectedCategory(category || { name: "" });
+    setSelectedCategory(category || { name: "", description: "" });
     setFormErrors({});
     setOpenAddEditModal(true);
   };
@@ -155,7 +175,6 @@ const ManageClassCategory = () => {
       [name]: value,
     });
 
-    // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -187,30 +206,23 @@ const ManageClassCategory = () => {
     } catch (error) {
       console.error("Error saving category:", error);
 
-      // Handle specific error format from the server
       if (error.response?.data) {
         const responseData = error.response.data;
 
-        // Handle case where server returns field-specific errors
         if (responseData.name && Array.isArray(responseData.name)) {
-          // Set field-specific error
           setFormErrors({
             ...formErrors,
             name: responseData.name[0]
           });
 
-          // Show the specific error message in the snackbar
           showSnackbar(responseData.name[0], "error");
           return;
-        }
-        // Handle case where server returns general message
-        else if (responseData.message) {
+        } else if (responseData.message) {
           showSnackbar(responseData.message, "error");
           return;
         }
       }
 
-      // Fallback for other error types
       const fallbackMessage = selectedCategory.id
         ? "Failed to update category"
         : "Failed to add category";
@@ -230,7 +242,6 @@ const ManageClassCategory = () => {
     } catch (error) {
       console.error("Error deleting category:", error);
 
-      // Extract specific error message if available
       if (error.response?.data) {
         if (error.response.data.message) {
           showSnackbar(error.response.data.message, "error");
@@ -247,7 +258,6 @@ const ManageClassCategory = () => {
     }
   };
 
-  // Updated bulk delete handler with better error handling
   const handleBulkDelete = async () => {
     if (selectedCategories.length === 0) return;
 
@@ -262,7 +272,6 @@ const ManageClassCategory = () => {
     } catch (error) {
       console.error("Error bulk deleting categories:", error);
 
-      // Extract specific error message if available
       if (error.response?.data) {
         if (error.response.data.message) {
           showSnackbar(error.response.data.message, "error");
@@ -279,38 +288,98 @@ const ManageClassCategory = () => {
     }
   };
 
+  const handleActionMenuOpen = (event, row) => {
+    setActionMenuAnchorEl(event.currentTarget);
+    setActionMenuRow(row);
+  };
+
+  const handleActionMenuClose = () => {
+    setActionMenuAnchorEl(null);
+    setActionMenuRow(null);
+  };
+
   const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const pageCount = Math.max(1, Math.ceil(filteredCategories.length / itemsPerPage));
-  const currentCategories = filteredCategories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handleCheckboxChange = (categoryId) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(categoryId)) {
-        return prev.filter((id) => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
-  };
-
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
-      setSelectedCategories(currentCategories.map((category) => category.id));
-    } else {
-      setSelectedCategories([]);
-    }
-  };
+  const columns = [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 70,
+      sortable: true,
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 1,
+      minWidth: 150,
+      sortable: true,
+    },
+    {
+      field: 'description',
+      headerName: 'Description',
+      flex: 1.5,
+      minWidth: 200,
+      sortable: true,
+      renderCell: (params) => (
+        params.value ? (
+          <Tooltip title={params.value} arrow>
+            <Typography
+              variant="body2"
+              sx={{
+                maxWidth: '100%',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {params.value}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography variant="body2" color="text.secondary" fontStyle="italic">
+            No description
+          </Typography>
+        )
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => handleOpenAddEditModal(params.row)}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => handleOpenDeleteModal(params.row)}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={(e) => handleActionMenuOpen(e, params.row)}
+          >
+            <MoreIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <Layout>
       <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header Card */}
         <Card
           elevation={2}
           sx={{
@@ -353,7 +422,6 @@ const ManageClassCategory = () => {
           </CardContent>
         </Card>
 
-        {/* Categories List Card */}
         <Card
           elevation={2}
           sx={{
@@ -362,7 +430,6 @@ const ManageClassCategory = () => {
           }}
         >
           <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-            {/* Search and Count Section */}
             <Box
               display="flex"
               flexDirection={{ xs: 'column', sm: 'row' }}
@@ -371,34 +438,51 @@ const ManageClassCategory = () => {
               gap={2}
               mb={2}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}
-              >
-                Class Categories ({filteredCategories.length})
-              </Typography>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  }}
+                >
+                  Class Categories ({filteredCategories.length})
+                </Typography>
+                <IconButton 
+                  size="small" 
+                  color="primary" 
+                  onClick={fetchCategories}
+                  title="Refresh"
+                >
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </Box>
 
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Search categories"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ width: { xs: '100%', sm: '220px' } }}
-              />
+              <Box display="flex" gap={2} width={{ xs: '100%', sm: 'auto' }}>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search categories"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ width: { xs: '100%', sm: '220px' } }}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FilterIcon />}
+                  sx={{ display: { xs: 'none', md: 'flex' } }}
+                >
+                  Filter
+                </Button>
+              </Box>
             </Box>
 
             {loading ? (
@@ -412,124 +496,116 @@ const ManageClassCategory = () => {
                 {searchTerm ? "No categories match your search" : "No categories available. Create one to get started."}
               </Alert>
             ) : (
-              <>
-                <Paper
-                  elevation={0}
+              <Paper
+                elevation={0}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  mb: 2,
+                  height: 440,
+                  width: '100%'
+                }}
+              >
+                <DataGrid
+                  rows={filteredCategories}
+                  columns={columns}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={setPaginationModel}
+                  pageSizeOptions={[5, 10, 25, 50]}
+                  pagination
+                  checkboxSelection
+                  disableRowSelectionOnClick
+                  sortModel={sortModel}
+                  onSortModelChange={setSortModel}
+                  onRowSelectionModelChange={(newSelection) => {
+                    setSelectedCategories(newSelection);
+                  }}
+                  rowSelectionModel={selectedCategories}
+                  loading={loading}
+                  autoHeight={false}
+                  getRowHeight={() => 'auto'}
+                  getEstimatedRowHeight={() => 60}
                   sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    mb: 2,
-                    width: '100%'
+                    '& .MuiDataGrid-row': {
+                      minHeight: '48px!important',
+                    },
+                    '& .MuiDataGrid-cell': {
+                      py: 1,
+                    },
+                  }}
+                />
+              </Paper>
+            )}
+
+            {filteredCategories.length > 0 && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'stretch', sm: 'center' },
+                  gap: 2,
+                  mt: 2
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleBulkDelete}
+                  disabled={selectedCategories.length === 0 || submitting}
+                  fullWidth={isMobile}
+                  sx={{
+                    py: { xs: 1, sm: 'auto' },
+                    textTransform: 'none',
+                    order: { xs: 2, sm: 1 }
                   }}
                 >
-                  <TableContainer sx={{ maxHeight: 440 }}>
-                    <Table size={isMobile ? "small" : "medium"}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: 'background.default' }}>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              indeterminate={
-                                selectedCategories.length > 0 &&
-                                selectedCategories.length < currentCategories.length
-                              }
-                              checked={
-                                currentCategories.length > 0 &&
-                                selectedCategories.length === currentCategories.length
-                              }
-                              onChange={handleSelectAll}
-                              size={isMobile ? "small" : "medium"}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                          <TableCell sx={{ fontWeight: 600, width: isMobile ? 100 : 120 }}>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {currentCategories.map((category, index) => (
-                          <TableRow
-                            key={category.id}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedCategories.includes(category.id)}
-                                onChange={() => handleCheckboxChange(category.id)}
-                                size={isMobile ? "small" : "medium"}
-                              />
-                            </TableCell>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>{category.name}</TableCell>
-                            <TableCell>
-                              <Box display="flex" gap={1}>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleOpenAddEditModal(category)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="error"
-                                  onClick={() => handleOpenDeleteModal(category)}
-                                >
-                                  <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Paper>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'stretch', sm: 'center' },
-                    gap: 2
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={handleBulkDelete}
-                    disabled={selectedCategories.length === 0 || submitting}
-                    fullWidth={isMobile}
-                    sx={{
-                      py: { xs: 1, sm: 'auto' },
-                      textTransform: 'none',
-                      order: { xs: 2, sm: 1 }
-                    }}
-                  >
-                    Delete Selected {selectedCategories.length > 0 && `(${selectedCategories.length})`}
-                  </Button>
-
-                  {pageCount > 1 && (
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(event, value) => setCurrentPage(value)}
-                      color="primary"
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ order: { xs: 1, sm: 2 } }}
-                    />
-                  )}
-                </Box>
-              </>
+                  Delete Selected {selectedCategories.length > 0 && `(${selectedCategories.length})`}
+                </Button>
+              </Box>
             )}
           </CardContent>
         </Card>
 
-        {/* Add/Edit Modal */}
+        <Menu
+          anchorEl={actionMenuAnchorEl}
+          open={Boolean(actionMenuAnchorEl)}
+          onClose={handleActionMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem 
+            onClick={() => {
+              handleOpenAddEditModal(actionMenuRow);
+              handleActionMenuClose();
+            }}
+            dense
+          >
+            <EditIcon fontSize="small" color="primary" sx={{ mr: 1 }} /> Edit
+          </MenuItem>
+          <MenuItem 
+            onClick={() => {
+              handleOpenDeleteModal(actionMenuRow);
+              handleActionMenuClose();
+            }}
+            dense
+          >
+            <DeleteIcon fontSize="small" color="error" sx={{ mr: 1 }} /> Delete
+          </MenuItem>
+          <Divider />
+          <MenuItem 
+            onClick={() => {
+              handleActionMenuClose();
+            }}
+            dense
+          >
+            View Details
+          </MenuItem>
+        </Menu>
+
         <Modal
           open={openAddEditModal}
           onClose={!submitting ? handleCloseAddEditModal : undefined}
@@ -585,6 +661,25 @@ const ManageClassCategory = () => {
               }}
             />
 
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Description (Optional)"
+              name="description"
+              value={selectedCategory?.description || ""}
+              onChange={handleCategoryChange}
+              error={Boolean(formErrors.description)}
+              helperText={formErrors.description}
+              disabled={submitting}
+              multiline
+              rows={3}
+              placeholder="Enter an optional description for this category"
+            />
+
+            <FormHelperText sx={{ mt: 0.5, px: 1.5, color: 'text.secondary' }}>
+              You can add a description to provide more information about this category
+            </FormHelperText>
+
             <Box
               mt={3}
               display="flex"
@@ -627,7 +722,6 @@ const ManageClassCategory = () => {
           </Box>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
         <Modal
           open={openDeleteModal}
           onClose={!submitting ? handleCloseDeleteModal : undefined}
@@ -714,7 +808,6 @@ const ManageClassCategory = () => {
           </Box>
         </Modal>
 
-        {/* Notification Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -740,7 +833,6 @@ const ManageClassCategory = () => {
           </Alert>
         </Snackbar>
 
-        {/* Loading Backdrop */}
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
           open={submitting}

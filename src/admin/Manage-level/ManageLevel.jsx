@@ -4,18 +4,11 @@ import {
   Card,
   CardContent,
   Typography,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   IconButton,
   Dialog,
   Button,
   TextField,
   Snackbar,
-  Pagination,
   Grid,
   useMediaQuery,
   useTheme,
@@ -30,6 +23,7 @@ import {
   FormHelperText,
   Alert
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Visibility as VisibilityIcon,
@@ -62,8 +56,10 @@ const ManageLevel = () => {
     message: "",
     severity: "success",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : 8;
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: isMobile ? 5 : 8,
+    page: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -324,11 +320,90 @@ const ManageLevel = () => {
     (lvl.description && lvl.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const pageCount = Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage));
-  const currentLevels = filteredLevels.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Generate rows with index that we'll use directly
+  const rows = filteredLevels.map((level, index) => ({
+    ...level,
+    index: paginationModel.page * paginationModel.pageSize + index + 1
+  }));
+
+  const columns = [
+    {
+      field: 'index',
+      headerName: '#',
+      width: 60,
+      sortable: false,
+      filterable: false,
+      // Simply display the pre-calculated index value
+      renderCell: (params) => params.value
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Box>
+          <Typography variant="body2" fontWeight={500}>
+            {params.value}
+          </Typography>
+          {isMobile && params.row.description && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: '-webkit-box',
+                overflow: 'hidden',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
+              }}
+            >
+              {params.row.description}
+            </Typography>
+          )}
+        </Box>
+      )
+    },
+    {
+      field: 'description',
+      headerName: 'Description',
+      flex: 2,
+      minWidth: 200,
+      hide: isMobile,
+      renderCell: (params) => (
+        params.value || "—"
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => (
+        <Box
+          display="flex"
+          justifyContent={isMobile ? "center" : "flex-start"}
+          gap={1}
+        >
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="info"
+            onClick={() => handleOpenViewDialog(params.row)}
+          >
+            <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="primary"
+            onClick={() => handleOpenEditDialog(params.row)}
+          >
+            <EditIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+        </Box>
+      )
+    }
+  ];
 
   return (
     <Layout>
@@ -430,125 +505,34 @@ const ManageLevel = () => {
                 }
               </Alert>
             ) : (
-              <>
-                <Paper
-                  elevation={0}
+              <Box sx={{ height: 440, width: '100%' }}>
+                <DataGrid
+                  rows={rows}
+                  columns={columns}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={setPaginationModel}
+                  pageSizeOptions={[5, 8, 10, 25]}
+                  disableRowSelectionOnClick
+                  getRowId={(row) => row.id}
+                  autoHeight
+                  loading={loading}
                   sx={{
                     border: '1px solid',
                     borderColor: 'divider',
                     borderRadius: 1,
-                    overflow: 'auto',
-                    mb: 2
+                    '& .MuiDataGrid-cell:focus': {
+                      outline: 'none',
+                    },
+                    '& .MuiDataGrid-row:nth-of-type(even)': {
+                      backgroundColor: '#fafafa',
+                    },
+                    '& .MuiDataGrid-columnHeaders': {
+                      backgroundColor: 'background.default',
+                      fontWeight: 600
+                    },
                   }}
-                >
-                  <TableContainer sx={{ minWidth: isMobile ? '100%' : 650, maxHeight: 440 }}>
-                    <Table size={isMobile ? "small" : "medium"}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: 'background.default' }}>
-                          <TableCell sx={{ fontWeight: 600, width: '5%' }}>#</TableCell>
-                          <TableCell sx={{ fontWeight: 600, width: '25%' }}>Name</TableCell>
-                          <TableCell
-                            sx={{
-                              fontWeight: 600,
-                              width: '50%',
-                              display: { xs: 'none', sm: 'table-cell' }
-                            }}
-                          >
-                            Description
-                          </TableCell>
-                          <TableCell
-                            align="center"
-                            sx={{
-                              fontWeight: 600,
-                              width: isMobile ? '20%' : '10%'
-                            }}
-                          >
-                            Actions
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {currentLevels.map((level, index) => (
-                          <TableRow
-                            key={level.id}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell>
-                              {index + 1 + (currentPage - 1) * itemsPerPage}
-                            </TableCell>
-                            <TableCell>
-                              <Box>
-                                <Typography variant="body2" fontWeight={500}>
-                                  {level.name}
-                                </Typography>
-                                {isMobile && level.description && (
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                      display: '-webkit-box',
-                                      overflow: 'hidden',
-                                      WebkitBoxOrient: 'vertical',
-                                      WebkitLineClamp: 2,
-                                    }}
-                                  >
-                                    {level.description}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                              {level.description || "—"}
-                            </TableCell>
-                            <TableCell align="center">
-                              <Box
-                                display="flex"
-                                justifyContent={isMobile ? "center" : "flex-start"}
-                                gap={1}
-                              >
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="info"
-                                  onClick={() => handleOpenViewDialog(level)}
-                                >
-                                  <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleOpenEditDialog(level)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Paper>
-
-                {pageCount > 1 && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      mt: 2
-                    }}
-                  >
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(event, value) => setCurrentPage(value)}
-                      color="primary"
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ py: 1 }}
-                    />
-                  </Box>
-                )}
-              </>
+                />
+              </Box>
             )}
           </CardContent>
         </Card>

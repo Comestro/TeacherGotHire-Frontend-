@@ -4,12 +4,6 @@ import {
   Button,
   Container,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Dialog,
   DialogActions,
@@ -22,15 +16,14 @@ import {
   Grid,
   Alert,
   Snackbar,
-  Pagination,
   useTheme,
   useMediaQuery,
   CircularProgress,
-  FormHelperText,
   InputAdornment,
   Divider,
   Backdrop
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -46,7 +39,7 @@ const ManageTeacherJobType = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  
+
   const [jobTypes, setJobTypes] = useState([]);
   const [filteredJobTypes, setFilteredJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,18 +51,20 @@ const ManageTeacherJobType = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobFormData, setJobFormData] = useState({ jobrole_name: "" });
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [formErrors, setFormErrors] = useState({});
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-  
-  const rowsPerPage = isMobile ? 5 : 10;
+
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: isMobile ? 5 : 10,
+    page: 0
+  });
+
   const inputRef = useRef(null);
 
-  // Focus the text field when the dialog opens
   useEffect(() => {
     if (openEditDialog && inputRef.current) {
       setTimeout(() => {
@@ -82,7 +77,6 @@ const ManageTeacherJobType = () => {
     fetchJobTypes();
   }, []);
 
-  // Filter job types when search term changes
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFilteredJobTypes(jobTypes);
@@ -92,7 +86,6 @@ const ManageTeacherJobType = () => {
       );
       setFilteredJobTypes(filtered);
     }
-    setCurrentPage(1);
   }, [searchTerm, jobTypes]);
 
   const fetchJobTypes = async () => {
@@ -112,20 +105,18 @@ const ManageTeacherJobType = () => {
   };
 
   const showSnackbar = (message, severity = "success") => {
-    // Clean up the message if it's an array or object
     let displayMessage;
-    
+
     if (Array.isArray(message)) {
-      displayMessage = message[0]; // Take first error if it's an array
+      displayMessage = message[0];
     } else if (typeof message === 'object' && message !== null) {
-      // If message is an object, try to extract first error message
       const firstKey = Object.keys(message)[0];
       const firstValue = message[firstKey];
       displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
     } else {
       displayMessage = message;
     }
-    
+
     setSnackbar({
       open: true,
       message: displayMessage,
@@ -135,8 +126,8 @@ const ManageTeacherJobType = () => {
 
   const handleOpenEditDialog = (job = null) => {
     setSelectedJob(job);
-    setJobFormData({ 
-      jobrole_name: job ? job.jobrole_name : "" 
+    setJobFormData({
+      jobrole_name: job ? job.jobrole_name : ""
     });
     setFormErrors({});
     setOpenEditDialog(true);
@@ -163,7 +154,7 @@ const ManageTeacherJobType = () => {
 
   const validateForm = () => {
     const errors = {};
-    
+
     if (!jobFormData.jobrole_name || jobFormData.jobrole_name.trim() === "") {
       errors.jobrole_name = "Job role name is required";
     } else if (jobFormData.jobrole_name.trim().length < 3) {
@@ -171,14 +162,14 @@ const ManageTeacherJobType = () => {
     } else if (jobFormData.jobrole_name.trim().length > 50) {
       errors.jobrole_name = "Job role name cannot exceed 50 characters";
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSaveJobType = async () => {
     if (!validateForm()) return;
-    
+
     setSubmitting(true);
     try {
       const payload = {
@@ -186,7 +177,6 @@ const ManageTeacherJobType = () => {
       };
 
       if (selectedJob) {
-        // Update existing job role
         await updateJobType(selectedJob.id, payload);
         setJobTypes(
           jobTypes.map((job) =>
@@ -195,7 +185,6 @@ const ManageTeacherJobType = () => {
         );
         showSnackbar(`Job type "${payload.jobrole_name}" updated successfully`);
       } else {
-        // Create new job role
         const newJob = await createJobType(payload);
         setJobTypes([...jobTypes, newJob]);
         showSnackbar(`Job type "${payload.jobrole_name}" added successfully`);
@@ -203,26 +192,23 @@ const ManageTeacherJobType = () => {
       handleCloseEditDialog();
     } catch (error) {
       console.error("Failed to save job type:", error);
-      
-      // Handle field-specific errors from backend
+
       if (error.response?.data) {
         const responseData = error.response.data;
-        
+
         if (responseData.jobrole_name) {
-          setFormErrors({ 
-            jobrole_name: Array.isArray(responseData.jobrole_name) 
-              ? responseData.jobrole_name[0] 
-              : responseData.jobrole_name 
+          setFormErrors({
+            jobrole_name: Array.isArray(responseData.jobrole_name)
+              ? responseData.jobrole_name[0]
+              : responseData.jobrole_name
           });
-          
-          // Show error message in snackbar
-          const errorMessage = Array.isArray(responseData.jobrole_name) 
-            ? responseData.jobrole_name[0] 
+
+          const errorMessage = Array.isArray(responseData.jobrole_name)
+            ? responseData.jobrole_name[0]
             : responseData.jobrole_name;
-            
+
           showSnackbar(errorMessage, "error");
         } else if (responseData.message) {
-          // General error message
           showSnackbar(responseData.message, "error");
         } else if (responseData.error) {
           showSnackbar(responseData.error, "error");
@@ -247,7 +233,7 @@ const ManageTeacherJobType = () => {
 
   const handleDeleteJobType = async () => {
     if (!selectedJob) return;
-    
+
     setSubmitting(true);
     try {
       await deleteJobType(selectedJob.id);
@@ -256,7 +242,7 @@ const ManageTeacherJobType = () => {
       handleCloseDeleteDialog();
     } catch (error) {
       console.error("Failed to delete job type:", error);
-      
+
       if (error.response?.data) {
         if (typeof error.response.data === 'string') {
           showSnackbar(error.response.data, "error");
@@ -281,8 +267,7 @@ const ManageTeacherJobType = () => {
       ...jobFormData,
       [name]: value
     });
-    
-    // Clear field error when user starts typing
+
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -291,24 +276,62 @@ const ManageTeacherJobType = () => {
     }
   };
 
-  // Calculate pagination
-  const pageCount = Math.ceil(filteredJobTypes.length / rowsPerPage);
-  const currentPageData = filteredJobTypes.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
+  const handlePaginationModelChange = (newPaginationModel) => {
+    setPaginationModel(newPaginationModel);
   };
+
+  const columns = [
+    {
+      field: 'serialNumber',
+      headerName: '#',
+      width: 70,
+      renderCell: (params) => {
+        const index = filteredJobTypes.findIndex(item => item.id === params.row?.id);
+        return index !== -1 ? index + 1 : 'N/A';
+      }
+    },
+    {
+      field: 'jobrole_name',
+      headerName: 'Job Type',
+      flex: 1,
+      minWidth: 200
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="flex-end" gap={1}>
+          <IconButton
+            color="primary"
+            onClick={() => handleOpenEditDialog(params.row)}
+            size="small"
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleOpenDeleteDialog(params.row)}
+            size="small"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header Section */}
-        <Card 
-          elevation={2} 
-          sx={{ 
+        <Card
+          elevation={2}
+          sx={{
             borderRadius: { xs: 1, sm: 2 },
             mb: { xs: 2, sm: 3 },
             overflow: 'hidden'
@@ -317,9 +340,9 @@ const ManageTeacherJobType = () => {
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={8}>
-                <Typography 
-                  variant={isMobile ? "h5" : "h4"} 
-                  sx={{ 
+                <Typography
+                  variant={isMobile ? "h5" : "h4"}
+                  sx={{
                     fontWeight: 700,
                     color: 'primary.main',
                     fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
@@ -338,7 +361,7 @@ const ManageTeacherJobType = () => {
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenEditDialog()}
                   fullWidth={isMobile}
-                  sx={{ 
+                  sx={{
                     py: { xs: 1, sm: 'auto' },
                     textTransform: 'none',
                     boxShadow: 2
@@ -351,10 +374,9 @@ const ManageTeacherJobType = () => {
           </CardContent>
         </Card>
 
-        {/* Search and Content Section */}
-        <Card 
-          elevation={2} 
-          sx={{ 
+        <Card
+          elevation={2}
+          sx={{
             borderRadius: { xs: 1, sm: 2 },
             overflow: 'hidden',
             mb: 2
@@ -369,16 +391,16 @@ const ManageTeacherJobType = () => {
               gap={2}
               mb={2}
             >
-              <Typography 
-                variant="h6" 
-                sx={{ 
+              <Typography
+                variant="h6"
+                sx={{
                   fontWeight: 600,
                   fontSize: { xs: '1.1rem', sm: '1.25rem' }
                 }}
               >
                 Job Types ({filteredJobTypes.length})
               </Typography>
-              
+
               <TextField
                 placeholder="Search job types..."
                 variant="outlined"
@@ -395,14 +417,14 @@ const ManageTeacherJobType = () => {
                 sx={{ width: { xs: '100%', sm: '220px' } }}
               />
             </Box>
-            
+
             {loading ? (
               <Box display="flex" justifyContent="center" py={4}>
                 <CircularProgress />
               </Box>
             ) : filteredJobTypes.length === 0 ? (
               <Alert severity="info" sx={{ mb: 2 }}>
-                {searchTerm 
+                {searchTerm
                   ? "No job types match your search criteria."
                   : "No job types available. Add a new job type to get started."
                 }
@@ -410,142 +432,141 @@ const ManageTeacherJobType = () => {
             ) : isMobile || isTablet ? (
               <>
                 <Grid container spacing={2}>
-                  {currentPageData.map((job, index) => (
-                    <Grid item xs={12} sm={6} key={job.id}>
-                      <Card 
-                        elevation={1} 
-                        sx={{ 
-                          height: '100%', 
-                          borderRadius: 1,
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            boxShadow: 3
-                          }
-                        }}
-                      >
-                        <CardContent>
-                          <Box 
-                            sx={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
-                            }}
-                          >
-                            <Typography 
-                              variant="subtitle1" 
-                              fontWeight={500}
+                  {filteredJobTypes
+                    .slice(paginationModel.page * paginationModel.pageSize,
+                      (paginationModel.page + 1) * paginationModel.pageSize)
+                    .map((job, index) => (
+                      <Grid item xs={12} sm={6} key={job.id}>
+                        <Card
+                          elevation={1}
+                          sx={{
+                            height: '100%',
+                            borderRadius: 1,
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              boxShadow: 3
+                            }
+                          }}
+                        >
+                          <CardContent>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}
                             >
-                              {job.jobrole_name}
-                            </Typography>
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleOpenEditDialog(job)}
-                                size="small"
+                              <Typography
+                                variant="subtitle1"
+                                fontWeight={500}
                               >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                color="error"
-                                onClick={() => handleOpenDeleteDialog(job)}
-                                size="small"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
+                                {job.jobrole_name}
+                              </Typography>
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => handleOpenEditDialog(job)}
+                                  size="small"
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  color="error"
+                                  onClick={() => handleOpenDeleteDialog(job)}
+                                  size="small"
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
                             </Box>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
                 </Grid>
+
+                {filteredJobTypes.length > paginationModel.pageSize && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      mt: 3
+                    }}
+                  >
+                    <Grid container justifyContent="center">
+                      <Grid item>
+                        <DataGrid
+                          paginationModel={paginationModel}
+                          onPaginationModelChange={handlePaginationModelChange}
+                          pageSizeOptions={[5, 10, 25]}
+                          pagination
+                          paginationMode="client"
+                          hideFooter={false}
+                          autoHeight
+                          rows={[]}
+                          columns={[]}
+                          sx={{
+                            '& .MuiDataGrid-main, .MuiDataGrid-virtualScroller, .MuiDataGrid-columnsContainer, .MuiDataGrid-columnHeaders': {
+                              display: 'none'
+                            },
+                            '& .MuiDataGrid-footerContainer': {
+                              borderTop: 'none'
+                            },
+                            width: 'auto',
+                            border: 'none'
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
               </>
             ) : (
-              <Paper 
-                elevation={0} 
-                sx={{ 
+              <Paper
+                elevation={0}
+                sx={{
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 1,
                   overflow: 'hidden',
                   mb: 2,
-                  width: '100%'
+                  width: '100%',
+                  height: 440
                 }}
               >
-                <TableContainer sx={{ maxHeight: 440 }}>
-                  <Table size="medium">
-                    <TableHead>
-                      <TableRow sx={{ backgroundColor: 'background.default' }}>
-                        <TableCell sx={{ fontWeight: 600, width: '5%' }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600, width: '75%' }}>Job Type</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, width: '20%' }}>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {currentPageData.map((job, index) => (
-                        <TableRow 
-                          key={job.id} 
-                          hover
-                          sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                        >
-                          <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
-                          <TableCell>{job.jobrole_name}</TableCell>
-                          <TableCell align="right">
-                            <Box display="flex" justifyContent="flex-end" gap={1}>
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleOpenEditDialog(job)}
-                                size="small"
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                color="error"
-                                onClick={() => handleOpenDeleteDialog(job)}
-                                size="small"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            )}
-            
-            {/* Pagination */}
-            {filteredJobTypes.length > 0 && pageCount > 1 && (
-              <Box 
-                sx={{ 
-                  display: 'flex',
-                  justifyContent: 'center',
-                  mt: 3
-                }}
-              >
-                <Pagination
-                  count={pageCount}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size={isMobile ? "small" : "medium"}
-                  sx={{ py: 1 }}
+                <DataGrid
+                  rows={filteredJobTypes}
+                  columns={columns}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={handlePaginationModelChange}
+                  pageSizeOptions={[5, 10, 25]}
+                  loading={loading}
+                  density={isMobile ? "compact" : "standard"}
+                  getRowId={(row) => row.id}
+                  disableRowSelectionOnClick
+                  sx={{
+                    '& .MuiDataGrid-columnHeader': {
+                      backgroundColor: 'background.default',
+                      fontWeight: 600,
+                    },
+                    '& .MuiDataGrid-row:nth-of-type(even)': {
+                      backgroundColor: '#fafafa',
+                    },
+                    border: 'none'
+                  }}
                 />
-              </Box>
+              </Paper>
             )}
           </CardContent>
         </Card>
 
-        {/* Add/Edit Dialog */}
-        <Dialog 
-          open={openEditDialog} 
+        <Dialog
+          open={openEditDialog}
           onClose={!submitting ? handleCloseEditDialog : undefined}
           fullWidth
           maxWidth="sm"
           PaperProps={{
-            sx: { 
+            sx: {
               borderRadius: { xs: 1, sm: 2 },
               width: { xs: '95%', sm: 'auto' }
             }
@@ -569,9 +590,9 @@ const ManageTeacherJobType = () => {
               )}
             </Box>
           </DialogTitle>
-          
+
           <Divider />
-          
+
           <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
             <TextField
               label="Job Role Name"
@@ -589,9 +610,9 @@ const ManageTeacherJobType = () => {
               InputLabelProps={{ shrink: true }}
             />
           </DialogContent>
-          
+
           <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box 
+            <Box
               sx={{
                 width: '100%',
                 display: 'flex',
@@ -600,27 +621,27 @@ const ManageTeacherJobType = () => {
                 gap: 1
               }}
             >
-              <Button 
-                onClick={handleCloseEditDialog} 
+              <Button
+                onClick={handleCloseEditDialog}
                 variant="outlined"
                 color="primary"
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   order: { xs: 2, sm: 1 },
                   textTransform: 'none'
                 }}
               >
                 Cancel
               </Button>
-              
-              <Button 
-                onClick={handleSaveJobType} 
-                variant="contained" 
+
+              <Button
+                onClick={handleSaveJobType}
+                variant="contained"
                 color="primary"
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   order: { xs: 1, sm: 2 },
                   textTransform: 'none'
                 }}
@@ -637,12 +658,11 @@ const ManageTeacherJobType = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
         <Dialog
           open={openDeleteDialog}
           onClose={!submitting ? handleCloseDeleteDialog : undefined}
           PaperProps={{
-            sx: { 
+            sx: {
               borderRadius: { xs: 1, sm: 2 },
               width: { xs: '95%', sm: 'auto' },
               maxWidth: '450px'
@@ -667,9 +687,9 @@ const ManageTeacherJobType = () => {
               )}
             </Box>
           </DialogTitle>
-          
+
           <Divider />
-          
+
           <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
             <Typography variant="body1" mb={1}>
               Are you sure you want to delete this job type:
@@ -681,9 +701,9 @@ const ManageTeacherJobType = () => {
               This action cannot be undone.
             </Typography>
           </DialogContent>
-          
+
           <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box 
+            <Box
               sx={{
                 width: '100%',
                 display: 'flex',
@@ -692,25 +712,25 @@ const ManageTeacherJobType = () => {
                 gap: 1
               }}
             >
-              <Button 
-                onClick={handleCloseDeleteDialog} 
+              <Button
+                onClick={handleCloseDeleteDialog}
                 variant="outlined"
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   order: { xs: 2, sm: 1 },
                   textTransform: 'none'
                 }}
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={handleDeleteJobType} 
-                variant="contained" 
+              <Button
+                onClick={handleDeleteJobType}
+                variant="contained"
                 color="error"
                 disabled={submitting}
                 fullWidth={isMobile}
-                sx={{ 
+                sx={{
                   order: { xs: 1, sm: 2 },
                   textTransform: 'none'
                 }}
@@ -721,7 +741,6 @@ const ManageTeacherJobType = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Loading Backdrop */}
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
           open={submitting}
@@ -729,7 +748,6 @@ const ManageTeacherJobType = () => {
           <CircularProgress color="inherit" />
         </Backdrop>
 
-        {/* Notification Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -742,8 +760,8 @@ const ManageTeacherJobType = () => {
             severity={snackbar.severity}
             variant="filled"
             elevation={6}
-            sx={{ 
-              width: "100%", 
+            sx={{
+              width: "100%",
               boxShadow: 3,
               '& .MuiAlert-message': {
                 maxWidth: '100%',
