@@ -6,13 +6,6 @@ import {
   Typography,
   Button,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
-  Checkbox,
   IconButton,
   Dialog,
   DialogActions,
@@ -28,8 +21,8 @@ import {
   Divider,
   Alert,
   InputAdornment,
-  Pagination
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -66,15 +59,15 @@ const ManageQualification = () => {
   const [formErrors, setFormErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : 10;
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: isMobile ? 5 : 10,
+    page: 0
+  });
 
-  // Fetch qualifications from the server
   useEffect(() => {
     fetchQualifications();
   }, []);
 
-  // Filter qualifications when search query changes
   useEffect(() => {
     handleSearch(searchQuery);
   }, [qualifications, searchQuery]);
@@ -97,20 +90,16 @@ const ManageQualification = () => {
   };
 
   const showSnackbar = (message, severity = "success") => {
-    // Clean up the message if it's an array or object
     let displayMessage;
-    
     if (Array.isArray(message)) {
-      displayMessage = message[0]; // Take first error if it's an array
+      displayMessage = message[0];
     } else if (typeof message === 'object' && message !== null) {
-      // If message is an object, try to extract first error message
       const firstKey = Object.keys(message)[0];
       const firstValue = message[firstKey];
       displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
     } else {
       displayMessage = message;
     }
-    
     setSnackbar({
       open: true,
       message: displayMessage,
@@ -129,7 +118,6 @@ const ManageQualification = () => {
       );
       setFilteredQualifications(filtered);
     }
-    setCurrentPage(1);
   };
 
   const handleAddQualification = () => {
@@ -156,11 +144,8 @@ const ManageQualification = () => {
           (qualification) => qualification.id !== qualificationId
         )
       );
-      
       const deletedItem = qualifications.find(q => q.id === qualificationId);
       showSnackbar(`Qualification "${deletedItem?.name}" deleted successfully.`);
-      
-      // Clear selection if the deleted item was selected
       if (selectedQualifications.includes(qualificationId)) {
         setSelectedQualifications(
           selectedQualifications.filter(id => id !== qualificationId)
@@ -176,19 +161,16 @@ const ManageQualification = () => {
 
   const handleBulkDelete = async () => {
     if (selectedQualifications.length === 0) return;
-    
     setSubmitting(true);
     try {
       await Promise.all(
         selectedQualifications.map((id) => deleteQualification(id))
       );
-      
       setQualifications(
         qualifications.filter(
           (qualification) => !selectedQualifications.includes(qualification.id)
         )
       );
-      
       showSnackbar(`${selectedQualifications.length} qualifications deleted successfully.`);
       setSelectedQualifications([]);
     } catch (error) {
@@ -202,13 +184,9 @@ const ManageQualification = () => {
   const handleApiError = (error, fallbackMessage) => {
     if (error.response?.data) {
       const responseData = error.response.data;
-      
-      // Handle field-specific errors
       if (typeof responseData === 'object' && !Array.isArray(responseData)) {
         const fieldErrors = {};
         let hasFieldErrors = false;
-        
-        // Process each field error
         for (const [field, errorMessages] of Object.entries(responseData)) {
           if (Array.isArray(errorMessages) && errorMessages.length > 0) {
             fieldErrors[field] = errorMessages[0];
@@ -218,49 +196,35 @@ const ManageQualification = () => {
             hasFieldErrors = true;
           }
         }
-        
         if (hasFieldErrors) {
           setFormErrors(fieldErrors);
-          
-          // Show the first field error in the snackbar
           const firstField = Object.keys(fieldErrors)[0];
           showSnackbar(fieldErrors[firstField], "error");
           return;
         }
       }
-      
-      // Handle non-field errors
       if (responseData.non_field_errors && Array.isArray(responseData.non_field_errors)) {
         showSnackbar(responseData.non_field_errors[0], "error");
         return;
       }
-      
-      // Handle string message
       if (typeof responseData === 'string') {
         showSnackbar(responseData, "error");
         return;
       }
-      
-      // Handle message property
       if (responseData.message) {
         showSnackbar(responseData.message, "error");
         return;
       }
-      
-      // Handle detail property (common in DRF errors)
       if (responseData.detail) {
         showSnackbar(responseData.detail, "error");
         return;
       }
     }
-    
-    // Fallback error message
     showSnackbar(fallbackMessage, "error");
   };
 
   const validateForm = () => {
     const errors = {};
-    
     if (!currentQualification?.name || currentQualification.name.trim() === "") {
       errors.name = "Qualification name is required";
     } else if (currentQualification.name.length < 2) {
@@ -268,20 +232,17 @@ const ManageQualification = () => {
     } else if (currentQualification.name.length > 100) {
       errors.name = "Qualification name cannot exceed 100 characters";
     }
-    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSaveQualification = async () => {
     if (!validateForm()) return;
-    
     setSubmitting(true);
     try {
       const payload = {
         name: currentQualification.name.trim(),
       };
-
       if (currentQualification.id) {
         await updateQualification(currentQualification.id, payload);
         setQualifications(
@@ -315,8 +276,6 @@ const ManageQualification = () => {
       ...currentQualification,
       [name]: value
     });
-    
-    // Clear validation error for the field being edited
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -325,36 +284,58 @@ const ManageQualification = () => {
     }
   };
 
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
-      const visibleQualificationIds = currentQualifications.map(qualification => qualification.id);
-      setSelectedQualifications(visibleQualificationIds);
-    } else {
-      setSelectedQualifications([]);
-    }
+  const handleSelectAll = (newSelection) => {
+    setSelectedQualifications(newSelection);
   };
 
-  const handleCheckboxChange = (qualificationId) => {
-    setSelectedQualifications((prev) => {
-      if (prev.includes(qualificationId)) {
-        return prev.filter(id => id !== qualificationId);
-      } else {
-        return [...prev, qualificationId];
+  const columns = [
+    {
+      field: 'serialNumber',
+      headerName: 'ID',
+      width: 70,
+      // Use a much simpler approach that doesn't rely on any potentially undefined params
+      renderCell: (params) => {
+        const index = filteredQualifications.findIndex(item => item.id === params.row?.id);
+        return index !== -1 ? index + 1 : 'N/A';
       }
-    });
-  };
-
-  // Pagination
-  const pageCount = Math.max(1, Math.ceil(filteredQualifications.length / itemsPerPage));
-  const currentQualifications = filteredQualifications.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+    },
+    {
+      field: 'name',
+      headerName: 'Qualification Name',
+      flex: 1,
+      minWidth: 200
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Box display="flex" gap={1}>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="primary"
+            onClick={() => handleEditQualification(params.row)}
+          >
+            <EditIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="error"
+            onClick={() => handleDeleteQualification(params.row.id)}
+          >
+            <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+        </Box>
+      )
+    }
+  ];
 
   return (
     <Layout>
       <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header Card */}
         <Card 
           elevation={2} 
           sx={{ 
@@ -397,7 +378,6 @@ const ManageQualification = () => {
           </CardContent>
         </Card>
 
-        {/* Qualifications List Card */}
         <Card 
           elevation={2} 
           sx={{ 
@@ -462,78 +442,41 @@ const ManageQualification = () => {
                     borderRadius: 1,
                     overflow: 'hidden',
                     mb: 2,
-                    width: '100%'
+                    width: '100%',
+                    height: 440
                   }}
                 >
-                  <TableContainer sx={{ maxHeight: 440 }}>
-                    <Table size={isMobile ? "small" : "medium"}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: 'background.default' }}>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              indeterminate={
-                                selectedQualifications.length > 0 &&
-                                selectedQualifications.length < currentQualifications.length
-                              }
-                              checked={
-                                currentQualifications.length > 0 &&
-                                selectedQualifications.length === currentQualifications.length
-                              }
-                              onChange={handleSelectAll}
-                              size={isMobile ? "small" : "medium"}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Qualification Name</TableCell>
-                          <TableCell sx={{ fontWeight: 600, width: isMobile ? 100 : 120 }}>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {currentQualifications.map((qualification, index) => (
-                          <TableRow 
-                            key={qualification.id} 
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedQualifications.includes(qualification.id)}
-                                onChange={() => handleCheckboxChange(qualification.id)}
-                                size={isMobile ? "small" : "medium"}
-                              />
-                            </TableCell>
-                            <TableCell>{index + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
-                            <TableCell>{qualification.name}</TableCell>
-                            <TableCell>
-                              <Box display="flex" gap={1}>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleEditQualification(qualification)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="error"
-                                  onClick={() => handleDeleteQualification(qualification.id)}
-                                >
-                                  <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <DataGrid
+                    rows={filteredQualifications}
+                    columns={columns}
+                    checkboxSelection
+                    disableRowSelectionOnClick
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
+                    pageSizeOptions={[5, 10, 25]}
+                    rowSelectionModel={selectedQualifications}
+                    onRowSelectionModelChange={handleSelectAll}
+                    loading={loading}
+                    density={isMobile ? "compact" : "standard"}
+                    getRowId={(row) => row.id} 
+                    sx={{
+                      '& .MuiDataGrid-columnHeader': {
+                        backgroundColor: 'background.default',
+                        fontWeight: 600,
+                      },
+                      '& .MuiDataGrid-row:nth-of-type(even)': {
+                        backgroundColor: '#fafafa',
+                      },
+                      border: 'none'
+                    }}
+                  />
                 </Paper>
                 
                 <Box 
                   sx={{ 
                     display: 'flex', 
                     flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-start',
                     alignItems: { xs: 'stretch', sm: 'center' },
                     gap: 2
                   }}
@@ -547,30 +490,17 @@ const ManageQualification = () => {
                     fullWidth={isMobile}
                     sx={{ 
                       py: { xs: 1, sm: 'auto' },
-                      textTransform: 'none',
-                      order: { xs: 2, sm: 1 }
+                      textTransform: 'none'
                     }}
                   >
                     Delete Selected {selectedQualifications.length > 0 && `(${selectedQualifications.length})`}
                   </Button>
-                  
-                  {pageCount > 1 && (
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(event, value) => setCurrentPage(value)}
-                      color="primary"
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ order: { xs: 1, sm: 2 } }}
-                    />
-                  )}
                 </Box>
               </>
             )}
           </CardContent>
         </Card>
 
-        {/* Edit/Add Dialog */}
         <Dialog 
           open={isEditModalOpen} 
           onClose={!submitting ? () => setIsEditModalOpen(false) : undefined}
@@ -667,7 +597,6 @@ const ManageQualification = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Loading Backdrop */}
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
           open={submitting}
@@ -675,7 +604,6 @@ const ManageQualification = () => {
           <CircularProgress color="inherit" />
         </Backdrop>
 
-        {/* Notification Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}

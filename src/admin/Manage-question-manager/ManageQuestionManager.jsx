@@ -5,12 +5,6 @@ import {
   Box,
   Button,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   IconButton,
   Modal,
@@ -22,7 +16,6 @@ import {
   Switch,
   Snackbar,
   Alert,
-  TablePagination,
   useTheme,
   useMediaQuery,
   Card,
@@ -46,9 +39,16 @@ import {
   PersonAdd as PersonAddIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
-  MoreVert as MoreVertIcon,
   Close as CloseIcon
 } from "@mui/icons-material";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+  GridToolbarExport,
+  GridToolbarColumnsButton,
+  GridToolbarDensitySelector
+} from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import {
   getQuestionsManager,
@@ -174,12 +174,9 @@ const ManageQuestionManager = () => {
       });
       setSelectedSubjects(manager.subject.map(sub => sub.id));
 
-      // For edit mode, get class categories from the manager.class_category array
       if (manager.class_category && Array.isArray(manager.class_category)) {
-        // Filter to only include categories that have subjects
         const validCategoryIds = manager.class_category
           .filter(cat => {
-            // Check if this category has any subjects in the system
             const categoryInSystem = classCategories.find(c => c.id === cat.id);
             return categoryInSystem && categoryInSystem.subjects && categoryInSystem.subjects.length > 0;
           })
@@ -187,7 +184,6 @@ const ManageQuestionManager = () => {
 
         setSelectedClassCategories(validCategoryIds);
       } else {
-        // Fallback to the old logic if new format is not available, still filtering for categories with subjects
         const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
         const validCategoryIds = uniqueClassCategories
           .filter(catId => {
@@ -199,7 +195,6 @@ const ManageQuestionManager = () => {
         setSelectedClassCategories(validCategoryIds);
       }
     } else {
-      // Reset form for new manager
       setSelectedManager(null);
       setUserData({
         id: null,
@@ -235,7 +230,6 @@ const ManageQuestionManager = () => {
     try {
       setLoadingAction(true);
 
-      // Validate form
       if (!userData.email || !userData.Fname || !userData.Lname || (!isEditMode && !userData.password)) {
         setNotification({
           open: true,
@@ -256,22 +250,18 @@ const ManageQuestionManager = () => {
         return;
       }
 
-      // Prepare payload with the new structure
       const payload = {
         user: {
           email: userData.email,
           Fname: userData.Fname,
           Lname: userData.Lname,
-          ...(isEditMode ? {} : { password: userData.password }), // Include password only for new users
+          ...(isEditMode ? {} : { password: userData.password }),
         },
-        class_category: selectedClassCategories, // Add class_category array to the payload
+        class_category: selectedClassCategories,
         subject: selectedSubjects,
-        status: userData.is_verified, // Include status in the payload
+        status: userData.is_verified,
       };
 
-      console.log("Payload for user creation or update:", payload); // Debugging log
-
-      // Call API
       let response;
       if (isEditMode) {
         response = await updateAssignedUserManager(userData.id, payload);
@@ -279,7 +269,6 @@ const ManageQuestionManager = () => {
         response = await adminManageAssignedUserManager(payload);
       }
 
-      // Check if the response was successful
       if (response && (response.data || response.message)) {
         setNotification({
           open: true,
@@ -287,7 +276,6 @@ const ManageQuestionManager = () => {
           severity: "success",
         });
 
-        // Refresh data and close modal
         await fetchData();
         handleCloseModal();
       } else {
@@ -296,34 +284,26 @@ const ManageQuestionManager = () => {
     } catch (error) {
       console.error("Error saving manager:", error);
 
-      // Extract detailed error message for better error handling
       let errorMessage = "Failed to save changes";
 
       if (error.response?.data) {
         const responseData = error.response.data;
 
-        // Check for nested error object structure
         if (responseData.error) {
-          // Check if error contains field-specific errors
           if (typeof responseData.error === 'object') {
-            // Extract the first error message from the first field
             const firstField = Object.keys(responseData.error)[0];
             if (Array.isArray(responseData.error[firstField]) && responseData.error[firstField].length > 0) {
               errorMessage = `${firstField}: ${responseData.error[firstField][0]}`;
             } else {
-              // Fallback if structure is unexpected
               errorMessage = responseData.message || "Validation error occurred";
             }
           } else {
-            // If error is a string
             errorMessage = responseData.error;
           }
         } else if (responseData.message) {
-          // Use message directly if it exists
           errorMessage = responseData.message;
         }
       } else if (error.message) {
-        // Use JavaScript error message if available
         errorMessage = error.message;
       }
 
@@ -337,7 +317,6 @@ const ManageQuestionManager = () => {
     }
   };
 
-
   // Delete functionality
   const handleDeleteConfirmation = (manager) => {
     setManagerToDelete(manager);
@@ -350,17 +329,14 @@ const ManageQuestionManager = () => {
     try {
       setLoadingAction(true);
 
-      // Use the root-level `id` for deletion
       await deleteAssignedUserManager(managerToDelete.id);
 
-      // Show success notification
       setNotification({
         open: true,
         message: "Manager deleted successfully!",
         severity: "success",
       });
 
-      // Refresh data after deletion
       await fetchData();
     } catch (error) {
       console.error("Error deleting manager:", error);
@@ -382,10 +358,8 @@ const ManageQuestionManager = () => {
       setLoadingAction(true);
       const updatedStatus = !manager.user.is_verified;
 
-      // Prepare class categories IDs from the manager's class_category array
       const classCategories = manager.class_category?.map(cat => cat.id) || [];
 
-      // Update the payload structure to match API expectations
       const payload = {
         user: {
           email: manager.user.email,
@@ -393,15 +367,14 @@ const ManageQuestionManager = () => {
           Lname: manager.user.Lname,
           is_verified: updatedStatus
         },
-        class_category: classCategories, // Use the class_category array directly
+        class_category: classCategories,
         subject: manager.subject.map(sub => sub.id),
-        status: updatedStatus // Include status in the payload
+        status: updatedStatus
       };
 
       const response = await updateAssignedUserManager(manager.id, payload);
 
       if (response && (response.data || response.message)) {
-        // Update local state for immediate UI update
         setManagers(prev =>
           prev.map(m =>
             m.id === manager.id
@@ -421,7 +394,6 @@ const ManageQuestionManager = () => {
     } catch (error) {
       console.error("Error updating status:", error);
 
-      // Better error handling
       let errorMessage = "Failed to update status";
 
       if (error.response?.data) {
@@ -467,18 +439,15 @@ const ManageQuestionManager = () => {
   const handleSubjectChange = (event, value) => {
     const selectedSubjectId = value.props.value;
 
-    // If already selected, remove it, otherwise add it
     if (selectedSubjects.includes(selectedSubjectId)) {
       setSelectedSubjects(selectedSubjects.filter(id => id !== selectedSubjectId));
     } else {
       setSelectedSubjects([...selectedSubjects, selectedSubjectId]);
     }
 
-    // Close the dropdown after selection
     setSubjectSelectOpen(false);
   };
 
-  // Get available subjects based on selected class categories
   const getFilteredSubjects = () => {
     if (selectedClassCategories.length === 0) return [];
 
@@ -491,29 +460,15 @@ const ManageQuestionManager = () => {
     return classCategories.filter(category => category.subjects && category.subjects.length > 0);
   };
 
-  // Filtering and pagination
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setPage(0); // Reset to first page when searching
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleFilterStatus = (e) => {
-    setFilterStatus(e.target.value);
-    setPage(0); // Reset to first page when filtering
-  };
-
-  // Filter managers based on search and status filter
-  const filteredManagers = Array.isArray(managers)
-    ? managers.filter((manager) => {
+  const getFilteredManagers = () => {
+    if (!Array.isArray(managers)) return [];
+    
+    return managers.filter((manager) => {
       const fullName = `${manager.user.Fname} ${manager.user.Lname}`.toLowerCase();
       const searchTermLower = searchTerm.toLowerCase();
       const emailMatch = manager.user.email.toLowerCase().includes(searchTermLower);
@@ -528,10 +483,25 @@ const ManageQuestionManager = () => {
         (filterStatus === "inactive" && !manager.user.is_verified);
 
       return (fullName.includes(searchTermLower) || emailMatch || subjectMatch) && statusMatch;
-    })
-    : [];
+    });
+  };
 
-  // Get subject names for display
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleFilterStatus = (e) => {
+    setFilterStatus(e.target.value);
+    setPage(0);
+  };
+
+  const filteredManagers = getFilteredManagers();
+
   const getSubjectNames = (subjectIds) => {
     return subjectIds
       .map(id => {
@@ -541,7 +511,6 @@ const ManageQuestionManager = () => {
       .join(", ");
   };
 
-  // Render mobile card view
   const renderMobileView = () => {
     return (
       <Box>
@@ -568,7 +537,6 @@ const ManageQuestionManager = () => {
 
                 <Divider sx={{ my: 1 }} />
 
-                {/* Display Class Categories */}
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Assigned Classes:
                 </Typography>
@@ -584,13 +552,11 @@ const ManageQuestionManager = () => {
                   ))}
                 </Box>
 
-                {/* Display Subjects */}
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Assigned Subjects:
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
                   {manager.subject.map((sub) => {
-                    // Find class category name
                     const categoryId = sub.class_category;
                     const category = manager.class_category?.find(cat => cat.id === categoryId);
                     const categoryName = category ? category.name : `Class ${categoryId}`;
@@ -660,10 +626,30 @@ const ManageQuestionManager = () => {
     );
   };
 
+  const CustomToolbar = () => {
+    const theme = useTheme();
+    
+    return (
+      <GridToolbarContainer sx={{ p: 1 }}>
+        <GridToolbarColumnsButton 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarFilterButton 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarDensitySelector 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarExport 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+      </GridToolbarContainer>
+    );
+  };
+
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
-        {/* Header section */}
         <Paper
           elevation={0}
           sx={{
@@ -710,7 +696,6 @@ const ManageQuestionManager = () => {
           </Button>
         </Paper>
 
-        {/* Filters section */}
         <Paper
           elevation={2}
           sx={{
@@ -754,7 +739,6 @@ const ManageQuestionManager = () => {
           </Grid>
         </Paper>
 
-        {/* Managers List */}
         <Paper
           elevation={2}
           sx={{
@@ -778,171 +762,217 @@ const ManageQuestionManager = () => {
           ) : (
             <>
               {isMobile ? (
-                // Mobile card view
                 <Box p={2}>
                   {renderMobileView()}
                 </Box>
               ) : (
-                // Desktop table view changes
-                <TableContainer>
-                  <Table size={isTablet ? "small" : "medium"}>
-                    <TableHead sx={{ bgcolor: 'background.default' }}>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Manager Name</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                        {!isTablet && (
-                          <>
-                            <TableCell sx={{ fontWeight: 600 }}>Classes</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Subjects</TableCell>
-                          </>
-                        )}
-                        <TableCell sx={{ fontWeight: 600 }} align="center">Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
+                <Box sx={{ height: 500, width: '100%' }}>
+                  <DataGrid
+                    rows={filteredManagers.map(manager => ({
+                      id: manager.id,
+                      name: `${manager.user.Fname} ${manager.user.Lname}`,
+                      email: manager.user.email,
+                      classes: manager.class_category || [],
+                      subjects: manager.subject,
+                      status: manager.user.is_verified,
+                      rawData: manager
+                    }))}
+                    columns={[
+                      {
+                        field: 'name',
+                        headerName: 'Manager Name',
+                        flex: 1.5,
+                        minWidth: 180,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'email',
+                        headerName: 'Email',
+                        flex: 2,
+                        minWidth: 200,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'classes',
+                        headerName: 'Classes',
+                        flex: 2,
+                        minWidth: 200,
+                        sortable: false,
+                        filterable: false,
+                        renderCell: (params) => (
+                          <Box display="flex" flexWrap="wrap" gap={0.5}>
+                            {params.value && params.value.map((cat) => (
+                              <Chip
+                                key={cat.id}
+                                label={cat.name}
+                                size="small"
+                                variant="outlined"
+                                color="secondary"
+                                sx={{ m: 0.2 }}
+                              />
+                            ))}
+                          </Box>
+                        ),
+                        hide: isTablet,
+                      },
+                      {
+                        field: 'subjects',
+                        headerName: 'Subjects',
+                        flex: 2,
+                        minWidth: 220,
+                        sortable: false,
+                        filterable: false,
+                        renderCell: (params) => (
+                          <Box display="flex" flexWrap="wrap" gap={0.5}>
+                            {params.value.map((sub) => {
+                              const categoryId = sub.class_category;
+                              const category = params.row.classes.find(cat => cat.id === categoryId);
+                              const categoryName = category ? category.name : `Class ${categoryId}`;
 
-                    <TableBody>
-                      {filteredManagers
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((manager) => (
-                          <TableRow
-                            key={manager.user.id}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell>
-                              <Typography variant="body2" fontWeight={500}>
-                                {manager.user.Fname} {manager.user.Lname}
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell>{manager.user.email}</TableCell>
-
-                            {!isTablet && (
-                              <>
-                                {/* Class Categories Column */}
-                                <TableCell>
-                                  <Box display="flex" flexWrap="wrap" gap={0.5}>
-                                    {manager.class_category && manager.class_category.map((cat) => (
-                                      <Chip
-                                        key={cat.id}
-                                        label={cat.name}
-                                        size="small"
-                                        variant="outlined"
-                                        color="secondary"
-                                        sx={{ m: 0.2 }}
-                                      />
-                                    ))}
-                                  </Box>
-                                </TableCell>
-
-                                {/* Subjects Column */}
-                                <TableCell>
-                                  <Box display="flex" flexWrap="wrap" gap={0.5}>
-                                    {manager.subject.map((sub) => {
-                                      // Find class category name
-                                      const categoryId = sub.class_category;
-                                      const category = manager.class_category?.find(cat => cat.id === categoryId);
-                                      const categoryName = category ? category.name : `Class ${categoryId}`;
-
-                                      return (
-                                        <Chip
-                                          key={sub.id}
-                                          label={`${sub.subject_name} (${categoryName})`}
-                                          size="small"
-                                          variant="outlined"
-                                          color="primary"
-                                          sx={{ m: 0.2 }}
-                                        />
-                                      );
-                                    })}
-                                  </Box>
-                                </TableCell>
-                              </>
-                            )}
-
-                            <TableCell align="center">
-                              <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                              return (
                                 <Chip
-                                  label={manager.user.is_verified ? "Active" : "Inactive"}
-                                  color={manager.user.is_verified ? "success" : "default"}
+                                  key={sub.id}
+                                  label={`${sub.subject_name} (${categoryName})`}
                                   size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                  sx={{ m: 0.2 }}
                                 />
-                                <Tooltip title={manager.user.is_verified ? "Deactivate" : "Activate"}>
-                                  <Switch
-                                    checked={manager.user.is_verified}
-                                    onChange={() => handleToggleStatus(manager)}
-                                    color="success"
-                                    size="small"
-                                    disabled={loadingAction}
-                                  />
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
+                              );
+                            })}
+                          </Box>
+                        ),
+                        hide: isTablet,
+                      },
+                      {
+                        field: 'status',
+                        headerName: 'Status',
+                        width: 170,
+                        sortable: true,
+                        filterable: true,
+                        type: 'boolean',
+                        renderCell: (params) => (
+                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                            <Chip
+                              label={params.value ? "Active" : "Inactive"}
+                              color={params.value ? "success" : "default"}
+                              size="small"
+                            />
+                            <Tooltip title={params.value ? "Deactivate" : "Activate"}>
+                              <Switch
+                                checked={params.value}
+                                onChange={() => handleToggleStatus(params.row.rawData)}
+                                color="success"
+                                size="small"
+                                disabled={loadingAction}
+                              />
+                            </Tooltip>
+                          </Box>
+                        ),
+                      },
+                      {
+                        field: 'actions',
+                        headerName: 'Actions',
+                        width: 150,
+                        sortable: false,
+                        filterable: false,
+                        renderCell: (params) => (
+                          <Box display="flex" justifyContent="center" gap={1}>
+                            <Tooltip title="View Details">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => handleOpenViewDialog(params.row.rawData)}
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
 
-                            <TableCell align="center">
-                              <Box display="flex" justifyContent="center" gap={1}>
-                                <Tooltip title="View Details">
-                                  <IconButton
-                                    size="small"
-                                    color="info"
-                                    onClick={() => handleOpenViewDialog(manager)}
-                                  >
-                                    <VisibilityIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
+                            <Tooltip title="Edit Manager">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleOpenModal(true, params.row.rawData)}
+                                disabled={loadingAction}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
 
-                                <Tooltip title="Edit Manager">
-                                  <IconButton
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleOpenModal(true, manager)}
-                                    disabled={loadingAction}
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-
-                                <Tooltip title="Delete Manager">
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    onClick={() => handleDeleteConfirmation(manager)}
-                                    disabled={loadingAction}
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                            <Tooltip title="Delete Manager">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteConfirmation(params.row.rawData)}
+                                disabled={loadingAction}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: {
+                          page: page,
+                          pageSize: rowsPerPage
+                        },
+                      },
+                      sorting: {
+                        sortModel: [{ field: 'name', sort: 'asc' }],
+                      },
+                      filter: {
+                        filterModel: {
+                          items: [],
+                          quickFilterValues: searchTerm ? [searchTerm] : [],
+                        },
+                      },
+                    }}
+                    pageSizeOptions={[5, 10, 25, 50]}
+                    onPaginationModelChange={(model) => {
+                      setPage(model.page);
+                      setRowsPerPage(model.pageSize);
+                    }}
+                    filterMode="client"
+                    slots={{
+                      toolbar: CustomToolbar,
+                      noRowsOverlay: () => (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
+                          <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
+                            No managers found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" align="center">
+                            Try adjusting your search or filters
+                          </Typography>
+                        </Box>
+                      ),
+                    }}
+                    sx={{
+                      border: 'none',
+                      '& .MuiDataGrid-cell:focus': {
+                        outline: 'none',
+                      },
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: theme.palette.background.default,
+                        fontWeight: 600,
+                      },
+                      '& .MuiDataGrid-row:nth-of-type(even)': {
+                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
+                      },
+                      '& .MuiDataGrid-toolbarContainer': {
+                        padding: 1,
+                      },
+                      '& .MuiButton-root': {
+                        textTransform: 'none',
+                      },
+                    }}
+                  />
+                </Box>
               )}
-
-              {/* Pagination */}
-              <Box
-                display="flex"
-                justifyContent="flex-end"
-                p={2}
-                sx={{
-                  backgroundColor: theme.palette.background.default,
-                  borderTop: `1px solid ${theme.palette.divider}`
-                }}
-              >
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  component="div"
-                  count={filteredManagers.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
-                />
-              </Box>
             </>
           )}
         </Paper>
@@ -1174,7 +1204,6 @@ const ManageQuestionManager = () => {
           <DialogContent dividers>
             {viewManager && (
               <Grid container spacing={2}>
-                {/* Personal Information */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
                     Personal Information
@@ -1208,7 +1237,6 @@ const ManageQuestionManager = () => {
                   </Paper>
                 </Grid>
 
-                {/* Class Categories */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
                     Assigned Class Categories
@@ -1243,7 +1271,6 @@ const ManageQuestionManager = () => {
                   </Paper>
                 </Grid>
 
-                {/* Subjects */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" fontWeight={500} color="primary.main" gutterBottom>
                     Assigned Subjects
@@ -1252,7 +1279,6 @@ const ManageQuestionManager = () => {
                     {viewManager.subject && viewManager.subject.length > 0 ? (
                       <Grid container spacing={1}>
                         {viewManager.subject.map((sub) => {
-                          // Find class category name
                           const categoryId = sub.class_category;
                           const category = viewManager.class_category?.find(cat => cat.id === categoryId);
                           const categoryName = category ? category.name : `Class ${categoryId}`;
@@ -1299,7 +1325,6 @@ const ManageQuestionManager = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
         <Dialog
           open={openDeleteDialog}
           onClose={() => !loadingAction && setOpenDeleteDialog(false)}
@@ -1333,7 +1358,6 @@ const ManageQuestionManager = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Notification Snackbar */}
         <Snackbar
           open={notification.open}
           autoHideDuration={6000}

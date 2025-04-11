@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Button, TextField,
-  Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
   Checkbox, IconButton, Dialog, DialogActions, DialogContent, DialogTitle,
   Box, Snackbar, Grid, Paper, useTheme, useMediaQuery, CircularProgress,
-  Divider, Backdrop, Pagination, Card, CardContent, InputAdornment, Alert,
-  FormHelperText
+  Divider, Backdrop, Card, CardContent, InputAdornment, Alert
 } from '@mui/material';
 import {
   Add as AddIcon, 
@@ -14,6 +12,7 @@ import {
   Search as SearchIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
+import { DataGrid } from '@mui/x-data-grid';
 import Layout from "../Admin/Layout";
 import {
   getSkills, 
@@ -68,13 +67,11 @@ const ManageSkills = () => {
   };
 
   const showSnackbar = (message, severity = "success") => {
-    // Clean up the message if it's an array or object
     let displayMessage;
     
     if (Array.isArray(message)) {
-      displayMessage = message[0]; // Take first error if it's an array
+      displayMessage = message[0];
     } else if (typeof message === 'object' && message !== null) {
-      // If message is an object, try to extract first error message
       const firstKey = Object.keys(message)[0];
       const firstValue = message[firstKey];
       displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
@@ -163,12 +160,10 @@ const ManageSkills = () => {
     if (error.response?.data) {
       const responseData = error.response.data;
       
-      // Handle field-specific errors
       if (typeof responseData === 'object' && !Array.isArray(responseData)) {
         const fieldErrors = {};
         let hasFieldErrors = false;
         
-        // Process each field error
         for (const [field, errorMessages] of Object.entries(responseData)) {
           if (Array.isArray(errorMessages) && errorMessages.length > 0) {
             fieldErrors[field] = errorMessages[0];
@@ -181,34 +176,28 @@ const ManageSkills = () => {
         
         if (hasFieldErrors) {
           setFormErrors(fieldErrors);
-          
-          // Show the first field error in the snackbar
           const firstField = Object.keys(fieldErrors)[0];
           showSnackbar(fieldErrors[firstField], "error");
           return;
         }
       }
       
-      // Handle non-field errors
       if (responseData.non_field_errors && Array.isArray(responseData.non_field_errors)) {
         showSnackbar(responseData.non_field_errors[0], "error");
         return;
       }
       
-      // Handle string message
       if (typeof responseData === 'string') {
         showSnackbar(responseData, "error");
         return;
       }
       
-      // Handle message property
       if (responseData.message) {
         showSnackbar(responseData.message, "error");
         return;
       }
     }
     
-    // Fallback error message
     showSnackbar(fallbackMessage, "error");
   };
 
@@ -244,7 +233,6 @@ const ManageSkills = () => {
       [name]: value
     });
     
-    // Clear validation error for the field being edited
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -267,15 +255,6 @@ const ManageSkills = () => {
     setCurrentPage(1);
   };
 
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
-      const visibleSkillIds = currentSkills.map(skill => skill.id);
-      setSelectedSkills(visibleSkillIds);
-    } else {
-      setSelectedSkills([]);
-    }
-  };
-
   const handleCheckboxChange = (skillId) => {
     setSelectedSkills((prev) => {
       if (prev.includes(skillId)) {
@@ -286,17 +265,89 @@ const ManageSkills = () => {
     });
   };
 
-  // Pagination
-  const pageCount = Math.max(1, Math.ceil(filteredSkills.length / itemsPerPage));
-  const currentSkills = filteredSkills.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const columns = [
+    {
+      field: 'select',
+      headerName: '',
+      width: 50,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderHeader: () => (
+        <Checkbox
+          indeterminate={
+            selectedSkills.length > 0 &&
+            selectedSkills.length < filteredSkills.length
+          }
+          checked={
+            filteredSkills.length > 0 &&
+            selectedSkills.length === filteredSkills.length
+          }
+          onChange={(event) => {
+            if (event.target.checked) {
+              setSelectedSkills(filteredSkills.map(skill => skill.id));
+            } else {
+              setSelectedSkills([]);
+            }
+          }}
+          size={isMobile ? "small" : "medium"}
+        />
+      ),
+      renderCell: (params) => (
+        <Checkbox
+          checked={selectedSkills.includes(params.row.id)}
+          onChange={() => handleCheckboxChange(params.row.id)}
+          size={isMobile ? "small" : "medium"}
+        />
+      )
+    },
+    {
+      field: 'name',
+      headerName: 'Skill Name',
+      flex: 1,
+      minWidth: 150
+    },
+    {
+      field: 'description',
+      headerName: 'Description',
+      flex: 2,
+      minWidth: 200,
+      hide: isMobile,
+      renderCell: (params) => (
+        params.value || "—"
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Box display="flex" gap={1}>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="primary"
+            onClick={() => handleEditSkill(params.row)}
+          >
+            <EditIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+          <IconButton
+            size={isMobile ? "small" : "medium"}
+            color="error"
+            onClick={() => handleConfirmDelete(params.row)}
+          >
+            <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
+          </IconButton>
+        </Box>
+      )
+    }
+  ];
 
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header Card */}
         <Card 
           elevation={2} 
           sx={{ 
@@ -339,7 +390,6 @@ const ManageSkills = () => {
           </CardContent>
         </Card>
 
-        {/* Search and List Card */}
         <Card 
           elevation={2} 
           sx={{ 
@@ -404,107 +454,44 @@ const ManageSkills = () => {
                     borderRadius: 1,
                     overflow: 'hidden',
                     mb: 2,
-                    width: '100%'
+                    width: '100%',
+                    height: 440
                   }}
                 >
-                  <TableContainer sx={{ maxHeight: 440 }}>
-                    <Table size={isMobile ? "small" : "medium"}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: 'background.default' }}>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              indeterminate={
-                                selectedSkills.length > 0 &&
-                                selectedSkills.length < currentSkills.length
-                              }
-                              checked={
-                                currentSkills.length > 0 &&
-                                selectedSkills.length === currentSkills.length
-                              }
-                              onChange={handleSelectAll}
-                              size={isMobile ? "small" : "medium"}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Skill Name</TableCell>
-                          <TableCell 
-                            sx={{ 
-                              fontWeight: 600, 
-                              display: { xs: 'none', sm: 'table-cell' } 
-                            }}
-                          >
-                            Description
-                          </TableCell>
-                          <TableCell 
-                            sx={{ 
-                              fontWeight: 600, 
-                              width: isMobile ? 100 : 120 
-                            }}
-                          >
-                            Actions
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {currentSkills.map((skill) => (
-                          <TableRow 
-                            key={`skill-${skill.id}`} 
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedSkills.includes(skill.id)}
-                                onChange={() => handleCheckboxChange(skill.id)}
-                                size={isMobile ? "small" : "medium"}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box>
-                                <Typography variant="body2" fontWeight={500}>
-                                  {skill.name}
-                                </Typography>
-                                {isMobile && skill.description && (
-                                  <Typography 
-                                    variant="caption" 
-                                    color="text.secondary"
-                                    sx={{ 
-                                      display: '-webkit-box',
-                                      overflow: 'hidden',
-                                      WebkitBoxOrient: 'vertical',
-                                      WebkitLineClamp: 2,
-                                    }}
-                                  >
-                                    {skill.description}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                              {skill.description || "—"}
-                            </TableCell>
-                            <TableCell>
-                              <Box display="flex" gap={1}>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleEditSkill(skill)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="error"
-                                  onClick={() => handleConfirmDelete(skill)}
-                                >
-                                  <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <DataGrid
+                    rows={filteredSkills}
+                    columns={columns}
+                    disableRowSelectionOnClick
+                    pagination
+                    paginationMode="client"
+                    rowCount={filteredSkills.length}
+                    pageSize={itemsPerPage}
+                    onPageChange={(page) => setCurrentPage(page + 1)}
+                    page={currentPage - 1}
+                    rowsPerPageOptions={[itemsPerPage]}
+                    checkboxSelection={false}
+                    disableColumnFilter
+                    disableColumnSelector
+                    disableDensitySelector
+                    disableColumnMenu
+                    loading={loading}
+                    getRowClassName={(params) => 
+                      params.indexRelativeToCurrentPage % 2 === 0 ? '' : 'even-row'
+                    }
+                    sx={{
+                      '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                      '& .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+                      '& .even-row': { backgroundColor: '#fafafa' },
+                      border: 'none',
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: 'background.default',
+                        fontWeight: 600
+                      },
+                      '& .MuiDataGrid-virtualScroller': {
+                        backgroundColor: 'background.paper',
+                      },
+                    }}
+                  />
                 </Paper>
                 
                 <Box 
@@ -531,24 +518,12 @@ const ManageSkills = () => {
                   >
                     Delete Selected {selectedSkills.length > 0 && `(${selectedSkills.length})`}
                   </Button>
-                  
-                  {pageCount > 1 && (
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(event, value) => setCurrentPage(value)}
-                      color="primary"
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ order: { xs: 1, sm: 2 } }}
-                    />
-                  )}
                 </Box>
               </>
             )}
           </CardContent>
         </Card>
 
-        {/* Skill Add/Edit Dialog */}
         <Dialog 
           open={isEditModalOpen} 
           onClose={() => !submitting && setIsEditModalOpen(false)}
@@ -661,7 +636,6 @@ const ManageSkills = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
         <Dialog
           open={openDeleteDialog}
           onClose={() => !submitting && setOpenDeleteDialog(false)}
@@ -745,7 +719,6 @@ const ManageSkills = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Notification Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -771,7 +744,6 @@ const ManageSkills = () => {
           </Alert>
         </Snackbar>
 
-        {/* Loading Backdrop */}
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
           open={submitting}

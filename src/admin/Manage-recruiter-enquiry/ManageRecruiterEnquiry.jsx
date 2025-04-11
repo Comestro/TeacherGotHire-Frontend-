@@ -24,9 +24,9 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    useMediaQuery,
-    Pagination
+    useMediaQuery
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import {
     Search as SearchIcon,
     FilterList as FilterListIcon,
@@ -71,8 +71,10 @@ const ManageRecruiterEnquiry = () => {
     const [adminNote, setAdminNote] = useState('');
 
     // Add pagination state
-    const [page, setPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [paginationModel, setPaginationModel] = useState({
+        pageSize: 10,
+        page: 0,
+    });
 
     // Load data on component mount
     useEffect(() => {
@@ -152,17 +154,6 @@ const ManageRecruiterEnquiry = () => {
         setFilteredInquiries(results);
     }, [searchTerm, filters, inquiries, sortOption]);
 
-    // Calculate paginated data
-    const paginatedInquiries = filteredInquiries.slice(
-        (page - 1) * rowsPerPage,
-        page * rowsPerPage
-    );
-
-    // Handle page change
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
     // Handle view details
     const handleViewDetails = (inquiry) => {
         setSelectedInquiry(inquiry);
@@ -230,6 +221,103 @@ const ManageRecruiterEnquiry = () => {
             default: return theme.palette.warning.main;
         }
     };
+    
+    // Define DataGrid columns
+    const columns = [
+        { 
+            field: 'recruiterName', 
+            headerName: 'Recruiter',
+            flex: 1.5,
+            minWidth: 180,
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="body2" fontWeight="medium">{params.value || ''}</Typography>
+                    <Typography variant="caption" color="text.secondary">{params.row?.email || ''}</Typography>
+                    <Typography variant="caption" color="text.secondary">{params.row?.contactNumber || ''}</Typography>
+                </Box>
+            )
+        },
+        {
+            field: 'subjects',
+            headerName: 'Requirements',
+            flex: 1.5,
+            minWidth: 200,
+            sortable: false,
+            renderCell: (params) => {
+                const subjects = params.row?.subjects || [];
+                const teacherType = params.row?.teacherType || '';
+                
+                return (
+                    <Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
+                            {subjects.map((subject, idx) => (
+                                <Chip key={idx} label={subject} size="small" variant="outlined" />
+                            ))}
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                            Teacher Type: {teacherType}
+                        </Typography>
+                    </Box>
+                );
+            }
+        },
+        {
+            field: 'location',
+            headerName: 'Location',
+            flex: 1,
+            minWidth: 150,
+            sortable: false,
+            renderCell: (params) => {
+                const city = params.row?.location?.city || '';
+                const state = params.row?.location?.state || '';
+                const area = params.row?.location?.area || '';
+                const pincode = params.row?.location?.pincode || '';
+                
+                return (
+                    <Box>
+                        <Typography variant="body2">{city}, {state}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {area} - {pincode}
+                        </Typography>
+                    </Box>
+                );
+            }
+        },
+        {
+            field: 'status',
+            headerName: 'Status',
+            width: 130,
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip
+                        label={params.value || 'Pending'}
+                        size="small"
+                        sx={{
+                            backgroundColor: getStatusColor(params.value),
+                            color: '#fff'
+                        }}
+                    />
+                </Box>
+            )
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 100,
+            sortable: false,
+            renderCell: (params) => (
+                <Tooltip title="View Details">
+                    <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleViewDetails(params.row)}
+                    >
+                        <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            )
+        }
+    ];
 
     return (
         <Layout>
@@ -403,186 +491,73 @@ const ManageRecruiterEnquiry = () => {
                     </Collapse>
                 </Paper>
 
-                {/* Inquiry List Section */}
-                <Box>
-                    {/* Desktop View - Table */}
-                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                        <Paper elevation={1}>
-                            <Box sx={{
-                                display: 'grid',
-                                gridTemplateColumns: '2fr 2fr 2fr 1fr',
-                                p: 2,
-                                fontWeight: 'bold',
-                                borderBottom: 1,
-                                borderColor: 'divider'
-                            }}>
-                                <Typography variant="subtitle2">Recruiter</Typography>
-                                <Typography variant="subtitle2">Requirements</Typography>
-                                <Typography variant="subtitle2">Location</Typography>
-                                <Typography variant="subtitle2">Status</Typography>
-                            </Box>
+                {/* DataGrid Inquiry List */}
+                <Paper 
+                    elevation={1}
+                    sx={{
+                        height: 500,
+                        width: '100%',
+                        '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                        mb: 3,
+                        overflow: 'hidden'
+                    }}
+                >
+                    <DataGrid
+                        rows={filteredInquiries}
+                        columns={columns}
+                        paginationModel={paginationModel}
+                        onPaginationModelChange={setPaginationModel}
+                        pageSizeOptions={[5, 10, 25, 50]}
+                        disableRowSelectionOnClick
+                        density={isMobile ? "compact" : "standard"}
+                        sx={{
+                            '& .MuiDataGrid-columnHeader': {
+                                backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                                fontWeight: 600,
+                                padding: '0 16px',
+                            },
+                            '& .MuiDataGrid-row:nth-of-type(even)': {
+                                backgroundColor: '#fafafa',
+                            },
+                            '& .MuiDataGrid-cell': {
+                                padding: '16px',
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word',
+                                lineHeight: '1.3',
+                                '&:focus': {
+                                    outline: 'none'
+                                }
+                            },
+                            '& .MuiDataGrid-virtualScroller': {
+                                backgroundColor: theme.palette.mode === 'dark' ? 
+                                    'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.01)'
+                            },
+                            '& .MuiDataGrid-footerContainer': {
+                                backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                                borderTop: '1px solid',
+                                borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            },
+                            '& .MuiTablePagination-root': {
+                                padding: '8px 12px'
+                            },
+                            border: 'none',
+                            borderRadius: '8px',
+                            minHeight: '400px',
+                            height: '100%',
+                        }}
+                        initialState={{
+                            pagination: {
+                                paginationModel,
+                            },
+                            sorting: {
+                                sortModel: [{ field: 'createdAt', sort: sortOption === 'newest' ? 'desc' : 'asc' }]
+                            }
+                        }}
+                    />
+                </Paper>
 
-                            {paginatedInquiries.map((inquiry) => (
-                                <Box
-                                    key={inquiry.id}
-                                    sx={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '2fr 2fr 2fr 1fr',
-                                        p: 2,
-                                        borderBottom: 1,
-                                        borderColor: 'divider',
-                                        '&:hover': {
-                                            backgroundColor: 'action.hover',
-                                        }
-                                    }}
-                                >
-                                    <Box>
-                                        <Typography variant="body2" fontWeight="medium">{inquiry.recruiterName}</Typography>
-                                        <Typography variant="caption" display="block">{inquiry.email}</Typography>
-                                        <Typography variant="caption" color="text.secondary">{inquiry.contactNumber}</Typography>
-                                    </Box>
-
-                                    <Box>
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
-                                            {inquiry.subjects.map((subject, idx) => (
-                                                <Chip key={idx} label={subject} size="small" variant="outlined" />
-                                            ))}
-                                        </Box>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Teacher Type: {inquiry.teacherType}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box>
-                                        <Typography variant="body2">{inquiry.location.city}, {inquiry.location.state}</Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {inquiry.location.area} - {inquiry.location.pincode}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box>
-                                        <Chip
-                                            label={inquiry.status}
-                                            size="small"
-                                            sx={{
-                                                backgroundColor: getStatusColor(inquiry.status),
-                                                color: '#fff',
-                                                mr: 1
-                                            }}
-                                        />
-                                        <Tooltip title="View Details">
-                                            <IconButton
-                                                size="small"
-                                                color="primary"
-                                                onClick={() => handleViewDetails(inquiry)}
-                                            >
-                                                <VisibilityIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Box>
-                                </Box>
-                            ))}
-                        </Paper>
-                    </Box>
-
-                    {/* Mobile View - Cards */}
-                    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                        {paginatedInquiries.map((inquiry) => (
-                            <Card
-                                key={inquiry.id}
-                                sx={{
-                                    mb: 2,
-                                    border: `1px solid ${theme.palette.divider}`,
-                                    position: 'relative'
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        right: 12,
-                                        zIndex: 1
-                                    }}
-                                >
-                                    <Chip
-                                        label={inquiry.status}
-                                        size="small"
-                                        sx={{
-                                            backgroundColor: getStatusColor(inquiry.status),
-                                            color: '#fff'
-                                        }}
-                                    />
-                                </Box>
-
-                                <CardContent>
-                                    <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h6" component="div">
-                                            {inquiry.recruiterName}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {inquiry.email} | {inquiry.contactNumber}
-                                        </Typography>
-                                    </Box>
-
-                                    <Divider sx={{ mb: 2 }} />
-
-                                    <Grid container spacing={1}>
-                                        <Grid item xs={6}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                Teacher Type
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {inquiry.teacherType}
-                                            </Typography>
-                                        </Grid>
-
-                                        <Grid item xs={6}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                Location
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {inquiry.location.city}, {inquiry.location.state}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-
-                                    <Box sx={{ mt: 2 }}>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Subjects
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                            {inquiry.subjects.map((subject, idx) => (
-                                                <Chip key={idx} label={subject} size="small" variant="outlined" />
-                                            ))}
-                                        </Box>
-                                    </Box>
-                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            startIcon={<VisibilityIcon />}
-                                            onClick={() => handleViewDetails(inquiry)}
-                                        >
-                                            View Details
-                                        </Button>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </Box>
-
-                    {/* Add Pagination */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                        <Pagination
-                            count={Math.ceil(filteredInquiries.length / rowsPerPage)}
-                            page={page}
-                            onChange={handleChangePage}
-                            color="primary"
-                            showFirstButton
-                            showLastButton
-                        />
-                    </Box>
-
+                {/* Mobile specific card view for small screens */}
+                <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 2 }}>
                     {filteredInquiries.length === 0 && (
                         <Box sx={{ textAlign: 'center', py: 4 }}>
                             <Typography variant="h6" color="text.secondary">
@@ -704,6 +679,31 @@ const ManageRecruiterEnquiry = () => {
                                     )}
                                 </Paper>
                             </Box>
+
+                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                                {selectedInquiry.status === 'Pending' && (
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            fullWidth
+                                            onClick={() => handleApprove(selectedInquiry.id)}
+                                            startIcon={<CheckIcon />}
+                                        >
+                                            Approve
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            fullWidth
+                                            onClick={() => handleOpenRejectModal(selectedInquiry)}
+                                            startIcon={<CloseIcon />}
+                                        >
+                                            Reject
+                                        </Button>
+                                    </>
+                                )}
+                            </Box>
                         </Box>
                     )}
                 </Drawer>
@@ -754,7 +754,6 @@ const ManageRecruiterEnquiry = () => {
                 </Dialog>
 
                 {/* Add Note Modal */}
-
                 <Dialog
                     open={isNoteModalOpen}
                     onClose={() => setIsNoteModalOpen(false)}
@@ -780,7 +779,6 @@ const ManageRecruiterEnquiry = () => {
                 </Dialog>
             </Container>
         </Layout>
-
     );
 }
 export default ManageRecruiterEnquiry;
