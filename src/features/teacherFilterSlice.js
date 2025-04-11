@@ -28,7 +28,7 @@ export const fetchTeachers = createAsyncThunk(
       const response = await axiosInstance.get("/api/admin/teacher/", {
         params: filters,
       });
-      console.log("filter data in slice", response.data);
+      // console.log("filter data in slice", response.data);
       return response.data; 
     } catch (error) {
       return rejectWithValue(

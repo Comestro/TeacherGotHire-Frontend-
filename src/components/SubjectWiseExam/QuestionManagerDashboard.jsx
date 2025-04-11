@@ -1868,7 +1868,7 @@ const QuestionManagerDashboard = () => {
                                 <div className="p-4">
                                   <p className="text-gray-700 mb-3 line-clamp-2">{question.text}</p>
                                   <div className="space-y-1.5 mb-3">
-                                    {question.options.map((option, idx) => (
+                                    {question?.options?.map((option, idx) => (
                                       <div key={idx}
                                         className={`flex items-center p-2 rounded ${option === question.correct_option ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
                                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 ${option === question.correct_option ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'}`}>
