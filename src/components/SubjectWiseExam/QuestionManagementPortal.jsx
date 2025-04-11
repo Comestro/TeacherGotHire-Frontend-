@@ -84,7 +84,7 @@ const renderStatusBadge = (status) => {
   );
 };
 
-const QuestionManagerDashboard = () => {
+const QuestionManagementPortal = () => {
   // Redux selectors
   const dispatch = useDispatch();
   const { loading, setterExamSet } = useSelector((state) => state.examQues || {});
@@ -1988,4 +1988,4 @@ const QuestionManagerDashboard = () => {
   );
 };
 
-export default QuestionManagerDashboard;
+export default QuestionManagementPortal;
