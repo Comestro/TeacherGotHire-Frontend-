@@ -8,9 +8,6 @@ import {
   postExamSet,
   putExamSet,
   deleteExamSet,
-  postQuestionToExamSet,
-  putQuestionToExamSet,
-  getQuestionToExamSet,
   getSetterInfo,
   getLevels
 } from "../../features/examQuesSlice";
@@ -18,6 +15,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader";
 import SubjectExpertHeader from "./components/SubjectExpertHeader";
+import { createQuestion, updateQuestion, getQuestions, deleteQuestion } from "../../services/adminManageExam";
 
 // Component to add at the top of your file after imports
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -93,8 +91,7 @@ const QuestionManagerDashboard = () => {
   const setterUser = useSelector((state) => state.examQues.setterInfo);
   const levels = useSelector((state) => state.examQues.levels || []);
 
-  console.log("setter user", setterUser);
-
+  console.log("Levels:", levels);
   // Update these console logs to avoid undefined errors
   useEffect(() => {
     if (setterUser) {
@@ -395,27 +392,40 @@ const QuestionManagerDashboard = () => {
 
     try {
       if (editingQuestionIndex !== null) {
+        // Update existing question
         const questionId = selectedExamSet.questions[editingQuestionIndex].id;
-        const response = await dispatch(
-          putQuestionToExamSet({ questionId, payload })
-        ).unwrap();
-        dispatch(getQuestionToExamSet(questionId));
-        setSelectedExamSet((prev) => ({
+        const response = await updateQuestion(questionId, payload);
+        
+        // Update UI directly
+        setSelectedExamSet(prev => ({
           ...prev,
-          questions: prev.questions.map((q) =>
+          questions: prev.questions.map(q => 
             q.id === questionId ? response : q
-          ),
+          )
         }));
+
         toast.success("Question updated successfully!");
       } else {
-        const response = await dispatch(
-          postQuestionToExamSet(payload)
-        ).unwrap();
+        // Create new question
+        const response = await createQuestion(payload);
+        
+        if (response.message === "Question stored in English and Hindi") {
+          setSelectedExamSet(prev => ({
+            ...prev,
+            questions: [
+              ...(prev.questions || []),
+              response.english_data,
+              response.hindi_data
+            ]
+          }));
+        } else {
+          // Handle single question response
+          setSelectedExamSet(prev => ({
+            ...prev,
+            questions: [...(prev.questions || []), response]
+          }));
+        }
 
-        setSelectedExamSet((prev) => ({
-          ...prev,
-          questions: [...(prev.questions || []), response],
-        }));
         toast.success("Question added successfully!");
       }
 
@@ -466,10 +476,14 @@ const QuestionManagerDashboard = () => {
   const handleDeleteQuestion = async (questionId) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
+        await deleteQuestion(questionId);
+        
+        // Update UI directly
         setSelectedExamSet(prev => ({
           ...prev,
           questions: prev.questions.filter(q => q.id !== questionId)
         }));
+        
         toast.success("Question deleted successfully!");
       } catch (error) {
         toast.error("Error: " + (error.message || "Failed to delete question"));
@@ -477,6 +491,31 @@ const QuestionManagerDashboard = () => {
       }
     }
   };
+
+  // Add a function to fetch questions for an exam set
+  const fetchQuestionsForExamSet = async (examSetId) => {
+    try {
+      const questions = await getQuestions();
+      // Filter questions for current exam set
+      const examSetQuestions = questions.filter(q => q.exam === examSetId);
+      
+      // Update UI directly
+      setSelectedExamSet(prev => ({
+        ...prev,
+        questions: examSetQuestions
+      }));
+    } catch (error) {
+      toast.error("Error fetching questions: " + error.message);
+      console.error("Error:", error);
+    }
+  };
+
+  // Update the useEffect where you need to load questions
+  useEffect(() => {
+    if (selectedExamSet?.id) {
+      fetchQuestionsForExamSet(selectedExamSet.id);
+    }
+  }, [selectedExamSet?.id]);
 
   // Filter and search functions
   const applyFilters = () => {
@@ -1868,7 +1907,7 @@ const QuestionManagerDashboard = () => {
                                 <div className="p-4">
                                   <p className="text-gray-700 mb-3 line-clamp-2">{question.text}</p>
                                   <div className="space-y-1.5 mb-3">
-                                    {question.options.map((option, idx) => (
+                                    {question?.options?.map((option, idx) => (
                                       <div key={idx}
                                         className={`flex items-center p-2 rounded ${option === question.correct_option ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
                                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 ${option === question.correct_option ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'}`}>

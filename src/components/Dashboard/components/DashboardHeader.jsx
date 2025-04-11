@@ -142,7 +142,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
               exit={{ opacity: 0, y: -10 }}
             >
               <div className="px-4 py-2 border-b">
-                <p className="text-sm font-medium text-gray-700">User Code</p>
+                <p className="text-sm font-medium text-gray-700">Teacher Code</p>
                 <p className="text-sm text-gray-500">{profile.user_code}</p>
               </div>
               <button
