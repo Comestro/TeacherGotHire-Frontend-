@@ -13,6 +13,7 @@ import {
 } from "../../features/examQuesSlice";
 import TeacherDashboardCard from "./components/TeacherDashboardCard";
 import ExamManagement from "./components/ExamManagement";
+import FilterdExamCard from "./components/FilterdExamCard"
 import { Helmet } from "react-helmet-async";
 import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
@@ -170,7 +171,8 @@ function TeacherDashboard() {
         </div>
      
         <div className="md:px-6">
-          <ExamManagement />
+          {/* <ExamManagement /> */}
+          <FilterdExamCard/>
         </div>
         <div className="md:px-6">
           <InterviewCard />

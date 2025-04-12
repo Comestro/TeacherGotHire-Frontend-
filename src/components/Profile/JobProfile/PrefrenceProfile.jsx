@@ -14,6 +14,7 @@ import { HiExclamationCircle, HiPencil } from "react-icons/hi";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getLevels } from "../../../features/examQuesSlice";
 
 const PrefrenceProfile = () => {
   const dispatch = useDispatch();
@@ -25,7 +26,6 @@ const PrefrenceProfile = () => {
     dispatch(getTeacherjobType());
     dispatch(getPrefrence());
   }, [dispatch]);
-
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
   const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);

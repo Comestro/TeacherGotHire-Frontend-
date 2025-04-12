@@ -107,9 +107,9 @@ const QuestionManagerDashboard = () => {
     const fetchData = async () => {
       try {
         // These thunks expect no parameters or just an empty object
-        await dispatch(getExamSets());
-        await dispatch(getSetterInfo());
-        await dispatch(getLevels());
+        dispatch(getExamSets());
+        dispatch(getSetterInfo());
+        dispatch(getLevels());
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to load data. Please try again.");
