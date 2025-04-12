@@ -20,9 +20,9 @@ export const examCard = createAsyncThunk(
       if (
         error.response &&
         error.response.data &&
-        error.response.data.message
+        error.response.data.error
       ) {
-        errorMessage = error.response.data.message;
+        errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -35,7 +35,11 @@ export const examCard = createAsyncThunk(
 const examSlice = createSlice({
     name: "exam",
     initialState,
-    reducers: {},
+    reducers: {
+      setError(state, action) {
+        state.error = null;
+      },
+    },
     extraReducers:(builder) => {
         builder
               // for get data handeling
@@ -54,5 +58,9 @@ const examSlice = createSlice({
               });
   }
   });
+
+  export const {
+    setError
+  } = examSlice.actions;
 
   export default examSlice.reducer;

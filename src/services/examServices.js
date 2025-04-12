@@ -74,3 +74,14 @@ export const fetchLevel = async () => {
     throw err;
   }
 };
+
+export const checkPasskey = async (exam) => {
+  try {
+    const response = await apiClient.post(`/api/check-passkey/`,exam);
+    console.log("exam", response);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};

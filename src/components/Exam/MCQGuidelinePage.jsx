@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllQues, setLanguage } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
+import { checkPasskey } from "../../services/examServices";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
@@ -52,7 +53,10 @@ const MCQGuidelinePage = () => {
       await dispatch(setLanguage(selectedLanguage));
 
       if (examCards?.type === "offline") {
+        const exam = examCards?.id;
         // For offline exams, just open the modal
+       const check =  checkPasskey(exam);
+       console.log("check",check)
         setIsExamCenterModalOpen(true);
         // DON'T navigate here - navigation will happen after passkey generation
       } else {

@@ -9,6 +9,7 @@ import {
   getAllCenter,
   getgeneratedPasskey,
 } from "../../../features/examQuesSlice";
+import { checkPasskey } from "../../../services/examServices";
 
 const ExamCenterModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -35,6 +36,7 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     dispatch(getAllCenter({ signal: abortController.signal }));
     dispatch(getgeneratedPasskey());
+    
     return () => abortController.abort();
   }, [dispatch]);
 

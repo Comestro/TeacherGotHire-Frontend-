@@ -19,12 +19,10 @@ import { updateBasicProfile } from "../../services/profileServices";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import InterviewCard from "./components/InterviewCard";
+import { attemptsExam } from "../../features/examQuesSlice";
 
 function TeacherDashboard() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const [passcode, setPasscode] = useState("");
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,9 +30,24 @@ function TeacherDashboard() {
   const inputRef = useRef(null);
 
   const { basicData } = useSelector((state) => state.personalProfile);
+  const {  attempts } = useSelector(
+      (state) => state.examQues
+    );
+    console.log("attempts",attempts);
+  
+    useEffect(()=>{
+  
+        dispatch(attemptsExam());
+      
+    },[dispatch]);
+
+    const qualifiedExamNames = attempts
+  .filter(item => item.exam.level_code === 2 && item.isqualified)
+  .map(item => item.exam.name);
+
+  console.log("qualifiedExamNames",qualifiedExamNames)
   
   useEffect(() => {
-    dispatch(getInterview());
     dispatch(getSubjects());
     dispatch(getProfilCompletion()).then(() => {
       // Show modal if phone number is not set
@@ -164,17 +177,20 @@ function TeacherDashboard() {
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
 
       <div className="min-h-screen">
-        <div className="md:px-6 md:py-5">
+        {/* <div className="md:px-6 md:py-5">
             <TeacherDashboardCard />
-        </div>
+        </div> */}
      
         <div className="md:px-6">
           {/* <ExamManagement /> */}
           <FilterdExamCard/>
         </div>
+       {qualifiedExamNames.length>0 && (
         <div className="md:px-6">
-          <InterviewCard />
-        </div>
+        <InterviewCard />
+      </div>
+       ) 
+        }
       </div>
     </>
   );
