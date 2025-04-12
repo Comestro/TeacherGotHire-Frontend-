@@ -57,7 +57,7 @@ import ManageTeacherApplied from "./admin/Manage-teacher-applied/ManageTeacherAp
 import ManageRecruiterEnquiry from "./admin/Manage-recruiter-enquiry/ManageRecruiterEnquiry";
 import ManageQuestionReport from "./admin/Manage-Question-Report/ManageQuestionReport";
 import ExamDetails from "./admin/Manage-exam/ExamDetails";
-import QuestionManagerDashboard from "./components/SubjectWiseExam/QuestionManagerDashboard";
+import QuestionManagementPortal from "./components/SubjectWiseExam/QuestionManagementPortal";
 
 function App() {
   return (
@@ -91,7 +91,7 @@ function App() {
               <Route path="portal" element={<ExamPortal />} />
               <Route path="result" element={<ResultPage />} />
             </Route>
-            <Route path="subject-expert" element={<QuestionManagerDashboard />} />
+            <Route path="subject-expert" element={<QuestionManagementPortal />} />
 
             {/* Recruiter Routes */}
             <Route

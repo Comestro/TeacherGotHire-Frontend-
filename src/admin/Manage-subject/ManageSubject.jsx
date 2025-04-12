@@ -4,13 +4,7 @@ import {
   Typography,
   Button,
   TextField,
-  Table,
-  TableBody,
   TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
-  Checkbox,
   IconButton,
   Dialog,
   DialogActions,
@@ -26,12 +20,10 @@ import {
   Paper,
   useTheme,
   useMediaQuery,
-  InputAdornment,
   CircularProgress,
   Divider,
   FormHelperText,
   Backdrop,
-  Pagination,
   Card,
   CardContent,
   Chip,
@@ -44,6 +36,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { Alert } from "@mui/material";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import {
   getSubjects,
@@ -497,122 +490,64 @@ const ManageSubject = () => {
                     mb: 2
                   }}
                 >
-                  <TableContainer sx={{ maxHeight: 440 }}>
-                    <Table size={isMobile ? "small" : "medium"}>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: 'background.default' }}>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              indeterminate={
-                                selectedSubjects.length > 0 &&
-                                selectedSubjects.length < currentSubjects.length
-                              }
-                              checked={
-                                currentSubjects.length > 0 &&
-                                selectedSubjects.length === currentSubjects.length
-                              }
-                              onChange={handleSelectAll}
-                              size={isMobile ? "small" : "medium"}
+                  <DataGrid
+                    rows={filteredSubjects}
+                    columns={[
+                      { field: 'id', headerName: 'ID', width: 90 },
+                      { field: 'subject_name', headerName: 'Subject Name', flex: 1 },
+                      {
+                        field: 'class_category',
+                        headerName: 'Class Category',
+                        flex: 1,
+                        renderCell: (params) => {
+                          const classObj = classes.find((cls) => cls.id === params.value);
+                          return (
+                            <Chip
+                              label={classObj ? classObj.name : "N/A"}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
                             />
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Subject</TableCell>
-                          <TableCell sx={{ fontWeight: 600, display: { xs: 'none', sm: 'table-cell' } }}>Class Category</TableCell>
-                          <TableCell sx={{ fontWeight: 600, width: isMobile ? 100 : 120 }}>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {currentSubjects.map((subject, index) => (
-                          <TableRow
-                            key={`subject-${subject.id}`}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedSubjects.includes(subject.id)}
-                                onChange={() => handleCheckboxChange(subject.id)}
-                                size={isMobile ? "small" : "medium"}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box>
-                                <Typography variant="body2" fontWeight={500}>{subject.subject_name}</Typography>
-                                {isMobile && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {getClassName(subject.class_category)}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                              <Chip
-                                label={getClassName(subject.class_category)}
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box display="flex" gap={1}>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="primary"
-                                  onClick={() => handleEditSubject(subject)}
-                                >
-                                  <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                                <IconButton
-                                  size={isMobile ? "small" : "medium"}
-                                  color="error"
-                                  onClick={() => handleConfirmDelete(subject)}
-                                >
-                                  <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Paper>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'stretch', sm: 'center' },
-                    gap: 2
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={handleBulkDelete}
-                    disabled={selectedSubjects.length === 0 || submitting}
-                    fullWidth={isMobile}
-                    sx={{
-                      py: { xs: 1, sm: 'auto' },
-                      textTransform: 'none',
-                      order: { xs: 2, sm: 1 }
+                          );
+                        }
+                      },
+                      {
+                        field: 'actions',
+                        headerName: 'Actions',
+                        sortable: false,
+                        renderCell: (params) => (
+                          <Box display="flex" gap={1}>
+                            <IconButton
+                              size={isMobile ? "small" : "medium"}
+                              color="primary"
+                              onClick={() => handleEditSubject(params.row)}
+                            >
+                              <EditIcon fontSize={isMobile ? "small" : "medium"} />
+                            </IconButton>
+                            <IconButton
+                              size={isMobile ? "small" : "medium"}
+                              color="error"
+                              onClick={() => handleConfirmDelete(params.row)}
+                            >
+                              <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
+                            </IconButton>
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    pageSize={itemsPerPage}
+                    rowsPerPageOptions={[itemsPerPage]}
+                    checkboxSelection
+                    disableSelectionOnClick
+                    components={{
+                      Toolbar: GridToolbar,
                     }}
-                  >
-                    Delete Selected {selectedSubjects.length > 0 && `(${selectedSubjects.length})`}
-                  </Button>
-
-                  {pageCount > 1 && (
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(event, value) => setCurrentPage(value)}
-                      color="primary"
-                      size={isMobile ? "small" : "medium"}
-                      sx={{ order: { xs: 1, sm: 2 } }}
-                    />
-                  )}
-                </Box>
+                    onSelectionModelChange={(newSelection) => {
+                      setSelectedSubjects(newSelection);
+                    }}
+                    sx={{ height: 400 }}
+                  />
+                </Paper>
               </>
             )}
           </CardContent>

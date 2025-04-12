@@ -9,14 +9,6 @@ import {
   Select,
   MenuItem,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  Chip,
   Modal,
   IconButton,
   Divider,
@@ -26,17 +18,13 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Chip,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/system";
 import { FiDownload, FiFilter, FiMoreVertical } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import { getHireRequest, updateHireRequest } from "../../services/adminHiringRequest";
-
-const StyledTableCell = styled(TableCell)(({ theme = {} }) => ({
-  backgroundColor: theme.palette?.common?.white || "#ffffff",
-  color: theme.palette?.common?.black || "#000000",
-  fontWeight: "bold",
-}));
 
 const StyledStatusChip = styled(Chip)(({ status }) => ({
   backgroundColor:
@@ -73,8 +61,10 @@ const ManageHiringRequests = () => {
     dateRange: [null, null],
   });
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 10,
+    page: 0,
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [data, setData] = useState([]);
@@ -91,8 +81,8 @@ const ManageHiringRequests = () => {
         if (Array.isArray(response)) {
           const formatData = response.map((item) => ({
             id: item.id,
-            recruiterName: item.recruiter_id, // This is an object
-            teacherName: item.teacher_id, // This is an object
+            recruiterName: item.recruiter_id,
+            teacherName: item.teacher_id,
             role: item.role,
             subjects: item.subject,
             status: item.status,
@@ -109,19 +99,9 @@ const ManageHiringRequests = () => {
     fetchData();
   }, []);
 
-  // Helper function to format names
   const formatName = (user) => {
     if (!user) return "N/A";
     return `${user.Fname} ${user.Lname}`;
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const handleOpenModal = (request) => {
@@ -142,8 +122,8 @@ const ManageHiringRequests = () => {
   const handleApproveRequest = async () => {
     try {
       await updateHireRequest(selectedRequest.id, {
-        recruiter_id: selectedRequest.recruiterName.id, // Use the recruiter ID
-        teacher_id: selectedRequest.teacherName.id, // Use the teacher ID
+        recruiter_id: selectedRequest.recruiterName.id,
+        teacher_id: selectedRequest.teacherName.id,
         status: "fulfilled",
       });
       setData((prev) =>
@@ -166,10 +146,10 @@ const ManageHiringRequests = () => {
   const handleRejectRequest = async () => {
     try {
       await updateHireRequest(selectedRequest.id, {
-        recruiter_id: selectedRequest.recruiterName.id, // Use the recruiter ID
-        teacher_id: selectedRequest.teacherName.id, // Use the teacher ID
+        recruiter_id: selectedRequest.recruiterName.id,
+        teacher_id: selectedRequest.teacherName.id,
         status: "rejected",
-        reject_reason: "Reason for rejection", // Add the actual reason here
+        reject_reason: "Reason for rejection",
       });
       setData((prev) =>
         prev.map((item) =>
@@ -231,6 +211,71 @@ const ManageHiringRequests = () => {
     document.body.removeChild(link);
   };
 
+  const columns = [
+    {
+      field: 'recruiter',
+      headerName: 'Recruiter',
+      flex: 1,
+      minWidth: 180,
+      valueGetter: (params) => formatName(params.row.recruiterName),
+    },
+    {
+      field: 'teacher',
+      headerName: 'Teacher',
+      flex: 1,
+      minWidth: 180,
+      valueGetter: (params) => formatName(params.row.teacherName),
+    },
+    {
+      field: 'role',
+      headerName: 'Role',
+      width: 150,
+    },
+    {
+      field: 'subjects',
+      headerName: 'Subjects',
+      flex: 1,
+      minWidth: 200,
+      valueGetter: (params) => params.row.subjects.map(subject => subject.subject_name).join(', '),
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 130,
+      renderCell: (params) => (
+        <StyledStatusChip
+          label={params.value}
+          status={params.value}
+        />
+      ),
+    },
+    {
+      field: 'requestDate',
+      headerName: 'Date',
+      width: 120,
+      valueFormatter: (params) => formatDate(params.value),
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <IconButton onClick={(e) => {
+          e.stopPropagation();
+          handleOpenModal(params.row);
+        }}>
+          <FiMoreVertical />
+        </IconButton>
+      ),
+    },
+  ];
+
+  const handleRowClick = (params) => {
+    handleOpenModal(params.row);
+  };
+
   return (
     <Layout>
       <Container maxWidth="xl">
@@ -243,7 +288,6 @@ const ManageHiringRequests = () => {
           </Typography>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            {/* Filters Panel */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6" gutterBottom>
@@ -313,73 +357,46 @@ const ManageHiringRequests = () => {
               </Paper>
             </Grid>
 
-            {/* Table */}
             <Grid item xs={12}>
-              <TableContainer component={Paper}>
+              <Paper sx={{ height: 500, width: '100%' }}>
                 {loading ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                  <Box sx={{ display: "flex", justifyContent: "center", p: 2, height: '100%', alignItems: 'center' }}>
                     <CircularProgress />
                   </Box>
                 ) : (
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>Recruiter</StyledTableCell>
-                        <StyledTableCell>Teacher</StyledTableCell>
-                        <StyledTableCell>Role</StyledTableCell>
-                        <StyledTableCell>Subjects</StyledTableCell>
-                        <StyledTableCell>Status</StyledTableCell>
-                        <StyledTableCell>Date</StyledTableCell>
-                        <StyledTableCell>Actions</StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredData
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row) => (
-                          <TableRow
-                            key={row.id}
-                            hover
-                            onClick={() => handleOpenModal(row)}
-                            sx={{ cursor: "pointer" }}
-                          >
-                            <TableCell>{formatName(row.recruiterName)}</TableCell>
-                            <TableCell>{formatName(row.teacherName)}</TableCell>
-                            <TableCell>{row.role}</TableCell>
-                            <TableCell>{row.subjects.map((subject) => subject.subject_name).join(", ")}</TableCell>
-                            <TableCell>
-                              <StyledStatusChip
-                                label={row.status}
-                                status={row.status}
-                              />
-                            </TableCell>
-                            <TableCell>{formatDate(row.requestDate)}</TableCell>
-                            <TableCell>
-                              <IconButton>
-                                <FiMoreVertical />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                  <DataGrid
+                    rows={filteredData}
+                    columns={columns}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
+                    pageSizeOptions={[5, 10, 25, 50]}
+                    loading={loading}
+                    disableRowSelectionOnClick
+                    onRowClick={handleRowClick}
+                    getRowId={(row) => row.id}
+                    sx={{
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: 'background.paper',
+                        fontWeight: 'bold',
+                      },
+                      '& .MuiDataGrid-row:hover': {
+                        backgroundColor: 'action.hover',
+                        cursor: 'pointer',
+                      },
+                      border: 'none',
+                      '& .MuiDataGrid-cell:focus': {
+                        outline: 'none',
+                      },
+                      '& .MuiDataGrid-row:nth-of-type(even)': {
+                        backgroundColor: '#fafafa',
+                      },
+                    }}
+                  />
                 )}
-                <TablePagination
-                  component="div"
-                  count={filteredData.length}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  rowsPerPage={rowsPerPage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </TableContainer>
+              </Paper>
             </Grid>
           </Grid>
 
-          {/* Request Details Modal */}
           <RequestDetailsModal open={modalOpen} onClose={handleCloseModal}>
             <ModalContent>
               {selectedRequest && (
@@ -423,7 +440,6 @@ const ManageHiringRequests = () => {
             </ModalContent>
           </RequestDetailsModal>
 
-          {/* Snackbar for feedback messages */}
           <Snackbar
             open={snackbarOpen}
             autoHideDuration={6000}

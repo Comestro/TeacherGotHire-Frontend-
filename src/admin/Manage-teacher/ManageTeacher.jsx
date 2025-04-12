@@ -6,23 +6,15 @@ import {
   TextField,
   Select,
   MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Checkbox,
   IconButton,
   FormControl,
-  InputLabel,
   Box,
   Snackbar,
   Alert,
   Switch,
-  TablePagination,
   Paper,
   Grid,
-  TableContainer,
   CircularProgress,
   Chip,
   Tooltip,
@@ -40,6 +32,15 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+// Import DataGrid components
+import { 
+  DataGrid, 
+  GridToolbarContainer,
+  GridToolbarExport,
+  GridToolbarFilterButton,
+  GridToolbarColumnsButton,
+  GridToolbarDensitySelector
+} from "@mui/x-data-grid";
 import {
   Visibility as ViewIcon,
   GetApp as ExportIcon,
@@ -76,10 +77,12 @@ const TeacherAvatar = styled(Avatar)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ theme, active }) => ({
   fontWeight: 500,
-  backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+  backgroundColor: active === "true" || active === true ? 
+    theme.palette.success.main : theme.palette.error.main,
   color: '#fff',
   '&:hover': {
-    backgroundColor: active ? theme.palette.success.main : theme.palette.error.main,
+    backgroundColor: active === "true" || active === true ? 
+      theme.palette.success.main : theme.palette.error.main,
   }
 }));
 
@@ -527,6 +530,137 @@ const ManageTeacher = () => {
   const activeTeachers = teachers.filter(teacher => teacher.is_active === true).length;
   const inactiveTeachers = teachers.filter(teacher => teacher.is_active === false).length;
 
+  // Custom toolbar for the DataGrid
+  function CustomToolbar() {
+    return (
+      <GridToolbarContainer sx={{ p: 1 }}>
+        <GridToolbarColumnsButton />
+        <GridToolbarFilterButton />
+        <GridToolbarDensitySelector />
+        <GridToolbarExport 
+          csvOptions={{
+            fileName: `teachers_export_${new Date().toISOString().split('T')[0]}`,
+            delimiter: ',',
+            utf8WithBom: true,
+          }}
+        />
+      </GridToolbarContainer>
+    );
+  }
+  
+  // Prepare columns for the DataGrid
+  const columns = [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 70,
+      hide: isMobile,
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => {
+        const initials = `${params.row.Fname?.charAt(0) || ''}${params.row.Lname?.charAt(0) || ''}`;
+        return (
+          <Box display="flex" alignItems="center">
+            <TeacherAvatar>{initials}</TeacherAvatar>
+            <Box ml={1}>
+              <Typography variant="subtitle2" fontWeight={600}>
+                {`${params.row.Fname || ''} ${params.row.Lname || ''}`}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                ID: {params.row.id || ''}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      },
+      sortable: true,
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      flex: 1,
+      minWidth: 220,
+      sortable: true,
+    },
+    {
+      field: 'qualifications',
+      headerName: 'Qualification',
+      flex: 1,
+      minWidth: 180,
+      hide: isMobile || isTablet,
+      renderCell: (params) => {
+        const qualifications = (params.row.teacherqualifications || [])
+          .map((q) => q?.qualification?.name || '')
+          .filter(Boolean)
+          .join(", ");
+        return <span>{qualifications || 'N/A'}</span>;
+      },
+      sortable: false,
+    },
+    {
+      field: 'location',
+      headerName: 'Location',
+      flex: 1,
+      minWidth: 150,
+      hide: isMobile || isTablet,
+      renderCell: (params) => {
+        const locations = (params.row.teachersaddress || [])
+          .map((address) => address?.state || '')
+          .filter(Boolean)
+          .join(", ");
+        return <span>{locations || 'N/A'}</span>;
+      },
+      sortable: false,
+    },
+    {
+      field: 'is_active',
+      headerName: 'Status',
+      width: 120,
+      renderCell: (params) => (
+        <StatusChip
+          label={params.row.is_active ? "Active" : "Inactive"}
+          active={params.row.is_active ? "true" : "false"} // Fix: convert to string
+          size="small"
+        />
+      ),
+      sortable: true,
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <Tooltip title="View Details">
+            <IconButton
+              component={Link}
+              to={`/admin/view/teacher/${params.row.id}`}
+              size="small"
+              color="primary"
+            >
+              <ViewIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={params.row.is_active ? "Deactivate" : "Activate"}>
+            <span>
+              <Switch
+                checked={params.row.is_active === true}
+                onChange={() => confirmToggleStatus(params.row.id, params.row.is_active)}
+                size="small"
+                color={params.row.is_active ? "success" : "error"}
+              />
+            </span>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
@@ -826,149 +960,63 @@ const ManageTeacher = () => {
               {filteredTeachers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map(renderTeacherCard)}
+              
+              {/* Add pagination control for mobile */}
+              <Box display="flex" justifyContent="center" mt={2}>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredTeachers.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </Box>
             </Box>
           ) : (
-            // Desktop table view
-            <>
-              <TableContainer>
-                <Table>
-                  <TableHead sx={{ bgcolor: theme.palette.background.default }}>
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          indeterminate={
-                            selectedTeachers.length > 0 &&
-                            selectedTeachers.length < filteredTeachers.length
-                          }
-                          checked={
-                            filteredTeachers.length > 0 &&
-                            selectedTeachers.length === filteredTeachers.length
-                          }
-                          onChange={handleSelectAllClick}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 600, display: { xs: 'none', md: 'table-cell' } }}>Qualification</TableCell>
-                      <TableCell sx={{ fontWeight: 600, display: { xs: 'none', lg: 'table-cell' } }}>Location</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredTeachers
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((teacher) => {
-                        const initials = `${teacher.Fname?.charAt(0) || ''}${teacher.Lname?.charAt(0) || ''}`;
-                        return (
-                          <TableRow
-                            key={teacher.id || Math.random().toString()}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: theme.palette.action.hover } }}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={selectedTeachers.includes(teacher.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedTeachers([...selectedTeachers, teacher.id]);
-                                  } else {
-                                    setSelectedTeachers(selectedTeachers.filter((id) => id !== teacher.id));
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box display="flex" alignItems="center">
-                                <TeacherAvatar>{initials}</TeacherAvatar>
-                                <Box ml={1}>
-                                  <Typography variant="subtitle2" fontWeight={600}>
-                                    {`${teacher.Fname || ''} ${teacher.Lname || ''}`}
-                                  </Typography>
-                                  <Typography variant="body2" color="textSecondary">
-                                    ID: {teacher.id || ''}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </TableCell>
-                            <TableCell>{teacher.email || ''}</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                              {(teacher.teacherqualifications || [])
-                                .map((q) => q?.qualification?.name || '')
-                                .filter(Boolean)
-                                .join(", ") || 'N/A'}
-                            </TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                              {(teacher.teachersaddress || [])
-                                .map((address) => address?.state || '')
-                                .filter(Boolean)
-                                .join(", ") || 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              <StatusChip
-                                label={teacher.is_active ? "Active" : "Inactive"}
-                                active={teacher.is_active}
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <Tooltip title="View Details">
-                                  <IconButton
-                                    component={Link}
-                                    to={`/admin/view/teacher/${teacher.id}`}
-                                    size="small"
-                                    color="primary"
-                                  >
-                                    <ViewIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title={teacher.is_active ? "Deactivate" : "Activate"}>
-                                  <span>
-                                    <Switch
-                                      checked={teacher.is_active === true}
-                                      onChange={() => confirmToggleStatus(teacher.id, teacher.is_active)}
-                                      size="small"
-                                      color={teacher.is_active ? "success" : "error"}
-                                      sx={{
-                                        '& .MuiSwitch-switchBase.Mui-checked': {
-                                          color: theme.palette.success.main,
-                                        },
-                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                          backgroundColor: theme.palette.success.main,
-                                        },
-                                        '& .MuiSwitch-switchBase:not(.Mui-checked)': {
-                                          color: theme.palette.error.main,
-                                        },
-                                        '& .MuiSwitch-switchBase:not(.Mui-checked) + .MuiSwitch-track': {
-                                          backgroundColor: theme.palette.error.light,
-                                        },
-                                      }}
-                                    />
-                                  </span>
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      }
-                      )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {/* Pagination */}
-
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredTeachers.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
+            // Replace table with DataGrid for desktop
+            <Box sx={{ height: 600, width: '100%' }}>
+              <DataGrid
+                rows={filteredTeachers}
+                getRowId={(row) => row.id} // Important: specify how to get row IDs
+                columns={columns}
+                initialState={{
+                  pagination: {
+                    paginationModel: { 
+                      page: page,
+                      pageSize: rowsPerPage 
+                    },
+                  },
+                }}
+                pageSizeOptions={[5, 10, 25]}
+                checkboxSelection
+                disableRowSelectionOnClick
+                onPaginationModelChange={(newModel) => {
+                  setPage(newModel.page);
+                  setRowsPerPage(newModel.pageSize);
+                }}
+                onRowSelectionModelChange={(newSelectionModel) => {
+                  setSelectedTeachers(newSelectionModel);
+                }}
+                rowSelectionModel={selectedTeachers}
+                loading={loading}
+                slots={{ toolbar: CustomToolbar }}
+                sx={{
+                  border: 'none',
+                  '& .MuiDataGrid-cell:focus': {
+                    outline: 'none',
+                  },
+                  '& .MuiDataGrid-columnHeaders': {
+                    backgroundColor: theme.palette.background.default,
+                    fontWeight: 600,
+                  },
+                  '& .MuiDataGrid-row:nth-of-type(even)': {
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                }}
               />
-            </>
+            </Box>
           )}
         </Paper>
       </Container>

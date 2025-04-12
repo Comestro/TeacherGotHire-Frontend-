@@ -3,9 +3,9 @@ import {
     Box, Container, Typography, Grid, Paper, TextField, Button, Autocomplete,
     FormControl, InputLabel, Select, MenuItem, Modal, Chip, IconButton, Switch,
     ThemeProvider, createTheme, CssBaseline, CircularProgress, Alert, Snackbar,
-    useMediaQuery, Tooltip, Divider, Avatar, Card, CardContent, Stack, Table,
-    TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination
+    useMediaQuery, Tooltip, Divider, Avatar, Card, CardContent, Stack
 } from "@mui/material";
+import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { alpha } from "@mui/material/styles";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -62,6 +62,7 @@ const InterviewManagement = () => {
     const [rejectionReason, setRejectionReason] = useState("");
     const [interviewScore, setInterviewScore] = useState("");
     const [meetingLink, setMeetingLink] = useState("");
+    const [meetingLinkError, setMeetingLinkError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -380,18 +381,49 @@ const InterviewManagement = () => {
         return interviewData.filter(teacher => teacher.status === status).length;
     };
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
     const handleViewDetails = (teacher) => {
         setSelectedTeacher(teacher);
         setOpenModal(true);
+    };
+
+    const handleOpenSchedule = (teacher) => {
+        setSelectedTeacher(teacher);
+        setSelectedDateTime(dayjs(teacher.desiredDateTime !== "—" ? teacher.desiredDateTime : null));
+        setMeetingLink("");
+        setMeetingLinkError(false);
+        setScheduleModalOpen(true);
+    };
+
+    const handleScheduleInterview = async () => {
+        if (!meetingLink.trim()) {
+            setMeetingLinkError(true);
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            const response = await updateInterview(
+                selectedTeacher.id, 
+                {
+                    status: "scheduled",
+                    time: selectedDateTime.format("YYYY-MM-DD HH:mm:ss"),
+                    link: meetingLink,
+                }
+            );
+
+            setSnackbarMessage("Interview scheduled successfully");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setScheduleModalOpen(false);
+
+            fetchInterviews();
+        } catch (err) {
+            setSnackbarMessage("Failed to schedule interview: " + (err.response?.data?.message || err.message || "Unknown error"));
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const renderCardView = () => {
@@ -540,176 +572,216 @@ const InterviewManagement = () => {
     };
 
     const renderTableView = () => {
+        const columns = [
+            {
+                field: 'name',
+                headerName: 'Teacher Name',
+                flex: 1.5,
+                minWidth: 200,
+                renderCell: (params) => (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar
+                            sx={{
+                                bgcolor: stringToColor(params.row.name),
+                                width: 32,
+                                height: 32,
+                                fontSize: '14px'
+                            }}
+                        >
+                            {params.row.name.charAt(0)}
+                        </Avatar>
+                        <Box>
+                            <Typography variant="body2" fontWeight={500}>
+                                {params.row.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                {params.row.email}
+                            </Typography>
+                        </Box>
+                    </Box>
+                ),
+                sortable: true
+            },
+            {
+                field: 'mergedSubject',
+                headerName: 'Subject (Class)',
+                flex: 1,
+                minWidth: 180,
+                sortable: true
+            },
+            {
+                field: 'desiredDateTime',
+                headerName: 'Desired Date/Time',
+                flex: 1,
+                minWidth: 180,
+                renderCell: (params) => (
+                    <Typography variant="body2">
+                        {params.value !== "—" ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <FiCalendar size="14px" />
+                                {params.value}
+                            </Box>
+                        ) : "—"}
+                    </Typography>
+                ),
+                sortable: true
+            },
+            {
+                field: 'score',
+                headerName: 'Grade',
+                width: 120,
+                renderCell: (params) => (
+                    <Typography
+                        variant="body2"
+                        fontWeight={params.value !== "Not graded" ? 600 : 400}
+                        color={
+                            params.value !== "Not graded" ?
+                                (Number(params.value) >= 7 ? 'success.main' :
+                                    Number(params.value) >= 4 ? 'warning.main' : 'error.main')
+                                : 'text.secondary'
+                        }
+                    >
+                        {params.value !== "Not graded" ? `${params.value}/10` : "—"}
+                    </Typography>
+                ),
+                sortable: true
+            },
+            {
+                field: 'statusWithMode',
+                headerName: 'Status (Mode)',
+                flex: 1,
+                minWidth: 160,
+                renderCell: (params) => (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Chip
+                            label={params.value}
+                            size="small"
+                            color={
+                                params.row.status === "Pending" ? "warning" :
+                                    params.row.status === "Scheduled" ? "info" :
+                                        params.row.status === "Completed" ? "success" :
+                                            "error"
+                            }
+                            sx={{
+                                fontWeight: 500,
+                                minWidth: '140px'
+                            }}
+                        />
+                    </Box>
+                ),
+                sortable: true
+            },
+            {
+                field: 'scheduledDate',
+                headerName: 'Schedule',
+                flex: 1,
+                minWidth: 160,
+                renderCell: (params) => (
+                    <Typography variant="body2">
+                        {params.value || "—"}
+                    </Typography>
+                ),
+                sortable: true
+            },
+            {
+                field: 'actions',
+                headerName: 'Actions',
+                type: 'actions',
+                width: 150,
+                getActions: (params) => {
+                    const actions = [
+                        <GridActionsCellItem
+                            icon={<FiEye />}
+                            label="View Details"
+                            onClick={() => handleViewDetails(params.row)}
+                            color="info"
+                            showInMenu={false}
+                        />
+                    ];
+
+                    if (params.row.apiStatus === "requested") {
+                        actions.push(
+                            <GridActionsCellItem
+                                icon={<FiClock />}
+                                label="Schedule Interview"
+                                onClick={() => handleOpenSchedule(params.row)}
+                                color="primary"
+                                showInMenu={false}
+                            />,
+                            <GridActionsCellItem
+                                icon={<FiX />}
+                                label="Reject Request"
+                                onClick={() => handleOpenReject(params.row)}
+                                color="error"
+                                showInMenu={false}
+                            />
+                        );
+                    }
+
+                    if (params.row.apiStatus === "scheduled") {
+                        actions.push(
+                            <GridActionsCellItem
+                                icon={<FiCheck />}
+                                label="Complete Interview"
+                                onClick={() => handleOpenComplete(params.row)}
+                                color="success"
+                                showInMenu={false}
+                            />
+                        );
+
+                        if (params.row.link) {
+                            actions.push(
+                                <GridActionsCellItem
+                                    icon={<Button variant="contained" size="small">Join</Button>}
+                                    label="Join Meeting"
+                                    onClick={() => window.open(params.row.link, "_blank")}
+                                    showInMenu={false}
+                                />
+                            );
+                        }
+                    }
+
+                    return actions;
+                }
+            }
+        ];
+
         return (
-            <TableContainer>
-                <Table sx={{ minWidth: 750 }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Teacher Name</TableCell>
-                            <TableCell>Subject (Class)</TableCell>
-                            <TableCell>Desired Date/Time</TableCell>
-                            <TableCell>Grade</TableCell>
-                            <TableCell align="center">Status (Mode)</TableCell>
-                            <TableCell>Schedule</TableCell>
-                            <TableCell align="center">Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredTeachers
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((teacher) => (
-                                <TableRow
-                                    key={teacher.id}
-                                    hover
-                                    sx={{
-                                        '&:nth-of-type(even)': {
-                                            backgroundColor: theme.palette.mode === 'dark' ?
-                                                alpha(theme.palette.common.white, 0.05) :
-                                                alpha(theme.palette.common.black, 0.02)
-                                        }
-                                    }}
-                                >
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Avatar
-                                                sx={{
-                                                    bgcolor: stringToColor(teacher.name),
-                                                    width: 32,
-                                                    height: 32,
-                                                    fontSize: '14px'
-                                                }}
-                                            >
-                                                {teacher.name.charAt(0)}
-                                            </Avatar>
-                                            <Box>
-                                                <Typography variant="body2" fontWeight={500}>
-                                                    {teacher.name}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {teacher.email}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {teacher.mergedSubject}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {teacher.desiredDateTime !== "—" ? (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <FiCalendar size="14px" />
-                                                    {teacher.desiredDateTime}
-                                                </Box>
-                                            ) : "—"}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight={teacher.score !== "Not graded" ? 600 : 400}
-                                            color={
-                                                teacher.score !== "Not graded" ?
-                                                    (Number(teacher.score) >= 7 ? 'success.main' :
-                                                        Number(teacher.score) >= 4 ? 'warning.main' : 'error.main')
-                                                    : 'text.secondary'
-                                            }
-                                        >
-                                            {teacher.score !== "Not graded" ? `${teacher.score}/10` : "—"}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Chip
-                                                label={teacher.statusWithMode}
-                                                size="small"
-                                                color={
-                                                    teacher.status === "Pending" ? "warning" :
-                                                        teacher.status === "Scheduled" ? "info" :
-                                                            teacher.status === "Completed" ? "success" :
-                                                                "error"
-                                                }
-                                                sx={{
-                                                    fontWeight: 500,
-                                                    minWidth: '140px'
-                                                }}
-                                            />
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {teacher.scheduledDate || "—"}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                            <Tooltip title="View Details">
-                                                <IconButton
-                                                    onClick={() => handleViewDetails(teacher)}
-                                                    size="small"
-                                                    color="info"
-                                                >
-                                                    <FiEye />
-                                                </IconButton>
-                                            </Tooltip>
-
-                                            {teacher.apiStatus === "requested" && (
-                                                <>
-                                                    <Tooltip title="Schedule Interview">
-                                                        <IconButton
-                                                            onClick={() => handleOpenSchedule(teacher)}
-                                                            size="small"
-                                                            color="primary"
-                                                        >
-                                                            <FiClock />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Reject Request">
-                                                        <IconButton
-                                                            onClick={() => handleOpenReject(teacher)}
-                                                            size="small"
-                                                            color="error"
-                                                        >
-                                                            <FiX />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </>
-                                            )}
-
-                                            {teacher.apiStatus === "scheduled" && (
-                                                <>
-                                                    <Tooltip title="Complete Interview">
-                                                        <IconButton
-                                                            onClick={() => handleOpenComplete(teacher)}
-                                                            size="small"
-                                                            color="success"
-                                                        >
-                                                            <FiCheck />
-                                                        </IconButton>
-                                                    </Tooltip>
-
-                                                    {teacher.link && (
-                                                        <Tooltip title="Join Meeting">
-                                                            <Button
-                                                                variant="contained"
-                                                                size="small"
-                                                                onClick={() => window.open(teacher.link, "_blank")}
-                                                            >
-                                                                Join
-                                                            </Button>
-                                                        </Tooltip>
-                                                    )}
-                                                </>
-                                            )}
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Box sx={{ height: 500, width: '100%' }}>
+                <DataGrid
+                    rows={filteredTeachers}
+                    columns={columns}
+                    initialState={{
+                        pagination: {
+                            paginationModel: { pageSize: rowsPerPage },
+                        },
+                        sorting: {
+                            sortModel: [{ field: 'desiredDateTime', sort: 'desc' }],
+                        },
+                    }}
+                    pageSizeOptions={[5, 10, 25, 50]}
+                    onPaginationModelChange={(model) => {
+                        setPage(model.page);
+                        setRowsPerPage(model.pageSize);
+                    }}
+                    disableRowSelectionOnClick
+                    sx={{
+                        '& .MuiDataGrid-cell': { 
+                            py: 1 
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                            backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                            fontWeight: 600,
+                        },
+                        '& .MuiDataGrid-virtualScroller': {
+                            backgroundColor: theme.palette.mode === 'dark' ? 
+                                'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
+                        },
+                        border: 'none',
+                        borderRadius: '8px',
+                    }}
+                />
+            </Box>
         );
     };
 
@@ -1041,18 +1113,7 @@ const InterviewManagement = () => {
                                 </Typography>
                             </Box>
                         ) : (
-                            <>
-                                {viewMode === 'table' ? renderTableView() : renderCardView()}
-                                <TablePagination
-                                    rowsPerPageOptions={[5, 10, 25, 50]}
-                                    component="div"
-                                    count={filteredTeachers.length}
-                                    rowsPerPage={rowsPerPage}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </>
+                            viewMode === 'table' ? renderTableView() : renderCardView()
                         )}
                     </Paper>
 
@@ -1176,6 +1237,109 @@ const InterviewManagement = () => {
                             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                                 <Button variant="contained" onClick={() => setOpenModal(false)}>
                                     Close
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Modal>
+
+                    <Modal
+                        open={scheduleModalOpen}
+                        onClose={() => setScheduleModalOpen(false)}
+                        aria-labelledby="schedule-interview-modal"
+                    >
+                        <Paper sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: { xs: '90%', sm: 500 },
+                            p: 3,
+                            borderRadius: 2,
+                            maxHeight: '90vh',
+                            overflow: 'auto'
+                        }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                <Typography variant="h6" fontWeight={600}>Schedule Interview</Typography>
+                                <IconButton onClick={() => setScheduleModalOpen(false)} size="small">
+                                    <FiX />
+                                </IconButton>
+                            </Box>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            {selectedTeacher && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Teacher Name</Typography>
+                                        <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DateTimePicker
+                                                label="Schedule Date & Time"
+                                                value={selectedDateTime}
+                                                onChange={setSelectedDateTime}
+                                                slotProps={{
+                                                    textField: {
+                                                        fullWidth: true,
+                                                        margin: 'normal',
+                                                        required: true
+                                                    }
+                                                }}
+                                            />
+                                        </LocalizationProvider>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Interview Meeting Link"
+                                            variant="outlined"
+                                            value={meetingLink}
+                                            onChange={(e) => {
+                                                setMeetingLink(e.target.value);
+                                                if (e.target.value.trim()) {
+                                                    setMeetingLinkError(false);
+                                                }
+                                            }}
+                                            placeholder="Enter meeting URL (Google Meet, Zoom, etc.)"
+                                            required
+                                            error={meetingLinkError}
+                                            helperText={meetingLinkError ? "Meeting link is required" : ""}
+                                            margin="normal"
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <FiLink style={{ marginRight: '8px', color: '#999' }} />
+                                                ),
+                                            }}
+                                        />
+                                        {meetingLinkError && (
+                                            <Alert severity="error" sx={{ mt: 1 }}>
+                                                Please provide a meeting link before scheduling the interview.
+                                            </Alert>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            )}
+
+                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => setScheduleModalOpen(false)}
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={handleScheduleInterview}
+                                    disabled={actionLoading}
+                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiClock />}
+                                >
+                                    {actionLoading ? "Scheduling..." : "Schedule Interview"}
                                 </Button>
                             </Box>
                         </Paper>

@@ -18,13 +18,6 @@ import {
     Modal,
     Paper,
     Select,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TablePagination,
-    TableRow,
     TextField,
     Typography,
     useTheme,
@@ -34,6 +27,7 @@ import {
     Snackbar,
     Skeleton,
 } from '@mui/material';
+import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import {
     Search,
     FilterList,
@@ -253,24 +247,183 @@ const ManageTeacherApplied = () => {
     const renderSkeletons = () => {
         const skeletonRows = Array(rowsPerPage).fill(0);
         return skeletonRows.map((_, index) => (
-            <TableRow key={`skeleton-${index}`}>
-                <TableCell>
-                    <Skeleton variant="text" width="100%" height={24} />
-                    <Skeleton variant="text" width="80%" height={16} />
-                </TableCell>
-                <TableCell><Skeleton variant="text" width={80} /></TableCell>
-                <TableCell><Skeleton variant="text" width={80} /></TableCell>
-                <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Skeleton variant="rounded" width={60} height={24} />
-                        <Skeleton variant="rounded" width={60} height={24} />
-                    </Box>
-                </TableCell>
-                <TableCell><Skeleton variant="text" width={100} /></TableCell>
-                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
-                <TableCell align="center"><Skeleton variant="circular" width={32} height={32} /></TableCell>
-            </TableRow>
+            <Skeleton key={`skeleton-${index}`} variant="text" width="100%" height={24} />
         ));
+    };
+
+    // Replace the Applications Table section with DataGrid
+    const renderApplicationsTable = () => {
+        const columns = [
+            {
+                field: 'teacherInfo',
+                headerName: 'Teacher Info',
+                flex: 1.5,
+                minWidth: 200,
+                sortable: true,
+                filterable: true,
+                renderCell: (params) => (
+                    <Box>
+                        <Typography variant="body1" fontWeight="medium">
+                            {params.row.teacherName}
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: { xs: '150px', sm: '200px' },
+                            }}
+                        >
+                            {params.row.teacherEmail}
+                        </Typography>
+                    </Box>
+                ),
+            },
+            {
+                field: 'appliedDate',
+                headerName: 'Applied Date',
+                flex: 1,
+                minWidth: 130,
+                sortable: true,
+                filterable: true,
+                hide: isMobile,
+            },
+            {
+                field: 'classCategory',
+                headerName: 'Class Category',
+                flex: 1,
+                minWidth: 150,
+                sortable: true,
+                filterable: true,
+                hide: isMobile || isTablet,
+            },
+            {
+                field: 'subjects',
+                headerName: 'Subjects',
+                flex: 1.5,
+                minWidth: 200,
+                sortable: false,
+                filterable: false,
+                hide: isMobile || isTablet,
+                renderCell: (params) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {params.row.subjects.map((subject) => (
+                            <Chip
+                                key={subject}
+                                label={subject}
+                                size="small"
+                                variant="outlined"
+                            />
+                        ))}
+                    </Box>
+                ),
+            },
+            {
+                field: 'jobType',
+                headerName: 'Job Type',
+                flex: 1,
+                minWidth: 130,
+                sortable: true,
+                filterable: true,
+                hide: isMobile,
+            },
+            {
+                field: 'status',
+                headerName: 'Status',
+                flex: 0.8,
+                minWidth: 120,
+                sortable: true,
+                filterable: true,
+                renderCell: (params) => (
+                    <StatusChip
+                        label={params.row.status}
+                        status={params.row.status}
+                        size="small"
+                    />
+                ),
+            },
+            {
+                field: 'actions',
+                headerName: 'View',
+                type: 'actions',
+                width: 80,
+                getActions: (params) => [
+                    <GridActionsCellItem
+                        icon={<Visibility fontSize="small" />}
+                        onClick={() => handleOpenDetails(params.row)}
+                        label="View Details"
+                        color="primary"
+                    />,
+                ],
+            },
+        ];
+
+        // Prepare rows with a proper id field for DataGrid
+        const rows = filteredApplications.map(app => ({
+            id: app.id,
+            ...app,
+            // Add a composite field for teacher info display
+            teacherInfo: `${app.teacherName} (${app.teacherEmail})`
+        }));
+
+        return (
+            <Box sx={{ height: 450, width: '100%' }}>
+                <DataGrid
+                    rows={applications}
+                    columns={columns}
+                    pageSize={10}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    checkboxSelection={false}
+                    disableSelectionOnClick
+                    autoHeight
+                    getRowId={(row) => row.id}
+                    density={isMobile ? "compact" : "standard"}
+                    components={{
+                        NoRowsOverlay: () => (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 2 }}>
+                                <Typography variant="h6" color="text.secondary">No Applications Found</Typography>
+                                <Typography variant="body2" color="text.secondary">Try adjusting your filters</Typography>
+                            </Box>
+                        ),
+                    }}
+                    sx={{
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        border: 'none',
+                        '& .MuiDataGrid-cell': {
+                            padding: '16px',
+                            whiteSpace: 'normal',
+                            wordWrap: 'break-word',
+                            lineHeight: '1.3',
+                            '&:focus': { outline: 'none' }
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                            backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                            fontWeight: 600
+                        },
+                        '& .MuiDataGrid-virtualScroller': {
+                            backgroundColor: theme.palette.mode === 'dark' ? 
+                                'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.01)'
+                        },
+                        '& .MuiDataGrid-row:nth-of-type(even)': {
+                            backgroundColor: theme.palette.mode === 'dark' ? 
+                                'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.02)'
+                        },
+                        '& .MuiDataGrid-footerContainer': {
+                            backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                            borderTop: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                        },
+                        '& .MuiTablePagination-root': {
+                            padding: '8px 16px'
+                        },
+                        minHeight: '400px',
+                        height: '100%',
+                    }}
+                />
+            </Box>
+        );
     };
 
     return (
@@ -491,7 +644,7 @@ const ManageTeacherApplied = () => {
                     </Alert>
                 )}
 
-                {/* Applications Table */}
+                {/* Applications Table - Replace with DataGrid */}
                 <Paper
                     sx={{
                         width: '100%',
@@ -524,165 +677,8 @@ const ManageTeacherApplied = () => {
                         </Typography>
                     </Box>
 
-                    <TableContainer sx={{ maxHeight: { xs: 350, sm: 440 } }}>
-                        <Table
-                            stickyHeader
-                            aria-label="Applications table"
-                            size={isMobile ? "small" : "medium"}
-                        >
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: 'background.default' }}>
-                                    <TableCell
-                                        sx={{
-                                            fontWeight: 600,
-                                            whiteSpace: 'nowrap'
-                                        }}
-                                    >
-                                        Teacher Info
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            fontWeight: 600,
-                                            display: { xs: 'none', sm: 'table-cell' }
-                                        }}
-                                    >
-                                        Applied Date
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            fontWeight: 600,
-                                            display: { xs: 'none', md: 'table-cell' }
-                                        }}
-                                    >
-                                        Class Category
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            fontWeight: 600,
-                                            display: { xs: 'none', md: 'table-cell' }
-                                        }}
-                                    >
-                                        Subjects
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            fontWeight: 600,
-                                            display: { xs: 'none', sm: 'table-cell' }
-                                        }}
-                                    >
-                                        Job Type
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 600 }}>View</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {loading ? (
-                                    renderSkeletons()
-                                ) : filteredApplications.length > 0 ? (
-                                    filteredApplications
-                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((application) => (
-                                            <TableRow
-                                                hover
-                                                key={application.id}
-                                                sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                                            >
-                                                <TableCell>
-                                                    <Box>
-                                                        <Typography variant="body1" fontWeight="medium">
-                                                            {application.teacherName}
-                                                        </Typography>
-                                                        <Typography
-                                                            variant="body2"
-                                                            color="text.secondary"
-                                                            sx={{
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                maxWidth: { xs: '150px', sm: '200px' },
-                                                            }}
-                                                        >
-                                                            {application.teacherEmail}
-                                                        </Typography>
-                                                        {/* Mobile-only info */}
-                                                        <Box sx={{ display: { xs: 'block', sm: 'none' }, mt: 1 }}>
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                Applied: {application.appliedDate}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                                                    {application.appliedDate}
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                                    {application.classCategory}
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                        {application.subjects.map((subject) => (
-                                                            <Chip
-                                                                key={subject}
-                                                                label={subject}
-                                                                size="small"
-                                                                variant="outlined"
-                                                            />
-                                                        ))}
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                                                    {application.jobType}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <StatusChip
-                                                        label={application.status}
-                                                        status={application.status}
-                                                        size="small"
-                                                    />
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    <IconButton
-                                                        color="primary"
-                                                        onClick={() => handleOpenDetails(application)}
-                                                        size="small"
-                                                    >
-                                                        <Visibility fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={7} align="center">
-                                            <Typography variant="body1" py={3}>
-                                                {searchQuery || Object.values(filters).some(f => f !== '')
-                                                    ? "No applications found matching the filters"
-                                                    : "No applications available"
-                                                }
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-
-                    {!loading && filteredApplications.length > 0 && (
-                        <TablePagination
-                            rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
-                            component="div"
-                            count={filteredApplications.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            sx={{
-                                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                                    fontSize: { xs: '0.8rem', sm: 'inherit' }
-                                }
-                            }}
-                        />
-                    )}
+                    {/* Replace the TableContainer with the DataGrid component */}
+                    {renderApplicationsTable()}
                 </Paper>
 
                 {/* Application Detail Modal */}

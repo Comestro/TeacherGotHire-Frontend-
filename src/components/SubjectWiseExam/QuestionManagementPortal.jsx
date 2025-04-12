@@ -84,7 +84,7 @@ const renderStatusBadge = (status) => {
   );
 };
 
-const QuestionManagerDashboard = () => {
+const QuestionManagementPortal = () => {
   // Redux selectors
   const dispatch = useDispatch();
   const { loading, setterExamSet } = useSelector((state) => state.examQues || {});
@@ -107,9 +107,9 @@ const QuestionManagerDashboard = () => {
     const fetchData = async () => {
       try {
         // These thunks expect no parameters or just an empty object
-        dispatch(getExamSets());
-        dispatch(getSetterInfo());
-        dispatch(getLevels());
+        await dispatch(getExamSets());
+        await dispatch(getSetterInfo());
+        await dispatch(getLevels());
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to load data. Please try again.");
@@ -382,7 +382,7 @@ const QuestionManagerDashboard = () => {
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,
-      correct_option: parseInt(currentQuestion.correctAnswer) + 1, // Add 1 to convert from 0-based to 1-based
+      correct_option: parseInt(currentQuestion.correctAnswer) + 1, 
       exam: selectedExamSet.id,
       language: currentQuestion.language,
       time: parseInt(currentQuestion.time),
@@ -397,14 +397,26 @@ const QuestionManagerDashboard = () => {
         
         setSelectedExamSet(prev => ({
           ...prev,
-          questions: prev.questions.map(q => 
-            q.id === questionId ? response : q
-          )
+          questions: prev.questions.map(q => {
+            if (q.id === questionId) {
+              return {
+                ...q,
+                ...payload,
+                id: questionId
+              };
+            }
+            if (response.hindi_data && q.id === response.hindi_data.id) {
+              return {
+                ...q,
+                ...response.hindi_data
+              };
+            }
+            return q;
+          })
         }));
 
         toast.success("Question updated successfully!");
       } else {
-        // Create new question
         const response = await createQuestion(payload);
         
         if (response.message === "Question stored in English and Hindi") {
@@ -470,7 +482,6 @@ const QuestionManagerDashboard = () => {
       try {
         await deleteQuestion(questionId);
         
-        // Update UI directly
         setSelectedExamSet(prev => ({
           ...prev,
           questions: prev.questions.filter(q => q.id !== questionId)
@@ -484,7 +495,6 @@ const QuestionManagerDashboard = () => {
     }
   };
 
-  // Add a function to fetch questions for an exam set
   const fetchQuestionsForExamSet = async (examSetId) => {
     try {
       const questions = await getQuestions();
@@ -1988,4 +1998,4 @@ const QuestionManagerDashboard = () => {
   );
 };
 
-export default QuestionManagerDashboard;
+export default QuestionManagementPortal;

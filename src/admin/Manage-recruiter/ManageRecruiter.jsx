@@ -6,11 +6,7 @@ import {
   TextField,
   Select,
   MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
+  TablePagination,
   Checkbox,
   IconButton,
   Dialog,
@@ -22,11 +18,9 @@ import {
   Box,
   Snackbar,
   Alert,
-  TablePagination,
   Chip,
   Paper,
   Grid,
-  TableContainer,
   Tooltip,
   CircularProgress,
   Card,
@@ -37,6 +31,14 @@ import {
   Avatar,
   alpha,
 } from "@mui/material";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import {
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+  GridToolbarExport,
+  GridToolbarColumnsButton,
+  GridToolbarDensitySelector
+} from '@mui/x-data-grid';
 import {
   Visibility as ViewIcon,
   GetApp as ExportIcon,
@@ -140,17 +142,8 @@ const ManageRecruiter = () => {
     setPage(0);
   };
 
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelected = filteredRecruiters.map((recruiter) => recruiter.id);
-      setSelectedRecruiters(newSelected);
-      return;
-    }
-    setSelectedRecruiters([]);
-  };
-
   const handleExportData = () => {
-    if (filteredRecruiters.length === 0) {
+    if (handleFilterChange().length === 0) {
       setNotification({
         open: true,
         message: "No data to export",
@@ -171,7 +164,7 @@ const ManageRecruiter = () => {
         "Location",
         "Registration Date"
       ],
-      ...filteredRecruiters.map((recruiter) => [
+      ...handleFilterChange().map((recruiter) => [
         recruiter.id,
         recruiter.name,
         recruiter.email,
@@ -202,19 +195,20 @@ const ManageRecruiter = () => {
     });
   };
 
-  const filteredRecruiters = recruiters.filter((recruiter) => {
-    return (
-      (searchQuery === "" ||
+  const handleFilterChange = () => {
+    // Your existing filter logic for the search box only
+    const filtered = recruiters.filter((recruiter) => {
+      return (
+        searchQuery === "" ||
         recruiter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         recruiter.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         recruiter.id.toString().includes(searchQuery) ||
-        (recruiter.phone && recruiter.phone.includes(searchQuery))) &&
-      (selectedGender === "" ||
-        recruiter.gender.toLowerCase() === selectedGender.toLowerCase()) &&
-      (selectedStatus === "" ||
-        recruiter.status.toLowerCase() === selectedStatus.toLowerCase())
-    );
-  });
+        (recruiter.phone && recruiter.phone.includes(searchQuery))
+      );
+    });
+    
+    return filtered;
+  };
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
@@ -234,8 +228,27 @@ const ManageRecruiter = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const CustomToolbar = () => {
+    return (
+      <GridToolbarContainer sx={{ p: 1 }}>
+        <GridToolbarColumnsButton
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarFilterButton
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarDensitySelector
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarExport
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+      </GridToolbarContainer>
+    );
+  };
+
   const renderMobileCards = () => {
-    return filteredRecruiters
+    return handleFilterChange()
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
       .map((recruiter) => (
         <Card
@@ -371,7 +384,7 @@ const ManageRecruiter = () => {
               Manage Recruiters
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5}>
-              {filteredRecruiters.length} recruiters found
+              {handleFilterChange().length} recruiters found
             </Typography>
           </Box>
 
@@ -380,7 +393,7 @@ const ManageRecruiter = () => {
             color="secondary"
             startIcon={<ExportIcon />}
             onClick={handleExportData}
-            disabled={filteredRecruiters.length === 0 || loading}
+            disabled={handleFilterChange().length === 0 || loading}
             sx={{
               boxShadow: 2,
               textTransform: 'none',
@@ -470,186 +483,254 @@ const ManageRecruiter = () => {
             <Box p={3} textAlign="center">
               <Alert severity="error">{error}</Alert>
             </Box>
-          ) : filteredRecruiters.length === 0 ? (
+          ) : handleFilterChange().length === 0 ? (
             <Box p={3} textAlign="center">
               <Alert severity="info">No recruiters found matching your criteria</Alert>
             </Box>
           ) : (
             <>
               {isXsScreen ? (
-                <>
-                  {/* Mobile view: Card layout */}
-                  <Box p={2}>
-                    {renderMobileCards()}
-                  </Box>
-                </>
+                // Mobile view: Card layout - Keep this as is
+                <Box p={2}>
+                  {renderMobileCards()}
+                </Box>
               ) : (
-                <>
-                  {/* Desktop view: Table layout */}
-                  <TableContainer>
-                    <Table size={isSmallScreen ? "small" : "medium"}>
-                      <TableHead sx={{ bgcolor: 'background.default' }}>
-                        <TableRow>
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              indeterminate={
-                                selectedRecruiters.length > 0 &&
-                                selectedRecruiters.length < filteredRecruiters.length
-                              }
-                              checked={
-                                filteredRecruiters.length > 0 &&
-                                selectedRecruiters.length === filteredRecruiters.length
-                              }
-                              onChange={handleSelectAllClick}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Recruiter</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
-                          {!isSmallScreen && (
-                            <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
-                          )}
-                          {!isMediumScreen && (
-                            <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
-                          )}
-                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {filteredRecruiters
-                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                          .map((recruiter) => (
-                            <TableRow
-                              key={recruiter.id}
-                              hover
-                              sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
+                // Replace the TableContainer with DataGrid
+                <Box sx={{ height: 500, width: '100%' }}>
+                  <DataGrid
+                    rows={handleFilterChange()}
+                    getRowId={(row) => row.id}
+                    columns={[
+                      {
+                        field: 'name', // Change from 'recruiter' to 'name' to match actual data field
+                        headerName: 'Recruiter',
+                        flex: 2,
+                        minWidth: 220,
+                        renderCell: (params) => (
+                          <Box display="flex" alignItems="center" gap={1.5}>
+                            <Avatar
+                              src={params.row.profilePic}
+                              alt={getInitials(params.row.name)}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                bgcolor: theme.palette.primary.main,
+                              }}
                             >
-                              <TableCell padding="checkbox">
-                                <Checkbox
-                                  checked={selectedRecruiters.includes(recruiter.id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedRecruiters([
-                                        ...selectedRecruiters,
-                                        recruiter.id,
-                                      ]);
-                                    } else {
-                                      setSelectedRecruiters(
-                                        selectedRecruiters.filter(
-                                          (id) => id !== recruiter.id
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Box display="flex" alignItems="center" gap={1.5}>
-                                  <Avatar
-                                    src={recruiter.profilePic}
-                                    alt={getInitials(recruiter.name)}
-                                    sx={{
-                                      width: 32,
-                                      height: 32,
-                                      bgcolor: theme.palette.primary.main,
-                                    }}
-                                  >
-                                    {getInitials(recruiter.name)}
-                                  </Avatar>
-                                  <Box>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {recruiter.name}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {recruiter.email}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              </TableCell>
-                              <TableCell>
-                                <Box display="flex" alignItems="center">
-                                  <Tooltip title="Contact on WhatsApp">
-                                    <IconButton
-                                      size="small"
-                                      component="a"
-                                      href={`https://api.whatsapp.com/send/?phone=${recruiter.phone}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      sx={{ color: '#25D366' }}
-                                    >
-                                      <WhatsAppIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Typography variant="body2">{recruiter.phone}</Typography>
-                                </Box>
-                              </TableCell>
-                              {!isSmallScreen && (
-                                <TableCell>{recruiter.company}</TableCell>
-                              )}
-                              {!isMediumScreen && (
-                                <TableCell>{recruiter.location}</TableCell>
-                              )}
-                              <TableCell>
-                                <Chip
-                                  size="small"
-                                  label={recruiter.status}
-                                  color={getStatusColor(recruiter.status)}
-                                  variant="outlined"
-                                  icon={recruiter.status === 'Verified' ? <VerifiedIcon fontSize="small" /> : undefined}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Box display="flex" gap={1}>
-                                  <Tooltip title="View Details">
-                                    <IconButton
-                                      size="small"
-                                      color="primary"
-                                      onClick={() => handleViewRecruiter(recruiter)}
-                                    >
-                                      <ViewIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title="Send Email">
-                                    <IconButton
-                                      size="small"
-                                      color="warning"
-                                      component="a"
-                                      href={`mailto:${recruiter.email}`}
-                                    >
-                                      <EmailIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Box>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </>
+                              {getInitials(params.row.name)}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body2" fontWeight={500}>
+                                {params.row.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {params.row.email}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        ),
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'email',
+                        headerName: 'Email',
+                        flex: 1,
+                        minWidth: 180,
+                        hide: true,
+                      },
+                      {
+                        field: 'phone', // Change from 'contact' to 'phone' to match actual data field
+                        headerName: 'Contact',
+                        flex: 1.5,
+                        minWidth: 180,
+                        renderCell: (params) => (
+                          <Box display="flex" alignItems="center">
+                            <Tooltip title="Contact on WhatsApp">
+                              <IconButton
+                                size="small"
+                                component="a"
+                                href={`https://api.whatsapp.com/send/?phone=${params.row.phone}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ color: '#25D366' }}
+                              >
+                                <WhatsAppIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Typography variant="body2">{params.row.phone}</Typography>
+                          </Box>
+                        ),
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'company',
+                        headerName: 'Company',
+                        flex: 1,
+                        minWidth: 150,
+                        hide: isSmallScreen,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'location',
+                        headerName: 'Location',
+                        flex: 1,
+                        minWidth: 150,
+                        hide: isMediumScreen,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'status',
+                        headerName: 'Status',
+                        width: 140,
+                        renderCell: (params) => (
+                          <Chip
+                            size="small"
+                            label={params.value}
+                            color={getStatusColor(params.value)}
+                            variant="outlined"
+                            icon={params.value === 'Verified' ? <VerifiedIcon fontSize="small" /> : undefined}
+                          />
+                        ),
+                        sortable: true,
+                        filterable: true,
+                        type: 'singleSelect',
+                        valueOptions: ['Verified', 'Pending', 'Rejected'],
+                      },
+                      {
+                        field: 'actions',
+                        headerName: 'Actions',
+                        width: 120,
+                        sortable: false,
+                        filterable: false,
+                        disableColumnMenu: true,
+                        renderCell: (params) => (
+                          <Box display="flex" gap={1}>
+                            <Tooltip title="View Details">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleViewRecruiter(params.row)}
+                              >
+                                <ViewIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Send Email">
+                              <IconButton
+                                size="small"
+                                color="warning"
+                                component="a"
+                                href={`mailto:${params.row.email}`}
+                              >
+                                <EmailIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: {
+                          page: page,
+                          pageSize: rowsPerPage
+                        },
+                      },
+                      sorting: {
+                        sortModel: [{ field: 'name', sort: 'asc' }], // Change from 'recruiter' to 'name'
+                      },
+                      filter: {
+                        filterModel: {
+                          items: [],
+                          quickFilterValues: [],
+                        },
+                      },
+                    }}
+                    pageSizeOptions={[5, 10, 25, 50]}
+                    onPaginationModelChange={(model) => {
+                      setPage(model.page);
+                      setRowsPerPage(model.pageSize);
+                    }}
+                    checkboxSelection
+                    disableRowSelectionOnClick
+                    onRowSelectionModelChange={(newSelectionModel) => {
+                      setSelectedRecruiters(newSelectionModel);
+                    }}
+                    rowSelectionModel={selectedRecruiters}
+                    loading={loading}
+                    filterMode="client"
+                    slots={{
+                      toolbar: CustomToolbar,
+                      noRowsOverlay: () => (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
+                          <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
+                            No recruiters found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" align="center">
+                            Try adjusting your search or filters
+                          </Typography>
+                        </Box>
+                      ),
+                    }}
+                    componentsProps={{
+                      noRowsOverlay: {
+                        sx: {
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '100%',
+                        },
+                      },
+                    }}
+                    sx={{
+                      border: 'none',
+                      '& .MuiDataGrid-cell:focus': {
+                        outline: 'none',
+                      },
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: theme.palette.background.default,
+                        fontWeight: 600,
+                      },
+                      '& .MuiDataGrid-row:nth-of-type(even)': {
+                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
+                      },
+                      '& .MuiDataGrid-toolbarContainer': {
+                        padding: 1,
+                      },
+                      '& .MuiButton-root': {
+                        textTransform: 'none',
+                      },
+                    }}
+                  />
+                </Box>
               )}
 
-              {/* Pagination - always visible */}
-              <Box
-                display="flex"
-                justifyContent="flex-end"
-                p={2}
-                sx={{
-                  backgroundColor: theme.palette.background.default,
-                  borderTop: `1px solid ${theme.palette.divider}`
-                }}
-              >
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  component="div"
-                  count={filteredRecruiters.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  labelRowsPerPage={isSmallScreen ? "Rows:" : "Rows per page:"}
-                />
-              </Box>
+              {/* Remove the existing TablePagination as DataGrid has built-in pagination */}
+              {isXsScreen && (
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
+                  p={2}
+                  sx={{
+                    backgroundColor: theme.palette.background.default,
+                    borderTop: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    component="div"
+                    count={handleFilterChange().length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage={isSmallScreen ? "Rows:" : "Rows per page:"}
+                  />
+                </Box>
+              )}
             </>
           )}
         </Paper>

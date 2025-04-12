@@ -4,12 +4,6 @@ import {
   Typography,
   Button,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   IconButton,
   Dialog,
@@ -47,6 +41,15 @@ import {
   Phone as PhoneIcon,
   Mail as EmailIcon
 } from "@mui/icons-material";
+// Additional imports for DataGrid
+import { 
+  DataGrid, 
+  GridToolbarContainer, 
+  GridToolbarFilterButton, 
+  GridToolbarColumnsButton, 
+  GridToolbarDensitySelector,
+  GridToolbarExport 
+} from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import { createCenterManager, deleteCenterManager, getManageCenter, updateCenterManager } from "../../services/adminManageCenterApi";
 import axios from 'axios';
@@ -55,6 +58,26 @@ const ManageCenter = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Move CustomToolbar inside the component to access the theme
+  const CustomToolbar = () => {
+    return (
+      <GridToolbarContainer sx={{ p: 1 }}>
+        <GridToolbarColumnsButton 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarFilterButton 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarDensitySelector 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+        <GridToolbarExport 
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+        />
+      </GridToolbarContainer>
+    );
+  };
 
   const [examCenters, setExamCenters] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,6 +145,7 @@ const ManageCenter = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleFilterStatus = (e) => {
@@ -598,106 +622,173 @@ const ManageCenter = () => {
           ) : (
             <>
               {isMobile ? (
-                // Mobile view with cards
+                // Mobile view with cards - keep this unchanged
                 <Box p={2}>
                   {renderMobileCards()}
                 </Box>
               ) : (
-                // Desktop view with table
-                <TableContainer>
-                  <Table size={isTablet ? "small" : "medium"}>
-                    <TableHead sx={{ bgcolor: 'background.default' }}>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Center Name</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Pincode</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Manager</TableCell>
-                        <TableCell sx={{ fontWeight: 600, width: 100 }} align="center">Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600, width: 120 }} align="center">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredCenters
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((center) => (
-                          <TableRow
-                            key={center.id}
-                            hover
-                            sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}
-                          >
-                            <TableCell>{center.center_name}</TableCell>
-                            <TableCell>{`${center.area}, ${center.city}, ${center.state}`}</TableCell>
-                            <TableCell>{center.pincode}</TableCell>
-                            <TableCell>
-                              {center.user ? (
-                                <Box>
-                                  <Typography variant="body2">{`${center.user.Fname} ${center.user.Lname}`}</Typography>
-                                  <Typography variant="caption" color="text.secondary">{center.user.email}</Typography>
-                                </Box>
-                              ) : (
-                                <Typography variant="body2" color="text.secondary">Not assigned</Typography>
-                              )}
-                            </TableCell>
-                            <TableCell align="center">
-                              <Box display="flex" alignItems="center" justifyContent="center">
-                                <Switch
-                                  checked={center.status}
-                                  onChange={() => handleToggleStatus(center)}
-                                  color="success"
-                                  size="small"
-                                />
-                              </Box>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Box display="flex" justifyContent="center" gap={1}>
-                                <Tooltip title="Edit Center">
-                                  <IconButton
-                                    color="primary"
-                                    onClick={() => handleEditCenter(center)}
-                                    size="small"
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete Center">
-                                  <IconButton
-                                    color="error"
-                                    onClick={() => handleDeleteConfirmation(center)}
-                                    size="small"
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                // Desktop view with DataGrid instead of Table
+                <Box sx={{ height: 500, width: '100%' }}>
+                  <DataGrid
+                    rows={filteredCenters.map((center) => ({
+                      id: center.id,
+                      centerName: center.center_name || '',
+                      location: `${center.area || ''}, ${center.city || ''}, ${center.state || ''}`,
+                      pincode: center.pincode || '',
+                      manager: center.user ? `${center.user.Fname || ''} ${center.user.Lname || ''}` : '',
+                      email: center.user ? center.user.email : '',
+                      status: center.status || false,
+                      rawData: center // Store the full object for use in actions
+                    }))}
+                    columns={[
+                      {
+                        field: 'centerName',
+                        headerName: 'Center Name',
+                        flex: 1.5,
+                        minWidth: 180,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'location',
+                        headerName: 'Location',
+                        flex: 2,
+                        minWidth: 200,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'pincode',
+                        headerName: 'Pincode',
+                        flex: 0.8,
+                        minWidth: 100,
+                        sortable: true,
+                        filterable: true,
+                      },
+                      {
+                        field: 'manager',
+                        headerName: 'Manager',
+                        flex: 1.5,
+                        minWidth: 180,
+                        sortable: true,
+                        filterable: true,
+                        renderCell: (params) => (
+                          params.row.manager ? (
+                            <Box>
+                              <Typography variant="body2">{params.row.manager}</Typography>
+                              <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
+                            </Box>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">Not assigned</Typography>
+                          )
+                        ),
+                      },
+                      {
+                        field: 'status',
+                        headerName: 'Status',
+                        width: 120,
+                        sortable: true,
+                        filterable: true,
+                        type: 'boolean',
+                        renderCell: (params) => (
+                          <Box display="flex" alignItems="center" justifyContent="center">
+                            <Switch
+                              checked={params.value}
+                              onChange={() => handleToggleStatus(params.row.rawData)}
+                              color="success"
+                              size="small"
+                            />
+                          </Box>
+                        ),
+                      },
+                      {
+                        field: 'actions',
+                        headerName: 'Actions',
+                        width: 120,
+                        sortable: false,
+                        filterable: false,
+                        renderCell: (params) => (
+                          <Box display="flex" justifyContent="center" gap={1}>
+                            <Tooltip title="Edit Center">
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleEditCenter(params.row.rawData)}
+                                size="small"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete Center">
+                              <IconButton
+                                color="error"
+                                onClick={() => handleDeleteConfirmation(params.row.rawData)}
+                                size="small"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        ),
+                      },
+                    ]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: {
+                          page: page,
+                          pageSize: rowsPerPage
+                        },
+                      },
+                      sorting: {
+                        sortModel: [{ field: 'centerName', sort: 'asc' }],
+                      },
+                      filter: {
+                        filterModel: {
+                          items: [],
+                          quickFilterValues: searchTerm ? [searchTerm] : [],
+                        },
+                      },
+                    }}
+                    pageSizeOptions={[5, 10, 25, 50]}
+                    onPaginationModelChange={(model) => {
+                      setPage(model.page);
+                      setRowsPerPage(model.pageSize);
+                    }}
+                    filterMode="client"
+                    slots={{
+                      toolbar: CustomToolbar,
+                      noRowsOverlay: () => (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
+                          <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
+                            No exam centers found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" align="center">
+                            Try adjusting your search or filters
+                          </Typography>
+                        </Box>
+                      ),
+                    }}
+                    sx={{
+                      border: 'none',
+                      '& .MuiDataGrid-cell:focus': {
+                        outline: 'none',
+                      },
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: theme.palette.background.default,
+                        fontWeight: 600,
+                      },
+                      '& .MuiDataGrid-row:nth-of-type(even)': {
+                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
+                      },
+                      '& .MuiDataGrid-toolbarContainer': {
+                        padding: 1,
+                      },
+                      '& .MuiButton-root': {
+                        textTransform: 'none',
+                      },
+                    }}
+                  />
+                </Box>
               )}
-
-              {/* Pagination */}
-              <Box
-                display="flex"
-                justifyContent="flex-end"
-                p={2}
-                sx={{
-                  backgroundColor: theme.palette.background.default,
-                  borderTop: `1px solid ${theme.palette.divider}`
-                }}
-              >
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  component="div"
-                  count={filteredCenters.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  labelRowsPerPage={isMobile ? "Rows:" : "Rows per page:"}
-                />
-              </Box>
             </>
           )}
         </Paper>

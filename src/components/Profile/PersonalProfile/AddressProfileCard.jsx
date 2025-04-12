@@ -277,7 +277,7 @@ const AddressProfileCard = () => {
       personalProfile.current_address.district ||
       personalProfile.current_address.state ||
       personalProfile.current_address.pincode)
-  );
+  );  
 
   const addressesMatch = useMemo(() => {
     if (!personalProfile.current_address || !personalProfile.permanent_address) {
