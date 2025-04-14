@@ -11,7 +11,7 @@ import {
 } from "../../../features/examQuesSlice";
 import { checkPasskey } from "../../../services/examServices";
 
-const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData }) => {
+const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData,selectedLanguage }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [abortController] = useState(new AbortController());
@@ -23,7 +23,7 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData }) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Redux state
-  const { allcenter, passkeyresponse, language } = useSelector(
+  const { allcenter, passkeyresponse } = useSelector(
     (state) => state.examQues
   );
   const { examCards } = useSelector((state) => state.exam);
@@ -58,11 +58,11 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData }) => {
       }
 
       toast.success("Verification successful!");
-
+      console.log("selectedLanguage",selectedLanguage)
       await dispatch(
         getAllQues({
           exam_id: examCards?.id,
-          language: language,
+          language: selectedLanguage,
         })
       ).unwrap();
 

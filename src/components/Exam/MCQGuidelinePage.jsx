@@ -40,7 +40,6 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
-    dispatch(setLanguage(selectedLanguage));
     console.log("Selected Language:", language);
   };
 
@@ -48,7 +47,7 @@ const MCQGuidelinePage = () => {
     e.preventDefault();
 
     if (!selectedLanguage || !isChecked) return;
-
+  console.log("selected",selectedLanguage)
     try {
       setIsLoading(true);
       setError(null);
@@ -254,6 +253,7 @@ const MCQGuidelinePage = () => {
           </button>
           {
             card && <ExamCenterModal
+            selectedLanguage = {selectedLanguage}
             isOpen={isExamCenterModalOpen}
             onClose={() => {
               setIsExamCenterModalOpen(false);
