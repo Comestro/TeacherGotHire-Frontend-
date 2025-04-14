@@ -496,34 +496,44 @@ const ManageRecruiter = () => {
                 </Box>
               ) : (
                 // Replace the TableContainer with DataGrid
-                <Box sx={{ height: 500, width: '100%' }}>
+                <Box sx={{ height: 600, width: '100%' }}>
                   <DataGrid
                     rows={handleFilterChange()}
                     getRowId={(row) => row.id}
                     columns={[
                       {
-                        field: 'name', // Change from 'recruiter' to 'name' to match actual data field
+                        field: 'name',
                         headerName: 'Recruiter',
                         flex: 2,
                         minWidth: 220,
+                        headerAlign: 'center',
                         renderCell: (params) => (
-                          <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box 
+                            display="flex" 
+                            alignItems="center" 
+                            gap={1.5} 
+                            sx={{ 
+                              py: 1.5, 
+                              width: '100%',
+                              justifyContent: 'center'
+                            }}
+                          >
                             <Avatar
                               src={params.row.profilePic}
                               alt={getInitials(params.row.name)}
                               sx={{
-                                width: 32,
-                                height: 32,
+                                width: 36,
+                                height: 36,
                                 bgcolor: theme.palette.primary.main,
                               }}
                             >
                               {getInitials(params.row.name)}
                             </Avatar>
                             <Box>
-                              <Typography variant="body2" fontWeight={500}>
+                              <Typography variant="body2" fontWeight={500} align="center">
                                 {params.row.name}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography variant="caption" color="text.secondary" align="center">
                                 {params.row.email}
                               </Typography>
                             </Box>
@@ -531,6 +541,7 @@ const ManageRecruiter = () => {
                         ),
                         sortable: true,
                         filterable: true,
+                        align: 'center',
                       },
                       {
                         field: 'email',
@@ -538,14 +549,26 @@ const ManageRecruiter = () => {
                         flex: 1,
                         minWidth: 180,
                         hide: true,
+                        headerAlign: 'center',
+                        align: 'center',
                       },
                       {
-                        field: 'phone', // Change from 'contact' to 'phone' to match actual data field
+                        field: 'phone',
                         headerName: 'Contact',
                         flex: 1.5,
                         minWidth: 180,
+                        headerAlign: 'center',
                         renderCell: (params) => (
-                          <Box display="flex" alignItems="center">
+                          <Box 
+                            display="flex" 
+                            alignItems="center" 
+                            gap={1} 
+                            sx={{ 
+                              py: 1, 
+                              width: '100%',
+                              justifyContent: 'center'
+                            }}
+                          >
                             <Tooltip title="Contact on WhatsApp">
                               <IconButton
                                 size="small"
@@ -558,11 +581,12 @@ const ManageRecruiter = () => {
                                 <WhatsAppIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Typography variant="body2">{params.row.phone}</Typography>
+                            <Typography variant="body2" align="center">{params.row.phone}</Typography>
                           </Box>
                         ),
                         sortable: true,
                         filterable: true,
+                        align: 'center',
                       },
                       {
                         field: 'company',
@@ -572,6 +596,15 @@ const ManageRecruiter = () => {
                         hide: isSmallScreen,
                         sortable: true,
                         filterable: true,
+                        headerAlign: 'center',
+                        renderCell: (params) => (
+                          <Box sx={{ py: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="body2" align="center">
+                              {params.value || 'N/A'}
+                            </Typography>
+                          </Box>
+                        ),
+                        align: 'center',
                       },
                       {
                         field: 'location',
@@ -581,24 +614,45 @@ const ManageRecruiter = () => {
                         hide: isMediumScreen,
                         sortable: true,
                         filterable: true,
+                        headerAlign: 'center',
+                        renderCell: (params) => (
+                          <Box sx={{ py: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="body2" align="center">
+                              {params.value || 'N/A'}
+                            </Typography>
+                          </Box>
+                        ),
+                        align: 'center',
                       },
                       {
                         field: 'status',
                         headerName: 'Status',
                         width: 140,
+                        headerAlign: 'center',
                         renderCell: (params) => (
-                          <Chip
-                            size="small"
-                            label={params.value}
-                            color={getStatusColor(params.value)}
-                            variant="outlined"
-                            icon={params.value === 'Verified' ? <VerifiedIcon fontSize="small" /> : undefined}
-                          />
+                          <Box 
+                            display="flex" 
+                            justifyContent="center" 
+                            sx={{ 
+                              py: 1, 
+                              width: '100%'
+                            }}
+                          >
+                            <Chip
+                              size="small"
+                              label={params.value}
+                              color={getStatusColor(params.value)}
+                              variant="outlined"
+                              icon={params.value === 'Verified' ? <VerifiedIcon fontSize="small" /> : undefined}
+                              sx={{ minWidth: 85 }}
+                            />
+                          </Box>
                         ),
                         sortable: true,
                         filterable: true,
                         type: 'singleSelect',
                         valueOptions: ['Verified', 'Pending', 'Rejected'],
+                        align: 'center',
                       },
                       {
                         field: 'actions',
@@ -607,8 +661,17 @@ const ManageRecruiter = () => {
                         sortable: false,
                         filterable: false,
                         disableColumnMenu: true,
+                        headerAlign: 'center',
                         renderCell: (params) => (
-                          <Box display="flex" gap={1}>
+                          <Box 
+                            display="flex" 
+                            gap={1} 
+                            sx={{ 
+                              py: 1,
+                              width: '100%',
+                              justifyContent: 'center'
+                            }}
+                          >
                             <Tooltip title="View Details">
                               <IconButton
                                 size="small"
@@ -630,6 +693,7 @@ const ManageRecruiter = () => {
                             </Tooltip>
                           </Box>
                         ),
+                        align: 'center',
                       },
                     ]}
                     initialState={{
@@ -640,7 +704,7 @@ const ManageRecruiter = () => {
                         },
                       },
                       sorting: {
-                        sortModel: [{ field: 'name', sort: 'asc' }], // Change from 'recruiter' to 'name'
+                        sortModel: [{ field: 'name', sort: 'asc' }],
                       },
                       filter: {
                         filterModel: {
@@ -685,24 +749,80 @@ const ManageRecruiter = () => {
                         },
                       },
                     }}
+                    getRowHeight={() => 'auto'}
+                    getEstimatedRowHeight={() => 80}
                     sx={{
                       border: 'none',
+                      '& .MuiDataGrid-cell': {
+                        px: 2,
+                        py: 1.5,
+                        whiteSpace: 'normal',
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      },
                       '& .MuiDataGrid-cell:focus': {
                         outline: 'none',
                       },
                       '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: theme.palette.background.default,
+                        backgroundColor: theme.palette.mode === 'light' ? 
+                          alpha(theme.palette.primary.main, 0.05) : 
+                          theme.palette.background.default,
                         fontWeight: 600,
+                        borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        py: 2,
+                      },
+                      '& .MuiDataGrid-columnHeader': {
+                        px: 2,
+                        py: 0.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      },
+                      '& .MuiDataGrid-columnHeaderTitle': {
+                        fontWeight: 600,
+                        textAlign: 'center',
+                      },
+                      '& .MuiDataGrid-columnHeaderTitleContainer': {
+                        display: 'flex',
+                        justifyContent: 'center',
+                      },
+                      '& .MuiDataGrid-row': {
+                        '&:hover': {
+                          backgroundColor: theme.palette.mode === 'light' ? 
+                            alpha(theme.palette.primary.main, 0.04) : 
+                            alpha(theme.palette.primary.main, 0.1),
+                        },
                       },
                       '& .MuiDataGrid-row:nth-of-type(even)': {
-                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
+                        backgroundColor: theme.palette.mode === 'light' ? 
+                          alpha(theme.palette.background.default, 0.6) : 
+                          alpha(theme.palette.background.paper, 0.1),
                       },
                       '& .MuiDataGrid-toolbarContainer': {
-                        padding: 1,
+                        padding: 2,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
                       },
                       '& .MuiButton-root': {
                         textTransform: 'none',
                       },
+                      '& .MuiDataGrid-virtualScroller': {
+                        backgroundColor: theme.palette.mode === 'light' ? 
+                          alpha(theme.palette.background.paper, 0.8) : 
+                          'transparent',
+                      },
+                      '& .MuiCheckbox-root': {
+                        color: theme.palette.mode === 'light' ? 
+                          theme.palette.text.secondary : 
+                          theme.palette.primary.light,
+                      },
+                      // Center checkbox column
+                      '& .MuiDataGrid-columnHeaderCheckbox, & .MuiDataGrid-cellCheckbox': {
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }
                     }}
                   />
                 </Box>
