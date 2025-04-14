@@ -136,6 +136,15 @@ export const GeneratePasskey = async ({user_id,exam_id,center_id}) => {
     throw err;
   }
 };
+export const getGeneratedPasskey = async () => {
+  try {
+    const response = await apiClient.get(`/api/generate-passkey/`);
+    return response.data;
+  } catch (err) {
+    console.error("error:", err.response?.data || err);
+    throw err;
+  }
+};
 
 
 

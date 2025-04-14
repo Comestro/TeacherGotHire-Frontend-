@@ -23,6 +23,7 @@ import {
   editExamSet,
   editQuestionToExamSet,
   fetchQuestionsByExamSet,
+  getGeneratedPasskey,
 } from "../services/examQuesServices";
 
 const initialState = {
@@ -54,6 +55,7 @@ export const getLevels = createAsyncThunk(
   "getLevels",
   async ({ rejectWithValue }) => {
     try {
+      console.log("gfhj")
       const data = await fetchLevel();
 
       return data;
@@ -158,7 +160,7 @@ export const postResult = createAsyncThunk(
     export const postInterview= createAsyncThunk(
       "postInterview",
       async ({ subject,time,class_category,level}, { rejectWithValue }) => {
-        console.log("interview",{ subject,time,class_category})
+        console.log("interview",{ subject,time,class_category,level})
         try {
           const data = await AddInterview({ subject,time,class_category,level});
            return data; 
@@ -241,10 +243,31 @@ export const getReport = createAsyncThunk(
 );
 export const generatePasskey = createAsyncThunk(
   "generatePasskey",
-  async ({ user_id, exam_id, center_id }, { rejectWithValue }) => {
-    console.log("generate password", { user_id, exam_id, center_id });
+  async ({  exam_id, center_id }, { rejectWithValue }) => {
+    console.log("generate password", {  exam_id, center_id });
     try {
-      const data = await GeneratePasskey({ user_id, exam_id, center_id });
+      const data = await GeneratePasskey({  exam_id, center_id });
+      return data;
+    } catch (error) {
+      console.log("Error in getLevels:", error);
+      let errorMessage = "An error occurred";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.error
+      ) {
+        errorMessage = error.response.data.error;
+      } 
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const getgeneratedPasskey = createAsyncThunk(
+  "getgeneratedPasskey",
+  async (__, { rejectWithValue }) => {
+    
+    try {
+      const data = await getGeneratedPasskey();
       return data;
     } catch (error) {
       console.log("Error in getLevels:", error);
@@ -620,7 +643,7 @@ const examQuesSlice = createSlice({
       .addCase(getLevels.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.levels = action.payload;
-        console.log("stepper", action.payload);
+        console.log("levels", action.payload);
       })
       .addCase(getLevels.rejected, (state, action) => {
         state.status = "failed";
@@ -629,16 +652,17 @@ const examQuesSlice = createSlice({
     builder
       // for get data handeling
       .addCase(getAllQues.pending, (state) => {
+        state.loading = true;
         state.status = "loading";
         state.error = null;
       })
       .addCase(getAllQues.fulfilled, (state, action) => {
+        state.loading = false;
         state.status = "succeeded";
         state.allQuestion = action.payload;
-        // state.verifyresponse = action.payload.verifyresponse || {};
-        // state.passkeyresponse = action.payload.passkeyresponse || {};
       })
       .addCase(getAllQues.rejected, (state, action) => {
+        state.loading = false;
         state.status = "failed";
         state.error = action.payload;
       });
@@ -754,14 +778,35 @@ const examQuesSlice = createSlice({
     builder
       // for get data handeling
       .addCase(generatePasskey.pending, (state) => {
+        state.loading = true;
         state.status = "loading";
         state.error = null;
       })
       .addCase(generatePasskey.fulfilled, (state, action) => {
+        state.loading = false;
         state.status = "succeeded";
         state.passkeyresponse = action.payload;
       })
       .addCase(generatePasskey.rejected, (state, action) => {
+        state.loading = false;
+        state.status = "failed";
+        state.error = action.payload;
+      });
+
+      builder
+      // for get data handeling
+      .addCase(getgeneratedPasskey.pending, (state) => {
+        state.loading = true;
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getgeneratedPasskey.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = "succeeded";
+        state.passkeyresponse = action.payload;
+      })
+      .addCase(getgeneratedPasskey.rejected, (state, action) => {
+        state.loading = false;
         state.status = "failed";
         state.error = action.payload;
       });
@@ -787,10 +832,12 @@ const examQuesSlice = createSlice({
         state.error = null;
       })
       .addCase(approveCenterUser.fulfilled, (state, action) => {
+        state.loading = false;
         state.status = "succeeded";
         state.approvedpasskey = action.payload;
       })
       .addCase(approveCenterUser.rejected, (state, action) => {
+        state.loading = false;
         state.status = "failed";
         state.error = action.payload;
       });

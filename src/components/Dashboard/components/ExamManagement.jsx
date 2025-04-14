@@ -12,6 +12,7 @@ import {
   resetPasskeyResponse,
   verifyPasscode,
   resetInterview,
+  getgeneratedPasskey,
 } from "../../../features/examQuesSlice";
 import {
   getPrefrence,
@@ -150,6 +151,7 @@ function ExamManagement() {
   }, []);
 
   useEffect(() => {
+    dispatch(getgeneratedPasskey());
     dispatch(getAllCenter());
     if (classCategories) {
       setActiveTab(classCategories[0]?.id);

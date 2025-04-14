@@ -8,6 +8,7 @@ import jobProfileSlice from "../features/jobProfileSlice";
 import dashboardSlice from "../features/dashboardSlice";
 import examQuesSlice from "../features/examQuesSlice";
 import teacherSlice from "../features/teacherFilterSlice";
+import examSlice from "../features/examSlice";
 
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   dashboard: dashboardSlice,
   examQues: examQuesSlice,
   teachers: teacherSlice,
+  exam:examSlice,
 });
 
 // Step 2: Configure persist 

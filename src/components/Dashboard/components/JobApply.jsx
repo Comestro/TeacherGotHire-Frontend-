@@ -38,7 +38,8 @@ const JobApply = () => {
     try {
       const subject = convertToArray(subjectId);
       const class_category = convertToArray(classCategoryId);
-
+      console.log("subject",subject);
+      console.log("class_category")
       const response = await dispatch(postJobApply({ subject, class_category })).unwrap();
 
       if (response.status) {
@@ -85,6 +86,11 @@ const JobApply = () => {
                 const subjectId = attempt.exam.subject_id;
                 const classCategoryId = attempt.exam.class_category_id;
                 const isApplied = jobApply?.data?.status
+                // const isApplied = jobApply?.data?.some(item => 
+                //   item.subject_id === subjectId && 
+                //   item.class_category_id === classCategoryId && 
+                //   item.status === "applied"
+                // );
                 return (
                   <tr
                     key={index}
