@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -11,7 +11,7 @@ import {
 } from "../../../features/examQuesSlice";
 import { checkPasskey } from "../../../services/examServices";
 
-const ExamCenterModal = ({ isOpen, onClose }) => {
+const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [abortController] = useState(new AbortController());
@@ -19,45 +19,73 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
   // State management
   const [selectedCenterId, setSelectedCenterId] = useState("");
   const [showVerificationCard, setShowVerificationCard] = useState(false);
-  const [passcode, setPasscode] = useState("");
+  const [entered_passcode, setPasscode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showModal, setShowModel] = useState(isverifyCard);
+
+  console.log(
+    "Current render values - show:",
+    showVerificationCard,
+    "isverifyCard:",
+    showModal
+  );
 
   // Redux state
   const { allcenter, passkeyresponse, loading, error } = useSelector(
     (state) => state.examQues
   );
   const { examCards } = useSelector((state) => state.exam);
-  const { userData } = useSelector((state) => state.auth);
   const { selectedLanguage } = useSelector((state) => state.exam);
-  console.log("passkeyresponse",passkeyresponse)
-
+  console.log("passkeyresponse", passkeyresponse);
+  console.log("showVerificationCard", showVerificationCard);
   // Fetch centers on mount
   useEffect(() => {
     dispatch(getAllCenter({ signal: abortController.signal }));
-    dispatch(getgeneratedPasskey());
-    
     return () => abortController.abort();
-  }, [dispatch]);
+  }, []);
 
+  // useEffect(()=>{
+  //   console.log("verficard",verfiyCard)
+  //   if(verfiyCard?.passkey === true){
+  //     setShowVerificationCard(true);
+  //     console.log(showVerificationCard)
+  //   }
+  // },[verfiyCard]);
+
+  // useEffect(() => {
+  //   if (verifyCard?.passkey === true) {
+  //     setShowVerificationCard(true); // Asynchronous state update
+  //   }
+  // }, [verifyCard]);
+
+  // This runs AFTER state updates
+  // useEffect(() => {
+  //   if (showVerificationCard) {
+  //     console.log("Now updated:", showVerificationCard); // true
+  //     // Perform actions here (e.g., show a modal)
+  //   }
+  // }, [showVerificationCard]); // Dependency on the state
   const handleverifyPasskey = async (e) => {
     e.preventDefault();
-    
-    if (!passcode) {
+
+    if (!entered_passcode) {
       toast.error("Please enter a verification code");
       return;
     }
 
     try {
       setIsVerifying(true);
-      
+
       // 1. Verify passcode
       const verificationResult = await dispatch(
-        verifyPasscode({
-          user_id: userData?.id,
-          exam_id: examCards?.id,
-          passcode,
-        }, { signal: abortController.signal })
+        verifyPasscode(
+          {
+            exam_id: examCards?.id,
+            entered_passcode,
+          },
+          { signal: abortController.signal }
+        )
       ).unwrap();
 
       if (verificationResult.error) {
@@ -65,21 +93,23 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
       }
 
       toast.success("Verification successful! Loading questions...");
-      
+
       // 2. Fetch questions
       await dispatch(
-        getAllQues({
-          exam_id: examCards?.id,
-          language: selectedLanguage,
-        }, { signal: abortController.signal })
+        getAllQues(
+          {
+            exam_id: examCards?.id,
+            language: selectedLanguage,
+          },
+          { signal: abortController.signal }
+        )
       ).unwrap();
 
       // 3. Navigate to exam
       navigate("/exam/portal");
-      
     } catch (error) {
       console.error("Verification failed:", error);
-      
+
       if (error.message.includes("network")) {
         toast.error("Network error. Please check your connection.");
       } else if (error.message.includes("Invalid")) {
@@ -97,24 +127,27 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
 
     try {
       setIsGenerating(true);
-      
+
       if (!selectedCenterId) {
         toast.warning("Please select an exam center");
         return;
       }
 
       const result = await dispatch(
-        generatePasskey({
-          exam_id: examCards?.id,
-          center_id: selectedCenterId,
-        }, { signal: abortController.signal })
+        generatePasskey(
+          {
+            exam_id: examCards?.id,
+            center_id: selectedCenterId,
+          },
+          { signal: abortController.signal }
+        )
       ).unwrap();
 
       toast.success("Passkey generated successfully!");
       setShowVerificationCard(true);
     } catch (error) {
       console.error("Passkey generation failed:", error);
-      
+
       if (error.message.includes("network")) {
         toast.error("Network error during passkey generation");
       } else {
@@ -127,6 +160,8 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
   };
 
   if (!isOpen) return null;
+  console.log("isopen", isOpen);
+  console.log("ABOUT TO RENDER - showCard:", showVerificationCard);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -145,14 +180,21 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         {!showVerificationCard ? (
           <div className="p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Select Exam Center</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Select Exam Center
+            </h3>
             <form onSubmit={handleGeneratePasskey} className="space-y-4">
               <div className="flex flex-col gap-4">
                 <select
@@ -172,7 +214,9 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
                   type="submit"
                   disabled={isGenerating || !selectedCenterId}
                   className={`w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 flex items-center justify-center ${
-                    isGenerating || !selectedCenterId ? "opacity-75 cursor-not-allowed" : ""
+                    isGenerating || !selectedCenterId
+                      ? "opacity-75 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   {isGenerating ? (
@@ -183,7 +227,14 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
                         fill="none"
                         viewBox="0 0 24 24"
                       >
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
@@ -202,16 +253,18 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
         ) : (
           <div className="p-6">
             <div className="bg-white rounded-lg overflow-hidden">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Offline Exam Verification</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Offline Exam Verification
+              </h2>
               <p className="text-gray-600 mb-4">
-                Your exam center is {passkeyresponse?.center_name}. 
-                Please enter the verification code provided at the center.
+                Your exam center is {passkeyresponse?.center_name}. Please enter
+                the verification code provided at the center.
               </p>
-              
+
               <form onSubmit={handleverifyPasskey} className="space-y-4">
                 <input
                   type="text"
-                  value={passcode}
+                  value={entered_passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="Enter Verification Code"
                   required
@@ -220,9 +273,11 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
                 />
                 <button
                   type="submit"
-                  disabled={isVerifying || !passcode}
+                  disabled={isVerifying || !entered_passcode}
                   className={`w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 ${
-                    isVerifying || !passcode ? "opacity-75 cursor-not-allowed" : ""
+                    isVerifying || !entered_passcode
+                      ? "opacity-75 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   {isVerifying ? (
@@ -233,7 +288,76 @@ const ExamCenterModal = ({ isOpen, onClose }) => {
                         fill="none"
                         viewBox="0 0 24 24"
                       >
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Verifying...
+                    </>
+                  ) : (
+                    "Verify and Proceed to Exam"
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+        {showModal && alert("hello world") && (
+          <div className="p-6">
+            <div className="bg-white rounded-lg overflow-hidden">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Offline Exam Verification
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Your exam center is {passkeyresponse?.center_name}. Please enter
+                the verification code provided at the center.
+              </p>
+
+              <form onSubmit={handleverifyPasskey} className="space-y-4">
+                <input
+                  type="text"
+                  value={entered_passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Enter Verification Code"
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isVerifying}
+                />
+                <button
+                  type="submit"
+                  disabled={isVerifying || !entered_passcode}
+                  className={`w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 ${
+                    isVerifying || !entered_passcode
+                      ? "opacity-75 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {isVerifying ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"

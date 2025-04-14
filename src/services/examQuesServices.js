@@ -148,9 +148,9 @@ export const getGeneratedPasskey = async () => {
 
 
 
-export const VerifyPasscode = async ({user_id,exam_id,passcode}) => {
+export const VerifyPasscode = async ({exam_id,entered_passcode}) => {
   try {
-    const response = await apiClient.post(`/api/verify-passcode/`,{user_id,exam_id,passcode});
+    const response = await apiClient.post(`/api/verify-passcode/`,{exam_id,entered_passcode});
     
     return response.data;
   } catch (err) {

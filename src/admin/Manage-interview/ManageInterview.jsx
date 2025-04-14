@@ -426,6 +426,85 @@ const InterviewManagement = () => {
         }
     };
 
+    const handleOpenReject = (teacher) => {
+        setSelectedTeacher(teacher);
+        setRejectionReason("");
+        setRejectModalOpen(true);
+    };
+
+    const handleOpenComplete = (teacher) => {
+        setSelectedTeacher(teacher);
+        setInterviewScore("");
+        setCompleteModalOpen(true);
+    };
+
+    const handleRejectInterview = async () => {
+        if (!rejectionReason.trim()) {
+            setSnackbarMessage("Please provide a rejection reason");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            await updateInterview(
+                selectedTeacher.id,
+                {
+                    status: "rejected",
+                    rejectionReason: rejectionReason
+                }
+            );
+
+            setSnackbarMessage("Interview request rejected");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setRejectModalOpen(false);
+
+            fetchInterviews();
+        } catch (err) {
+            setSnackbarMessage("Failed to reject interview: " + (err.response?.data?.message || err.message || "Unknown error"));
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleCompleteInterview = async () => {
+        const score = Number(interviewScore);
+        if (isNaN(score) || score < 0 || score > 10) {
+            setSnackbarMessage("Please provide a valid score between 0 and 10");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            await updateInterview(
+                selectedTeacher.id,
+                {
+                    status: "fulfilled",
+                    grade: score
+                }
+            );
+
+            setSnackbarMessage("Interview completed successfully");
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setCompleteModalOpen(false);
+
+            fetchInterviews();
+        } catch (err) {
+            setSnackbarMessage("Failed to complete interview: " + (err.response?.data?.message || err.message || "Unknown error"));
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const renderCardView = () => {
         return (
             <Stack spacing={2}>
@@ -579,12 +658,12 @@ const InterviewManagement = () => {
                 flex: 1.5,
                 minWidth: 200,
                 renderCell: (params) => (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
                         <Avatar
                             sx={{
                                 bgcolor: stringToColor(params.row.name),
-                                width: 32,
-                                height: 32,
+                                width: 36,
+                                height: 36,
                                 fontSize: '14px'
                             }}
                         >
@@ -607,6 +686,11 @@ const InterviewManagement = () => {
                 headerName: 'Subject (Class)',
                 flex: 1,
                 minWidth: 180,
+                renderCell: (params) => (
+                    <Typography variant="body2" sx={{ py: 1 }}>
+                        {params.value}
+                    </Typography>
+                ),
                 sortable: true
             },
             {
@@ -615,7 +699,7 @@ const InterviewManagement = () => {
                 flex: 1,
                 minWidth: 180,
                 renderCell: (params) => (
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ py: 1 }}>
                         {params.value !== "—" ? (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <FiCalendar size="14px" />
@@ -640,6 +724,7 @@ const InterviewManagement = () => {
                                     Number(params.value) >= 4 ? 'warning.main' : 'error.main')
                                 : 'text.secondary'
                         }
+                        sx={{ py: 1 }}
                     >
                         {params.value !== "Not graded" ? `${params.value}/10` : "—"}
                     </Typography>
@@ -652,7 +737,7 @@ const InterviewManagement = () => {
                 flex: 1,
                 minWidth: 160,
                 renderCell: (params) => (
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
                         <Chip
                             label={params.value}
                             size="small"
@@ -677,7 +762,7 @@ const InterviewManagement = () => {
                 flex: 1,
                 minWidth: 160,
                 renderCell: (params) => (
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ py: 1 }}>
                         {params.value || "—"}
                     </Typography>
                 ),
@@ -687,7 +772,7 @@ const InterviewManagement = () => {
                 field: 'actions',
                 headerName: 'Actions',
                 type: 'actions',
-                width: 150,
+                width: 180,
                 getActions: (params) => {
                     const actions = [
                         <GridActionsCellItem
@@ -747,7 +832,7 @@ const InterviewManagement = () => {
         ];
 
         return (
-            <Box sx={{ height: 500, width: '100%' }}>
+            <Box sx={{ height: 650, width: '100%' }}>
                 <DataGrid
                     rows={filteredTeachers}
                     columns={columns}
@@ -767,11 +852,19 @@ const InterviewManagement = () => {
                     disableRowSelectionOnClick
                     sx={{
                         '& .MuiDataGrid-cell': { 
-                            py: 1 
+                            py: 1.5,
+                            px: 2
                         },
                         '& .MuiDataGrid-columnHeaders': {
                             backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
                             fontWeight: 600,
+                            py: 2,
+                        },
+                        '& .MuiDataGrid-row': {
+                            '&:hover': {
+                                backgroundColor: theme.palette.mode === 'dark' ? 
+                                    'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                            }
                         },
                         '& .MuiDataGrid-virtualScroller': {
                             backgroundColor: theme.palette.mode === 'dark' ? 
@@ -780,6 +873,8 @@ const InterviewManagement = () => {
                         border: 'none',
                         borderRadius: '8px',
                     }}
+                    getRowHeight={() => 'auto'}
+                    getEstimatedRowHeight={() => 80}
                 />
             </Box>
         );
@@ -1340,6 +1435,155 @@ const InterviewManagement = () => {
                                     startIcon={actionLoading ? <CircularProgress size={20} /> : <FiClock />}
                                 >
                                     {actionLoading ? "Scheduling..." : "Schedule Interview"}
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Modal>
+
+                    <Modal
+                        open={completeModalOpen}
+                        onClose={() => setCompleteModalOpen(false)}
+                        aria-labelledby="complete-interview-modal"
+                    >
+                        <Paper sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: { xs: '90%', sm: 500 },
+                            p: 3,
+                            borderRadius: 2,
+                            maxHeight: '90vh',
+                            overflow: 'auto'
+                        }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                <Typography variant="h6" fontWeight={600}>Complete Interview</Typography>
+                                <IconButton onClick={() => setCompleteModalOpen(false)} size="small">
+                                    <FiX />
+                                </IconButton>
+                            </Box>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            {selectedTeacher && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Teacher Name</Typography>
+                                        <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Scheduled Date & Time</Typography>
+                                        <Typography variant="body1">{selectedTeacher.scheduledDate || "—"}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sx={{ mt: 1 }}>
+                                        <TextField
+                                            fullWidth
+                                            label="Interview Score (0-10)"
+                                            variant="outlined"
+                                            type="number"
+                                            InputProps={{ inputProps: { min: 0, max: 10, step: 0.5 } }}
+                                            value={interviewScore}
+                                            onChange={(e) => setInterviewScore(e.target.value)}
+                                            required
+                                            placeholder="Enter score between 0 and 10"
+                                            helperText="Please provide a score between 0 and 10"
+                                        />
+                                    </Grid>
+                                </Grid>
+                            )}
+
+                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => setCompleteModalOpen(false)}
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    color="success"
+                                    onClick={handleCompleteInterview}
+                                    disabled={actionLoading}
+                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiCheck />}
+                                >
+                                    {actionLoading ? "Completing..." : "Complete Interview"}
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Modal>
+
+                    <Modal
+                        open={rejectModalOpen}
+                        onClose={() => setRejectModalOpen(false)}
+                        aria-labelledby="reject-interview-modal"
+                    >
+                        <Paper sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: { xs: '90%', sm: 500 },
+                            p: 3,
+                            borderRadius: 2,
+                            maxHeight: '90vh',
+                            overflow: 'auto'
+                        }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                <Typography variant="h6" fontWeight={600}>Reject Interview Request</Typography>
+                                <IconButton onClick={() => setRejectModalOpen(false)} size="small">
+                                    <FiX />
+                                </IconButton>
+                            </Box>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            {selectedTeacher && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Teacher Name</Typography>
+                                        <Typography variant="body1" fontWeight={500}>{selectedTeacher.name}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="subtitle2" color="text.secondary">Subject & Class</Typography>
+                                        <Typography variant="body1">{selectedTeacher.mergedSubject}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sx={{ mt: 1 }}>
+                                        <TextField
+                                            fullWidth
+                                            label="Rejection Reason"
+                                            variant="outlined"
+                                            multiline
+                                            rows={4}
+                                            value={rejectionReason}
+                                            onChange={(e) => setRejectionReason(e.target.value)}
+                                            required
+                                            placeholder="Please explain why this interview request is being rejected"
+                                        />
+                                    </Grid>
+                                </Grid>
+                            )}
+
+                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => setRejectModalOpen(false)}
+                                    disabled={actionLoading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    color="error"
+                                    onClick={handleRejectInterview}
+                                    disabled={actionLoading}
+                                    startIcon={actionLoading ? <CircularProgress size={20} /> : <FiThumbsDown />}
+                                >
+                                    {actionLoading ? "Rejecting..." : "Reject Interview"}
                                 </Button>
                             </Box>
                         </Paper>

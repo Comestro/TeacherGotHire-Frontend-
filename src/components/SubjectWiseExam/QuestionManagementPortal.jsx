@@ -466,7 +466,7 @@ const QuestionManagementPortal = () => {
     setCurrentQuestion({
       text: question.text || "",
       options: Array.isArray(question.options) ? [...question.options] : ["", "", "", ""],
-      correctAnswer: (question.correct_option - 1).toString(), // Subtract 1 to convert from 1-based to 0-based
+      correctAnswer: (question.correct_option - 1).toString(), 
       solution: question.solution || "",
       language: question.language || "English",
       time: question.time || 0,
@@ -524,6 +524,25 @@ const QuestionManagementPortal = () => {
     if (!selectedExamSet?.questions) return [];
 
     let filtered = [...selectedExamSet.questions];
+
+    // Create a map to store English questions by their ID
+    const englishQuestions = new Map();
+    
+    // First pass to identify English questions
+    filtered.forEach(q => {
+      if (q.language === "English") {
+        englishQuestions.set(q.id, q);
+      }
+    });
+
+    // Sort and number questions based on related pairs
+    filtered = filtered.sort((a, b) => {
+      // Get base question IDs (English version ID)
+      const aBaseId = a.language === "Hindi" ? a.related_question : a.id;
+      const bBaseId = b.language === "Hindi" ? b.related_question : b.id;
+      
+      return aBaseId - bBaseId;
+    });
 
     // Apply language filter
     if (selectedLanguage !== "All") {
@@ -1394,16 +1413,34 @@ const QuestionManagementPortal = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Status <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={currentQuestion.status || "draft"}
-                    onChange={(e) => setCurrentQuestion({ ...currentQuestion, status: e.target.value })}
-                    className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
-                    required
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="review">Submit for Review</option>
-                    <option value="published">Published</option>
-                  </select>
+                  <div className="relative inline-block text-left">
+                    <select
+                      className="appearance-none w-full pl-4 pr-10 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors duration-200"
+                      value={selectedStatus}
+                      onChange={(e) => setSelectedStatus(e.target.value)}
+                    >
+                      <option value="All">All Statuses</option>
+                      <option value="draft">Draft</option>
+                      <option value="review">Under Review</option>
+                      <option value="published">Published</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                      <svg 
+                        className="h-5 w-5 transition-transform duration-200" 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M19 9l-7 7-7-7" 
+                        />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1847,16 +1884,34 @@ const QuestionManagementPortal = () => {
                           ))}
                         </select>
 
-                        <select
-                          className="text-sm border-gray-300 rounded-md"
-                          value={selectedStatus}
-                          onChange={(e) => setSelectedStatus(e.target.value)}
-                        >
-                          <option value="All">All Statuses</option>
-                          <option value="draft">Draft</option>
-                          <option value="review">Under Review</option>
-                          <option value="published">Published</option>
-                        </select>
+                        <div className="relative inline-block text-left">
+                          <select
+                            className="appearance-none w-full pl-4 pr-10 py-2.5 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors duration-200"
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                          >
+                            <option value="All">All Statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="review">Under Review</option>
+                            <option value="published">Published</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <svg 
+                              className="h-5 w-5 transition-transform duration-200" 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M19 9l-7 7-7-7" 
+                              />
+                            </svg>
+                          </div>
+                        </div>
 
                         <button
                           onClick={() => {
@@ -1881,57 +1936,65 @@ const QuestionManagementPortal = () => {
                       <>
                         {viewMode === "grid" && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {applyFilters().map((question, index) => (
-                              <div key={question.id}
-                                className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 bg-white">
-                                <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-                                  <div className="flex items-center">
-                                    <span className="font-medium text-gray-700 mr-2">Question {index + 1}</span>
-                                    {renderStatusBadge(question.status || "draft")}
+                            {applyFilters().map((question, index) => {
+                              // Calculate the actual question number based on the base English question
+                              const questionNumber = Math.ceil((index + 1) / 2);
+                              
+                              return (
+                                <div key={question.id}
+                                  className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 bg-white">
+                                  <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                                    <div className="flex items-center">
+                                      <span className="font-medium text-gray-700 mr-2">
+                                        Question {questionNumber}
+                                        <span className="ml-2 text-sm text-gray-500">({question.language})</span>
+                                      </span>
+                                      {renderStatusBadge(question.status || "draft")}
+                                    </div>
+                                    <div className="flex space-x-2">
+                                      <button
+                                        onClick={() => handleEditQuestion(question, index)}
+                                        className="p-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                                        aria-label="Edit question"
+                                        title="Edit question"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteQuestion(question.id)}
+                                        className="p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                        aria-label="Delete question"
+                                        title="Delete question"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="flex space-x-2">
-                                    <button
-                                      onClick={() => handleEditQuestion(question, index)}
-                                      className="p-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
-                                      aria-label="Edit question"
-                                      title="Edit question"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteQuestion(question.id)}
-                                      className="p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                      aria-label="Delete question"
-                                      title="Delete question"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
+                                  <div className="p-4">
+                                    <p className="text-gray-700 mb-3 line-clamp-2">{question.text}</p>
+                                    <div className="space-y-1.5 mb-3">
+                                      {question?.options?.map((option, idx) => (
+                                        <div key={idx}
+                                          className={`flex items-center p-2 rounded ${option === question.correct_option ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
+                                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 ${option === question.correct_option ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'}`}>
+                                            {String.fromCharCode(65 + idx)}
+                                          </span>
+                                          <span className="line-clamp-1">{option}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-sm border-t pt-3">
+                                      <div><span className="text-gray-500">Language:</span> {question.language}</div>
+                                      <div><span className="text-gray-500">Time:</span> {question.time} min</div>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="p-4">
-                                  <p className="text-gray-700 mb-3 line-clamp-2">{question.text}</p>
-                                  <div className="space-y-1.5 mb-3">
-                                    {question?.options?.map((option, idx) => (
-                                      <div key={idx}
-                                        className={`flex items-center p-2 rounded ${option === question.correct_option ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 ${option === question.correct_option ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'}`}>
-                                          {String.fromCharCode(65 + idx)}
-                                        </span>
-                                        <span className="line-clamp-1">{option}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2 text-sm border-t pt-3">
-                                    <div><span className="text-gray-500">Language:</span> {question.language}</div>
-                                    <div><span className="text-gray-500">Time:</span> {question.time} min</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                         {viewMode === "list" && (
@@ -1954,33 +2017,38 @@ const QuestionManagementPortal = () => {
                                 </tr>
                               </thead>
                               <tbody className="bg-white divide-y divide-gray-200">
-                                {applyFilters().map((question, index) => (
-                                  <tr key={question.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                      {question.text}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      {question.language}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      {renderStatusBadge(question.status || "draft")}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                      <button
-                                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                                        onClick={() => handleEditQuestion(question, index)}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        className="text-red-600 hover:text-red-900"
-                                        onClick={() => handleDeleteQuestion(question.id)}
-                                      >
-                                        Delete
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))}
+                                {applyFilters().map((question, index) => {
+                                  // Calculate the actual question number based on the base English question
+                                  const questionNumber = Math.ceil((index + 1) / 2);
+                                  
+                                  return (
+                                    <tr key={question.id} className="hover:bg-gray-50">
+                                      <td className="px-6 py-4 text-sm text-gray-900">
+                                        <span className="font-medium">Q{questionNumber}.</span> {question.text}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {question.language}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {renderStatusBadge(question.status || "draft")}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button
+                                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                          onClick={() => handleEditQuestion(question, index)}
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          className="text-red-600 hover:text-red-900"
+                                          onClick={() => handleDeleteQuestion(question.id)}
+                                        >
+                                          Delete
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                           </div>

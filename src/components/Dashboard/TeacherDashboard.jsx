@@ -49,12 +49,12 @@ function TeacherDashboard() {
   
   useEffect(() => {
     dispatch(getSubjects());
-    dispatch(getProfilCompletion()).then(() => {
-      // Show modal if phone number is not set
-      if (!basicData?.phone_number) {
-        setShowPhoneModal(true);
-      }
-    });
+    // dispatch(getProfilCompletion()).then(() => {
+    //   // Show modal if phone number is not set
+    //   if (!basicData?.phone_number) {
+    //     setShowPhoneModal(true);
+    //   }
+    // });
   }, [dispatch, basicData?.phone_number]);
 
   const handleSubmitPhoneNumber = async (e) => {

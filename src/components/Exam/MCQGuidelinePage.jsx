@@ -20,6 +20,8 @@ const MCQGuidelinePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState();
+  const [showVerificationCard, setShowVerificationCard] = useState(false);
+  const [card,setCard]=useState(false);
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
@@ -53,12 +55,26 @@ const MCQGuidelinePage = () => {
       await dispatch(setLanguage(selectedLanguage));
 
       if (examCards?.type === "offline") {
-        const exam = examCards?.id;
-        // For offline exams, just open the modal
-       const check =  checkPasskey(exam);
-       console.log("check",check)
-        setIsExamCenterModalOpen(true);
-        // DON'T navigate here - navigation will happen after passkey generation
+        try {
+          const examid = examCards?.id;
+          // For offline exams, check passkey first
+          const response = await checkPasskey({ exam: examid });
+          console.log("check", response);
+          
+          if (response?.passkey === true) {
+            // If passkey exists, show verification card
+            setShowVerificationCard(true);
+            setCard(true);
+          } else {
+            //If no passkey, show exam center modal
+            setIsExamCenterModalOpen(true);
+            setCard(true);
+          }
+        } catch (error) {
+          console.error("Error checking passkey:", error);
+          // Fallback to showing exam center modal if check fails
+          // setIsExamCenterModalOpen(true);
+        }
       } else {
         // For online exams, fetch questions and navigate
         await dispatch(
@@ -241,11 +257,13 @@ const MCQGuidelinePage = () => {
   )}
 
           </button>
-          <ExamCenterModal
-            selectedLanguage
+          {
+            card && <ExamCenterModal
             isOpen={isExamCenterModalOpen}
             onClose={() => setIsExamCenterModalOpen(false)}
+            isverifyCard={showVerificationCard }
           />
+          }
         </div>
       </main>
 
