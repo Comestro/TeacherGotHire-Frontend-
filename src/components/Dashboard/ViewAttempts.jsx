@@ -182,28 +182,37 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       status: result.isqualified ? "Passed" : "Failed",
       score: `${result.calculate_percentage}%`,
       date: new Date(result.created_at).toLocaleDateString(),
+      attemptCount: result.attempt || '1',
     });
 
-    // Add interviews if any - only if they have a grade
+    // Add interviews if any - filter out pending interviews
     if (result.interviews?.length) {
-      result.interviews.forEach(interview => {
-        if (interview.subject === subject && interview.grade) { // Only add interviews for matching subject with a grade
-          interviewRows.push({
-            levelOrder: 4, // Interview is always last
-            levelName: "Interview",
-            type: "Interview",
-            classCategory: interview.class_category,
-            subject: interview.subject,
-            level: "Interview",
-            language: '-',
-            status: interview.status,
-            score: interview.grade ? `${interview.grade}/10` : 'N/A',
-            attemptCount: '-',
-            date: new Date(interview.time).toLocaleDateString(),
-            interviewDate: new Date(interview.created_at).toLocaleDateString(),
-          });
-        }
-      });
+      result.interviews
+        // Filter out interviews with "pending" status
+        .filter(interview => interview.status !== "pending")
+        .forEach(interview => {
+          if (interview.subject === subject) { // Show all non-pending interviews for matching subject
+            // Determine interview level based on the parent exam
+            const interviewLevel = `Interview - ${result.exam.level_name}`;
+            
+            interviewRows.push({
+              levelOrder: 4, // Interview is always last
+              levelName: "Interview",
+              type: "Interview",
+              classCategory: interview.class_category,
+              subject: interview.subject,
+              level: interviewLevel, // Set the level based on parent exam level
+              language: '-',
+              status: interview.status === "fulfilled" ? "Completed" : 
+                     interview.status === "scheduled" ? "Scheduled" : 
+                     interview.status === "requested" ? "Requested" : interview.status,
+              score: interview.grade ? `${interview.grade}/10` : 'N/A',
+              attemptCount: interview.attempt || '-',
+              date: interview.time ? new Date(interview.time).toLocaleDateString() : '-',
+              interviewDate: new Date(interview.created_at).toLocaleDateString(),
+            });
+          }
+        });
     }
   });
 
@@ -216,18 +225,8 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
     return new Date(b.date) - new Date(a.date);
   });
 
-  // Remove duplicate interviews (keep only latest)
-  const uniqueRows = allRows.filter((row, index, self) =>
-    row.type !== "Interview" ||
-    index === self.findIndex(r => 
-      r.type === "Interview" && 
-      r.classCategory === row.classCategory && 
-      r.subject === row.subject
-    )
-  );
-
   // Don't render anything if no valid results
-  if (!uniqueRows.length) return null;
+  if (!allRows.length) return null;
 
   return (
     <div className="mb-8">
@@ -257,7 +256,16 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
               </tr>
             </thead>
             <tbody>
-              {uniqueRows.map((row, index) => (
+              {allRows.map((row, index) => {
+                const statusColor = 
+                  row.type === "Interview" 
+                    ? row.status === "Completed" ? "text-green-600" 
+                    : row.status === "Scheduled" ? "text-blue-600"
+                    : row.status === "Requested" ? "text-yellow-600"
+                    : "text-gray-600"
+                    : row.status === "Passed" ? "text-green-600" : "text-red-600";
+                
+                return (
                 <tr 
                   key={index} 
                   className={`text-sm ${
@@ -271,18 +279,14 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
                   <td className="py-2 px-4 border-b text-center">{row.subject}</td>
                   <td className="py-2 px-4 border-b text-center">{row.level}</td>
                   <td className="py-2 px-4 border-b text-center">{row.language}</td>
-                  <td className={`py-2 px-4 border-b text-center ${
-                    row.type === "Interview" 
-                      ? row.status === "Completed" ? "text-green-600" : "text-yellow-600"
-                      : row.status === "Passed" ? "text-green-600" : "text-red-600"
-                  }`}>
+                  <td className={`py-2 px-4 border-b text-center ${statusColor}`}>
                     {row.status}
                   </td>
                   <td className="py-2 px-4 border-b text-center">{row.score}</td>
                   <td className="py-2 px-4 border-b text-center">{row.attemptCount}</td>
                   <td className="py-2 px-4 border-b text-center">{row.date}</td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

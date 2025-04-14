@@ -42,7 +42,7 @@ function TeacherDashboard() {
     },[dispatch]);
 
     const qualifiedExamNames = attempts
-  .filter(item => item.exam.level_code === 2 && item.isqualified)
+  .filter(item => item?.exam?.level_code === 2 && item.isqualified)
   .map(item => item.exam.name);
 
   console.log("qualifiedExamNames",qualifiedExamNames)
