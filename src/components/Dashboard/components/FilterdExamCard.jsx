@@ -81,10 +81,65 @@ const ClassSelectionCard = () => {
     setShowSubjectPanel(false);
   };
 
+  // Helper functions to check qualifications
+  const checkLevelQualification = (categoryId, subjectId, levelCode) => {
+    return attempts.some(attempt => 
+      attempt.exam.class_category_id === categoryId &&
+      attempt.exam.subject_id === subjectId &&
+      attempt.exam.level_code === levelCode &&
+      attempt.isqualified === true
+    );
+  };
+
+  const getInterviewStatus = (categoryId, subjectId) => {
+    const relevantAttempt = attempts.find(attempt => 
+      attempt.exam.class_category_id === categoryId &&
+      attempt.exam.subject_id === subjectId &&
+      attempt.exam.level_code === 2.0
+    );
+
+    if (!relevantAttempt?.interviews?.length) return null;
+
+    // Create a copy of the array before sorting
+    const sortedInterviews = [...relevantAttempt.interviews].sort((a, b) => 
+      new Date(b.created_at) - new Date(a.created_at)
+    );
+
+    return sortedInterviews[0]?.status;
+  };
+
   const handleLevelSelect = async (level) => {
     if (!selectedSubject || !selectedCategory) {
       setErrors("Please select both category and subject first");
       return;
+    }
+
+    // Check if Level 2 is being selected and Level 1 isn't completed
+    if (level.level_code >= 2.0) {
+      const isLevel1Qualified = checkLevelQualification(
+        selectedCategory.id,
+        selectedSubject.id,
+        1.0
+      );
+
+      if (!isLevel1Qualified) {
+        setErrors("You must complete Level 1 first");
+        return;
+      }
+    }
+
+    // Check if it's offline Level 2 (level_code 2.5) and online Level 2 isn't completed
+    if (level.level_code === 2.5) {
+      const isOnlineLevel2Qualified = checkLevelQualification(
+        selectedCategory.id,
+        selectedSubject.id,
+        2.0
+      );
+
+      if (!isOnlineLevel2Qualified) {
+        setErrors("You must complete online Level 2 first");
+        return;
+      }
     }
 
     try {
@@ -135,6 +190,69 @@ const ClassSelectionCard = () => {
   
   const handleViewInterviews = () => {
     navigate("/teacher/interview");
+  };
+
+  // Update the level item rendering in the return section to show qualification status
+  const renderLevelItem = (level) => {
+    const isQualified = checkLevelQualification(
+      selectedCategory?.id,
+      selectedSubject?.id, 
+      level.level_code
+    );
+    const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
+
+    return (
+      <motion.div
+        key={level.id}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => handleLevelSelect(level)}
+        className={`p-5 rounded-xl border-2 hover:shadow-md transition-all ${
+          (level.level_code === 2.0 && !isQualified) 
+            ? 'opacity-60 cursor-not-allowed' 
+            : 'cursor-pointer'
+        } ${
+          isQualified ? 'border-green-500 bg-green-50' : ''
+        }`}
+        style={{
+          borderColor: selectedLevel?.id === level.id ? '#0d9488' : '#e5e7eb',
+          background: selectedLevel?.id === level.id ? '#f0fdfa' : 'white'
+        }}
+      >
+        <div className="flex items-start">
+          <div className="bg-teal-100 p-3 rounded-lg text-teal-600 mr-4 flex-shrink-0">
+            <FaLayerGroup size={18} />
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold text-gray-800">{level.name}</h4>
+            <p className="text-sm text-gray-500 mt-1">
+              {level.level_code === 1.0 && "Basic concepts assessment"}
+              {level.level_code === 2.0 && "Advanced problem solving"}
+              {level.level_code > 2.0 && "Specialized assessment"}
+            </p>
+            
+            {isQualified && (
+              <div className="mt-2 flex items-center text-green-600">
+                <FaCheckCircle className="mr-1" />
+                <span>Qualified</span>
+              </div>
+            )}
+            
+            {level.level_code === 2.0 && interviewStatus && (
+              <div className={`mt-2 flex items-center ${
+                interviewStatus === 'fulfilled' ? 'text-green-600' : 
+                interviewStatus === 'scheduled' ? 'text-blue-600' : 
+                'text-orange-600'
+              }`}>
+                <span className="text-sm">
+                  Interview: {interviewStatus.charAt(0).toUpperCase() + interviewStatus.slice(1)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
   };
 
   return (
@@ -355,54 +473,7 @@ const ClassSelectionCard = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {levels?.map((level) => {
-                  const isInterviewLevel = level.level_code === 2.0;
-                  const isQualified = isSubjectQualifiedForInterview(
-                    selectedSubject?.id, 
-                    selectedCategory?.id
-                  );
-                  
-                  return (
-                    <motion.div
-                      key={level.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleLevelSelect(level)}
-                      className={`p-5 rounded-xl border-2 hover:shadow-md transition-all ${
-                        (isInterviewLevel && !isQualified) 
-                          ? 'opacity-60 cursor-not-allowed' 
-                          : 'cursor-pointer'
-                      }`}
-                      style={{
-                        borderColor: selectedLevel?.id === level.id ? '#0d9488' : '#e5e7eb',
-                        background: selectedLevel?.id === level.id ? '#f0fdfa' : 'white'
-                      }}
-                    >
-                      <div className="flex items-start">
-                        <div className="bg-teal-100 p-3 rounded-lg text-teal-600 mr-4 flex-shrink-0">
-                          <FaLayerGroup size={18} />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-800">{level.name}</h4>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {level.level_code === 1.0 && "Basic concepts assessment"}
-                            {level.level_code === 2.0 && "Advanced problem solving"}
-                            {level.level_code > 2.0 && "Specialized assessment"}
-                          </p>
-                          
-                          {isInterviewLevel && !isQualified && (
-                            <div className="mt-2 text-orange-500 text-sm flex items-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                              </svg>
-                              Complete Level 1 first
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                {levels?.map((level) => renderLevelItem(level))}
               </div>
             </motion.div>
           )}

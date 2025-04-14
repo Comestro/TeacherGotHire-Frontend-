@@ -22,6 +22,7 @@ const MCQGuidelinePage = () => {
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState();
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [card,setCard]=useState(false);
+  const [examCenterData, setExamCenterData] = useState(null);
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
@@ -52,32 +53,24 @@ const MCQGuidelinePage = () => {
       setIsLoading(true);
       setError(null);
 
-      // Always set language first
-      
-
       if (examCards?.type === "offline") {
-        try {
-          const examid = examCards?.id;
-          // For offline exams, check passkey first
-          const response = await checkPasskey({ exam: examid });
-          console.log("check", response);
-          
-          if (response?.passkey === true) {
-            // If passkey exists, show verification card
-            setShowVerificationCard(true);
-            setCard(true);
-          } else {
-            //If no passkey, show exam center modal
-            setIsExamCenterModalOpen(true);
-            setCard(true);
-          }
-        } catch (error) {
-          console.error("Error checking passkey:", error);
-          // Fallback to showing exam center modal if check fails
-          // setIsExamCenterModalOpen(true);
+        const examid = examCards?.id;
+        // Check passkey status
+        const response = await checkPasskey({ exam: examid });
+        console.log("Passkey check response:", response);
+
+        if (response?.passkey === true) {
+          // If passkey exists, show verification with center info
+          setExamCenterData(response.center);
+          setShowVerificationCard(true);
+        } else {
+          // If no passkey, show center selection
+          setShowVerificationCard(false);
         }
+        setIsExamCenterModalOpen(true);
+        setCard(true);
       } else {
-        // For online exams, fetch questions and navigate
+        // Handle online exam flow
         await dispatch(
           getAllQues({
             exam_id: examCards?.id,
@@ -88,6 +81,7 @@ const MCQGuidelinePage = () => {
       }
     } catch (err) {
       setError(err.message || "Failed to proceed");
+      toast.error("Error checking exam status");
     } finally {
       setIsLoading(false);
     }
@@ -261,8 +255,13 @@ const MCQGuidelinePage = () => {
           {
             card && <ExamCenterModal
             isOpen={isExamCenterModalOpen}
-            onClose={() => setIsExamCenterModalOpen(false)}
-            isverifyCard={showVerificationCard }
+            onClose={() => {
+              setIsExamCenterModalOpen(false);
+              setShowVerificationCard(false);
+              setCard(false);
+            }}
+            isverifyCard={showVerificationCard}
+            examCenterData={examCenterData}
           />
           }
         </div>
