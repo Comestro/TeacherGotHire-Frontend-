@@ -22,21 +22,22 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
   const [entered_passcode, setPasscode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showModal, setShowModel] = useState(isverifyCard);
+  // const [showModal, setShowModel] = useState(isverifyCard);
 
-  console.log(
-    "Current render values - show:",
-    showVerificationCard,
-    "isverifyCard:",
-    showModal
-  );
+  // console.log(
+  //   "Current render values - show:",
+  //   showVerificationCard,
+  //   "isverifyCard:",
+  //   showModal
+  // );
 
   // Redux state
   const { allcenter, passkeyresponse, loading, error } = useSelector(
     (state) => state.examQues
   );
   const { examCards } = useSelector((state) => state.exam);
-  const { selectedLanguage } = useSelector((state) => state.exam);
+  const { language  } = useSelector((state) => state.examQues);
+  console.log("selectedLanguage",language )
   console.log("passkeyresponse", passkeyresponse);
   console.log("showVerificationCard", showVerificationCard);
   // Fetch centers on mount
@@ -44,6 +45,13 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
     dispatch(getAllCenter({ signal: abortController.signal }));
     return () => abortController.abort();
   }, []);
+  
+  useEffect(() => {
+    if (isverifyCard === true) {
+      setShowVerificationCard(true);
+    }
+  }, [isverifyCard]);
+  
 
   // useEffect(()=>{
   //   console.log("verficard",verfiyCard)
@@ -66,57 +74,97 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
   //     // Perform actions here (e.g., show a modal)
   //   }
   // }, [showVerificationCard]); // Dependency on the state
+  // const handleverifyPasskey = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!entered_passcode) {
+  //     toast.error("Please enter a verification code");
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsVerifying(true);
+
+  //     // 1. Verify passcode
+  //     const verificationResult = await dispatch(
+  //       verifyPasscode(
+  //         {
+  //           exam_id: examCards?.id,
+  //           entered_passcode,
+  //         },
+  //         { signal: abortController.signal }
+  //       )
+  //     ).unwrap();
+
+  //     if (verificationResult.error) {
+  //       throw new Error(verificationResult.error);
+  //     }
+
+  //     toast.success("Verification successful! Loading questions...");
+
+  //     // 2. Fetch questions
+  //     await dispatch(
+  //       getAllQues(
+  //         {
+  //           exam_id: examCards?.id,
+  //           language: selectedLanguage,
+  //         },
+  //         { signal: abortController.signal }
+  //       )
+  //     ).unwrap();
+
+  //     // 3. Navigate to exam
+  //     navigate("/exam/portal");
+  //   } catch (error) {
+  //     console.error("Verification failed:", error);
+
+  //     if (error.message.includes("network")) {
+  //       toast.error("Network error. Please check your connection.");
+  //     } else if (error.message.includes("Invalid")) {
+  //       toast.error("Invalid passcode. Please try again.");
+  //     } else {
+  //       toast.error("Verification failed. Please try again.");
+  //     }
+  //   } finally {
+  //     setIsVerifying(false);
+  //   }
+  // };
   const handleverifyPasskey = async (e) => {
     e.preventDefault();
-
+  
     if (!entered_passcode) {
       toast.error("Please enter a verification code");
       return;
     }
-
+  
     try {
       setIsVerifying(true);
-
-      // 1. Verify passcode
+  
+      // 1. FIRST verify ONLY
       const verificationResult = await dispatch(
-        verifyPasscode(
-          {
-            exam_id: examCards?.id,
-            entered_passcode,
-          },
-          { signal: abortController.signal }
-        )
+        verifyPasscode({
+          exam_id: examCards?.id,
+          entered_passcode,
+        }, { signal: abortController.signal })
       ).unwrap();
-
+  
       if (verificationResult.error) {
         throw new Error(verificationResult.error);
       }
-
+  
       toast.success("Verification successful! Loading questions...");
-
-      // 2. Fetch questions
+  
+      // 2. ONLY if verification succeeded, fetch questions
       await dispatch(
-        getAllQues(
-          {
-            exam_id: examCards?.id,
-            language: selectedLanguage,
-          },
-          { signal: abortController.signal }
-        )
+        getAllQues({
+          exam_id: examCards?.id,
+          language: language ,
+        }, { signal: abortController.signal })
       ).unwrap();
-
-      // 3. Navigate to exam
+  
       navigate("/exam/portal");
     } catch (error) {
-      console.error("Verification failed:", error);
-
-      if (error.message.includes("network")) {
-        toast.error("Network error. Please check your connection.");
-      } else if (error.message.includes("Invalid")) {
-        toast.error("Invalid passcode. Please try again.");
-      } else {
-        toast.error("Verification failed. Please try again.");
-      }
+      // Handle errors
     } finally {
       setIsVerifying(false);
     }
@@ -312,7 +360,7 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
             </div>
           </div>
         )}
-        {showModal && alert("hello world") && (
+        {/* {showModal &&  (
           <div className="p-6">
             <div className="bg-white rounded-lg overflow-hidden">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
@@ -373,7 +421,7 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard }) => {
               </form>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

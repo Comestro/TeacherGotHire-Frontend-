@@ -39,6 +39,7 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
+    dispatch(setLanguage(selectedLanguage));
     console.log("Selected Language:", language);
   };
 
@@ -52,7 +53,7 @@ const MCQGuidelinePage = () => {
       setError(null);
 
       // Always set language first
-      await dispatch(setLanguage(selectedLanguage));
+      
 
       if (examCards?.type === "offline") {
         try {
