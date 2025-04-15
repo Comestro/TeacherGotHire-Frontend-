@@ -42,19 +42,19 @@ function TeacherDashboard() {
     },[dispatch]);
 
     const qualifiedExamNames = attempts
-  .filter(item => item.exam.level_code === 2 && item.isqualified)
+  .filter(item => item?.exam?.level_code === 2 && item.isqualified)
   .map(item => item.exam.name);
 
   console.log("qualifiedExamNames",qualifiedExamNames)
   
   useEffect(() => {
     dispatch(getSubjects());
-    dispatch(getProfilCompletion()).then(() => {
-      // Show modal if phone number is not set
-      if (!basicData?.phone_number) {
-        setShowPhoneModal(true);
-      }
-    });
+    // dispatch(getProfilCompletion()).then(() => {
+    //   // Show modal if phone number is not set
+    //   if (!basicData?.phone_number) {
+    //     setShowPhoneModal(true);
+    //   }
+    // });
   }, [dispatch, basicData?.phone_number]);
 
   const handleSubmitPhoneNumber = async (e) => {

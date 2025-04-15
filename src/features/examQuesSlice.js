@@ -311,9 +311,9 @@ export const getAllCenter = createAsyncThunk(
 
 export const verifyPasscode = createAsyncThunk(
   "verifyPasscode",
-  async ({ user_id, exam_id, passcode }, { rejectWithValue }) => {
+  async ({  exam_id, entered_passcode }, { rejectWithValue }) => {
     try {
-      const data = await VerifyPasscode({ user_id, exam_id, passcode });
+      const data = await VerifyPasscode({ exam_id, entered_passcode });
       return data;
     } catch (error) {
       console.log("Error in getLevels:", error);

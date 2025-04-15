@@ -20,6 +20,9 @@ const MCQGuidelinePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState();
+  const [showVerificationCard, setShowVerificationCard] = useState(false);
+  const [card,setCard]=useState(false);
+  const [examCenterData, setExamCenterData] = useState(null);
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
@@ -44,23 +47,29 @@ const MCQGuidelinePage = () => {
     e.preventDefault();
 
     if (!selectedLanguage || !isChecked) return;
-
+  console.log("selected",selectedLanguage)
     try {
       setIsLoading(true);
       setError(null);
 
-      // Always set language first
-      await dispatch(setLanguage(selectedLanguage));
-
       if (examCards?.type === "offline") {
-        const exam = examCards?.id;
-        // For offline exams, just open the modal
-       const check =  checkPasskey(exam);
-       console.log("check",check)
+        const examid = examCards?.id;
+        // Check passkey status
+        const response = await checkPasskey({ exam: examid });
+        console.log("Passkey check response:", response);
+
+        if (response?.passkey === true) {
+          // If passkey exists, show verification with center info
+          setExamCenterData(response.center);
+          setShowVerificationCard(true);
+        } else {
+          // If no passkey, show center selection
+          setShowVerificationCard(false);
+        }
         setIsExamCenterModalOpen(true);
-        // DON'T navigate here - navigation will happen after passkey generation
+        setCard(true);
       } else {
-        // For online exams, fetch questions and navigate
+        // Handle online exam flow
         await dispatch(
           getAllQues({
             exam_id: examCards?.id,
@@ -71,6 +80,7 @@ const MCQGuidelinePage = () => {
       }
     } catch (err) {
       setError(err.message || "Failed to proceed");
+      toast.error("Error checking exam status");
     } finally {
       setIsLoading(false);
     }
@@ -241,11 +251,19 @@ const MCQGuidelinePage = () => {
   )}
 
           </button>
-          <ExamCenterModal
-            selectedLanguage
+          {
+            card && <ExamCenterModal
+            selectedLanguage = {selectedLanguage}
             isOpen={isExamCenterModalOpen}
-            onClose={() => setIsExamCenterModalOpen(false)}
+            onClose={() => {
+              setIsExamCenterModalOpen(false);
+              setShowVerificationCard(false);
+              setCard(false);
+            }}
+            isverifyCard={showVerificationCard}
+            examCenterData={examCenterData}
           />
+          }
         </div>
       </main>
 
