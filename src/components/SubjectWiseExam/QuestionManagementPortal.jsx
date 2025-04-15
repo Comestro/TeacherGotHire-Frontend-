@@ -1122,13 +1122,13 @@ const QuestionManagementPortal = () => {
                                   onClick={() => setSelectedExamSet(examSet)}
                                   className="text-teal-600 hover:text-teal-900 mr-3"
                                 >
-                                  Manage Questions
+                                  Edit Questions
                                 </button>
                                 <button
                                   onClick={() => handleEdit(index)}
                                   className="text-indigo-600 hover:text-indigo-900 mr-3"
                                 >
-                                  Edit
+                                  Edit Exam-Set
                                 </button>
                                 <button
                                   onClick={() => handleDelete(index)}
