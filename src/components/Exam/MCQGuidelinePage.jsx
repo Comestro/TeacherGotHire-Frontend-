@@ -5,6 +5,7 @@ import { getAllQues} from "../../features/examQuesSlice";
 import { getAllCenter } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
+import { getQuestionToExamSet } from "../../features/examQuesSlice";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
@@ -25,7 +26,10 @@ const MCQGuidelinePage = () => {
     setIsChecked(!isChecked);
   };
   useEffect(()=>{
+    console.log("seghjkljgfdzs")
    dispatch(getAllCenter());
+   dispatch(getQuestionToExamSet());
+   console.log("seghjkljgfdzs")
   },[])
 
   useEffect(() => {

@@ -287,7 +287,9 @@ export const getgeneratedPasskey = createAsyncThunk(
 );
 export const getAllCenter = createAsyncThunk(
   "getAllCenter",
+  
   async ({ rejectWithValue }) => {
+    console.log("seghjkljgfdzs")
     try {
       const data = await AllCenter();
       console.log("data", data);

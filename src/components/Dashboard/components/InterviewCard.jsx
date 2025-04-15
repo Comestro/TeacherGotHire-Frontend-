@@ -498,7 +498,7 @@ const InterviewCard = () => {
             )}
 
             {/* Existing Interview Status Cards */}
-            {interview && (
+            {interview.length>0 && (
               <div className="space-y-4">
               { interview?.map((item) => (
                 <motion.div
