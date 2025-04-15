@@ -1,14 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Loader from './components/Loader';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getTeacher } from '../../services/teacherService';
 import { fetchSingleTeacherById } from '../../services/apiService';
 import { FaArrowLeft, FaGraduationCap, FaBriefcase, FaLightbulb, FaChalkboardTeacher } from 'react-icons/fa';
 
 const TeacherViewPage = () => {
+  const profile = useSelector((state) => state.auth.userData || {});
+  console.log("Auth Usre Data: ", profile);
   const { id } = useParams();
   const [teacher, setTeacher] = useState({});
+  console.log('Initial teacher state:', teacher);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
@@ -20,6 +23,7 @@ const TeacherViewPage = () => {
     const loadTeacher = async () => {
       try {
         const data = await fetchSingleTeacherById(id);
+        console.log('Fetched teacher data:', data); 
         setTeacher(data);
         setLoading(false);
       } catch (err) {
