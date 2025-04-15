@@ -26,6 +26,7 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData,selecte
   const { allcenter, passkeyresponse } = useSelector(
     (state) => state.examQues
   );
+  console.log("allcenter",allcenter)
   const { examCards } = useSelector((state) => state.exam);
 
   useEffect(() => {

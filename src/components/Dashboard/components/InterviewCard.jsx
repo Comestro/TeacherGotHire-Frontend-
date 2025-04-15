@@ -498,8 +498,9 @@ const InterviewCard = () => {
             )}
 
             {/* Existing Interview Status Cards */}
-            <div className="space-y-4">
-              {interview?.map((item) => (
+            {interview && (
+              <div className="space-y-4">
+              { interview?.map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -621,6 +622,7 @@ const InterviewCard = () => {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
