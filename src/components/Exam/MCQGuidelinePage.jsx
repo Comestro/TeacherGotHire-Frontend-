@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllQues, setLanguage } from "../../features/examQuesSlice";
+import { getAllQues} from "../../features/examQuesSlice";
+import { getAllCenter } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
+import { getQuestionToExamSet } from "../../features/examQuesSlice";
 
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedLanguage, setSelectedLanguage] = useState("");
-  // const {exam,verifyresponse}= useSelector((state) => state.examQues);
-  // const examID = exam?.id;
-  // const verfyExamId = verifyresponse?.offline_exam?.id;
   const [isChecked, setIsChecked] = useState(false);
-  // console.log("exam",exam)
   const { examCards } = useSelector((state) => state.exam);
   const {loading}= useSelector((state)=>state.examQues);
   const subjectName = examCards?.subject?.name;
@@ -27,6 +25,12 @@ const MCQGuidelinePage = () => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
+  useEffect(()=>{
+    console.log("seghjkljgfdzs")
+   dispatch(getAllCenter());
+   dispatch(getQuestionToExamSet());
+   console.log("seghjkljgfdzs")
+  },[])
 
   useEffect(() => {
     if (subjectName === "English") {
@@ -40,6 +44,7 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
+    
     console.log("Selected Language:", language);
   };
 
@@ -216,19 +221,6 @@ const MCQGuidelinePage = () => {
           </div>
 
           {/* Proceed Button */}
-          <div className="mt-5 text-center mb-4 md:md-0">
-            {/* <Link
-            to={selectedLanguage && isChecked && !isLoading ? "/exam/portal" : "#"}
-            onClick={handleProceedClick}
-            className={`${
-              selectedLanguage && isChecked
-                ? "bg-teal-600 hover:bg-teal-700"
-                : "bg-gray-400 cursor-not-allowed"
-            } text-white px-4 py-2 rounded`}
-          >
-            Proceed to Exam / परीक्षा के लिए आगे बढ़ें
-          </Link> */}
-          </div>
           <button
             onClick={handleProceedClick}
             disabled={loading}

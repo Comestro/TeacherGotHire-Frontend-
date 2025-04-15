@@ -10,9 +10,9 @@ const InterviewCard = () => {
   const dispatch = useDispatch();
   const { interview, attempts } = useSelector((state) => state.examQues);
 
-  const filteredExams = attempts.filter(
+  const filteredExams = attempts?.filter(
     (item) => item?.exam?.level_code === 2 && item?.isqualified === true
-  );
+  ) || [];
   
   const [selectedDateTime, setSelectedDateTime] = useState("");
   const [selectedExam, setSelectedExam] = useState(null);
@@ -26,18 +26,18 @@ const InterviewCard = () => {
   
   // Extract unique subjects and class categories for filter dropdowns
   const uniqueSubjects = [...new Set(filteredExams.map(item => 
-    item.exam.subject_name
+    item?.exam?.subject_name
   ))].sort();
   
   const uniqueClassCategories = [...new Set(filteredExams.map(item => 
-    item.exam.class_category_name
+    item?.exam?.class_category_name
   ))].sort();
   
   // Apply filters to the exams
   const applyFilters = (exams) => {
     return exams.filter(item => {
-      const subjectMatch = subjectFilter === "all" || item.exam.subject_name === subjectFilter;
-      const classCategoryMatch = classCategoryFilter === "all" || item.exam.class_category_name === classCategoryFilter;
+      const subjectMatch = subjectFilter === "all" || item?.exam?.subject_name === subjectFilter;
+      const classCategoryMatch = classCategoryFilter === "all" || item?.exam?.class_category_name === classCategoryFilter;
       return subjectMatch && classCategoryMatch;
     });
   };
@@ -45,11 +45,13 @@ const InterviewCard = () => {
   // Group exams by subject for better organization
   const filteredAndGroupedExams = applyFilters(filteredExams);
   const subjectGroups = filteredAndGroupedExams.reduce((groups, item) => {
-    const subject = item.exam.subject_name;
-    if (!groups[subject]) {
+    const subject = item?.exam?.subject_name;
+    if (subject && !groups[subject]) {
       groups[subject] = [];
     }
-    groups[subject].push(item);
+    if (subject) {
+      groups[subject].push(item);
+    }
     return groups;
   }, {});
   
@@ -67,7 +69,7 @@ const InterviewCard = () => {
 
   useEffect(() => {
     // Reset selectedExam if it's filtered out
-    if (selectedExam && !filteredAndGroupedExams.some(item => item.exam.name === selectedExam)) {
+    if (selectedExam && !filteredAndGroupedExams.some(item => item?.exam?.name === selectedExam)) {
       setSelectedExam(null);
     }
   }, [subjectFilter, classCategoryFilter, selectedExam, filteredAndGroupedExams]);
@@ -79,8 +81,8 @@ const InterviewCard = () => {
     
     try {
       const selectedExamData = filteredExams.find(item => 
-        item.exam.name === selectedExam && 
-        item.isqualified
+        item?.exam?.name === selectedExam && 
+        item?.isqualified
       );
       
       if (!selectedExamData) {
@@ -88,11 +90,11 @@ const InterviewCard = () => {
       }
   
       const payload = {
-        subject: selectedExamData.exam.subject_id,
-        class_category: selectedExamData.exam.class_category_id,
-        level: selectedExamData.exam.level_code,
+        subject: selectedExamData?.exam?.subject_id,
+        class_category: selectedExamData?.exam?.class_category_id,
+        level: selectedExamData?.exam?.level_code,
         time: selectedDateTime,
-        exam_id: selectedExamData.exam.id
+        exam_id: selectedExamData?.exam?.id
       };
   
       await dispatch(postInterview(payload)).unwrap();
@@ -110,12 +112,12 @@ const InterviewCard = () => {
       console.error("Failed to schedule interview:", error);
       
       // Handle specific error cases with user-friendly messages
-      if (error.message && error.message.includes("time slot")) {
+      if (error?.message && error.message?.includes("time slot")) {
         setNotification({
           type: 'error',
           message: 'This time slot is no longer available. Please choose another time.'
         });
-      } else if (error.message && error.message.includes("conflict")) {
+      } else if (error?.message && error.message?.includes("conflict")) {
         setNotification({
           type: 'error',
           message: 'You already have an interview scheduled at this time.'
@@ -498,8 +500,9 @@ const InterviewCard = () => {
             )}
 
             {/* Existing Interview Status Cards */}
-            <div className="space-y-4">
-              {interview?.map((item) => (
+            {interview?.length > 0 && (
+              <div className="space-y-4">
+              { interview?.filter(item => item?.status !== "pending").map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -539,7 +542,7 @@ const InterviewCard = () => {
 
                         <div className="ml-4 flex-1">
                           <h3 className="text-lg font-semibold text-gray-800">
-                            {item.status === "requested"
+                            {item?.status === "requested"
                               ? "Interview Request Pending"
                               : "Interview Scheduled"}
                           </h3>
@@ -561,34 +564,34 @@ const InterviewCard = () => {
                               </div>
                             </div>
                             
-                            {item.subject && (
+                            {item?.subject && (
                               <div className="bg-white/50 p-3 rounded-lg border border-gray-100 flex items-start">
                                 <FaBook className={`mt-0.5 mr-2 ${
-                                  item.status === "requested" ? "text-amber-500" : "text-emerald-500"
+                                  item?.status === "requested" ? "text-amber-500" : "text-emerald-500"
                                 }`} />
                                 <div>
                                   <div className="text-xs text-gray-500 font-medium">Subject</div>
-                                  <div className="font-medium">{item.subject.subject_name}</div>
+                                  <div className="font-medium">{item?.subject?.subject_name}</div>
                                 </div>
                               </div>
                             )}
                           </div>
                           
                           {/* Class Category info */}
-                          {item.class_category && (
+                          {item?.class_category && (
                             <div className="mt-4 bg-white/50 p-3 rounded-lg border border-gray-100 flex items-start">
                               <FaGraduationCap className={`mt-0.5 mr-2 ${
-                                item.status === "requested" ? "text-amber-500" : "text-emerald-500"
+                                item?.status === "requested" ? "text-amber-500" : "text-emerald-500"
                               }`} />
                               <div>
                                 <div className="text-xs text-gray-500 font-medium">Class Category</div>
-                                <div className="font-medium">{item.class_category.name}</div>
+                                <div className="font-medium">{item?.class_category?.name}</div>
                               </div>
                             </div>
                           )}
 
                           {/* Join link (only for scheduled interviews) */}
-                          {item.status !== "requested" && item.link && (
+                          {item?.status !== "requested" && item?.link && (
                             <a
                               href={item.link}
                               target="_blank"
@@ -621,6 +624,7 @@ const InterviewCard = () => {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
