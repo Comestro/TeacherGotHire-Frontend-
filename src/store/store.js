@@ -9,6 +9,7 @@ import dashboardSlice from "../features/dashboardSlice";
 import examQuesSlice from "../features/examQuesSlice";
 import teacherSlice from "../features/teacherFilterSlice";
 import examSlice from "../features/examSlice";
+import { apiSlice } from '../features/api/apiSlice';
 
 // Step 1: Combine all reducers
 const rootReducer = combineReducers({
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   dashboard: dashboardSlice,
   examQues: examQuesSlice,
   teachers: teacherSlice,
-  exam:examSlice,
+  exam: examSlice,
+  [apiSlice.reducerPath]: apiSlice.reducer,
 });
 
 // Step 2: Configure persist 
@@ -38,7 +40,7 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(apiSlice.middleware),
 });
 
 // Step 4: Create the persistor
