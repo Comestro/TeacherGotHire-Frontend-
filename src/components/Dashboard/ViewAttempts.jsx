@@ -166,50 +166,50 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
   const interviewRows = [];
 
   subjectResults.forEach(result => {
-    const level_id = result.exam.level_id;
+    const level_id = result?.exam?.level_id;
     const levelKey = `level${level_id}`;
     
 
     // Add exam result
     examRows.push({
-      levelOrder: getLevelOrder(result.exam.level_name),
-      levelName: result.exam.level_name,
+      levelOrder: getLevelOrder(result?.exam?.level_name),
+      levelName: result?.exam?.level_name,
       type: "Exam",
-      classCategory: result.exam.class_category_name,
-      subject: result.exam.subject_name,
-      level: result.exam.level_name,
-      language: result.language || 'N/A',
-      status: result.isqualified ? "Passed" : "Failed",
-      score: `${result.calculate_percentage}%`,
-      date: new Date(result.created_at).toLocaleDateString(),
-      attemptCount: result.attempt || '1',
+      classCategory: result?.exam?.class_category_name,
+      subject: result?.exam?.subject_name,
+      level: result?.exam?.level_name,
+      language: result?.language || 'N/A',
+      status: result?.isqualified ? "Passed" : "Failed",
+      score: `${result?.calculate_percentage}%`,
+      date: new Date(result?.created_at).toLocaleDateString(),
+      attemptCount: result?.attempt || '1',
     });
 
     // Add interviews if any - filter out pending interviews
-    if (result.interviews?.length) {
+    if (result?.interviews?.length) {
       result.interviews
         // Filter out interviews with "pending" status
-        .filter(interview => interview.status !== "pending")
+        .filter(interview => interview?.status !== "pending")
         .forEach(interview => {
-          if (interview.subject === subject) { // Show all non-pending interviews for matching subject
+          if (interview?.subject === subject) { // Show all non-pending interviews for matching subject
             // Determine interview level based on the parent exam
-            const interviewLevel = `Interview - ${result.exam.level_name}`;
+            const interviewLevel = `Interview - ${result?.exam?.level_name}`;
             
             interviewRows.push({
               levelOrder: 4, // Interview is always last
               levelName: "Interview",
               type: "Interview",
-              classCategory: interview.class_category,
-              subject: interview.subject,
+              classCategory: interview?.class_category,
+              subject: interview?.subject,
               level: interviewLevel, // Set the level based on parent exam level
               language: '-',
-              status: interview.status === "fulfilled" ? "Completed" : 
-                     interview.status === "scheduled" ? "Scheduled" : 
-                     interview.status === "requested" ? "Requested" : interview.status,
-              score: interview.grade ? `${interview.grade}/10` : 'N/A',
-              attemptCount: interview.attempt || '-',
-              date: interview.time ? new Date(interview.time).toLocaleDateString() : '-',
-              interviewDate: new Date(interview.created_at).toLocaleDateString(),
+              status: interview?.status === "fulfilled" ? "Completed" : 
+                     interview?.status === "scheduled" ? "Scheduled" : 
+                     interview?.status === "requested" ? "Requested" : interview?.status,
+              score: interview?.grade ? `${interview.grade}/10` : 'N/A',
+              attemptCount: interview?.attempt || '-',
+              date: interview?.time ? new Date(interview.time).toLocaleDateString() : '-',
+              interviewDate: interview?.created_at ? new Date(interview.created_at).toLocaleDateString() : '-',
             });
           }
         });

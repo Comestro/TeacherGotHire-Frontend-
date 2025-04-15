@@ -33,14 +33,14 @@ const ClassSelectionCard = () => {
   const [showLevelPanel, setShowLevelPanel] = useState(false);
   
   // Determine qualified Level 2 subjects
-  const qualifiedSubjects = attempts
-    .filter(item => item.exam?.level_code === 2 && item.isqualified === true)
-    .map(item => ({
-      subjectId: item.exam.subject_id,
-      subjectName: item.exam.subject_name,
-      categoryId: item.exam.class_category_id,
-      categoryName: item.exam.class_category_name
-    }));
+  const qualifiedSubjects = attempts?.filter(item => 
+    item?.exam?.level_code === 2 && item?.isqualified === true
+  ).map(item => ({
+    subjectId: item?.exam?.subject_id,
+    subjectName: item?.exam?.subject_name,
+    categoryId: item?.exam?.class_category_id,
+    categoryName: item?.exam?.class_category_name
+  })) || [];
 
   // Fetch levels on component mount
   useEffect(() => {
@@ -57,8 +57,8 @@ const ClassSelectionCard = () => {
   }, []);
   
   const isSubjectQualifiedForInterview = (subjectId, categoryId) => {
-    return qualifiedSubjects.some(
-      q => q.subjectId === subjectId && q.categoryId === categoryId
+    return qualifiedSubjects?.some(
+      q => q?.subjectId === subjectId && q?.categoryId === categoryId
     );
   };
 
@@ -83,26 +83,26 @@ const ClassSelectionCard = () => {
 
   // Helper functions to check qualifications
   const checkLevelQualification = (categoryId, subjectId, levelCode) => {
-    return attempts.some(attempt => 
-      attempt.exam.class_category_id === categoryId &&
-      attempt.exam.subject_id === subjectId &&
-      attempt.exam.level_code === levelCode &&
-      attempt.isqualified === true
+    return attempts?.some(attempt => 
+      attempt?.exam?.class_category_id === categoryId &&
+      attempt?.exam?.subject_id === subjectId &&
+      attempt?.exam?.level_code === levelCode &&
+      attempt?.isqualified === true
     );
   };
 
   const getInterviewStatus = (categoryId, subjectId) => {
-    const relevantAttempt = attempts.find(attempt => 
-      attempt.exam.class_category_id === categoryId &&
-      attempt.exam.subject_id === subjectId &&
-      attempt.exam.level_code === 2.0
+    const relevantAttempt = attempts?.find(attempt => 
+      attempt?.exam?.class_category_id === categoryId &&
+      attempt?.exam?.subject_id === subjectId &&
+      attempt?.exam?.level_code === 2.0
     );
 
     if (!relevantAttempt?.interviews?.length) return null;
 
     // Create a copy of the array before sorting
-    const sortedInterviews = [...relevantAttempt.interviews].sort((a, b) => 
-      new Date(b.created_at) - new Date(a.created_at)
+    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort((a, b) => 
+      new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
     );
 
     return sortedInterviews[0]?.status;
@@ -115,10 +115,10 @@ const ClassSelectionCard = () => {
     }
 
     // Check if Level 2 is being selected and Level 1 isn't completed
-    if (level.level_code >= 2.0) {
+    if (level?.level_code >= 2.0) {
       const isLevel1Qualified = checkLevelQualification(
-        selectedCategory.id,
-        selectedSubject.id,
+        selectedCategory?.id,
+        selectedSubject?.id,
         1.0
       );
 
@@ -129,10 +129,10 @@ const ClassSelectionCard = () => {
     }
 
     // Check if it's offline Level 2 (level_code 2.5) and online Level 2 isn't completed
-    if (level.level_code === 2.5) {
+    if (level?.level_code === 2.5) {
       const isOnlineLevel2Qualified = checkLevelQualification(
-        selectedCategory.id,
-        selectedSubject.id,
+        selectedCategory?.id,
+        selectedSubject?.id,
         2.0
       );
 
@@ -148,9 +148,9 @@ const ClassSelectionCard = () => {
       setSelectedLevel(level);
 
       const payload = {
-        subject_id: selectedSubject.id,
-        class_category_id: selectedCategory.id,
-        level_id: level.id,
+        subject_id: selectedSubject?.id,
+        class_category_id: selectedCategory?.id,
+        level_id: level?.id,
       };
 
       await dispatch(examCard(payload)).unwrap();
@@ -197,26 +197,26 @@ const ClassSelectionCard = () => {
     const isQualified = checkLevelQualification(
       selectedCategory?.id,
       selectedSubject?.id, 
-      level.level_code
+      level?.level_code
     );
     const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
 
     return (
       <motion.div
-        key={level.id}
+        key={level?.id}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => handleLevelSelect(level)}
         className={`p-5 rounded-xl border-2 hover:shadow-md transition-all ${
-          (level.level_code === 2.0 && !isQualified) 
+          (level?.level_code === 2.0 && !isQualified) 
             ? 'opacity-60 cursor-not-allowed' 
             : 'cursor-pointer'
         } ${
           isQualified ? 'border-green-500 bg-green-50' : ''
         }`}
         style={{
-          borderColor: selectedLevel?.id === level.id ? '#0d9488' : '#e5e7eb',
-          background: selectedLevel?.id === level.id ? '#f0fdfa' : 'white'
+          borderColor: selectedLevel?.id === level?.id ? '#0d9488' : '#e5e7eb',
+          background: selectedLevel?.id === level?.id ? '#f0fdfa' : 'white'
         }}
       >
         <div className="flex items-start">
@@ -224,11 +224,11 @@ const ClassSelectionCard = () => {
             <FaLayerGroup size={18} />
           </div>
           <div>
-            <h4 className="text-lg font-semibold text-gray-800">{level.name}</h4>
+            <h4 className="text-lg font-semibold text-gray-800">{level?.name}</h4>
             <p className="text-sm text-gray-500 mt-1">
-              {level.level_code === 1.0 && "Basic concepts assessment"}
-              {level.level_code === 2.0 && "Advanced problem solving"}
-              {level.level_code > 2.0 && "Specialized assessment"}
+              {level?.level_code === 1.0 && "Basic concepts assessment"}
+              {level?.level_code === 2.0 && "Advanced problem solving"}
+              {level?.level_code > 2.0 && "Specialized assessment"}
             </p>
             
             {isQualified && (
@@ -238,7 +238,7 @@ const ClassSelectionCard = () => {
               </div>
             )}
             
-            {level.level_code === 2.0 && interviewStatus && (
+            {level?.level_code === 2.0 && interviewStatus && (
               <div className={`mt-2 flex items-center ${
                 interviewStatus === 'fulfilled' ? 'text-green-600' : 
                 interviewStatus === 'scheduled' ? 'text-blue-600' : 
@@ -394,18 +394,18 @@ const ClassSelectionCard = () => {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedCategory?.subjects?.map((subject) => {
-                  const isQualified = isSubjectQualifiedForInterview(subject.id, selectedCategory.id);
+                  const isQualified = isSubjectQualifiedForInterview(subject?.id, selectedCategory?.id);
                   
                   return (
                     <motion.div
-                      key={subject.id}
+                      key={subject?.id}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleSubjectSelect(subject)}
                       className="cursor-pointer p-5 rounded-xl border-2 hover:shadow-md transition-all relative"
                       style={{
-                        borderColor: selectedSubject?.id === subject.id ? '#4f46e5' : '#e5e7eb',
-                        background: selectedSubject?.id === subject.id ? '#eef2ff' : 'white'
+                        borderColor: selectedSubject?.id === subject?.id ? '#4f46e5' : '#e5e7eb',
+                        background: selectedSubject?.id === subject?.id ? '#eef2ff' : 'white'
                       }}
                     >
                       {isQualified && (
@@ -422,7 +422,7 @@ const ClassSelectionCard = () => {
                         </div>
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800">
-                            {subject.subject_name}
+                            {subject?.subject_name}
                           </h4>
                           {isQualified && (
                             <div className="mt-2 flex items-center text-green-600 text-sm">

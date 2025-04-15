@@ -127,7 +127,7 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData, select
         }, 1500);
       }
     } catch (error) {
-      if (error.message?.includes("already exists")) {
+      if (error?.message?.includes("already exists")) {
         toast.info("A passkey already exists. Please enter the verification code.");
         window.location.reload();
       } else {
@@ -211,10 +211,10 @@ const ExamCenterModal = ({ isOpen, onClose, isverifyCard, examCenterData, select
                     disabled={isGenerating}
                   >
                     <option value="">Select Exam Center</option>
-                    {Array.isArray(centers) && centers.length > 0 ? (
+                    {Array.isArray(centers) && centers?.length > 0 ? (
                       centers.map((center) => (
-                        <option key={center.id} value={center.id}>
-                          {center.center_name || center.name}
+                        <option key={center?.id} value={center?.id}>
+                          {center?.center_name || center?.name || 'Unknown Center'}
                         </option>
                       ))
                     ) : (
