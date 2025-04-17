@@ -136,7 +136,7 @@ const TeacherRequestModal = ({ isOpen, onClose }) => {
 
         <div className="flex items-center gap-3 mb-6">
           <FaChalkboardTeacher className="text-teal-500" size={24} />
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-semibold text-teal-700 mb-1">
             Request a Teacher
           </h2>
         </div>

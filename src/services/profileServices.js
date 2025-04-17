@@ -65,6 +65,15 @@ export const createTeacherRequest = async (payload) => {
   }
 };
 
+export const requestTeacher = async (payload) => {
+  try {
+    const response = await apiClient.post('/api/self/hirerequest/', payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to submit request');
+  }
+}
+
 
 export const updateBasicProfile = async(personaldata)=>{
   try{
