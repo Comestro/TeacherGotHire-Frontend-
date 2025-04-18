@@ -8,10 +8,11 @@ import { setError } from "../../../features/examSlice";
 import { 
   FaGraduationCap, FaLayerGroup, FaBookOpen, 
   FaArrowRight, FaSpinner, FaExclamationCircle, 
-  FaCheckCircle, FaAngleRight 
+  FaCheckCircle, FaAngleRight, FaChevronLeft,
+  FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock
 } from "react-icons/fa";
 
-const ClassSelectionCard = () => {
+const FilterdExamCard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -56,10 +57,36 @@ const ClassSelectionCard = () => {
     fetchData();
   }, []);
   
+  // Helper functions to check qualifications
+  const checkLevelQualification = (categoryId, subjectId, levelCode) => {
+    return attempts?.some(attempt => 
+      attempt?.exam?.class_category_id === categoryId &&
+      attempt?.exam?.subject_id === subjectId &&
+      attempt?.exam?.level_code === levelCode &&
+      attempt?.isqualified === true
+    );
+  };
+
   const isSubjectQualifiedForInterview = (subjectId, categoryId) => {
     return qualifiedSubjects?.some(
       q => q?.subjectId === subjectId && q?.categoryId === categoryId
     );
+  };
+
+  const getInterviewStatus = (categoryId, subjectId) => {
+    const relevantAttempt = attempts?.find(attempt => 
+      attempt?.exam?.class_category_id === categoryId &&
+      attempt?.exam?.subject_id === subjectId &&
+      attempt?.exam?.level_code === 2.0
+    );
+
+    if (!relevantAttempt?.interviews?.length) return null;
+
+    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort((a, b) => 
+      new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+    );
+
+    return sortedInterviews[0]?.status;
   };
 
   const handleCategorySelect = (category) => {
@@ -81,40 +108,12 @@ const ClassSelectionCard = () => {
     setShowSubjectPanel(false);
   };
 
-  // Helper functions to check qualifications
-  const checkLevelQualification = (categoryId, subjectId, levelCode) => {
-    return attempts?.some(attempt => 
-      attempt?.exam?.class_category_id === categoryId &&
-      attempt?.exam?.subject_id === subjectId &&
-      attempt?.exam?.level_code === levelCode &&
-      attempt?.isqualified === true
-    );
-  };
-
-  const getInterviewStatus = (categoryId, subjectId) => {
-    const relevantAttempt = attempts?.find(attempt => 
-      attempt?.exam?.class_category_id === categoryId &&
-      attempt?.exam?.subject_id === subjectId &&
-      attempt?.exam?.level_code === 2.0
-    );
-
-    if (!relevantAttempt?.interviews?.length) return null;
-
-    // Create a copy of the array before sorting
-    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort((a, b) => 
-      new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
-    );
-
-    return sortedInterviews[0]?.status;
-  };
-
   const handleLevelSelect = async (level) => {
     if (!selectedSubject || !selectedCategory) {
       setErrors("Please select both category and subject first");
       return;
     }
 
-    // Check if Level 2 is being selected and Level 1 isn't completed
     if (level?.level_code >= 2.0) {
       const isLevel1Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -128,7 +127,6 @@ const ClassSelectionCard = () => {
       }
     }
 
-    // Check if it's offline Level 2 (level_code 2.5) and online Level 2 isn't completed
     if (level?.level_code === 2.5) {
       const isOnlineLevel2Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -187,327 +185,493 @@ const ClassSelectionCard = () => {
     setShowSubjectPanel(true);
     setShowLevelPanel(false);
   };
-  
-  const handleViewInterviews = () => {
-    navigate("/teacher/interview");
-  };
 
-  // Update the level item rendering in the return section to show qualification status
-  const renderLevelItem = (level) => {
-    const isQualified = checkLevelQualification(
-      selectedCategory?.id,
-      selectedSubject?.id, 
-      level?.level_code
-    );
-    const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
-
-    return (
-      <motion.div
-        key={level?.id}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => handleLevelSelect(level)}
-        className={`p-5 rounded-xl border-2 hover:shadow-md transition-all ${
-          (level?.level_code === 2.0 && !isQualified) 
-            ? 'opacity-60 cursor-not-allowed' 
-            : 'cursor-pointer'
-        } ${
-          isQualified ? 'border-green-500 bg-green-50' : ''
-        }`}
-        style={{
-          borderColor: selectedLevel?.id === level?.id ? '#0d9488' : '#e5e7eb',
-          background: selectedLevel?.id === level?.id ? '#f0fdfa' : 'white'
-        }}
-      >
-        <div className="flex items-start">
-          <div className="bg-teal-100 p-3 rounded-lg text-teal-600 mr-4 flex-shrink-0">
-            <FaLayerGroup size={18} />
-          </div>
-          <div>
-            <h4 className="text-lg font-semibold text-gray-800">{level?.name}</h4>
-            <p className="text-sm text-gray-500 mt-1">
-              {level?.level_code === 1.0 && "Basic concepts assessment"}
-              {level?.level_code === 2.0 && "Advanced problem solving"}
-              {level?.level_code > 2.0 && "Specialized assessment"}
-            </p>
-            
-            {isQualified && (
-              <div className="mt-2 flex items-center text-green-600">
-                <FaCheckCircle className="mr-1" />
-                <span>Qualified</span>
-              </div>
-            )}
-            
-            {level?.level_code === 2.0 && interviewStatus && (
-              <div className={`mt-2 flex items-center ${
-                interviewStatus === 'fulfilled' ? 'text-green-600' : 
-                interviewStatus === 'scheduled' ? 'text-blue-600' : 
-                'text-orange-600'
-              }`}>
-                <span className="text-sm">
-                  Interview: {interviewStatus.charAt(0).toUpperCase() + interviewStatus.slice(1)}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    );
+  const pageTransition = {
+    initial: { opacity: 0, x: 20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 },
+    transition: { duration: 0.3 }
   };
 
   return (
-    <div className="bg-gray-50 py-8 px-4">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Exam Selection</h2>
-            <p className="text-gray-600 mt-1">Select your class category, subject and level to begin</p>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+              <span className="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">
+                <FaFilter />
+              </span>
+              Exam Selection
+            </h1>
+            <p className="text-gray-600 mt-2 max-w-xl">
+              Select your preferred class category, subject, and level to begin your assessment journey
+            </p>
           </div>
           
-          {qualifiedSubjects.length > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleViewInterviews}
-              className="mt-4 md:mt-0 flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
+          <div className="mt-4 md:mt-0 flex space-x-3">
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="flex items-center px-4 py-2 text-gray-600 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
             >
-              <span>View Interview Qualification</span>
-              <FaAngleRight className="ml-2" />
-            </motion.button>
-          )}
+              <FaHome className="mr-2" />
+              Dashboard
+            </button>
+            
+            {qualifiedSubjects.length > 0 && (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/teacher/interview')}
+                className="flex items-center bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
+              >
+                <span>View Interviews</span>
+                <FaAngleRight className="ml-2" />
+              </motion.button>
+            )}
+          </div>
         </div>
         
-        {/* Progress Steps */}
-        <div className="mb-8">
+        <div className="mb-8 bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showCategoryPanel ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
-            }`}>
-              <span className="font-bold">1</span>
+            <div 
+              className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                showCategoryPanel 
+                  ? 'bg-blue-600 text-white' 
+                  : selectedCategory 
+                    ? 'bg-blue-100 text-blue-600 border-2 border-blue-300' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              <FaGraduationCap className={selectedCategory ? 'animate-pulse' : ''} />
             </div>
             <div className={`flex-1 h-1 mx-2 ${
-              selectedCategory ? 'bg-blue-600' : 'bg-gray-200'
+              selectedCategory ? 'bg-gradient-to-r from-blue-600 to-indigo-500' : 'bg-gray-200'
             }`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showSubjectPanel ? 'bg-indigo-600 text-white' : selectedSubject ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-600'
-            }`}>
-              <span className="font-bold">2</span>
+            
+            <div 
+              className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                showSubjectPanel 
+                  ? 'bg-indigo-600 text-white' 
+                  : selectedSubject 
+                    ? 'bg-indigo-100 text-indigo-600 border-2 border-indigo-300' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              <FaBookOpen className={selectedSubject ? 'animate-pulse' : ''} />
             </div>
             <div className={`flex-1 h-1 mx-2 ${
-              selectedSubject ? 'bg-indigo-600' : 'bg-gray-200'
+              selectedSubject ? 'bg-gradient-to-r from-indigo-500 to-teal-500' : 'bg-gray-200'
             }`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showLevelPanel ? 'bg-teal-600 text-white' : selectedLevel ? 'bg-teal-100 text-teal-600' : 'bg-gray-200 text-gray-600'
-            }`}>
-              <span className="font-bold">3</span>
+            
+            <div 
+              className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                showLevelPanel 
+                  ? 'bg-teal-600 text-white' 
+                  : selectedLevel 
+                    ? 'bg-teal-100 text-teal-600 border-2 border-teal-300' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              <FaLayerGroup className={selectedLevel ? 'animate-pulse' : ''} />
             </div>
           </div>
-          <div className="flex justify-between mt-2 text-sm">
-            <div className={`w-1/3 text-center ${showCategoryPanel ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+          
+          <div className="flex justify-between mt-3 text-sm font-medium">
+            <div 
+              className={`w-1/3 text-center ${
+                showCategoryPanel 
+                  ? 'text-blue-700' 
+                  : selectedCategory 
+                    ? 'text-blue-600' 
+                    : 'text-gray-500'
+              }`}
+            >
               Class Category
             </div>
-            <div className={`w-1/3 text-center ${showSubjectPanel ? 'text-indigo-600 font-medium' : 'text-gray-500'}`}>
+            <div 
+              className={`w-1/3 text-center ${
+                showSubjectPanel 
+                  ? 'text-indigo-700' 
+                  : selectedSubject 
+                    ? 'text-indigo-600' 
+                    : 'text-gray-500'
+              }`}
+            >
               Subject
             </div>
-            <div className={`w-1/3 text-center ${showLevelPanel ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+            <div 
+              className={`w-1/3 text-center ${
+                showLevelPanel 
+                  ? 'text-teal-700' 
+                  : selectedLevel 
+                    ? 'text-teal-600' 
+                    : 'text-gray-500'
+              }`}
+            >
               Level
             </div>
           </div>
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1: Class Category Panel */}
           {showCategoryPanel && (
             <motion.div
               key="categories"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              {...pageTransition}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-8"
             >
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-blue-600">Select Class Category</h3>
-                <p className="text-gray-500 mt-1">Choose the class category you want to take an exam for</p>
+              <div className="bg-gradient-to-r from-blue-700 to-blue-600 p-6 text-white">
+                <h2 className="text-2xl font-bold flex items-center">
+                  <FaGraduationCap className="mr-3" />
+                  Select Class Category
+                </h2>
+                <p className="text-blue-100 mt-1">
+                  Choose a class category from your profile preferences
+                </p>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {classCategories?.map((category) => (
-                  <motion.div
-                    key={category.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleCategorySelect(category)}
-                    className="cursor-pointer p-5 rounded-xl border-2 hover:shadow-md transition-all flex items-start"
-                    style={{
-                      borderColor: selectedCategory?.id === category.id ? '#2563eb' : '#e5e7eb',
-                      background: selectedCategory?.id === category.id ? '#eff6ff' : 'white'
-                    }}
-                  >
-                    <div className="bg-blue-100 p-3 rounded-lg text-blue-600 mr-4">
-                      <FaGraduationCap size={20} />
+              <div className="p-6">
+                {classCategories?.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {classCategories?.map((category) => (
+                      <motion.div
+                        key={category.id}
+                        whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleCategorySelect(category)}
+                        className={`cursor-pointer rounded-xl border-2 transition-all hover:shadow-md overflow-hidden ${
+                          selectedCategory?.id === category.id 
+                            ? 'border-blue-500 ring-2 ring-blue-200' 
+                            : 'border-gray-200 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className={`p-4 ${
+                          selectedCategory?.id === category.id 
+                            ? 'bg-blue-50' 
+                            : 'bg-white'
+                        }`}>
+                          <div className="flex items-start">
+                            <div className={`p-3 rounded-lg mr-3 flex-shrink-0 ${
+                              selectedCategory?.id === category.id 
+                                ? 'bg-blue-500 text-white' 
+                                : 'bg-blue-100 text-blue-600'
+                            }`}>
+                              <FaGraduationCap size={24} />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800">
+                                {category.name}
+                              </h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {category.subjects?.length || 0} subjects available
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="bg-blue-50 p-4 rounded-full inline-block mb-4">
+                      <FaExclamationCircle className="text-blue-500 text-3xl" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-800">{category.name}</h4>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {category.subjects?.length || 0} subjects available
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-                
-                {(!classCategories || classCategories.length === 0) && (
-                  <div className="col-span-full text-center py-12">
-                    <FaExclamationCircle className="mx-auto text-gray-400 text-4xl mb-3" />
-                    <p className="text-gray-500">No class categories available. Please update your profile preferences.</p>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Class Categories Available</h3>
+                    <p className="text-gray-600 max-w-md mx-auto mb-6">
+                      You don't have any class categories in your profile preferences. 
+                      Please update your profile to add class categories.
+                    </p>
+                    <button
+                      onClick={() => navigate('/teacher/profile')}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                    >
+                      Update Profile
+                    </button>
                   </div>
                 )}
               </div>
             </motion.div>
           )}
           
-          {/* Step 2: Subject Panel */}
           {showSubjectPanel && (
             <motion.div
               key="subjects"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              {...pageTransition}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-8"
             >
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-indigo-600">Select Subject</h3>
-                  <p className="text-gray-500 mt-1">Choose a subject from {selectedCategory?.name || "your category"}</p>
+              <div className="bg-gradient-to-r from-indigo-700 to-indigo-600 p-6 text-white">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <FaBookOpen className="mr-3" />
+                    Select Subject
+                  </h2>
+                  <button
+                    onClick={handleBackToCategories}
+                    className="bg-indigo-800/50 hover:bg-indigo-800 text-white px-3 py-1.5 rounded-lg flex items-center text-sm transition-colors"
+                  >
+                    <FaChevronLeft className="mr-1" />
+                    Back
+                  </button>
                 </div>
-                <button
-                  onClick={handleBackToCategories}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Back
-                </button>
+                <p className="text-indigo-100 mt-1">
+                  Choose a subject from <span className="font-medium">{selectedCategory?.name}</span>
+                </p>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedCategory?.subjects?.map((subject) => {
-                  const isQualified = isSubjectQualifiedForInterview(subject?.id, selectedCategory?.id);
-                  
-                  return (
-                    <motion.div
-                      key={subject?.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleSubjectSelect(subject)}
-                      className="cursor-pointer p-5 rounded-xl border-2 hover:shadow-md transition-all relative"
-                      style={{
-                        borderColor: selectedSubject?.id === subject?.id ? '#4f46e5' : '#e5e7eb',
-                        background: selectedSubject?.id === subject?.id ? '#eef2ff' : 'white'
-                      }}
-                    >
-                      {isQualified && (
-                        <div className="absolute top-0 right-0 translate-x-1/4 -translate-y-1/4">
-                          <div className="bg-green-500 text-white text-xs font-bold py-1 px-2 rounded-md shadow-sm">
-                            LEVEL 2 QUALIFIED
-                          </div>
-                        </div>
-                      )}
+              <div className="p-6">
+                {selectedCategory?.subjects?.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {selectedCategory?.subjects?.map((subject) => {
+                      const isQualified = isSubjectQualifiedForInterview(subject?.id, selectedCategory?.id);
                       
-                      <div className="flex items-start">
-                        <div className="bg-indigo-100 p-3 rounded-lg text-indigo-600 mr-4 flex-shrink-0">
-                          <FaBookOpen size={18} />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-800">
-                            {subject?.subject_name}
-                          </h4>
+                      return (
+                        <motion.div
+                          key={subject?.id}
+                          whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleSubjectSelect(subject)}
+                          className={`cursor-pointer rounded-xl border-2 transition-all overflow-hidden relative ${
+                            selectedSubject?.id === subject?.id 
+                              ? 'border-indigo-500 ring-2 ring-indigo-200' 
+                              : 'border-gray-200 hover:border-indigo-300'
+                          }`}
+                        >
                           {isQualified && (
-                            <div className="mt-2 flex items-center text-green-600 text-sm">
-                              <FaCheckCircle className="mr-1" />
-                              <span>Interview eligible</span>
+                            <div className="absolute -top-1 -right-1 z-10">
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-green-500 rounded-br-xl rounded-tl-xl blur-sm opacity-70"></div>
+                                <div className="relative bg-green-500 text-white text-xs font-bold py-1 px-2 rounded-br-xl rounded-tl-xl">
+                                  LEVEL 2 QUALIFIED
+                                </div>
+                              </div>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-                
-                {(!selectedCategory?.subjects || selectedCategory.subjects.length === 0) && (
-                  <div className="col-span-full text-center py-12">
-                    <FaExclamationCircle className="mx-auto text-gray-400 text-4xl mb-3" />
-                    <p className="text-gray-500">No subjects available for this class category.</p>
+                          
+                          <div className={`p-4 ${
+                            selectedSubject?.id === subject?.id 
+                              ? 'bg-indigo-50' 
+                              : 'bg-white'
+                          }`}>
+                            <div className="flex items-start">
+                              <div className={`p-3 rounded-lg mr-3 flex-shrink-0 ${
+                                selectedSubject?.id === subject?.id 
+                                  ? 'bg-indigo-500 text-white' 
+                                  : isQualified
+                                    ? 'bg-green-100 text-green-600'
+                                    : 'bg-indigo-100 text-indigo-600'
+                              }`}>
+                                <FaBookOpen size={24} />
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                  {subject?.subject_name}
+                                </h3>
+                                
+                                {isQualified && (
+                                  <div className="flex items-center text-green-600 text-sm mt-2">
+                                    <FaCheckCircle className="mr-1" />
+                                    <span>Interview eligible</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="bg-indigo-50 p-4 rounded-full inline-block mb-4">
+                      <FaExclamationCircle className="text-indigo-500 text-3xl" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Subjects Available</h3>
+                    <p className="text-gray-600 max-w-md mx-auto">
+                      There are no subjects available for this class category.
+                      Please select a different class category.
+                    </p>
                   </div>
                 )}
               </div>
             </motion.div>
           )}
           
-          {/* Step 3: Level Panel */}
           {showLevelPanel && (
             <motion.div
               key="levels"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              {...pageTransition}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-8"
             >
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-teal-600">Select Level</h3>
-                  <p className="text-gray-500 mt-1">Choose your exam level for {selectedSubject?.subject_name || ""}</p>
+              <div className="bg-gradient-to-r from-teal-700 to-teal-600 p-6 text-white">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <FaLayerGroup className="mr-3" />
+                    Select Level
+                  </h2>
+                  <button
+                    onClick={handleBackToSubjects}
+                    className="bg-teal-800/50 hover:bg-teal-800 text-white px-3 py-1.5 rounded-lg flex items-center text-sm transition-colors"
+                  >
+                    <FaChevronLeft className="mr-1" />
+                    Back
+                  </button>
                 </div>
-                <button
-                  onClick={handleBackToSubjects}
-                  className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Back
-                </button>
+                <p className="text-teal-100 mt-1">
+                  Choose the assessment level for <span className="font-medium">{selectedSubject?.subject_name}</span>
+                </p>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {levels?.map((level) => renderLevelItem(level))}
+              <div className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {levels.map((level) => {
+                    const isQualified = checkLevelQualification(
+                      selectedCategory?.id,
+                      selectedSubject?.id, 
+                      level?.level_code
+                    );
+                    
+                    const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
+                    const isLocked = 
+                      (level?.level_code === 2.0 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0)) ||
+                      (level?.level_code === 2.5 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0));
+                    
+                    return (
+                      <motion.div
+                        key={level?.id}
+                        whileHover={!isLocked ? { scale: 1.02, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" } : {}}
+                        whileTap={!isLocked ? { scale: 0.98 } : {}}
+                        onClick={() => !isLocked && handleLevelSelect(level)}
+                        className={`rounded-xl border-2 overflow-hidden relative ${
+                          isLocked 
+                            ? 'opacity-70 cursor-not-allowed' 
+                            : 'cursor-pointer hover:shadow-lg'
+                        } ${
+                          selectedLevel?.id === level?.id 
+                            ? 'border-teal-500 ring-2 ring-teal-200' 
+                            : isQualified
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200'
+                        }`}
+                      >
+                        {isLocked && (
+                          <div className="absolute inset-0 bg-gray-900/20 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                            <div className="bg-gray-900/80 text-white text-sm font-medium py-1.5 px-3 rounded-lg">
+                              {level?.level_code === 2.0 
+                                ? "Complete Level 1 First" 
+                                : "Complete Level 2 First"}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className={`p-5 ${
+                          selectedLevel?.id === level?.id ? 'bg-teal-50' : ''
+                        }`}>
+                          <div className="flex items-start">
+                            <div className={`p-4 rounded-xl flex-shrink-0 mr-4 ${
+                              selectedLevel?.id === level?.id 
+                                ? 'bg-teal-500 text-white' 
+                                : isQualified
+                                  ? 'bg-green-100 text-green-600'
+                                  : 'bg-teal-100 text-teal-600'
+                            }`}>
+                              <FaLayerGroup size={24} />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start">
+                                <h3 className="text-xl font-semibold text-gray-800">{level?.name}</h3>
+                                {level?.level_code && (
+                                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                    level?.level_code === 1.0 
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : level?.level_code === 2.0
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-amber-100 text-amber-700'
+                                  }`}>
+                                    Level {level?.level_code}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-gray-600 my-2">
+                                {level?.level_code === 1.0 && "Basic concepts assessment for beginners"}
+                                {level?.level_code === 2.0 && "Advanced problem solving techniques"}
+                                {level?.level_code === 2.5 && "Specialized interview preparation assessment"}
+                                {!level?.level_code && "Standard assessment level"}
+                              </p>
+                              
+                              {isQualified && (
+                                <div className="mt-3 flex items-center text-green-600 bg-green-50 py-1.5 px-3 rounded-lg border border-green-200 inline-block">
+                                  <FaCheckCircle className="mr-2" />
+                                  <span className="font-medium">Qualified</span>
+                                </div>
+                              )}
+                              
+                              {level?.level_code === 2.0 && interviewStatus && (
+                                <div className={`mt-3 flex items-center py-1.5 px-3 rounded-lg border inline-block ${
+                                  interviewStatus === 'fulfilled' 
+                                    ? 'text-green-600 bg-green-50 border-green-200' 
+                                    : interviewStatus === 'scheduled' 
+                                      ? 'text-blue-600 bg-blue-50 border-blue-200' 
+                                      : 'text-amber-600 bg-amber-50 border-amber-200'
+                                }`}>
+                                  {interviewStatus === 'fulfilled' && <FaCheckCircle className="mr-2" />}
+                                  {interviewStatus === 'scheduled' && <FaCalendarAlt className="mr-2" />}
+                                  {interviewStatus === 'pending' && <FaClock className="mr-2" />}
+                                  <span className="font-medium">
+                                    Interview: {interviewStatus.charAt(0).toUpperCase() + interviewStatus.slice(1)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
         
-        {/* Loading Overlay */}
         {isLoading && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
-            <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-sm mx-auto">
-              <FaSpinner className="mx-auto text-blue-500 text-4xl animate-spin mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800">Preparing Your Exam</h3>
-              <p className="text-gray-600 mt-2">Setting up your assessment environment...</p>
-            </div>
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-auto"
+            >
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-blue-100 rounded-full mx-auto flex items-center justify-center">
+                  <FaSpinner className="text-blue-600 text-3xl animate-spin" />
+                </div>
+                <div className="absolute top-0 left-0 w-full h-full rounded-full border-4 border-blue-500 border-t-transparent animate-spin opacity-20"></div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Preparing Your Exam</h3>
+              <p className="text-gray-600">
+                Setting up your assessment environment. This may take a moment...
+              </p>
+            </motion.div>
           </div>
         )}
 
-        {/* Error Display */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-md border border-red-200 p-6 mb-6"
+            className="bg-white rounded-xl shadow-lg border-l-4 border-red-500 p-6 mb-6"
           >
             <div className="flex items-start">
-              <div className="bg-red-100 p-2 rounded-lg">
+              <div className="bg-red-100 p-3 rounded-lg">
                 <FaExclamationCircle className="text-red-500 text-xl" />
               </div>
               <div className="ml-4 flex-1">
-                <h3 className="text-lg font-semibold text-gray-800">Error Loading Exam</h3>
-                <p className="mt-1 text-red-600">{error}</p>
+                <h3 className="text-xl font-semibold text-gray-800">Error Loading Exam</h3>
+                <p className="mt-2 text-red-600">{error}</p>
                 <div className="mt-4">
                   <button
                     onClick={resetSelection}
-                    className="px-4 py-2 border border-red-300 rounded-lg text-red-700 hover:bg-red-50 transition-all text-sm font-medium"
+                    className="px-4 py-2 bg-red-100 rounded-lg text-red-700 hover:bg-red-200 transition-all text-sm font-medium"
                   >
                     Reset Selections
                   </button>
@@ -517,40 +681,48 @@ const ClassSelectionCard = () => {
           </motion.div>
         )}
 
-        {/* Exam Ready Card */}
         {examReady && !error && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-md border-2 border-green-200 overflow-hidden"
+            className="bg-white rounded-2xl shadow-lg border-2 border-green-200 overflow-hidden"
           >
             <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-6 text-white">
               <div className="flex items-center">
-                <div className="bg-white/20 p-2 rounded-lg mr-4">
+                <div className="bg-white/20 p-3 rounded-lg mr-4">
                   <FaCheckCircle className="text-white text-2xl" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Ready to Start Your Exam</h3>
+                  <h3 className="text-xl font-bold">Ready to Begin Your Assessment</h3>
                   <p className="text-green-100">All selections have been made successfully</p>
                 </div>
               </div>
             </div>
             
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Class Category</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-1">{selectedCategory?.name}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all">
+                  <div className="flex items-center mb-2">
+                    <FaGraduationCap className="text-blue-600 mr-2" />
+                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Class Category</p>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-800">{selectedCategory?.name}</p>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Subject</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-1">{selectedSubject?.subject_name}</p>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all">
+                  <div className="flex items-center mb-2">
+                    <FaBookOpen className="text-indigo-600 mr-2" />
+                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Subject</p>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-800">{selectedSubject?.subject_name}</p>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Level</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-1">{selectedLevel?.name}</p>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all">
+                  <div className="flex items-center mb-2">
+                    <FaLayerGroup className="text-teal-600 mr-2" />
+                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Level</p>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-800">{selectedLevel?.name}</p>
                 </div>
               </div>
               
@@ -559,7 +731,7 @@ const ClassSelectionCard = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={resetSelection}
-                  className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all font-medium flex items-center"
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all font-medium flex items-center"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -571,7 +743,7 @@ const ClassSelectionCard = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExam}
-                  className="px-8 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center"
+                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center"
                 >
                   Start Exam
                   <FaArrowRight className="ml-2" />
@@ -581,22 +753,59 @@ const ClassSelectionCard = () => {
           </motion.div>
         )}
         
-        {/* Welcome Card */}
         {!selectedCategory && !selectedSubject && !selectedLevel && !error && !examReady && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-md border border-blue-100 p-6 text-center"
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
+            className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden mb-8"
           >
-            <div className="max-w-xl mx-auto">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaGraduationCap className="text-blue-600 text-2xl" />
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 text-center">
+              <div className="max-w-lg mx-auto">
+                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FaGraduationCap className="text-white text-3xl" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">Start Your Assessment Journey</h3>
+                <p className="text-gray-600">
+                  Welcome to the teacher qualification process. To begin your assessment, please follow the 
+                  steps above. Select your class category, choose a subject, and pick an appropriate level 
+                  that matches your teaching expertise.
+                </p>
+                <div className="mt-6">
+                  <div className="inline-flex items-center justify-center bg-blue-100 text-blue-700 px-4 py-2 rounded-lg">
+                    <FaArrowRight className="animate-pulse mr-2" />
+                    Select a Class Category to begin
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Start Your Assessment Journey</h3>
-              <p className="text-gray-600">
-                To begin your assessment, please follow the steps above. First choose your class category, 
-                then select a subject, and finally pick the level that's right for you.
-              </p>
+            </div>
+            
+            <div className="p-6 border-t border-blue-100">
+              <h4 className="font-semibold text-gray-800 mb-3">Assessment Process:</h4>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center mb-2 text-blue-600">
+                    <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold">1</span>
+                    <h5 className="font-medium">Level 1</h5>
+                  </div>
+                  <p className="text-sm text-gray-600">Basic concepts assessment to evaluate your fundamental knowledge.</p>
+                </div>
+                
+                <div className="flex-1 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center mb-2 text-indigo-600">
+                    <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold">2</span>
+                    <h5 className="font-medium">Level 2</h5>
+                  </div>
+                  <p className="text-sm text-gray-600">Advanced problem solving to test your in-depth knowledge.</p>
+                </div>
+                
+                <div className="flex-1 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center mb-2 text-teal-600">
+                    <span className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold">3</span>
+                    <h5 className="font-medium">Interview</h5>
+                  </div>
+                  <p className="text-sm text-gray-600">Final interview to showcase your teaching abilities and expertise.</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -605,4 +814,4 @@ const ClassSelectionCard = () => {
   );
 };
 
-export default ClassSelectionCard;
+export default FilterdExamCard;
