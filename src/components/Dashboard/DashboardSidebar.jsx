@@ -42,17 +42,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
           {/* profiel section */}
           <div className="flex items-center gap-3 py-3 bg-[#F5F8FA] px-4 rounded-lg shadow-sm">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               {/* User Icon */}
-              <div className="p-2 bg-[#E5F1F9] rounded-full">
-              <BsPerson className="size-6 text-blue-400 font-semibold"/>
+              <div className="p-2 bg-[#E5F1F9] rounded-full flex-shrink-0">
+                <BsPerson className="size-6 text-blue-400 font-semibold"/>
               </div>
               {/* Profile Info */}
-              <div className="flex flex-col">
-                <h2 className="text-md font-semibold text-gray-800">
+              <div className="flex flex-col min-w-0">
+                <h2 className="text-md font-semibold text-gray-800 truncate">
                   {profile.Fname || "Your Name"}
                 </h2>
-                <p className="text-sm text-gray-600 truncate">
+                <p className="text-sm text-gray-600 truncate overflow-hidden text-ellipsis whitespace-nowrap">
                   {profile.email || "email@example.com"}
                 </p>
               </div>
