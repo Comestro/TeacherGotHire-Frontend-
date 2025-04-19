@@ -181,7 +181,7 @@ function TeacherDashboard() {
             <TeacherDashboardCard />
         </div> */}
      
-        <div className="md:px-6">
+        <div className="">
           {/* <ExamManagement /> */}
           <FilterdExamCard/>
         </div>

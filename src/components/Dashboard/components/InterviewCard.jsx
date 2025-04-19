@@ -196,7 +196,7 @@ const InterviewCard = () => {
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-4">
         {/* Qualified Subjects Section */}
         <div className="lg:col-span-5">
           <motion.div 
@@ -206,16 +206,16 @@ const InterviewCard = () => {
             className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden h-full"
           >
             <div className="h-full flex flex-col">
-              <div className="p-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+              <div className="p-6 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold">Qualified Subjects</h2>
                   <div className="flex items-center space-x-2">
-                    <span className="bg-white text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <span className="bg-white text-[#3E98C7] text-xs font-bold px-3 py-1 rounded-full">
                       LEVEL 2
                     </span>
                     <button
                       onClick={() => setIsFilterOpen(!isFilterOpen)}
-                      className="p-1.5 bg-blue-700 rounded-full hover:bg-blue-900 transition-colors"
+                      className="p-1.5 bg-[#3E98C7] rounded-full hover:bg-blue-900 transition-colors"
                       aria-label="Toggle filters"
                     >
                       <FaFilter size={14} className="text-white" />

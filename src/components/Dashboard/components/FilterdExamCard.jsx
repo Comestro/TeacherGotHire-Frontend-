@@ -220,7 +220,7 @@ const ClassSelectionCard = () => {
         }}
       >
         <div className="flex items-start">
-          <div className="bg-teal-100 p-3 rounded-lg text-teal-600 mr-4 flex-shrink-0">
+          <div className="bg-[#E5F1F9] p-3 rounded-lg text-[#3E98C7] mr-4 flex-shrink-0">
             <FaLayerGroup size={18} />
           </div>
           <div>
@@ -241,7 +241,7 @@ const ClassSelectionCard = () => {
             {level?.level_code === 2.0 && interviewStatus && (
               <div className={`mt-2 flex items-center ${
                 interviewStatus === 'fulfilled' ? 'text-green-600' : 
-                interviewStatus === 'scheduled' ? 'text-blue-600' : 
+                interviewStatus === 'scheduled' ? 'text-teal-600' : 
                 'text-orange-600'
               }`}>
                 <span className="text-sm">
@@ -256,11 +256,11 @@ const ClassSelectionCard = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-8 px-4">
+    <div className="pt-8 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Exam Selection</h2>
+            <h2 className="text-2xl font-bold text-gray-600">Exam Selection</h2>
             <p className="text-gray-600 mt-1">Select your class category, subject and level to begin</p>
           </div>
           
@@ -269,7 +269,7 @@ const ClassSelectionCard = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleViewInterviews}
-              className="mt-4 md:mt-0 flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
+              className="mt-4 md:mt-0 flex items-center bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
               <span>View Interview Qualification</span>
               <FaAngleRight className="ml-2" />
@@ -281,35 +281,35 @@ const ClassSelectionCard = () => {
         <div className="mb-8">
           <div className="flex items-center">
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showCategoryPanel ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+              showCategoryPanel ? 'bg-[#3E98C7] text-white' : 'bg-blue-100 text-bg-[#3E98C7]'
             }`}>
               <span className="font-bold">1</span>
             </div>
             <div className={`flex-1 h-1 mx-2 ${
-              selectedCategory ? 'bg-blue-600' : 'bg-gray-200'
+              selectedCategory ? 'bg-[#3E98C7]' : 'bg-gray-200'
             }`}></div>
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showSubjectPanel ? 'bg-indigo-600 text-white' : selectedSubject ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-600'
+              showSubjectPanel ? 'bg-[#3E98C7] text-white' : selectedSubject ? 'bg-indigo-100 text-bg-[#3E98C7]' : 'bg-gray-200 text-gray-600'
             }`}>
               <span className="font-bold">2</span>
             </div>
             <div className={`flex-1 h-1 mx-2 ${
-              selectedSubject ? 'bg-indigo-600' : 'bg-gray-200'
+              selectedSubject ? 'bg-[#3E98C7]' : 'bg-gray-200'
             }`}></div>
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              showLevelPanel ? 'bg-teal-600 text-white' : selectedLevel ? 'bg-teal-100 text-teal-600' : 'bg-gray-200 text-gray-600'
+              showLevelPanel ? 'bg-[#3E98C7] text-white' : selectedLevel ? 'bg-teal-100 text-bg-[#3E98C7]' : 'bg-gray-200 text-gray-600'
             }`}>
               <span className="font-bold">3</span>
             </div>
           </div>
           <div className="flex justify-between mt-2 text-sm">
-            <div className={`w-1/3 text-center ${showCategoryPanel ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+            <div className={`w-1/3 text-center ${showCategoryPanel ? 'text-[#3E98C7] font-medium' : 'text-gray-500'}`}>
               Class Category
             </div>
-            <div className={`w-1/3 text-center ${showSubjectPanel ? 'text-indigo-600 font-medium' : 'text-gray-500'}`}>
+            <div className={`w-1/3 text-center ${showSubjectPanel ? 'text-[#3E98C7] font-medium' : 'text-gray-500'}`}>
               Subject
             </div>
-            <div className={`w-1/3 text-center ${showLevelPanel ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+            <div className={`w-1/3 text-center ${showLevelPanel ? 'text-[#3E98C7] font-medium' : 'text-gray-500'}`}>
               Level
             </div>
           </div>
@@ -324,10 +324,10 @@ const ClassSelectionCard = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8"
             >
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-blue-600">Select Class Category</h3>
+                <h3 className="text-xl font-bold text-[#3E98C7]">Select Class Category</h3>
                 <p className="text-gray-500 mt-1">Choose the class category you want to take an exam for</p>
               </div>
               
@@ -344,7 +344,7 @@ const ClassSelectionCard = () => {
                       background: selectedCategory?.id === category.id ? '#eff6ff' : 'white'
                     }}
                   >
-                    <div className="bg-blue-100 p-3 rounded-lg text-blue-600 mr-4">
+                    <div className="bg-blue-100 p-3 rounded-lg text-[#3E98C7] mr-4">
                       <FaGraduationCap size={20} />
                     </div>
                     <div>
@@ -374,16 +374,16 @@ const ClassSelectionCard = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              className="bg-white rounded-md shadow-sm border border-gray-100 p-6 mb-8"
             >
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-indigo-600">Select Subject</h3>
+                  <h3 className="text-xl font-bold text-[#3E98C7]">Select Subject</h3>
                   <p className="text-gray-500 mt-1">Choose a subject from {selectedCategory?.name || "your category"}</p>
                 </div>
                 <button
                   onClick={handleBackToCategories}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
+                  className="text-[#3E98C7] hover:text-indigo-700 text-sm font-medium flex items-center"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -417,7 +417,7 @@ const ClassSelectionCard = () => {
                       )}
                       
                       <div className="flex items-start">
-                        <div className="bg-indigo-100 p-3 rounded-lg text-indigo-600 mr-4 flex-shrink-0">
+                        <div className="bg-indigo-100 p-3 rounded-lg text-[#3E98C7] mr-4 flex-shrink-0">
                           <FaBookOpen size={18} />
                         </div>
                         <div>
@@ -454,16 +454,16 @@ const ClassSelectionCard = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8"
+              className="bg-white rounded-md shadow-sm border border-gray-100 p-6 mb-8"
             >
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-teal-600">Select Level</h3>
+                  <h3 className="text-xl font-bold text-[#3E98C7]">Select Level</h3>
                   <p className="text-gray-500 mt-1">Choose your exam level for {selectedSubject?.subject_name || ""}</p>
                 </div>
                 <button
                   onClick={handleBackToSubjects}
-                  className="text-teal-600 hover:text-teal-800 text-sm font-medium flex items-center"
+                  className="text-[#3E98C7] hover:text-teal-800 text-sm font-medium flex items-center"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -522,9 +522,9 @@ const ClassSelectionCard = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-md border-2 border-green-200 overflow-hidden"
+            className="bg-white rounded-md shadow-sm border-2 border-[#E5F1F9] overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-6 text-white">
+            <div className="bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] p-6 text-white">
               <div className="flex items-center">
                 <div className="bg-white/20 p-2 rounded-lg mr-4">
                   <FaCheckCircle className="text-white text-2xl" />
@@ -571,7 +571,7 @@ const ClassSelectionCard = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExam}
-                  className="px-8 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center"
+                  className="px-8 py-2.5 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center"
                 >
                   Start Exam
                   <FaArrowRight className="ml-2" />
@@ -590,7 +590,7 @@ const ClassSelectionCard = () => {
           >
             <div className="max-w-xl mx-auto">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaGraduationCap className="text-blue-600 text-2xl" />
+                <FaGraduationCap className="text-[#3E98C7] text-2xl" />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Start Your Assessment Journey</h3>
               <p className="text-gray-600">
