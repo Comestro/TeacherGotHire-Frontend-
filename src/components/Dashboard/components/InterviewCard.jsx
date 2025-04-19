@@ -14,7 +14,9 @@ import {
 
 const InterviewCard = () => {
   const dispatch = useDispatch();
-  const { interview, attempts } = useSelector((state) => state.examQues);
+  const interviewData = useSelector((state) => state.examQues.interview);
+  const interview = Array.isArray(interviewData) ? interviewData : [];
+  const attempts = useSelector((state) => state.examQues.attempts);
 
   // Get qualified exams for Level 2
   const filteredExams = attempts?.filter(
@@ -44,11 +46,11 @@ const InterviewCard = () => {
   ))].sort();
   
   // For interviews filtering
-  const interviewUniqueSubjects = [...new Set(interview?.map(item => 
+  const interviewUniqueSubjects = [...new Set(interview.map(item => 
     item?.subject?.subject_name
   ).filter(Boolean))].sort();
   
-  const interviewUniqueClassCategories = [...new Set(interview?.map(item => 
+  const interviewUniqueClassCategories = [...new Set(interview.map(item => 
     item?.class_category?.name
   ).filter(Boolean))].sort();
   
@@ -62,8 +64,9 @@ const InterviewCard = () => {
   };
   
   // Apply filters to interviews
-  const applyInterviewFilters = (interviews) => {
-    return interviews.filter(item => {
+  const applyInterviewFilters = (interviewsArray) => {
+    if (!Array.isArray(interviewsArray)) return [];
+    return interviewsArray.filter(item => {
       const subjectMatch = subjectFilter === "all" || item?.subject?.subject_name === subjectFilter;
       const classCategoryMatch = classCategoryFilter === "all" || item?.class_category?.name === classCategoryFilter;
       const statusMatch = statusFilter === "all" || item?.status === statusFilter;
@@ -85,7 +88,7 @@ const InterviewCard = () => {
   }, {});
   
   // Group interviews by subject
-  const filteredInterviews = applyInterviewFilters(interview || []);
+  const filteredInterviews = applyInterviewFilters(interview);
   const interviewSubjectGroups = filteredInterviews.reduce((groups, item) => {
     const subject = item?.subject?.subject_name || "Unknown Subject";
     if (!groups[subject]) {
@@ -213,7 +216,7 @@ const InterviewCard = () => {
       case 'scheduled':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'fulfilled':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-sky-100 text-sky-800 border-sky-200';
       case 'requested':
       case 'pending':
         return 'bg-amber-100 text-amber-800 border-amber-200';
@@ -241,26 +244,38 @@ const InterviewCard = () => {
     }
   };
 
+  // Format a level value for display - NEW HELPER FUNCTION
+  const formatLevel = (level) => {
+    if (level === null || level === undefined) return "Not specified";
+    // If it's a simple number or string, just return it
+    if (typeof level === 'number' || typeof level === 'string') return level;
+    // If it's an object with a name property, return that
+    if (level?.name) return level.name;
+    // Fallback: stringify but with a clean format
+    return `Level ${level?.level_code || ""}`;
+  };
+
   return (
-    <div className="w-full bg-gray-50 p-6 rounded-xl">
+    <div className="w-full bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
       <AnimatePresence>
         {notification && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`mb-6 p-4 rounded-lg ${
+            className={`mb-6 p-4 rounded-md border ${ // Use rounded-md and border
               notification.type === 'success' 
-                ? 'bg-green-100 border-l-4 border-green-500 text-green-700' 
-                : 'bg-red-100 border-l-4 border-red-500 text-red-700'
+                ? 'bg-green-50 border-green-300 text-green-800' 
+                : 'bg-red-50 border-red-300 text-red-800'
             }`}
+            role="alert" // Add role for accessibility
           >
             <div className="flex">
               <div className="flex-shrink-0">
                 {notification.type === 'success' ? (
-                  <FaCheck className="h-5 w-5 text-green-500" />
+                  <FaCheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" /> // Use CheckCircle
                 ) : (
-                  <FaExclamationCircle className="h-5 w-5 text-red-500" />
+                  <FaExclamationCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
                 )}
               </div>
               <div className="ml-3">
@@ -269,14 +284,16 @@ const InterviewCard = () => {
               <div className="ml-auto pl-3">
                 <div className="-mx-1.5 -my-1.5">
                   <button
+                    type="button" // Add type
                     onClick={() => setNotification(null)}
                     className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       notification.type === 'success' 
-                        ? 'text-green-500 hover:bg-green-200 focus:ring-green-600' 
-                        : 'text-red-500 hover:bg-red-200 focus:ring-red-600'
+                        ? 'text-green-500 hover:bg-green-100 focus:ring-green-600 focus:ring-offset-green-50' 
+                        : 'text-red-500 hover:bg-red-100 focus:ring-red-600 focus:ring-offset-red-50'
                     }`}
+                    aria-label="Dismiss notification" // Add aria-label
                   >
-                    <FaTimes className="h-4 w-4" />
+                    <FaTimes className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -287,42 +304,46 @@ const InterviewCard = () => {
       
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <FaVideo className="mr-3 text-indigo-600" />
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+          <FaVideo className="mr-2 sm:mr-3 text-cyan-600" />
           Interview Management
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 mt-1 text-sm sm:text-base">
           Schedule and manage your teaching qualification interviews
         </p>
       </div>
       
       {/* Tab Navigation */}
       <div className="mb-6 border-b border-gray-200">
-        <div className="flex space-x-8">
+        <div className="flex space-x-4 sm:space-x-8 overflow-x-auto"> {/* Allow horizontal scroll on small screens */}
           <button
             onClick={() => setActiveTab("qualified")}
-            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+            className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${ // Use whitespace-nowrap
               activeTab === "qualified"
-                ? "border-indigo-500 text-indigo-600"
+                ? "border-cyan-500 text-cyan-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
+            role="tab" // Add role
+            aria-selected={activeTab === "qualified"} // Add aria-selected
           >
-            <FaGraduationCap className={`mr-2 ${activeTab === "qualified" ? "text-indigo-500" : "text-gray-400"}`} />
+            <FaGraduationCap className={`mr-2 ${activeTab === "qualified" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
             Qualified Exams
           </button>
           
           <button
             onClick={() => setActiveTab("interviews")}
-            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+            className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${ // Use whitespace-nowrap
               activeTab === "interviews"
-                ? "border-indigo-500 text-indigo-600"
+                ? "border-cyan-500 text-cyan-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
+            role="tab" // Add role
+            aria-selected={activeTab === "interviews"} // Add aria-selected
           >
-            <FaCalendarAlt className={`mr-2 ${activeTab === "interviews" ? "text-indigo-500" : "text-gray-400"}`} />
+            <FaCalendarAlt className={`mr-2 ${activeTab === "interviews" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
             My Interviews
             {interview?.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800">
+              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-100 text-cyan-800">
                 {interview.length}
               </span>
             )}
@@ -331,32 +352,33 @@ const InterviewCard = () => {
       </div>
       
       {/* Filters Section */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200"> {/* Add background and border */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h2 className="text-lg font-medium text-gray-900 flex items-center">
-            <FaFilter className="text-sm mr-2 text-gray-500" />
+            <FaFilter className="text-sm mr-2 text-gray-500" aria-hidden="true" />
             Filters
           </h2>
           <button
             onClick={resetFilters}
-            className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center"
+            className="text-sm text-cyan-600 hover:text-cyan-800 flex items-center disabled:opacity-50 disabled:cursor-not-allowed" // Add disabled styles
             disabled={subjectFilter === "all" && classCategoryFilter === "all" && statusFilter === "all"}
           >
-            <FaTimes size={12} className="mr-1" />
+            <FaTimes size={12} className="mr-1" aria-hidden="true" />
             Reset All
           </button>
         </div>
         
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> {/* Adjust grid for responsiveness */}
           {/* Subject Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="subject-filter" className="block text-sm font-medium text-gray-700 mb-1"> {/* Add htmlFor */}
               Subject
             </label>
             <select
+              id="subject-filter" // Add id
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
             >
               <option value="all">All Subjects</option>
               {activeTab === "qualified" 
@@ -372,13 +394,14 @@ const InterviewCard = () => {
           
           {/* Class Category Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="class-category-filter" className="block text-sm font-medium text-gray-700 mb-1"> {/* Add htmlFor */}
               Class Category
             </label>
             <select
+              id="class-category-filter" // Add id
               value={classCategoryFilter}
               onChange={(e) => setClassCategoryFilter(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
             >
               <option value="all">All Classes</option>
               {activeTab === "qualified" 
@@ -394,14 +417,15 @@ const InterviewCard = () => {
           
           {/* Status Filter - Only for interviews tab */}
           {activeTab === "interviews" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="sm:col-span-2 lg:col-span-1"> {/* Adjust column span */}
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1"> {/* Add htmlFor */}
                 Status
               </label>
               <select
+                id="status-filter" // Add id
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
               >
                 <option value="all">All Statuses</option>
                 <option value="requested">Pending</option>
@@ -415,31 +439,32 @@ const InterviewCard = () => {
         
         {/* Active Filters */}
         {(subjectFilter !== "all" || classCategoryFilter !== "all" || statusFilter !== "all") && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-200 pt-3"> {/* Add border-t and pt */}
+            <span className="text-sm font-medium text-gray-700 mr-2">Active:</span>
             {subjectFilter !== "all" && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
                 Subject: {subjectFilter}
                 <button
-                  type="button"
+                  type="button" // Add type
                   onClick={() => setSubjectFilter("all")}
-                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:outline-none focus:bg-indigo-200 focus:text-indigo-500"
+                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-cyan-400 hover:bg-cyan-200 hover:text-cyan-500 focus:outline-none focus:bg-cyan-200 focus:text-cyan-500"
+                  aria-label={`Remove subject filter: ${subjectFilter}`} // Add aria-label
                 >
-                  <span className="sr-only">Remove subject filter</span>
-                  <FaTimes className="h-2 w-2" />
+                  <FaTimes className="h-2 w-2" aria-hidden="true" />
                 </button>
               </span>
             )}
             
             {classCategoryFilter !== "all" && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
                 Class: {classCategoryFilter}
                 <button
-                  type="button"
+                  type="button" // Add type
                   onClick={() => setClassCategoryFilter("all")}
-                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none focus:bg-blue-200 focus:text-blue-500"
+                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-sky-400 hover:bg-sky-200 hover:text-sky-500 focus:outline-none focus:bg-sky-200 focus:text-sky-500"
+                  aria-label={`Remove class category filter: ${classCategoryFilter}`} // Add aria-label
                 >
-                  <span className="sr-only">Remove class category filter</span>
-                  <FaTimes className="h-2 w-2" />
+                  <FaTimes className="h-2 w-2" aria-hidden="true" />
                 </button>
               </span>
             )}
@@ -448,12 +473,12 @@ const InterviewCard = () => {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Status: {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
                 <button
-                  type="button"
+                  type="button" // Add type
                   onClick={() => setStatusFilter("all")}
                   className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-green-400 hover:bg-green-200 hover:text-green-500 focus:outline-none focus:bg-green-200 focus:text-green-500"
+                  aria-label={`Remove status filter: ${statusFilter}`} // Add aria-label
                 >
-                  <span className="sr-only">Remove status filter</span>
-                  <FaTimes className="h-2 w-2" />
+                  <FaTimes className="h-2 w-2" aria-hidden="true" />
                 </button>
               </span>
             )}
@@ -466,10 +491,10 @@ const InterviewCard = () => {
         <div>
           {qualifiedSubjects.length > 0 ? (
             <>
-              <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden mb-6">
-                <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-                  <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                    <FaGraduationCap className="mr-2 text-indigo-600" />
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4"> {/* Adjust padding */}
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+                    <FaGraduationCap className="mr-2 text-cyan-600" aria-hidden="true" />
                     Qualified Exams
                   </h2>
                   <p className="mt-1 text-sm text-gray-500">
@@ -479,60 +504,61 @@ const InterviewCard = () => {
                 
                 <div className="divide-y divide-gray-200">
                   {qualifiedSubjects.map((subject, index) => (
-                    <div key={index} className="px-6 py-4">
+                    <div key={index} className="px-4 sm:px-6 py-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-md font-semibold text-gray-800 flex items-center">
-                          <FaBook className="mr-2 text-indigo-500" />
+                        <h3 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center">
+                          <FaBook className="mr-2 text-cyan-500" aria-hidden="true" />
                           {subject}
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
                           {subjectGroups[subject].length} {subjectGroups[subject].length === 1 ? 'exam' : 'exams'}
                         </span>
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-2"> {/* Adjust gap */}
                         {subjectGroups[subject].map((item, examIndex) => (
-                          <motion.div
+                          <motion.button // Change to button for accessibility
                             key={examIndex}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => handleExamSelect(item.exam.name)}
-                            className={`p-4 border rounded-xl cursor-pointer transition-all ${
+                            className={`p-3 sm:p-4 border rounded-lg text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
                               selectedExam === item.exam.name
-                                ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                                : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30'
+                                ? 'border-cyan-500 bg-cyan-50 focus:ring-cyan-500'
+                                : 'border-gray-200 hover:border-cyan-300 hover:bg-cyan-50/30 focus:ring-cyan-500'
                             }`}
+                            aria-pressed={selectedExam === item.exam.name} // Add aria-pressed
                           >
                             <div className="flex items-start">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${ // Adjust size
                                 selectedExam === item.exam.name
-                                  ? 'bg-indigo-100 text-indigo-600'
+                                  ? 'bg-cyan-100 text-cyan-600'
                                   : 'bg-gray-100 text-gray-600'
                               }`}>
-                                <FaGraduationCap className="text-lg" />
+                                <FaGraduationCap className="text-md sm:text-lg" aria-hidden="true" />
                               </div>
                               
                               <div className="ml-3 flex-1">
-                                <div className="font-medium text-gray-800">{item.exam.name}</div>
-                                <div className="text-sm text-gray-500 flex items-center mt-1">
-                                  <FaGraduationCap className="mr-1 text-xs" />
+                                <div className="font-medium text-sm sm:text-base text-gray-800">{item.exam.name}</div>
+                                <div className="text-xs sm:text-sm text-gray-500 flex items-center mt-1">
+                                  <FaGraduationCap className="mr-1 text-xs" aria-hidden="true" />
                                   {item.exam.class_category_name}
                                 </div>
                                 <div className="mt-2">
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                    <FaCheckCircle className="mr-1 text-xs" />
+                                    <FaCheckCircle className="mr-1 text-xs" aria-hidden="true" />
                                     Level 2 Qualified
                                   </span>
                                 </div>
                               </div>
                               
                               {selectedExam === item.exam.name && (
-                                <div className="bg-indigo-500 rounded-full p-1 ml-auto">
-                                  <FaCheck className="text-white text-xs" />
+                                <div className="bg-cyan-500 rounded-full p-1 ml-auto flex-shrink-0"> {/* Add flex-shrink-0 */}
+                                  <FaCheck className="text-white text-xs" aria-hidden="true" />
                                 </div>
                               )}
                             </div>
-                          </motion.div>
+                          </motion.button>
                         ))}
                       </div>
                     </div>
@@ -548,43 +574,46 @@ const InterviewCard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden mb-6"
+                    className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6" // Remove shadow
                   >
-                    <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-cyan-600 to-sky-600 text-white"> {/* Adjust padding */}
                       <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-medium flex items-center">
-                          <FaCalendarAlt className="mr-2" />
+                        <h2 className="text-base sm:text-lg font-medium flex items-center">
+                          <FaCalendarAlt className="mr-2" aria-hidden="true" />
                           Schedule Interview
                         </h2>
                         <button
+                          type="button" // Add type
                           onClick={() => setShowScheduleForm(false)}
-                          className="text-white hover:text-gray-200 p-1"
+                          className="text-cyan-100 hover:text-white p-1 rounded focus:outline-none focus:ring-2 focus:ring-white" // Adjust colors, add focus ring
+                          aria-label="Close scheduling form" // Add aria-label
                         >
-                          <FaTimes />
+                          <FaTimes aria-hidden="true" />
                         </button>
                       </div>
                     </div>
                     
-                    <form onSubmit={handleSubmit} className="p-6">
-                      <div className="mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                        <div className="flex">
-                          <FaChalkboardTeacher className="text-indigo-500 text-xl mr-3 mt-0.5" />
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-6"> {/* Adjust padding */}
+                      <div className="mb-4 sm:mb-6 bg-cyan-50 p-3 sm:p-4 rounded-lg border border-cyan-100"> {/* Adjust padding */}
+                        <div className="flex items-start"> {/* Align items start */}
+                          <FaChalkboardTeacher className="text-cyan-500 text-lg sm:text-xl mr-3 mt-1 flex-shrink-0" aria-hidden="true" /> {/* Adjust size, margin */}
                           <div>
-                            <h4 className="font-medium text-gray-800">Selected Exam:</h4>
-                            <p className="text-indigo-600 font-semibold">{selectedExam}</p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Select a date and time when you'll be available for a virtual interview.
+                            <h4 className="font-medium text-sm sm:text-base text-gray-800">Selected Exam:</h4>
+                            <p className="text-cyan-600 font-semibold text-sm sm:text-base">{selectedExam}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                              Select a date and time for your virtual interview.
                             </p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="mb-6">
-                        <label htmlFor="datetime" className="block text-sm font-medium text-gray-700 mb-1">
+                      <div className="mb-4 sm:mb-6"> {/* Adjust margin */}
+                        <label htmlFor="datetime-picker" className="block text-sm font-medium text-gray-700 mb-1"> {/* Add htmlFor */}
                           Interview Date & Time
                         </label>
                         <div className="relative">
                           <Flatpickr
+                            id="datetime-picker" // Add id
                             options={{
                               enableTime: true,
                               dateFormat: "Y-m-d H:i:S",
@@ -600,23 +629,23 @@ const InterviewCard = () => {
                                 .replace(/\.\d+Z/, "");
                               setSelectedDateTime(formatted);
                             }}
-                            className="block w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                            className="block w-full px-3 sm:px-4 py-2 sm:py-2.5 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" // Adjust padding, use rounded-md
                             placeholder="Select date and time"
                           />
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                            <FaCalendarAlt className="text-gray-400" />
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"> {/* Add pointer-events-none */}
+                            <FaCalendarAlt className="text-gray-400" aria-hidden="true" />
                           </div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"> {/* Adjust layout for mobile */}
                         <button
                           type="submit"
                           disabled={!selectedDateTime || isSubmitting}
-                          className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center ${
+                          className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-medium flex items-center justify-center transition-all duration-200 ${ // Adjust padding, use rounded-md
                             selectedDateTime && !isSubmitting
-                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all'
-                              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              ? 'bg-cyan-600 hover:bg-cyan-700 text-white border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500' // Remove shadow, add border, focus
+                              : 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300' // Adjust disabled style
                           }`}
                         >
                           {isSubmitting ? (
@@ -629,7 +658,7 @@ const InterviewCard = () => {
                             </>
                           ) : (
                             <>
-                              <FaCalendarCheck className="mr-2" />
+                              <FaCalendarCheck className="mr-2" aria-hidden="true" />
                               Schedule Interview
                             </>
                           )}
@@ -638,7 +667,7 @@ const InterviewCard = () => {
                         <button
                           type="button"
                           onClick={() => setShowScheduleForm(false)}
-                          className="ml-3 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Adjust padding, add focus
                         >
                           Cancel
                         </button>
@@ -649,28 +678,28 @@ const InterviewCard = () => {
               </AnimatePresence>
             </>
           ) : filteredExams.length > 0 ? (
-            <div className="bg-white shadow-sm rounded-xl border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaFilter className="text-indigo-500 text-xl" />
+            <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center"> {/* Adjust padding */}
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4"> {/* Adjust size */}
+                <FaFilter className="text-cyan-500 text-lg sm:text-xl" aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Results Found</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">No Results Found</h3>
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-4">
                 No exams match your current filter criteria. Try adjusting your filters or check if you have any qualified Level 2 exams.
               </p>
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 transition-colors"
+                className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-md hover:bg-cyan-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Add focus
               >
                 Reset Filters
               </button>
             </div>
           ) : (
-            <div className="bg-white shadow-sm rounded-xl border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaGraduationCap className="text-gray-400 text-xl" />
+            <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center"> {/* Adjust padding */}
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"> {/* Adjust size */}
+                <FaGraduationCap className="text-gray-400 text-lg sm:text-xl" aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Qualified Exams</h3>
-              <p className="text-gray-600 max-w-md mx-auto">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">No Qualified Exams</h3>
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto">
                 You need to pass Level 2 online exams to qualify for interview scheduling. Complete your assessments to become eligible.
               </p>
             </div>
@@ -682,10 +711,10 @@ const InterviewCard = () => {
       {activeTab === "interviews" && (
         <div>
           {interviewSubjects.length > 0 ? (
-            <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-              <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-                <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                  <FaCalendarAlt className="mr-2 text-indigo-600" />
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4"> {/* Adjust padding */}
+                <h2 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+                  <FaCalendarAlt className="mr-2 text-cyan-600" aria-hidden="true" />
                   My Interviews
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
@@ -695,13 +724,13 @@ const InterviewCard = () => {
               
               <div className="divide-y divide-gray-200">
                 {interviewSubjects.map((subject, index) => (
-                  <div key={index} className="px-6 py-4">
+                  <div key={index} className="px-4 sm:px-6 py-4"> {/* Adjust padding */}
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-md font-semibold text-gray-800 flex items-center">
-                        <FaBook className="mr-2 text-indigo-500" />
+                      <h3 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center">
+                        <FaBook className="mr-2 text-cyan-500" aria-hidden="true" />
                         {subject}
                       </h3>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
                         {interviewSubjectGroups[subject].length} {interviewSubjectGroups[subject].length === 1 ? 'interview' : 'interviews'}
                       </span>
                     </div>
@@ -713,24 +742,24 @@ const InterviewCard = () => {
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: interviewIndex * 0.05 }}
-                          className={`border rounded-xl overflow-hidden shadow-sm ${
+                          className={`border rounded-lg overflow-hidden ${ // Use rounded-lg
                             item.status === "scheduled" 
-                              ? "border-green-200" 
+                              ? "border-green-300" 
                               : item.status === "fulfilled"
-                                ? "border-blue-200"
+                                ? "border-sky-300"
                                 : item.status === "cancelled"
-                                  ? "border-red-200"
-                                  : "border-amber-200"
+                                  ? "border-red-300"
+                                  : "border-amber-300" // Use darker border for contrast
                           }`}
                         >
-                          {/* Status badge */}
+                          {/* Status badge - Keep as is, looks okay */}
                           <div className="relative overflow-hidden">
                             <div className="absolute top-0 right-0">
                               <div className={`text-xs font-bold py-1 px-3 rounded-bl-lg ${
                                 item.status === "scheduled"
                                   ? "bg-green-500 text-white"
                                   : item.status === "fulfilled"
-                                    ? "bg-blue-500 text-white"
+                                    ? "bg-sky-500 text-white"
                                     : item.status === "cancelled"
                                       ? "bg-red-500 text-white"
                                       : "bg-amber-500 text-white"
@@ -745,15 +774,15 @@ const InterviewCard = () => {
                               </div>
                             </div>
 
-                            <div className="p-6">
-                              <div className="flex">
-                                <div className={`p-3 rounded-xl ${
+                            <div className="p-4 sm:p-6"> {/* Adjust padding */}
+                              <div className="flex flex-col sm:flex-row"> {/* Stack on mobile */}
+                                <div className={`p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4 flex-shrink-0 ${ // Adjust margin, size
                                   item.status === "requested"
                                     ? "bg-amber-100 text-amber-600"
                                     : item.status === "scheduled"
                                       ? "bg-green-100 text-green-600"
                                       : item.status === "fulfilled"
-                                        ? "bg-blue-100 text-blue-600"
+                                        ? "bg-sky-100 text-sky-600"
                                         : "bg-red-100 text-red-600"
                                 }`}>
                                   {item.status === "requested" && <FaClock className="h-6 w-6" />}
@@ -762,13 +791,13 @@ const InterviewCard = () => {
                                   {item.status === "cancelled" && <FaTimes className="h-6 w-6" />}
                                 </div>
 
-                                <div className="ml-4 flex-1">
-                                  <div className="flex flex-wrap items-start justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-800">
+                                <div className="flex-1">
+                                  <div className="flex flex-col sm:flex-row flex-wrap items-start justify-between gap-2 mb-3"> {/* Adjust layout */}
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">
                                       {item?.class_category?.name} - {item?.subject?.subject_name}
                                     </h3>
                                     
-                                    <div className={`flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full mt-1 sm:mt-0 ${getStatusColor(item.status)}`}>
+                                    <div className={`flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full order-none sm:order-1 ${getStatusColor(item.status)}`}>
                                       {getStatusIcon(item.status)}
                                       <span>
                                         {item.status === "requested"
@@ -782,36 +811,38 @@ const InterviewCard = () => {
                                     </div>
                                   </div>
                                   
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-4"> {/* Adjust gap */}
                                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-start">
-                                      <FaCalendarAlt className="text-gray-500 mr-2 mt-0.5" />
+                                      <FaCalendarAlt className="text-gray-500 mr-2 mt-0.5 flex-shrink-0" aria-hidden="true" /> {/* Add flex-shrink-0 */}
                                       <div>
                                         <div className="text-xs text-gray-500 font-medium">Date & Time</div>
-                                        <div className="font-medium text-gray-800">{formatDate(item.time)}</div>
+                                        <div className="font-medium text-sm sm:text-base text-gray-800">{formatDate(item.time)}</div>
                                       </div>
                                     </div>
                                     
                                     {item?.level && (
                                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-start">
-                                        <FaLayerGroup className="text-gray-500 mr-2 mt-0.5" />
+                                        <FaLayerGroup className="text-gray-500 mr-2 mt-0.5 flex-shrink-0" aria-hidden="true" /> {/* Add flex-shrink-0 */}
                                         <div>
                                           <div className="text-xs text-gray-500 font-medium">Level</div>
-                                          <div className="font-medium text-gray-800">Level {item?.level}</div>
+                                          <div className="font-medium text-sm sm:text-base text-gray-800">
+                                            Level {formatLevel(item?.level)}
+                                          </div>
                                         </div>
                                       </div>
                                     )}
                                   </div>
                                   
                                   {/* Conditional actions based on status */}
-                                  <div className="mt-4 flex flex-wrap gap-3">
+                                  <div className="mt-4 flex flex-wrap gap-2 sm:gap-3"> {/* Adjust gap */}
                                     {item?.status === "scheduled" && item?.link && (
                                       <a
                                         href={item.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all text-sm"
+                                        className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md border border-transparent transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" // Adjust padding, add focus
                                       >
-                                        <FaVideo className="mr-2" />
+                                        <FaVideo className="mr-2" aria-hidden="true" />
                                         Join Interview
                                       </a>
                                     )}
@@ -819,9 +850,9 @@ const InterviewCard = () => {
                                     {item?.status === "scheduled" && (
                                       <button
                                         type="button"
-                                        className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all text-sm"
+                                        className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Adjust padding, add focus
                                       >
-                                        <FaCalendarAlt className="mr-2 text-gray-500" />
+                                        <FaCalendarAlt className="mr-2 text-gray-500" aria-hidden="true" />
                                         Add to Calendar
                                       </button>
                                     )}
@@ -829,16 +860,16 @@ const InterviewCard = () => {
                                     {item?.status === "fulfilled" && (
                                       <button
                                         type="button"
-                                        className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all text-sm"
+                                        className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-100 text-sky-700 font-medium rounded-md hover:bg-sky-200 transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500" // Adjust padding, add focus
                                       >
-                                        <FaClipboardList className="mr-2" />
+                                        <FaClipboardList className="mr-2" aria-hidden="true" />
                                         View Feedback
                                       </button>
                                     )}
                                     
                                     {item?.status === "requested" && (
-                                      <div className="flex items-center text-gray-600 text-sm">
-                                        <FaInfoCircle className="mr-2 text-amber-500" />
+                                      <div className="flex items-center text-gray-600 text-sm p-2 bg-amber-50 rounded-md border border-amber-200"> {/* Add background/border */}
+                                        <FaInfoCircle className="mr-2 text-amber-500 flex-shrink-0" aria-hidden="true" />
                                         Awaiting administrator approval
                                       </div>
                                     )}
@@ -854,34 +885,34 @@ const InterviewCard = () => {
                 ))}
               </div>
             </div>
-          ) : filteredInterviews.length === 0 && interview?.length > 0 ? (
-            <div className="bg-white shadow-sm rounded-xl border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaFilter className="text-indigo-500 text-xl" />
+          ) : filteredInterviews.length === 0 && interview.length > 0 ? (
+             <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center"> {/* Adjust padding */}
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4"> {/* Adjust size */}
+                <FaFilter className="text-cyan-500 text-lg sm:text-xl" aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Matching Interviews</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">No Matching Interviews</h3>
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-4">
                 No interviews match your current filter criteria. Try adjusting your filters.
               </p>
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 transition-colors"
+                className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-md hover:bg-cyan-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Add focus
               >
                 Reset Filters
               </button>
             </div>
           ) : (
-            <div className="bg-white shadow-sm rounded-xl border border-gray-200 p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaCalendarAlt className="text-gray-400 text-xl" />
+            <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center"> {/* Adjust padding */}
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"> {/* Adjust size */}
+                <FaCalendarAlt className="text-gray-400 text-lg sm:text-xl" aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">No Interviews Scheduled</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">No Interviews Scheduled</h3>
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-4">
                 You haven't scheduled any interviews yet. Select a qualified exam from the Qualified Exams tab to schedule your interview.
               </p>
               <button
                 onClick={() => setActiveTab("qualified")}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm"
+                className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Remove shadow, add focus
               >
                 Go to Qualified Exams
               </button>
