@@ -56,10 +56,8 @@ const Home = () => {
         draggable
       />
 
-      <div className="relative md:bg-contain bg-cover bg-no-repeat"
-      style={{
-        backgroundImage: `url('Home3.png')`,
-      }}>
+      <div className="relative md:bg-contain bg-cover bg-no-repeat md:bg-[url(Home3.png)]"
+      >
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="pt-40 pb-16 md:pt-40 md:pb-28">
