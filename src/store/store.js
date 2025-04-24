@@ -8,6 +8,7 @@ import jobProfileSlice from "../features/jobProfileSlice";
 import dashboardSlice from "../features/dashboardSlice";
 import examQuesSlice from "../features/examQuesSlice";
 import teacherSlice from "../features/teacherFilterSlice";
+import notificationSlice from "../features/notificationSlice";
 import examSlice from "../features/examSlice";
 import { apiSlice } from '../features/api/apiSlice';
 
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   examQues: examQuesSlice,
   teachers: teacherSlice,
   exam: examSlice,
+  notification: notificationSlice,
   [apiSlice.reducerPath]: apiSlice.reducer,
 });
 

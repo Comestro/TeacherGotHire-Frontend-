@@ -13,8 +13,10 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { showNotification } from "../../features/notificationSlice";
 
-export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
+export const TeacherEnquiry = ({ showModal, setShowModal }) => {
+  const dispatch = useDispatch();
   const apiClient = axios.create({
     baseURL: getApiUrl(), // Use the API URL from config service
     headers: {
@@ -190,6 +192,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal, sendToster }) => {
 
       if (response.status === 200 || response.status === 201) {
         toast.success("Application submitted successfully!");
+        dispatch(showNotification({
+          message: "Application submitted successfully!",
+          type: "success"
+        }))
         resetForm();
         setShowModal(false);
       }
