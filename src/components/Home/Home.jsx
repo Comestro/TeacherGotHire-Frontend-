@@ -19,23 +19,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 const Home = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const  notification = useSelector((state) => state.notification);
-
-  console.log(notification.show, "notification");
-
-  useEffect(() => {
-    if (notification.show) {
-      if (notification.type === 'success') {
-        toast.success(notification.message);
-      } else if (notification.type === 'error') {
-        toast.error(notification.message);
-      }
-      // Clear the notification after showing
-      dispatch(clearNotification());
-    }
-  }, [notification.show, notification.message, notification.type, dispatch]);
-
+ 
   const handleRoleSelection = (role) => {
     navigate(`/signup/${role}`);
   };
@@ -45,16 +29,6 @@ const Home = () => {
       <Helmet>
         <title>Home | PTPI</title>
       </Helmet>
-
-      <ToastContainer 
-        position="bottom-right"
-        autoClose={3000}
-        limit={1}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-      />
 
       <div className="relative md:bg-contain bg-cover bg-no-repeat md:bg-[url(Home3.png)]"
       >

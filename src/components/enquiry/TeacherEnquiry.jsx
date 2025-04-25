@@ -9,6 +9,8 @@ import {
   FiArrowLeft,
   FiMail,
   FiPhone,
+  FiCheckCircle,
+  FiSmile,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,7 +20,7 @@ import { showNotification } from "../../features/notificationSlice";
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const dispatch = useDispatch();
   const apiClient = axios.create({
-    baseURL: getApiUrl(), // Use the API URL from config service
+    baseURL: getApiUrl(),
     headers: {
       "Content-Type": "application/json",
     },
@@ -28,17 +30,41 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const [error, setError] = useState("");
   const [contactError, setContactError] = useState("");
 
-  console.log("subject in home page", subject);
-
   const [currentStep, setCurrentStep] = useState(0);
   const [teacherType, setTeacherType] = useState("");
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [pincode, setPincode] = useState("");
   const [email, setEmail] = useState("");
-  const [contact, setContact] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const modalRef = useRef(null);
+
+  // Pincode state
+  const [loadingPincode, setLoadingPincode] = useState(false);
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState("");
+  const [pincodeDetails, setPincodeDetails] = useState({
+    state: "",
+    city: "",
+  });
+
+  const teacherTypes = [
+    {
+      type: "school",
+      title: "School Teacher",
+      description: "Teaching in a school environment",
+    },
+    {
+      type: "coaching",
+      title: "Coaching Teacher",
+      description: "Teaching in a coaching institute",
+    },
+    {
+      type: "personal",
+      title: "Personal(Home) Tutor",
+      description: "Private one-on-one tutoring",
+    },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,21 +77,40 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setShowModal(false);
+        resetForm();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  // for pincode
-  const [loadingPincode, setLoadingPincode] = useState(false);
-  const [areas, setAreas] = useState([]);
-  const [selectedArea, setSelectedArea] = useState("");
-  const [pincodeDetails, setPincodeDetails] = useState({
-    state: "",
-    city: "",
-  });
+  const resetForm = () => {
+    setCurrentStep(0);
+    setTeacherType("");
+    setSelectedSubjects([]);
+    setSelectedClassCategory("");
+    setContactNumber("");
+    setPincode("");
+    setEmail("");
+    setAreas([]);
+    setSelectedArea("");
+    setPincodeDetails({ state: "", city: "" });
+  };
+
+  const handleSubjectToggle = (subject) => {
+    setSelectedSubjects((prev) =>
+      prev.includes(subject)
+        ? prev.filter((s) => s !== subject)
+        : [...prev, subject]
+    );
+  };
 
   const handlePincodeChange = async (e) => {
     const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -106,56 +151,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     }
   };
 
-  const teacherTypes = [
-    {
-      type: "school",
-      title: "School Teacher",
-      description: "Teaching in a school environment",
-    },
-    {
-      type: "coaching",
-      title: "Coaching Teacher",
-      description: "Teaching in a coaching institute",
-    },
-    {
-      type: "personal",
-      title: "Personal(Home) Tutor",
-      description: "Private one-on-one tutoring",
-    },
-  ];
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setShowModal(false);
-        resetForm();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const resetForm = () => {
-    setCurrentStep(0);
-    setTeacherType("");
-    setSelectedSubjects([]);
-    setSelectedClassCategory("");
-    setContactNumber("");
-    setPincode("");
-    setEmail("");
-    setAreas([]);
-    setSelectedArea("");
-    setPincodeDetails({ state: "", city: "" });
-  };
-
-  const handleSubjectToggle = (subject) => {
-    setSelectedSubjects((prev) =>
-      prev.includes(subject)
-        ? prev.filter((s) => s !== subject)
-        : [...prev, subject]
-    );
-  };
-
   const handleSubmit = async () => {
     if (!isValidEmail(email)) {
       toast.error("Please enter a valid email address");
@@ -169,7 +164,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
 
     const formData = {
       email: email,
-      contact: contactNumber, // Add contact number to the form data
+      contact: contactNumber,
       subject: selectedSubjects,
       teachertype: teacherType,
       pincode: pincode,
@@ -191,30 +186,28 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        toast.success("Application submitted successfully!");
-        dispatch(showNotification({
-          message: "Application submitted successfully!",
-          type: "success"
-        }))
-        resetForm();
-        setShowModal(false);
+        setCurrentStep(4);
+        dispatch(
+          showNotification({
+            message: "Application submitted successfully!",
+            type: "success",
+          })
+        );
       }
     } catch (error) {
       console.error("Submission error:", error);
-      if (
-        error.response?.data?.contact?.includes("This field must be unique.")
-      ) {
+      if (error.response?.data?.contact?.includes("This field must be unique.")) {
         const errorMsg = "This contact number is already registered";
         setContactError(errorMsg);
         toast.error(errorMsg);
       } else {
         toast.error(
-          error.response?.data?.message ||
-            "Submission failed. Please try again."
+          error.response?.data?.message || "Submission failed. Please try again."
         );
       }
     }
   };
+
   const isValidEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
@@ -238,14 +231,16 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
         <div className="fixed inset-0 bg-black/50 z-50">
           <ToastContainer />
           <div ref={modalRef} className="bg-white w-full h-full flex flex-col">
-            {/* Fixed Header */}
             <div className="sticky top-0 bg-white border-b z-20 shadow-sm">
               <div className="flex justify-between items-center p-4">
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Teacher Enquiry
                 </h2>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    resetForm();
+                  }}
                   className="text-gray-500 hover:text-gray-700 p-2 transition-colors"
                 >
                   <FiX size={28} />
@@ -253,12 +248,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
               </div>
             </div>
 
-            {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto">
-                <StepIndicator />
+                {currentStep < 4 && <StepIndicator />}
 
-                {/* Step Content Container */}
                 <div className="relative min-h-[400px] mt-10 md:mt-5">
                   {/* Step 0: Teacher Type Selection */}
                   {currentStep === 0 && (
@@ -297,8 +290,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                       <h3 className="text-lg font-medium mb-4">
                         Select Subjects
                       </h3>
-                      
-                      {/* Add Class Category Dropdown */}
                       <div className="mb-6">
                         <label className="block text-sm font-medium mb-2 text-gray-600">
                           Select Class Category
@@ -309,22 +300,25 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
                           <option value="">Select Class Category</option>
-                          {subject && subject.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
+                          {subject &&
+                            subject.map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
                         </select>
                       </div>
-
-                      {/* Show subjects only if class category is selected */}
                       <div className="mb-5 max-h-[350px] overflow-y-auto">
-                        {subject && selectedClassCategory && 
+                        {subject &&
+                          selectedClassCategory &&
                           subject
-                            .filter(category => category.id === parseInt(selectedClassCategory))
+                            .filter(
+                              (category) =>
+                                category.id === parseInt(selectedClassCategory)
+                            )
                             .map((category) => {
-                              if (!category.subjects || category.subjects.length === 0) return null;
-
+                              if (!category.subjects || category.subjects.length === 0)
+                                return null;
                               return (
                                 <div key={category.id} className="mb-6">
                                   <h4 className="text-sm font-medium mb-3 text-gray-600">
@@ -352,18 +346,20 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                   </div>
                                 </div>
                               );
-                            })
-                        }
-                        
-                        {selectedClassCategory && subject
-                          .filter(category => category.id === parseInt(selectedClassCategory))
-                          .some(category => !category.subjects?.length) && (
-                          <p className="text-gray-500 text-center py-4">
-                            No subjects available for this class category
-                          </p>
-                        )}
+                            })}
+                        {selectedClassCategory &&
+                          subject &&
+                          subject
+                            .filter(
+                              (category) =>
+                                category.id === parseInt(selectedClassCategory)
+                            )
+                            .some((category) => !category.subjects?.length) && (
+                            <p className="text-gray-500 text-center py-4">
+                              No subjects available for this class category
+                            </p>
+                          )}
                       </div>
-
                       <div className="flex justify-between px-2">
                         <button
                           onClick={() => {
@@ -414,7 +410,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                             )}
                           </div>
                         </div>
-
                         {pincodeDetails.state && (
                           <div className="bg-gray-50 p-4 rounded-lg">
                             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -425,15 +420,12 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-600">
-                                  District
-                                </p>
+                                <p className="text-sm text-gray-600">District</p>
                                 <p className="font-medium">
                                   {pincodeDetails.city}
                                 </p>
                               </div>
                             </div>
-
                             {areas.length > 0 && (
                               <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-600">
@@ -441,9 +433,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                 </label>
                                 <select
                                   value={selectedArea}
-                                  onChange={(e) =>
-                                    setSelectedArea(e.target.value)
-                                  }
+                                  onChange={(e) => setSelectedArea(e.target.value)}
                                   className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 >
                                   <option value="">Select area</option>
@@ -498,12 +488,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                               value={contactNumber}
                               onChange={(e) => {
                                 setContactNumber(e.target.value);
-                                setContactError(""); // Clear error when user types
+                                setContactError("");
                               }}
                               className={`w-full pl-10 pr-4 py-3 border ${
-                                contactError
-                                  ? "border-red-500"
-                                  : "border-gray-200"
+                                contactError ? "border-red-500" : "border-gray-200"
                               } rounded-lg focus:outline-none focus:ring-2 ${
                                 contactError
                                   ? "focus:ring-red-500"
@@ -518,7 +506,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                             </p>
                           )}
                         </div>
-
                         <div>
                           <label className="block text-sm font-medium mb-2 text-gray-600">
                             Email Address
@@ -543,23 +530,43 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           <FiArrowLeft className="mr-2" /> Back
                         </button>
                         <button
-                          onClick={() => {
-                            if (!isValidEmail(email)) {
-                              toast.error("Please enter a valid email address");
-                              return;
-                            }
-                            if (!contactNumber) {
-                              toast.error(
-                                "Please enter a valid contact number"
-                              );
-                              return;
-                            }
-                            handleSubmit();
-                          }}
+                          onClick={handleSubmit}
                           className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
                         >
                           Send Request
                         </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Success Screen */}
+                  {currentStep === 4 && (
+                    <div className="animate-fade-in">
+                      <div className="text-center py-10 px-4">
+                        <div className="mb-8">
+                          {/* <FiCheckCircle className="text-teal-500 text-6xl mx-auto mb-4" /> */}
+                          <FiSmile className="text-yellow-400 text-5xl mx-auto animate-pulse" />
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-4">
+                          🎉 Success! You're All Set!
+                        </h3>
+                        <p className="text-gray-600 mb-6 text-lg">
+                          Thank you for your submission! Our team will contact you
+                          within 24 hours.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setShowModal(false);
+                            resetForm();
+                          }}
+                          className="bg-teal-500 text-white px-8 py-3 rounded-lg hover:bg-teal-600 transition-colors flex items-center mx-auto"
+                        >
+                          <FiCheck className="mr-2" />
+                          Close Window
+                        </button>
+                        <p className="mt-6 text-sm text-gray-500">
+                          Check your email for confirmation details
+                        </p>
                       </div>
                     </div>
                   )}
@@ -569,45 +576,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
           </div>
         </div>
       )}
-
-      {/* Add these styles */}
-      <style jsx>{`
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-in;
-        }
-
-        .animate-slide-in {
-          animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes slideIn {
-          from {
-            transform: translateX(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-
-        .btn-primary {
-          @apply bg-teal-600 text-white px-6 py-2.5 rounded-lg hover:bg-teal-700 transition-colors flex items-center;
-        }
-
-        .btn-secondary {
-          @apply text-gray-600 hover:text-gray-800 transition-colors flex items-center;
-        }
-      `}</style>
     </div>
   );
 };
