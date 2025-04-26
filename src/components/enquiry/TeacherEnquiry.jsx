@@ -196,13 +196,16 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      if (error.response?.data?.contact?.includes("This field must be unique.")) {
+      if (
+        error.response?.data?.contact?.includes("This field must be unique.")
+      ) {
         const errorMsg = "This contact number is already registered";
         setContactError(errorMsg);
         toast.error(errorMsg);
       } else {
         toast.error(
-          error.response?.data?.message || "Submission failed. Please try again."
+          error.response?.data?.message ||
+            "Submission failed. Please try again."
         );
       }
     }
@@ -296,7 +299,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         </label>
                         <select
                           value={selectedClassCategory}
-                          onChange={(e) => setSelectedClassCategory(e.target.value)}
+                          onChange={(e) =>
+                            setSelectedClassCategory(e.target.value)
+                          }
                           className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
                           <option value="">Select Class Category</option>
@@ -317,7 +322,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                 category.id === parseInt(selectedClassCategory)
                             )
                             .map((category) => {
-                              if (!category.subjects || category.subjects.length === 0)
+                              if (
+                                !category.subjects ||
+                                category.subjects.length === 0
+                              )
                                 return null;
                               return (
                                 <div key={category.id} className="mb-6">
@@ -328,7 +336,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                     {category.subjects.map((subject) => (
                                       <button
                                         key={subject.id}
-                                        onClick={() => handleSubjectToggle(subject.id)}
+                                        onClick={() =>
+                                          handleSubjectToggle(subject.id)
+                                        }
                                         className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                                           selectedSubjects.includes(subject.id)
                                             ? "border-teal-500 bg-teal-50"
@@ -338,7 +348,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                         <span className="text-sm">
                                           {subject.subject_name}
                                         </span>
-                                        {selectedSubjects.includes(subject.id) && (
+                                        {selectedSubjects.includes(
+                                          subject.id
+                                        ) && (
                                           <FiCheck className="text-teal-500" />
                                         )}
                                       </button>
@@ -374,7 +386,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         <button
                           onClick={() => setCurrentStep(2)}
                           className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
-                          disabled={!selectedSubjects.length || !selectedClassCategory}
+                          disabled={
+                            !selectedSubjects.length || !selectedClassCategory
+                          }
                         >
                           Continue
                         </button>
@@ -420,7 +434,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-sm text-gray-600">District</p>
+                                <p className="text-sm text-gray-600">
+                                  District
+                                </p>
                                 <p className="font-medium">
                                   {pincodeDetails.city}
                                 </p>
@@ -433,7 +449,9 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                 </label>
                                 <select
                                   value={selectedArea}
-                                  onChange={(e) => setSelectedArea(e.target.value)}
+                                  onChange={(e) =>
+                                    setSelectedArea(e.target.value)
+                                  }
                                   className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 >
                                   <option value="">Select area</option>
@@ -477,32 +495,34 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         Contact Information
                       </h3>
                       <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-600">
-                            Contact Number
-                          </label>
-                          <div className="relative">
-                            <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="tel"
-                              value={contactNumber}
-                              onChange={(e) => {
-                                setContactNumber(e.target.value);
-                                setContactError("");
-                              }}
-                              className={`w-full pl-10 pr-4 py-3 border ${
-                                contactError ? "border-red-500" : "border-gray-200"
-                              } rounded-lg focus:outline-none focus:ring-2 ${
-                                contactError
-                                  ? "focus:ring-red-500"
-                                  : "focus:ring-teal-500"
-                              }`}
-                              placeholder="Enter phone number"
-                            />
-                          </div>
-                          {contactError && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {contactError}
+                        <div className="relative">
+                          <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="tel"
+                            value={contactNumber}
+                            onChange={(e) => {
+                              // Only allow numbers and limit to 10 digits
+                              const value = e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 10);
+                              setContactNumber(value);
+                              setContactError("");
+                            }}
+                            maxLength="10"
+                            className={`w-full pl-10 pr-4 py-3 border ${
+                              contactError
+                                ? "border-red-500"
+                                : "border-gray-200"
+                            } rounded-lg focus:outline-none focus:ring-2 ${
+                              contactError
+                                ? "focus:ring-red-500"
+                                : "focus:ring-teal-500"
+                            }`}
+                            placeholder="Enter 10 digit phone number"
+                          />
+                          {contactNumber && contactNumber.length < 10 && (
+                            <p className="text-yellow-600 text-sm mt-1">
+                              Please enter a 10 digit phone number
                             </p>
                           )}
                         </div>
@@ -551,8 +571,8 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           🎉 Success! You're All Set!
                         </h3>
                         <p className="text-gray-600 mb-6 text-lg">
-                          Thank you for your submission! Our team will contact you
-                          within 24 hours.
+                          Thank you for your submission! Our team will contact
+                          you within 24 hours.
                         </p>
                         <button
                           onClick={() => {
