@@ -11,11 +11,18 @@ import {
   FiPhone,
   FiCheckCircle,
   FiSmile,
+  FiMessageSquare,
+  FiBriefcase,
+  FiBookmark,
+  FiStar,
+  FiUser,
+  FiEye,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { showNotification } from "../../features/notificationSlice";
+import { fetchTeachers } from "../../features/teacherFilterSlice";
 
 export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const dispatch = useDispatch();
@@ -48,6 +55,11 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     city: "",
   });
 
+  // Teacher search state
+  const [teachers, setTeachers] = useState([]);
+  const [teachersLoading, setTeachersLoading] = useState(false);
+  const [teachersError, setTeachersError] = useState("");
+
   const teacherTypes = [
     {
       type: "school",
@@ -71,6 +83,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       try {
         const response = await apiClient.get("/api/public/classcategory/");
         setSubject(response.data);
+        console.log("Class category and subject:", response.data);
         setLoading(false);
       } catch (error) {
         setError(error.message);
@@ -102,6 +115,8 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     setAreas([]);
     setSelectedArea("");
     setPincodeDetails({ state: "", city: "" });
+    setTeachers([]);
+    setTeachersError("");
   };
 
   const handleSubjectToggle = (subject) => {
@@ -150,6 +165,46 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       setPincodeDetails({ state: "", city: "" });
     }
   };
+  const fetchTeachersData = async () => {
+    setTeachersLoading(true);
+    setTeachersError("");
+    try {
+      // Find the class category name
+      const classCategory = subject.find(
+        (cat) => cat.id === parseInt(selectedClassCategory)
+      );
+      const classCategoryName = classCategory ? classCategory.name : "";
+
+      // Find the subject names
+      const subjectNames = selectedSubjects
+        .map((subjectId) => {
+          for (const category of subject) {
+            const subject = category.subjects.find(
+              (subj) => subj.id === subjectId
+            );
+            if (subject) return subject.subject_name;
+          }
+          return null;
+        })
+        .filter((name) => name)
+        .join(",");
+
+      const filters = {
+        class_category_name: classCategoryName,
+        subject_names: subjectNames,
+        pincode: pincode,
+        area: selectedArea || undefined,
+      };
+
+      const result = await dispatch(fetchTeachers(filters)).unwrap();
+      setTeachers(result);
+      setTeachersLoading(false);
+    } catch (error) {
+      setTeachersError(error);
+      toast.error(error || "Failed to fetch teachers");
+      setTeachersLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!isValidEmail(email)) {
@@ -186,7 +241,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        setCurrentStep(4);
+        setCurrentStep(5);
         dispatch(
           showNotification({
             message: "Application submitted successfully!",
@@ -217,7 +272,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
 
   const StepIndicator = () => (
     <div className="flex justify-center mb-4">
-      {[0, 1, 2, 3].map((step) => (
+      {[0, 1, 2, 3, 4].map((step) => (
         <div
           key={step}
           className={`w-3 h-3 rounded-full mx-1 transition-colors ${
@@ -253,7 +308,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-3xl mx-auto">
-                {currentStep < 4 && <StepIndicator />}
+                {currentStep < 5 && <StepIndicator />}
 
                 <div className="relative min-h-[400px] mt-10 md:mt-5">
                   {/* Step 0: Teacher Type Selection */}
@@ -474,7 +529,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           <FiArrowLeft className="mr-2" /> Back
                         </button>
                         <button
-                          onClick={() => setCurrentStep(3)}
+                          onClick={() => {
+                            fetchTeachersData();
+                            setCurrentStep(3);
+                          }}
                           disabled={
                             pincode.length !== 6 ||
                             loadingPincode ||
@@ -482,14 +540,205 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           }
                           className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
                         >
-                          Continue
+                          Search Teachers
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* Step 3: Contact Information */}
+                  {/* Step 3: Display Teachers */}
                   {currentStep === 3 && (
+                    <div className="animate-slide-in">
+                      <h3 className="text-lg font-medium mb-6">
+                        Available Teachers
+                      </h3>
+                      {teachersLoading && (
+                        <div className="text-center py-10">
+                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-500 mx-auto"></div>
+                          <p className="text-gray-600 mt-4">
+                            Loading teachers...
+                          </p>
+                        </div>
+                      )}
+                      {teachersError && !teachersLoading && (
+                        <div className="text-center py-10">
+                          <p className="text-red-500 mb-4">{teachersError}</p>
+                          <button
+                            onClick={fetchTeachersData}
+                            className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+                      {!teachersLoading &&
+                        !teachersError &&
+                        teachers.length === 0 && (
+                          <div className="text-center py-10">
+                            <p className="text-gray-600 mb-4">
+                              No teachers found for the selected criteria.
+                            </p>
+                            <button
+                              onClick={() => setCurrentStep(2)}
+                              className="text-teal-500 hover:text-teal-700 flex items-center mx-auto"
+                            >
+                              <FiArrowLeft className="mr-2" /> Change Location
+                            </button>
+                          </div>
+                        )}
+                      {!teachersLoading &&
+                        !teachersError &&
+                        teachers.length > 0 && (
+                          <div
+                            className="space-y-4 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+                            style={{
+                              overflowX: "hidden",
+                              msOverflowStyle: "none",
+                              scrollbarWidth: "thin",
+                            }}
+                          >
+                            {teachers.map((teacher) => {
+                              const fullName = `${teacher.Fname} ${teacher.Lname}`;
+                              const address =
+                                teacher.teachersaddress.find(
+                                  (addr) => addr.address_type === "current"
+                                ) ||
+                                teacher.teachersaddress.find(
+                                  (addr) => addr.address_type === "permanent"
+                                );
+                              const location = address
+                                ? `${address.area ? address.area + ", " : ""}${
+                                    address.postoffice
+                                  }, ${address.district}, ${address.state}`
+                                : "N/A";
+                              const subjects =
+                                teacher.preferences[0]?.prefered_subject
+                                  ?.map((subj) => subj.subject_name)
+                                  .join(", ") || "N/A";
+                              const roles =
+                                teacher.preferences[0]?.job_role
+                                  ?.map((role) => role.jobrole_name)
+                                  .join(", ") || "N/A";
+
+                              return (
+                                <div
+                                  key={teacher.id}
+                                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 w-full"
+                                >
+                                  {/* Header Section */}
+                                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                    {/* Profile Icon */}
+                                    <div className="flex items-center sm:items-start gap-4">
+                                      <div className="bg-teal-100 p-3 rounded-lg shrink-0">
+                                        <FiUser className="text-2xl text-teal-600" />
+                                      </div>
+
+                                      {/* Name and Rating */}
+                                      <div className="flex-1">
+                                        <h3 className="text-lg font-semibold mb-1">
+                                          {fullName}
+                                        </h3>
+                                        {teacher.total_marks > 0 && (
+                                          <div className="flex items-center text-amber-600">
+                                            <FiStar className="mr-1" />
+                                            <span className="text-sm font-medium">
+                                              Rating: {teacher.total_marks}/5
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Bookmark Icon */}
+                                      <button className="text-gray-400 hover:text-teal-600 transition-colors">
+                                        <FiBookmark className="text-xl" />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Details Grid */}
+                                  <div className="space-y-3 mb-4">
+                                    {/* Subjects */}
+                                    <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
+                                      <FiBook className="text-teal-600 text-lg mt-0.5" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-gray-500">
+                                          Subjects
+                                        </p>
+                                        <p className="font-medium text-gray-900 break-words">
+                                          {subjects}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Roles */}
+                                    <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
+                                      <FiBriefcase className="text-teal-600 text-lg mt-0.5" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-gray-500">
+                                          Roles
+                                        </p>
+                                        <p className="font-medium text-gray-900 break-words">
+                                          {roles}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
+                                      <FiMapPin className="text-teal-600 text-lg mt-0.5" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-gray-500">
+                                          Location
+                                        </p>
+                                        <p className="font-medium text-gray-900 break-words">
+                                          {location}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="border-t pt-4 mt-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                      <button className="flex items-center justify-center gap-2 bg-teal-50 text-teal-700 px-4 py-2.5 rounded-lg hover:bg-teal-100 transition-colors w-full">
+                                        <FiMessageSquare className="text-lg" />
+                                        <span>Message</span>
+                                      </button>
+                                      <button className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-lg hover:bg-teal-700 transition-colors w-full">
+                                        <FiPhone className="text-lg" />
+                                        <span>Contact Now</span>
+                                      </button>
+                                    </div>
+
+                                    <button className="flex items-center justify-center gap-2 text-teal-600 hover:text-teal-700 font-medium mt-3 w-full">
+                                      <FiEye className="text-lg" />
+                                      <span>View Full Profile</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      <div className="flex justify-between mt-5">
+                        <button
+                          onClick={() => setCurrentStep(2)}
+                          className="text-gray-600 hover:text-gray-800 flex items-center"
+                        >
+                          <FiArrowLeft className="mr-2" /> Back
+                        </button>
+                        <button
+                          onClick={() => setCurrentStep(4)}
+                          className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600"
+                        >
+                          Proceed to Contact
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Contact Information */}
+                  {currentStep === 4 && (
                     <div className="animate-slide-in">
                       <h3 className="text-lg font-medium mb-6">
                         Contact Information
@@ -501,7 +750,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                             type="tel"
                             value={contactNumber}
                             onChange={(e) => {
-                              // Only allow numbers and limit to 10 digits
                               const value = e.target.value
                                 .replace(/\D/g, "")
                                 .slice(0, 10);
@@ -544,7 +792,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                       </div>
                       <div className="flex justify-between mt-5">
                         <button
-                          onClick={() => setCurrentStep(2)}
+                          onClick={() => setCurrentStep(3)}
                           className="text-gray-600 hover:text-gray-800 flex items-center"
                         >
                           <FiArrowLeft className="mr-2" /> Back
@@ -559,12 +807,11 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                     </div>
                   )}
 
-                  {/* Step 4: Success Screen */}
-                  {currentStep === 4 && (
+                  {/* Step 5: Success Screen */}
+                  {currentStep === 5 && (
                     <div className="animate-fade-in">
                       <div className="text-center py-10 px-4">
                         <div className="mb-8">
-                          {/* <FiCheckCircle className="text-teal-500 text-6xl mx-auto mb-4" /> */}
                           <FiSmile className="text-yellow-400 text-5xl mx-auto animate-pulse" />
                         </div>
                         <h3 className="text-2xl font-semibold mb-4">

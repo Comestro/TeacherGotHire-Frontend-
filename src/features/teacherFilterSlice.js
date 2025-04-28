@@ -24,6 +24,7 @@ axiosInstance.interceptors.request.use(
 export const fetchTeachers = createAsyncThunk(
   "teachers/fetchTeachers",
   async (filters, { rejectWithValue }) => {
+    console.log("filter data in slice", filters);
     try {
       const response = await axiosInstance.get("/api/admin/teacher/", {
         params: filters,
