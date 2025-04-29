@@ -2,14 +2,12 @@ import axios from "axios";
 import { getApiUrl } from "../../store/configue";
 import { useState, useEffect, useRef } from "react";
 import {
-  FiX,
   FiBook,
   FiMapPin,
   FiCheck,
   FiArrowLeft,
   FiMail,
   FiPhone,
-  FiCheckCircle,
   FiSmile,
   FiMessageSquare,
   FiBriefcase,
@@ -18,15 +16,14 @@ import {
   FiUser,
   FiEye,
   FiSliders,
-  FiChevronUp,
-  FiChevronDown,
-  FiFilter,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { showNotification } from "../../features/notificationSlice";
 import { fetchTeachers } from "../../features/teacherFilterSlice";
+import TeacherFilterSidebar from "./components/TeacherFilterSidebar";
+import EnquiryHeader from "./components/EnquiryHeader";
 
 export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
   const dispatch = useDispatch();
@@ -325,19 +322,6 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
     setFilteredTeachers(filtered);
   };
 
-  const StepIndicator = () => (
-    <div className="flex justify-center mb-4">
-      {[0, 1, 2, 3, 4].map((step) => (
-        <div
-          key={step}
-          className={`w-3 h-3 rounded-full mx-1 transition-colors ${
-            step === currentStep ? "bg-teal-500" : "bg-gray-300"
-          }`}
-        />
-      ))}
-    </div>
-  );
-
   return (
     <div>
       {showModal && (
@@ -345,17 +329,11 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
           <ToastContainer />
           <div ref={modalRef} className="bg-white w-full h-full flex flex-col">
             <div className="sticky top-0 bg-white border-b z-20 shadow-sm">
-              <div className="flex justify-between items-center p-3">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  Teacher Enquiry
-                </h2>
-              </div>
+              <EnquiryHeader />
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="">
-                {/* {currentStep < 5 && <StepIndicator />} */}
-
                 <div className="relative min-h-[400px] mt-10 md:mt-5">
                   {/* Step 0: Teacher Type Selection */}
                   {currentStep === 0 && (
@@ -595,119 +573,41 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                   {/* Step 3: Display Teachers */}
                   {currentStep === 3 && (
                     <div className="animate-slide-in min-h-screen">
+                      {/* Mobile Header with Filter Button */}
+                      <div className="md:hidden sticky top-0 z-20 bg-white border-b px-4 py-3 flex justify-between items-center mb-4">
+                        <h3 className="font-medium">Available Teachers</h3>
+                        <button
+                          onClick={() => setShowFilters(true)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100"
+                        >
+                          <FiSliders className="text-teal-600" />
+                          <span>Filters</span>
+                        </button>
+                      </div>
+
                       <div className="flex flex-col md:flex-row gap-6">
-                        {/* Sidebar Filters */}
-                        <div className={`md:w-72 shrink-0 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden 
-  md:sticky md:top-4 self-start ${showFilters ? 'h-auto' : 'h-[60px]'}`}>
-                          <div 
-                            className="flex justify-between items-center p-4 border-b cursor-pointer bg-gray-50"
-                            onClick={() => setShowFilters(!showFilters)}
-                          >
-                            <div className="flex items-center gap-2">
-                              <FiSliders className="text-teal-600" />
-                              <h3 className="font-medium">Filter Options</h3>
-                            </div>
-                            <button>
-                              {showFilters ? <FiChevronUp /> : <FiChevronDown />}
-                            </button>
-                          </div>
-                  
-                          {showFilters && (
-                            <div className="p-4 space-y-6">
-                              {/* Class Category Filter */}
-                              <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-600">
-                                  Class Category
-                                </label>
-                                <select
-                                  value={filterClassCategory}
-                                  onChange={(e) => setFilterClassCategory(e.target.value)}
-                                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                >
-                                  <option value="">All Categories</option>
-                                  {subject && subject.map((category) => (
-                                    <option key={category.id} value={category.id}>
-                                      {category.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                  
-                              {/* Subjects Filter */}
-                              {filterClassCategory && (
-                                <div>
-                                  <label className="block text-sm font-medium mb-2 text-gray-600">
-                                    Subjects
-                                  </label>
-                                  <div className="max-h-40 overflow-y-auto border rounded-lg p-2">
-                                    {subject && subject
-                                      .filter(category => category.id === parseInt(filterClassCategory))
-                                      .map(category => (
-                                        category.subjects && category.subjects.map(subj => (
-                                          <div key={subj.id} className="mb-1">
-                                            <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                              <input
-                                                type="checkbox"
-                                                checked={filterSubjects.includes(subj.id)}
-                                                onChange={() => {
-                                                  if (filterSubjects.includes(subj.id)) {
-                                                    setFilterSubjects(prev => prev.filter(id => id !== subj.id));
-                                                  } else {
-                                                    setFilterSubjects(prev => [...prev, subj.id]);
-                                                  }
-                                                }}
-                                                className="rounded text-teal-500 focus:ring-teal-500"
-                                              />
-                                              {subj.subject_name}
-                                            </label>
-                                          </div>
-                                        ))
-                                      ))}
-                                  </div>
-                                </div>
-                              )}
-                  
-                              {/* Pincode Filter */}
-                              <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-600">
-                                  Pincode
-                                </label>
-                                <input
-                                  type="text"
-                                  value={filterPincode}
-                                  onChange={(e) => setFilterPincode(e.target.value)}
-                                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                  placeholder="Enter pincode"
-                                  maxLength="6"
-                                />
-                              </div>
-                  
-                              {/* Filter Buttons */}
-                              <div className="pt-4 space-y-2">
-                                <button
-                                  onClick={applyFilters}
-                                  className="w-full bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition-colors flex items-center justify-center"
-                                >
-                                  <FiFilter className="mr-2" />
-                                  Apply Filters
-                                </button>
-                                
-                                <button
-                                  onClick={() => {
-                                    setFilterClassCategory(selectedClassCategory);
-                                    setFilterSubjects(selectedSubjects);
-                                    setFilterPincode(pincode);
-                                    setFilteredTeachers(teachers);
-                                  }}
-                                  className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-                                >
-                                  Reset Filters
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                  
+                        {/* Filter Sidebar */}
+                        <TeacherFilterSidebar
+                          showFilters={showFilters}
+                          setShowFilters={setShowFilters}
+                          isMobile={window.innerWidth < 768}
+                          subject={subject}
+                          filterClassCategory={filterClassCategory}
+                          setFilterClassCategory={setFilterClassCategory}
+                          filterSubjects={filterSubjects}
+                          setFilterSubjects={setFilterSubjects}
+                          filterPincode={filterPincode}
+                          setFilterPincode={setFilterPincode}
+                          applyFilters={applyFilters}
+                          resetFilters={() => {
+                            setFilterClassCategory(selectedClassCategory);
+                            setFilterSubjects(selectedSubjects);
+                            setFilterPincode(pincode);
+                            setFilteredTeachers(teachers);
+                          }}
+                          onClose={() => setShowFilters(false)}
+                        />
+
                         {/* Teachers List */}
                         <div className="w-full">
                         {teachersLoading && (
