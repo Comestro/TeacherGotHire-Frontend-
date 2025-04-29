@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiMenu,
   FiX,
@@ -16,6 +16,7 @@ import { FaSignInAlt } from "react-icons/fa";
 
 const Navbar = ({ links }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -26,6 +27,12 @@ const Navbar = ({ links }) => {
   console.log("Role: ", role);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const navRef = useRef(null);
+
+  const handleTeacherSearch = () => {
+    navigate('/get-preferred-teacher');
+    setShowEnquiry(false); // Close enquiry if open
+    setIsMobileOpen(false); // Close mobile menu if open
+  };
 
   const hiddenPaths = ["/signin", "/signup/teacher"];
   const shouldHide = hiddenPaths.includes(location.pathname);
@@ -99,7 +106,7 @@ const Navbar = ({ links }) => {
 
           <div className="md:hidden">
             <button
-              onClick={() => setShowEnquiry(true)}
+              onClick={handleTeacherSearch}
               className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
                 duration-500 hover:bg-right-bottom hover:shadow-2xl px-3 py-2 rounded-xl font-semibold text-white
                 hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"
@@ -132,7 +139,8 @@ const Navbar = ({ links }) => {
           <div className="hidden md:flex items-center space-x-3">
             {!shouldHide && (
               <button
-                onClick={() => setShowEnquiry(true)}
+              onClick={handleTeacherSearch}
+                
                 className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
                 duration-500 hover:bg-right-bottom hover:shadow-2xl px-6 py-3 rounded-xl font-semibold text-white
                 hover:-translate-y-0.5 transform shadow-lg hover:shadow-teal-500/30"

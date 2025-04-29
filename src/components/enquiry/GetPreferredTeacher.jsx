@@ -574,7 +574,7 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                   {currentStep === 3 && (
                     <div className="animate-slide-in min-h-screen">
                       {/* Mobile Header with Filter Button */}
-                      <div className="md:hidden sticky top-0 z-20 bg-white border-b px-4 py-3 flex justify-between items-center mb-4">
+                      <div className="md:hidden sticky -top-9 z-20 bg-white border-b px-4 py-3 flex justify-between items-center mb-4">
                         <h3 className="font-medium">Available Teachers</h3>
                         <button
                           onClick={() => setShowFilters(true)}
@@ -586,7 +586,6 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                       </div>
 
                       <div className="flex flex-col md:flex-row gap-6">
-                        {/* Filter Sidebar */}
                         <TeacherFilterSidebar
                           showFilters={showFilters}
                           setShowFilters={setShowFilters}
