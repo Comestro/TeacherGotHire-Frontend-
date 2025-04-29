@@ -58,6 +58,7 @@ import ManageRecruiterEnquiry from "./admin/Manage-recruiter-enquiry/ManageRecru
 import ManageQuestionReport from "./admin/Manage-Question-Report/ManageQuestionReport";
 import ExamDetails from "./admin/Manage-exam/ExamDetails";
 import QuestionManagementPortal from "./components/SubjectWiseExam/QuestionManagementPortal";
+import { GetPreferredTeacher } from "./components/enquiry/GetPreferredTeacher";
 
 function App() {
   return (
@@ -71,10 +72,12 @@ function App() {
               <Route path="test" element={<Test />} />
 
               <Route path="contact" element={<ContactUs />} />
-              <Route path="exam-mode" element={<ExamMode />} />
+              <Route path="exam-mode" element={<ExamMode />} />  
             </Route>
+            <Route path="get-preferred-teacher" element={<GetPreferredTeacher />} />
             <Route path="signup/teacher" element={<SignUpPage />} />
             <Route path="signin" element={<Login />} />
+            
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route
               path="reset-password/:uid/:token"
