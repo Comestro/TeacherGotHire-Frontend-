@@ -93,6 +93,23 @@ export const createaccount = async (userDetails) => {
   }
 };
 
+export const verifyTeacherOtp = async ({ email, otp }) => {
+  try {
+    const response = await apiClient.post('https://api.ptpinstitute.com/api/verify_otp/', {
+      email,
+      otp
+    });
+
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+    }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'OTP verification failed';
+  }
+};
+
+
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);
   if (response && response.access_token) {
