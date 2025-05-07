@@ -4,7 +4,7 @@ import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { createaccount, verifyTeacherOtp } from "../services/authServices";
+import { createaccount, verifyTeacherOtp, resendTeacherOtp } from "../services/authServices";
 import { login } from "../services/authUtils";
 import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import Loader from "./Loader";
@@ -16,6 +16,37 @@ import "react-toastify/dist/ReactToastify.css";
 function SignUpPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const [timer, setTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+  const [showOTPForm, setShowOTPForm] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (showOTPForm && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer, showOTPForm]);
+
+  const handleResendOTP = async () => {
+    setLoading(true);
+    try {
+      await resendTeacherOtp(userEmail);
+      setTimer(30);
+      setCanResend(false);
+      toast.success('OTP resent successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -34,7 +65,7 @@ function SignUpPage() {
     number: false,
     special: false
   });
-  const [showOTPForm, setShowOTPForm] = useState(false);
+  
   const [userEmail, setUserEmail] = useState('');
   const [otp, setOtp] = useState('');
 
@@ -100,12 +131,21 @@ function SignUpPage() {
         toast.success("Account created! Please verify your email.");
         setUserEmail(email);
         setShowOTPForm(true);
+        setTimer(30); 
+        setCanResend(false); 
       }
     } catch (error) {
       const errorMessage = error.message || "Failed to create account";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOTPChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); 
+    if (value.length <= 6) {
+      setOtp(value);
     }
   };
 
@@ -131,22 +171,71 @@ function SignUpPage() {
               <Input
                 type="text"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={handleOTPChange}
                 className="w-full border-2 text-sm rounded-xl p-3 transition-colors border-gray-300 focus:border-teal-600"
-                placeholder="Enter OTP"
+                placeholder="Enter 6-digit OTP"
+                pattern="\d{6}"
+                maxLength={6}
+                inputMode="numeric"
                 required
               />
+              {otp && otp.length < 6 && (
+                <p className="mt-1 text-sm text-red-600">
+                  Please enter a 6-digit OTP
+                </p>
+              )}
             </div>
 
-            <Button
-              type="submit"
-              className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 ${
-                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-teal-700"
-              }`}
-              disabled={loading || !otp}
-            >
-              {loading ? "Verifying..." : "Verify OTP"}
-            </Button>
+            {/* Timer Display */}
+            <div className="text-center">
+              {timer > 0 && (
+                <p className="text-gray-600">
+                  Resend OTP in <span className="text-teal-600 font-medium">{timer}s</span>
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                type="submit"
+                className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 ${
+                  loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : "hover:bg-teal-700"
+                }`}
+                disabled={loading || otp.length !== 6}
+              >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </Button>
+
+              {canResend && (
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  className="w-full group relative px-4 py-3 rounded-xl overflow-hidden border-2 border-teal-500 hover:border-teal-600 transition-colors"
+                  disabled={loading}
+                >
+                  {/* Background Shine Effect */}
+                  <div className="absolute inset-0 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  
+                  {/* Button Content */}
+                  <div className="relative flex items-center justify-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-teal-600 group-hover:rotate-180 transition-transform duration-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    <span className="text-teal-600 font-medium">Resend OTP</span>
+                  </div>
+                </button>
+              )}
+            </div>
           </form>
           </div>
         </div>

@@ -109,6 +109,17 @@ export const verifyTeacherOtp = async ({ email, otp }) => {
   }
 };
 
+export const resendTeacherOtp = async (email) => {
+  try {
+    const response = await apiClient.post('https://api.ptpinstitute.com/api/resend_otp/', {
+      email: email
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Failed to resend OTP';
+  }
+};
+
 
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);
