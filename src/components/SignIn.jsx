@@ -180,20 +180,44 @@ function Login() {
       if (response.access_token) {
         toast.success('Account verified successfully!');
         
-        // Determine where to navigate based on user role
-        const role = localStorage.getItem("role");
-        if (role === "recruiter") {
-          navigate("/recruiter");
-        } else if (role === "teacher") {
-          navigate("/teacher");
-        } else {
-          // Try login again automatically
-          const password = getValues("password");
-          if (password) {
-            await login({ email: userEmail, password });
+        // Set showOTPForm to false to return to login form
+        setShowOTPForm(false);
+        setOtp('');
+        
+        // Store token if received
+        if (response.access_token) {
+          localStorage.setItem('access_token', response.access_token);
+          
+          // If role is also returned, store and navigate
+          if (response.role) {
+            localStorage.setItem('role', response.role);
+            
+            // Determine where to navigate based on user role
+            switch (response.role) {
+              case "recruiter":
+                navigate("/recruiter");
+                return;
+              case "teacher":
+                navigate("/teacher");
+                return;
+              case "centeruser":
+                navigate("/examcenter");
+                return;
+              case "questionuser":
+                navigate("/subject-expert");
+                return;
+              default:
+                navigate("/admin/dashboard");
+                return;
+            }
           }
-          navigate("/signin");
         }
+        
+        // If no navigation happened (no role or token), show login form with success message
+        toast.info('Please login with your credentials now', {
+          position: "top-right",
+          autoClose: 5000,
+        });
       }
     } catch (error) {
       toast.error(error.message || 'OTP verification failed');
