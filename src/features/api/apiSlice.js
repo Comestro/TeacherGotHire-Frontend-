@@ -4,7 +4,6 @@ import { getApiUrl } from "../../store/configue";
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: getApiUrl(),
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("access_token");
       if (token) {
@@ -28,8 +27,19 @@ export const apiSlice = createApi({
         return response;
       },
     }),
+    getJobsApplyDetails: builder.query({
+      query:()=>'/api/self/apply/',
+      transformResponse: (response) => {
+        console.log('Centers response from RTK Query:', response);
+        return response;
+      },
+    })
   }),
+  
+
+  
 });
 
+
 // Export the auto-generated hook
-export const { useGetCentersQuery } = apiSlice;
+export const { useGetCentersQuery,useGetJobsApplyDetailsQuery} = apiSlice;

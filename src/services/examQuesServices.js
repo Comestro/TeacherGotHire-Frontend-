@@ -85,9 +85,14 @@ export const fetchQuestion = async ({ exam_id, language }) => {
   }
 };
 
-export const Attempts = async () => {
+export const Attempts = async (params= {}) => {
   try {
-    const response = await apiClient.get(`/api/self/teacherexamresult/`);
+    const response = await apiClient.get(`/api/self/teacherexamresult/`,{
+      params: {  // axios will properly encode these
+        isqualified: params.isqualified,
+        level_code: params.level_code
+      }
+    });
     console.log("attempts result from services", response);
     return response.data;
   } catch (err) {

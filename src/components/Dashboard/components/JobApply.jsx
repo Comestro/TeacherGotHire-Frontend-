@@ -1,144 +1,207 @@
-
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { attemptsExam, postJobApply } from "../../../features/examQuesSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation"
-
-
+import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation";
+import { useGetJobsApplyDetailsQuery } from "../../../features/api/apiSlice";
 const JobApply = () => {
-
-  const [appliedJobs,setAppliedJobs] = useState("")
   const dispatch = useDispatch();
-  const { attempts,jobApply,error} = useSelector((state) => state.examQues);
-  console.log("error",error)
-  useEffect(() => {
-    dispatch(attemptsExam());
-  }, [dispatch]);
-
-  console.log("attempts",attempts);
-
-  const passedOfflineAttempt = attempts?.filter(
-    (attempt) =>
-    {
-      const isSecondLevelQualified = attempt?.exam?.level_code == 2 && attempt?.isqualified;
-      const hasInterviews = attempt.interviews && attempt.interviews.length > 0  && attempt.isqualified;;
-  
-  return isSecondLevelQualified || hasInterviews;
-    }
-     
+  const { attempts, interviews, error } = useSelector(
+    (state) => state.examQues
   );
+  const [appliedSubjects, setAppliedSubjects] = useState([]);
+  const [isqualified, setQualified] = useState("True");
+  const [levelCode, setLevelCode] = useState(2.5);
 
+  useEffect(() => {
+    dispatch(
+      attemptsExam({
+        isqualified: isqualified,
+        level_code: levelCode,
+      })
+    );
+  }, []);
+  const { data: jobApply, isLoading } = useGetJobsApplyDetailsQuery();
   console.log("jobApply",jobApply)
-  const convertToArray = (value) => (Array.isArray(value) ? value : [value]);
-
-  // Handle Notify Button Click
-  const handleNotify = async (subjectId, classCategoryId) => {
+  const passedOfflineAttempt = attempts || interviews;
+  const handleApply = async (subjectId, classCategoryId, subjectName) => {
     try {
-      const subject = convertToArray(subjectId);
-      const class_category = convertToArray(classCategoryId);
-      console.log("subject",subject);
-      console.log("class_category")
-      const response = await dispatch(postJobApply({ subject, class_category })).unwrap();
+      const response = await dispatch(
+        postJobApply({
+          subject: [subjectId],
+          class_category: [classCategoryId],
+        })
+      ).unwrap();
 
       if (response.status) {
-        setAppliedJobs((prev) => [...prev, { subjectId, classCategoryId }]); // Add to applied list
-        toast.success("You will be notified.");
+        setAppliedSubjects((prev) => [...prev, subjectId]);
+        toast.success(
+          <div>
+            <div className="font-bold">Application Successful!</div>
+            <div className="text-sm">You've applied for {subjectName}</div>
+          </div>,
+          {
+            position: "top-right",
+            className: "bg-green-50 text-green-800",
+          }
+        );
       }
     } catch (error) {
-      console.error("Error notifying:", error.code.response.data.error);
+      toast.error(
+        <div>
+          <div className="font-bold">Application Failed</div>
+          <div className="text-sm">
+            {error?.response?.data?.error || "Please try again"}
+          </div>
+        </div>,
+        {
+          position: "top-right",
+          className: "bg-red-50 text-red-800",
+        }
+      );
     }
   };
-
-  // Handle Cancel Button Click
-  const handleCancel = async (subjectId, classCategoryId) => {
-    try {
-      const subject = convertToArray(subjectId);
-      const class_category = convertToArray(classCategoryId);
-
-      const response = await dispatch(postJobApply({ subject, class_category })).unwrap();
-    } catch (error) {
-      console.error("Error canceling:", error);
-    }
-  };
-
   return (
-    <div className="p-6">
-      
+    <div className="p-6 max-w-6xl mx-auto">
       {passedOfflineAttempt && passedOfflineAttempt.length > 0 ? (
         <>
-          <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg border-l-4 border-green-500">
-            🎉 <strong>Congratulations!</strong> You are eligible for the Teacher Job Role.
-            Below are the subjects and their respective class categories.
-            Click <strong>"Notify"</strong> to be visible to recruiters or <strong>"Cancel"</strong> if you do not want to notify.
+          <div className="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 shadow-sm">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 text-blue-500 text-xl mr-3">📊</div>
+              <div>
+                <h3 className="font-bold text-lg mb-1">Your Exam Results</h3>
+                <p className="text-sm">
+                  Below are your qualified exams. You can apply separately for
+                  each subject.
+                </p>
+              </div>
+            </div>
           </div>
-          <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-3 px-6 text-left font-semibold text-gray-700">Subject Name</th>
-                <th className="py-3 px-6 text-left font-semibold text-gray-700">Class Category Name</th>
-                <th className="py-3 px-6 text-left font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {passedOfflineAttempt.map((attempt, index) => {
-                const subjectId = attempt.exam.subject_id;
-                const classCategoryId = attempt.exam.class_category_id;
-                const isApplied = jobApply?.data?.status
-                // const isApplied = jobApply?.data?.some(item => 
-                //   item.subject_id === subjectId && 
-                //   item.class_category_id === classCategoryId && 
-                //   item.status === "applied"
-                // );
-                return (
-                  <tr
-                    key={index}
-                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-colors`}
-                  >
-                    <td className="py-4 px-6 border-b border-gray-200">{attempt.exam.subject_name}</td>
-                    <td className="py-4 px-6 border-b border-gray-200">{attempt.exam.class_category_name}</td>
-                    <td className="py-4 px-6 border-b border-gray-200">
-                      {isApplied ? (
 
-                        <button
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                          onClick={() => handleCancel(subjectId, classCategoryId)}
-                        >
-                          Cancel
-                        </button>
-                      ) : (
-                        <button
-                          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                          onClick={() => handleNotify(subjectId, classCategoryId)}
-                        >
-                          Notify
-                        </button>
-                   
-                        
-                      )}
-                     
-                    </td>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subject
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Class
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Language
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                  
-                );
-              })}
-            </tbody>
-            {error && (
-                    <p className="text-red-600 text-center mb-4">{error}</p>
-                  )} 
-          </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {passedOfflineAttempt.map((attempt, index) => {
+                    const subjectId = attempt.exam.subject_id;
+                    const classCategoryId = attempt.exam.class_category_id;
+                    const subjectName = attempt.exam.subject_name;
+                    const className = attempt.exam.class_category_name;
+
+                    // Check if this subject is applied (status: true in response)
+                    const isApplied = jobApply?.some(item => {
+                      // Check if item has subjects array with matching subject
+                      const hasSubject = item.subject?.some?.(
+                        sub => sub.id === subjectId
+                      );
+                      
+                      // Check if item has class_categories array with matching category
+                      const hasClassCategory = item.class_category?.some?.(
+                        cat => cat.id === classCategoryId
+                      );
+                      
+                      return hasSubject && hasClassCategory && item.status === true;
+                    });
+                    return (
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {subjectName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {className}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {attempt.language}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            {attempt.calculate_percentage}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            {isApplied ? (
+                              <>
+                                <span className="text-green-600 font-medium">
+                                  Applied
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    handleApply(
+                                      // applicationData.id, // Use the application ID from response
+                                      subjectId,
+                                      classCategoryId,
+                                      subjectName
+                                    )
+                                  }
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleApply(
+                                    subjectId,
+                                    classCategoryId,
+                                    subjectName
+                                  )
+                                }
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                              >
+                                Apply
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       ) : (
-        <div className="p-4 bg-red-100 text-red-700 rounded-lg border-l-4 border-red-500">
-          ❌ <strong>Sorry!</strong> You are not eligible for the Teacher Job Role.
+        <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200 shadow-sm">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 text-yellow-500 text-xl mr-3">ℹ️</div>
+            <div>
+              <h3 className="font-bold text-lg mb-1">No Qualified Exams</h3>
+              <p className="text-sm">
+                You don't have any qualified exam results yet. Please complete
+                and pass the exams to apply.
+              </p>
+            </div>
+          </div>
         </div>
       )}
-
-       {passedOfflineAttempt?.length>0 && <JobPrefrenceLocation/> }
-      
+      {passedOfflineAttempt?.length > 0 && <JobPrefrenceLocation />}
     </div>
-    
   );
 };
 

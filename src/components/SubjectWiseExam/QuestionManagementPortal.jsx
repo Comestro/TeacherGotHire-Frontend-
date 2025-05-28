@@ -16,6 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader";
 import SubjectExpertHeader from "./components/SubjectExpertHeader";
 import { createQuestion, updateQuestion, getQuestions, deleteQuestion } from "../../services/adminManageExam";
+import { fetchLevel } from "../../services/examQuesServices";
 
 // Component to add at the top of your file after imports
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -89,8 +90,18 @@ const QuestionManagementPortal = () => {
   const dispatch = useDispatch();
   const { loading, setterExamSet } = useSelector((state) => state.examQues || {});
   const setterUser = useSelector((state) => state.examQues.setterInfo);
-  const levels = useSelector((state) => state.examQues.levels || []);
+  // const levels = useSelector((state) => state.examQues.levels || []);
+  const [levels, setLevel] = useState(null);
 
+useEffect(() => {
+  fetchLevel()
+    .then(data => {
+      setLevel(data);
+    })
+    .catch(error => {
+      console.error("Error fetching level:", error);
+    });
+}, []);
   console.log("Levels:", levels);
   // Update these console logs to avoid undefined errors
   useEffect(() => {
@@ -109,7 +120,7 @@ const QuestionManagementPortal = () => {
         // These thunks expect no parameters or just an empty object
         await dispatch(getExamSets());
         await dispatch(getSetterInfo());
-        await dispatch(getLevels());
+        // await dispatc(getLevels());
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to load data. Please try again.");
@@ -941,7 +952,7 @@ const QuestionManagementPortal = () => {
                         onChange={(e) => setExamSetFilterLevel(e.target.value)}
                       >
                         <option value="All">All Levels</option>
-                        {levels.map(level => (
+                        {levels?.map(level => (
                           <option key={level.id} value={level.id}>{level.name}</option>
                         ))}
                       </select>
@@ -1217,7 +1228,7 @@ const QuestionManagementPortal = () => {
                     className="w-full rounded-md border p-2 border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
                   >
                     <option value="">Select a Level</option>
-                    {levels.map((lev) => (
+                    {levels?.map((lev) => (
                       <option key={lev.id} value={lev.id}>
                         {lev.name}
                       </option>

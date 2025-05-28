@@ -199,9 +199,9 @@ export const postResult = createAsyncThunk(
 
 export const attemptsExam = createAsyncThunk(
   "attemptExam",
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const data = await Attempts();
+      const data = await Attempts(params);
       return data;
     } catch (error) {
       console.log("Error in getLevels:", error);
@@ -318,7 +318,7 @@ export const verifyPasscode = createAsyncThunk(
       const data = await VerifyPasscode({ exam_id, entered_passcode });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      console.log("Error verfiy:", error);
       let errorMessage = "An error occurred";
       if (error.response && error.response.data.error) {
         errorMessage = error.response.data.error;

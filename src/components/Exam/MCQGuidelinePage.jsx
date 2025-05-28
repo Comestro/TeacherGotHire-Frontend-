@@ -2,11 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllQues} from "../../features/examQuesSlice";
-import { getAllCenter } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
-import { getQuestionToExamSet } from "../../features/examQuesSlice";
-
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -25,12 +22,6 @@ const MCQGuidelinePage = () => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
-  useEffect(()=>{
-    console.log("seghjkljgfdzs")
-   dispatch(getAllCenter());
-   dispatch(getQuestionToExamSet());
-   console.log("seghjkljgfdzs")
-  },[])
 
   useEffect(() => {
     if (subjectName === "English") {

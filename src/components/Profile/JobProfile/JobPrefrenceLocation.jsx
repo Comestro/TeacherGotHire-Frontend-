@@ -59,6 +59,7 @@ const JobPrefrenceLocation = () => {
     dispatch(getJobPrefrence()); // Fetch job preferences from Redux store
   }, [dispatch]);
 
+
   const fetchjobrefrence = () => {
     dispatch(getJobPrefrence());
   };
