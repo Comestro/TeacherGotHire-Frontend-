@@ -369,7 +369,7 @@ const ManageQuestionManager = () => {
         },
         class_category: classCategories,
         subject: manager.subject.map(sub => sub.id),
-        status: updatedStatus
+        status: updatedStatus  // Make sure status is updated to match is_verified
       };
 
       const response = await updateAssignedUserManager(manager.id, payload);
@@ -378,7 +378,11 @@ const ManageQuestionManager = () => {
         setManagers(prev =>
           prev.map(m =>
             m.id === manager.id
-              ? { ...m, user: { ...m.user, is_verified: updatedStatus } }
+              ? { 
+                  ...m, 
+                  user: { ...m.user, is_verified: updatedStatus },
+                  status: updatedStatus  // Also update the top-level status
+                }
               : m
           )
         );
@@ -853,24 +857,29 @@ const ManageQuestionManager = () => {
                         sortable: true,
                         filterable: true,
                         type: 'boolean',
-                        renderCell: (params) => (
-                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
-                            <Chip
-                              label={params.value ? "Active" : "Inactive"}
-                              color={params.value ? "success" : "default"}
-                              size="small"
-                            />
-                            <Tooltip title={params.value ? "Deactivate" : "Activate"}>
-                              <Switch
-                                checked={params.value}
-                                onChange={() => handleToggleStatus(params.row.rawData)}
-                                color="success"
+                        renderCell: (params) => {
+                          // Use the status from the rawData object instead of just user.is_verified
+                          const isActive = params.row.rawData.user.is_verified && params.row.rawData.status;
+                          
+                          return (
+                            <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                              <Chip
+                                label={isActive ? "Active" : "Inactive"}
+                                color={isActive ? "success" : "default"}
                                 size="small"
-                                disabled={loadingAction}
                               />
-                            </Tooltip>
-                          </Box>
-                        ),
+                              <Tooltip title={isActive ? "Deactivate" : "Activate"}>
+                                <Switch
+                                  checked={isActive}
+                                  onChange={() => handleToggleStatus(params.row.rawData)}
+                                  color="success"
+                                  size="small"
+                                  disabled={loadingAction}
+                                />
+                              </Tooltip>
+                            </Box>
+                          );
+                        },
                       },
                       {
                         field: 'actions',
