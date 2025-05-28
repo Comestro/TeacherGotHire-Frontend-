@@ -356,7 +356,8 @@ const ManageQuestionManager = () => {
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
-      const updatedStatus = !manager.user.is_verified;
+      // Update both status indicators
+      const updatedStatus = !getManagerActiveStatus(manager);
 
       const classCategories = manager.class_category?.map(cat => cat.id) || [];
 
@@ -369,7 +370,7 @@ const ManageQuestionManager = () => {
         },
         class_category: classCategories,
         subject: manager.subject.map(sub => sub.id),
-        status: updatedStatus  // Make sure status is updated to match is_verified
+        status: updatedStatus
       };
 
       const response = await updateAssignedUserManager(manager.id, payload);
@@ -381,7 +382,7 @@ const ManageQuestionManager = () => {
               ? { 
                   ...m, 
                   user: { ...m.user, is_verified: updatedStatus },
-                  status: updatedStatus  // Also update the top-level status
+                  status: updatedStatus
                 }
               : m
           )
@@ -481,10 +482,12 @@ const ManageQuestionManager = () => {
         subject.subject_name.toLowerCase().includes(searchTermLower)
       );
 
+      // Use the combined status check for filtering
+      const managerStatus = getManagerActiveStatus(manager);
       const statusMatch =
         filterStatus === "" ||
-        (filterStatus === "active" && manager.user.is_verified) ||
-        (filterStatus === "inactive" && !manager.user.is_verified);
+        (filterStatus === "active" && managerStatus) ||
+        (filterStatus === "inactive" && !managerStatus);
 
       return (fullName.includes(searchTermLower) || emailMatch || subjectMatch) && statusMatch;
     });
@@ -582,13 +585,13 @@ const ManageQuestionManager = () => {
                     <Typography variant="body2" mr={1}>Status:</Typography>
                     <Chip
                       size="small"
-                      label={manager.user.is_verified ? "Active" : "Inactive"}
-                      color={manager.user.is_verified ? "success" : "default"}
+                      label={getManagerActiveStatus(manager) ? "Active" : "Inactive"}
+                      color={getManagerActiveStatus(manager) ? "success" : "default"}
                     />
                   </Box>
                   <Box>
                     <Switch
-                      checked={manager.user.is_verified}
+                      checked={getManagerActiveStatus(manager)}
                       onChange={() => handleToggleStatus(manager)}
                       color="success"
                       size="small"
@@ -649,6 +652,12 @@ const ManageQuestionManager = () => {
         />
       </GridToolbarContainer>
     );
+  };
+
+  // 1. First fix - update the manager status display logic consistently:
+  // Create a helper function to determine the actual status
+  const getManagerActiveStatus = (manager) => {
+    return manager.user.is_verified && manager.status;
   };
 
   return (
@@ -1232,8 +1241,8 @@ const ManageQuestionManager = () => {
                       <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">Status</Typography>
                         <Chip
-                          label={viewManager.user.is_verified ? "Active" : "Inactive"}
-                          color={viewManager.user.is_verified ? "success" : "default"}
+                          label={getManagerActiveStatus(viewManager) ? "Active" : "Inactive"}
+                          color={getManagerActiveStatus(viewManager) ? "success" : "default"}
                           size="small"
                           sx={{ mt: 0.5 }}
                         />
