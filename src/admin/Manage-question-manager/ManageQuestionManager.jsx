@@ -170,7 +170,7 @@ const ManageQuestionManager = () => {
         Fname: manager.user.Fname,
         Lname: manager.user.Lname,
         password: "",
-        is_verified: manager.user.is_verified
+        is_verified: manager.status // Use status instead of user.is_verified
       });
       setSelectedSubjects(manager.subject.map(sub => sub.id));
 
@@ -259,7 +259,7 @@ const ManageQuestionManager = () => {
         },
         class_category: selectedClassCategories,
         subject: selectedSubjects,
-        status: userData.is_verified,
+        status: userData.is_verified, // This maps the switch value to the status field
       };
 
       let response;
@@ -356,8 +356,7 @@ const ManageQuestionManager = () => {
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
-      // Update both status indicators
-      const updatedStatus = !getManagerActiveStatus(manager);
+      const updatedStatus = !manager.status; // Use status instead of user.is_verified
 
       const classCategories = manager.class_category?.map(cat => cat.id) || [];
 
@@ -366,23 +365,23 @@ const ManageQuestionManager = () => {
           email: manager.user.email,
           Fname: manager.user.Fname,
           Lname: manager.user.Lname,
-          is_verified: updatedStatus
+          is_verified: true // Keep user verified, only toggle status
         },
         class_category: classCategories,
         subject: manager.subject.map(sub => sub.id),
-        status: updatedStatus
+        status: updatedStatus // Update status field
       };
 
       const response = await updateAssignedUserManager(manager.id, payload);
 
       if (response && (response.data || response.message)) {
+        // Update local state based on status field
         setManagers(prev =>
           prev.map(m =>
             m.id === manager.id
               ? { 
                   ...m, 
-                  user: { ...m.user, is_verified: updatedStatus },
-                  status: updatedStatus
+                  status: updatedStatus  // Update the status field
                 }
               : m
           )
@@ -397,6 +396,7 @@ const ManageQuestionManager = () => {
         throw new Error("Failed to update status");
       }
     } catch (error) {
+      // Error handling remains the same
       console.error("Error updating status:", error);
 
       let errorMessage = "Failed to update status";
@@ -482,12 +482,10 @@ const ManageQuestionManager = () => {
         subject.subject_name.toLowerCase().includes(searchTermLower)
       );
 
-      // Use the combined status check for filtering
-      const managerStatus = getManagerActiveStatus(manager);
       const statusMatch =
         filterStatus === "" ||
-        (filterStatus === "active" && managerStatus) ||
-        (filterStatus === "inactive" && !managerStatus);
+        (filterStatus === "active" && manager.status) || // Use status instead of user.is_verified
+        (filterStatus === "inactive" && !manager.status); // Use status instead of user.is_verified
 
       return (fullName.includes(searchTermLower) || emailMatch || subjectMatch) && statusMatch;
     });
@@ -585,13 +583,13 @@ const ManageQuestionManager = () => {
                     <Typography variant="body2" mr={1}>Status:</Typography>
                     <Chip
                       size="small"
-                      label={getManagerActiveStatus(manager) ? "Active" : "Inactive"}
-                      color={getManagerActiveStatus(manager) ? "success" : "default"}
+                      label={manager.status ? "Active" : "Inactive"} // Use status instead of user.is_verified
+                      color={manager.status ? "success" : "default"} // Use status instead of user.is_verified
                     />
                   </Box>
                   <Box>
                     <Switch
-                      checked={getManagerActiveStatus(manager)}
+                      checked={manager.status} // Use status instead of user.is_verified
                       onChange={() => handleToggleStatus(manager)}
                       color="success"
                       size="small"
@@ -652,12 +650,6 @@ const ManageQuestionManager = () => {
         />
       </GridToolbarContainer>
     );
-  };
-
-  // 1. First fix - update the manager status display logic consistently:
-  // Create a helper function to determine the actual status
-  const getManagerActiveStatus = (manager) => {
-    return manager.user.is_verified && manager.status;
   };
 
   return (
@@ -787,7 +779,7 @@ const ManageQuestionManager = () => {
                       email: manager.user.email,
                       classes: manager.class_category || [],
                       subjects: manager.subject,
-                      status: manager.user.is_verified,
+                      status: manager.status, // Use status instead of user.is_verified
                       rawData: manager
                     }))}
                     columns={[
@@ -866,29 +858,24 @@ const ManageQuestionManager = () => {
                         sortable: true,
                         filterable: true,
                         type: 'boolean',
-                        renderCell: (params) => {
-                          // Use the status from the rawData object instead of just user.is_verified
-                          const isActive = params.row.rawData.user.is_verified && params.row.rawData.status;
-                          
-                          return (
-                            <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
-                              <Chip
-                                label={isActive ? "Active" : "Inactive"}
-                                color={isActive ? "success" : "default"}
+                        renderCell: (params) => (
+                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                            <Chip
+                              label={params.value ? "Active" : "Inactive"}
+                              color={params.value ? "success" : "default"}
+                              size="small"
+                            />
+                            <Tooltip title={params.value ? "Deactivate" : "Activate"}>
+                              <Switch
+                                checked={params.value}
+                                onChange={() => handleToggleStatus(params.row.rawData)}
+                                color="success"
                                 size="small"
+                                disabled={loadingAction}
                               />
-                              <Tooltip title={isActive ? "Deactivate" : "Activate"}>
-                                <Switch
-                                  checked={isActive}
-                                  onChange={() => handleToggleStatus(params.row.rawData)}
-                                  color="success"
-                                  size="small"
-                                  disabled={loadingAction}
-                                />
-                              </Tooltip>
-                            </Box>
-                          );
-                        },
+                            </Tooltip>
+                          </Box>
+                        ),
                       },
                       {
                         field: 'actions',
@@ -1241,8 +1228,8 @@ const ManageQuestionManager = () => {
                       <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">Status</Typography>
                         <Chip
-                          label={getManagerActiveStatus(viewManager) ? "Active" : "Inactive"}
-                          color={getManagerActiveStatus(viewManager) ? "success" : "default"}
+                          label={viewManager.status ? "Active" : "Inactive"} // Use status instead of user.is_verified
+                          color={viewManager.status ? "success" : "default"} // Use status instead of user.is_verified
                           size="small"
                           sx={{ mt: 0.5 }}
                         />
