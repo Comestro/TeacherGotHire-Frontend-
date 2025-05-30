@@ -1405,7 +1405,7 @@ useEffect(() => {
                   </select>
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Time (minutes) <span className="text-red-500">*</span>
                   </label>
@@ -1418,7 +1418,7 @@ useEffect(() => {
                     placeholder="Enter time in minutes"
                     required
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1998,10 +1998,10 @@ useEffect(() => {
                                         </div>
                                       ))}
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 text-sm border-t pt-3">
+                                    {/* <div className="grid grid-cols-2 gap-2 text-sm border-t pt-3">
                                       <div><span className="text-gray-500">Language:</span> {question.language}</div>
                                       <div><span className="text-gray-500">Time:</span> {question.time} min</div>
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </div>
                               );

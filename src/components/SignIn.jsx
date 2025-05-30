@@ -2,11 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { login, verifyTeacherOtp, resendTeacherOtp } from "../services/authServices";
+import {
+  login,
+  verifyTeacherOtp,
+  resendTeacherOtp,
+} from "../services/authServices";
 import Input from "./Input";
 import Button from "./Button";
 import Navbar from "./Navbar/Navbar";
-import { FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
@@ -21,22 +30,22 @@ function Login() {
     handleSubmit,
     formState: { errors, isValid, dirtyFields },
     watch,
-    getValues
+    getValues,
   } = useForm({
     mode: "onChange",
-    criteriaMode: "all"
+    criteriaMode: "all",
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // States for OTP verification
   const [showOTPForm, setShowOTPForm] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [userEmail, setUserEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
-  
+
   const watchedFields = watch();
 
   // Timer for OTP resend
@@ -77,10 +86,10 @@ function Login() {
 
   const onSubmit = async (data) => {
     setLoading(true);
-    
+
     try {
       await login(data);
-      
+
       // If login is successful, navigate based on role
       const role = localStorage.getItem("role");
       if (role === "recruiter") {
@@ -94,13 +103,12 @@ function Login() {
       } else {
         navigate("/admin/dashboard");
       }
-      
     } catch (err) {
       console.error("Login error:", err);
-      
+
       // Check if error is related to account verification
       const errorMessage = err.message || "An error occurred during login";
-      
+
       if (
         errorMessage.toLowerCase().includes("verify") ||
         errorMessage.toLowerCase().includes("verification") ||
@@ -114,7 +122,7 @@ function Login() {
         setShowOTPForm(true);
         setTimer(30);
         setCanResend(false);
-        
+
         // Trigger sending OTP automatically
         handleResendOTP(email);
       } else {
@@ -130,21 +138,21 @@ function Login() {
 
   const handleResendOTP = async (email = null) => {
     const emailToUse = email || userEmail;
-    
+
     if (!emailToUse) {
       toast.error("Email address is required for verification");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       console.log("Resending OTP for:", emailToUse);
       await resendTeacherOtp(emailToUse);
-      
+
       setTimer(30);
       setCanResend(false);
-      
+
       toast.success("Verification code sent successfully", {
         position: "top-right",
         autoClose: 3000,
@@ -161,7 +169,7 @@ function Login() {
   };
 
   const handleOTPChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); 
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 6) {
       setOtp(value);
     }
@@ -174,24 +182,24 @@ function Login() {
     try {
       const response = await verifyTeacherOtp({
         email: userEmail,
-        otp: otp
+        otp: otp,
       });
 
       if (response.access_token) {
-        toast.success('Account verified successfully!');
-        
+        toast.success("Account verified successfully!");
+
         // Set showOTPForm to false to return to login form
         setShowOTPForm(false);
-        setOtp('');
-        
+        setOtp("");
+
         // Store token if received
         if (response.access_token) {
-          localStorage.setItem('access_token', response.access_token);
-          
+          localStorage.setItem("access_token", response.access_token);
+
           // If role is also returned, store and navigate
           if (response.role) {
-            localStorage.setItem('role', response.role);
-            
+            localStorage.setItem("role", response.role);
+
             // Determine where to navigate based on user role
             switch (response.role) {
               case "recruiter":
@@ -212,20 +220,20 @@ function Login() {
             }
           }
         }
-        
+
         // If no navigation happened (no role or token), show login form with success message
-        toast.info('Please login with your credentials now', {
+        toast.info("Please login with your credentials now", {
           position: "top-right",
           autoClose: 5000,
         });
       }
     } catch (error) {
-      toast.error(error.message || 'OTP verification failed');
+      toast.error(error.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
   };
-  
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -233,7 +241,7 @@ function Login() {
   const isEmailValid = (email) => {
     return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
   };
-  
+
   // Render the appropriate form based on state
   const renderForm = () => {
     if (showOTPForm) {
@@ -249,7 +257,10 @@ function Login() {
               </p>
             </div>
 
-            <form onSubmit={handleOTPSubmit} className="space-y-4 mb-40 md:mb-0">
+            <form
+              onSubmit={handleOTPSubmit}
+              className="space-y-4 mb-40 md:mb-0"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Enter OTP
@@ -276,7 +287,8 @@ function Login() {
               <div className="text-center">
                 {timer > 0 && (
                   <p className="text-gray-600">
-                    Resend OTP in <span className="text-teal-600 font-medium">{timer}s</span>
+                    Resend OTP in{" "}
+                    <span className="text-teal-600 font-medium">{timer}s</span>
                   </p>
                 )}
               </div>
@@ -285,7 +297,9 @@ function Login() {
                 <Button
                   type="submit"
                   className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 ${
-                    loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : "hover:bg-teal-700"
+                    loading || otp.length !== 6
+                      ? "opacity-60 cursor-not-allowed"
+                      : "hover:bg-teal-700"
                   }`}
                   disabled={loading || otp.length !== 6}
                 >
@@ -301,7 +315,7 @@ function Login() {
                   >
                     {/* Background Shine Effect */}
                     <div className="absolute inset-0 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                    
+
                     {/* Button Content */}
                     <div className="relative flex items-center justify-center space-x-2">
                       <svg
@@ -317,16 +331,18 @@ function Login() {
                           d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                         />
                       </svg>
-                      <span className="text-teal-600 font-medium">Resend OTP</span>
+                      <span className="text-teal-600 font-medium">
+                        Resend OTP
+                      </span>
                     </div>
                   </button>
                 )}
-                
+
                 <button
                   type="button"
                   onClick={() => {
                     setShowOTPForm(false);
-                    setOtp('');
+                    setOtp("");
                   }}
                   className="w-full text-gray-600 py-2 hover:text-gray-800 transition-colors"
                 >
@@ -338,7 +354,7 @@ function Login() {
         </div>
       );
     }
-    
+
     return (
       <div className="w-full max-w-md bg-white rounded-xl p-6 sm:p-8">
         <div className="space-y-2 mb-6">
@@ -349,11 +365,17 @@ function Login() {
             Sign in to <span className="text-teal-600">PTPI</span>
           </h2>
         </div>
-       
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
+
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 sm:space-y-5"
+        >
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="email">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1.5"
+              htmlFor="email"
+            >
               Email
             </label>
             <div className="relative">
@@ -387,13 +409,18 @@ function Login() {
               )}
             </div>
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="pass">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1.5"
+              htmlFor="pass"
+            >
               Password
             </label>
             <div className="relative">
@@ -425,10 +452,19 @@ function Login() {
               </button>
             </div>
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.password.message}
+              </p>
             )}
           </div>
-
+          <div className="flex justify-end mb-4">
+            <a
+              href="/forgot-password"
+              className="text-teal-600 hover:underline text-sm"
+            >
+              Forgot password?
+            </a>
+          </div>
           {/* Submit Button */}
           <Button
             type="submit"
@@ -526,7 +562,7 @@ function Login() {
                 {showOTPForm ? "Verify Email" : "Enter Credentials"}
               </h3>
               <p className="text-gray-500 mt-1">
-                {showOTPForm 
+                {showOTPForm
                   ? "Confirm your email with OTP verification"
                   : "Sign in with your registered email and password"}
               </p>
