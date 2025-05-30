@@ -560,7 +560,17 @@ const ManageQuestionManager = () => {
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Assigned Subjects:
                 </Typography>
-                <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
+                <Box 
+                  display="flex" 
+                  flexWrap="wrap" 
+                  gap={0.5} 
+                  mb={2}
+                  sx={{ 
+                    maxHeight: 100,
+                    overflow: 'auto',
+                    pb: 0.5
+                  }}
+                >
                   {manager.subject.map((sub) => {
                     const categoryId = sub.class_category;
                     const category = manager.class_category?.find(cat => cat.id === categoryId);
@@ -569,10 +579,12 @@ const ManageQuestionManager = () => {
                     return (
                       <Chip
                         key={sub.id}
-                        label={`${sub.subject_name} (${categoryName})`}
+                        label={sub.subject_name}
                         size="small"
                         variant="outlined"
                         color="primary"
+                        sx={{ mb: 0.5 }}
+                        onClick={() => alert(`Category: ${categoryName}`)}
                       />
                     );
                   })}
@@ -631,23 +643,76 @@ const ManageQuestionManager = () => {
     );
   };
 
+  // Enhance the custom toolbar
   const CustomToolbar = () => {
     const theme = useTheme();
     
     return (
-      <GridToolbarContainer sx={{ p: 1 }}>
-        <GridToolbarColumnsButton 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarFilterButton 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarDensitySelector 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarExport 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
+      <GridToolbarContainer 
+        sx={{ 
+          p: 2, 
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+          <GridToolbarColumnsButton 
+            sx={{ 
+              fontSize: '0.85rem', 
+              borderRadius: 1, 
+              color: theme.palette.text.primary,
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              fontWeight: 500,
+              px: 2,
+              py: 0.75,
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              }
+            }}
+          />
+          <GridToolbarFilterButton 
+            sx={{ 
+              fontSize: '0.85rem', 
+              borderRadius: 1, 
+              color: theme.palette.text.primary,
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              fontWeight: 500, 
+              px: 2,
+              py: 0.75,
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              }
+            }}
+          />
+          <GridToolbarDensitySelector 
+            sx={{ 
+              fontSize: '0.85rem', 
+              borderRadius: 1, 
+              color: theme.palette.text.primary,
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              fontWeight: 500,
+              px: 2,
+              py: 0.75, 
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              }
+            }}
+          />
+          <GridToolbarExport 
+            sx={{ 
+              fontSize: '0.85rem', 
+              borderRadius: 1, 
+              color: theme.palette.text.primary,
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              fontWeight: 500,
+              px: 2,
+              py: 0.75,
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              }
+            }}
+          />
+        </Box>
       </GridToolbarContainer>
     );
   };
@@ -701,12 +766,14 @@ const ManageQuestionManager = () => {
           </Button>
         </Paper>
 
+        {/* Enhance search and filter section */}
         <Paper
-          elevation={2}
+          elevation={1}
           sx={{
             mb: 3,
             p: { xs: 2, sm: 3 },
-            borderRadius: 2
+            borderRadius: 2,
+            boxShadow: theme.shadows[2]
           }}
         >
           <Grid container spacing={2} alignItems="center">
@@ -720,6 +787,22 @@ const ManageQuestionManager = () => {
                 onChange={handleSearch}
                 InputProps={{
                   startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
+                  sx: {
+                    borderRadius: 1.5,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: alpha(theme.palette.divider, 0.8),
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.main,
+                      borderWidth: 1.5,
+                    },
+                    height: 46,
+                    paddingLeft: 1.5,
+                  },
                 }}
               />
             </Grid>
@@ -732,6 +815,20 @@ const ManageQuestionManager = () => {
                   onChange={handleFilterStatus}
                   label="Status"
                   startAdornment={<FilterIcon color="action" sx={{ mr: 1 }} />}
+                  sx={{
+                    borderRadius: 1.5,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    height: 46,
+                    '& .MuiSelect-select': {
+                      paddingLeft: 1.5,
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: alpha(theme.palette.divider, 0.8),
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.primary.main,
+                    },
+                  }}
                 >
                   <MenuItem value="">
                     <em>All Status</em>
@@ -779,7 +876,7 @@ const ManageQuestionManager = () => {
                       email: manager.user.email,
                       classes: manager.class_category || [],
                       subjects: manager.subject,
-                      status: manager.status, // Use status instead of user.is_verified
+                      status: manager.status,
                       rawData: manager
                     }))}
                     columns={[
@@ -830,21 +927,43 @@ const ManageQuestionManager = () => {
                         sortable: false,
                         filterable: false,
                         renderCell: (params) => (
-                          <Box display="flex" flexWrap="wrap" gap={0.5}>
+                          <Box 
+                            display="flex" 
+                            flexWrap="wrap" 
+                            gap={0.5} 
+                            sx={{ 
+                              maxHeight: '100%',
+                              overflow: 'auto',
+                              py: 0.5
+                            }}
+                          >
                             {params.value.map((sub) => {
                               const categoryId = sub.class_category;
                               const category = params.row.classes.find(cat => cat.id === categoryId);
                               const categoryName = category ? category.name : `Class ${categoryId}`;
 
                               return (
-                                <Chip
+                                <Tooltip 
                                   key={sub.id}
-                                  label={`${sub.subject_name} (${categoryName})`}
-                                  size="small"
-                                  variant="outlined"
-                                  color="primary"
-                                  sx={{ m: 0.2 }}
-                                />
+                                  title={`${sub.subject_name} (${categoryName})`} 
+                                  arrow
+                                >
+                                  <Chip
+                                    label={`${sub.subject_name}`}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                    sx={{ 
+                                      m: 0.2,
+                                      maxWidth: 150,
+                                      '& .MuiChip-label': {
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }
+                                    }}
+                                  />
+                                </Tooltip>
                               );
                             })}
                           </Box>
@@ -859,21 +978,35 @@ const ManageQuestionManager = () => {
                         filterable: true,
                         type: 'boolean',
                         renderCell: (params) => (
-                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%" px={1}>
                             <Chip
                               label={params.value ? "Active" : "Inactive"}
                               color={params.value ? "success" : "default"}
                               size="small"
+                              sx={{ 
+                                borderRadius: '4px',
+                                fontWeight: 500,
+                                px: 1,
+                                '& .MuiChip-label': {
+                                  px: 0.5,
+                                }
+                              }}
                             />
-                            <Tooltip title={params.value ? "Deactivate" : "Activate"}>
-                              <Switch
-                                checked={params.value}
-                                onChange={() => handleToggleStatus(params.row.rawData)}
-                                color="success"
-                                size="small"
-                                disabled={loadingAction}
-                              />
-                            </Tooltip>
+                            <Switch
+                              checked={params.value}
+                              onChange={() => handleToggleStatus(params.row.rawData)}
+                              color="success"
+                              size="small"
+                              disabled={loadingAction}
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  transform: 'translateX(14px)',
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+                                },
+                              }}
+                            />
                           </Box>
                         ),
                       },
@@ -962,17 +1095,33 @@ const ManageQuestionManager = () => {
                         outline: 'none',
                       },
                       '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: theme.palette.background.default,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
                         fontWeight: 600,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        paddingTop: '8px',
+                        paddingBottom: '8px',
+                      },
+                      '& .MuiDataGrid-cell': {
+                        paddingTop: '14px',
+                        paddingBottom: '14px',
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                      },
+                      '& .MuiDataGrid-row': {
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                        },
                       },
                       '& .MuiDataGrid-row:nth-of-type(even)': {
-                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
+                        backgroundColor: theme.palette.mode === 'light' ? alpha(theme.palette.primary.main, 0.02) : alpha(theme.palette.background.paper, 0.2),
                       },
                       '& .MuiDataGrid-toolbarContainer': {
-                        padding: 1,
+                        padding: '16px',
+                        borderBottom: `1px solid ${theme.palette.divider}`,
                       },
                       '& .MuiButton-root': {
                         textTransform: 'none',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
                       },
                     }}
                   />

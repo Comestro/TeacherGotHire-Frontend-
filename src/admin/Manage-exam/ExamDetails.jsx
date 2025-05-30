@@ -236,16 +236,9 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
                 )}
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AccessTime fontSize="small" color="action" sx={{ mr: 0.5 }} />
-                        <Typography variant="body2" color="text.secondary">
-                            {question.time} minutes
-                        </Typography>
-                    </Box>
-
                     {isHovered && !isMobile && (
                         <Fade in={isHovered}>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Box sx={{ display: 'flex', gap: 1, mt: 2, justifyContent: 'flex-end' }}>
                                 <Tooltip title="Edit Question" arrow>
                                     <IconButton size="small" color="primary" onClick={() => onEdit(question)}>
                                         <Edit fontSize="small" />
@@ -284,7 +277,6 @@ const ExamDetails = () => {
         options: ["", "", "", ""],
         correct_option: 1,
         solution: "",
-        time: 2.5,
         language: "English"
     });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -335,9 +327,6 @@ const ExamDetails = () => {
         } else if (newQuestion.correct_option < 1 || newQuestion.correct_option > 4) {
             errors.correct_option = "Correct Option must be between 1 and 4.";
         }
-        if (!newQuestion.time || newQuestion.time <= 0) {
-            errors.time = "Time must be greater than 0.";
-        }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -351,7 +340,6 @@ const ExamDetails = () => {
             options: ["", "", "", ""],
             correct_option: 1,
             solution: "",
-            time: 2.5,
             language: selectedLanguage
         });
     };
@@ -995,30 +983,6 @@ const ExamDetails = () => {
                                 disabled={formSubmitting}
                                 InputLabelProps={{
                                     shrink: true,
-                                }}
-                            />
-
-                            <TextField
-                                label="Time Allocation"
-                                placeholder="Time in minutes"
-                                fullWidth
-                                variant="outlined"
-                                type="number"
-                                value={newQuestion.time}
-                                onChange={(e) =>
-                                    setNewQuestion({ ...newQuestion, time: e.target.value })
-                                }
-                                error={!!formErrors.time}
-                                helperText={formErrors.time || "The time allocated for this question (in minutes)"}
-                                size={isMobile ? "small" : "medium"}
-                                required
-                                disabled={formSubmitting}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                inputProps={{
-                                    step: 0.5,
-                                    min: 0.5,
                                 }}
                             />
 

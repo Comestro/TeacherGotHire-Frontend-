@@ -25,7 +25,7 @@ import {
   Stack,
   Chip
 } from "@mui/material";
-import { Edit, Delete, Add, School, ArrowBack, Assessment, AccessTime } from "@mui/icons-material";
+import { Edit, Delete, Add, School, ArrowBack, Assessment } from "@mui/icons-material";
 
 import {
   getExamById,
@@ -157,15 +157,6 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
             </Typography>
           </Box>
         )}
-
-        {question.time && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.5 }}>
-            <AccessTime fontSize="small" color="action" sx={{ mr: 0.5 }} />
-            <Typography variant="body2" color="text.secondary">
-              {question.time} minutes
-            </Typography>
-          </Box>
-        )}
       </CardContent>
     </Paper>
   );
@@ -185,7 +176,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     options: ["", "", "", ""],
     correct_option: 1,
     solution: "",
-    time: 2.5,
     language: "English"
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -245,7 +235,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
       options: ["", "", "", ""],
       correct_option: 1,
       solution: "",
-      time: 2.5,
       language: "English"
     });
   };
@@ -653,44 +642,24 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
             </Grid>
 
             <Box sx={{ mt: 1 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth size={isMobile ? "small" : "medium"}>
-                    <TextField
-                      label="Correct Option (1-4)"
-                      type="number"
-                      fullWidth
-                      value={newQuestion.correct_option}
-                      onChange={(e) =>
-                        setNewQuestion({
-                          ...newQuestion,
-                          correct_option: parseInt(e.target.value, 10),
-                        })
-                      }
-                      inputProps={{ min: 1, max: 4 }}
-                      error={!!formErrors.correct_option}
-                      helperText={formErrors.correct_option}
-                      size={isMobile ? "small" : "medium"}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Time (minutes)"
-                    type="number"
-                    fullWidth
-                    value={newQuestion.time}
-                    onChange={(e) =>
-                      setNewQuestion({
-                        ...newQuestion,
-                        time: parseFloat(e.target.value),
-                      })
-                    }
-                    inputProps={{ step: 0.5 }}
-                    size={isMobile ? "small" : "medium"}
-                  />
-                </Grid>
-              </Grid>
+              <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+                <TextField
+                  label="Correct Option (1-4)"
+                  type="number"
+                  fullWidth
+                  value={newQuestion.correct_option}
+                  onChange={(e) =>
+                    setNewQuestion({
+                      ...newQuestion,
+                      correct_option: parseInt(e.target.value, 10),
+                    })
+                  }
+                  inputProps={{ min: 1, max: 4 }}
+                  error={!!formErrors.correct_option}
+                  helperText={formErrors.correct_option}
+                  size={isMobile ? "small" : "medium"}
+                />
+              </FormControl>
             </Box>
 
             <TextField
