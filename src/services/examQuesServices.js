@@ -39,7 +39,6 @@ apiClient.interceptors.response.use(
 export const fetchLevel = async () => {
   try {
     const response = await apiClient.get(`/api/admin/level/`);
-    console.log("level", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

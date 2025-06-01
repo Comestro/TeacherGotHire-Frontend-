@@ -76,7 +76,7 @@ function Login() {
           navigate("/examcenter");
           break;
         case "questionuser":
-          navigate("/subject-expert");
+          navigate("/manage-exam");
           break;
         default:
           navigate("/admin/dashboard");
@@ -99,7 +99,7 @@ function Login() {
       } else if (role === "centeruser") {
         navigate("/examcenter");
       } else if (role === "questionuser") {
-        navigate("/subject-expert");
+        navigate("/manage-exam");
       } else {
         navigate("/admin/dashboard");
       }

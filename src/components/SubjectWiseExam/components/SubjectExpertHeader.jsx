@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiSettings, FiLogOut, FiChevronDown, FiBell } from 'react-icons/fi';
+import { FiLogOut, FiChevronDown, FiBell } from 'react-icons/fi';
 import { handleLogout } from '../../../services/authUtils';
 
 const SubjectExpertHeader = () => {

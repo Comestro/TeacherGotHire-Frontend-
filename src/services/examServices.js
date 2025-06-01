@@ -67,7 +67,6 @@ export const addExamCard = async ({ subject_id, class_category_id, level_id }) =
 export const fetchLevel = async () => {
   try {
     const response = await apiClient.get(`/api/admin/level/`);
-    console.log("level", response);
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
