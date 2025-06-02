@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut, FiChevronDown, FiBell, FiUser, FiSettings } from 'react-icons/fi';
 import { handleLogout } from '../../../services/authUtils';
+import { getSetterInfo } from '../../../features/examQuesSlice';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Header = () => {
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    dispatch(getSetterInfo());
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);

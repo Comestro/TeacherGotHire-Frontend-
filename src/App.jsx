@@ -98,7 +98,8 @@ function App() {
               <Route path="portal" element={<ExamPortal />} />
               <Route path="result" element={<ResultPage />} />
             </Route>
-            <Route path="subject-expert" element={<QuestionManagementPortal />} />
+            {/* <Route path="subject-expert" element={<QuestionManagementPortal />} /> */}
+
             <Route path="manage-exam" element={<SubjectExpertLayout />} >
               <Route index element={<ManageExam />} />
               <Route path="questions/:examId" element={<ManageQuestion />} />
