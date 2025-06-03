@@ -25,7 +25,7 @@ const ManageQuestion = () => {
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAnswers, setShowAnswers] = useState(true);
+  const [showAnswers, setShowAnswers] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
 
@@ -311,7 +311,7 @@ const ManageQuestion = () => {
         {/* Questions by Language */}
         {selectedLanguage === 'all' ? (
           // Show categorized by language
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {['English', 'Hindi'].map(language => {
               const langQuestions = questionsByLanguage[language];
               if (langQuestions.length === 0) return null;
