@@ -28,7 +28,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     } else {
       setFormData(initialFormState);
     }
-  }, [editingQuestion, examId, isOpen]); // Added isOpen to dependencies
+  }, [editingQuestion, examId, isOpen]); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +46,20 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
     setIsSubmitting(true);
     try {
-      await onSubmit(formData);
+      const submissionData = {
+        text: formData.text.trim(),
+        options: formData.options.map(opt => opt.trim()),
+        correct_option: formData.correct_option,
+        exam: formData.exam,
+        language: formData.language,
+      };
+
+      // Only add solution if it's not empty
+      if (formData.solution.trim()) {
+        submissionData.solution = formData.solution.trim();
+      }
+
+      await onSubmit(submissionData);
     } catch (error) {
       console.error('Form submission error:', error);
       toast.error('Failed to submit question');
