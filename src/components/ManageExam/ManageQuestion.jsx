@@ -297,8 +297,15 @@ const ManageQuestion = () => {
               {showAnswers ? <FiEye className="w-4 h-4 mr-2" /> : <FiEyeOff className="w-4 h-4 mr-2" />}
               {showAnswers ? 'Hide Answers' : 'Show Answers'}
             </button>
-            <button
+            {/* <button
               onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all"
+            >
+              <FiPlus className="w-5 h-5 mr-2" />
+              Add Question
+            </button> */}
+            <button
+              onClick={() => navigate(`/manage-exam/questions/${exam.id}/add`)}
               className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all"
             >
               <FiPlus className="w-5 h-5 mr-2" />

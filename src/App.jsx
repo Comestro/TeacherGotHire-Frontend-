@@ -63,6 +63,7 @@ import ManageExam from "./components/ManageExam/ManageExam";
 import SubjectExpertLayout from "./components/ManageExam/SubjectExpertLayout";
 import ExamSetterProfile from "./components/ManageExam/ExamSetterProfile";
 import ManageQuestion from "./components/ManageExam/ManageQuestion";
+import QuestionForm from "./components/ManageExam/componets/QuestionForm";
 
 function App() {
   return (
@@ -103,6 +104,7 @@ function App() {
             <Route path="manage-exam" element={<SubjectExpertLayout />} >
               <Route index element={<ManageExam />} />
               <Route path="questions/:examId" element={<ManageQuestion />} />
+              <Route path="questions/:examId/add" element={<QuestionForm />} />
               <Route path="profile" element={<ExamSetterProfile />}/>
             </Route>
 

@@ -16,3 +16,7 @@ export const createQuestion = (data) => apiService.create("/api/examsetter/quest
 export const updateQuestion = (id, data) => apiService.update("/api/examsetter/question", id, data);
 export const deleteQuestion = (id) => apiService.delete("/api/examsetter/question", id);
 
+
+export const createNewQuestion = (data) => apiService.create("/api/new/examsetter/question", data);
+export const updateNewQuestion = (id, data) => apiService.update("/api/new/examsetter/question", id, data);
+

@@ -25,12 +25,31 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+export const translateText = async (text, sourceLang, targetLang) => {
+  if (!text.trim()) return "";
+  
+  try {
+    const response = await axiosInstance.post('api/translator/', {
+      text,
+      source: sourceLang === "English" ? "en" : "hi",
+      dest: targetLang === "English" ? "en" : "hi"
+    });
+
+    // console.log("Translation response:", response.data);
+    
+    return response.data.translated || text;
+  } catch (error) {
+    console.error('Translation error:', error);
+    throw error;
+  }
+};
+
 export const fetchSingleTeacherById = async (teacherId) => {
   try {
     const response = await axiosInstance.get(
       `/api/admin/teacher/${teacherId}/`
     );
-    return response.data; // Return the single teacher's data
+    return response.data; 
   } catch (error) {
     throw new Error(
       error.response?.data?.message ||
@@ -62,6 +81,7 @@ const apiService = {
 
   create: async (endpoint, data) => {
     try {
+      console.log("Creating data in endpoint:", endpoint, "with data:", data);
       const response = await axiosInstance.post(`${endpoint}/`, data);
       return response.data;
     } catch (error) {
