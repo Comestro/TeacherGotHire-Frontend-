@@ -44,6 +44,18 @@ export const translateText = async (text, sourceLang, targetLang) => {
   }
 };
 
+export const reorderQuestions = async (orderIds) => {
+  try {
+    const response = await axiosInstance.post('api/questions/reorder/', {
+      order: orderIds
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error reordering questions:', error);
+    throw error;
+  }
+};
+
 export const fetchSingleTeacherById = async (teacherId) => {
   try {
     const response = await axiosInstance.get(
@@ -57,6 +69,7 @@ export const fetchSingleTeacherById = async (teacherId) => {
     );
   }
 };
+
 
 const apiService = {
   getAll: async (endpoint) => {
