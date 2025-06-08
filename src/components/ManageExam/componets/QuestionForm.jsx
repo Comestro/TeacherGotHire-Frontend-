@@ -103,7 +103,7 @@ const QuestionForm = () => {
       setHindiQuestion((prev) => ({
         ...prev,
         text: translatedText || "",
-        solution: translatedSolution || englishQuestion.correct_option,
+        solution: translatedSolution || "",
         options: translatedOptions.map((opt) => opt || ""),
         correct_option: englishQuestion.correct_option,
       }));
