@@ -8,12 +8,15 @@ import {
   FiFileText,
   FiEdit,
   FiTrash2,
-  FiHelpCircle 
+  FiHelpCircle, 
+  FiLock,
+  FiEdit2,
+  FiList
 } from 'react-icons/fi';
 import { getExam, deleteExam } from '../../../services/adminManageExam';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ExamSetsTable = ({ onEdit, refreshTrigger }) => {
   const navigate = useNavigate();
@@ -64,6 +67,18 @@ const handleManageQuestions = (exam) => {
     state: { exam: exam }
   });
 };
+
+  // Format date in a readable way
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   useEffect(() => {
     fetchExamSets();
   }, [refreshTrigger]); 
@@ -87,23 +102,27 @@ const handleManageQuestions = (exam) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Exam Details
               </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Subject & Level
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Class & Subject
               </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Configuration
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
               </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Questions
               </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -111,103 +130,58 @@ const handleManageQuestions = (exam) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {examSets.map((exam) => (
               <tr key={exam.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {exam.name}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {exam.description}
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center mt-1">
-                      <FiUsers className="w-4 h-4 mr-1" />
-                      {exam.assigneduser.user.Fname} {exam.assigneduser.user.Lname}
-                    </div>
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{exam.name}</div>
+                  <div className="text-sm text-gray-500">{formatDate(exam.created_at)}</div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium text-gray-900 flex items-center">
-                      <FiBook className="w-4 h-4 mr-1 text-blue-500" />
-                      {exam.subject.subject_name}
-                    </div>
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <FiTarget className="w-4 h-4 mr-1 text-green-500" />
-                      {exam.level.name}
-                    </div>
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <FiUsers className="w-4 h-4 mr-1 text-purple-500" />
-                      Class {exam.class_category.name}
-                    </div>
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{exam.class_category?.name || 'N/A'}</div>
+                  <div className="text-sm text-gray-500">{exam.subject?.subject_name || 'N/A'}</div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="space-y-1">
-                    <div className="text-sm text-gray-900 flex items-center">
-                      <FiAward className="w-4 h-4 mr-1 text-yellow-500" />
-                      {exam.total_marks} marks
-                    </div>
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <FiClock className="w-4 h-4 mr-1 text-red-500" />
-                      {exam.duration} minutes
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                        exam.type === 'online' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {exam.type}
-                      </span>
-                    </div>
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {exam.type === 'online' ? 'Online Exam' : 'Center Exam'}
+                  </span>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="space-y-2">
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      exam.status 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {exam.status ? 'Active' : 'Draft'}
-                    </span>
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <FiHelpCircle className="w-4 h-4 mr-1" />
-                      {exam.questions.length} questions
-                    </div>
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`flex items-center text-sm ${
+                    exam.is_published ? 'text-green-600' : 'text-amber-600'
+                  }`}>
+                    {exam.is_published ? (
+                      <><FiCheck className="mr-1.5 h-4 w-4" /> Published</>
+                    ) : (
+                      <><FiLock className="mr-1.5 h-4 w-4" /> Draft</>
+                    )}
+                  </span>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleManageQuestions(exam)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors"
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {(exam.subject.subject_name != "hindi") ? exam.questions.length/2 : 0} questions
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex justify-end space-x-2">
+                    <Link
+                      to={`/manage-exam/questions/${exam.id}`}
+                      state={{ exam }}
+                      className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-1.5 rounded-md transition-colors"
                       title="Manage Questions"
-                      disabled={isDeleting}
                     >
-                      <FiFileText className="w-4 h-4" />
-                    </button>
+                      <FiList className="w-4 h-4" />
+                    </Link>
                     <button
                       onClick={() => onEdit(exam)}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-lg transition-colors"
-                      title="Edit Exam Set"
-                      disabled={isDeleting}
+                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-md transition-colors"
+                      title="Edit Exam"
                     >
-                      <FiEdit className="w-4 h-4" />
+                      <FiEdit2 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(exam.id)}
-                      className={`bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors ${
-                        isDeleting ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                      title="Delete Exam Set"
-                      disabled={isDeleting}
+                      onClick={() => onDelete(exam.id)}
+                      className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors"
+                      title="Delete Exam"
                     >
-                      {isDeleting ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                      ) : (
-                        <FiTrash2 className="w-4 h-4" />
-                      )}
+                      <FiTrash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -215,6 +189,72 @@ const handleManageQuestions = (exam) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-gray-200">
+        {examSets.map((exam) => (
+          <div key={exam.id} className="p-4 hover:bg-gray-50">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-base font-medium text-gray-900">{exam.name}</h3>
+                <p className="text-xs text-gray-500 mt-1">{formatDate(exam.created_at)}</p>
+              </div>
+              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+                {exam.type === 'online' ? 'Online Exam' : 'Center Exam'}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+              <div>
+                <span className="text-gray-500">Class:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.class_category?.name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Subject:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.subject?.name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Questions:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.questions.length}</span>
+              </div>
+              <div className={exam.is_published ? 'text-green-600' : 'text-amber-600'}>
+                {exam.is_published ? (
+                  <><FiCheck className="inline mr-1 h-3 w-3" /> Published</>
+                ) : (
+                  <><FiLock className="inline mr-1 h-3 w-3" /> Draft</>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
+              <Link
+                to={`/manage-exam/questions`}
+                state={{ exam }}
+                className="flex items-center justify-center bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              >
+                <FiList className="w-3 h-3 mr-1" />
+                Questions
+              </Link>
+              <button
+                onClick={() => onEdit(exam)}
+                className="flex items-center justify-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              >
+                <FiEdit2 className="w-3 h-3 mr-1" />
+                Edit
+              </button>
+              <button
+                onClick={() => onDelete(exam.id)}
+                className="flex items-center justify-center bg-red-50 text-red-700 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              >
+                <FiTrash2 className="w-3 h-3 mr-1" />
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

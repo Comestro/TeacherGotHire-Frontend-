@@ -23,6 +23,7 @@ const ManageExam = () => {
     duration: '',
     type: 'online'
   });
+  
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -201,46 +202,46 @@ const ManageExam = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between">
+        {/* Header - Made more responsive */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <FiBook className="w-8 h-8 text-teal-600 mr-3" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center">
+                <FiBook className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600 mr-2 sm:mr-3" />
                 Manage Exam Sets
               </h1>
-              <p className="text-gray-600 mt-2">Create and manage your examination sets</p>
+              <p className="text-gray-600 mt-1 sm:mt-2">Create and manage your examination sets</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors shadow-lg"
+              className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg flex items-center justify-center sm:justify-start space-x-2 transition-colors shadow-lg w-full sm:w-auto"
             >
-              <FiPlus className="w-5 h-5" />
+              <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Create Exam Set</span>
             </button>
           </div>
         </div>
 
-        {/* Add Filters and Search Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
-            <div className="flex items-center space-x-4 w-full md:w-auto">
-              <div className="relative flex-grow md:flex-grow-0">
+        {/* Add Filters and Search Section - Improved for mobile */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+              <div className="relative w-full sm:w-auto">
                 <FiSearch className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search exam sets..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 />
               </div>
 
               <button
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors w-full sm:w-auto justify-center sm:justify-start ${
                   isFilterExpanded || selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all'
                     ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -250,25 +251,25 @@ const ManageExam = () => {
                 Filters
                 {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
                   <span className="ml-2 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {(selectedClassCategory !== 'all' ? 1 : 0) +
-                     (selectedSubject !== 'all' ? 1 : 0) +
-                     (selectedType !== 'all' ? 1 : 0) +
-                     (selectedLevel !== 'all' ? 1 : 0)}
+                  {(selectedClassCategory !== 'all' ? 1 : 0) +
+                   (selectedSubject !== 'all' ? 1 : 0) +
+                   (selectedType !== 'all' ? 1 : 0) +
+                   (selectedLevel !== 'all' ? 1 : 0)}
                   </span>
                 )}
               </button>
             </div>
 
-            <div className="text-gray-500 text-sm">
+            <div className="text-gray-500 text-sm hidden sm:block">
               Showing {filteredExams.length} of {examSets.length} exam sets
             </div>
           </div>
 
-          {/* Expanded filters */}
+          {/* Expanded filters - Made grid more responsive */}
           {isFilterExpanded && (
             <div className="bg-gray-50 p-4 rounded-lg mt-2 border border-gray-200 animate-fadeIn">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Class Category Selection - First to control Subject options */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Class Category Selection */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
                     <FiLayers className="mr-2" /> Class Category
@@ -287,7 +288,7 @@ const ManageExam = () => {
                   </select>
                 </div>
 
-                {/* Subject Selection - Depends on Class Category */}
+                {/* Subject Selection */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
                     <FiBookOpen className="mr-2" /> Subject
@@ -345,8 +346,8 @@ const ManageExam = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value="all">All Types</option>
-                    <option value="online">Online</option>
-                    <option value="offline">Offline</option>
+                    <option value="online">Online Exam</option>
+                    <option value="offline">Center Exam</option>
                   </select>
                 </div>
               </div>
@@ -362,7 +363,7 @@ const ManageExam = () => {
             </div>
           )}
 
-          {/* Active filter badges */}
+          {/* Active filter badges - Improved wrapping */}
           {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
             <div className="flex flex-wrap gap-2 mt-4">
               {selectedClassCategory !== 'all' && (
@@ -421,17 +422,22 @@ const ManageExam = () => {
               )}
             </div>
           )}
+          
+          {/* Mobile view count */}
+          <div className="text-gray-500 text-sm block sm:hidden text-center mt-4">
+            Showing {filteredExams.length} of {examSets.length} exam sets
+          </div>
         </div>
 
         {/* Show empty state or exam sets table */}
         {!loading && filteredExams.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+          <div className="bg-white rounded-xl shadow-sm p-6 sm:p-12 text-center">
             <div className="max-w-md mx-auto">
-              <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <FiFileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 {examSets.length === 0 ? 'No Exam Sets Found' : 'No Matching Exam Sets'}
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
                 {examSets.length === 0 
                   ? 'Get started by creating your first exam set. You can add questions after creating an exam set.' 
                   : 'Try adjusting your search or filter settings to find what you\'re looking for.'}
@@ -439,17 +445,17 @@ const ManageExam = () => {
               {examSets.length === 0 ? (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto transition-all shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto transition-all shadow-lg hover:shadow-xl"
                 >
-                  <FiPlus className="w-5 h-5" />
+                  <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Create First Exam Set</span>
                 </button>
               ) : (
                 <button
                   onClick={clearFilters}
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 sm:px-6 sm:py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto"
                 >
-                  <FiX className="w-5 h-5" />
+                  <FiX className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Clear Filters</span>
                 </button>
               )}
@@ -457,7 +463,7 @@ const ManageExam = () => {
           </div>
         ) : (
           <ExamSetsTable 
-            examSets={filteredExams} // Pass filtered exams instead of all exams
+            examSets={filteredExams}
             onAddQuestions={handleAddQuestions}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -480,7 +486,7 @@ const ManageExam = () => {
         />
       </div>
 
-      {/* Loading state remains unchanged */}
+      {/* Loading state - unchanged */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl">
