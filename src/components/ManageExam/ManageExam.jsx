@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { fetchLevel } from '../../services/examServices';
 import { getExam } from '../../services/adminManageExam';
 import { useSelector } from 'react-redux';
-import { FiPlus, FiBook, FiFileText } from 'react-icons/fi';
+import { FiPlus, FiBook, FiFileText, FiSearch, FiFilter, FiX, FiLayers, FiBookOpen } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ExamSetsTable from './componets/ExamSetsTable';
@@ -28,6 +28,13 @@ const ManageExam = () => {
 
   const setterUser = useSelector((state) => state.examQues.setterInfo);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [selectedClassCategory, setSelectedClassCategory] = useState('all');
+  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
+  
   useEffect(() => {
     const getLevels = async () => {
       try {
@@ -54,10 +61,32 @@ const ManageExam = () => {
     fetchExamSets();
   }, []);
 
-  // Get class categories and subjects from setterUser
+  // Get class categories and subjects from setterUser - Fix the subject extraction
   const classCategories = setterUser?.[0]?.class_category || [];
-  const subjects = classCategories.flatMap(cat => cat.subjects || []);
 
+  // Improved subject extraction
+  const getSubjects = () => {
+    // Create an array of all subjects from all class categories
+    let allSubjects = [];
+    
+    // Go through each class category
+    classCategories.forEach(category => {
+      // If the category has subjects, add them to our array
+      if (category.subjects && Array.isArray(category.subjects)) {
+        // Add class identifier to each subject to help user know which class it belongs to
+        const subjectsWithClass = category.subjects.map(subject => ({
+          ...subject,
+          displayName: `${category.name} - ${subject.subject_name}` // Add class name prefix
+        }));
+        allSubjects = [...allSubjects, ...subjectsWithClass];
+      }
+    });
+    
+    return allSubjects;
+  };
+
+  // Get all subjects
+  const subjects = getSubjects();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +95,6 @@ const ManageExam = () => {
       [name]: value
     }));
   };
-
 
   const resetForm = () => {
     setFormData({
@@ -117,6 +145,61 @@ const ManageExam = () => {
     toast.success('Exam updated successfully!');
   };
 
+  // Get filtered subjects based on selected class category - similar to ExamSetterModal
+  const filteredSubjects = useMemo(() => {
+    if (selectedClassCategory === 'all') return [];
+    
+    const selectedCategory = classCategories.find(
+      cat => cat.id.toString() === selectedClassCategory
+    );
+    
+    return selectedCategory?.subjects || [];
+  }, [selectedClassCategory, classCategories]);
+
+  // Handle class category change
+  const handleClassCategoryChange = (e) => {
+    setSelectedClassCategory(e.target.value);
+    // Reset subject when class category changes
+    setSelectedSubject('all');
+  };
+
+  const getFilteredExams = () => {
+    return examSets.filter(exam => {
+      // Search filter for name and description
+      const matchesSearch = searchTerm === '' || 
+        (exam.name && exam.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (exam.description && exam.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Class category filter
+      const matchesClassCategory = selectedClassCategory === 'all' || 
+        (exam.class_category && exam.class_category.id.toString() === selectedClassCategory);
+      
+      // Subject filter - now depends on class category
+      const matchesSubject = selectedSubject === 'all' || 
+        (exam.subject && exam.subject.id.toString() === selectedSubject);
+      
+      // Level filter
+      const matchesLevel = selectedLevel === 'all' ||
+        (exam.level && exam.level.id.toString() === selectedLevel);
+      
+      // Exam type filter
+      const matchesType = selectedType === 'all' || 
+        (exam.type && exam.type === selectedType);
+      
+      return matchesSearch && matchesClassCategory && matchesSubject && matchesLevel && matchesType;
+    });
+  };
+
+  const filteredExams = getFilteredExams();
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedClassCategory('all');
+    setSelectedSubject('all');
+    setSelectedLevel('all');
+    setSelectedType('all');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -140,29 +223,241 @@ const ManageExam = () => {
           </div>
         </div>
 
+        {/* Add Filters and Search Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+            <div className="flex items-center space-x-4 w-full md:w-auto">
+              <div className="relative flex-grow md:flex-grow-0">
+                <FiSearch className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search exam sets..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+
+              <button
+                onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  isFilterExpanded || selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all'
+                    ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <FiFilter className="w-4 h-4 mr-2" />
+                Filters
+                {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
+                  <span className="ml-2 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {(selectedClassCategory !== 'all' ? 1 : 0) +
+                     (selectedSubject !== 'all' ? 1 : 0) +
+                     (selectedType !== 'all' ? 1 : 0) +
+                     (selectedLevel !== 'all' ? 1 : 0)}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="text-gray-500 text-sm">
+              Showing {filteredExams.length} of {examSets.length} exam sets
+            </div>
+          </div>
+
+          {/* Expanded filters */}
+          {isFilterExpanded && (
+            <div className="bg-gray-50 p-4 rounded-lg mt-2 border border-gray-200 animate-fadeIn">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Class Category Selection - First to control Subject options */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center">
+                    <FiLayers className="mr-2" /> Class Category
+                  </label>
+                  <select
+                    value={selectedClassCategory}
+                    onChange={handleClassCategoryChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="all">All Class Categories</option>
+                    {classCategories.map((category) => (
+                      <option key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subject Selection - Depends on Class Category */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center">
+                    <FiBookOpen className="mr-2" /> Subject
+                  </label>
+                  <select
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    disabled={selectedClassCategory === 'all'}
+                  >
+                    <option value="all">
+                      {selectedClassCategory === 'all' 
+                        ? 'Please select a class category first' 
+                        : 'All Subjects'}
+                    </option>
+                    {filteredSubjects.length > 0 ? (
+                      filteredSubjects.map((subject) => (
+                        <option key={subject.id} value={subject.id.toString()}>
+                          {subject.subject_name}
+                        </option>
+                      ))
+                    ) : selectedClassCategory !== 'all' && (
+                      <option disabled>No subjects available</option>
+                    )}
+                  </select>
+                </div>
+
+                {/* Level Filter */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center">
+                    <FiLayers className="mr-2" /> Level
+                  </label>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="all">All Levels</option>
+                    {level.map((lvl) => (
+                      <option key={lvl.id} value={lvl.id.toString()}>
+                        {lvl.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Exam Type */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center">
+                    <FiFilter className="mr-2" /> Exam Type
+                  </label>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-gray-600 hover:text-teal-600 flex items-center"
+                >
+                  <FiX className="mr-1" /> Clear filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Active filter badges */}
+          {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {selectedClassCategory !== 'all' && (
+                <div className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm flex items-center">
+                  <FiLayers className="mr-1 h-3 w-3" />
+                  {classCategories.find(c => c.id.toString() === selectedClassCategory)?.name || 'Class'}
+                  <button
+                    onClick={() => {
+                      setSelectedClassCategory('all');
+                      setSelectedSubject('all'); // Reset subject when clearing class
+                    }}
+                    className="ml-2 text-teal-600 hover:text-teal-800"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              )}
+
+              {selectedSubject !== 'all' && (
+                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                  <FiBookOpen className="mr-1 h-3 w-3" />
+                  {filteredSubjects.find(s => s.id.toString() === selectedSubject)?.subject_name || 'Subject'}
+                  <button
+                    onClick={() => setSelectedSubject('all')}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              )}
+
+              {selectedLevel !== 'all' && (
+                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center">
+                  <FiLayers className="mr-1 h-3 w-3" />
+                  {level.find(l => l.id.toString() === selectedLevel)?.name || 'Level'}
+                  <button
+                    onClick={() => setSelectedLevel('all')}
+                    className="ml-2 text-green-600 hover:text-green-800"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              )}
+
+              {selectedType !== 'all' && (
+                <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
+                  <FiFilter className="mr-1 h-3 w-3" />
+                  {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
+                  <button
+                    onClick={() => setSelectedType('all')}
+                    className="ml-2 text-purple-600 hover:text-purple-800"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Show empty state or exam sets table */}
-        {!loading && examSets.length === 0 ? (
+        {!loading && filteredExams.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <div className="max-w-md mx-auto">
               <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                No Exam Sets Found
+                {examSets.length === 0 ? 'No Exam Sets Found' : 'No Matching Exam Sets'}
               </h2>
               <p className="text-gray-600 mb-8">
-                Get started by creating your first exam set. You can add questions after creating an exam set.
+                {examSets.length === 0 
+                  ? 'Get started by creating your first exam set. You can add questions after creating an exam set.' 
+                  : 'Try adjusting your search or filter settings to find what you\'re looking for.'}
               </p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto transition-all shadow-lg hover:shadow-xl"
-              >
-                <FiPlus className="w-5 h-5" />
-                <span>Create First Exam Set</span>
-              </button>
+              {examSets.length === 0 ? (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto transition-all shadow-lg hover:shadow-xl"
+                >
+                  <FiPlus className="w-5 h-5" />
+                  <span>Create First Exam Set</span>
+                </button>
+              ) : (
+                <button
+                  onClick={clearFilters}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl flex items-center justify-center space-x-2 mx-auto"
+                >
+                  <FiX className="w-5 h-5" />
+                  <span>Clear Filters</span>
+                </button>
+              )}
             </div>
           </div>
         ) : (
           <ExamSetsTable 
-            examSets={examSets}
+            examSets={filteredExams} // Pass filtered exams instead of all exams
             onAddQuestions={handleAddQuestions}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -170,7 +465,7 @@ const ManageExam = () => {
           />
         )}
 
-        {/* Modal */}
+        {/* Modal remains unchanged */}
         <ExamSetterModal 
           isOpen={isModalOpen}
           onClose={resetForm}
@@ -185,7 +480,7 @@ const ManageExam = () => {
         />
       </div>
 
-      {/* Add loading state */}
+      {/* Loading state remains unchanged */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl">
