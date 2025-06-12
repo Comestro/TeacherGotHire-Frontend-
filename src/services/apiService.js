@@ -44,14 +44,21 @@ export const translateText = async (text, sourceLang, targetLang) => {
   }
 };
 
-export const reorderQuestions = async (orderIds) => {
+// Update the reorderQuestions function to properly handle orders
+export const reorderQuestions = async (questions) => {
   try {
-    const response = await axiosInstance.post('api/questions/reorder/', {
-      order: orderIds
-    });
+    // Check if the input is an array of objects with id and order
+    const payload = Array.isArray(questions) && questions[0]?.order !== undefined
+      ? { questions } // Send as { questions: [{id, order}, ...] }
+      : { question_ids: questions }; // Legacy format: just IDs
+
+    const response = await axiosInstance.post(
+      `/admin/teacher/api/questions/reorder/`,
+      payload
+    );
     return response.data;
   } catch (error) {
-    console.error('Error reordering questions:', error);
+    console.error("Error reordering questions:", error);
     throw error;
   }
 };

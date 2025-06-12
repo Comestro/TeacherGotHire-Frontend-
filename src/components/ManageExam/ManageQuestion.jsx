@@ -24,6 +24,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+
 import {
   arrayMove,
   SortableContext,
@@ -32,6 +33,7 @@ import {
 } from "@dnd-kit/sortable";
 import QuestionCard from "./componets/QuestionCard";
 import QuestionModal from "./componets/QuestionModal";
+
 import {
   createQuestion,
   updateQuestion,
@@ -98,7 +100,7 @@ const ManageQuestion = () => {
     fetchExamData();
   }, [location.state, navigate]);
 
-  // Organize questions by order and handle missing order numbers
+  // Improved organize questions by order function to better handle empty positions
   const organizeQuestionsByOrder = () => {
     // Find the maximum order number to know the range we need to display
     const maxOrder = Math.max(...questions.map((q) => q.order || 0), 0);
@@ -133,7 +135,7 @@ const ManageQuestion = () => {
     };
   };
 
-  // Handle drag end with improved order handling and parallel order updates
+  // Improved drag end handler to handle empty positions properly
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -148,25 +150,33 @@ const ManageQuestion = () => {
       const activeQuestion = questions.find((q) => q.id === active.id);
       const overQuestion = questions.find((q) => q.id === over.id);
 
-      if (!activeQuestion || !overQuestion) return;
+      if (!activeQuestion) return;
 
       // Get the active language
       const activeLanguage = activeQuestion.language;
       // Get the other language
       const otherLanguage = activeLanguage === "English" ? "Hindi" : "English";
 
-      // Get all questions of the active language
+      // Get all questions of the active language, sorted by order
       const activeLanguageQuestions = questions
         .filter((q) => q.language === activeLanguage)
         .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-      // Find the old and new indices in the active language array
+      // Get the other language questions
+      const otherLanguageQuestions = questions
+        .filter((q) => q.language === otherLanguage)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      // Find the indices in the active language array
       const oldIndex = activeLanguageQuestions.findIndex((q) => q.id === active.id);
-      const newIndex = activeLanguageQuestions.findIndex((q) => q.id === over.id);
+      let newIndex = overQuestion 
+        ? activeLanguageQuestions.findIndex((q) => q.id === over.id) 
+        : activeLanguageQuestions.length - 1; // Default to end if over doesn't exist
 
-      if (oldIndex === -1 || newIndex === -1) return;
+      if (oldIndex === -1) return;
+      if (newIndex === -1) newIndex = activeLanguageQuestions.length - 1;
 
-      // Reorder the active language questions array
+      // Create a new array with the question moved to the new position
       const reorderedActiveLanguageQuestions = arrayMove(
         activeLanguageQuestions,
         oldIndex,
@@ -176,14 +186,20 @@ const ManageQuestion = () => {
       // Create a deep copy of all questions to update
       const updatedQuestions = [...questions];
 
-      // Create a mapping of order positions between languages
-      // This helps us identify which questions in different languages correspond to each other
+      // Get current order mappings before changes
+      const oldOrderMappings = {};
+      activeLanguageQuestions.forEach((question) => {
+        oldOrderMappings[question.id] = question.order || 0;
+      });
+
+      // Create a mapping of order positions between languages (maps old order to new order)
       const orderMappings = {};
       
       // First update the active language questions with their new orders
       reorderedActiveLanguageQuestions.forEach((question, idx) => {
+        // Get actual order value (might have gaps)
         const newOrder = idx;
-        const oldOrder = question.order || 0;
+        const oldOrder = oldOrderMappings[question.id];
         
         // Track the mapping from old order to new order
         orderMappings[oldOrder] = newOrder;
@@ -199,10 +215,6 @@ const ManageQuestion = () => {
       });
 
       // Now update any corresponding questions in the other language based on the same order positions
-      const otherLanguageQuestions = questions.filter(
-        (q) => q.language === otherLanguage
-      );
-      
       otherLanguageQuestions.forEach((question) => {
         const oldOrder = question.order || 0;
         // If there's a mapping for this order, update it
@@ -223,13 +235,23 @@ const ManageQuestion = () => {
 
       // Prepare data for API call - all questions that had their order changed
       const changedQuestions = updatedQuestions.filter(
-        (q) => questions.find(origQ => origQ.id === q.id)?.order !== q.order
+        (q) => {
+          const originalQuestion = questions.find(origQ => origQ.id === q.id);
+          return originalQuestion && originalQuestion.order !== q.order;
+        }
       );
       
-      // Send the new orders to the API
-      await reorderQuestions(changedQuestions.map(q => q.id));
-
-      toast.success("Questions reordered successfully");
+      // Send the new orders to the API - include IDs and new orders
+      if (changedQuestions.length > 0) {
+        await reorderQuestions(
+          changedQuestions.map(q => ({
+            id: q.id,
+            order: q.order
+          }))
+        );
+        
+        toast.success("Questions reordered successfully");
+      }
     } catch (error) {
       console.error("Error reordering questions:", error);
       toast.error("Failed to reorder questions");
@@ -305,13 +327,26 @@ const ManageQuestion = () => {
     }
   };
 
+  const handleAddQuestionAt = (index) => {
+    // Set the default order for a new question
+    setIsModalOpen(true);
+    // Store the target position for when we create the new question
+    sessionStorage.setItem('newQuestionOrder', index);
+  };
+
   const handleSubmitQuestion = async (formData) => {
     try {
+      // Get stored order position if available
+      const storedOrder = sessionStorage.getItem('newQuestionOrder');
+      const orderPosition = storedOrder ? parseInt(storedOrder) : null;
+      
       if (editingQuestion) {
         // Update existing question
         const response = await updateQuestion(editingQuestion.id, {
           ...formData,
           exam: exam.id,
+          // Keep the original order if editing
+          order: editingQuestion.order
         });
 
         if (response && response.id) {
@@ -324,10 +359,12 @@ const ManageQuestion = () => {
           toast.success("Question updated successfully");
         }
       } else {
-        // Create new question
+        // Create new question with specific order if provided
         const response = await createQuestion({
           ...formData,
           exam: exam.id,
+          // Use the order position if available, otherwise let API decide
+          ...(orderPosition !== null ? { order: orderPosition } : {})
         });
 
         if (response && response.id) {
@@ -336,6 +373,9 @@ const ManageQuestion = () => {
           toast.success("Question created successfully");
         }
       }
+
+      // Clear the stored order after use
+      sessionStorage.removeItem('newQuestionOrder');
 
       // Close modal and reset editing state
       setIsModalOpen(false);
@@ -408,264 +448,283 @@ const ManageQuestion = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header - Improved responsiveness */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-8 mb-4 sm:mb-8 border border-gray-100">
-          <button
-            onClick={handleBack}
-            className="mb-4 sm:mb-6 flex items-center text-gray-600 hover:text-teal-600 transition-colors group"
-          >
-            <FiArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Back to Exam Sets
-          </button>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex-1 mb-4 sm:mb-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {exam.name}
-              </h1>
-
-              {/* Stats Cards - Made more responsive */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg sm:rounded-xl p-3 sm:p-4 text-white">
-                  <div className="flex items-center">
-                    <FiFileText className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
-                    <div>
-                      <p className="text-teal-100 text-xs sm:text-sm">Total Questions</p>
-                      <p className="text-lg sm:text-2xl font-bold">{questions.length}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg sm:rounded-xl p-3 sm:p-4 text-white">
-                  <div className="flex items-center">
-                    <FiGlobe className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
-                    <div>
-                      <p className="text-blue-100 text-xs sm:text-sm">English</p>
-                      <p className="text-lg sm:text-2xl font-bold">{englishCount}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg sm:rounded-xl p-3 sm:p-4 text-white">
-                  <div className="flex items-center">
-                    <FiBook className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
-                    <div>
-                      <p className="text-purple-100 text-xs sm:text-sm">Hindi</p>
-                      <p className="text-lg sm:text-2xl font-bold">{hindiCount}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl p-3 sm:p-4 text-white">
-                  <div className="flex items-center">
-                    <FiAward className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3" />
-                    <div>
-                      <p className="text-green-100 text-xs sm:text-sm">Total Marks</p>
-                      <p className="text-lg sm:text-2xl font-bold">{totalMarks}</p>
-                    </div>
-                  </div>
-                </div>
+        {/* Enhanced Header with integrated search and filters */}
+        <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+          {/* Top section with back button and exam name */}
+          <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <button
+                  onClick={handleBack}
+                  className="flex items-center text-teal-100 hover:text-white transition-colors group mb-2"
+                >
+                  <FiArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                  <span className="text-sm font-medium">Back to Exam Sets</span>
+                </button>
+                <h1 className="text-xl sm:text-3xl font-bold">
+                  {exam.name}
+                </h1>
+                <p className="text-teal-100 text-sm mt-1 hidden sm:block">
+                  Manage all questions for this exam set
+                </p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters and Search - Improved for mobile */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8 border border-gray-100">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-4">
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full sm:w-auto">
-              <div className="relative w-full sm:w-auto">
-                <FiSearch className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search questions..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-auto pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
-
+              
+              {/* Add Question button */}
               <button
-                onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-colors w-full sm:w-auto justify-center sm:justify-start ${
-                  isFilterExpanded ||
-                  selectedLanguage !== "all" ||
-                  selectedClass !== "all" ||
-                  selectedSubject !== "all"
-                    ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                onClick={() => navigate(`/manage-exam/questions/${exam.id}/add`)}
+                className="bg-white text-teal-700 hover:bg-teal-50 px-4 py-2 rounded-lg flex items-center text-sm font-medium shadow-sm transition-colors self-start sm:self-center"
               >
-                <FiFilter className="w-4 h-4 mr-2" />
-                Filters
-                {(selectedLanguage !== "all" ||
-                  selectedClass !== "all" ||
-                  selectedSubject !== "all") && (
-                  <span className="ml-2 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {(selectedLanguage !== "all" ? 1 : 0) +
-                      (selectedClass !== "all" ? 1 : 0) +
-                      (selectedSubject !== "all" ? 1 : 0)}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-between sm:justify-end">
-              <button
-                onClick={() => setShowAnswers(!showAnswers)}
-                className={`flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm ${
-                  showAnswers
-                    ? "bg-green-100 text-green-700 hover:bg-green-200"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {showAnswers ? (
-                  <FiEye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                ) : (
-                  <FiEyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                )}
-                {showAnswers ? "Hide Answers" : "Show Answers"}
-              </button>
-
-              <button
-                onClick={() =>
-                  navigate(`/manage-exam/questions/${exam.id}/add`)
-                }
-                className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-3 py-1.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl flex items-center shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
-              >
-                <FiPlus className="w-3.5 h-3.5 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <FiPlus className="w-4 h-4 mr-2" />
                 Add Question
               </button>
             </div>
           </div>
-
-          {/* Expanded filters - Made responsive */}
-          {isFilterExpanded && (
-            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg mt-2 border border-gray-200 animate-fadeIn">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="space-y-1 sm:space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
-                    <FiGlobe className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" /> Language
-                  </label>
-                  <select
-                    value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
-                    className="w-full px-2 py-1.5 sm:px-3 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Languages</option>
-                    <option value="English">English Only</option>
-                    <option value="Hindi">Hindi Only</option>
-                  </select>
+          
+          {/* Search & Filter bar */}
+          <div className="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4 bg-gray-50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-1 items-center gap-2">
+                <div className="relative w-full sm:w-auto sm:min-w-[240px]">
+                  <FiSearch className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search questions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                  />
                 </div>
-
-                <div className="space-y-1 sm:space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
-                    <FiLayers className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" /> Class Category
-                  </label>
-                  <select
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="w-full px-2 py-1.5 sm:px-3 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Classes</option>
-                    {classCategories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1 sm:space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
-                    <FiBookOpen className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" /> Subject Level
-                  </label>
-                  <select
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full px-2 py-1.5 sm:px-3 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Subjects</option>
-                    {subjectLevels.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-3 sm:mt-4 flex justify-end">
+                
                 <button
-                  onClick={clearFilters}
-                  className="text-xs sm:text-sm text-gray-600 hover:text-teal-600 flex items-center"
+                  onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                  className={`hidden sm:flex items-center px-3 py-2 rounded-lg transition-colors ${
+                    isFilterExpanded || selectedLanguage !== "all" || selectedClass !== "all" || selectedSubject !== "all"
+                      ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  } text-sm`}
                 >
-                  <FiX className="mr-1" /> Clear filters
+                  <FiFilter className="w-3.5 h-3.5 mr-1.5" />
+                  Filters
+                  {(selectedLanguage !== "all" || selectedClass !== "all" || selectedSubject !== "all") && (
+                    <span className="ml-1.5 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {(selectedLanguage !== "all" ? 1 : 0) +
+                        (selectedClass !== "all" ? 1 : 0) +
+                        (selectedSubject !== "all" ? 1 : 0)}
+                    </span>
+                  )}
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                  className={`sm:hidden flex items-center px-3 py-2 rounded-lg transition-colors ${
+                    isFilterExpanded || selectedLanguage !== "all" || selectedClass !== "all" || selectedSubject !== "all"
+                      ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  } text-sm flex-1`}
+                >
+                  <FiFilter className="w-3.5 h-3.5 mr-1.5" />
+                  Filters
+                  {(selectedLanguage !== "all" || selectedClass !== "all" || selectedSubject !== "all") && (
+                    <span className="ml-1.5 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {(selectedLanguage !== "all" ? 1 : 0) +
+                        (selectedClass !== "all" ? 1 : 0) +
+                        (selectedSubject !== "all" ? 1 : 0)}
+                    </span>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setShowAnswers(!showAnswers)}
+                  className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm ${
+                    showAnswers
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {showAnswers ? (
+                    <><FiEye className="w-3.5 h-3.5 mr-1.5" /> Hide</>
+                  ) : (
+                    <><FiEyeOff className="w-3.5 h-3.5 mr-1.5" /> Show</>
+                  )}
                 </button>
               </div>
             </div>
-          )}
-
-          {/* Active filter badges - Made responsive */}
-          {(selectedLanguage !== "all" ||
-            selectedClass !== "all" ||
-            selectedSubject !== "all") && (
-            <div className="flex flex-wrap gap-1 sm:gap-2 mt-3 sm:mt-4">
-              {selectedLanguage !== "all" && (
-                <div className="bg-teal-100 text-teal-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm flex items-center">
-                  <FiGlobe className="mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {selectedLanguage}
-                  <button
-                    onClick={() => setSelectedLanguage("all")}
-                    className="ml-1 sm:ml-2 text-teal-600 hover:text-teal-800"
-                  >
-                    <FiX className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </button>
+            
+            {/* Expanded filters */}
+            {isFilterExpanded && (
+              <div className="mt-3 pt-3 border-t border-gray-200 animate-fadeIn">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                      Language
+                    </label>
+                    <select
+                      value={selectedLanguage}
+                      onChange={(e) => setSelectedLanguage(e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="all">All Languages</option>
+                      <option value="English">English Only</option>
+                      <option value="Hindi">Hindi Only</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                      Class Category
+                    </label>
+                    <select
+                      value={selectedClass}
+                      onChange={(e) => setSelectedClass(e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="all">All Classes</option>
+                      {classCategories.map((category) => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                      Subject Level
+                    </label>
+                    <select
+                      value={selectedSubject}
+                      onChange={(e) => setSelectedSubject(e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="all">All Subjects</option>
+                      {subjectLevels.map((subject) => (
+                        <option key={subject} value={subject}>{subject}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              )}
-
-              {selectedClass !== "all" && (
-                <div className="bg-blue-100 text-blue-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm flex items-center">
-                  <FiLayers className="mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {selectedClass}
-                  <button
-                    onClick={() => setSelectedClass("all")}
-                    className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <FiX className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </button>
+                
+                {/* Active filter badges */}
+                {(selectedLanguage !== "all" || selectedClass !== "all" || selectedSubject !== "all") && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {selectedLanguage !== "all" && (
+                      <div className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs flex items-center">
+                        <FiGlobe className="mr-1 h-2.5 w-2.5" />
+                        {selectedLanguage}
+                        <button
+                          onClick={() => setSelectedLanguage("all")}
+                          className="ml-1 text-teal-600 hover:text-teal-800"
+                        >
+                          <FiX className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {selectedClass !== "all" && (
+                      <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs flex items-center">
+                        <FiLayers className="mr-1 h-2.5 w-2.5" />
+                        {selectedClass}
+                        <button
+                          onClick={() => setSelectedClass("all")}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          <FiX className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {selectedSubject !== "all" && (
+                      <div className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs flex items-center">
+                        <FiBookOpen className="mr-1 h-2.5 w-2.5" />
+                        {selectedSubject}
+                        <button
+                          onClick={() => setSelectedSubject("all")}
+                          className="ml-1 text-purple-600 hover:text-purple-800"
+                        >
+                          <FiX className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-gray-500 hover:text-teal-600 flex items-center ml-1"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Reordering indicator */}
+            {isReordering && (
+              <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                  <span className="text-blue-700 text-xs">
+                    Reordering questions...
+                  </span>
                 </div>
-              )}
-
-              {selectedSubject !== "all" && (
-                <div className="bg-purple-100 text-purple-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm flex items-center">
-                  <FiBookOpen className="mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {selectedSubject}
-                  <button
-                    onClick={() => setSelectedSubject("all")}
-                    className="ml-1 sm:ml-2 text-purple-600 hover:text-purple-800"
-                  >
-                    <FiX className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Reordering indicator - Made responsive */}
-          {isReordering && (
-            <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              </div>
+            )}
+          </div>
+          
+          {/* Stats Cards Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100">
+            <div className="p-4 sm:p-6">
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-600 mr-2"></div>
-                <span className="text-blue-700 text-xs sm:text-sm">
-                  Reordering questions...
-                </span>
+                <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-700 mr-3">
+                  <FiFileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Questions</p>
+                  <p className="text-xl font-bold text-gray-900">{questions.length}</p>
+                </div>
               </div>
             </div>
-          )}
+            
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 mr-3">
+                  <FiGlobe className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">English</p>
+                  <p className="text-xl font-bold text-gray-900">{englishCount}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 mr-3">
+                  <FiBook className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Hindi</p>
+                  <p className="text-xl font-bold text-gray-900">{hindiCount}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center text-green-700 mr-3">
+                  <FiAward className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Marks</p>
+                  <p className="text-xl font-bold text-gray-900">{totalMarks}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Questions by Language - Made responsive */}
+        {/* Remove the separate filters section since it's now in the header */}
+        
+        {/* Questions by Language - Keep the existing code */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -716,10 +775,19 @@ const ManageQuestion = () => {
                                   isDraggable={true}
                                 />
                               ) : (
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 flex items-center justify-center min-h-[120px]">
-                                  <p className="text-gray-400 text-center">
-                                    No English question for order #{index + 1}
-                                  </p>
+                                <div 
+                                  onClick={() => handleAddQuestionAt(index)}
+                                  className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 flex items-center justify-center min-h-[120px] cursor-pointer hover:bg-gray-100 hover:border-teal-300 transition-colors"
+                                >
+                                  <div className="text-center">
+                                    <p className="text-gray-400">
+                                      No English question for order #{index + 1}
+                                    </p>
+                                    <p className="text-teal-600 text-sm mt-2">
+                                      <FiPlus className="inline-block mr-1" /> 
+                                      Click to add a question here
+                                    </p>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -755,10 +823,19 @@ const ManageQuestion = () => {
                                   isDraggable={true}
                                 />
                               ) : (
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 flex items-center justify-center min-h-[120px]">
-                                  <p className="text-gray-400 text-center">
-                                    No Hindi question for order #{index + 1}
-                                  </p>
+                                <div 
+                                  onClick={() => handleAddQuestionAt(index)}
+                                  className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 flex items-center justify-center min-h-[120px] cursor-pointer hover:bg-gray-100 hover:border-purple-300 transition-colors"
+                                >
+                                  <div className="text-center">
+                                    <p className="text-gray-400">
+                                      No Hindi question for order #{index + 1}
+                                    </p>
+                                    <p className="text-purple-600 text-sm mt-2">
+                                      <FiPlus className="inline-block mr-1" /> 
+                                      Click to add a question here
+                                    </p>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -899,7 +976,7 @@ const ManageQuestion = () => {
           )}
         </DndContext>
 
-        {/* Question Modal */}
+        {/* Question Modal - Keep the existing code */}
         <QuestionModal
           isOpen={isModalOpen}
           onClose={() => {
