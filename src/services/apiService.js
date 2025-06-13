@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../store/configue";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/";
+const API_URL = getApiUrl();
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -44,19 +44,39 @@ export const translateText = async (text, sourceLang, targetLang) => {
   }
 };
 
-// Update the reorderQuestions function to properly handle orders
+// Update reorderQuestions function to handle CSRF verification
 export const reorderQuestions = async (questions) => {
   try {
-    // Check if the input is an array of objects with id and order
-    const payload = Array.isArray(questions) && questions[0]?.order !== undefined
-      ? { questions } // Send as { questions: [{id, order}, ...] }
-      : { question_ids: questions }; // Legacy format: just IDs
-
-    const response = await axiosInstance.post(
-      `/admin/teacher/api/questions/reorder/`,
-      payload
-    );
-    return response.data;
+    // Extract just the IDs from the questions
+    const questionIds = questions.map(q => q.id);
+    
+    // Format the payload as expected by the API: { "order": [id1, id2, id3, ...] }
+    const payload = { 
+      order: questionIds
+    };
+    
+    console.log("Sending reorder payload:", payload);
+    
+    
+    // Include CSRF token in headers
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+   
+    
+    // Use fetch API directly to have more control over headers
+    const response = await fetch('https://api.ptpinstitute.com/admin/teacher/api/questions/reorder/', {
+      method: 'PUT',
+      headers: headers,
+      credentials: 'include', // Important for cookies
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Reorder failed with status: ${response.status}`);
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error("Error reordering questions:", error);
     throw error;
