@@ -49,7 +49,7 @@ const QuestionCard = ({
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
           <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
-            Question {index + 1}
+           ({question.id}) Question {index + 1}
           </span>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
