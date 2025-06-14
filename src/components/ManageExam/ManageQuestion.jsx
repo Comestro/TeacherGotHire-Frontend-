@@ -135,7 +135,7 @@ const ManageQuestion = () => {
     };
   };
 
-  // Improved drag end handler to handle empty positions properly
+  // Improved drag end handler to only reorder questions of the same language
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -144,24 +144,53 @@ const ManageQuestion = () => {
     try {
       setIsReordering(true);
 
-      const oldIndex = questions.findIndex(q => q.id === active.id);
-      const newIndex = questions.findIndex(q => q.id === over.id);
+      // Get the dragged question
+      const activeQuestion = questions.find(q => q.id === active.id);
+      if (!activeQuestion) return;
 
+      // Get the language of the dragged question
+      const language = activeQuestion.language;
+      
+      // Only reorder questions of the same language
+      const sameLanguageQuestions = questions.filter(q => q.language === language);
+      
+      // Find indices within the same language questions
+      const oldIndex = sameLanguageQuestions.findIndex(q => q.id === active.id);
+      const newIndex = sameLanguageQuestions.findIndex(q => q.id === over.id);
+      
       if (oldIndex === -1 || newIndex === -1) return;
 
-      // Create new array with reordered questions
-      const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
+      // Create new array with reordered questions of the same language
+      const reorderedLanguageQuestions = arrayMove(sameLanguageQuestions, oldIndex, newIndex);
       
-      // Extract only the IDs from the questions array
-      const orderedIds = reorderedQuestions.map(question => question.id);
+      // Update orders sequentially for the reordered questions
+      const updatedLanguageQuestions = reorderedLanguageQuestions.map((q, index) => ({
+        ...q,
+        order: index
+      }));
+      
+      // Extract IDs of the reordered questions in their new order
+      const orderedIds = updatedLanguageQuestions.map(question => question.id);
+      
+      // Update the full questions array with the reordered questions
+      const updatedQuestions = [...questions];
+      updatedLanguageQuestions.forEach(updatedQuestion => {
+        const index = updatedQuestions.findIndex(q => q.id === updatedQuestion.id);
+        if (index !== -1) {
+          updatedQuestions[index] = updatedQuestion;
+        }
+      });
 
       // Update UI optimistically
-      setQuestions(reorderedQuestions);
+      setQuestions(updatedQuestions);
 
-      // Call API with formatted payload
+      // Log what we're sending to the API
+      console.log(`Reordering ${language} questions:`, orderedIds);
+
+      // Call API with formatted payload - only sending the IDs of the reordered questions
       await reorderQuestions(orderedIds);
       
-      toast.success('Questions reordered successfully');
+      toast.success(`${language} questions reordered successfully`);
 
     } catch (error) {
       console.error('Reordering failed:', error);

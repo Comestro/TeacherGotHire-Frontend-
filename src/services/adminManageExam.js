@@ -20,4 +20,27 @@ export const deleteQuestion = (id) => apiService.delete("/api/new/examsetter/que
 export const createNewQuestion = (data) => apiService.create("/api/new/examsetter/question", data);
 export const updateNewQuestion = (id, data) => apiService.update("/api/new/examsetter/question", id, data);
 
+// Update reorderQuestions function to handle language-specific reordering
+export const reorderQuestions = async (questionIds) => {
+  try {
+    // Format the payload as { "order": [id1, id2, id3, ...] }
+    const payload = { 
+      order: questionIds
+    };
+    
+    console.log("Sending reorder payload:", payload);
+    
+    const response = await axiosInstance.post(
+      `/admin/teacher/api/questions/reorder/`,
+      payload
+    );
+    
+    console.log("Reorder response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error reordering questions:", error);
+    throw error;
+  }
+};
+
 
