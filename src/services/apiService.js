@@ -27,59 +27,40 @@ axiosInstance.interceptors.request.use(
 
 export const translateText = async (text, sourceLang, targetLang) => {
   if (!text.trim()) return "";
-  
+
   try {
-    const response = await axiosInstance.post('api/translator/', {
+    const response = await axiosInstance.post("api/translator/", {
       text,
       source: sourceLang === "English" ? "en" : "hi",
-      dest: targetLang === "English" ? "en" : "hi"
+      dest: targetLang === "English" ? "en" : "hi",
     });
 
     // console.log("Translation response:", response.data);
-    
+
     return response.data.translated || text;
   } catch (error) {
-    console.error('Translation error:', error);
+    console.error("Translation error:", error);
     throw error;
   }
 };
 
-// Update reorderQuestions function to handle CSRF verification
-export const reorderQuestions = async (questions) => {
+export const reorderQuestions = async (orderedIds) => {
   try {
-    // Extract just the IDs from the questions
-    const questionIds = questions.map(q => q.id);
-    
-    // Format the payload as expected by the API: { "order": [id1, id2, id3, ...] }
-    const payload = { 
-      order: questionIds
+    const payload = {
+      order: orderedIds,
     };
-    
-    console.log("Sending reorder payload:", payload);
-    
-    
-    // Include CSRF token in headers
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-   
-    
-    // Use fetch API directly to have more control over headers
-    const response = await fetch('https://api.ptpinstitute.com/admin/teacher/api/questions/reorder/', {
-      method: 'PUT',
-      headers: headers,
-      credentials: 'include', // Important for cookies
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Reorder failed with status: ${response.status}`);
+
+    const response = await axiosInstance.put("api/questions/reorder/", payload);
+
+    if (response.status === 200) {
+      return response.data;
     }
-    
-    return await response.json();
+    throw new Error("Failed to reorder questions");
   } catch (error) {
     console.error("Error reordering questions:", error);
-    throw error;
+    throw error.response?.data || {
+      message: "Failed to reorder questions",
+    };
   }
 };
 
@@ -88,7 +69,7 @@ export const fetchSingleTeacherById = async (teacherId) => {
     const response = await axiosInstance.get(
       `/api/admin/teacher/${teacherId}/`
     );
-    return response.data; 
+    return response.data;
   } catch (error) {
     throw new Error(
       error.response?.data?.message ||
@@ -96,7 +77,6 @@ export const fetchSingleTeacherById = async (teacherId) => {
     );
   }
 };
-
 
 const apiService = {
   getAll: async (endpoint) => {

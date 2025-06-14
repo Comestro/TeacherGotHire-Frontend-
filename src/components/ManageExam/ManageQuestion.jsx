@@ -139,124 +139,33 @@ const ManageQuestion = () => {
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) {
-      return;
-    }
+    if (!active || !over || active.id === over.id) return;
 
     try {
       setIsReordering(true);
 
-      // Get the active question and target question
-      const activeQuestion = questions.find((q) => q.id === active.id);
-      const overQuestion = questions.find((q) => q.id === over.id);
+      const oldIndex = questions.findIndex(q => q.id === active.id);
+      const newIndex = questions.findIndex(q => q.id === over.id);
 
-      if (!activeQuestion) return;
+      if (oldIndex === -1 || newIndex === -1) return;
 
-      // Get the active language
-      const activeLanguage = activeQuestion.language;
-      // Get the other language
-      const otherLanguage = activeLanguage === "English" ? "Hindi" : "English";
-
-      // Get all questions of the active language, sorted by order
-      const activeLanguageQuestions = questions
-        .filter((q) => q.language === activeLanguage)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-      // Get the other language questions
-      const otherLanguageQuestions = questions
-        .filter((q) => q.language === otherLanguage)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-      // Find the indices in the active language array
-      const oldIndex = activeLanguageQuestions.findIndex((q) => q.id === active.id);
-      let newIndex = overQuestion 
-        ? activeLanguageQuestions.findIndex((q) => q.id === over.id) 
-        : activeLanguageQuestions.length - 1; // Default to end if over doesn't exist
-
-      if (oldIndex === -1) return;
-      if (newIndex === -1) newIndex = activeLanguageQuestions.length - 1;
-
-      // Create a new array with the question moved to the new position
-      const reorderedActiveLanguageQuestions = arrayMove(
-        activeLanguageQuestions,
-        oldIndex,
-        newIndex
-      );
-
-      // Create a deep copy of all questions to update
-      const updatedQuestions = [...questions];
-
-      // Get current order mappings before changes
-      const oldOrderMappings = {};
-      activeLanguageQuestions.forEach((question) => {
-        oldOrderMappings[question.id] = question.order || 0;
-      });
-
-      // Create a mapping of order positions between languages (maps old order to new order)
-      const orderMappings = {};
+      // Create new array with reordered questions
+      const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
       
-      // First update the active language questions with their new orders
-      reorderedActiveLanguageQuestions.forEach((question, idx) => {
-        // Get actual order value (might have gaps)
-        const newOrder = idx;
-        const oldOrder = oldOrderMappings[question.id];
-        
-        // Track the mapping from old order to new order
-        orderMappings[oldOrder] = newOrder;
-        
-        // Update in our local state
-        const qIndex = updatedQuestions.findIndex((q) => q.id === question.id);
-        if (qIndex !== -1) {
-          updatedQuestions[qIndex] = {
-            ...updatedQuestions[qIndex],
-            order: newOrder,
-          };
-        }
-      });
+      // Extract only the IDs from the questions array
+      const orderedIds = reorderedQuestions.map(question => question.id);
 
-      // Now update any corresponding questions in the other language based on the same order positions
-      otherLanguageQuestions.forEach((question) => {
-        const oldOrder = question.order || 0;
-        // If there's a mapping for this order, update it
-        if (orderMappings[oldOrder] !== undefined) {
-          const newOrder = orderMappings[oldOrder];
-          const qIndex = updatedQuestions.findIndex((q) => q.id === question.id);
-          if (qIndex !== -1) {
-            updatedQuestions[qIndex] = {
-              ...updatedQuestions[qIndex],
-              order: newOrder,
-            };
-          }
-        }
-      });
+      // Update UI optimistically
+      setQuestions(reorderedQuestions);
 
-      // Update the questions state
-      setQuestions(updatedQuestions);
-
-      // Prepare data for API call - all questions that had their order changed
-      const changedQuestions = updatedQuestions.filter(
-        (q) => {
-          const originalQuestion = questions.find(origQ => origQ.id === q.id);
-          return originalQuestion && originalQuestion.order !== q.order;
-        }
-      );
+      // Call API with formatted payload
+      await reorderQuestions(orderedIds);
       
-      // Send the new orders to the API - include IDs and new orders
-      if (changedQuestions.length > 0) {
-        await reorderQuestions(
-          changedQuestions.map(q => ({
-            id: q.id,
-            order: q.order
-          }))
-        );
-        
-        toast.success("Questions reordered successfully");
-      }
+      toast.success('Questions reordered successfully');
+
     } catch (error) {
-      console.error("Error reordering questions:", error);
-      toast.error("Failed to reorder questions");
-
-      // Revert the changes by refetching data
+      console.error('Reordering failed:', error);
+      toast.error(error.message || 'Failed to reorder questions');
       await refreshExamData();
     } finally {
       setIsReordering(false);
