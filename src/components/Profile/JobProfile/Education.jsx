@@ -61,8 +61,9 @@ const Education = () => {
 
   const handleQualificationChange = (e) => {
     setSelectedQualification(e.target.value);
+    // Update the form value when selection changes
+    setValue("qualification", e.target.value);
   };
-
 
   // Fetch education data on component mount
   useEffect(() => {
@@ -77,13 +78,15 @@ const Education = () => {
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
-      console.log("data",data)
+      console.log("data", data);
       setLoading(true);
       const payload = {
         institution: data.institution,
-        qualification: data.qualification,
+        qualification: selectedQualification, // Use the selected qualification state
         year_of_passing: data.year_of_passing,
         grade_or_percentage: data.grade_or_percentage,
+        session: data.session || "",
+        board_or_university: data.board_or_university || "", // Changed from board to board_or_university
         subjects: selectedSubjects.map(subject => ({
           name: subject.name,
           marks: parseFloat(subject.marks)
@@ -113,7 +116,6 @@ const Education = () => {
     }
   };
 
-
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsEditing(true);
@@ -123,10 +125,16 @@ const Education = () => {
     Object.keys(education).forEach((key) => {
       setValue(key, education[key]);
     });
+    
+    // Set selected qualification for the dropdown
+    if (education.qualification && education.qualification.name) {
+      setSelectedQualification(education.qualification.name);
+    }
   
     // Populate selectedSubjects with existing subjects
     setSelectedSubjects(education.subjects || []);
   };
+
   const handleDelete = async (index) => {
     try {
       const id = educationData[index].id;
@@ -140,7 +148,7 @@ const Education = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white  border border-gray-200">
+    <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
       <ToastContainer position="top-right" autoClose={3000} />
       {/* Enhanced Header */}
       {loading && <Loader />}
@@ -178,88 +186,82 @@ const Education = () => {
         </div>
       )}
 
-      {/* Education List */}
-      {!isEditing ? (
-        <div className="space-y-4">
-          {educationData.map((experience, index) => (
-            <div
-              key={index}
-              className="group relative p-5 rounded-xl border border-gray-200 hover:border-[#3E98C7]/30 transition-all duration-200 bg-white hover:shadow-sm"
-            >
-              <div className="absolute bottom-4 right-4 flex gap-2  group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => {
-                    handleEdit(index);
-                    setIsEditing(true);
-                    setEditingRowIndex(index);
-                  }}
-                  className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
-                >
-                  <HiPencil className="size-5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(index)}
-                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
-                >
-                  <HiOutlineTrash className="size-5" />
-                </button>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#3E98C7] to-[#67B3DA] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
-                  {experience.qualification?.name?.[0] || "E"}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {experience.qualification?.name || "N/A"}
-                      </h3>
-                      <p className="text-sm text-[#3E98C7] font-medium">
-                        {experience.institution || "N/A"}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-500 whitespace-nowrap">
-                      Passing Year : {experience.year_of_passing || "N/A"}
-                    </p>
-                  </div>
-
-                  <div className="">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">
-                        {/^[A-Da-d]$/.test(experience.grade_or_percentage)
-                          ? "Grade:"
-                          : "Percentage:"}
-                      </span>{" "}
-                      {experience.grade_or_percentage || "N/A"}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {experience.subjects.map((subject, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full"
-                      >
-                        <span className="text-sm text-teal-800">
-                          {subject.name} ({subject.marks} marks)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubject(index)}
-                          className="text-teal-600 hover:text-teal-800"
+      {/* Education Table */}
+      {!isEditing && educationData.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Course Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Session</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Passing Year</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Institution</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Board/University</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Subjects</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Result/Marks(%)</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {educationData.map((education, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.qualification?.name || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.session || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.year_of_passing || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.institution || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.board_or_university || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    <div className="flex flex-wrap gap-1">
+                      {education.subjects?.map((subject, idx) => (
+                        <span 
+                          key={idx} 
+                          className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-md"
                         >
-                          <IoClose className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+                          {subject.name}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    {education.grade_or_percentage || "N/A"}
+                  </td>
+                  <td className="px-4 py-3 border-b text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          handleEdit(index);
+                          setIsEditing(true);
+                          setEditingRowIndex(index);
+                        }}
+                        className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                      >
+                        <HiPencil className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                      >
+                        <HiOutlineTrash className="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
+        // Form remains unchanged
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="bg-white p-6 rounded-xl border border-gray-200"
@@ -309,6 +311,17 @@ const Education = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                Session
+              </label>
+              <input
+                type="text"
+                placeholder="YYYY-YY (e.g., 2020-22)"
+                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
+                {...register("session")}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year of Passing <span className="text-red-500">*</span>
               </label>
               <input
@@ -336,6 +349,17 @@ const Education = () => {
                   {errors.year_of_passing.message}
                 </p>
               )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Board/University
+              </label>
+              <input
+                type="text"
+                placeholder="Enter board or university name"
+                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
+                {...register("board_or_university")}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
