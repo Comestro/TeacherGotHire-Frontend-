@@ -46,6 +46,40 @@ const Education = () => {
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
 
+  // Define the qualification order mapping - moved to component level so it can be reused
+  const qualificationOrder = {
+    "Matriculation": 1,
+    "Matric": 1,
+    "SSC": 1,
+    "10th": 1,
+    "Intermediate": 2,
+    "HSSC": 2,
+    "Inter": 2,
+    "12th": 2,
+    "Associate": 3,
+    "Bachelor": 3,
+    "Bachelor's": 3,
+    "BS": 3,
+    "BSc": 3,
+    "BA": 3,
+    "BBA": 3,
+    "B.Tech": 3,
+    "Master": 4,
+    "Master's": 4,
+    "MS": 4,
+    "MSc": 4,
+    "MA": 4,
+    "MBA": 4,
+    "M.Tech": 4,
+    "M.Phil": 5,
+    "MPhil": 5,
+    "PhD": 6,
+    "Doctorate": 6,
+    "Post Doctorate": 7,
+    "Diploma": 8,
+    "Certificate": 9,
+  };
+
   // Add handler for adding subject with marks
   const handleAddSubject = () => {
     if (subjectInput.name && subjectInput.marks) {
@@ -73,6 +107,109 @@ const Education = () => {
 
   const fetchProfile = () => {
     dispatch(getEducationProfile());
+  };
+
+  // Add this function to determine the next allowed qualification levels
+  const getNextAllowedQualificationLevels = (existingEducations) => {
+    // If no education exists yet, allow all education levels to start with
+    if (!existingEducations || existingEducations.length === 0) {
+      return Object.values(qualificationOrder); // Allow all qualification levels initially
+    }
+    
+    // Track which levels already exist in the user's education
+    const existingLevels = new Set();
+    
+    // Get all qualification levels that the user already has
+    existingEducations.forEach(education => {
+      let qualName = "";
+      
+      // Extract qualification name
+      if (education.qualification?.name) {
+        qualName = education.qualification.name;
+      } else if (typeof education.qualification === 'string') {
+        qualName = education.qualification;
+      } else {
+        qualName = education.qualification_name || "";
+      }
+      
+      // Get the level for this qualification
+      const level = qualificationOrder[qualName] || 0;
+      
+      // Add to existing levels
+      if (level > 0) {
+        existingLevels.add(level);
+      }
+    });
+    
+    // Convert to array for easier checking
+    const existingLevelsArray = Array.from(existingLevels);
+    
+    // Allow any qualification level that doesn't already exist
+    return Object.values(qualificationOrder).filter(level => !existingLevels.has(level));
+  };
+
+  // Function to sort qualifications for the dropdown
+  const getSortedQualifications = (qualifications) => {
+    if (!qualifications || qualifications.length === 0) {
+      return [];
+    }
+    
+    // Get the allowed qualification levels for new entries
+    const allowedLevels = getNextAllowedQualificationLevels(educationData);
+    
+    // Filter and sort qualifications
+    return [...qualifications]
+      .filter(qual => {
+        const level = qualificationOrder[qual.name] || 100;
+        return allowedLevels.includes(level);
+      })
+      .sort((a, b) => {
+        const orderA = qualificationOrder[a.name] || 100;
+        const orderB = qualificationOrder[b.name] || 100;
+        return orderA - orderB;
+      });
+  };
+
+  // Function to sort education data by qualification level
+  const getSortedEducationData = (data) => {
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    // Create a copy of the data to avoid mutating the original
+    const sorted = [...data].sort((a, b) => {
+      // First try to get the qualification name from the object structure
+      let qualA = a.qualification?.name;
+      let qualB = b.qualification?.name;
+      
+      // If qualification is just a string (not an object)
+      if (typeof a.qualification === 'string') {
+        qualA = a.qualification;
+      }
+      
+      if (typeof b.qualification === 'string') {
+        qualB = b.qualification;
+      }
+      
+      // If we still don't have qualification names, try backup properties
+      qualA = qualA || a.qualification_name || "";
+      qualB = qualB || b.qualification_name || "";
+      
+      // Get the order values, default to a high number if not found
+      const orderA = qualificationOrder[qualA] || 100;
+      const orderB = qualificationOrder[qualB] || 100;
+      
+      // If order is the same, sort by year of passing (newest first)
+      if (orderA === orderB) {
+        const yearA = parseInt(a.year_of_passing) || 0;
+        const yearB = parseInt(b.year_of_passing) || 0;
+        return yearB - yearA; // Newest first
+      }
+      
+      return orderA - orderB;
+    });
+    
+    return sorted;
   };
 
   // Handle saving or updating education data
@@ -203,7 +340,7 @@ const Education = () => {
               </tr>
             </thead>
             <tbody>
-              {educationData.map((education, index) => (
+              {getSortedEducationData(educationData).map((education, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b text-sm">
                     {education.qualification?.name || "N/A"}
@@ -297,11 +434,41 @@ const Education = () => {
                 <option value="" disabled>
                   Select qualification
                 </option>
-                {qualification.map((role) => (
-                  <option key={role.id} value={role.name}>
-                    {role.name}
-                  </option>
-                ))}
+                {qualification.map((role) => {
+                  // Get the level for this qualification
+                  const qualLevel = qualificationOrder[role.name] || 100;
+                  
+                  // Get all allowed levels
+                  const allowedLevels = getNextAllowedQualificationLevels(educationData);
+                  
+                  // Check if this qualification is already added
+                  const alreadyAdded = educationData.some(edu => 
+                    (edu.qualification?.name === role.name) || 
+                    (typeof edu.qualification === 'string' && edu.qualification === role.name)
+                  );
+                  
+                  // Disable if already added, unless we're editing this specific qualification
+                  const isDisabled = alreadyAdded && 
+                    (editingIndex === null || educationData[editingIndex]?.qualification?.name !== role.name);
+                  
+                  // If editing, enable the qualification that's being edited
+                  const isCurrentlyEditing = editingIndex !== null && 
+                    educationData[editingIndex]?.qualification?.name === role.name;
+                  
+                  // Enable if it's allowed or if it's the one being edited
+                  const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
+                  
+                  return (
+                    <option 
+                      key={role.id} 
+                      value={role.name}
+                      disabled={!isEnabled}
+                      className={!isEnabled ? "text-gray-400" : ""}
+                    >
+                      {role.name} {alreadyAdded ? "(Already added)" : ""}
+                    </option>
+                  );
+                })}
               </select>
               {errors.qualification && (
                 <span className="text-red-500 text-sm">
