@@ -277,54 +277,53 @@ const QuestionForm = () => {
 
   // New function to handle Hindi field real-time word-by-word translation
   const handleHindiKeyUp = async (e, field, value, optionIndex = null) => {
-    // First update the field with current value
-    updateHindiQuestion(field, value, optionIndex);
+  updateHindiQuestion(field, value, optionIndex);
 
-    // Check if space or enter was pressed
-    if ((e.key === " " || e.key === "Enter") && value.trim()) {
-      const lastWord = getLastWord(value);
+  if ((e.key === " " || e.key === "Enter") && value.trim()) {
+    const words = value.trim().split(/\s+/);
+    let updatedWords = [...words];
+    let hasTranslation = false;
 
-      // Check if the last word is in English and needs translation
-      if (lastWord && isEnglishWord(lastWord)) {
-        setIsTranslating(true);
+    setIsTranslating(true);
 
-        try {
-          // Translate only the last word
-          const translatedWord = await translateText(
-            lastWord,
-            "English",
-            "Hindi"
-          );
-
-          // Replace the last English word with Hindi translation
-          const updatedText = replaceLastWord(value, translatedWord);
-
-          // Update the field with the translated word
-          if (field === "options" && optionIndex !== null) {
-            setHindiQuestion((prev) => {
-              const updated = { ...prev };
-              updated.options[optionIndex] = updatedText;
-              return updated;
-            });
-          } else {
-            setHindiQuestion((prev) => ({
-              ...prev,
-              [field]: updatedText,
-            }));
+    try {
+      // Loop through each word to detect and translate English ones
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        if (isEnglishWord(word)) {
+          try {
+            const translated = await translateText(word, "English", "Hindi");
+            updatedWords[i] = translated;
+            hasTranslation = true;
+          } catch (error) {
+            console.warn("Failed to translate:", word);
           }
-
-          // Show subtle success feedback (optional)
-          console.log(`Translated: ${lastWord} → ${translatedWord}`);
-        } catch (error) {
-          console.error("Word translation failed:", error);
-          // Don't show error toast for individual word failures to avoid spam
-          console.log("Failed to translate word:", lastWord);
-        } finally {
-          setIsTranslating(false);
         }
       }
+
+      if (hasTranslation) {
+        const updatedText = updatedWords.join(" ");
+
+        if (field === "options" && optionIndex !== null) {
+          setHindiQuestion((prev) => {
+            const updated = { ...prev };
+            updated.options[optionIndex] = updatedText;
+            return updated;
+          });
+        } else {
+          setHindiQuestion((prev) => ({
+            ...prev,
+            [field]: updatedText,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Bulk translation failed:", error);
+    } finally {
+      setIsTranslating(false);
     }
-  };
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-6">
