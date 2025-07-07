@@ -178,7 +178,7 @@ export const resendOtp = async (email) =>
   postRequest("/api/resend_otp/", { email });
 
 export const forgetPassword = async (email) =>
-  postRequest("/api/forget-password/", { email });
+  postRequest("/api/password_reset_request/", { email });
 
 export const resetPassword = async (uidb64, token, newPassword) =>
   postRequest(`/api/reset_password/${uidb64}/${token}/`, {
