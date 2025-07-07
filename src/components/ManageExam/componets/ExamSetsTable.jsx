@@ -177,7 +177,7 @@ const handleManageQuestions = (exam) => {
                       <FiEdit2 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => onDelete(exam.id)}
+                      onClick={() => handleDelete(exam.id)}
                       className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors"
                       title="Delete Exam"
                     >
