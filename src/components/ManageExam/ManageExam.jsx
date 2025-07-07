@@ -36,6 +36,7 @@ const ManageExam = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
   
+  // Separate useEffect for fetching levels - runs only once
   useEffect(() => {
     const getLevels = async () => {
       try {
@@ -45,22 +46,28 @@ const ManageExam = () => {
         console.log(error);
       }
     };
-
+    
+    getLevels();
+  }, []);
+  
+  // Updated useEffect for exam sets - now depends on refreshTrigger
+  useEffect(() => {
     const fetchExamSets = async () => {
       try {
+        setLoading(true);
         const response = await getExam();
         setExamSets(response);
+        console.log("Fetched exam sets:", response);
       } catch (error) {
         toast.error('Failed to fetch exam sets');
-        console.error('Error:', error);
+        console.error('Error fetching exams:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    getLevels();
     fetchExamSets();
-  }, []);
+  }, [refreshTrigger]); // This will re-run when refreshTrigger changes
 
   // Get class categories and subjects from setterUser - Fix the subject extraction
   const classCategories = setterUser?.[0]?.class_category || [];
@@ -136,14 +143,20 @@ const ManageExam = () => {
     alert(`Add questions for exam ID: ${examId}`);
   };
 
+  // Enhanced handleExamCreated function to show more feedback
   const handleExamCreated = (newExam) => {
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    console.log("New exam created:", newExam);
     toast.success('Exam created successfully!');
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    setIsModalOpen(false); // Close modal after success
   };
 
+  // Enhanced handleExamUpdated function
   const handleExamUpdated = (updatedExam) => {
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    console.log("Exam updated:", updatedExam);
     toast.success('Exam updated successfully!');
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    setIsModalOpen(false); // Close modal after success
   };
 
   // Get filtered subjects based on selected class category - similar to ExamSetterModal
