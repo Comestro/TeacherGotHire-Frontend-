@@ -197,82 +197,44 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
     setIsSubmitting(true);
     try {
-      // If editing, create a payload based on the language of the question being edited
+      // Create structured form data for both languages
+      const formData = {
+        english: {
+          language: "English",
+          text: englishQuestion.text.trim(),
+          solution: englishQuestion.solution.trim(),
+          options: englishQuestion.options.map(opt => opt.trim()),
+          correct_option: englishQuestion.correct_option + 1
+        },
+        hindi: {
+          language: "Hindi",
+          text: hindiQuestion.text.trim(),
+          solution: hindiQuestion.solution.trim(),
+          options: hindiQuestion.options.map(opt => opt.trim()),
+          correct_option: hindiQuestion.correct_option + 1
+        }
+      };
+
+      // If editing, handle single language edits
       if (editingQuestion) {
-        const isEditingEnglish = editingQuestion.language === 'English';
-        const questionToUpdate = isEditingEnglish ? englishQuestion : hindiQuestion;
-        
-        if (!questionToUpdate.text.trim()) {
-          toast.error(`Please fill the ${isEditingEnglish ? 'English' : 'Hindi'} question text`);
-          setIsSubmitting(false);
-          return;
+        // Keep only the language being edited if we're in edit mode
+        if (editingQuestion.language === 'English') {
+          delete formData.hindi;
+        } else if (editingQuestion.language === 'Hindi') {
+          delete formData.english;
         }
-        
-        const payload = {
-          language: questionToUpdate.language,
-          text: questionToUpdate.text.trim(),
-          options: questionToUpdate.options.map(opt => opt.trim()),
-          correct_option: questionToUpdate.correct_option + 1,
-        };
-        
-        // Add solution if it exists
-        if (questionToUpdate.solution.trim()) {
-          payload.solution = questionToUpdate.solution.trim();
+      } else {
+        // For new questions, filter out empty languages
+        if (!formData.english.text.trim() || !formData.english.options.some(opt => opt.trim())) {
+          delete formData.english;
         }
-        
-        await onSubmit(payload);
-      } 
-      // For new questions, submit both languages if they're filled
-      else {
-        // Create array of questions to submit
-        const questionsToSubmit = [];
-
-        // Add English question if it has content
-        if (englishQuestion.text.trim() && englishQuestion.options.some(opt => opt.trim())) {
-          const englishPayload = {
-            language: englishQuestion.language,
-            text: englishQuestion.text.trim(),
-            options: englishQuestion.options.map(opt => opt.trim()),
-            correct_option: englishQuestion.correct_option + 1,
-          };
-
-          // Only add solution if it exists
-          if (englishQuestion.solution.trim()) {
-            englishPayload.solution = englishQuestion.solution.trim();
-          }
-
-          questionsToSubmit.push(englishPayload);
+        if (!formData.hindi.text.trim() || !formData.hindi.options.some(opt => opt.trim())) {
+          delete formData.hindi;
         }
-
-        // Add Hindi question if it has content
-        if (hindiQuestion.text.trim() && hindiQuestion.options.some(opt => opt.trim())) {
-          const hindiPayload = {
-            language: hindiQuestion.language,
-            text: hindiQuestion.text.trim(),
-            options: hindiQuestion.options.map(opt => opt.trim()),
-            correct_option: hindiQuestion.correct_option + 1,
-          };
-
-          // Only add solution if it exists
-          if (hindiQuestion.solution.trim()) {
-            hindiPayload.solution = hindiQuestion.solution.trim();
-          }
-
-          questionsToSubmit.push(hindiPayload);
-        }
-
-        if (questionsToSubmit.length === 0) {
-          toast.error("Please fill at least one complete question (English or Hindi)");
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Submit the first question (or potentially both, depending on the API)
-        await onSubmit(questionsToSubmit[0]);
       }
 
-      // Reset form and close modal on success
-      onClose();
+      await onSubmit(formData);
+      
     } catch (error) {
       console.error("Submission failed:", error);
       toast.error("Failed to save question");
@@ -297,7 +259,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         return false;
       }
       
-      // Check if the correct option is filled
       const correctOptionText = questionToValidate.options[questionToValidate.correct_option];
       if (!correctOptionText || !correctOptionText.trim()) {
         toast.error(`The selected correct answer for ${isEditingEnglish ? 'English' : 'Hindi'} question cannot be empty`);

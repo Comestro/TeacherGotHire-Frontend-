@@ -39,6 +39,7 @@ import {
   updateQuestion,
   getExamById,
   deleteQuestion,
+  createNewQuestion,
 } from "../../services/adminManageExam";
 import { reorderQuestions } from "../../services/apiService";
 
@@ -301,14 +302,46 @@ const ManageQuestion = () => {
       const storedOrder = sessionStorage.getItem('newQuestionOrder');
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
       
+      // Extract English and Hindi question data from formData
+      const englishQuestion = formData.english ? {
+        language: "English",
+        text: formData.english.text || "",
+        solution: formData.english.solution || "",
+        options: formData.english.options || [],
+        correct_option: formData.english.correct_option || 1
+      } : null;
+      
+      const hindiQuestion = formData.hindi ? {
+        language: "Hindi",
+        text: formData.hindi.text || "",
+        solution: formData.hindi.solution || "",
+        options: formData.hindi.options || [],
+        correct_option: formData.hindi.correct_option || 1
+      } : null;
+      
+      // Create questions array with non-null questions
+      const questions = [];
+      if (englishQuestion && englishQuestion.text.trim() && englishQuestion.options.length) {
+        questions.push(englishQuestion);
+      }
+      if (hindiQuestion && hindiQuestion.text.trim() && hindiQuestion.options.length) {
+        questions.push(hindiQuestion);
+      }
+      
+      if (questions.length === 0) {
+        toast.error("Please provide at least one complete question");
+        return;
+      }
+      
       if (editingQuestion) {
         // Update existing question
-        const response = await updateQuestion(editingQuestion.id, {
-          ...formData,
+        const payload = {
           exam: exam.id,
-          // Keep the original order if editing
-          order: editingQuestion.order
-        });
+          order: orderPosition !== null ? orderPosition : editingQuestion.order,
+          questions: questions
+        };
+        
+        const response = await updateQuestion(editingQuestion.id, payload);
 
         if (response && response.id) {
           // Update questions list with edited question
@@ -321,17 +354,22 @@ const ManageQuestion = () => {
         }
       } else {
         // Create new question with specific order if provided
-        const response = await createQuestion({
-          ...formData,
+        const payload = {
           exam: exam.id,
-          // Use the order position if available, otherwise let API decide
-          ...(orderPosition !== null ? { order: orderPosition } : {})
-        });
+          ...(orderPosition !== null ? { order: orderPosition } : {}),
+          questions: questions
+        };
+        
+        const response = await createNewQuestion(payload);
 
         if (response && response.id) {
-          // Add new question to the questions list
-          setQuestions((prevQuestions) => [...prevQuestions, response]);
-          toast.success("Question created successfully");
+          // Add new questions to the questions list
+          if (Array.isArray(response)) {
+            setQuestions((prevQuestions) => [...prevQuestions, ...response]);
+          } else {
+            setQuestions((prevQuestions) => [...prevQuestions, response]);
+          }
+          toast.success(`${questions.length} question(s) created successfully`);
         }
       }
 
@@ -423,7 +461,7 @@ const ManageQuestion = () => {
                   <span className="text-sm font-medium">Back to Exam Sets</span>
                 </button>
                 <h1 className="text-xl sm:text-3xl font-bold">
-                  {exam.name}
+                  {exam.name} ({exam.set_name || "N/A"})
                 </h1>
                 <p className="text-teal-100 text-sm mt-1 hidden sm:block">
                   Manage all questions for this exam set
@@ -737,7 +775,7 @@ const ManageQuestion = () => {
                                 />
                               ) : (
                                 <div 
-                                  onClick={() => handleAddQuestionAt(index)}
+                                  onClick={() => handleAddQuestionAt(index + 1)}
                                   className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 flex items-center justify-center min-h-[120px] cursor-pointer hover:bg-gray-100 hover:border-teal-300 transition-colors"
                                 >
                                   <div className="text-center">

@@ -7,6 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ExamSetsTable from './componets/ExamSetsTable';
 import ExamSetterModal from './componets/ExamSetterModal';
+import QuestionModal from './componets/QuestionModal';
 
 const ManageExam = () => {
   const [level, setLevel] = useState([]);
@@ -15,6 +16,7 @@ const ManageExam = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExam, setEditingExam] = useState(null);
   const [formData, setFormData] = useState({
+    set_name: '',
     description: '',
     subject: '',
     level: '',
@@ -26,6 +28,7 @@ const ManageExam = () => {
   
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isCopying, setIsCopying] = useState(false);
 
   const setterUser = useSelector((state) => state.examQues.setterInfo);
 
@@ -35,6 +38,10 @@ const ManageExam = () => {
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
+  
+  // Add these new states to manage question addition
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [examForQuestions, setExamForQuestions] = useState(null);
   
   // Separate useEffect for fetching levels - runs only once
   useEffect(() => {
@@ -104,8 +111,26 @@ const ManageExam = () => {
     }));
   };
 
+  const handleCopyExam = (exam) => {
+    setIsCopying(true);
+    // Clone the exam data but change the name to indicate it's a copy
+    const newName = `${exam.name || exam.description} (Copy)`;
+    setFormData({
+      set_name: newName,
+      description: exam.description,
+      subject: exam.subject.id.toString(),
+      level: exam.level.id.toString(),
+      class_category: exam.class_category.id.toString(),
+      total_marks: exam.total_marks,
+      duration: exam.duration,
+      type: exam.type
+    });
+    setIsModalOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({
+      set_name: '',
       description: '',
       subject: '',
       level: '',
@@ -116,11 +141,13 @@ const ManageExam = () => {
     });
     setIsModalOpen(false);
     setEditingExam(null);
+    setIsCopying(false);
   };
 
   const handleEdit = (exam) => {
     setEditingExam(exam);
     setFormData({
+      set_name: exam.name || '', // Add the set name from exam
       description: exam.description,
       subject: exam.subject.id.toString(),
       level: exam.level.id.toString(),
@@ -139,8 +166,65 @@ const ManageExam = () => {
     }
   };
 
-  const handleAddQuestions = (examId) => {
-    alert(`Add questions for exam ID: ${examId}`);
+  // Function to handle adding questions at a specific position
+  const handleAddQuestionAt = (exam, index) => {
+    setExamForQuestions(exam);
+    setIsQuestionModalOpen(true);
+    // Store the target position for when we create the new question
+    sessionStorage.setItem('newQuestionOrder', index);
+  };
+
+  // Function to handle submitting a new question
+  const handleSubmitQuestion = async (formData) => {
+    try {
+      setLoading(true);
+      
+      // Get stored order position if available
+      const storedOrder = sessionStorage.getItem('newQuestionOrder');
+      const orderPosition = storedOrder ? parseInt(storedOrder) : null;
+      
+      // Create payload with exam ID and order (if available)
+      const payload = {
+        ...formData,
+        exam: examForQuestions.id,
+        ...(orderPosition !== null ? { order: orderPosition } : {})
+      };
+      
+      const response = await createQuestion(payload);
+      
+      if (response && response.id) {
+        toast.success("Question added successfully!");
+        // Refresh the exam list to show updated question count
+        setRefreshTrigger(prev => prev + 1);
+      }
+      
+      // Clear the stored order after use
+      sessionStorage.removeItem('newQuestionOrder');
+      setIsQuestionModalOpen(false);
+      setExamForQuestions(null);
+      
+    } catch (error) {
+      console.error("Error adding question:", error);
+      toast.error(error.response?.data?.message || "Failed to add question");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update handleAddQuestions function
+  const handleAddQuestions = (examId, position = null) => {
+    const exam = examSets.find(exam => exam.id === examId);
+    if (exam) {
+      if (position !== null) {
+        // Add a question at a specific position
+        handleAddQuestionAt(exam, position);
+      } else {
+        // Navigate to the questions page without specifying a position
+        navigate(`/manage-exam/questions/${examId}/add`);
+      }
+    } else {
+      toast.error("Exam not found");
+    }
   };
 
   // Enhanced handleExamCreated function to show more feedback
@@ -149,6 +233,7 @@ const ManageExam = () => {
     toast.success('Exam created successfully!');
     setRefreshTrigger(prev => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success
+    setIsCopying(false); // Reset copying state
   };
 
   // Enhanced handleExamUpdated function
@@ -479,6 +564,7 @@ const ManageExam = () => {
             examSets={filteredExams}
             onAddQuestions={handleAddQuestions}
             onEdit={handleEdit}
+            onCopy={handleCopyExam}
             onDelete={handleDelete}
             refreshTrigger={refreshTrigger}
           />
@@ -489,6 +575,7 @@ const ManageExam = () => {
           isOpen={isModalOpen}
           onClose={resetForm}
           editingExam={editingExam}
+          isCopying={isCopying}
           formData={formData}
           onInputChange={handleInputChange}
           subjects={subjects}
@@ -497,6 +584,21 @@ const ManageExam = () => {
           onExamCreated={handleExamCreated}
           onExamUpdated={handleExamUpdated}
         />
+
+        {/* Import the QuestionModal component */}
+        {examForQuestions && (
+          <QuestionModal
+            isOpen={isQuestionModalOpen}
+            onClose={() => {
+              setIsQuestionModalOpen(false);
+              setExamForQuestions(null);
+              sessionStorage.removeItem('newQuestionOrder');
+            }}
+            onSubmit={handleSubmitQuestion}
+            examId={examForQuestions?.id}
+            editingQuestion={null}
+          />
+        )}
       </div>
 
       {/* Loading state - unchanged */}

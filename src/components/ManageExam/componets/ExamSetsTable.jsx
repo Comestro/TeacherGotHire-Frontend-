@@ -11,14 +11,19 @@ import {
   FiHelpCircle, 
   FiLock,
   FiEdit2,
-  FiList
+  FiList,
+  FiPlus,
+  FiCopy,
+  FiMoreVertical,
+  FiEye,
+  FiBarChart2
 } from 'react-icons/fi';
 import { getExam, deleteExam } from '../../../services/adminManageExam';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ExamSetsTable = ({ onEdit, refreshTrigger }) => {
+const ExamSetsTable = ({ onEdit, refreshTrigger, onAddQuestions, onCopy }) => {
   const navigate = useNavigate();
   const [examSets, setExamSets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +84,10 @@ const handleManageQuestions = (exam) => {
     });
   };
 
+  const handleViewQuestions = (exam) => {
+    navigate('/manage-exam/questions', { state: { exam } });
+  };
+
   useEffect(() => {
     fetchExamSets();
   }, [refreshTrigger]); 
@@ -131,12 +140,12 @@ const handleManageQuestions = (exam) => {
             {examSets.map((exam) => (
               <tr key={exam.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{exam.name}</div>
+                  <div className="text-sm font-medium text-gray-900">{exam.set_name || "N/A"}</div>
                   <div className="text-sm text-gray-500">{exam.description}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{exam.class_category?.name || 'N/A'}</div>
-                  <div className="text-sm text-gray-500">{exam.subject?.subject_name || 'N/A'}</div>
+                  <div className="text-sm text-gray-500">{exam.subject?.subject_name || 'N/A'} ({exam.class_category?.name || 'N/A'})</div>
+                  <div className="text-sm text-gray-500">{exam.level?.name || 'N/A'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -182,6 +191,13 @@ const handleManageQuestions = (exam) => {
                       title="Delete Exam"
                     >
                       <FiTrash2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onCopy(exam)}
+                      className="text-teal-600 hover:text-teal-900 p-1.5 rounded-md hover:bg-teal-50"
+                      title="Copy Exam Set"
+                    >
+                      <FiCopy className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -251,6 +267,13 @@ const handleManageQuestions = (exam) => {
               >
                 <FiTrash2 className="w-3 h-3 mr-1" />
                 Delete
+              </button>
+              <button
+                onClick={() => onCopy(exam)}
+                className="flex items-center justify-center bg-teal-50 text-teal-700 hover:bg-teal-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              >
+                <FiCopy className="w-3 h-3 mr-1" />
+                Copy
               </button>
             </div>
           </div>

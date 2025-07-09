@@ -7,7 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 const ExamSetterModal = ({ 
   isOpen, 
   onClose, 
-  editingExam, 
+  editingExam,
+  isCopying, // Add new prop to indicate if we're copying an exam set
   formData, 
   onInputChange,
   level,
@@ -82,6 +83,7 @@ const ExamSetterModal = ({
 
     try {
       const payload = {
+        set_name: formData.set_name, // Add set_name to the payload
         description: formData.description,
         subject: parseInt(formData.subject),
         level: parseInt(formData.level),
@@ -116,7 +118,12 @@ const ExamSetterModal = ({
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              {editingExam ? 'Edit Exam Set' : 'Create New Exam Set'}
+              {editingExam && !isCopying ? 'Edit Exam Set' : 'Create New Exam Set'}
+              {isCopying && (
+                <span className="ml-2 text-sm font-normal text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
+                  Copying from existing exam
+                </span>
+              )}
             </h2>
             <button
               onClick={onClose}
@@ -127,6 +134,21 @@ const ExamSetterModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Set Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="set_name"
+                value={formData.set_name || ''}
+                onChange={onInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                required
+                placeholder="Enter exam set name..."
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Exam Description
@@ -304,7 +326,7 @@ const ExamSetterModal = ({
                     Processing...
                   </span>
                 ) : (
-                  editingExam ? 'Update Exam Set' : 'Create Exam Set'
+                  isCopying ? 'Create Copy' : (editingExam ? 'Update Exam Set' : 'Create Exam Set')
                 )}
               </button>
             </div>
