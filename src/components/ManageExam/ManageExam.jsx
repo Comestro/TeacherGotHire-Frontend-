@@ -114,9 +114,8 @@ const ManageExam = () => {
   const handleCopyExam = (exam) => {
     setIsCopying(true);
     // Clone the exam data but change the name to indicate it's a copy
-    const newName = `${exam.name || exam.description} (Copy)`;
     setFormData({
-      set_name: newName,
+      set_name: exam.set_name,
       description: exam.description,
       subject: exam.subject.id.toString(),
       level: exam.level.id.toString(),
@@ -147,7 +146,7 @@ const ManageExam = () => {
   const handleEdit = (exam) => {
     setEditingExam(exam);
     setFormData({
-      set_name: exam.name || '', // Add the set name from exam
+      set_name: exam.set_name || '', // Add the set name from exam
       description: exam.description,
       subject: exam.subject.id.toString(),
       level: exam.level.id.toString(),
