@@ -90,7 +90,8 @@ const ExamSetterModal = ({
         class_category: parseInt(formData.class_category),
         type: formData.type,
         total_marks: parseInt(formData.total_marks),
-        duration: parseInt(formData.duration)
+        duration: parseInt(formData.duration),
+        total_questions: parseInt(formData.total_questions || 0) // Add total_questions to payload
       };
 
       if (editingExam) {
@@ -299,6 +300,25 @@ const ExamSetterModal = ({
                   placeholder="Enter duration in minutes"
                 />
               </div>
+            </div>
+            
+            {/* Add Total Questions field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Total Questions
+              </label>
+              <input
+                type="number"
+                name="total_questions"
+                value={formData.total_questions || ''}
+                onChange={onInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                min="1"
+                placeholder="Enter total questions"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Set the number of questions for this exam
+              </p>
             </div>
 
             <div className="flex justify-end space-x-4 pt-6">

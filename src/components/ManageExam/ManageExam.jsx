@@ -23,7 +23,8 @@ const ManageExam = () => {
     class_category: '',
     total_marks: '',
     duration: '',
-    type: 'online'
+    type: 'online',
+    total_questions: '' // Add total_questions to formData
   });
   
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,8 @@ const ManageExam = () => {
       class_category: exam.class_category.id.toString(),
       total_marks: exam.total_marks,
       duration: exam.duration,
-      type: exam.type
+      type: exam.type,
+      total_questions: exam.total_questions || 10 // Add total_questions when copying
     });
     setIsModalOpen(true);
   };
@@ -136,7 +138,8 @@ const ManageExam = () => {
       class_category: '',
       total_marks: '',
       duration: '',
-      type: 'online'
+      type: 'online',
+      total_questions: '' // Add total_questions to reset
     });
     setIsModalOpen(false);
     setEditingExam(null);
@@ -153,7 +156,8 @@ const ManageExam = () => {
       class_category: exam.class_category.id.toString(),
       total_marks: exam.total_marks,
       duration: exam.duration,
-      type: exam.type
+      type: exam.type,
+      total_questions: exam.total_questions || 10 // Add total_questions when editing
     });
     setIsModalOpen(true);
   };
@@ -324,7 +328,7 @@ const ManageExam = () => {
         {/* Add Filters and Search Section - Improved for mobile */}
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="relative w-full sm:w-auto">
                 <FiSearch className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
@@ -357,7 +361,7 @@ const ManageExam = () => {
               </button>
             </div>
 
-            <div className="text-gray-500 text-sm hidden sm:block">
+            <div className="text-gray-500 text-sm hidden sm:block truncate">
               Showing {filteredExams.length} of {examSets.length} exam sets
             </div>
           </div>

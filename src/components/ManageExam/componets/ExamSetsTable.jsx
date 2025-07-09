@@ -166,7 +166,7 @@ const handleManageQuestions = (exam) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {(exam.subject.subject_name != "hindi") ? exam.questions.length/2 : 0} questions
+                  {exam.questions.length} / {exam.total_questions} questions
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end space-x-2">
