@@ -126,6 +126,12 @@ const handleManageQuestions = (exam) => {
                 Type
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Duration
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Marks
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -153,6 +159,18 @@ const handleManageQuestions = (exam) => {
                   }`}>
                     {exam.type === 'online' ? 'Online Exam' : 'Center Exam'}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex items-center">
+                    <FiClock className="mr-1.5 h-4 w-4 text-gray-400" />
+                    {exam.duration || 0} mins
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex items-center">
+                    <FiAward className="mr-1.5 h-4 w-4 text-gray-400" />
+                    {exam.total_marks || 0} marks
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`flex items-center text-sm ${
@@ -231,6 +249,14 @@ const handleManageQuestions = (exam) => {
               <div>
                 <span className="text-gray-500">Subject:</span>
                 <span className="ml-1 text-gray-900 font-medium">{exam.subject?.name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Duration:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.duration || 0} mins</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Marks:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.total_marks || 0}</span>
               </div>
               <div>
                 <span className="text-gray-500">Questions:</span>
