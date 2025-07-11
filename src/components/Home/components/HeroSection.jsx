@@ -4,16 +4,14 @@ import { Link } from "react-router-dom";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const HeroSection = () => {
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [showStudentInstructions, setShowStudentInstructions] = useState(false);
+  const [expandedCards, setExpandedCards] = useState({
+    student: false,
+    institute: false,
+    teacher: false
+  });
 
-  const toggleInstructions = () => {
-    setShowInstructions(!showInstructions);
-  };
-
-  const toggleStudentInstructions = () => {
-    setShowStudentInstructions(!showStudentInstructions);
-  };
+  // Constants
+  const INITIAL_STEPS_TO_SHOW = 3;
 
   const studentSteps = [
     "सबसे पहले www.ptpinstitute.com को सर्च करें!",
@@ -24,8 +22,31 @@ const HeroSection = () => {
     "अगर मनो-योग्य शिक्षक मिलता है तो आप उसे Order कर सकते हैं",
   ];
 
+  const instituteSteps = [
+    "सबसे पहले www.ptpinstitute.com को सर्च करें!",
+    'होम पेज पर जाएं, "शिक्षक खोजें" बटन पर क्लिक करें!',
+    "School Teacher या Coaching Teacher चयन करें",
+    "Class Category और Subject को चुने!",
+    "जिस जगह पर स्कूल या कोचिंग है वहां का पिन कोड नंबर डालें( चाहे तो आप Optional area को भी सेलेक्ट कर सकते हैं जो स्कूल या कोचिंग के करीब हो) फिर सर्च करें!",
+    "अगर मनो-योग्य शिक्षक मिलता है तो आप उसे Order कर सकते हैं"
+  ];
+
+  const teacherSteps = [
+    "सबसे पहले www.ptpinstitute.com को सर्च करें!",
+    'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
+    'फॉर्म को भरकर "Sign up as a Teacher" करें!',
+    "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
+    "Level-1( Test from home) का टेस्ट घर से दे!",
+    "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
+    "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
+    "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
+    "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
+    "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
+  ];
+
   const highlightItems = [
     {
+      id: "student",
       title: "Students/Parents",
       content:
         "अगर आप एक छात्र/अभिभावक हैं और आपको एक अच्छे शिक्षक (Home Tutor) की आवश्यकता है।",
@@ -51,9 +72,10 @@ const HeroSection = () => {
         </svg>
       ),
       steps: studentSteps,
-      color: "blue"
+      color: "teal"
     },
     {
+      id: "institute",
       title: "Educational Institutes",
       content:
         "अगर आपको शिक्षण संस्थान (स्कूल, कोचिंग) के लिए किसी भी विषय के शिक्षकों की आवश्यकता है।",
@@ -72,8 +94,11 @@ const HeroSection = () => {
           />
         </svg>
       ),
+      steps: instituteSteps,
+      color: "teal"
     },
     {
+      id: "teacher",
       title: "Teachers/Tutors",
       content:
         "अगर आप एक शिक्षक हैं और आपको Home Tuition, कोचिंग, स्कूल में पढ़ाना है।",
@@ -92,21 +117,17 @@ const HeroSection = () => {
           />
         </svg>
       ),
-      steps: [
-        "सबसे पहले www.ptpinstitute.com को सर्च करें!",
-        'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
-        'फॉर्म को भरकर "Sign up as a Teacher" करें!',
-        "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
-        "Level-1( Test from home) का टेस्ट घर से दे!",
-        "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
-        "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
-        "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
-        "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
-        "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
-      ],
+      steps: teacherSteps,
       color: "teal"
     },
   ];
+
+  const toggleCardExpansion = (cardId) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }));
+  };
 
   return (
     <div className="relative w-full bg-white min-h-screen">
@@ -182,9 +203,9 @@ const HeroSection = () => {
       <div className="relative z-10 bg-gradient-to-b from-teal-50 to-white py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {highlightItems.map((item, index) => (
+            {highlightItems.map((item) => (
               <div
-                key={index}
+                key={item.title}
                 className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300"
               >
                 <div className="mb-4 text-teal-600">{item.icon}</div>
@@ -193,38 +214,50 @@ const HeroSection = () => {
                 </h3>
                 <p className="text-gray-600 leading-relaxed mb-4">{item.content}</p>
 
-                {/* Steps Section - Collapsible within the card */}
+                {/* Steps Section - Always visible (3 steps) */}
                 {item.steps && (
                   <div className="mt-4">
-                    <button
-                      onClick={item.title === "Students/Parents" ? toggleStudentInstructions : toggleInstructions}
-                      className={`flex items-center justify-center w-full py-2 px-4 bg-${item.color}-50 text-${item.color}-600 rounded-lg border border-${item.color}-200 hover:bg-${item.color}-100 transition-colors duration-300`}
-                    >
-                      <span className="font-medium">
-                        {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions)
-                          ? "Hide Steps"
-                          : "View Steps"}
-                      </span>
-                      {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions) ? (
-                        <IoIosArrowUp className="ml-2" />
-                      ) : (
-                        <IoIosArrowDown className="ml-2" />
-                      )}
-                    </button>
-
-                    {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions) && (
-                      <div className="mt-4 space-y-3">
-                        {item.steps.map((step, stepIndex) => (
-                          <div key={stepIndex} className="flex items-start">
+                    <div className="space-y-3">
+                      {item.steps
+                        .slice(0, expandedCards[item.id] ? item.steps.length : INITIAL_STEPS_TO_SHOW)
+                        .map((step, index) => (
+                          <div key={index} className="flex items-start">
                             <div className="flex-shrink-0 mr-3">
-                              <div className={`w-6 h-6 bg-${item.color}-600 text-white rounded-full flex items-center justify-center text-xs font-bold`}>
-                                {stepIndex + 1}
+                              <div className={`w-6 h-6 ${
+                                item.color === 'blue' ? 'bg-blue-600' : 
+                                item.color === 'purple' ? 'bg-purple-600' : 
+                                'bg-teal-600'
+                              } text-white rounded-full flex items-center justify-center text-xs font-bold`}>
+                                {index + 1}
                               </div>
                             </div>
                             <p className="text-sm text-gray-700">{step}</p>
                           </div>
-                        ))}
-                      </div>
+                      ))}
+                    </div>
+
+                    {/* Show More/Less Button (only if there are more steps) */}
+                    {item.steps.length > INITIAL_STEPS_TO_SHOW && (
+                      <button
+                        onClick={() => toggleCardExpansion(item.id)}
+                        className={`mt-3 text-sm font-medium flex items-center ${
+                          item.color === 'blue' ? 'text-blue-600 hover:text-blue-700' : 
+                          item.color === 'purple' ? 'text-purple-600 hover:text-purple-700' : 
+                          'text-teal-600 hover:text-teal-700'
+                        }`}
+                      >
+                        {expandedCards[item.id] ? (
+                          <>
+                            Show Less
+                            <IoIosArrowUp className="ml-1" />
+                          </>
+                        ) : (
+                          <>
+                            Show {item.steps.length - INITIAL_STEPS_TO_SHOW} More Steps
+                            <IoIosArrowDown className="ml-1" />
+                          </>
+                        )}
+                      </button>
                     )}
                   </div>
                 )}
