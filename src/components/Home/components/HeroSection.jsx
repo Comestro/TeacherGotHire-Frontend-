@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const HeroSection = () => {
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [showStudentInstructions, setShowStudentInstructions] = useState(false);
+
+  const toggleInstructions = () => {
+    setShowInstructions(!showInstructions);
+  };
+
+  const toggleStudentInstructions = () => {
+    setShowStudentInstructions(!showStudentInstructions);
+  };
+
+  const studentSteps = [
+    "सबसे पहले www.ptpinstitute.com को सर्च करें!",
+    'होम पेज पर जाएं, "शिक्षक खोजें" बटन पर क्लिक करें!',
+    "न्यू पेज पर तीन तरह के शिक्षक को हम लोग चुन सकते हैं (।) स्कूल टीचर(।।)कोचिंग टीचर(।।।)पर्सनल(होम) टीचर किसी एक को चुने !",
+    "Class Category और Subject को चुने!",
+    "जिस जगह पर आपको शिक्षक चाहिए वहां का पिन कोड नंबर डालें( चाहे तो आप Optional area को भी सेलेक्ट कर सकते हैं जो आपके करीब हो) फिर सर्च करें!",
+    "अगर मनो-योग्य शिक्षक मिलता है तो आप उसे Order कर सकते हैं",
+  ];
+
   const highlightItems = [
     {
       title: "Students/Parents",
@@ -70,6 +91,19 @@ const HeroSection = () => {
         </svg>
       ),
     },
+  ];
+
+  const teacherSteps = [
+    "सबसे पहले www.ptpinstitute.com को सर्च करें!",
+    'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
+    'फॉर्म को भरकर "Sign up as a Teacher" करें!',
+    "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
+    "Level-1( Test from home) का टेस्ट घर से दे!",
+    "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
+    "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
+    "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
+    "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
+    "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
   ];
 
   return (
@@ -156,9 +190,101 @@ const HeroSection = () => {
                   {item.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{item.content}</p>
+
+                {/* Student/Parents Button */}
+                {item.title === "Students/Parents" && (
+                  <button
+                    onClick={toggleStudentInstructions}
+                    className="mt-6 flex items-center justify-center w-full py-2 px-4 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors duration-300"
+                  >
+                    <span className="font-medium">
+                      {showStudentInstructions
+                        ? "Hide Steps"
+                        : "View Steps to Find Teachers"}
+                    </span>
+                    {showStudentInstructions ? (
+                      <IoIosArrowUp className="ml-2" />
+                    ) : (
+                      <IoIosArrowDown className="ml-2" />
+                    )}
+                  </button>
+                )}
+
+                {/* Add "View Steps" button below the Teachers/Tutors card */}
+                {item.title === "Teachers/Tutors" && (
+                  <button
+                    onClick={toggleInstructions}
+                    className="mt-6 flex items-center justify-center w-full py-2 px-4 bg-teal-50 text-teal-600 rounded-lg border border-teal-200 hover:bg-teal-100 transition-colors duration-300"
+                  >
+                    <span className="font-medium">
+                      {showInstructions
+                        ? "Hide Steps"
+                        : "View Steps to Become a Teacher"}
+                    </span>
+                    {showInstructions ? (
+                      <IoIosArrowUp className="ml-2" />
+                    ) : (
+                      <IoIosArrowDown className="ml-2" />
+                    )}
+                  </button>
+                )}
               </div>
             ))}
           </div>
+
+          {/* Student Instructions Section - Collapsible Cards */}
+          {showStudentInstructions && (
+            <div className="mt-12 transition-all duration-300 ease-in-out">
+              <h2 className="text-3xl font-bold text-center mb-8">
+                शिक्षक खोजने की प्रक्रिया
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {studentSteps.map((step, index) => (
+                  <div
+                    key={index}
+                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 mr-4">
+                        <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <p className="text-gray-700">{step}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Teacher Instructions Section - Collapsible Cards */}
+          {showInstructions && (
+            <div className="mt-12 transition-all duration-300 ease-in-out">
+              <h2 className="text-3xl font-bold text-center mb-8">
+                निम्नलिखित तरीके से आप यहां पर शिक्षक बन सकते हैं
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teacherSteps.map((step, index) => (
+                  <div
+                    key={index}
+                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 mr-4">
+                        <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <p className="text-gray-700">{step}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
