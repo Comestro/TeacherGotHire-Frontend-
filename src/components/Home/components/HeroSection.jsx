@@ -50,6 +50,8 @@ const HeroSection = () => {
           />
         </svg>
       ),
+      steps: studentSteps,
+      color: "blue"
     },
     {
       title: "Educational Institutes",
@@ -90,20 +92,20 @@ const HeroSection = () => {
           />
         </svg>
       ),
+      steps: [
+        "सबसे पहले www.ptpinstitute.com को सर्च करें!",
+        'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
+        'फॉर्म को भरकर "Sign up as a Teacher" करें!',
+        "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
+        "Level-1( Test from home) का टेस्ट घर से दे!",
+        "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
+        "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
+        "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
+        "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
+        "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
+      ],
+      color: "teal"
     },
-  ];
-
-  const teacherSteps = [
-    "सबसे पहले www.ptpinstitute.com को सर्च करें!",
-    'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
-    'फॉर्म को भरकर "Sign up as a Teacher" करें!',
-    "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
-    "Level-1( Test from home) का टेस्ट घर से दे!",
-    "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
-    "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
-    "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
-    "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
-    "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
   ];
 
   return (
@@ -183,108 +185,52 @@ const HeroSection = () => {
             {highlightItems.map((item, index) => (
               <div
                 key={index}
-                className="bg-white p-8 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300"
+                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300"
               >
                 <div className="mb-4 text-teal-600">{item.icon}</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
                   {item.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">{item.content}</p>
+                <p className="text-gray-600 leading-relaxed mb-4">{item.content}</p>
 
-                {/* Student/Parents Button */}
-                {item.title === "Students/Parents" && (
-                  <button
-                    onClick={toggleStudentInstructions}
-                    className="mt-6 flex items-center justify-center w-full py-2 px-4 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors duration-300"
-                  >
-                    <span className="font-medium">
-                      {showStudentInstructions
-                        ? "Hide Steps"
-                        : "View Steps to Find Teachers"}
-                    </span>
-                    {showStudentInstructions ? (
-                      <IoIosArrowUp className="ml-2" />
-                    ) : (
-                      <IoIosArrowDown className="ml-2" />
-                    )}
-                  </button>
-                )}
+                {/* Steps Section - Collapsible within the card */}
+                {item.steps && (
+                  <div className="mt-4">
+                    <button
+                      onClick={item.title === "Students/Parents" ? toggleStudentInstructions : toggleInstructions}
+                      className={`flex items-center justify-center w-full py-2 px-4 bg-${item.color}-50 text-${item.color}-600 rounded-lg border border-${item.color}-200 hover:bg-${item.color}-100 transition-colors duration-300`}
+                    >
+                      <span className="font-medium">
+                        {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions)
+                          ? "Hide Steps"
+                          : "View Steps"}
+                      </span>
+                      {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions) ? (
+                        <IoIosArrowUp className="ml-2" />
+                      ) : (
+                        <IoIosArrowDown className="ml-2" />
+                      )}
+                    </button>
 
-                {/* Add "View Steps" button below the Teachers/Tutors card */}
-                {item.title === "Teachers/Tutors" && (
-                  <button
-                    onClick={toggleInstructions}
-                    className="mt-6 flex items-center justify-center w-full py-2 px-4 bg-teal-50 text-teal-600 rounded-lg border border-teal-200 hover:bg-teal-100 transition-colors duration-300"
-                  >
-                    <span className="font-medium">
-                      {showInstructions
-                        ? "Hide Steps"
-                        : "View Steps to Become a Teacher"}
-                    </span>
-                    {showInstructions ? (
-                      <IoIosArrowUp className="ml-2" />
-                    ) : (
-                      <IoIosArrowDown className="ml-2" />
+                    {(item.title === "Students/Parents" ? showStudentInstructions : showInstructions) && (
+                      <div className="mt-4 space-y-3">
+                        {item.steps.map((step, stepIndex) => (
+                          <div key={stepIndex} className="flex items-start">
+                            <div className="flex-shrink-0 mr-3">
+                              <div className={`w-6 h-6 bg-${item.color}-600 text-white rounded-full flex items-center justify-center text-xs font-bold`}>
+                                {stepIndex + 1}
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-700">{step}</p>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                  </button>
+                  </div>
                 )}
               </div>
             ))}
           </div>
-
-          {/* Student Instructions Section - Collapsible Cards */}
-          {showStudentInstructions && (
-            <div className="mt-12 transition-all duration-300 ease-in-out">
-              <h2 className="text-3xl font-bold text-center mb-8">
-                शिक्षक खोजने की प्रक्रिया
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {studentSteps.map((step, index) => (
-                  <div
-                    key={index}
-                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 mr-4">
-                        <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                          {index + 1}
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{step}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Teacher Instructions Section - Collapsible Cards */}
-          {showInstructions && (
-            <div className="mt-12 transition-all duration-300 ease-in-out">
-              <h2 className="text-3xl font-bold text-center mb-8">
-                निम्नलिखित तरीके से आप यहां पर शिक्षक बन सकते हैं
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teacherSteps.map((step, index) => (
-                  <div
-                    key={index}
-                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 mr-4">
-                        <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                          {index + 1}
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{step}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
