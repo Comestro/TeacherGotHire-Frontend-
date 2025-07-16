@@ -40,6 +40,7 @@ import {
   getExamById,
   deleteQuestion,
   createNewQuestion,
+  updateNewQuestion,
 } from "../../services/adminManageExam";
 import { reorderQuestions } from "../../services/apiService";
 
@@ -334,17 +335,38 @@ const ManageQuestion = () => {
       }
       
       if (editingQuestion) {
-        // Update existing question
+        // Update only the language being edited
+        let updatedQuestions = [];
+        if (editingQuestion.language === "English") {
+          if (englishQuestion && englishQuestion.text && englishQuestion.options && englishQuestion.options.length) {
+            updatedQuestions.push({
+              language: "English",
+              text: englishQuestion.text,
+              solution: englishQuestion.solution,
+              options: englishQuestion.options,
+              correct_option: englishQuestion.correct_option,
+            });
+          }
+        } else if (editingQuestion.language === "Hindi") {
+          if (hindiQuestion && hindiQuestion.text && hindiQuestion.options && hindiQuestion.options.length) {
+            updatedQuestions.push({
+              language: "Hindi",
+              text: hindiQuestion.text,
+              solution: hindiQuestion.solution,
+              options: hindiQuestion.options,
+              correct_option: hindiQuestion.correct_option,
+            });
+          }
+        }
+
         const payload = {
           exam: exam.id,
-          order: orderPosition !== null ? orderPosition : editingQuestion.order,
-          questions: questions
+          questions: updatedQuestions
         };
-        
-        const response = await updateQuestion(editingQuestion.id, payload);
+
+        const response = await updateNewQuestion(editingQuestion.id, payload);
 
         if (response && response.id) {
-          // Update questions list with edited question
           setQuestions((prevQuestions) =>
             prevQuestions.map((q) =>
               q.id === editingQuestion.id ? response : q
