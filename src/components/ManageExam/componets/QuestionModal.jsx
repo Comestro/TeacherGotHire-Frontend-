@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiGlobe, FiRefreshCw, FiLoader } from 'react-icons/fi';
 import { translateText } from '../../../services/apiService';
+import { updateNewQuestion } from '../../../services/adminManageExam';
 import { toast } from 'react-toastify';
 import QuestionPreview from './QuestionPreview';
 
@@ -197,44 +198,66 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
     setIsSubmitting(true);
     try {
-      // Create structured form data for both languages
-      const formData = {
-        english: {
+      // Create questions array for the payload
+      const questionsArray = [];
+      
+      // For editing, we'll still send both languages if they exist
+      // Add English question if it has content
+      if (englishQuestion.text.trim() && englishQuestion.options.some(opt => opt.trim())) {
+        questionsArray.push({
           language: "English",
           text: englishQuestion.text.trim(),
-          solution: englishQuestion.solution.trim(),
           options: englishQuestion.options.map(opt => opt.trim()),
-          correct_option: englishQuestion.correct_option + 1
-        },
-        hindi: {
+          correct_option: englishQuestion.correct_option + 1,
+          ...(englishQuestion.solution.trim() && { solution: englishQuestion.solution.trim() }),
+          ...(editingQuestion?.language === 'English' && editingQuestion?.id && { id: editingQuestion.id })
+        });
+      }
+      
+      // Add Hindi question if it has content
+      if (hindiQuestion.text.trim() && hindiQuestion.options.some(opt => opt.trim())) {
+        questionsArray.push({
           language: "Hindi",
           text: hindiQuestion.text.trim(),
-          solution: hindiQuestion.solution.trim(),
           options: hindiQuestion.options.map(opt => opt.trim()),
-          correct_option: hindiQuestion.correct_option + 1
-        }
+          correct_option: hindiQuestion.correct_option + 1,
+          ...(hindiQuestion.solution.trim() && { solution: hindiQuestion.solution.trim() }),
+          ...(editingQuestion?.language === 'Hindi' && editingQuestion?.id && { id: editingQuestion.id })
+        });
+      }
+      
+      if (questionsArray.length === 0) {
+        toast.error("Please fill at least one complete question (English or Hindi)");
+        return;
+      }
+      
+      // Create the final payload matching the example format
+      const payload = {
+        exam: editingQuestion?.exam || parseInt(examId),
+        questions: questionsArray
       };
-
-      // If editing, handle single language edits
+      
+      console.log("Question payload:", payload);
+      
       if (editingQuestion) {
-        // Keep only the language being edited if we're in edit mode
-        if (editingQuestion.language === 'English') {
-          delete formData.hindi;
-        } else if (editingQuestion.language === 'Hindi') {
-          delete formData.english;
+        try {
+          // When updating, use the updateNewQuestion function directly
+          const response = await updateNewQuestion(editingQuestion.id, payload);
+          console.log("Update response:", response);
+          
+          if (response) {
+            toast.success("Question updated successfully!");
+            // Automatically refresh the page after update
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error("Update failed:", error);
+          toast.error("Failed to update question");
         }
       } else {
-        // For new questions, filter out empty languages
-        if (!formData.english.text.trim() || !formData.english.options.some(opt => opt.trim())) {
-          delete formData.english;
-        }
-        if (!formData.hindi.text.trim() || !formData.hindi.options.some(opt => opt.trim())) {
-          delete formData.hindi;
-        }
+        // For new questions, use the provided onSubmit function
+        await onSubmit(payload);
       }
-
-      await onSubmit(formData);
-      
     } catch (error) {
       console.error("Submission failed:", error);
       toast.error("Failed to save question");
