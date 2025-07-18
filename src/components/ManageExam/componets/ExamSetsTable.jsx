@@ -273,7 +273,7 @@ const handleManageQuestions = (exam) => {
             
             <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
               <Link
-                to={`/manage-exam/questions`}
+                to={`/manage-exam/questions/${exam.id}`}
                 state={{ exam }}
                 className="flex items-center justify-center bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
               >
