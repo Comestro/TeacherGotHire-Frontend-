@@ -447,8 +447,8 @@ const ManageExam = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value="all">All Types</option>
-                    <option value="online">Online Exam</option>
-                    <option value="offline">Center Exam</option>
+                    <option value="online">Home Exam</option>
+                    <option value="offline">Exam Centre</option>
                   </select>
                 </div>
               </div>

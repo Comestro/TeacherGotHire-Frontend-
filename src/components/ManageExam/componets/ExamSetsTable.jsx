@@ -157,7 +157,7 @@ const handleManageQuestions = (exam) => {
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {exam.type === 'online' ? 'Online Exam' : 'Center Exam'}
+                {exam.type === 'online' ? 'Home' : 'Exam Centre'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -237,7 +237,7 @@ const handleManageQuestions = (exam) => {
               <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                 exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
               }`}>
-                {exam.type === 'online' ? 'Online Exam' : 'Center Exam'}
+                {exam.type === 'online' ? 'Home' : 'Exam Centre'}
               </span>
             </div>
             
