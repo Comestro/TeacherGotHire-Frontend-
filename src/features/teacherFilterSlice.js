@@ -33,7 +33,7 @@ export const fetchTeachers = createAsyncThunk(
       return response.data; 
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "An error occurred."
+        error.response?.data?.detail || "An error occurred."
       );
     }
   }
