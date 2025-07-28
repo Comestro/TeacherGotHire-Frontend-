@@ -110,7 +110,7 @@ const handleManageQuestions = (exam) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
       {/* Desktop Table View */}
       <div className="hidden md:block">
         <table className="min-w-full divide-y divide-gray-200">
