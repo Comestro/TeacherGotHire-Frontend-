@@ -26,7 +26,13 @@ const ExamPortal = () => {
 
   
   const { allQuestion, language, loading } = useSelector((state) => state.examQues);
-  const questions = allQuestion.questions || [];
+  // Ensure questions are sorted by ascending order (order 1 first, then 2, 3, ...)
+  const questions = [...(allQuestion.questions || [])].sort((a, b) => {
+    // Use Number() and fallback to a large number if order is missing
+    const orderA = a.order !== undefined ? Number(a.order) : Number.MAX_SAFE_INTEGER;
+    const orderB = b.order !== undefined ? Number(b.order) : Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
   const exam = allQuestion.id;
 
   console.log("language", language);
