@@ -219,7 +219,7 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
       setTeachersLoading(false);
     } catch (error) {
       setTeachersError(error);
-      toast.error(error || "Failed to fetch teachers");
+      // toast.error(error || "Failed to fetch teachers");
       setTeachersLoading(false);
     }
   };
@@ -619,12 +619,22 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                       )}
                       {teachersError && !teachersLoading && (
                         <div className="text-center py-10">
-                          <p className="text-red-500 mb-4">{teachersError}</p>
-                          <button
+{teachersError.includes('|') ? (
+                              <>
+                                <div className="mb-3 text-lg font-semibold text-teal-700">
+                                  {teachersError.split('|')[0].trim()}
+                                </div>
+                                <div className="text-lg text-black">
+                                  {teachersError.split('|')[1].trim()}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-red-600">{teachersError}</div>
+                            )}                          <button
                             onClick={fetchTeachersData}
-                            className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600"
+                            className="bg-teal-500 rounded mt-3 text-white px-6 py-2 hover:bg-teal-600"
                           >
-                            Retry
+                            Retry Again
                           </button>
                         </div>
                       )}

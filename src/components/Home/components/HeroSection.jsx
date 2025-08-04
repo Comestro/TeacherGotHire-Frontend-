@@ -39,8 +39,8 @@ const HeroSection = () => {
     "Level-1( Test from home) का टेस्ट घर से दे!",
     "Level-1 का टेस्ट पास करने के बाद Level-2(Test from home)पास करें!",
     "Level-2(test from home ) पास करने के बाद आप इंटरव्यू के लिए अप्लाई कर सकते हैं या Level-2(Test from Exam centre) के लिए apply कर सकते हैं!",
-    "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
-    "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3(test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
+    "Level-2(test from Exam centre) या इंटरव्यू पास करने के बाद आप पढ़ाने के लिए अप्लाई कर सकते हैं या Level-3(test from home ) test दे सकते हैं!",
+    "Level-3(test from home ) का टेस्ट पास करने के बाद Level-3 (test from Exam centre) का टेस्ट दे सकते हैं और उसे भी पास कर सकते हैं!",
     "अब Level-3 का इंटरव्यू दे सकते हैं और पास कर सकते हैं।",
   ];
 

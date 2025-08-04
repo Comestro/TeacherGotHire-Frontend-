@@ -561,14 +561,35 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         </div>
                       )}
                       {teachersError && !teachersLoading && (
-                        <div className="text-center py-10">
-                          <p className="text-red-500 mb-4">{teachersError}</p>
-                          <button
-                            onClick={fetchTeachersData}
-                            className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600"
-                          >
-                            Retry
-                          </button>
+                        <div className="text-center py-8">
+                          <div className="bg-red-50 border border-red-100 rounded-lg p-5 mb-4">
+                            {teachersError.includes('|') ? (
+                              <>
+                                <div className="mb-3 text-lg font-medium text-red-700">
+                                  {teachersError.split('|')[0].trim()}
+                                </div>
+                                <div className="text-base text-gray-700">
+                                  {teachersError.split('|')[1].trim()}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-red-600">{teachersError}</div>
+                            )}
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                              onClick={() => setCurrentStep(2)}
+                              className="flex items-center justify-center bg-white border border-teal-500 text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors"
+                            >
+                              <FiArrowLeft className="mr-2" /> Change Location
+                            </button>
+                            <button
+                              onClick={fetchTeachersData}
+                              className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition-colors"
+                            >
+                              Retry Search
+                            </button>
+                          </div>
                         </div>
                       )}
                       {!teachersLoading &&
