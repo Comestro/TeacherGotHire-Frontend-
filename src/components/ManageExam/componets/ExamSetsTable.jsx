@@ -174,9 +174,9 @@ const handleManageQuestions = (exam) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`flex items-center text-sm ${
-                    exam.is_published ? 'text-green-600' : 'text-amber-600'
+                    exam.status ? 'text-green-600' : 'text-amber-600'
                   }`}>
-                    {exam.is_published ? (
+                    {exam.status ? (
                       <><FiCheck className="mr-1.5 h-4 w-4" /> Published</>
                     ) : (
                       <><FiLock className="mr-1.5 h-4 w-4" /> Draft</>
@@ -262,8 +262,8 @@ const handleManageQuestions = (exam) => {
                 <span className="text-gray-500">Questions:</span>
                 <span className="ml-1 text-gray-900 font-medium">{exam.questions.length}</span>
               </div>
-              <div className={exam.is_published ? 'text-green-600' : 'text-amber-600'}>
-                {exam.is_published ? (
+              <div className={exam.status ? 'text-green-600' : 'text-amber-600'}>
+                {exam.status ? (
                   <><FiCheck className="inline mr-1 h-3 w-3" /> Published</>
                 ) : (
                   <><FiLock className="inline mr-1 h-3 w-3" /> Draft</>
