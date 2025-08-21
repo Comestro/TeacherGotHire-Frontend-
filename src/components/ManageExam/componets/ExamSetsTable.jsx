@@ -16,7 +16,8 @@ import {
   FiCopy,
   FiMoreVertical,
   FiEye,
-  FiBarChart2
+  FiBarChart2,
+  FiCheck
 } from 'react-icons/fi';
 import { getExam, deleteExam } from '../../../services/adminManageExam';
 import { toast } from 'react-toastify';
@@ -263,7 +264,7 @@ const handleManageQuestions = (exam) => {
                 <span className="ml-1 text-gray-900 font-medium">{exam.questions.length}</span>
               </div>
               <div className={exam.status ? 'text-green-600' : 'text-amber-600'}>
-                {exam.status ? (
+                {!exam.status ? (
                   <><FiCheck className="inline mr-1 h-3 w-3" /> Published</>
                 ) : (
                   <><FiLock className="inline mr-1 h-3 w-3" /> Draft</>
