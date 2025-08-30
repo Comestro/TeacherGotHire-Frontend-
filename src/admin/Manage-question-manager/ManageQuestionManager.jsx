@@ -1159,10 +1159,8 @@ const ManageQuestionManager = () => {
                   value={userData.Fname}
                   onChange={handleInputChange}
                   required
-                  disabled={loadingAction || isEditMode}
-                  InputProps={{
-                    readOnly: isEditMode,
-                  }}
+                  disabled={loadingAction}
+
                 />
               </Grid>
 
@@ -1175,10 +1173,8 @@ const ManageQuestionManager = () => {
                   value={userData.Lname}
                   onChange={handleInputChange}
                   required
-                  disabled={loadingAction || isEditMode}
-                  InputProps={{
-                    readOnly: isEditMode,
-                  }}
+                  disabled={loadingAction}
+                  
                 />
               </Grid>
 
@@ -1192,10 +1188,8 @@ const ManageQuestionManager = () => {
                   value={userData.email}
                   onChange={handleInputChange}
                   required
-                  disabled={loadingAction || isEditMode}
-                  InputProps={{
-                    readOnly: isEditMode,
-                  }}
+                  disabled={loadingAction}
+                
                 />
               </Grid>
 
