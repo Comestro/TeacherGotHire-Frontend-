@@ -35,6 +35,50 @@ const QuestionForm = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper: detect LaTeX-like tokens (dollars, backslash commands, braces, caret, underscore)
+  const isLatexToken = (token) => {
+    if (!token || typeof token !== "string") return false;
+    // contains dollar delimiters
+    if (/\$/.test(token)) return true;
+    // starts with a backslash command like \frac or \alpha
+    if (/^\\[A-Za-z]+/.test(token)) return true;
+    // contains common TeX characters which translators may mangle
+    if (/[\\^_{}]/.test(token)) return true;
+    return false;
+  };
+
+  // Extract LaTeX fragments and replace with placeholders before sending to translator
+  const extractLatexPlaceholders = (input) => {
+    const placeholders = [];
+    let idx = 0;
+    if (!input) return { textWithPlaceholders: input || "", placeholders };
+    // match display math $$...$$, inline $...$, \[...\], \(...\), or backslash-commands with optional {...}
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})?)/g;
+    const textWithPlaceholders = input.replace(regex, (match) => {
+      const key = `__LATEX_${idx}__`;
+      placeholders.push(match);
+      idx += 1;
+      return key;
+    });
+    return { textWithPlaceholders, placeholders };
+  };
+
+  const restoreLatexPlaceholders = (translatedText, placeholders) => {
+    let result = translatedText;
+    placeholders.forEach((orig, i) => {
+      const key = `__LATEX_${i}__`;
+      result = result.split(key).join(orig);
+    });
+    return result;
+  };
+
+  const translatePreservingLatex = async (src) => {
+    if (!src || !src.trim()) return "";
+    const { textWithPlaceholders, placeholders } = extractLatexPlaceholders(src);
+    const translated = await translateText(textWithPlaceholders, "English", "Hindi");
+    return restoreLatexPlaceholders(translated || textWithPlaceholders, placeholders);
+  };
+
   // Function to detect if a word is in English
   const isEnglishWord = (word) => {
     if (!word || word.trim().length === 0) return false;
@@ -76,28 +120,20 @@ const QuestionForm = () => {
       console.log("Starting manual translation...");
       console.log("Source English Question:", englishQuestion);
 
-      // Prepare translation requests for all fields
+      // Prepare translation requests for all fields while preserving LaTeX
       const translationPromises = [
-        translateText(englishQuestion.text, "English", "Hindi"),
+        translatePreservingLatex(englishQuestion.text),
         englishQuestion.solution.trim()
-          ? translateText(englishQuestion.solution, "English", "Hindi")
+          ? translatePreservingLatex(englishQuestion.solution)
           : Promise.resolve(""),
         ...englishQuestion.options.map((option) =>
-          option.trim()
-            ? translateText(option, "English", "Hindi")
-            : Promise.resolve("")
+          option.trim() ? translatePreservingLatex(option) : Promise.resolve("")
         ),
       ];
 
       // Translate all content in parallel
       const [translatedText, translatedSolution, ...translatedOptions] =
         await Promise.all(translationPromises);
-
-      console.log("Translation Results:", {
-        translatedText,
-        translatedSolution,
-        translatedOptions,
-      });
 
       // Update Hindi question with all translated content
       setHindiQuestion((prev) => ({
@@ -108,8 +144,8 @@ const QuestionForm = () => {
         correct_option: englishQuestion.correct_option,
       }));
 
-      toast.success("Successfully translated to Hindi");
-      console.log("Manual translation completed successfully");
+      toast.success("Successfully translated to Hindi (LaTeX preserved)");
+      console.log("Manual translation completed successfully (LaTeX preserved)");
     } catch (error) {
       console.error("Manual translation failed:", error);
       toast.error("Failed to translate content. Please try again.");
@@ -250,13 +286,13 @@ const QuestionForm = () => {
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       setIsTranslating(true);
       try {
-        const response = await translateText(value, "English", "Hindi");
+        const response = await translatePreservingLatex(value);
 
         // Update Hindi question with translated text from response
         if (field === "options" && optionIndex !== null) {
           setHindiQuestion((prev) => {
             const updated = { ...prev };
-            updated.options[optionIndex] = response; 
+            updated.options[optionIndex] = response;
             return updated;
           });
         } else {
@@ -265,7 +301,7 @@ const QuestionForm = () => {
             [field]: response,
           }));
         }
-        toast.success("Translation completed");
+        toast.success("Translation completed (LaTeX preserved)");
       } catch (error) {
         console.error("Translation failed:", error);
         toast.error("Failed to translate text");
@@ -290,6 +326,8 @@ const QuestionForm = () => {
       // Loop through each word to detect and translate English ones
       for (let i = 0; i < words.length; i++) {
         const word = words[i];
+        // Skip tokens that look like LaTeX (preserve math)
+        if (isLatexToken(word)) continue;
         if (isEnglishWord(word)) {
           try {
             const translated = await translateText(word, "English", "Hindi");
@@ -583,6 +621,7 @@ const QuestionForm = () => {
               </div>
             </div>
           </div>
+
 
           {/* Question Preview */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">

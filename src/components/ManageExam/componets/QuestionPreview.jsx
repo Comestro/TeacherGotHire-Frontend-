@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiCheck } from 'react-icons/fi';
+import MathRenderer from './MathRenderer';
 
 const QuestionPreview = ({ question, activeLanguage }) => {
   return (
@@ -11,7 +12,7 @@ const QuestionPreview = ({ question, activeLanguage }) => {
             {activeLanguage === "English" ? "🇺🇸" : "🇮🇳"} {activeLanguage} Version:
           </h4>
           <p className="text-gray-700 mb-3 font-medium">
-            {question.text || "Question text will appear here..."}
+            <MathRenderer text={question.text || 'Question text will appear here...'} />
           </p>
           <div className="space-y-2">
             {question.options.map((opt, idx) => (
@@ -26,7 +27,7 @@ const QuestionPreview = ({ question, activeLanguage }) => {
                 <span className="font-semibold min-w-6">
                   {String.fromCharCode(65 + idx)}.
                 </span>
-                <span>{opt || `Option ${idx + 1}`}</span>
+                <span><MathRenderer text={opt || `Option ${idx + 1}`} /></span>
                 {question.correct_option === idx && (
                   <FiCheck className="w-4 h-4 ml-auto text-green-600" />
                 )}
@@ -36,7 +37,9 @@ const QuestionPreview = ({ question, activeLanguage }) => {
           {question.solution && (
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <h5 className="font-medium text-blue-900 mb-1">Solution:</h5>
-              <p className="text-blue-800 text-sm">{question.solution}</p>
+              <p className="text-blue-800 text-sm">
+                <MathRenderer text={question.solution} />
+              </p>
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import MathRenderer from './MathRenderer';
 import {
   FiEdit,
   FiTrash2,
@@ -109,7 +110,7 @@ const QuestionCard = ({
 
       <div className="mb-6">
         {/* <span className="text-xs text-gray-500">ID: {question.id}</span> */}
-        <p className="text-lg text-gray-900 mt-1">{question.text}</p>
+        <p className="text-lg text-gray-900 mt-1"><MathRenderer text={question.text} /></p>
       </div>
 
       {showOptions && (
@@ -130,7 +131,7 @@ const QuestionCard = ({
                   ) : (
                     <div className="w-5 h-5 rounded-full border border-gray-300 mr-3" />
                   )}
-                  <span>{option}</span>
+                  <span><MathRenderer text={option} /></span>
                 </div>
               </div>
             ))}
@@ -139,7 +140,7 @@ const QuestionCard = ({
           {showAnswers && question.solution && (
             <div className="mt-4 p-4 bg-gray-50 rounded-xl">
               <p className="font-medium text-gray-900">Solution:</p>
-              <p className="mt-1 text-gray-700">{question.solution}</p>
+              <p className="mt-1 text-gray-700"><MathRenderer text={question.solution} /></p>
             </div>
           )}
         </>
