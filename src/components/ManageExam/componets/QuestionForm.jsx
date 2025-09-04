@@ -108,6 +108,66 @@ const QuestionForm = () => {
     return words.join(" ");
   };
 
+  // Heuristic: detect if a string looks like a math expression (contains ±, √, superscripts, fraction-style '/', =, or parentheses with operators)
+  const looksLikeMath = (text) => {
+    if (!text || typeof text !== 'string') return false;
+    if (/[±√=\^_{}\\]/.test(text)) return true;
+    // superscript digits
+    if (/[²³¹⁴⁵⁶⁷⁸⁹⁰]/.test(text)) return true;
+    // fraction with bracketed numerator "[...] / ..."
+    if (/\[[^\]]+\]\s*\/\s*[^\s]+/.test(text)) return true;
+    // simple pattern containing operators
+    if (/[+\-*\/]=?/.test(text)) return true;
+    return false;
+  };
+
+  // Convert common plain-math notation into LaTeX. This is intentionally conservative and focuses on patterns like ±, √(...), superscripts, bracketed numerators and simple fractions.
+  const convertPlainMathToLatex = (input) => {
+    if (!input || typeof input !== 'string') return input;
+    let s = input.trim();
+
+    // If already contains dollar delimiters, assume user already wrote LaTeX
+    if (/\$.*\$/.test(s) || /\\\[|\\\(|\\begin\{/.test(s)) return s;
+
+    if (!looksLikeMath(s)) return s; // avoid false positives
+
+    // Replace common symbols
+    s = s.replace(/±/g, ' \\pm ');
+
+    // Replace unicode superscripts like b² -> b^{2}
+    const supMap = { '²':'2','³':'3','¹':'1','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁰':'0' };
+    s = s.replace(/([A-Za-z0-9])([²³¹⁴⁵⁶⁷⁸⁹⁰]+)/g, (m, p1, p2) => {
+      const nums = p2.split('').map(ch => supMap[ch] || ch).join('');
+      return `${p1}^{${nums}}`;
+    });
+
+    // sqrt(...) -> \sqrt{...}
+    s = s.replace(/√\s*\(([^)]+)\)/g, (m, inner) => `\\sqrt{${inner.trim()}}`);
+
+    // bracketed numerator: [ ... ] / denom  => \frac{...}{denom}
+    s = s.replace(/\[([^\]]+)\]\s*\/\s*([^\s,;]+)/g, (m, num, den) => `\\frac{${num.trim()}}{${den.trim()}}`);
+
+    // simple parentheses numerator: ( ... ) / denom
+    s = s.replace(/\(([^)]+)\)\s*\/\s*([^\s,;]+)/g, (m, num, den) => `\\frac{${num.trim()}}{${den.trim()}}`);
+
+    // Insert spaces around operators for cleaner LaTeX
+    s = s.replace(/\s*([+\-*=\/])\s*/g, ' $1 ');
+
+    // Collapse multiple spaces
+    s = s.replace(/\s{2,}/g, ' ').trim();
+
+    // Wrap inline math in $...$
+    return `$${s}$`;
+  };
+
+  // Called onBlur for English fields to auto-convert plain math to LaTeX for preview
+  const handleEnglishFieldBlur = (field, value, optionIndex = null) => {
+    const converted = convertPlainMathToLatex(value);
+    if (converted !== value) {
+      updateEnglishQuestion(field, converted, optionIndex);
+    }
+  };
+
   const handleManualTranslate = async () => {
     setIsTranslating(true);
 
@@ -450,6 +510,7 @@ const QuestionForm = () => {
                       updateEnglishQuestion("text", e.target.value)
                     }
                     onKeyUp={(e) => handleKeyUp(e, "text", e.target.value)}
+                    onBlur={(e) => handleEnglishFieldBlur("text", e.target.value)}
                     placeholder="Enter your question in English..."
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                     rows="3"
@@ -492,6 +553,7 @@ const QuestionForm = () => {
                           onKeyUp={(e) =>
                             handleKeyUp(e, "options", e.target.value, index)
                           }
+                          onBlur={(e) => handleEnglishFieldBlur("options", e.target.value, index)}
                           placeholder={`Option ${index + 1}`}
                           className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
                         />
@@ -514,6 +576,7 @@ const QuestionForm = () => {
                       updateEnglishQuestion("solution", e.target.value)
                     }
                     onKeyUp={(e) => handleKeyUp(e, "solution", e.target.value)}
+                    onBlur={(e) => handleEnglishFieldBlur("solution", e.target.value)}
                     placeholder="Provide detailed explanation in English..."
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                     rows="3"
