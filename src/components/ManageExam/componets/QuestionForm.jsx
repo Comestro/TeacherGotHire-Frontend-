@@ -107,7 +107,81 @@ const QuestionForm = () => {
     language: "English",
     field: "text", // "text" | "solution" | "options"
     optionIndex: null,
+    originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
   });
+
+  // Track if content was just updated from equation editor to avoid auto-conversion
+  const [isFromEquationEditor, setIsFromEquationEditor] = useState(false);
+
+  // New: helper to insert LaTeX command at cursor or append
+  const insertLatexCommand = (command) => {
+    setEqEditorValue((prev) => prev + command);
+  };
+
+  // New: LaTeX toolbar component
+  const LatexToolbar = () => {
+    const toolbarItems = [
+      // Basic symbols
+      { label: "α", command: "\\alpha " },
+      { label: "β", command: "\\beta " },
+      { label: "γ", command: "\\gamma " },
+      { label: "θ", command: "\\theta " },
+      { label: "π", command: "\\pi " },
+      { label: "Σ", command: "\\sum " },
+      { label: "∫", command: "\\int " },
+      { label: "∞", command: "\\infty " },
+      { label: "±", command: "\\pm " },
+      { label: "≤", command: "\\leq " },
+      { label: "≥", command: "\\geq " },
+      { label: "≠", command: "\\neq " },
+      { label: "→", command: "\\rightarrow " },
+      { label: "√", command: "\\sqrt{} ", insert: "\\sqrt{" },
+      // Fractions and structures
+      { label: "x/y", command: "\\frac{}{} ", insert: "\\frac{" },
+      { label: "x²", command: "^{} ", insert: "^{" },
+      { label: "x₁", command: "_{} ", insert: "_{" },
+      { label: "∑ᵢ", command: "\\sum_{i=1}^{n} " },
+      { label: "∫ᵃᵇ", command: "\\int_{a}^{b} " },
+      { label: "lim", command: "\\lim_{x \\to \\infty} " },
+      // Functions
+      { label: "sin", command: "\\sin " },
+      { label: "cos", command: "\\cos " },
+      { label: "tan", command: "\\tan " },
+      { label: "log", command: "\\log " },
+      { label: "ln", command: "\\ln " },
+      // Brackets
+      { label: "()", command: "\\left( \\right) ", insert: "\\left(" },
+      { label: "[]", command: "\\left[ \\right] ", insert: "\\left[" },
+      { label: "{}", command: "\\left\\{ \\right\\} ", insert: "\\left\\{" },
+    ];
+
+    return (
+      <div className="border-b border-gray-200 p-3 bg-gray-50">
+        <div className="text-xs font-medium text-gray-700 mb-2">
+          LaTeX Toolbar
+        </div>
+        <div className="grid grid-cols-8 gap-1">
+          {toolbarItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={() =>
+                insertLatexCommand(item.insert || item.command)
+              }
+              className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-blue-100 hover:border-blue-400 transition-colors bg-white"
+              title={`Insert ${item.command.trim()}`}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-2 text-xs text-gray-500">
+          Click symbols to insert LaTeX code. You can also type directly in the
+          editor.
+        </div>
+      </div>
+    );
+  };
 
   // Helper: detect LaTeX-like tokens (dollars, backslash commands, braces, caret, underscore)
   const isLatexToken = (token) => {
@@ -266,6 +340,12 @@ const QuestionForm = () => {
 
   // Called onBlur for English fields to auto-convert plain math to LaTeX for preview
   const handleEnglishFieldBlur = (field, value, optionIndex = null) => {
+    // Skip auto-conversion if content just came from equation editor
+    if (isFromEquationEditor) {
+      setIsFromEquationEditor(false);
+      return;
+    }
+    
     const converted = convertPlainMathToLatex(value);
     if (converted !== value) {
       updateEnglishQuestion(field, converted, optionIndex);
@@ -477,60 +557,97 @@ const QuestionForm = () => {
 
   // New function to handle Hindi field real-time word-by-word translation
   const handleHindiKeyUp = async (e, field, value, optionIndex = null) => {
-  updateHindiQuestion(field, value, optionIndex);
+    updateHindiQuestion(field, value, optionIndex);
 
-  if ((e.key === " " || e.key === "Enter") && value.trim()) {
-    const words = value.trim().split(/\s+/);
-    let updatedWords = [...words];
-    let hasTranslation = false;
+    if ((e.key === " " || e.key === "Enter") && value.trim()) {
+      const words = value.trim().split(/\s+/);
+      let updatedWords = [...words];
+      let hasTranslation = false;
 
-    setIsTranslating(true);
+      setIsTranslating(true);
 
-    try {
-      // Loop through each word to detect and translate English ones
-      for (let i = 0; i < words.length; i++) {
-        const word = words[i];
-        // Skip tokens that look like LaTeX (preserve math)
-        if (isLatexToken(word)) continue;
-        if (isEnglishWord(word)) {
-          try {
-            const translated = await translateText(word, "English", "Hindi");
-            updatedWords[i] = translated;
-            hasTranslation = true;
-          } catch (error) {
-            console.warn("Failed to translate:", word);
+      try {
+        // Loop through each word to detect and translate English ones
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          // Skip tokens that look like LaTeX (preserve math)
+          if (isLatexToken(word)) continue;
+          if (isEnglishWord(word)) {
+            try {
+              const translated = await translateText(word, "English", "Hindi");
+              updatedWords[i] = translated;
+              hasTranslation = true;
+            } catch (error) {
+              console.warn("Failed to translate:", word);
+            }
           }
         }
-      }
 
-      if (hasTranslation) {
-        const updatedText = updatedWords.join(" ");
+        if (hasTranslation) {
+          const updatedText = updatedWords.join(" ");
 
-        if (field === "options" && optionIndex !== null) {
-          setHindiQuestion((prev) => {
-            const updated = { ...prev };
-            updated.options[optionIndex] = updatedText;
-            return updated;
-          });
-        } else {
-          setHindiQuestion((prev) => ({
-            ...prev,
-            [field]: updatedText,
-          }));
+          if (field === "options" && optionIndex !== null) {
+            setHindiQuestion((prev) => {
+              const updated = { ...prev };
+              updated.options[optionIndex] = updatedText;
+              return updated;
+            });
+          } else {
+            setHindiQuestion((prev) => ({
+              ...prev,
+              [field]: updatedText,
+            }));
+          }
         }
+      } catch (error) {
+        console.error("Bulk translation failed:", error);
+      } finally {
+        setIsTranslating(false);
       }
-    } catch (error) {
-      console.error("Bulk translation failed:", error);
-    } finally {
-      setIsTranslating(false);
     }
-  }
-};
+  };
+
+  // Find first LaTeX fragment and return structured info.
+  const extractFirstLatex = (src) => {
+    if (!src || typeof src !== "string") return null;
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+    const m = regex.exec(src);
+    if (!m) return null;
+    const match = m[0];
+    const index = m.index;
+    const length = match.length;
+
+    // Determine wrappers and inner content
+    if (match.startsWith("$$") && match.endsWith("$$")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "$$", wrapperEnd: "$$", index, length };
+    }
+    if (match.startsWith("$") && match.endsWith("$")) {
+      return { match, inner: match.slice(1, -1), wrapperStart: "$", wrapperEnd: "$", index, length };
+    }
+    if (match.startsWith("\\[") && match.endsWith("\\]")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "\\[", wrapperEnd: "\\]", index, length };
+    }
+    if (match.startsWith("\\(") && match.endsWith("\\)")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "\\(", wrapperEnd: "\\)", index, length };
+    }
+    // Command-like (e.g. \cfrac{...}{...}) — pass whole match as inner (don't strip)
+    if (match.startsWith("\\")) {
+      return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
+    }
+    return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
+  };
 
   // New: open editor for a specific target field
   const openEquationEditor = (language, field, optionIndex = null, initialValue = "") => {
-    setEqEditorTarget({ language, field, optionIndex });
-    setEqEditorValue(initialValue || "");
+    // detect first LaTeX fragment and present it in editor (without wrappers)
+    const latexInfo = extractFirstLatex(initialValue || "");
+    setEqEditorTarget({ language, field, optionIndex, originalLatexInfo: latexInfo });
+    if (latexInfo) {
+      setEqEditorValue(latexInfo.inner ?? latexInfo.match ?? "");
+    } else {
+      // no latex found — open with raw full text (or empty)
+      setEqEditorValue((initialValue || "").trim());
+    }
     setEqEditorOpen(true);
   };
 
@@ -540,17 +657,43 @@ const QuestionForm = () => {
 
   const saveEquationToField = (latex) => {
     const val = (latex || "").trim();
+    const info = eqEditorTarget.originalLatexInfo;
+    // Helper to perform replacement for a given text
+    const replaceInText = (text) => {
+      if (!info) {
+        // append as inline math by default
+        const appended = (text.trim() ? text + " " : "") + `$${val}$`;
+        return appended;
+      }
+      // replace exact original match at stored index
+      const before = text.slice(0, info.index);
+      const after = text.slice(info.index + info.length);
+      const wrapped = `${info.wrapperStart}${val}${info.wrapperEnd}`;
+      return before + wrapped + after;
+    };
+
+    // Mark that content is coming from equation editor to prevent auto-conversion
+    setIsFromEquationEditor(true);
+
     if (eqEditorTarget.language === "English") {
       if (eqEditorTarget.field === "options") {
-        updateEnglishQuestion("options", val, eqEditorTarget.optionIndex);
+        const curr = englishQuestion.options[eqEditorTarget.optionIndex] ?? "";
+        const updated = replaceInText(curr);
+        updateEnglishQuestion("options", updated, eqEditorTarget.optionIndex);
       } else {
-        updateEnglishQuestion(eqEditorTarget.field, val);
+        const curr = englishQuestion[eqEditorTarget.field] ?? "";
+        const updated = replaceInText(curr);
+        updateEnglishQuestion(eqEditorTarget.field, updated);
       }
     } else {
       if (eqEditorTarget.field === "options") {
-        updateHindiQuestion("options", val, eqEditorTarget.optionIndex);
+        const curr = hindiQuestion.options[eqEditorTarget.optionIndex] ?? "";
+        const updated = replaceInText(curr);
+        updateHindiQuestion("options", updated, eqEditorTarget.optionIndex);
       } else {
-        updateHindiQuestion(eqEditorTarget.field, val);
+        const curr = hindiQuestion[eqEditorTarget.field] ?? "";
+        const updated = replaceInText(curr);
+        updateHindiQuestion(eqEditorTarget.field, updated);
       }
     }
     setEqEditorOpen(false);
@@ -941,7 +1084,7 @@ const QuestionForm = () => {
       {/* Equation Editor Modal (lazy loaded) */}
       {eqEditorOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-          <div className="bg-white rounded-lg w-full max-w-3xl p-4 shadow-lg">
+          <div className="bg-white rounded-lg w-full max-w-4xl p-4 shadow-lg">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold">Equation Editor</h3>
               <button
@@ -951,6 +1094,9 @@ const QuestionForm = () => {
                 Close
               </button>
             </div>
+
+            {/* Add LaTeX Toolbar */}
+            <LatexToolbar />
 
             <Suspense fallback={<div className="p-4">Loading editor...</div>}>
               <EqErrorBoundary
@@ -972,6 +1118,20 @@ const QuestionForm = () => {
                 />
               </EqErrorBoundary>
             </Suspense>
+
+            {/* Alternative: Manual LaTeX Input */}
+            <div className="mt-4 border-t border-gray-200 pt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Manual LaTeX Input (if visual editor doesn't work)
+              </label>
+              <textarea
+                value={eqEditorValue}
+                onChange={(e) => setEqEditorValue(e.target.value)}
+                rows={3}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                placeholder="Type LaTeX here, e.g., \frac{a}{b}, x^{2}, \sqrt{x}"
+              />
+            </div>
 
             <div className="mt-4 flex justify-end space-x-2">
               <button
