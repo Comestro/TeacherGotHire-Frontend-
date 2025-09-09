@@ -28,6 +28,7 @@
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
     "dayjs": "^1.11.13",
+    "equation-editor-react": "^0.0.10",
     "flatpickr": "^4.6.13",
     "framer-motion": "^12.23.3",
     "html2canvas": "^1.4.1",

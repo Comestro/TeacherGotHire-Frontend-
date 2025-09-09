@@ -1,8 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { FiX, FiGlobe, FiRefreshCw, FiLoader } from 'react-icons/fi';
 import { translateText } from '../../../services/apiService';
 import { toast } from 'react-toastify';
 import QuestionPreview from './QuestionPreview';
+
+// Lazy-load equation editor
+const EquationEditor = lazy(() => import("equation-editor-react"));
+
+// New small error boundary + editable fallback for the equation editor
+class EqErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err, info) {
+    console.error("EquationEditor error:", err, info);
+  }
+  render() {
+    if (!this.state.hasError) return this.props.children;
+
+    const {
+      fallbackValue = "",
+      onChange = () => {},
+      onSave = () => {},
+      onCancel = () => {},
+    } = this.props;
+
+    return (
+      <div className="p-4 space-y-3">
+        <div className="p-3 text-sm text-red-700 bg-red-50 rounded">
+          Equation editor failed to load. You can paste or edit LaTeX below and
+          Save to insert it into the field.
+        </div>
+
+        <label className="block text-sm font-medium text-gray-700">LaTeX</label>
+        <textarea
+          value={fallbackValue}
+          onChange={(e) => onChange(e.target.value)}
+          rows={6}
+          className="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+          placeholder="Paste or type LaTeX here, e.g. \frac{a}{b}"
+        />
+
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={onSave}
+            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+          >
+            Save
+          </button>
+          <button
+            onClick={onCancel}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
 
 const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) => {
   const [englishQuestion, setEnglishQuestion] = useState({
@@ -23,6 +83,18 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New: equation editor modal state
+  const [eqEditorOpen, setEqEditorOpen] = useState(false);
+  const [eqEditorValue, setEqEditorValue] = useState("");
+  // modal key forces remount of boundary/editor so they initialize with eqEditorValue
+  const [eqModalKey, setEqModalKey] = useState(0);
+  const [eqEditorTarget, setEqEditorTarget] = useState({
+     language: "English",
+     field: "text", // "text" | "solution" | "options"
+     optionIndex: null,
+    originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
+   });
 
   // Initialize form with editing question data if available
   useEffect(() => {
@@ -124,6 +196,43 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     return words.join(" ");
   };
 
+  // New helper: detect LaTeX-like tokens (used in Hindi real-time translation)
+  const isLatexToken = (token) => {
+    if (!token || typeof token !== "string") return false;
+    if (/\$/.test(token)) return true;
+    if (/^\\[A-Za-z]+/.test(token)) return true;
+    if (/[\\^_{}]/.test(token)) return true;
+    return false;
+  };
+
+  // New: translatePreservingLatex - translate only non-latex segments
+  const translatePreservingLatex = async (src) => {
+    if (!src || !src.trim()) return "";
+    // regex matches $...$, $$...$$, \[...\], \(...\), or commands with one-or-more {...} groups
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+
+    const promises = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(src)) !== null) {
+      if (match.index > lastIndex) {
+        const chunk = src.slice(lastIndex, match.index);
+        promises.push(translateText(chunk, "English", "Hindi").catch(() => chunk));
+      }
+      promises.push(Promise.resolve(match[0])); // preserve LaTeX
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < src.length) {
+      const tail = src.slice(lastIndex);
+      promises.push(translateText(tail, "English", "Hindi").catch(() => tail));
+    }
+
+    const parts = await Promise.all(promises);
+    return parts.join("");
+  };
+
   const handleManualTranslate = async () => {
     setIsTranslating(true);
 
@@ -133,24 +242,18 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         return;
       }
 
-      // Prepare translation requests for all fields
       const translationPromises = [
-        translateText(englishQuestion.text, "English", "Hindi"),
+        translatePreservingLatex(englishQuestion.text),
         englishQuestion.solution.trim()
-          ? translateText(englishQuestion.solution, "English", "Hindi")
+          ? translatePreservingLatex(englishQuestion.solution)
           : Promise.resolve(""),
         ...englishQuestion.options.map((option) =>
-          option.trim()
-            ? translateText(option, "English", "Hindi")
-            : Promise.resolve("")
+          option.trim() ? translatePreservingLatex(option) : Promise.resolve("")
         ),
       ];
 
-      // Translate all content in parallel
-      const [translatedText, translatedSolution, ...translatedOptions] =
-        await Promise.all(translationPromises);
+      const [translatedText, translatedSolution, ...translatedOptions] = await Promise.all(translationPromises);
 
-      // Update Hindi question with all translated content
       setHindiQuestion((prev) => ({
         ...prev,
         text: translatedText || "",
@@ -159,7 +262,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         correct_option: englishQuestion.correct_option,
       }));
 
-      toast.success("Successfully translated to Hindi");
+      toast.success("Successfully translated to Hindi (LaTeX preserved)");
     } catch (error) {
       console.error("Manual translation failed:", error);
       toast.error("Failed to translate content. Please try again.");
@@ -308,13 +411,13 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       setIsTranslating(true);
       try {
-        const response = await translateText(value, "English", "Hindi");
+        const response = await translatePreservingLatex(value);
 
         // Update Hindi question with translated text from response
         if (field === "options" && optionIndex !== null) {
           setHindiQuestion((prev) => {
             const updated = { ...prev };
-            updated.options[optionIndex] = response; 
+            updated.options[optionIndex] = response;
             return updated;
           });
         } else {
@@ -331,55 +434,146 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     }
   };
 
-  // Handle Hindi field real-time word-by-word translation
+  // Hindi word-by-word handler: skip latex tokens
   const handleHindiKeyUp = async (e, field, value, optionIndex = null) => {
-   updateHindiQuestion(field, value, optionIndex);
- 
-   if ((e.key === " " || e.key === "Enter") && value.trim()) {
-     const words = value.trim().split(/\s+/);
-     let updatedWords = [...words];
-     let hasTranslation = false;
- 
-     setIsTranslating(true);
- 
-     try {
-       // Loop through each word to detect and translate English ones
-       for (let i = 0; i < words.length; i++) {
-         const word = words[i];
-         if (isEnglishWord(word)) {
-           try {
-             const translated = await translateText(word, "English", "Hindi");
-             updatedWords[i] = translated;
-             hasTranslation = true;
-           } catch (error) {
-             console.warn("Failed to translate:", word);
-           }
-         }
-       }
- 
-       if (hasTranslation) {
-         const updatedText = updatedWords.join(" ");
- 
-         if (field === "options" && optionIndex !== null) {
-           setHindiQuestion((prev) => {
-             const updated = { ...prev };
-             updated.options[optionIndex] = updatedText;
-             return updated;
-           });
-         } else {
-           setHindiQuestion((prev) => ({
-             ...prev,
-             [field]: updatedText,
-           }));
-         }
-       }
-     } catch (error) {
-       console.error("Bulk translation failed:", error);
-     } finally {
-       setIsTranslating(false);
-     }
-   }
- };
+    updateHindiQuestion(field, value, optionIndex);
+
+    if ((e.key === " " || e.key === "Enter") && value.trim()) {
+      const words = value.trim().split(/\s+/);
+      let updatedWords = [...words];
+      let hasTranslation = false;
+
+      setIsTranslating(true);
+
+      try {
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          if (isLatexToken(word)) continue;
+          if (isEnglishWord(word)) {
+            try {
+              const translated = await translateText(word, "English", "Hindi");
+              updatedWords[i] = translated;
+              hasTranslation = true;
+            } catch (error) {
+              console.warn("Failed to translate:", word);
+            }
+          }
+        }
+
+        if (hasTranslation) {
+          const updatedText = updatedWords.join(" ");
+          if (field === "options" && optionIndex !== null) {
+            setHindiQuestion((prev) => {
+              const updated = { ...prev };
+              updated.options[optionIndex] = updatedText;
+              return updated;
+            });
+          } else {
+            setHindiQuestion((prev) => ({
+              ...prev,
+              [field]: updatedText,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Bulk translation failed:", error);
+      } finally {
+        setIsTranslating(false);
+      }
+    }
+  };
+
+  // New: open/close/save eq editor
+  const openEquationEditor = (language, field, optionIndex = null, initialValue = "") => {
+    // detect first LaTeX fragment and present it in editor (without wrappers)
+    const latexInfo = extractFirstLatex(initialValue || "");
+    setEqEditorTarget({ language, field, optionIndex, originalLatexInfo: latexInfo });
+    if (latexInfo) {
+      setEqEditorValue(latexInfo.inner ?? latexInfo.match ?? "");
+    } else {
+      // no latex found — open with raw full text (or empty)
+      setEqEditorValue((initialValue || "").trim());
+    }
+    // bump modal key and open modal so boundary/editor remount with current value
+    setEqModalKey((k) => k + 1);
+    setEqEditorOpen(true);
+   };
+   
+   const closeEquationEditor = () => {
+     setEqEditorOpen(false);
+   };
+   
+   const saveEquationToField = (latex) => {
+    const val = (latex || "").trim();
+    const info = eqEditorTarget.originalLatexInfo;
+    // Helper to perform replacement for a given text
+    const replaceInText = (text) => {
+      if (!info) {
+        // append as inline math by default
+        const appended = (text.trim() ? text + " " : "") + `$${val}$`;
+        return appended;
+      }
+      // replace exact original match at stored index
+      const before = text.slice(0, info.index);
+      const after = text.slice(info.index + info.length);
+      const wrapped = `${info.wrapperStart}${val}${info.wrapperEnd}`;
+      return before + wrapped + after;
+    };
+
+    if (eqEditorTarget.language === "English") {
+      if (eqEditorTarget.field === "options") {
+        const curr = englishQuestion.options[eqEditorTarget.optionIndex] ?? "";
+        const updated = replaceInText(curr);
+        updateEnglishQuestion("options", updated, eqEditorTarget.optionIndex);
+      } else {
+        const curr = englishQuestion[eqEditorTarget.field] ?? "";
+        const updated = replaceInText(curr);
+        updateEnglishQuestion(eqEditorTarget.field, updated);
+      }
+    } else {
+      if (eqEditorTarget.field === "options") {
+        const curr = hindiQuestion.options[eqEditorTarget.optionIndex] ?? "";
+        const updated = replaceInText(curr);
+        updateHindiQuestion("options", updated, eqEditorTarget.optionIndex);
+      } else {
+        const curr = hindiQuestion[eqEditorTarget.field] ?? "";
+        const updated = replaceInText(curr);
+        updateHindiQuestion(eqEditorTarget.field, updated);
+      }
+    }
+    setEqEditorOpen(false);
+   };
+
+  // Find first LaTeX fragment and return structured info.
+  const extractFirstLatex = (src) => {
+    if (!src || typeof src !== "string") return null;
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\]|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+    const m = regex.exec(src);
+    if (!m) return null;
+    const match = m[0];
+    const index = m.index;
+    const length = match.length;
+
+    // Determine wrappers and inner content
+    if (match.startsWith("$$") && match.endsWith("$$")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "$$", wrapperEnd: "$$", index, length };
+    }
+    if (match.startsWith("$") && match.endsWith("$")) {
+      return { match, inner: match.slice(1, -1), wrapperStart: "$", wrapperEnd: "$", index, length };
+    }
+    if (match.startsWith("\\[") && match.endsWith("\\]")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "\\[", wrapperEnd: "\\]", index, length };
+    }
+    if (match.startsWith("\\(") && match.endsWith("\\)")) {
+      return { match, inner: match.slice(2, -2), wrapperStart: "\\(", wrapperEnd: "\\)", index, length };
+    }
+    // Command-like (e.g. \cfrac{...}{...}) — pass whole match as inner (don't strip)
+    if (match.startsWith("\\")) {
+      return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
+    }
+    return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -467,6 +661,15 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                     disabled={editingQuestion && editingQuestion.language === 'Hindi'}
                   />
                 </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => openEquationEditor("English", "text", null, englishQuestion.text)}
+                    className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                  >
+                    Equation
+                  </button>
+                </div>
 
                 {/* English Options */}
                 <div className="space-y-3 mb-6">
@@ -507,6 +710,17 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                           {String.fromCharCode(65 + index)}
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor("English", "options", index, englishQuestion.options[index])
+                          }
+                          className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
+                        >
+                          Eq
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -525,6 +739,15 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'Hindi'}
                   />
+                </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => openEquationEditor("English", "solution", null, englishQuestion.solution)}
+                    className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                  >
+                    Equation
+                  </button>
                 </div>
               </div>
             </div>
@@ -555,6 +778,15 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'English'}
                   />
+                </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => openEquationEditor("Hindi", "text", null, hindiQuestion.text)}
+                    className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                  >
+                    Equation
+                  </button>
                 </div>
 
                 {/* Hindi Options */}
@@ -596,6 +828,17 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                           {String.fromCharCode(65 + index)}
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor("Hindi", "options", index, hindiQuestion.options[index])
+                          }
+                          className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded"
+                        >
+                          Eq
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -614,6 +857,15 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'English'}
                   />
+                </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => openEquationEditor("Hindi", "solution", null, hindiQuestion.solution)}
+                    className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                  >
+                    Equation
+                  </button>
                 </div>
               </div>
             </div>
@@ -654,6 +906,59 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           </div>
         </div>
       </div>
+
+      {/* Equation Editor Modal (lazy loaded) */}
+      {eqEditorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+          <div className="bg-white rounded-lg w-full max-w-3xl p-4 shadow-lg">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">Equation Editor</h3>
+              <button
+                onClick={closeEquationEditor}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Close
+              </button>
+            </div>
+
+            <Suspense fallback={<div className="p-4">Loading editor...</div>}>
+              <EqErrorBoundary
+                key={`eqb-${eqModalKey}`}
+                fallbackValue={eqEditorValue}
+                onChange={setEqEditorValue}
+                onSave={() => saveEquationToField(eqEditorValue)}
+                onCancel={closeEquationEditor}
+              >
+                <EquationEditor
+                  key={`eq-${eqModalKey}`}
+                  value={eqEditorValue}
+                  latex={eqEditorValue}
+                  onChange={(val) => setEqEditorValue(val)}
+                  autoCommands="pi theta sqrt sum prod alpha beta gamma rho frac pm"
+                  autoOperatorNames="sin cos tan log ln exp"
+                  config={{ autoCommands: "pi theta sqrt sum prod alpha beta gamma rho frac pm" }}
+                  style={{ minHeight: 200 }}
+                />
+              </EqErrorBoundary>
+            </Suspense>
+
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => saveEquationToField(eqEditorValue)}
+                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+              >
+                Save
+              </button>
+              <button
+                onClick={closeEquationEditor}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

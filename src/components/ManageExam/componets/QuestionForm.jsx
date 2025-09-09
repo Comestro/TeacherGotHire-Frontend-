@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -11,6 +11,71 @@ import { toast } from "react-toastify";
 import { translateText } from "../../../services/apiService";
 import { createNewQuestion } from "../../../services/adminManageExam";
 import QuestionPreview from "./QuestionPreview";
+
+// Lazy-load equation editor to avoid runtime errors until package is installed
+const EquationEditor = lazy(() => import("equation-editor-react"));
+
+// New: small error boundary to isolate editor failures and provide editable fallback
+class EqErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err, info) {
+    console.error("EquationEditor error:", err, info);
+  }
+  render() {
+    // When no error, render children (the real editor)
+    if (!this.state.hasError) {
+      return this.props.children;
+    }
+
+    // Fallback UI: editable textarea using props passed from parent
+    // Props expected: fallbackValue, onChange (setter), onSave, onCancel
+    const {
+      fallbackValue = "",
+      onChange = () => {},
+      onSave = () => {},
+      onCancel = () => {},
+    } = this.props;
+
+    return (
+      <div className="p-4 space-y-3">
+        <div className="p-3 text-sm text-red-700 bg-red-50 rounded">
+          Equation editor failed to load. You can paste or edit LaTeX below and
+          Save to insert it into the field.
+        </div>
+
+        <label className="block text-sm font-medium text-gray-700">LaTeX</label>
+        <textarea
+          value={fallbackValue}
+          onChange={(e) => onChange(e.target.value)}
+          rows={6}
+          className="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+          placeholder="Paste or type LaTeX here, e.g. \frac{a}{b}"
+        />
+
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={onSave}
+            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+          >
+            Save
+          </button>
+          <button
+            onClick={onCancel}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
 
 const QuestionForm = () => {
   const { examId } = useParams();
@@ -35,6 +100,15 @@ const QuestionForm = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // New: equation editor modal state
+  const [eqEditorOpen, setEqEditorOpen] = useState(false);
+  const [eqEditorValue, setEqEditorValue] = useState("");
+  const [eqEditorTarget, setEqEditorTarget] = useState({
+    language: "English",
+    field: "text", // "text" | "solution" | "options"
+    optionIndex: null,
+  });
+
   // Helper: detect LaTeX-like tokens (dollars, backslash commands, braces, caret, underscore)
   const isLatexToken = (token) => {
     if (!token || typeof token !== "string") return false;
@@ -52,8 +126,9 @@ const QuestionForm = () => {
     const placeholders = [];
     let idx = 0;
     if (!input) return { textWithPlaceholders: input || "", placeholders };
-    // match display math $$...$$, inline $...$, \[...\], \(...\), or backslash-commands with optional {...}
-    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})?)/g;
+    // match display math $$...$$, inline $...$, \[...\], \(...\),
+    // or backslash-commands with one-or-more {...} groups (e.g. \cfrac{...}{...})
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
     const textWithPlaceholders = input.replace(regex, (match) => {
       const key = `__LATEX_${idx}__`;
       placeholders.push(match);
@@ -74,9 +149,38 @@ const QuestionForm = () => {
 
   const translatePreservingLatex = async (src) => {
     if (!src || !src.trim()) return "";
-    const { textWithPlaceholders, placeholders } = extractLatexPlaceholders(src);
-    const translated = await translateText(textWithPlaceholders, "English", "Hindi");
-    return restoreLatexPlaceholders(translated || textWithPlaceholders, placeholders);
+    // Split into LaTeX and non-LaTeX segments using the same regex as extractor.
+    // Translate only the non-LaTeX segments and keep LaTeX segments unchanged.
+    const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+
+    const promises = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(src)) !== null) {
+      // non-latex chunk before this match
+      if (match.index > lastIndex) {
+        const chunk = src.slice(lastIndex, match.index);
+        // translate the non-latex chunk; fall back to original chunk on error
+        promises.push(
+          translateText(chunk, "English", "Hindi").catch(() => chunk)
+        );
+      }
+      // latex chunk: preserve as-is
+      promises.push(Promise.resolve(match[0]));
+      lastIndex = regex.lastIndex;
+    }
+
+    // tail chunk after last match
+    if (lastIndex < src.length) {
+      const tail = src.slice(lastIndex);
+      promises.push(
+        translateText(tail, "English", "Hindi").catch(() => tail)
+      );
+    }
+
+    const parts = await Promise.all(promises);
+    return parts.join("");
   };
 
   // Function to detect if a word is in English
@@ -423,6 +527,35 @@ const QuestionForm = () => {
   }
 };
 
+  // New: open editor for a specific target field
+  const openEquationEditor = (language, field, optionIndex = null, initialValue = "") => {
+    setEqEditorTarget({ language, field, optionIndex });
+    setEqEditorValue(initialValue || "");
+    setEqEditorOpen(true);
+  };
+
+  const closeEquationEditor = () => {
+    setEqEditorOpen(false);
+  };
+
+  const saveEquationToField = (latex) => {
+    const val = (latex || "").trim();
+    if (eqEditorTarget.language === "English") {
+      if (eqEditorTarget.field === "options") {
+        updateEnglishQuestion("options", val, eqEditorTarget.optionIndex);
+      } else {
+        updateEnglishQuestion(eqEditorTarget.field, val);
+      }
+    } else {
+      if (eqEditorTarget.field === "options") {
+        updateHindiQuestion("options", val, eqEditorTarget.optionIndex);
+      } else {
+        updateHindiQuestion(eqEditorTarget.field, val);
+      }
+    }
+    setEqEditorOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -515,6 +648,18 @@ const QuestionForm = () => {
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                     rows="3"
                   />
+                  {/* Add Equation button next to the textarea */}
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openEquationEditor("English", "text", null, englishQuestion.text)
+                      }
+                      className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                    >
+                      Equation
+                    </button>
+                  </div>
                 </div>
 
                 {/* English Options */}
@@ -561,6 +706,22 @@ const QuestionForm = () => {
                           {String.fromCharCode(65 + index)}
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "English",
+                              "options",
+                              index,
+                              englishQuestion.options[index]
+                            )
+                          }
+                          className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
+                        >
+                          Eq
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -581,6 +742,22 @@ const QuestionForm = () => {
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                     rows="3"
                   />
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openEquationEditor(
+                          "English",
+                          "solution",
+                          null,
+                          englishQuestion.solution
+                        )
+                      }
+                      className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                    >
+                      Equation
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -607,6 +784,17 @@ const QuestionForm = () => {
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
                     rows="3"
                   />
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openEquationEditor("Hindi", "text", null, hindiQuestion.text)
+                      }
+                      className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                    >
+                      Equation
+                    </button>
+                  </div>
                 </div>
 
                 {/* Hindi Options */}
@@ -659,6 +847,22 @@ const QuestionForm = () => {
                           {String.fromCharCode(65 + index)}
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "Hindi",
+                              "options",
+                              index,
+                              hindiQuestion.options[index]
+                            )
+                          }
+                          className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded"
+                        >
+                          Eq
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -680,6 +884,22 @@ const QuestionForm = () => {
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
                     rows="3"
                   />
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openEquationEditor(
+                          "Hindi",
+                          "solution",
+                          null,
+                          hindiQuestion.solution
+                        )
+                      }
+                      className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                    >
+                      Equation
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -717,6 +937,59 @@ const QuestionForm = () => {
           </div>
         </div>
       </div>
+
+      {/* Equation Editor Modal (lazy loaded) */}
+      {eqEditorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+          <div className="bg-white rounded-lg w-full max-w-3xl p-4 shadow-lg">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">Equation Editor</h3>
+              <button
+                onClick={closeEquationEditor}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Close
+              </button>
+            </div>
+
+            <Suspense fallback={<div className="p-4">Loading editor...</div>}>
+              <EqErrorBoundary
+                fallbackValue={eqEditorValue}
+                onChange={setEqEditorValue}
+                onSave={() => saveEquationToField(eqEditorValue)}
+                onCancel={closeEquationEditor}
+              >
+                {/* Use value/onChange and provide safe autoCommands / autoOperatorNames */}
+                <EquationEditor
+                  value={eqEditorValue}
+                  onChange={(val) => setEqEditorValue(val)}
+                  // common commands/operators to avoid internal undefined.split errors
+                  autoCommands="pi theta sqrt sum prod alpha beta gamma rho frac pm"
+                  autoOperatorNames="sin cos tan log ln exp"
+                  // keep config fallback as extra safety
+                  config={{ autoCommands: "pi theta sqrt sum prod alpha beta gamma rho frac pm" }}
+                  style={{ minHeight: 200 }}
+                />
+              </EqErrorBoundary>
+            </Suspense>
+
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => saveEquationToField(eqEditorValue)}
+                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+              >
+                Save
+              </button>
+              <button
+                onClick={closeEquationEditor}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
