@@ -99,6 +99,10 @@ const QuestionForm = () => {
 
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duplicateError, setDuplicateError] = useState(null);
+  // Add missing state for englishSectionEmpty
+  const [englishSectionEmpty, setEnglishSectionEmpty] = useState(false);
+  const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
 
   // New: equation editor modal state
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
@@ -427,55 +431,33 @@ const QuestionForm = () => {
 
     setIsSubmitting(true);
     try {
-      // Create array of questions to submit
-      const questionsToSubmit = [];
+      // Now we expect both questions to be complete
+      const englishPayload = {
+        language: englishQuestion.language,
+        text: englishQuestion.text.trim(),
+        options: englishQuestion.options.map((opt) => opt.trim()),
+        correct_option: englishQuestion.correct_option + 1
+      };
 
-      // Add English question if it has content
-      if (
-        englishQuestion.text.trim() &&
-        englishQuestion.options.every((opt) => opt.trim())
-      ) {
-        const englishPayload = {
-          language: englishQuestion.language,
-          text: englishQuestion.text.trim(),
-          options: englishQuestion.options.map((opt) => opt.trim()),
-          correct_option: englishQuestion.correct_option + 1,
-        };
-
-        // Only add solution if it exists
-        if (englishQuestion.solution.trim()) {
-          englishPayload.solution = englishQuestion.solution.trim();
-        }
-
-        questionsToSubmit.push(englishPayload);
+      // Only add solution if it exists
+      if (englishQuestion.solution.trim()) {
+        englishPayload.solution = englishQuestion.solution.trim();
       }
 
-      // Add Hindi question if it has content
-      if (
-        hindiQuestion.text.trim() &&
-        hindiQuestion.options.every((opt) => opt.trim())
-      ) {
-        const hindiPayload = {
-          language: hindiQuestion.language,
-          text: hindiQuestion.text.trim(),
-          options: hindiQuestion.options.map((opt) => opt.trim()),
-          correct_option: hindiQuestion.correct_option + 1,
-        };
+      const hindiPayload = {
+        language: hindiQuestion.language,
+        text: hindiQuestion.text.trim(),
+        options: hindiQuestion.options.map((opt) => opt.trim()),
+        correct_option: hindiQuestion.correct_option + 1
+      };
 
-        // Only add solution if it exists
-        if (hindiQuestion.solution.trim()) {
-          hindiPayload.solution = hindiQuestion.solution.trim() || 1;
-        }
-
-        questionsToSubmit.push(hindiPayload);
+      // Only add solution if it exists
+      if (hindiQuestion.solution.trim()) {
+        hindiPayload.solution = hindiQuestion.solution.trim();
       }
 
-      if (questionsToSubmit.length === 0) {
-        toast.error(
-          "Please fill at least one complete question (English or Hindi)"
-        );
-        return;
-      }
+      // Both questions are required now
+      const questionsToSubmit = [englishPayload, hindiPayload];
 
       const payload = {
         exam: parseInt(examId),
@@ -487,9 +469,7 @@ const QuestionForm = () => {
       const response = await createNewQuestion(payload);
 
       if (response) {
-        toast.success(
-          `${questionsToSubmit.length} question(s) added successfully!`
-        );
+        toast.success("Questions added successfully in both languages!");
         navigate(-1);
       } else {
         throw new Error("Failed to create questions");
@@ -502,21 +482,153 @@ const QuestionForm = () => {
     }
   };
 
+  // Function to check if English and Hindi questions have duplicate content
+  const checkDuplicateContent = () => {
+    // Skip check if either form is empty
+    if (!englishQuestion.text.trim() || !hindiQuestion.text.trim()) {
+      setDuplicateError(null);
+      return false;
+    }
+
+    // Check for duplicate text (ignoring case and whitespace)
+    if (englishQuestion.text.trim().toLowerCase() === hindiQuestion.text.trim().toLowerCase()) {
+      setDuplicateError("The English and Hindi question texts are identical. Please make them unique.");
+      return true;
+    }
+
+    // Check for duplicate options
+    const duplicateOptions = englishQuestion.options.some((option, index) => {
+      return option.trim().toLowerCase() === hindiQuestion.options[index].trim().toLowerCase() && option.trim() !== "";
+    });
+
+    if (duplicateOptions) {
+      setDuplicateError("Some options are identical in both languages. Please make all options unique.");
+      return true;
+    }
+
+    // Check for duplicate solution if both have content
+    if (englishQuestion.solution.trim() && hindiQuestion.solution.trim() && 
+        englishQuestion.solution.trim().toLowerCase() === hindiQuestion.solution.trim().toLowerCase()) {
+      setDuplicateError("The solutions are identical in both languages. Please make them unique.");
+      return true;
+    }
+
+    // No duplicates found
+    setDuplicateError(null);
+    return false;
+  };
+
+  // Effect to check for duplicates whenever questions change
+  useEffect(() => {
+    // Debounced duplicate check to avoid checking on every keystroke
+    const duplicateCheckTimer = setTimeout(() => {
+      checkDuplicateContent();
+    }, 500);
+
+    return () => clearTimeout(duplicateCheckTimer);
+  }, [englishQuestion.text, hindiQuestion.text, 
+     englishQuestion.options.join(), hindiQuestion.options.join(),
+     englishQuestion.solution, hindiQuestion.solution]);
+
+  // Add state for field-level validation errors
+  const [fieldErrors, setFieldErrors] = useState({
+    english: {
+      text: false,
+      options: [false, false, false, false],
+      solution: false
+    },
+    hindi: {
+      text: false,
+      options: [false, false, false, false],
+      solution: false
+    }
+  });
+
+  // Update validateForm with more strict field validation
   const validateForm = () => {
-    const hasEnglishContent =
-      englishQuestion.text.trim() ||
-      englishQuestion.solution.trim() &&
-      englishQuestion.options.every((opt) => opt.trim());
+    // Check for duplicate content first
+    if (checkDuplicateContent()) {
+      return false;
+    }
+    
+    // Create a copy of field errors to update
+    const newFieldErrors = {
+      english: {
+        text: false,
+        options: [false, false, false, false],
+        solution: false
+      },
+      hindi: {
+        text: false,
+        options: [false, false, false, false],
+        solution: false
+      }
+    };
+    
+    let hasError = false;
 
-    const hasHindiContent =
-      hindiQuestion.text.trim() ||
-      hindiQuestion.solution.trim() &&
-      hindiQuestion.options.every((opt) => opt.trim());
+    // English validation - required regardless of emptiness
+    // Question text is required
+    if (!englishQuestion.text.trim()) {
+      newFieldErrors.english.text = true;
+      hasError = true;
+    }
 
-    if (!hasEnglishContent && !hasHindiContent) {
-      toast.error(
-        "Please fill at least one complete question (English or Hindi)"
-      );
+    // Each option is required
+    englishQuestion.options.forEach((opt, idx) => {
+      if (!opt.trim()) {
+        newFieldErrors.english.options[idx] = true;
+        hasError = true;
+      }
+    });
+
+    // Solution is NOT required - remove this check
+    // if (!englishQuestion.solution.trim()) {
+    //   newFieldErrors.english.solution = true;
+    //   hasError = true;
+    // }
+
+    // Hindi validation - required regardless of emptiness
+    // Question text is required
+    if (!hindiQuestion.text.trim()) {
+      newFieldErrors.hindi.text = true;
+      hasError = true;
+    }
+
+    // Each option is required
+    hindiQuestion.options.forEach((opt, idx) => {
+      if (!opt.trim()) {
+        newFieldErrors.hindi.options[idx] = true;
+        hasError = true;
+      }
+    });
+
+    // Solution is NOT required - remove this check
+    // if (!hindiQuestion.solution.trim()) {
+    //   newFieldErrors.hindi.solution = true;
+    //   hasError = true;
+    // }
+
+    // Update error state
+    setFieldErrors(newFieldErrors);
+
+    // If there are errors, show a toast notification
+    if (hasError) {
+      toast.error("Both English and Hindi questions must be complete. Please fill in all required fields.");
+      return false;
+    }
+
+    // Ensure that both languages have complete information
+    const isEnglishComplete = englishQuestion.text.trim() && 
+                             englishQuestion.options.every(opt => opt.trim());
+                             // Solution is optional now
+
+    const isHindiComplete = hindiQuestion.text.trim() && 
+                           hindiQuestion.options.every(opt => opt.trim());
+                           // Solution is optional now
+
+    if (!isEnglishComplete || !isHindiComplete) {
+      toast.error("Both English and Hindi questions must have text and all options filled");
       return false;
     }
 
@@ -699,6 +811,30 @@ const QuestionForm = () => {
     setEqEditorOpen(false);
   };
 
+  // Check if English section is actually empty (completely)
+  const isEnglishSectionTrulyEmpty = () => {
+    return !englishQuestion.text.trim() && 
+           !englishQuestion.options.some(opt => opt.trim()) &&
+           !englishQuestion.solution.trim(); // Fixed: added missing solution check
+  };
+
+  // Check if Hindi section is actually empty (completely)
+  const isHindiSectionTrulyEmpty = () => {
+    return !hindiQuestion.text.trim() && 
+           !hindiQuestion.options.some(opt => opt.trim()) &&
+           !hindiQuestion.solution.trim(); // Fixed: added missing solution check
+  };
+
+  // Add effect to check English section emptiness
+  useEffect(() => {
+    setEnglishSectionEmpty(isEnglishSectionTrulyEmpty());
+  }, [englishQuestion]);
+
+  // Add effect to check Hindi section emptiness 
+  useEffect(() => {
+    setHindiSectionEmpty(isHindiSectionTrulyEmpty());
+  }, [hindiQuestion]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -759,12 +895,32 @@ const QuestionForm = () => {
           {/* Submission Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 text-sm">
-              <strong>Real-time Translation:</strong> Type English words in
-              Hindi fields and press Space/Enter after each word for instant
-              translation. You can submit English only, Hindi only, or both
-              questions.
+              <strong>Important:</strong> Both English and Hindi versions are required. 
+              Type English words in Hindi fields and press Space/Enter after each word for instant
+              translation. All fields marked with <span className="text-red-500">*</span> must be filled.
             </p>
           </div>
+
+          {/* Add error banner for duplicate content */}
+          {duplicateError && (
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-md">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">
+                    <strong className="font-medium">Error:</strong> {duplicateError}
+                  </p>
+                  <p className="text-sm text-red-600 mt-1">
+                    English and Hindi versions must be different to validate as a bilingual question set.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Side-by-Side Forms */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -772,13 +928,13 @@ const QuestionForm = () => {
             <div className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                 <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  🇺🇸 English Question (Optional)
+                  🇺🇸 English Question <span className="text-red-500 ml-1">*</span>
                 </h2>
 
                 {/* English Question Text */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-semibold text-gray-800">
-                    Question Text
+                    Question Text <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={englishQuestion.text}
@@ -788,9 +944,13 @@ const QuestionForm = () => {
                     onKeyUp={(e) => handleKeyUp(e, "text", e.target.value)}
                     onBlur={(e) => handleEnglishFieldBlur("text", e.target.value)}
                     placeholder="Enter your question in English..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className={`w-full p-3 border ${fieldErrors.english.text ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
+                    required={!englishSectionEmpty}
                   />
+                  {fieldErrors.english.text && (
+                    <p className="text-red-500 text-xs mt-1">Question text is required</p>
+                  )}
                   {/* Add Equation button next to the textarea */}
                   <div className="mt-2">
                     <button
@@ -808,7 +968,7 @@ const QuestionForm = () => {
                 {/* English Options */}
                 <div className="space-y-4 mb-6">
                   <label className="block text-sm font-semibold text-gray-800">
-                    Answer Options
+                    Answer Options <span className="text-red-500">*</span>
                   </label>
                   {englishQuestion.options.map((option, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -843,8 +1003,12 @@ const QuestionForm = () => {
                           }
                           onBlur={(e) => handleEnglishFieldBlur("options", e.target.value, index)}
                           placeholder={`Option ${index + 1}`}
-                          className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
+                          className={`w-full p-2 border ${fieldErrors.english.options[index] ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10`}
+                          required={!englishSectionEmpty}
                         />
+                        {fieldErrors.english.options[index] && (
+                          <p className="text-red-500 text-xs mt-1">Option {index + 1} is required</p>
+                        )}
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
                           {String.fromCharCode(65 + index)}
                         </div>
@@ -872,7 +1036,7 @@ const QuestionForm = () => {
                 {/* English Solution */}
                 <div className="space-y-3">
                   <label className="block text-sm font-semibold text-gray-800">
-                    Solution/Explanation
+                    Solution/Explanation <span className="text-gray-500">(Optional)</span>
                   </label>
                   <textarea
                     value={englishQuestion.solution}
@@ -881,10 +1045,11 @@ const QuestionForm = () => {
                     }
                     onKeyUp={(e) => handleKeyUp(e, "solution", e.target.value)}
                     onBlur={(e) => handleEnglishFieldBlur("solution", e.target.value)}
-                    placeholder="Provide detailed explanation in English..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    placeholder="Provide detailed explanation in English (optional)..."
+                    className={`w-full p-3 border ${fieldErrors.english.solution ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                   />
+                  {/* Remove error message for solution since it's optional */}
                   <div className="mt-2">
                     <button
                       type="button"
@@ -909,13 +1074,13 @@ const QuestionForm = () => {
             <div className="space-y-6">
               <div className="bg-orange-50 p-4 rounded-xl border-2 border-orange-200">
                 <h2 className="text-xl font-bold text-orange-800 mb-4 flex items-center">
-                  🇮🇳 हिंदी प्रश्न (Hindi Question) - Optional
+                  🇮🇳 हिंदी प्रश्न (Hindi Question) <span className="text-red-500 ml-1">*</span>
                 </h2>
 
                 {/* Hindi Question Text */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-semibold text-gray-800">
-                    प्रश्न पाठ (Question Text)
+                    प्रश्न पाठ (Question Text) <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={hindiQuestion.text}
@@ -924,9 +1089,13 @@ const QuestionForm = () => {
                     }
                     onKeyUp={(e) => handleHindiKeyUp(e, "text", e.target.value)}
                     placeholder="हिंदी में टाइप करें या English words टाइप करके हर word के बाद Space दबाएं..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                    className={`w-full p-3 border ${fieldErrors.hindi.text ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
+                    required={!hindiSectionEmpty}
                   />
+                  {fieldErrors.hindi.text && (
+                    <p className="text-red-500 text-xs mt-1">प्रश्न पाठ आवश्यक है</p>
+                  )}
                   <div className="mt-2">
                     <button
                       type="button"
@@ -943,7 +1112,7 @@ const QuestionForm = () => {
                 {/* Hindi Options */}
                 <div className="space-y-4 mb-6">
                   <label className="block text-sm font-semibold text-gray-800">
-                    उत्तर विकल्प (Answer Options)
+                    उत्तर विकल्प (Answer Options) <span className="text-red-500">*</span>
                   </label>
                   {hindiQuestion.options.map((option, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -984,8 +1153,12 @@ const QuestionForm = () => {
                           placeholder={`विकल्प ${
                             index + 1
                           } (English word + Space for translation)`}
-                          className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all pr-10"
+                          className={`w-full p-2 border ${fieldErrors.hindi.options[index] ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all pr-10`}
+                          required={!hindiSectionEmpty}
                         />
+                        {fieldErrors.hindi.options[index] && (
+                          <p className="text-red-500 text-xs mt-1">विकल्प {index + 1} आवश्यक है</p>
+                        )}
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
                           {String.fromCharCode(65 + index)}
                         </div>
@@ -1013,7 +1186,7 @@ const QuestionForm = () => {
                 {/* Hindi Solution */}
                 <div className="space-y-3">
                   <label className="block text-sm font-semibold text-gray-800">
-                    समाधान/स्पष्टीकरण (Solution/Explanation)
+                    समाधान/स्पष्टीकरण (Solution/Explanation) <span className="text-gray-500">(Optional)</span>
                   </label>
                   <textarea
                     value={hindiQuestion.solution}
@@ -1023,10 +1196,11 @@ const QuestionForm = () => {
                     onKeyUp={(e) =>
                       handleHindiKeyUp(e, "solution", e.target.value)
                     }
-                    placeholder="हिंदी में solution टाइप करें या English words टाइप करके हर word के बाद Space दबाएं..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                    placeholder="हिंदी में solution टाइप करें या English words टाइप करके हर word के बाद Space दबाएं (optional)..."
+                    className={`w-full p-3 border ${fieldErrors.hindi.solution ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                   />
+                  {/* Remove error message for solution since it's optional */}
                   <div className="mt-2">
                     <button
                       type="button"
@@ -1048,21 +1222,11 @@ const QuestionForm = () => {
             </div>
           </div>
 
-
-          {/* Question Preview */}
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <QuestionPreview
-              question={englishQuestion}
-              activeLanguage="English"
-            />
-            <QuestionPreview question={hindiQuestion} activeLanguage="Hindi" />
-          </div>
-
           {/* Submit Button */}
           <div className="flex justify-end mt-8">
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || duplicateError !== null}
               className="w-full sm:w-auto bg-teal-600 text-white py-3 px-8 rounded-xl hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
             >
               {isSubmitting ? (
@@ -1078,78 +1242,86 @@ const QuestionForm = () => {
               )}
             </button>
           </div>
+          {/* Tooltip explaining why button is disabled */}
+          {duplicateError !== null && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-red-500">
+                Please fix the duplicate content issue before submitting
+              </p>
+            </div>
+          )}
+
+          {/* Equation Editor Modal (lazy loaded) */}
+          {eqEditorOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+              <div className="bg-white rounded-lg w-full max-w-4xl p-4 shadow-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">Equation Editor</h3>
+                  <button
+                    onClick={closeEquationEditor}
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                {/* Add LaTeX Toolbar */}
+                <LatexToolbar />
+
+                <Suspense fallback={<div className="p-4">Loading editor...</div>}>
+                  <EqErrorBoundary
+                    fallbackValue={eqEditorValue}
+                    onChange={setEqEditorValue}
+                    onSave={() => saveEquationToField(eqEditorValue)}
+                    onCancel={closeEquationEditor}
+                  >
+                    {/* Use value/onChange and provide safe autoCommands / autoOperatorNames */}
+                    <EquationEditor
+                      value={eqEditorValue}
+                      onChange={(val) => setEqEditorValue(val)}
+                      // common commands/operators to avoid internal undefined.split errors
+                      autoCommands="pi theta sqrt sum prod alpha beta gamma rho frac pm"
+                      autoOperatorNames="sin cos tan log ln exp"
+                      // keep config fallback as extra safety
+                      config={{ autoCommands: "pi theta sqrt sum prod alpha beta gamma rho frac pm" }}
+                      style={{ minHeight: 200 }}
+                    />
+                  </EqErrorBoundary>
+                </Suspense>
+
+                {/* Alternative: Manual LaTeX Input */}
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Manual LaTeX Input (if visual editor doesn't work)
+                  </label>
+                  <textarea
+                    value={eqEditorValue}
+                    onChange={(e) => setEqEditorValue(e.target.value)}
+                    rows={3}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                    placeholder="Type LaTeX here, e.g., \frac{a}{b}, x^{2}, \sqrt{x}"
+                  />
+                </div>
+
+                <div className="mt-4 flex justify-end space-x-2">
+                  <button
+                    onClick={() => saveEquationToField(eqEditorValue)}
+                    className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={closeEquationEditor}
+                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Equation Editor Modal (lazy loaded) */}
-      {eqEditorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl p-4 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Equation Editor</h3>
-              <button
-                onClick={closeEquationEditor}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Close
-              </button>
-            </div>
-
-            {/* Add LaTeX Toolbar */}
-            <LatexToolbar />
-
-            <Suspense fallback={<div className="p-4">Loading editor...</div>}>
-              <EqErrorBoundary
-                fallbackValue={eqEditorValue}
-                onChange={setEqEditorValue}
-                onSave={() => saveEquationToField(eqEditorValue)}
-                onCancel={closeEquationEditor}
-              >
-                {/* Use value/onChange and provide safe autoCommands / autoOperatorNames */}
-                <EquationEditor
-                  value={eqEditorValue}
-                  onChange={(val) => setEqEditorValue(val)}
-                  // common commands/operators to avoid internal undefined.split errors
-                  autoCommands="pi theta sqrt sum prod alpha beta gamma rho frac pm"
-                  autoOperatorNames="sin cos tan log ln exp"
-                  // keep config fallback as extra safety
-                  config={{ autoCommands: "pi theta sqrt sum prod alpha beta gamma rho frac pm" }}
-                  style={{ minHeight: 200 }}
-                />
-              </EqErrorBoundary>
-            </Suspense>
-
-            {/* Alternative: Manual LaTeX Input */}
-            <div className="mt-4 border-t border-gray-200 pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Manual LaTeX Input (if visual editor doesn't work)
-              </label>
-              <textarea
-                value={eqEditorValue}
-                onChange={(e) => setEqEditorValue(e.target.value)}
-                rows={3}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                placeholder="Type LaTeX here, e.g., \frac{a}{b}, x^{2}, \sqrt{x}"
-              />
-            </div>
-
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                onClick={() => saveEquationToField(eqEditorValue)}
-                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
-              >
-                Save
-              </button>
-              <button
-                onClick={closeEquationEditor}
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

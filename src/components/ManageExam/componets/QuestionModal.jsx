@@ -83,6 +83,11 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [textErrors, setTextErrors] = useState({
+    english: false,
+    hindi: false
+  });
+  const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
 
   // New: equation editor modal state
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
@@ -295,6 +300,192 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     });
   };
 
+  // Update canSubmitForm to make solution optional
+  const canSubmitForm = () => {
+    // If we're editing, we only need to check the language being edited
+    if (editingQuestion) {
+      if (editingQuestion.language === 'English') {
+        return englishQuestion.text.trim() && 
+               englishQuestion.options.every(opt => opt.trim());
+               // Solution is now optional
+      } else {
+        return hindiQuestion.text.trim() && 
+               hindiQuestion.options.every(opt => opt.trim());
+               // Solution is now optional
+      }
+    }
+    
+    // For new questions, check if BOTH language sections are complete
+    const isEnglishComplete = 
+      englishQuestion.text.trim() && 
+      englishQuestion.options.every(opt => opt.trim());
+      // Solution is now optional
+    
+    const isHindiComplete = 
+      hindiQuestion.text.trim() && 
+      hindiQuestion.options.every(opt => opt.trim());
+      // Solution is now optional
+    
+    // Now require both languages to be complete
+    return isEnglishComplete && isHindiComplete;
+  };
+
+  // Update validateForm to make solution optional
+  const validateForm = () => {
+    // Reset field errors
+    const newFieldErrors = {
+      english: {
+        text: false,
+        options: [false, false, false, false],
+        solution: false
+      },
+      hindi: {
+        text: false,
+        options: [false, false, false, false],
+        solution: false
+      }
+    };
+    
+    // Reset text errors
+    const newTextErrors = { english: false, hindi: false };
+    let hasError = false;
+    
+    // If editing, validate only the language being edited
+    if (editingQuestion) {
+      const isEditingEnglish = editingQuestion.language === 'English';
+      const questionToValidate = isEditingEnglish ? englishQuestion : hindiQuestion;
+      const errorField = isEditingEnglish ? newFieldErrors.english : newFieldErrors.hindi;
+      
+      // Text is required
+      if (!questionToValidate.text.trim()) {
+        if (isEditingEnglish) {
+          newTextErrors.english = true;
+          errorField.text = true;
+        } else {
+          newTextErrors.hindi = true;
+          errorField.text = true;
+        }
+        toast.error(`Question text in ${isEditingEnglish ? 'English' : 'Hindi'} is required`);
+        hasError = true;
+      }
+      
+      // Each option is required
+      questionToValidate.options.forEach((option, idx) => {
+        if (!option.trim()) {
+          errorField.options[idx] = true;
+          hasError = true;
+        }
+      });
+      
+      // If any option is empty, show an error
+      if (errorField.options.some(err => err)) {
+        toast.error(`All options in ${isEditingEnglish ? 'English' : 'Hindi'} are required`);
+      }
+      
+      // Solution is now optional - remove this check
+      // if (!questionToValidate.solution.trim()) {
+      //   errorField.solution = true;
+      //   toast.error(`Solution in ${isEditingEnglish ? 'English' : 'Hindi'} is required`);
+      //   hasError = true;
+      // }
+      
+      // Correct option must have content
+      const correctOptionText = questionToValidate.options[questionToValidate.correct_option];
+      if (!correctOptionText || !correctOptionText.trim()) {
+        errorField.options[questionToValidate.correct_option] = true;
+        toast.error(`The selected correct answer for ${isEditingEnglish ? 'English' : 'Hindi'} cannot be empty`);
+        hasError = true;
+      }
+      
+      setFieldErrors(newFieldErrors);
+      setTextErrors(newTextErrors);
+      return !hasError;
+    }
+    
+    // For new questions, validate BOTH languages (they're both required now)
+    
+    // English validation
+    if (!englishQuestion.text.trim()) {
+      newTextErrors.english = true;
+      newFieldErrors.english.text = true;
+      toast.error("Question text in English is required");
+      hasError = true;
+    }
+    
+    // Each English option is required
+    englishQuestion.options.forEach((option, idx) => {
+      if (!option.trim()) {
+        newFieldErrors.english.options[idx] = true;
+        hasError = true;
+      }
+    });
+    
+    // If any English option is empty, show an error
+    if (newFieldErrors.english.options.some(err => err)) {
+      toast.error("All options in English are required");
+    }
+    
+    // Solution is now optional - remove this check
+    // if (!englishQuestion.solution.trim()) {
+    //   newFieldErrors.english.solution = true;
+    //   toast.error("Solution in English is required");
+    //   hasError = true;
+    // }
+    
+    // English correct option must have content
+    if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
+      newFieldErrors.english.options[englishQuestion.correct_option] = true;
+      toast.error("The selected correct answer for English cannot be empty");
+      hasError = true;
+    }
+    
+    // Hindi validation
+    if (!hindiQuestion.text.trim()) {
+      newTextErrors.hindi = true;
+      newFieldErrors.hindi.text = true;
+      toast.error("Question text in Hindi is required");
+      hasError = true;
+    }
+    
+    // Each Hindi option is required
+    hindiQuestion.options.forEach((option, idx) => {
+      if (!option.trim()) {
+        newFieldErrors.hindi.options[idx] = true;
+        hasError = true;
+      }
+    });
+    
+    // If any Hindi option is empty, show an error
+    if (newFieldErrors.hindi.options.some(err => err)) {
+      toast.error("All options in Hindi are required");
+    }
+    
+    // Solution is now optional - remove this check
+    // if (!hindiQuestion.solution.trim()) {
+    //   newFieldErrors.hindi.solution = true;
+    //   toast.error("Solution in Hindi is required");
+    //   hasError = true;
+    // }
+    
+    // Hindi correct option must have content
+    if (!hindiQuestion.options[hindiQuestion.correct_option]?.trim()) {
+      newFieldErrors.hindi.options[hindiQuestion.correct_option] = true;
+      toast.error("The selected correct answer for Hindi cannot be empty");
+      hasError = true;
+    }
+    
+    // Update error states
+    setFieldErrors(newFieldErrors);
+    setTextErrors(newTextErrors);
+    
+    if (hasError) {
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Update handleSubmit to make solution optional
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -305,18 +496,25 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         english: {
           language: "English",
           text: englishQuestion.text.trim(),
-          solution: englishQuestion.solution.trim(),
           options: englishQuestion.options.map(opt => opt.trim()),
           correct_option: englishQuestion.correct_option + 1
         },
         hindi: {
           language: "Hindi",
           text: hindiQuestion.text.trim(),
-          solution: hindiQuestion.solution.trim(),
           options: hindiQuestion.options.map(opt => opt.trim()),
           correct_option: hindiQuestion.correct_option + 1
         }
       };
+      
+      // Only add solutions if they exist
+      if (englishQuestion.solution.trim()) {
+        formData.english.solution = englishQuestion.solution.trim();
+      }
+      
+      if (hindiQuestion.solution.trim()) {
+        formData.hindi.solution = hindiQuestion.solution.trim();
+      }
 
       // If editing, handle single language edits
       if (editingQuestion) {
@@ -325,14 +523,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           delete formData.hindi;
         } else if (editingQuestion.language === 'Hindi') {
           delete formData.english;
-        }
-      } else {
-        // For new questions, filter out empty languages
-        if (!formData.english.text.trim() || !formData.english.options.some(opt => opt.trim())) {
-          delete formData.english;
-        }
-        if (!formData.hindi.text.trim() || !formData.hindi.options.some(opt => opt.trim())) {
-          delete formData.hindi;
         }
       }
 
@@ -344,64 +534,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const validateForm = () => {
-    // If editing, validate only the language being edited
-    if (editingQuestion) {
-      const isEditingEnglish = editingQuestion.language === 'English';
-      const questionToValidate = isEditingEnglish ? englishQuestion : hindiQuestion;
-      
-      if (!questionToValidate.text.trim()) {
-        toast.error(`Please enter the question text in ${isEditingEnglish ? 'English' : 'Hindi'}`);
-        return false;
-      }
-      
-      if (!questionToValidate.options.some(opt => opt.trim())) {
-        toast.error(`Please enter at least one option in ${isEditingEnglish ? 'English' : 'Hindi'}`);
-        return false;
-      }
-      
-      const correctOptionText = questionToValidate.options[questionToValidate.correct_option];
-      if (!correctOptionText || !correctOptionText.trim()) {
-        toast.error(`The selected correct answer for ${isEditingEnglish ? 'English' : 'Hindi'} question cannot be empty`);
-        return false;
-      }
-      
-      return true;
-    }
-    
-    // For new questions, validate that at least one language is complete
-    const hasEnglishContent = englishQuestion.text.trim() && 
-      englishQuestion.options.some(opt => opt.trim());
-    
-    const hasHindiContent = hindiQuestion.text.trim() && 
-      hindiQuestion.options.some(opt => opt.trim());
-    
-    if (!hasEnglishContent && !hasHindiContent) {
-      toast.error("Please fill at least one complete question (English or Hindi)");
-      return false;
-    }
-    
-    // If English content exists, validate the correct option
-    if (hasEnglishContent) {
-      const correctOption = englishQuestion.options[englishQuestion.correct_option];
-      if (!correctOption || !correctOption.trim()) {
-        toast.error("The selected correct answer for English question cannot be empty");
-        return false;
-      }
-    }
-    
-    // If Hindi content exists, validate the correct option
-    if (hasHindiContent) {
-      const correctOption = hindiQuestion.options[hindiQuestion.correct_option];
-      if (!correctOption || !correctOption.trim()) {
-        toast.error("The selected correct answer for Hindi question cannot be empty");
-        return false;
-      }
-    }
-    
-    return true;
   };
 
   const handleKeyUp = async (e, field, value, optionIndex = null) => {
@@ -697,13 +829,31 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
             </div>
           </div>
 
+          {/* Add notice that both languages are required when not in edit mode */}
+          {!editingQuestion && (
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Important:</strong> Both English and Hindi versions are required for new questions. All fields marked with <span className="text-red-500">*</span> must be filled.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Side-by-Side Forms */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            {/* English Form */}
+            {/* English Form - Updated to always be required when not editing */}
             <div className="space-y-6">
               <div className={`bg-blue-50 p-4 rounded-xl border-2 ${editingQuestion && editingQuestion.language === 'Hindi' ? 'border-gray-200 opacity-60' : 'border-blue-200'}`}>
                 <h2 className="text-lg sm:text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  🇺🇸 English Question 
+                  🇺🇸 English Question {!editingQuestion && <span className="text-red-500 ml-1">*</span>}
                   {editingQuestion && editingQuestion.language === 'Hindi' && (
                     <span className="ml-2 text-xs sm:text-sm font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
                       View Only
@@ -714,17 +864,21 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                 {/* English Question Text */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-medium text-gray-800">
-                    Question Text
+                    Question Text <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={englishQuestion.text}
                     onChange={(e) => updateEnglishQuestion("text", e.target.value)}
                     onKeyUp={(e) => handleKeyUp(e, "text", e.target.value)}
                     placeholder="Enter your question in English..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className={`w-full p-3 border ${fieldErrors.english.text || textErrors.english ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'Hindi'}
+                    required={!editingQuestion || editingQuestion.language === 'English'}
                   />
+                  {(textErrors.english || fieldErrors.english.text) && (
+                    <p className="text-red-500 text-xs mt-1">Question text is required</p>
+                  )}
                 </div>
                 <div className="mt-2">
                   <button
@@ -739,7 +893,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                 {/* English Options */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-medium text-gray-800">
-                    Answer Options
+                    Answer Options <span className="text-red-500">*</span>
                   </label>
                   {englishQuestion.options.map((option, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -768,8 +922,9 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                           onChange={(e) => updateEnglishQuestion("options", e.target.value, index)}
                           onKeyUp={(e) => handleKeyUp(e, "options", e.target.value, index)}
                           placeholder={`Option ${index + 1}`}
-                          className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
+                          className={`w-full p-2 border ${fieldErrors.english.options[index] ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10`}
                           disabled={editingQuestion && editingQuestion.language === 'Hindi'}
+                          required={!editingQuestion || editingQuestion.language === 'English'}
                         />
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
                           {String.fromCharCode(65 + index)}
@@ -790,17 +945,17 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                   ))}
                 </div>
 
-                {/* English Solution */}
+                {/* English Solution - update to show it's optional */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-800">
-                    Solution/Explanation
+                    Solution/Explanation <span className="text-gray-500">(Optional)</span>
                   </label>
                   <textarea
                     value={englishQuestion.solution}
                     onChange={(e) => updateEnglishQuestion("solution", e.target.value)}
                     onKeyUp={(e) => handleKeyUp(e, "solution", e.target.value)}
-                    placeholder="Provide detailed explanation in English..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    placeholder="Provide detailed explanation in English (optional)..."
+                    className={`w-full p-3 border ${fieldErrors.english.solution ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'Hindi'}
                   />
@@ -817,14 +972,19 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
               </div>
             </div>
 
-            {/* Hindi Form */}
+            {/* Hindi Form - Updated to always be required when not editing */}
             <div className="space-y-6">
-              <div className={`bg-orange-50 p-4 rounded-xl border-2 ${editingQuestion && editingQuestion.language === 'English' ? 'border-gray-200 opacity-60' : 'border-orange-200'}`}>
+              <div className={`bg-orange-50 p-4 rounded-xl border-2 ${(editingQuestion && editingQuestion.language === 'English') || hindiSectionEmpty ? 'border-gray-200 opacity-60' : 'border-orange-200'}`}>
                 <h2 className="text-lg sm:text-xl font-bold text-orange-800 mb-4 flex items-center">
-                  🇮🇳 हिंदी प्रश्न (Hindi Question)
+                  🇮🇳 हिंदी प्रश्न (Hindi Question) {!editingQuestion && <span className="text-red-500 ml-1">*</span>}
                   {editingQuestion && editingQuestion.language === 'English' && (
                     <span className="ml-2 text-xs sm:text-sm font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">
                       View Only
+                    </span>
+                  )}
+                  {!editingQuestion && hindiSectionEmpty && (
+                    <span className="ml-2 text-xs sm:text-sm font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">
+                      Empty Section
                     </span>
                   )}
                 </h2>
@@ -832,17 +992,21 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                 {/* Hindi Question Text */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-medium text-gray-800">
-                    प्रश्न पाठ (Question Text)
+                    प्रश्न पाठ (Question Text) <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={hindiQuestion.text}
                     onChange={(e) => updateHindiQuestion("text", e.target.value)}
                     onKeyUp={(e) => handleHindiKeyUp(e, "text", e.target.value)}
                     placeholder="हिंदी में टाइप करें या English words टाइप करके हर word के बाद Space दबाएं..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                    className={`w-full p-3 border ${fieldErrors.hindi.text || textErrors.hindi ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'English'}
+                    required={!editingQuestion || editingQuestion.language === 'Hindi'}
                   />
+                  {(textErrors.hindi || fieldErrors.hindi.text) && (
+                    <p className="text-red-500 text-xs mt-1">प्रश्न पाठ आवश्यक है</p>
+                  )}
                 </div>
                 <div className="mt-2">
                   <button
@@ -857,7 +1021,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                 {/* Hindi Options */}
                 <div className="space-y-3 mb-6">
                   <label className="block text-sm font-medium text-gray-800">
-                    उत्तर विकल्प (Answer Options)
+                    उत्तर विकल्प (Answer Options) <span className="text-red-500">*</span>
                   </label>
                   {hindiQuestion.options.map((option, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -886,8 +1050,9 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                           onChange={(e) => updateHindiQuestion("options", e.target.value, index)}
                           onKeyUp={(e) => handleHindiKeyUp(e, "options", e.target.value, index)}
                           placeholder={`विकल्प ${index + 1} (English word + Space for translation)`}
-                          className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all pr-10"
+                          className={`w-full p-2 border ${fieldErrors.hindi.options[index] ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all pr-10`}
                           disabled={editingQuestion && editingQuestion.language === 'English'}
+                          required={!editingQuestion || editingQuestion.language === 'Hindi'}
                         />
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
                           {String.fromCharCode(65 + index)}
@@ -908,17 +1073,17 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                   ))}
                 </div>
 
-                {/* Hindi Solution */}
+                {/* Hindi Solution - update to show it's optional */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-800">
-                    समाधान/स्पष्टीकरण (Solution/Explanation)
+                    समाधान/स्पष्टीकरण (Solution/Explanation) <span className="text-gray-500">(Optional)</span>
                   </label>
                   <textarea
                     value={hindiQuestion.solution}
                     onChange={(e) => updateHindiQuestion("solution", e.target.value)}
                     onKeyUp={(e) => handleHindiKeyUp(e, "solution", e.target.value)}
-                    placeholder="हिंदी में solution टाइप करें या English words टाइप करके हर word के बाद Space दबाएं..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                    placeholder="हिंदी में solution टाइप करें या English words टाइप करके हर word के बाद Space दबाएं (optional)..."
+                    className={`w-full p-3 border ${fieldErrors.hindi.solution ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none`}
                     rows="3"
                     disabled={editingQuestion && editingQuestion.language === 'English'}
                   />
@@ -956,7 +1121,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
             </button>
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !canSubmitForm()}
               className="px-4 py-2 sm:px-6 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isSubmitting ? (
@@ -969,6 +1134,14 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
               )}
             </button>
           </div>
+          {/* Error message when form cannot be submitted - Updated message */}
+          {!isSubmitting && !canSubmitForm() && !editingQuestion && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-red-500">
+                Please complete both English and Hindi questions with all required fields
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

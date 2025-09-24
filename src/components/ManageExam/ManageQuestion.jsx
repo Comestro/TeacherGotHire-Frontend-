@@ -102,30 +102,29 @@ const ManageQuestion = () => {
     fetchExamData();
   }, [location.state, navigate]);
 
-  // Improved organize questions by order function to better handle empty positions
+  // Improved organize questions by order function to handle duplicate orders
   const organizeQuestionsByOrder = () => {
     // Find the maximum order number to know the range we need to display
     const maxOrder = Math.max(...questions.map((q) => q.order || 0), 0);
 
-    // Create arrays for English and Hindi with placeholders for missing orders
-    // Add +1 to account for 1-based indexing (orders start at 1, not 0)
-    const englishByOrder = Array(maxOrder + 1).fill(null);
-    const hindiByOrder = Array(maxOrder + 1).fill(null);
+    // Create arrays for English and Hindi, but store arrays of questions at each order index
+    // to handle duplicate orders
+    const englishByOrder = Array(maxOrder + 1).fill(null).map(() => []);
+    const hindiByOrder = Array(maxOrder + 1).fill(null).map(() => []);
 
     // Place questions in their respective arrays by order
     questions.forEach((question) => {
-      // Make sure we use the actual order from the question
       const orderNum = question.order || 0;
       if (question.language === "English") {
-        englishByOrder[orderNum] = question;
+        englishByOrder[orderNum].push(question);
       } else if (question.language === "Hindi") {
-        hindiByOrder[orderNum] = question;
+        hindiByOrder[orderNum].push(question);
       }
     });
 
     // Remove the first element (index 0) if we're using 1-based indexing
     // and there are no questions with order 0
-    if (!englishByOrder[0] && !hindiByOrder[0]) {
+    if (englishByOrder[0].length === 0 && hindiByOrder[0].length === 0) {
       englishByOrder.shift();
       hindiByOrder.shift();
     }
@@ -777,24 +776,39 @@ const ManageQuestion = () => {
                         </h3>
                       </div>
                       <SortableContext
-                        items={englishByOrder.filter(Boolean).map((q) => q.id)}
+                        items={englishByOrder.flat().filter(Boolean).map((q) => q.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-3 sm:space-y-4">
-                          {englishByOrder.map((question, index) => (
+                          {englishByOrder.map((questions, index) => (
                             <div key={`english-${index}`} className="relative pl-8 mb-4">
                               <div className="absolute left-0 top-4 bg-blue-100 text-blue-800 rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold shadow">
                                 {index + 1}
                               </div>
-                              {question ? (
-                                <QuestionCard
-                                  question={question}
-                                  index={index}
-                                  showAnswers={showAnswers}
-                                  onEdit={handleEdit}
-                                  onDelete={handleDelete}
-                                  isDraggable={true}
-                                />
+                              
+                              {/* Handle duplicate questions with same order */}
+                              {questions.length > 1 && (
+                                <div className="mb-2 py-1 px-2 bg-yellow-100 text-yellow-800 rounded-md text-xs font-medium inline-block">
+                                  ⚠️ {questions.length} English questions with same order #{index + 1}
+                                </div>
+                              )}
+                              
+                              {/* Render all questions with this order */}
+                              {questions.length > 0 ? (
+                                <div className="space-y-3">
+                                  {questions.map((question, qIndex) => (
+                                    <div key={question.id} className={qIndex > 0 ? "mt-3 pt-3 border-t border-gray-200" : ""}>
+                                      <QuestionCard
+                                        question={question}
+                                        index={index}
+                                        showAnswers={showAnswers}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        isDraggable={true}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
                               ) : (
                                 <div 
                                   onClick={() => handleAddQuestionAt(index + 1)}
@@ -825,24 +839,39 @@ const ManageQuestion = () => {
                         </h3>
                       </div>
                       <SortableContext
-                        items={hindiByOrder.filter(Boolean).map((q) => q.id)}
+                        items={hindiByOrder.flat().filter(Boolean).map((q) => q.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-3 sm:space-y-4">
-                          {hindiByOrder.map((question, index) => (
+                          {hindiByOrder.map((questions, index) => (
                             <div key={`hindi-${index}`} className="relative pl-8 mb-4">
                               <div className="absolute left-0 top-4 bg-purple-100 text-purple-800 rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold shadow">
                                 {index + 1}
                               </div>
-                              {question ? (
-                                <QuestionCard
-                                  question={question}
-                                  index={index}
-                                  showAnswers={showAnswers}
-                                  onEdit={handleEdit}
-                                  onDelete={handleDelete}
-                                  isDraggable={true}
-                                />
+                              
+                              {/* Handle duplicate questions with same order */}
+                              {questions.length > 1 && (
+                                <div className="mb-2 py-1 px-2 bg-yellow-100 text-yellow-800 rounded-md text-xs font-medium inline-block">
+                                  ⚠️ {questions.length} Hindi questions with same order #{index + 1}
+                                </div>
+                              )}
+                              
+                              {/* Render all questions with this order */}
+                              {questions.length > 0 ? (
+                                <div className="space-y-3">
+                                  {questions.map((question, qIndex) => (
+                                    <div key={question.id} className={qIndex > 0 ? "mt-3 pt-3 border-t border-gray-200" : ""}>
+                                      <QuestionCard
+                                        question={question}
+                                        index={index}
+                                        showAnswers={showAnswers}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        isDraggable={true}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
                               ) : (
                                 <div 
                                   onClick={() => handleAddQuestionAt(index)}
