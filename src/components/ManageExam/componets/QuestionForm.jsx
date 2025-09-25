@@ -496,15 +496,15 @@ const QuestionForm = () => {
       return true;
     }
 
-    // Check for duplicate options
-    const duplicateOptions = englishQuestion.options.some((option, index) => {
-      return option.trim().toLowerCase() === hindiQuestion.options[index].trim().toLowerCase() && option.trim() !== "";
-    });
+    // // Check for duplicate options
+    // const duplicateOptions = englishQuestion.options.some((option, index) => {
+    //   return option.trim().toLowerCase() === hindiQuestion.options[index].trim().toLowerCase() && option.trim() !== "";
+    // });
 
-    if (duplicateOptions) {
-      setDuplicateError("Some options are identical in both languages. Please make all options unique.");
-      return true;
-    }
+    // if (duplicateOptions) {
+    //   setDuplicateError("Some options are identical in both languages. Please make all options unique.");
+    //   return true;
+    // }
 
     // Check for duplicate solution if both have content
     if (englishQuestion.solution.trim() && hindiQuestion.solution.trim() && 
