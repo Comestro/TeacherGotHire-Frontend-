@@ -1116,7 +1116,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           </div>
 
           {/* Question Preview */}
-          <div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <QuestionPreview
               question={englishQuestion}
               activeLanguage="English"
