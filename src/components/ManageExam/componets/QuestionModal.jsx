@@ -89,6 +89,20 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
   });
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
 
+  // Add fieldErrors state that was missing
+  const [fieldErrors, setFieldErrors] = useState({
+    english: {
+      text: false,
+      options: [false, false, false, false],
+      solution: false
+    },
+    hindi: {
+      text: false,
+      options: [false, false, false, false],
+      solution: false
+    }
+  });
+
   // New: equation editor modal state
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
   const [eqEditorValue, setEqEditorValue] = useState("");
