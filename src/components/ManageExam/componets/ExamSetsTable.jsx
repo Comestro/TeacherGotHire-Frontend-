@@ -1,114 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  FiBook, 
-  FiTarget, 
-  FiUsers, 
-  FiAward, 
-  FiClock, 
-  FiFileText,
-  FiEdit,
-  FiTrash2,
-  FiHelpCircle, 
-  FiLock,
-  FiEdit2,
-  FiList,
-  FiPlus,
-  FiCopy,
-  FiMoreVertical,
-  FiEye,
-  FiBarChart2,
-  FiCheck
-} from 'react-icons/fi';
-import { getExam, deleteExam } from '../../../services/adminManageExam';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React from 'react';
+import { FiEdit2, FiTrash2, FiList, FiCopy, FiCheck, FiLock, FiClock, FiAward } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ExamSetsTable = ({ onEdit, refreshTrigger, onAddQuestions, onCopy }) => {
+const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) => {
   const navigate = useNavigate();
-  const [examSets, setExamSets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const fetchExamSets = async () => {
-    try {
-      const response = await getExam();
-      console.log('Exam API Response:', response);
-      setExamSets(response);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching exam sets:', err);
-      setError(err.message);
-      setLoading(false);
-      toast.error('Failed to fetch exam sets');
-    }
-  };
-
-  const handleDelete = async (examId) => {
-    if (!window.confirm('Are you sure you want to delete this exam set?')) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await deleteExam(examId);
-      await fetchExamSets();
-      toast.success('Exam set deleted successfully');
-    } catch (err) {
-      console.error('Error deleting exam set:', err);
-      // Check for the specific error message from API
-      if (err.response?.data?.error === "Please delete the associated questions first.") {
-        toast.error('Please delete the associated questions first');
-      } else {
-        toast.error(err.response?.data?.error || 'Failed to delete exam set');
-      }
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-const handleManageQuestions = (exam) => {
-  navigate(`/manage-exam/questions/${exam.id}`, { 
-    state: { exam: exam }
-  });
-};
 
   // Format date in a readable way
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
-  const handleViewQuestions = (exam) => {
-    navigate('/manage-exam/questions', { state: { exam } });
-  };
-
-  useEffect(() => {
-    fetchExamSets();
-  }, [refreshTrigger]); 
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading exam sets...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-red-600">
-        Error loading exam sets: {error}
-      </div>
-    );
-  }
+  console.log('ExamSetsTable received examSets:', examSets.map(exam => ({ id: exam.id, set_name: exam.set_name, level: exam.level?.name })));
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
@@ -147,7 +55,7 @@ const handleManageQuestions = (exam) => {
             {examSets.map((exam) => (
               <tr key={exam.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{exam.set_name || "N/A"}</div>
+                  <div className="text-sm font-medium text-gray-900">{exam.set_name || 'N/A'}</div>
                   <div className="text-sm text-gray-500">{exam.description}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -155,10 +63,12 @@ const handleManageQuestions = (exam) => {
                   <div className="text-sm text-gray-500">{exam.level?.name || 'N/A'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                {exam.type === 'online' ? 'Home' : 'Exam Centre'}
+                  <span
+                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {exam.type === 'online' ? 'Home' : 'Exam Centre'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -174,13 +84,15 @@ const handleManageQuestions = (exam) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`flex items-center text-sm ${
-                    exam.status ? 'text-green-600' : 'text-amber-600'
-                  }`}>
+                  <span className={`flex items-center text-sm ${exam.status ? 'text-green-600' : 'text-amber-600'}`}>
                     {exam.status ? (
-                      <><FiCheck className="mr-1.5 h-4 w-4" /> Published</>
+                      <>
+                        <FiCheck className="mr-1.5 h-4 w-4" /> Published
+                      </>
                     ) : (
-                      <><FiLock className="mr-1.5 h-4 w-4" /> Draft</>
+                      <>
+                        <FiLock className="mr-1.5 h-4 w-4" /> Draft
+                      </>
                     )}
                   </span>
                 </td>
@@ -205,7 +117,7 @@ const handleManageQuestions = (exam) => {
                       <FiEdit2 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(exam.id)}
+                      onClick={() => onDelete(exam.id)}
                       className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors"
                       title="Delete Exam"
                     >
@@ -232,16 +144,18 @@ const handleManageQuestions = (exam) => {
           <div key={exam.id} className="p-4 hover:bg-gray-50">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-base font-medium text-gray-900">{exam.name}</h3>
+                <h3 className="text-base font-medium text-gray-900">{exam.set_name}</h3>
                 <p className="text-xs text-gray-500 mt-1">{formatDate(exam.created_at)}</p>
               </div>
-              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-              }`}>
+              <span
+                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  exam.type === 'online' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                }`}
+              >
                 {exam.type === 'online' ? 'Home' : 'Exam Centre'}
               </span>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
               <div>
                 <span className="text-gray-500">Class:</span>
@@ -249,7 +163,11 @@ const handleManageQuestions = (exam) => {
               </div>
               <div>
                 <span className="text-gray-500">Subject:</span>
-                <span className="ml-1 text-gray-900 font-medium">{exam.subject?.name || 'N/A'}</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.subject?.subject_name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Level:</span>
+                <span className="ml-1 text-gray-900 font-medium">{exam.level?.name || 'N/A'}</span>
               </div>
               <div>
                 <span className="text-gray-500">Duration:</span>
@@ -264,14 +182,18 @@ const handleManageQuestions = (exam) => {
                 <span className="ml-1 text-gray-900 font-medium">{exam.questions.length}</span>
               </div>
               <div className={exam.status ? 'text-green-600' : 'text-amber-600'}>
-                {!exam.status ? (
-                  <><FiCheck className="inline mr-1 h-3 w-3" /> Published</>
+                {exam.status ? (
+                  <>
+                    <FiCheck className="inline mr-1 h-3 w-3" /> Published
+                  </>
                 ) : (
-                  <><FiLock className="inline mr-1 h-3 w-3" /> Draft</>
+                  <>
+                    <FiLock className="inline mr-1 h-3 w-3" /> Draft
+                  </>
                 )}
               </div>
             </div>
-            
+
             <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
               <Link
                 to={`/manage-exam/questions/${exam.id}`}
