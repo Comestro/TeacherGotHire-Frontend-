@@ -837,7 +837,7 @@ const QuestionForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <div className="rounded-2xl p-5">
           <button
             onClick={() => navigate(-1)}

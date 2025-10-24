@@ -339,7 +339,7 @@ const ManageExam = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         {/* Header - Made more responsive */}
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

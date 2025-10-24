@@ -467,7 +467,7 @@ const ManageQuestion = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         {/* Enhanced Header with integrated search and filters */}
         <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
           {/* Top section with back button and exam name */}

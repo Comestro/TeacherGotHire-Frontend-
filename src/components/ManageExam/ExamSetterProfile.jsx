@@ -24,7 +24,7 @@ const ExamSetterProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-100 p-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         {/* Add Back Button */}
         <button
           onClick={() => navigate(-1)}
