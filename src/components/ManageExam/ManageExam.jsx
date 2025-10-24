@@ -292,7 +292,42 @@ const ManageExam = () => {
     });
   };
 
-  const filteredExams = getFilteredExams();
+  // Sort exams by hierarchy: Class Category > Subject > Level > Type
+  const getSortedAndGroupedExams = () => {
+    const filtered = getFilteredExams();
+    
+    return filtered.sort((a, b) => {
+      // First sort by class category name
+      const classA = a.class_category?.name || '';
+      const classB = b.class_category?.name || '';
+      if (classA !== classB) {
+        return classA.localeCompare(classB);
+      }
+      
+      // Then sort by subject name
+      const subjectA = a.subject?.subject_name || '';
+      const subjectB = b.subject?.subject_name || '';
+      if (subjectA !== subjectB) {
+        return subjectA.localeCompare(subjectB);
+      }
+      
+      // Then sort by level (numerically if possible)
+      const levelA = a.level?.id || 0;
+      const levelB = b.level?.id || 0;
+      if (levelA !== levelB) {
+        return levelA - levelB;
+      }
+      
+      // Finally sort by type: online (home) first, then offline (exam centre)
+      const typeOrder = { 'online': 0, 'offline': 1 };
+      const typeA = typeOrder[a.type] || 0;
+      const typeB = typeOrder[b.type] || 0;
+      
+      return typeA - typeB;
+    });
+  };
+
+  const filteredExams = getSortedAndGroupedExams();
 
   const clearFilters = () => {
     setSearchTerm('');
