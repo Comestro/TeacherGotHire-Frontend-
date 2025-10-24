@@ -286,7 +286,19 @@ const Education = () => {
 
   return (
     <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
-      <ToastContainer position="top-right" autoClose={3000} />
+       <ToastContainer 
+        position="top-right" 
+        autoClose={1000} 
+        closeButton={true}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Enhanced Header */}
       {loading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">

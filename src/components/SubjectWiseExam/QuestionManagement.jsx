@@ -358,7 +358,19 @@ const QuestionManagement = () => {
       <Helmet>
         <title>PTPI | Subject Expert</title>
       </Helmet>
-      <ToastContainer position="top-right" autoClose={3000} />
+       <ToastContainer 
+        position="top-right" 
+        autoClose={1000} 
+        closeButton={true}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="top-0 fixed w-full">
         <CenterHeader name="Exam Management" />
       </div>

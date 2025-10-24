@@ -98,7 +98,19 @@ const Skills = () => {
 
   return (
     <div className="bg-white rounded-xl mx-4 sm:mx-0 p-6 border border-gray-200 mt-8">
-      <ToastContainer position="top-right" autoClose={3000} />
+       <ToastContainer 
+        position="top-right" 
+        autoClose={1000} 
+        closeButton={true}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-gray-200">
         <div className="mb-3 sm:mb-0">

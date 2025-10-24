@@ -20,6 +20,8 @@ import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import InterviewCard from "./components/InterviewCard";
 import { attemptsExam } from "../../features/examQuesSlice";
+import PrefrenceProfile from "../Profile/JobProfile/PrefrenceProfile";
+import { getPrefrence } from "../../features/jobProfileSlice";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
@@ -33,19 +35,23 @@ function TeacherDashboard() {
   const {  attempts } = useSelector(
       (state) => state.examQues
     );
-    console.log("attempts",attempts);
+  const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   
-    useEffect(()=>{
+  console.log("attempts",attempts);
   
-        dispatch(attemptsExam());
-      
-    },[dispatch]);
+  useEffect(()=>{
+    dispatch(attemptsExam());
+    dispatch(getPrefrence());
+  },[dispatch]);
 
-    const qualifiedExamNames = attempts
+  const qualifiedExamNames = attempts
   .filter(item => item?.exam?.level_code === 2 && item.isqualified)
   .map(item => item.exam.name);
 
-  console.log("qualifiedExamNames",qualifiedExamNames)
+  console.log("qualifiedExamNames",qualifiedExamNames);
+  
+  // Check if user has class categories set up
+  const hasClassCategories = teacherprefrence?.class_category?.length > 0;
   
   useEffect(() => {
     dispatch(getSubjects());
@@ -173,24 +179,45 @@ function TeacherDashboard() {
       <Helmet>
         <title>PTPI | Teacher Dashboard</title>
       </Helmet>
-      <ToastContainer position="top-right" autoClose={3000} />
+       <ToastContainer 
+        position="top-right" 
+        autoClose={1000} 
+        closeButton={true}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
 
       <div className="min-h-screen">
-        {/* <div className="md:px-6 md:py-5">
-            <TeacherDashboardCard />
-        </div> */}
-     
-        <div className="">
-          {/* <ExamManagement /> */}
-          <FilterdExamCard/>
-        </div>
-       {qualifiedExamNames.length>0 && (
-        <div className="md:px-6">
-        <InterviewCard />
-      </div>
-       ) 
-        }
+        {/* Show preference form if user doesn't have class categories */}
+        {!hasClassCategories ? (
+          <div className="max-w-6xl mx-auto p-4 sm:p-6">
+            <PrefrenceProfile forceEdit={true} />
+          </div>
+        ) : (
+          <>
+            {/* <div className="md:px-6 md:py-5">
+                <TeacherDashboardCard />
+            </div> */}
+         
+            <div className="">
+              {/* <ExamManagement /> */}
+              <FilterdExamCard/>
+            </div>
+           {qualifiedExamNames.length>0 && (
+            <div className="md:px-6">
+            <InterviewCard />
+          </div>
+           ) 
+            }
+          </>
+        )}
       </div>
     </>
   );

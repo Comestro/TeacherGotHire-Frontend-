@@ -612,7 +612,19 @@ useEffect(() => {
         <title>PTPI | Question Manager Dashboard</title>
       </Helmet>
 
-      <ToastContainer position="top-right" autoClose={3000} />
+       <ToastContainer 
+        position="top-right" 
+        autoClose={1000} 
+        closeButton={true}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
 
       <SubjectExpertHeader />
 
