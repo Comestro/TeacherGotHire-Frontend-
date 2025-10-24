@@ -46,10 +46,7 @@ const ExamPortal = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
   const [isNavigating, setIsNavigating] = useState(false);
-
-
-  
-  useEffect(() => {
+    useEffect(() => {
     dispatch(getReport());
   }, [currentQuestion]);
   const reportOptions = useSelector((state) => state.examQues?.reportReason);
@@ -148,6 +145,7 @@ const ExamPortal = () => {
       }
     });
 
+
     setResults({
       correct_answer,
       incorrect_answer,
@@ -168,6 +166,7 @@ const ExamPortal = () => {
     dispatch(attemptsExam());
     navigate("/exam/result", {
       state: { exam, correct_answer, incorrect_answer, is_unanswered,language },
+       replace: true
     });
   };
 
