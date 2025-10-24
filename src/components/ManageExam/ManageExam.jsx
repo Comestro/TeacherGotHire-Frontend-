@@ -39,6 +39,7 @@ const ManageExam = () => {
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
+  const [selectedStatus, setSelectedStatus] = useState('all'); // Add status filter
   
   // Add these new states to manage question addition
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
@@ -288,7 +289,12 @@ const ManageExam = () => {
       const matchesType = selectedType === 'all' || 
         (exam.type && exam.type === selectedType);
       
-      return matchesSearch && matchesClassCategory && matchesSubject && matchesLevel && matchesType;
+      // Status filter
+      const matchesStatus = selectedStatus === 'all' ||
+        (selectedStatus === 'published' && exam.status === true) ||
+        (selectedStatus === 'draft' && exam.status === false);
+      
+      return matchesSearch && matchesClassCategory && matchesSubject && matchesLevel && matchesType && matchesStatus;
     });
   };
 
@@ -335,6 +341,7 @@ const ManageExam = () => {
     setSelectedSubject('all');
     setSelectedLevel('all');
     setSelectedType('all');
+    setSelectedStatus('all');
   };
 
   return (
@@ -378,19 +385,20 @@ const ManageExam = () => {
               <button
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 className={`flex items-center px-4 py-2 rounded-lg transition-colors w-full sm:w-auto justify-center sm:justify-start ${
-                  isFilterExpanded || selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all'
+                  isFilterExpanded || selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedStatus !== 'all'
                     ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 <FiFilter className="w-4 h-4 mr-2" />
                 Filters
-                {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
+                {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all' || selectedStatus !== 'all') && (
                   <span className="ml-2 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {(selectedClassCategory !== 'all' ? 1 : 0) +
                    (selectedSubject !== 'all' ? 1 : 0) +
                    (selectedType !== 'all' ? 1 : 0) +
-                   (selectedLevel !== 'all' ? 1 : 0)}
+                   (selectedLevel !== 'all' ? 1 : 0) +
+                   (selectedStatus !== 'all' ? 1 : 0)}
                   </span>
                 )}
               </button>
@@ -404,7 +412,7 @@ const ManageExam = () => {
           {/* Expanded filters - Made grid more responsive */}
           {isFilterExpanded && (
             <div className="bg-gray-50 p-4 rounded-lg mt-2 border border-gray-200 animate-fadeIn">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {/* Class Category Selection */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 flex items-center">
@@ -486,6 +494,22 @@ const ManageExam = () => {
                     <option value="offline">Exam Centre</option>
                   </select>
                 </div>
+
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center">
+                    <FiLayers className="mr-2" /> Status
+                  </label>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
               </div>
 
               <div className="mt-4 flex justify-end">
@@ -500,7 +524,7 @@ const ManageExam = () => {
           )}
 
           {/* Active filter badges - Improved wrapping */}
-          {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all') && (
+          {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all' || selectedStatus !== 'all') && (
             <div className="flex flex-wrap gap-2 mt-4">
               {selectedClassCategory !== 'all' && (
                 <div className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm flex items-center">
@@ -551,6 +575,19 @@ const ManageExam = () => {
                   <button
                     onClick={() => setSelectedType('all')}
                     className="ml-2 text-purple-600 hover:text-purple-800"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              )}
+
+              {selectedStatus !== 'all' && (
+                <div className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm flex items-center">
+                  <FiLayers className="mr-1 h-3 w-3" />
+                  {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
+                  <button
+                    onClick={() => setSelectedStatus('all')}
+                    className="ml-2 text-orange-600 hover:text-orange-800"
                   >
                     <FiX />
                   </button>
