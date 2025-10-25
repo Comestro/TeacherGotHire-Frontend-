@@ -30,7 +30,6 @@ const PersonalInformation = () => {
         await updatePersonalProfile(data); // Call API for update
         dispatch(postProfile (updatedData)); // Dispatch updated data
       } else {
-        // Add new education record
         await updatePersonalProfile(data); // Call API to save
         dispatch(postProfile ([...personalData, data])); // Dispatch with new data
       }

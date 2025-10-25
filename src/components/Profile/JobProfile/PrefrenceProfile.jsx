@@ -134,11 +134,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     switch (currentStep) {
       case 1:
         isValid = await trigger("class_category");
-        if (!isValid) toast.error("Please select at least one class category");
+        if (!isValid) toast.error("Please select at least one class category / कम से कम एक कक्षा श्रेणी चुनें");
         break;
       case 2:
         isValid = await trigger("prefered_subject");
-        if (!isValid) toast.error("Please select at least one subject");
+        if (!isValid) toast.error("Please select at least one subject / कम से कम एक विषय चुनें");
         break;
       case 3:
         isValid = await trigger("job_role");
@@ -185,12 +185,12 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       fetchPreferences();
       setIsEditingPrefrence(false);
       setCurrentStep(1); // Reset to first step
-      toast.success("Job preferences updated successfully!");
+      toast.success("Job preferences updated successfully! / नौकरी की प्राथमिकताएं सफलतापूर्वक अपडेट की गईं!");
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
-        "Failed to update preferences";
+        "Failed to update preferences / प्राथमिकताओं को अपडेट करने में विफल";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -217,10 +217,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         <div className="mb-2 sm:mb-0">
           <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-2">
             <span className="text-2xl">🎓</span>
-            Teaching Preferences
+            Teaching Preferences / शिक्षण प्राथमिकताएं
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            शिक्षण प्राथमिकताओं को प्रबंधित करें
+            Manage your teaching preferences / अपनी शिक्षण प्राथमिकताओं को प्रबंधित करें
           </p>
         </div>
         {!forceEdit && (
@@ -230,7 +230,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
               onClick={() => setIsEditingPrefrence(true)}
             >
               <HiPencil className="w-4 h-4" />
-              <span>संपादित करें</span>
+              <span>Edit / संपादित करें</span>
             </button>
           ) : (
             <button
@@ -241,7 +241,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
               className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 hover:border-gray-400 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
               <FiX className="w-4 h-4" />
-              <span>बंद करें</span>
+              <span>Close / बंद करें</span>
             </button>
           )
         )}
@@ -418,10 +418,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 <div className="block sm:hidden text-center">
                   <p className="text-xs font-bold text-teal-700 bg-teal-100 px-3 py-1.5 rounded-full inline-block">
                     Step {currentStep} of {totalSteps}:{" "}
-                    {currentStep === 1 && "Class Category"}
-                    {currentStep === 2 && "Preferred Subject"}
-                    {currentStep === 3 && "Job Role"}
-                    {currentStep === 4 && "Job Type"}
+                    {currentStep === 1 && "Class / कक्षा"}
+                    {currentStep === 2 && "Subject / विषय"}
+                    {currentStep === 3 && "Role / भूमिका"}
+                    {currentStep === 4 && "Job Type / नौकरी"}
                   </p>
                 </div>
               </div>
@@ -435,11 +435,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-3xl">📚</span>
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                          कक्षा चुनें / Select Class
+                          Select Class Category / कक्षा श्रेणी चुनें
                         </h3>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-600 ml-11">
-                        शिक्षा के स्तर का चयन करें
+                        Choose the educational levels / शिक्षा के स्तर का चयन करें
                       </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
@@ -451,7 +451,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                           <input
                             type="checkbox"
                             {...register("class_category", {
-                              required: "कक्षा का चयन करें",
+                              required: "Please select at least one class category / कम से कम एक कक्षा श्रेणी चुनें",
                             })}
                             value={cat.id}
                             className="h-4 w-4 text-teal-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-teal-500 transition-all"
@@ -478,11 +478,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-3xl">📖</span>
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                          विषय चुनें / Select Subject
+                          Select Preferred Subjects / पसंदीदा विषय चुनें
                         </h3>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-600 ml-11">
-                        आप जो पढ़ा सकते हैं वह विषय चुनें
+                        Choose subjects you can teach / जो विषय आप पढ़ा सकते हैं उन्हें चुनें
                       </p>
                     </div>
                     <div className="space-y-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
@@ -490,7 +490,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                         <div className="text-center py-8">
                           <div className="text-5xl mb-2">📚</div>
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                            पहले कक्षा का चयन करें
+                            Please select class categories first / पहले कक्षा श्रेणी का चयन करें
                           </p>
                         </div>
                       ) : (
@@ -515,7 +515,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                                     <input
                                       type="checkbox"
                                       {...register("prefered_subject", {
-                                        required: "विषय का चयन करें",
+                                        required: "Please select at least one subject / कम से कम एक विषय चुनें",
                                       })}
                                       value={sub.id}
                                       className="h-4 w-4 text-green-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-green-500 transition-all"
@@ -547,11 +547,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-3xl">👔</span>
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                          भूमिका चुनें / Select Role
+                          Select Job Role / नौकरी की भूमिका चुनें
                         </h3>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-600 ml-11">
-                        शिक्षक आवश्यक है, अतिरिक्त भूमिकाएं जोड़ सकते हैं
+                        Teacher is required, can add additional roles / शिक्षक आवश्यक है, अतिरिक्त भूमिकाएं जोड़ सकते हैं
                       </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
@@ -580,7 +580,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                               {role.jobrole_name}
                               {role.id === 4 && (
                                 <span className="ml-1.5 text-xs text-purple-700 font-bold bg-purple-200 px-1.5 py-0.5 rounded-full">
-                                  आवश्यक ✓
+                                  Required / आवश्यक ✓
                                 </span>
                               )}
                             </span>
@@ -597,11 +597,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-3xl">💼</span>
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                          नौकरी का प्रकार / Job Type
+                          Select Job Type / नौकरी का प्रकार चुनें
                         </h3>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-600 ml-11">
-                        पसंदीदा रोजगार प्रकार चुनें <span className="text-orange-600 font-semibold">(वैकल्पिक)</span>
+                        Choose preferred employment type <span className="text-orange-600 font-semibold">(Optional / वैकल्पिक)</span>
                       </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
@@ -625,7 +625,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       ) : (
                         <div className="col-span-2 text-center py-8">
                           <div className="text-5xl mb-2">⏳</div>
-                          <p className="text-xs sm:text-sm text-gray-500 font-medium">लोड हो रहा है...</p>
+                          <p className="text-xs sm:text-sm text-gray-500 font-medium">Loading... / लोड हो रहा है...</p>
                         </div>
                       )}
                     </div>
@@ -651,7 +651,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     }}
                     className="order-3 sm:order-1 w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm hover:shadow-md"
                   >
-                    रद्द करें
+                    Cancel / रद्द करें
                   </button>
                 )}
 
@@ -663,7 +663,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-teal-700 bg-white border-2 border-teal-600 rounded-lg hover:bg-teal-50 hover:shadow-lg transition-all transform hover:scale-105"
                     >
                       <HiArrowLeft className="w-4 h-4" />
-                      <span>पीछे</span>
+                      <span>Back / पीछे</span>
                     </button>
                   )}
 
@@ -673,7 +673,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       onClick={handleNext}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
                     >
-                      <span>आगे</span>
+                      <span>Next / आगे</span>
                       <HiArrowRight className="w-4 h-4" />
                     </button>
                   ) : (
@@ -682,7 +682,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
                     >
                       <HiCheck className="w-4 h-4" />
-                      <span>सहेजें</span>
+                      <span>Save / सहेजें</span>
                     </button>
                   )}
                 </div>
