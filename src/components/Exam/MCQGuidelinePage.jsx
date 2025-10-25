@@ -35,7 +35,6 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
-    
     console.log("Selected Language:", language);
   };
 
@@ -72,7 +71,9 @@ const MCQGuidelinePage = () => {
             language: selectedLanguage,
           })
         );
-        navigate("/exam/portal");
+        navigate("/exam/portal", {
+          state: { language: selectedLanguage }
+        });
       }
     } catch (err) {
       setError(err.message || "Failed to proceed");

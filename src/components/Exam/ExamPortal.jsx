@@ -6,7 +6,7 @@ import {
   postResult,
   attemptsExam,
 } from "../../features/examQuesSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
@@ -23,9 +23,12 @@ const ExamPortal = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   
-  const { allQuestion, language, loading } = useSelector((state) => state.examQues);
+  const { allQuestion, language: reduxLanguage, loading } = useSelector((state) => state.examQues);
+  // Get language from navigation state or Redux (Redux language is set by getAllQues action)
+  const language = location.state?.language || reduxLanguage;
   // Ensure questions are sorted by ascending order (order 1 first, then 2, 3, ...)
   const questions = [...(allQuestion.questions || [])].sort((a, b) => {
     // Use Number() and fallback to a large number if order is missing
@@ -229,15 +232,21 @@ const ExamPortal = () => {
         )}
         {currentQuestion ? (
           <div className="relative bg-white p-6 w-full mt-1 h-full">
-            <div className="flex justify-between">
-              {" "}
+            <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold mb-4">
                 Question {currentQuestionIndex + 1}
               </h2>
-              <div>
-                <button onClick={toggleModal} className="px-4 py-2 text-white ">
+              <div className="flex items-center gap-4">
+                {language && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                    Language: {language}
+                  </span>
+                )}
+                <button onClick={toggleModal} className="px-4 py-2 text-white">
                   <IoWarningOutline className="text-2xl text-gray-500" />
                 </button>
+              </div>
+            </div>
                 {/* Modal */}
                 {isOpen && (
                   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -284,8 +293,6 @@ const ExamPortal = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
             <p className="text-gray-700 mb-6">{currentQuestion.text}</p>
             <div className="space-y-4">
