@@ -207,7 +207,37 @@ const FilterdExamCard = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen py-6 sm:py-8 px-4"> {/* Adjust padding */}
-      <div className="max-w-6xl mx-auto">
+       {/* Assessment Process Info */}
+            <div className="p-4 sm:p-6 border-t border-sky-100"> {/* Adjust padding, Changed border from blue */}
+              <h4 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">Assessment Process / मूल्यांकन प्रक्रिया:</h4> {/* Adjust text size */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"> {/* Adjust gap */}
+                {/* Level 1 Info */}
+                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
+                  <div className="flex items-center mb-1 sm:mb-2 text-sky-600"> {/* Adjust margin, Changed from blue */}
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-sky-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">1</span> {/* Adjust size */}
+                    <h5 className="font-medium text-sm sm:text-base">Level 1 / स्तर 1</h5> {/* Adjust text size */}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600">Basic concepts assessment / बुनियादी अवधारणा मूल्यांकन</p> {/* Adjust text size */}
+                </div>
+                {/* Level 2 Info */}
+                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
+                  <div className="flex items-center mb-1 sm:mb-2 text-cyan-600"> {/* Adjust margin, Changed from indigo */}
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-cyan-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">2</span> {/* Adjust size */}
+                    <h5 className="font-medium text-sm sm:text-base">Level 2 / स्तर 2</h5> {/* Adjust text size */}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600">Advanced problem solving / उन्नत समस्या समाधान</p> {/* Adjust text size */}
+                </div>
+                {/* Interview Info */}
+                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
+                  <div className="flex items-center mb-1 sm:mb-2 text-teal-600"> {/* Adjust margin, Kept teal */}
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-teal-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">3</span> {/* Adjust size */}
+                    <h5 className="font-medium text-sm sm:text-base">Interview / साक्षात्कार</h5> {/* Adjust text size */}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600">Final teaching ability showcase / अंतिम शिक्षण क्षमता प्रदर्शन</p> {/* Adjust text size */}
+                </div>
+              </div>
+            </div>
+            <div className="p-5">
     
         
         {/* Progress Indicator */}
@@ -271,21 +301,21 @@ const FilterdExamCard = () => {
                 showCategoryPanel ? 'text-sky-700' : selectedCategory ? 'text-sky-600' : 'text-gray-500' // Changed from blue
               }`}
             >
-              Category
+              Category / वर्ग
             </div>
             <div 
               className={`w-1/3 text-center transition-colors duration-300 ${
                 showSubjectPanel ? 'text-cyan-700' : selectedSubject ? 'text-cyan-600' : 'text-gray-500' // Changed from indigo
               }`}
             >
-              Subject
+              Subject / विषय
             </div>
             <div 
               className={`w-1/3 text-center transition-colors duration-300 ${
                 showLevelPanel ? 'text-teal-700' : selectedLevel ? 'text-teal-600' : 'text-gray-500' // Kept teal
               }`}
             >
-              Level
+              Level / स्तर
             </div>
           </div>
         </div>
@@ -301,10 +331,10 @@ const FilterdExamCard = () => {
               <div className="bg-gradient-to-r from-sky-600 to-sky-500 p-4 sm:p-6 text-white"> {/* Adjust padding, Changed gradient from blue */}
                 <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                   <FaGraduationCap className="mr-2 sm:mr-3" aria-hidden="true" />
-                  Select Class Category
+                  Select Class Category / वर्ग चुनें
                 </h2>
                 <p className="text-sky-100 mt-1 text-sm sm:text-base"> {/* Adjust text size, Changed from blue */}
-                  Choose from your profile preferences
+                  Choose from your profile preferences / अपनी प्रोफ़ाइल प्राथमिकताओं में से चुनें
                 </p>
               </div>
               
@@ -766,36 +796,7 @@ const FilterdExamCard = () => {
               </div>
             </div>
             
-            {/* Assessment Process Info */}
-            <div className="p-4 sm:p-6 border-t border-sky-100"> {/* Adjust padding, Changed border from blue */}
-              <h4 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">Assessment Process:</h4> {/* Adjust text size */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"> {/* Adjust gap */}
-                {/* Level 1 Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-sky-600"> {/* Adjust margin, Changed from blue */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-sky-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">1</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Level 1</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Basic concepts assessment.</p> {/* Adjust text size */}
-                </div>
-                {/* Level 2 Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-cyan-600"> {/* Adjust margin, Changed from indigo */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-cyan-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">2</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Level 2</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Advanced problem solving.</p> {/* Adjust text size */}
-                </div>
-                {/* Interview Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-teal-600"> {/* Adjust margin, Kept teal */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-teal-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">3</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Interview</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Final teaching ability showcase.</p> {/* Adjust text size */}
-                </div>
-              </div>
-            </div>
+           
           </motion.div>
         )}
       </div>

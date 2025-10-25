@@ -8,7 +8,6 @@ const Layout = () => {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-2xl mx-auto">
         <div className="flex ">
           {/* Sidebar Drawer */}
           <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -31,7 +30,6 @@ const Layout = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

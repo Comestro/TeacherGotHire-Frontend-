@@ -141,7 +141,7 @@ const Experience = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
+    <div className="mt-8 py-6 rounded-xl bg-white border border-gray-200">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 

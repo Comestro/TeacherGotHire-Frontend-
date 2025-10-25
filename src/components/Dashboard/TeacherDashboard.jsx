@@ -197,7 +197,7 @@ function TeacherDashboard() {
       <div className="min-h-screen">
         {/* Show preference form if user doesn't have class categories */}
         {!hasClassCategories ? (
-          <div className="max-w-6xl mx-auto p-4 sm:p-6">
+          <div className=" p-4 sm:p-6">
             <PrefrenceProfile forceEdit={true} />
           </div>
         ) : (

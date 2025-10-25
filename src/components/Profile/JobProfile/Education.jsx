@@ -22,6 +22,7 @@ const Education = () => {
     (state) => state?.jobProfile?.qualification
   );
 
+
   const { error, educationData } = useSelector(
     (state) => state.jobProfile || []
   );
@@ -33,6 +34,8 @@ const Education = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedQualification, setSelectedQualification] = useState("");
+  const [selectedStream, setSelectedStream] = useState("");
+  const [selectedDegreeType, setSelectedDegreeType] = useState("");
 
   const {
     register,
@@ -45,6 +48,45 @@ const Education = () => {
   // Add new state for subject selections
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
+
+  // Define streams for Intermediate
+  const intermediateStreams = [
+    { value: "Science", label: "I.Sc - Intermediate Science" },
+    { value: "Commerce", label: "I.Com - Intermediate Commerce" },
+    { value: "Arts", label: "I.A - Intermediate Arts" },
+  ];
+
+  // Define degree types for Bachelor's
+  const bachelorDegrees = [
+    { value: "B.A", label: "B.A - Bachelor of Arts" },
+    { value: "B.Sc", label: "B.Sc - Bachelor of Science" },
+    { value: "B.Com", label: "B.Com - Bachelor of Commerce" },
+    { value: "BCA", label: "BCA - Bachelor of Computer Applications" },
+    { value: "BBA", label: "BBA - Bachelor of Business Administration" },
+    { value: "B.Tech", label: "B.Tech - Bachelor of Technology" },
+    { value: "B.E", label: "B.E - Bachelor of Engineering" },
+    { value: "LLB", label: "LLB - Bachelor of Laws" },
+    { value: "Other", label: "Other" },
+  ];
+
+  // Define degree types for Master's
+  const masterDegrees = [
+    { value: "M.A", label: "M.A - Master of Arts" },
+    { value: "M.Sc", label: "M.Sc - Master of Science" },
+    { value: "M.Com", label: "M.Com - Master of Commerce" },
+    { value: "MCA", label: "MCA - Master of Computer Applications" },
+    { value: "MBA", label: "MBA - Master of Business Administration" },
+    { value: "M.Tech", label: "M.Tech - Master of Technology" },
+    { value: "M.E", label: "M.E - Master of Engineering" },
+    { value: "LLM", label: "LLM - Master of Laws" },
+    { value: "Other", label: "Other" },
+  ];
+
+  // Define common subjects for Matriculation
+  const matricSubjects = [
+    "Mathematics", "Science", "English", "Hindi", "Social Science",
+    "Sanskrit", "Computer Science", "Physical Education"
+  ];
 
   // Define the qualification order mapping - moved to component level so it can be reused
   const qualificationOrder = {
@@ -94,9 +136,14 @@ const Education = () => {
   };
 
   const handleQualificationChange = (e) => {
-    setSelectedQualification(e.target.value);
-    // Update the form value when selection changes
-    setValue("qualification", e.target.value);
+    const value = e.target.value;
+    setSelectedQualification(value);
+    setValue("qualification", value);
+    
+    // Reset dependent selections
+    setSelectedStream("");
+    setSelectedDegreeType("");
+    setSelectedSubjects([]);
   };
 
   // Fetch education data on component mount
@@ -217,13 +264,32 @@ const Education = () => {
     try {
       console.log("data", data);
       setLoading(true);
+      
+      // Send only base qualification to API
+      // Store stream/degree info separately for display purposes
+      let qualificationName = selectedQualification;
+      let streamOrDegree = "";
+      
+      if (selectedQualification === "Intermediate" && selectedStream) {
+        streamOrDegree = selectedStream;
+      } else if (selectedQualification === "Bachelor" && selectedDegreeType) {
+        streamOrDegree = selectedDegreeType === "Other" 
+          ? data.customDegree || "" 
+          : selectedDegreeType;
+      } else if (selectedQualification === "Master" && selectedDegreeType) {
+        streamOrDegree = selectedDegreeType === "Other" 
+          ? data.customDegree || "" 
+          : selectedDegreeType;
+      }
+      
       const payload = {
         institution: data.institution,
-        qualification: selectedQualification, // Use the selected qualification state
+        qualification: qualificationName, // Send only base qualification
         year_of_passing: data.year_of_passing,
         grade_or_percentage: data.grade_or_percentage,
         session: data.session || "",
-        board_or_university: data.board_or_university || "", // Changed from board to board_or_university
+        board_or_university: data.board_or_university || "",
+        stream_or_degree: streamOrDegree, // Add stream/degree as separate field
         subjects: selectedSubjects.map(subject => ({
           name: subject.name,
           marks: parseFloat(subject.marks)
@@ -234,20 +300,38 @@ const Education = () => {
         const id = educationData[editingIndex].id;
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
-        toast.success("Education details updated successfully!");
+        toast.success("Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!");
       } else {
         await dispatch(postEducationProfile(payload)).unwrap();
         fetchProfile();
-        toast.success("Education details added successfully!");
+        toast.success("Education details added successfully! / शिक्षा विवरण सफलतापूर्वक जोड़ा गया!");
       }
 
       setIsEditing(false);
       setEditingIndex(null);
-      setSelectedSubjects([]); // Reset subjects after successful save
+      setSelectedSubjects([]);
+      setSelectedStream("");
+      setSelectedDegreeType("");
       reset();
     } catch (err) {
       console.error("Error:", err);
-      toast.error(err.response?.data?.message || "Failed to save education details");
+      // Handle different error formats
+      let errorMessage = "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
+      
+      if (err?.error) {
+        errorMessage = err.error;
+      } else if (err?.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      toast.error(errorMessage, {
+        autoClose: 3000,
+        position: "top-center"
+      });
     } finally {
       setLoading(false);
     }
@@ -285,7 +369,7 @@ const Education = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 mt-8 py-6 rounded-xl bg-white border border-gray-200">
+    <div className="px-2 sm:px-4 lg:px-6 mt-4 sm:mt-8 py-4 sm:py-6 rounded-xl bg-white border border-gray-200">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -301,325 +385,590 @@ const Education = () => {
       />
       {/* Enhanced Header */}
       {loading && <Loader />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
-        <div className="mb-3 sm:mb-0">
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200">
+        <div className="mb-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
             Education Background
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             Manage your academic qualifications and educational history
           </p>
         </div>
         {!isEditing && (
           <button
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] transition-colors rounded-lg shadow-sm hover:shadow-md"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] transition-colors rounded-lg shadow-sm hover:shadow-md w-full sm:w-auto"
             onClick={() => {
               reset();
               setIsEditing(true);
             }}
           >
-            <IoMdAddCircleOutline className="size-5" />
-            Add Education
+            <IoMdAddCircleOutline className="size-4 sm:size-5" />
+            <span className="whitespace-nowrap">Add Education</span>
           </button>
         )}
       </div>
 
       {/* No Data State */}
       {educationData.length < 1 && !isEditing && (
-        <div className="p-6 text-center rounded-xl bg-gray-50 border-2 border-dashed border-gray-200">
-          <HiOutlineAcademicCap className="mx-auto size-12 text-gray-400 mb-3" />
-          <h3 className="text-gray-500 font-medium">No education added yet</h3>
-          <p className="text-sm text-gray-400 mt-1">
+        <div className="p-4 sm:p-6 text-center rounded-xl bg-gray-50 border-2 border-dashed border-gray-200">
+          <HiOutlineAcademicCap className="mx-auto size-10 sm:size-12 text-gray-400 mb-2 sm:mb-3" />
+          <h3 className="text-gray-500 font-medium text-sm sm:text-base">No education added yet</h3>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
             Click 'Add Education' to get started
           </p>
         </div>
       )}
 
-      {/* Education Table */}
-      {!isEditing && educationData.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Course Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Session</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Passing Year</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Institution</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Board/University</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Subjects</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Result/Marks(%)</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {getSortedEducationData(educationData).map((education, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.qualification?.name || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.session || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.year_of_passing || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.institution || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.board_or_university || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    <div className="flex flex-wrap gap-1">
-                      {education.subjects?.map((subject, idx) => (
-                        <span 
-                          key={idx} 
-                          className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-md"
-                        >
-                          {subject.name}
-                        </span>
-                      ))}
+      {/* Education Table - Desktop */}
+      {!isEditing && educationData.length > 0 && (
+        <>
+          {/* Mobile Cards View */}
+          <div className="block lg:hidden space-y-4">
+            {getSortedEducationData(educationData).map((education, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      {education.qualification?.name || "N/A"}
+                    </h3>
+                    {education.stream_or_degree && (
+                      <span className="inline-block mt-1 px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 rounded-full text-xs font-semibold">
+                        {education.stream_or_degree}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-1 ml-2">
+                    <button
+                      onClick={() => {
+                        handleEdit(index);
+                        setIsEditing(true);
+                        setEditingRowIndex(index);
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                    >
+                      <HiPencil className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                    >
+                      <HiOutlineTrash className="size-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-gray-500">Session:</span>
+                      <p className="font-medium text-gray-700">{education.session || "N/A"}</p>
                     </div>
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    {education.grade_or_percentage || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          handleEdit(index);
-                          setIsEditing(true);
-                          setEditingRowIndex(index);
-                        }}
-                        className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
-                      >
-                        <HiPencil className="size-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(index)}
-                        className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
-                      >
-                        <HiOutlineTrash className="size-4" />
-                      </button>
+                    <div>
+                      <span className="text-gray-500">Year:</span>
+                      <p className="font-medium text-gray-700">{education.year_of_passing || "N/A"}</p>
                     </div>
-                  </td>
+                  </div>
+                  
+                  <div>
+                    <span className="text-gray-500">Institution:</span>
+                    <p className="font-medium text-gray-700 break-words">{education.institution || "N/A"}</p>
+                  </div>
+                  
+                  <div>
+                    <span className="text-gray-500">Board/University:</span>
+                    <p className="font-medium text-gray-700 break-words">{education.board_or_university || "N/A"}</p>
+                  </div>
+                  
+                  <div>
+                    <span className="text-gray-500">Grade/Marks:</span>
+                    <p className="font-medium text-gray-700">{education.grade_or_percentage || "N/A"}</p>
+                  </div>
+                  
+                  {education.subjects && education.subjects.length > 0 && (
+                    <div>
+                      <span className="text-gray-500">Subjects:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {education.subjects.map((subject, idx) => (
+                          <div 
+                            key={idx} 
+                            className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                          >
+                            <span className="text-xs font-semibold text-gray-800">
+                              {subject.name}
+                            </span>
+                            <span className="text-xs font-bold text-blue-600 ml-1">
+                              {subject.marks}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Course Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Stream/Degree</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Session</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Passing Year</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Institution</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Board/University</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Subjects</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Result/Marks(%)</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        // Form remains unchanged
+              </thead>
+              <tbody>
+                {getSortedEducationData(educationData).map((education, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 border-b text-sm">
+                      <span className="font-semibold text-gray-900">
+                        {education.qualification?.name || "N/A"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      {education.stream_or_degree ? (
+                        <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 rounded-full text-xs font-semibold">
+                          {education.stream_or_degree}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      <span className="font-medium text-gray-700">
+                        {education.session || "N/A"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      {education.year_of_passing || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      {education.institution || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      {education.board_or_university || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      <div className="flex flex-col gap-1.5 max-w-xs">
+                        {education.subjects && education.subjects.length > 0 ? (
+                          education.subjects.map((subject, idx) => (
+                            <div 
+                              key={idx} 
+                              className="flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                            >
+                              <span className="text-xs font-semibold text-gray-800">
+                                {subject.name}
+                              </span>
+                              <span className="text-xs font-bold text-blue-600 ml-2">
+                                {subject.marks} marks
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-gray-400 text-xs">No subjects added</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      {education.grade_or_percentage || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            handleEdit(index);
+                            setIsEditing(true);
+                            setEditingRowIndex(index);
+                          }}
+                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                        >
+                          <HiPencil className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(index)}
+                          className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                        >
+                          <HiOutlineTrash className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* Form */}
+      {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-6 rounded-xl border border-gray-200"
+          className="bg-white p-3 sm:p-6 rounded-xl border border-gray-200"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Institution <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="University Name"
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                {...register("institution", {
-                  required: "Institution is required",
-                })}
-              />
-              {errors.institution && (
-                <span className="text-red-500 text-sm">
-                  {errors.institution.message}
-                </span>
-              )}
+          {/* Step 1: Select Qualification Level */}
+          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <span className="text-2xl sm:text-3xl">🎓</span>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 1: Select Qualification Level</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Choose your education level / शिक्षा स्तर चुनें</p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Qualification <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedQualification}
-                onChange={handleQualificationChange}
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7] bg-white"
-              >
-                <option value="" disabled>
-                  Select qualification
-                </option>
-                {qualification.map((role) => {
-                  // Get the level for this qualification
-                  const qualLevel = qualificationOrder[role.name] || 100;
-                  
-                  // Get all allowed levels
-                  const allowedLevels = getNextAllowedQualificationLevels(educationData);
-                  
-                  // Check if this qualification is already added
-                  const alreadyAdded = educationData.some(edu => 
-                    (edu.qualification?.name === role.name) || 
-                    (typeof edu.qualification === 'string' && edu.qualification === role.name)
-                  );
-                  
-                  // Disable if already added, unless we're editing this specific qualification
-                  const isDisabled = alreadyAdded && 
-                    (editingIndex === null || educationData[editingIndex]?.qualification?.name !== role.name);
-                  
-                  // If editing, enable the qualification that's being edited
-                  const isCurrentlyEditing = editingIndex !== null && 
-                    educationData[editingIndex]?.qualification?.name === role.name;
-                  
-                  // Enable if it's allowed or if it's the one being edited
-                  const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
-                  
-                  return (
-                    <option 
-                      key={role.id} 
-                      value={role.name}
-                      disabled={!isEnabled}
-                      className={!isEnabled ? "text-gray-400" : ""}
-                    >
-                      {role.name} {alreadyAdded ? "(Already added)" : ""}
-                    </option>
-                  );
-                })}
-              </select>
-              {errors.qualification && (
-                <span className="text-red-500 text-sm">
-                  {errors.qualification.message}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Session
-              </label>
-              <input
-                type="text"
-                placeholder="YYYY-YY (e.g., 2020-22)"
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                {...register("session")}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Year of Passing <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="YYYY"
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                maxLength={4}
-                {...register("year_of_passing", {
-                  required: "Year is required",
-                  pattern: {
-                    value: /^\d{4}$/,
-                    message: "Please enter a valid 4-digit year (e.g., 2023)",
-                  },
-                  validate: (value) => {
-                    const currentYear = new Date().getFullYear();
-                    if (value < 1900 || value > currentYear) {
-                      return `Year must be between 1900 and ${currentYear}`;
-                    }
-                    return true;
-                  },
-                })}
-              />
-              {errors.year_of_passing && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.year_of_passing.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Board/University
-              </label>
-              <input
-                type="text"
-                placeholder="Enter board or university name"
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                {...register("board_or_university")}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grade/Percentage
-              </label>
-              <input
-                type="text"
-                placeholder="Enter grade or percentage"
-                className="w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 focus:ring-[#3E98C7]"
-                {...register("grade_or_percentage", {
-                  required: "Grade or percentage is required",
-                  validate: (value) => {
-                    const isGrade = /^[A-Da-d]$/.test(value);
-                    const isPercentage = /^\d{1,3}%?$/.test(value);
-
-                    if (isGrade) {
-                      return true;
-                    } else if (isPercentage) {
-                      const numericValue = parseFloat(value.replace("%", ""));
-                      if (numericValue >= 0 && numericValue <= 100) {
-                        return true;
-                      }
-                      return "Percentage must be between 0% and 100%";
-                    }
-                    return "Please enter a valid grade (A, B, C, D) or a percentage (0-100%)";
-                  },
-                })}
-              />
-              {errors.grade_or_percentage && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.grade_or_percentage.message}
-                </p>
-              )}
-            </div>
+            
+            <select
+              value={selectedQualification}
+              onChange={handleQualificationChange}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm sm:text-base font-medium"
+            >
+              <option value="" disabled>
+                Select Qualification Level / योग्यता स्तर चुनें
+              </option>
+              {qualification.map((role) => {
+                const qualLevel = qualificationOrder[role.name] || 100;
+                const allowedLevels = getNextAllowedQualificationLevels(educationData);
+                const alreadyAdded = educationData.some(edu => 
+                  (edu.qualification?.name === role.name) || 
+                  (typeof edu.qualification === 'string' && edu.qualification === role.name)
+                );
+                const isDisabled = alreadyAdded && 
+                  (editingIndex === null || educationData[editingIndex]?.qualification?.name !== role.name);
+                const isCurrentlyEditing = editingIndex !== null && 
+                  educationData[editingIndex]?.qualification?.name === role.name;
+                const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
+                
+                return (
+                  <option 
+                    key={role.id} 
+                    value={role.name}
+                    disabled={!isEnabled}
+                    className={!isEnabled ? "text-gray-400" : ""}
+                  >
+                    {role.name} {alreadyAdded ? "(Already added / पहले से जोड़ा गया)" : ""}
+                  </option>
+                );
+              })}
+            </select>
           </div>
-          {/* Add Subject Selection Section */}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add Subjects with Marks</h3>
-            <div className="space-y-4">
-              <div className="flex gap-4">
+
+          {selectedQualification && (
+            <>
+              {/* Step 2: Stream/Degree Type Selection (for Intermediate, Bachelor, Master) */}
+              {selectedQualification === "Intermediate" && (
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 animate-fadeIn">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <span className="text-2xl sm:text-3xl">📚</span>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Stream</h3>
+                      <p className="text-xs sm:text-sm text-gray-600">Choose your intermediate stream / अपनी स्ट्रीम चुनें</p>
+                    </div>
+                  </div>
+                  
+                  <select
+                    value={selectedStream}
+                    onChange={(e) => setSelectedStream(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-sm sm:text-base font-medium"
+                    required
+                  >
+                    <option value="">Select Stream / स्ट्रीम चुनें</option>
+                    {intermediateStreams.map((stream) => (
+                      <option key={stream.value} value={stream.value}>
+                        {stream.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {selectedQualification === "Bachelor" && (
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 animate-fadeIn">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <span className="text-2xl sm:text-3xl">🎯</span>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
+                      <p className="text-xs sm:text-sm text-gray-600">Choose your bachelor's degree / स्नातक डिग्री चुनें</p>
+                    </div>
+                  </div>
+                  
+                  <select
+                    value={selectedDegreeType}
+                    onChange={(e) => setSelectedDegreeType(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm sm:text-base font-medium"
+                    required
+                  >
+                    <option value="">Select Degree / डिग्री चुनें</option>
+                    {bachelorDegrees.map((degree) => (
+                      <option key={degree.value} value={degree.value}>
+                        {degree.label}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {selectedDegreeType === "Other" && (
+                    <input
+                      type="text"
+                      placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
+                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                      {...register("customDegree", { 
+                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
+                      })}
+                    />
+                  )}
+                </div>
+              )}
+
+              {selectedQualification === "Master" && (
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 animate-fadeIn">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <span className="text-2xl sm:text-3xl">🏆</span>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
+                      <p className="text-xs sm:text-sm text-gray-600">Choose your master's degree / मास्टर डिग्री चुनें</p>
+                    </div>
+                  </div>
+                  
+                  <select
+                    value={selectedDegreeType}
+                    onChange={(e) => setSelectedDegreeType(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm sm:text-base font-medium"
+                    required
+                  >
+                    <option value="">Select Degree / डिग्री चुनें</option>
+                    {masterDegrees.map((degree) => (
+                      <option key={degree.value} value={degree.value}>
+                        {degree.label}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {selectedDegreeType === "Other" && (
+                    <input
+                      type="text"
+                      placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
+                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
+                      {...register("customDegree", { 
+                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
+                      })}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Step 3: Basic Information */}
+              <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border-2 border-teal-200 animate-fadeIn">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <span className="text-2xl sm:text-3xl">📝</span>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                      Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "3" : "2"}: Basic Information
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600">Enter your academic details / अपनी शैक्षणिक जानकारी दर्ज करें</p>
+                  </div>
+                </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  Institution <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  placeholder="Subject Name"
+                  placeholder="University Name / विश्वविद्यालय का नाम"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  {...register("institution", {
+                    required: "Institution is required / संस्थान आवश्यक है",
+                  })}
+                />
+                {errors.institution && (
+                  <span className="text-red-500 text-xs sm:text-sm">
+                    {errors.institution.message}
+                  </span>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  Board/University
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter board or university name / बोर्ड या विश्वविद्यालय का नाम"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  {...register("board_or_university")}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  Session
+                </label>
+                <input
+                  type="text"
+                  placeholder="YYYY-YY (e.g., 2020-22)"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  {...register("session")}
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  Year of Passing <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="YYYY"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  maxLength={4}
+                  {...register("year_of_passing", {
+                    required: "Year is required / वर्ष आवश्यक है",
+                    pattern: {
+                      value: /^\d{4}$/,
+                      message: "Please enter a valid 4-digit year (e.g., 2023)",
+                    },
+                    validate: (value) => {
+                      const currentYear = new Date().getFullYear();
+                      if (value < 1900 || value > currentYear) {
+                        return `Year must be between 1900 and ${currentYear}`;
+                      }
+                      return true;
+                    },
+                  })}
+                />
+                {errors.year_of_passing && (
+                  <p className="text-red-500 text-xs sm:text-sm mt-1">
+                    {errors.year_of_passing.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  Grade/Percentage <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter grade or percentage / ग्रेड या प्रतिशत"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  {...register("grade_or_percentage", {
+                    required: "Grade or percentage is required",
+                    validate: (value) => {
+                      const isGrade = /^[A-Da-d]$/.test(value);
+                      const isPercentage = /^\d{1,3}%?$/.test(value);
+
+                      if (isGrade) {
+                        return true;
+                      } else if (isPercentage) {
+                        const numericValue = parseFloat(value.replace("%", ""));
+                        if (numericValue >= 0 && numericValue <= 100) {
+                          return true;
+                        }
+                        return "Percentage must be between 0% and 100%";
+                      }
+                      return "Please enter a valid grade (A, B, C, D) or a percentage (0-100%)";
+                    },
+                  })}
+                />
+                {errors.grade_or_percentage && (
+                  <p className="text-red-500 text-xs sm:text-sm mt-1">
+                    {errors.grade_or_percentage.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          </div>
+
+          {/* Step 4: Add Subjects with Marks */}
+          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-200 animate-fadeIn">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <span className="text-2xl sm:text-3xl">📊</span>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Add Subjects & Marks
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600">Add subjects with their marks / विषय और अंक जोड़ें</p>
+              </div>
+            </div>
+            
+            {/* Quick Add for Matric Subjects */}
+            {selectedQualification === "Matriculation" && (
+              <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Quick Select Common Subjects / सामान्य विषय चुनें:</p>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {matricSubjects.map((subject) => (
+                    <button
+                      key={subject}
+                      type="button"
+                      onClick={() => {
+                        if (!selectedSubjects.find(s => s.name === subject)) {
+                          setSubjectInput({ name: subject, marks: '' });
+                        }
+                      }}
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-white border-2 border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-all"
+                    >
+                      {subject}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <input
+                  type="text"
+                  placeholder="Subject Name / विषय का नाम"
                   value={subjectInput.name}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-[#3E98C7]"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm sm:text-base"
                 />
                 <input
                   type="number"
-                  placeholder="Marks"
+                  placeholder="Marks / अंक"
                   value={subjectInput.marks}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
-                  className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-[#3E98C7]"
+                  className="w-full sm:w-32 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm sm:text-base"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubject}
                   disabled={!subjectInput.name || !subjectInput.marks}
-                  className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-medium rounded-lg hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm sm:text-base"
                 >
-                  Add Subject
+                  Add / जोड़ें
                 </button>
               </div>
+              
               {/* Selected Subjects List */}
               {selectedSubjects.length > 0 && (
-                <div className="mt-4">
-                  <div className="flex flex-wrap gap-2">
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Added Subjects / जोड़े गए विषय ({selectedSubjects.length}):</p>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {selectedSubjects.map((subject, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border-2 border-yellow-300 rounded-lg shadow-sm"
                       >
-                        <span className="text-sm text-teal-800">
-                          {subject.name} ({subject.marks} marks)
+                        <span className="text-xs sm:text-sm font-medium text-gray-800">
+                          {subject.name}
+                        </span>
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 sm:px-2 py-0.5 rounded-full font-semibold">
+                          {subject.marks}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSubject(index)}
-                          className="text-teal-600 hover:text-teal-800"
+                          className="text-red-500 hover:text-red-700 transition-colors"
                         >
-                          <IoClose className="h-4 w-4" />
+                          <IoClose className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       </div>
                     ))}
@@ -628,24 +977,32 @@ const Education = () => {
               )}
             </div>
           </div>
+          </>
+          )}
+
           {/* Form Actions */}
-          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row-reverse sm:justify-start gap-3">
+          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-gray-200 flex flex-col sm:flex-row-reverse sm:justify-start gap-2 sm:gap-3">
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+              disabled={!selectedQualification}
+              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white font-bold text-sm sm:text-base rounded-xl shadow-md hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 order-2 sm:order-1"
             >
-              Save Education
+              💾 Save Education / शिक्षा सहेजें
             </button>
             <button
               type="button"
               onClick={() => {
                 setIsEditing(false);
+                setSelectedQualification("");
+                setSelectedStream("");
+                setSelectedDegreeType("");
+                setSelectedSubjects([]);
                 reset();
                 dispatch(resetError());
               }}
-              className="border border-[#3E98C7] text-[#3E98C7] py-1.5 px-5 rounded-lg"
+              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-[#3E98C7] text-[#3E98C7] font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm sm:text-base order-1 sm:order-2"
             >
-              Cancel
+              ✖ Cancel / रद्द करें
             </button>
           </div>
         </form>

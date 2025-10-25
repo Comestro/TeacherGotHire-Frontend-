@@ -198,7 +198,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg border border-gray-100">
+    <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg border border-gray-100">
       <ToastContainer 
         position="top-right" 
         autoClose={1000} 

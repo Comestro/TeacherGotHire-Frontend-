@@ -97,7 +97,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl mx-4 sm:mx-0 p-6 border border-gray-200 mt-8">
+    <div className="bg-white rounded-xl sm:mx-0 p-6 border border-gray-200 mt-8">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
