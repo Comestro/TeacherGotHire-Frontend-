@@ -10,8 +10,8 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
-import { HiExclamationCircle, HiPencil, HiArrowRight, HiArrowLeft, HiCheck } from "react-icons/hi";
-import { FiX } from "react-icons/fi";
+import { HiOutlineExclamationCircle, HiOutlinePencil, HiOutlineArrowRight, HiOutlineArrowLeft, HiOutlineCheck, HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineBriefcase, HiOutlineUserGroup, HiOutlineClock } from "react-icons/hi";
+import { HiOutlineXMark } from "react-icons/hi2";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -198,7 +198,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
       <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -213,10 +213,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         theme="light"
       />
       {isLoading && <Loader />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b-2 border-gradient-to-r from-teal-200 to-cyan-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b-2 border-[#3E98C7]/20 px-6 pt-6">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] flex items-center gap-2">
+            <HiOutlineAcademicCap className="w-7 h-7 text-[#3E98C7]" />
             Teaching Preferences / शिक्षण प्राथमिकताएं
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
@@ -226,10 +226,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         {!forceEdit && (
           !isEditingPrefrence ? (
             <button
-              className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               onClick={() => setIsEditingPrefrence(true)}
             >
-              <HiPencil className="w-4 h-4" />
+              <HiOutlinePencil className="w-4 h-4" />
               <span>Edit / संपादित करें</span>
             </button>
           ) : (
@@ -240,14 +240,15 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
               }}
               className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 hover:border-gray-400 rounded-lg shadow-sm hover:shadow-md transition-all"
             >
-              <FiX className="w-4 h-4" />
+              <HiOutlineXMark className="w-4 h-4" />
               <span>Close / बंद करें</span>
             </button>
           )
         )}
       </div>
 
-      <div className="mb-4">
+      <div className="px-6 pb-6">
+        <div className="mb-4">
         {!isEditingPrefrence && !forceEdit ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -255,9 +256,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 {
                   title: "कक्षा श्रेणी / Class Category",
                   type: "category",
-                  icon: "📚",
-                  color: "from-blue-50 to-cyan-50",
-                  borderColor: "border-blue-200",
+                  icon: HiOutlineAcademicCap,
+                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
+                  borderColor: "border-[#3E98C7]/30",
                   value:
                     teacherprefrence?.class_category?.length > 0
                       ? teacherprefrence.class_category.map(
@@ -268,9 +269,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 {
                   title: "नौकरी की भूमिका / Job Role",
                   type: "role",
-                  icon: "👔",
-                  color: "from-purple-50 to-pink-50",
-                  borderColor: "border-purple-200",
+                  icon: HiOutlineUserGroup,
+                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
+                  borderColor: "border-[#3E98C7]/30",
                   value:
                     teacherprefrence?.job_role?.length > 0
                       ? teacherprefrence.job_role.map(
@@ -281,9 +282,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 {
                   title: "विषय / Subject",
                   type: "subject",
-                  icon: "📖",
-                  color: "from-green-50 to-emerald-50",
-                  borderColor: "border-green-200",
+                  icon: HiOutlineBookOpen,
+                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
+                  borderColor: "border-[#3E98C7]/30",
                   value:
                     teacherprefrence?.prefered_subject?.length > 0
                       ? (teacherprefrence.class_category || []).map(
@@ -308,9 +309,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 {
                   title: "नौकरी का प्रकार / Job Type",
                   type: "jobtype",
-                  icon: "💼",
-                  color: "from-orange-50 to-amber-50",
-                  borderColor: "border-orange-200",
+                  icon: HiOutlineBriefcase,
+                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
+                  borderColor: "border-[#3E98C7]/30",
                   value:
                     teacherprefrence?.teacher_job_type?.length > 0
                       ? teacherprefrence.teacher_job_type.map(
@@ -324,7 +325,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   className={`bg-gradient-to-br ${item.color} p-4 sm:p-5 rounded-xl border-2 ${item.borderColor} shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl">{item.icon}</span>
+                    <item.icon className="w-6 h-6 text-[#3E98C7]" />
                     <h3 className="text-sm sm:text-base font-bold text-gray-800">
                       {item.title}
                     </h3>
@@ -334,7 +335,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       item.value.map((category, categoryIndex) => (
                         <div key={categoryIndex} className="mb-2">
                           <h4 className="text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
+                            <span className="w-1.5 h-1.5 bg-[#3E98C7] rounded-full"></span>
                             {category.categoryName}
                           </h4>
                           <div className="flex flex-wrap gap-1.5">
@@ -342,7 +343,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                               (subjectName, subjectIndex) => (
                                 <span
                                   key={subjectIndex}
-                                  className="px-2 py-0.5 bg-white text-teal-700 border border-teal-300 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
+                                  className="px-2 py-0.5 bg-white text-[#3E98C7] border border-[#3E98C7]/30 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
                                 >
                                   {subjectName}
                                 </span>
@@ -356,7 +357,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                         {item.value.map((val, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 bg-white text-teal-700 border border-teal-300 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
+                            className="px-2 py-0.5 bg-white text-[#3E98C7] border border-[#3E98C7]/30 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
                           >
                             {val}
                           </span>
@@ -372,7 +373,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
           <div className="bg-white">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Stepper Header */}
-              <div className="bg-gradient-to-r from-white via-teal-50 to-white p-4 sm:p-5 rounded-xl border-2 border-teal-200 shadow-md">
+              <div className="bg-gradient-to-r from-white via-[#3E98C7]/10 to-white p-4 sm:p-5 rounded-xl border-2 border-[#3E98C7]/20 shadow-md">
                 <div className="flex items-center justify-between mb-3">
                   {[1, 2, 3, 4].map((step) => (
                     <React.Fragment key={step}>
@@ -382,14 +383,14 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                             currentStep > step
                               ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg scale-105"
                               : currentStep === step
-                              ? "bg-gradient-to-br from-teal-500 to-cyan-500 text-white ring-4 ring-teal-200 shadow-xl scale-110"
+                              ? "bg-gradient-to-br from-[#3E98C7] to-[#67B3DA] text-white ring-4 ring-[#3E98C7]/20 shadow-xl scale-110"
                               : "bg-gray-200 text-gray-500 shadow-sm"
                           }`}
                         >
-                          {currentStep > step ? <HiCheck className="w-6 h-6" /> : step}
+                          {currentStep > step ? <HiOutlineCheck className="w-6 h-6" /> : step}
                         </div>
                         <span className={`text-xs mt-1.5 font-medium hidden sm:block transition-colors ${
-                          currentStep === step ? "text-teal-700 font-bold" : currentStep > step ? "text-green-600" : "text-gray-500"
+                          currentStep === step ? "text-[#3E98C7] font-bold" : currentStep > step ? "text-green-600" : "text-gray-500"
                         }`}>
                           {step === 1 && "Class"}
                           {step === 2 && "Subject"}
@@ -409,14 +410,14 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
                   <div 
-                    className="bg-gradient-to-r from-teal-500 via-cyan-500 to-green-500 h-1.5 rounded-full transition-all duration-500 shadow-sm"
+                    className="bg-gradient-to-r from-[#3E98C7] via-[#67B3DA] to-green-500 h-1.5 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                   />
                 </div>
                 
                 {/* Mobile Step Labels */}
                 <div className="block sm:hidden text-center">
-                  <p className="text-xs font-bold text-teal-700 bg-teal-100 px-3 py-1.5 rounded-full inline-block">
+                  <p className="text-xs font-bold text-[#3E98C7] bg-[#3E98C7]/10 px-3 py-1.5 rounded-full inline-block">
                     Step {currentStep} of {totalSteps}:{" "}
                     {currentStep === 1 && "Class / कक्षा"}
                     {currentStep === 2 && "Subject / विषय"}
@@ -433,7 +434,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   <div className="space-y-3 animate-fadeIn">
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-3xl">📚</span>
+                        <HiOutlineAcademicCap className="w-8 h-8 text-[#3E98C7]" />
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                           Select Class Category / कक्षा श्रेणी चुनें
                         </h3>
@@ -446,7 +447,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       {category?.map((cat) => (
                         <label
                           key={cat.id}
-                          className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 border-2 border-gray-200 hover:border-teal-400 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-gradient-to-r hover:from-[#3E98C7]/10 hover:to-[#67B3DA]/10 border-2 border-gray-200 hover:border-[#3E98C7]/40 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                         >
                           <input
                             type="checkbox"
@@ -454,7 +455,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                               required: "Please select at least one class category / कम से कम एक कक्षा श्रेणी चुनें",
                             })}
                             value={cat.id}
-                            className="h-4 w-4 text-teal-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-teal-500 transition-all"
+                            className="h-4 w-4 text-[#3E98C7] border-2 border-gray-300 rounded focus:ring-2 focus:ring-[#3E98C7] transition-all"
                           />
                           <span className="text-xs sm:text-sm text-gray-800 font-semibold">
                             {cat.name}
@@ -464,7 +465,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     </div>
                     {errors.class_category && (
                       <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
                         {errors.class_category.message}
                       </div>
                     )}
@@ -476,7 +477,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   <div className="space-y-3 animate-fadeIn">
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-3xl">📖</span>
+                        <HiOutlineBookOpen className="w-8 h-8 text-[#3E98C7]" />
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                           Select Preferred Subjects / पसंदीदा विषय चुनें
                         </h3>
@@ -488,7 +489,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     <div className="space-y-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
                       {selectedClassCategories.length === 0 ? (
                         <div className="text-center py-8">
-                          <div className="text-5xl mb-2">📚</div>
+                          <HiOutlineAcademicCap className="w-16 h-16 text-gray-400 mx-auto mb-2" />
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">
                             Please select class categories first / पहले कक्षा श्रेणी का चयन करें
                           </p>
@@ -501,16 +502,16 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                           if (!categoryObj) return null;
 
                           return (
-                            <div key={categoryObj.id} className="space-y-2 bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border-2 border-green-200">
-                              <h4 className="text-xs sm:text-sm font-bold text-green-800 mb-2 pb-1.5 border-b-2 border-green-300 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                            <div key={categoryObj.id} className="space-y-2 bg-gradient-to-r from-[#3E98C7]/10 to-[#67B3DA]/10 p-3 rounded-lg border-2 border-[#3E98C7]/20">
+                              <h4 className="text-xs sm:text-sm font-bold text-[#3E98C7] mb-2 pb-1.5 border-b-2 border-[#3E98C7]/30 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-[#3E98C7] rounded-full animate-pulse"></span>
                                 {categoryObj.name}
                               </h4>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {categoryObj.subjects?.map((sub) => (
                                   <label
                                     key={sub.id}
-                                    className="flex items-center space-x-2 p-2.5 sm:p-3 bg-white rounded-lg hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 border-2 border-gray-200 hover:border-green-400 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                                    className="flex items-center space-x-2 p-2.5 sm:p-3 bg-white rounded-lg hover:bg-gradient-to-r hover:from-[#3E98C7]/10 hover:to-[#67B3DA]/10 border-2 border-gray-200 hover:border-[#3E98C7]/40 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                                   >
                                     <input
                                       type="checkbox"
@@ -518,7 +519,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                                         required: "Please select at least one subject / कम से कम एक विषय चुनें",
                                       })}
                                       value={sub.id}
-                                      className="h-4 w-4 text-green-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-green-500 transition-all"
+                                      className="h-4 w-4 text-[#3E98C7] border-2 border-gray-300 rounded focus:ring-2 focus:ring-[#3E98C7] transition-all"
                                     />
                                     <span className="text-xs sm:text-sm text-gray-800 font-medium">
                                       {sub.subject_name}
@@ -533,7 +534,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     </div>
                     {errors.prefered_subject && (
                       <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
                         {errors.prefered_subject.message}
                       </div>
                     )}
@@ -545,7 +546,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   <div className="space-y-3 animate-fadeIn">
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-3xl">👔</span>
+                        <HiOutlineUserGroup className="w-8 h-8 text-[#3E98C7]" />
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                           Select Job Role / नौकरी की भूमिका चुनें
                         </h3>
@@ -565,21 +566,21 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                             key={role.id}
                             className={`flex items-center space-x-2 p-3 sm:p-4 rounded-lg border-2 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ${
                               role.id === 4
-                                ? "bg-gradient-to-r from-purple-100 to-pink-100 border-purple-400 cursor-not-allowed"
-                                : "bg-white hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 border-gray-200 hover:border-purple-400 cursor-pointer"
+                                ? "bg-gradient-to-r from-[#3E98C7]/20 to-[#67B3DA]/20 border-[#3E98C7]/40 cursor-not-allowed"
+                                : "bg-white hover:bg-gradient-to-r hover:from-[#3E98C7]/10 hover:to-[#67B3DA]/10 border-gray-200 hover:border-[#3E98C7]/40 cursor-pointer"
                             }`}
                           >
                             <input
                               type="checkbox"
                               {...register("job_role")}
                               value={role.id}
-                              className="h-4 w-4 text-purple-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-purple-500 transition-all"
+                              className="h-4 w-4 text-[#3E98C7] border-2 border-gray-300 rounded focus:ring-2 focus:ring-[#3E98C7] transition-all"
                               disabled={role.id === 4}
                             />
                             <span className="text-xs sm:text-sm text-gray-800 font-semibold">
                               {role.jobrole_name}
                               {role.id === 4 && (
-                                <span className="ml-1.5 text-xs text-purple-700 font-bold bg-purple-200 px-1.5 py-0.5 rounded-full">
+                                <span className="ml-1.5 text-xs text-[#3E98C7] font-bold bg-[#3E98C7]/20 px-1.5 py-0.5 rounded-full">
                                   Required / आवश्यक ✓
                                 </span>
                               )}
@@ -595,7 +596,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   <div className="space-y-3 animate-fadeIn">
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-3xl">💼</span>
+                        <HiOutlineBriefcase className="w-8 h-8 text-[#3E98C7]" />
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                           Select Job Type / नौकरी का प्रकार चुनें
                         </h3>
@@ -609,13 +610,13 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                         displayedJobTypes.map((role) => (
                           <label
                             key={role.id}
-                            className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 border-2 border-gray-200 hover:border-orange-400 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                            className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-gradient-to-r hover:from-[#3E98C7]/10 hover:to-[#67B3DA]/10 border-2 border-gray-200 hover:border-[#3E98C7]/40 transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                           >
                             <input
                               type="checkbox"
                               {...register("teacher_job_type")}
                               value={role.id}
-                              className="h-4 w-4 text-orange-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-orange-500 transition-all"
+                              className="h-4 w-4 text-[#3E98C7] border-2 border-gray-300 rounded focus:ring-2 focus:ring-[#3E98C7] transition-all"
                             />
                             <span className="text-xs sm:text-sm text-gray-800 font-semibold">
                               {role.teacher_job_name}
@@ -624,14 +625,14 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                         ))
                       ) : (
                         <div className="col-span-2 text-center py-8">
-                          <div className="text-5xl mb-2">⏳</div>
+                          <HiOutlineClock className="w-16 h-16 text-gray-400 mx-auto mb-2 animate-spin" />
                           <p className="text-xs sm:text-sm text-gray-500 font-medium">Loading... / लोड हो रहा है...</p>
                         </div>
                       )}
                     </div>
                     {errors.teacher_job_type && (
                       <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiExclamationCircle className="mr-1.5 h-4 w-4" />
+                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
                         {errors.teacher_job_type.message}
                       </div>
                     )}
@@ -660,9 +661,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     <button
                       type="button"
                       onClick={handleBack}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-teal-700 bg-white border-2 border-teal-600 rounded-lg hover:bg-teal-50 hover:shadow-lg transition-all transform hover:scale-105"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-[#3E98C7] bg-white border-2 border-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 hover:shadow-lg transition-all transform hover:scale-105"
                     >
-                      <HiArrowLeft className="w-4 h-4" />
+                      <HiOutlineArrowLeft className="w-4 h-4" />
                       <span>Back / पीछे</span>
                     </button>
                   )}
@@ -671,17 +672,17 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     <button
                       type="button"
                       onClick={handleNext}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
                     >
                       <span>Next / आगे</span>
-                      <HiArrowRight className="w-4 h-4" />
+                      <HiOutlineArrowRight className="w-4 h-4" />
                     </button>
                   ) : (
                     <button
                       type="submit"
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
                     >
-                      <HiCheck className="w-4 h-4" />
+                      <HiOutlineCheck className="w-4 h-4" />
                       <span>Save / सहेजें</span>
                     </button>
                   )}
@@ -690,6 +691,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
             </form>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

@@ -8,13 +8,12 @@ import {
   delSkillProfile,
 } from "../../../features/jobProfileSlice";
 import {
-  HiOutlineClipboardList,
-  HiPlusCircle,
-  HiTag,
-  HiX,
-  HiXCircle,
-} from "react-icons/hi";
-import { HiCheckBadge } from "react-icons/hi2";
+  HiOutlinePlus,
+  HiOutlineTag,
+  HiOutlineXMark,
+  HiOutlineCheckBadge,
+  HiOutlineClipboardDocumentList,
+} from "react-icons/hi2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -97,7 +96,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl sm:mx-0 p-6 border border-gray-200 mt-8">
+    <div className="bg-white rounded-xl sm:mx-0 p-6 border border-gray-200 mt-8 shadow-lg">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -112,27 +111,28 @@ const Skills = () => {
         theme="light"
       />
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b-2 border-[#3E98C7]/20">
         <div className="mb-3 sm:mb-0">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] flex items-center gap-2">
+            <HiOutlineClipboardDocumentList className="text-2xl" />
             Skills & Expertise
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             Showcase your core competencies and technical abilities
           </p>
         </div>
         <button
-          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] rounded-lg shadow-sm hover:shadow-md transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? (
             <>
-              <HiX className="size-5" />
+              <HiOutlineXMark className="size-5" />
               Cancel
             </>
           ) : (
             <>
-              <HiPlusCircle className="size-5" />
+              <HiOutlinePlus className="size-5" />
               Add Skill
             </>
           )}
@@ -148,26 +148,26 @@ const Skills = () => {
                 type="text"
                 {...register("skillInput")}
                 placeholder="Search skills..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 onFocus={handleInputFocus}
               />
               <button
                 type="submit"
-                className="px-6 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white font-medium rounded-lg hover:shadow-md transition-shadow"
+                className="px-6 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-medium rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
               >
                 Add
               </button>
             </div>
 
             {suggestions.length > 0 && (
-              <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-10">
+              <ul className="absolute left-0 right-0 mt-2 bg-white border-2 border-[#3E98C7]/30 rounded-lg shadow-xl overflow-hidden z-10">
                 {suggestions.map((skill, index) => (
                   <li
                     key={index}
                     onClick={() => handleSuggestionClick(skill)}
-                    className="px-4 py-3 hover:bg-[#F0F9FF] cursor-pointer transition-colors text-sm text-gray-700 flex items-center gap-2"
+                    className="px-4 py-3 hover:bg-[#3E98C7]/10 cursor-pointer transition-colors text-sm text-gray-700 flex items-center gap-2"
                   >
-                    <HiTag className="text-[#3E98C7] size-4" />
+                    <HiOutlineTag className="text-[#3E98C7] size-4" />
                     {skill.name}
                   </li>
                 ))}
@@ -183,24 +183,24 @@ const Skills = () => {
           Current Skills
         </h3>
         {teacherSkill.length === 0 ? (
-          <div className="p-4 text-center rounded-xl bg-gray-50 border-2 border-dashed border-gray-200">
-            <HiOutlineClipboardList className="mx-auto size-8 text-gray-400 mb-2" />
-            <p className="text-gray-500">No skills added yet</p>
+          <div className="p-4 text-center rounded-xl bg-[#3E98C7]/5 border border-dashed border-[#3E98C7]/25">
+            <HiOutlineClipboardDocumentList className="mx-auto size-8 text-[#3E98C7]/60 mb-2" />
+            <p className="text-[#3E98C7]">No skills added yet</p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-3">
             {teacherSkill.map((skill, index) => (
               <div
                 key={index}
-                className="flex items-center bg-[#F0F9FF] text-[#2A6476] px-4 py-2 rounded-full border border-[#D4EEFC] hover:border-[#3E98C7]/40 transition-colors"
+                className="flex items-center bg-[#3E98C7]/10 text-[#3E98C7] px-4 py-2 rounded-full border-2 border-[#3E98C7]/40 hover:border-[#3E98C7]/60 hover:bg-[#3E98C7]/20 transition-all transform hover:scale-105"
               >
-                <HiCheckBadge className="size-5 mr-2 text-[#3E98C7]" />
+                <HiOutlineCheckBadge className="size-5 mr-2 text-[#3E98C7]" />
                 <span className="text-sm font-medium">{skill.skill.name}</span>
                 <button
                   onClick={() => handleRemoveSelectedSkill(skill)}
-                  className="ml-2 text-gray-400 hover:text-red-500 rounded-full p-1 transition-colors"
+                  className="ml-2 text-gray-400 hover:text-red-500 rounded-full p-1 transition-all transform hover:scale-110"
                 >
-                  <HiXCircle className="size-5" />
+                  <HiOutlineXMark className="size-5" />
                 </button>
               </div>
             ))}

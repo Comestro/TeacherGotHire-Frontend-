@@ -9,9 +9,9 @@ import {
   delEducationProfile,
   resetError,
 } from "../../../features/jobProfileSlice";
-import { HiOutlineAcademicCap, HiOutlineTrash, HiPencil } from "react-icons/hi";
-import { IoMdAddCircleOutline } from "react-icons/io";
-import { IoClose } from "react-icons/io5";
+import { HiOutlineAcademicCap, HiOutlineTrash, HiOutlinePencil, HiOutlineBookOpen, HiOutlinePresentationChartBar, HiOutlineClipboard } from "react-icons/hi";
+import { HiOutlinePlusCircle, HiOutlineXMark, HiOutlineXCircle } from "react-icons/hi2";
+import { HiOutlineCheck } from "react-icons/hi";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -125,8 +125,13 @@ const Education = () => {
   // Add handler for adding subject with marks
   const handleAddSubject = () => {
     if (subjectInput.name && subjectInput.marks) {
-      setSelectedSubjects(prev => [...prev, { ...subjectInput }]);
-      setSubjectInput({ name: '', marks: '' }); // Reset input
+      const percentage = parseFloat(subjectInput.marks);
+      if (percentage >= 0 && percentage <= 100) {
+        setSelectedSubjects(prev => [...prev, { ...subjectInput }]);
+        setSubjectInput({ name: '', marks: '' }); // Reset input
+      } else {
+        toast.error("Percentage must be between 0 and 100 / प्रतिशत 0 से 100 के बीच होना चाहिए");
+      }
     }
   };
 
@@ -369,7 +374,7 @@ const Education = () => {
   };
 
   return (
-    <div className="px-2 sm:px-4 lg:px-6 mt-4 sm:mt-8 py-4 sm:py-6 rounded-xl bg-white border border-gray-200">
+    <div className="px-2 sm:px-4 lg:px-6 mt-4 sm:mt-8 py-4 sm:py-6 rounded-2xl bg-white border border-gray-100">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -385,9 +390,10 @@ const Education = () => {
       />
       {/* Enhanced Header */}
       {loading && <Loader />}
-      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-[#3E98C7]/15">
         <div className="mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] mb-1 flex items-center gap-2">
+            <HiOutlineAcademicCap className="text-2xl" />
             Education Background
           </h2>
           <p className="text-xs sm:text-sm text-gray-500">
@@ -396,13 +402,13 @@ const Education = () => {
         </div>
         {!isEditing && (
           <button
-            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] transition-colors rounded-lg shadow-sm hover:shadow-md w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] transition-all rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 w-full sm:w-auto"
             onClick={() => {
               reset();
               setIsEditing(true);
             }}
           >
-            <IoMdAddCircleOutline className="size-4 sm:size-5" />
+            <HiOutlinePlusCircle className="size-4 sm:size-5" />
             <span className="whitespace-nowrap">Add Education</span>
           </button>
         )}
@@ -410,9 +416,9 @@ const Education = () => {
 
       {/* No Data State */}
       {educationData.length < 1 && !isEditing && (
-        <div className="p-4 sm:p-6 text-center rounded-xl bg-gray-50 border-2 border-dashed border-gray-200">
-          <HiOutlineAcademicCap className="mx-auto size-10 sm:size-12 text-gray-400 mb-2 sm:mb-3" />
-          <h3 className="text-gray-500 font-medium text-sm sm:text-base">No education added yet</h3>
+        <div className="p-4 sm:p-6 text-center rounded-xl bg-[#3E98C7]/5 border border-dashed border-[#3E98C7]/25">
+          <HiOutlineAcademicCap className="mx-auto size-10 sm:size-12 text-[#3E98C7]/60 mb-2 sm:mb-3" />
+          <h3 className="text-[#3E98C7] font-medium text-sm sm:text-base">No education added yet</h3>
           <p className="text-xs sm:text-sm text-gray-400 mt-1">
             Click 'Add Education' to get started
           </p>
@@ -425,7 +431,7 @@ const Education = () => {
           {/* Mobile Cards View */}
           <div className="block lg:hidden space-y-4">
             {getSortedEducationData(educationData).map((education, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div key={index} className="bg-[#3E98C7]/5 rounded-xl p-4 border border-[#3E98C7]/20 hover:border-[#3E98C7]/30 hover:shadow-md transition-all">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 text-sm">
@@ -444,13 +450,13 @@ const Education = () => {
                         setIsEditing(true);
                         setEditingRowIndex(index);
                       }}
-                      className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                      className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
                     >
-                      <HiPencil className="size-4" />
+                      <HiOutlinePencil className="size-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(index)}
-                      className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                      className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
                     >
                       <HiOutlineTrash className="size-4" />
                     </button>
@@ -487,17 +493,17 @@ const Education = () => {
                   {education.subjects && education.subjects.length > 0 && (
                     <div>
                       <span className="text-gray-500">Subjects:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="flex flex-wrap gap-2 mt-1">
                         {education.subjects.map((subject, idx) => (
                           <div 
                             key={idx} 
-                            className="flex items-center justify-between px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                            className="flex items-center justify-between px-3 py-2 bg-white/80 border border-[#3E98C7]/20 rounded-lg min-w-[100px] shadow-sm"
                           >
-                            <span className="text-xs font-semibold text-gray-800">
+                            <span className="text-xs font-semibold text-[#3E98C7] mr-2">
                               {subject.name}
                             </span>
-                            <span className="text-xs font-bold text-blue-600 ml-1">
-                              {subject.marks}
+                            <span className="text-xs font-bold text-white bg-[#3E98C7] px-2 py-1 rounded-full">
+                              {subject.marks}%
                             </span>
                           </div>
                         ))}
@@ -512,7 +518,7 @@ const Education = () => {
           {/* Desktop Table View */}
           <div className="hidden lg:block overflow-x-auto">
             <table className="w-full border-collapse">
-              <thead className="bg-gray-50">
+              <thead className="bg-[#3E98C7]/8">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Course Name</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Stream/Degree</th>
@@ -535,7 +541,7 @@ const Education = () => {
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
                       {education.stream_or_degree ? (
-                        <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 rounded-full text-xs font-semibold">
+                        <span className="inline-block px-3 py-1 bg-[#3E98C7]/15 text-[#3E98C7] rounded-full text-xs font-semibold">
                           {education.stream_or_degree}
                         </span>
                       ) : (
@@ -557,18 +563,18 @@ const Education = () => {
                       {education.board_or_university || "N/A"}
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
-                      <div className="flex flex-col gap-1.5 max-w-xs">
+                      <div className="flex flex-col gap-2 max-w-xs">
                         {education.subjects && education.subjects.length > 0 ? (
                           education.subjects.map((subject, idx) => (
                             <div 
                               key={idx} 
-                              className="flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                              className="flex items-center justify-between px-3 py-2 bg-white/90 border border-[#3E98C7]/20 rounded-lg min-w-[120px] shadow-sm"
                             >
-                              <span className="text-xs font-semibold text-gray-800">
+                              <span className="text-xs font-semibold text-[#3E98C7]">
                                 {subject.name}
                               </span>
-                              <span className="text-xs font-bold text-blue-600 ml-2">
-                                {subject.marks} marks
+                              <span className="text-xs font-bold text-white bg-[#3E98C7] px-2 py-1 rounded-full ml-2">
+                                {subject.marks}%
                               </span>
                             </div>
                           ))
@@ -588,13 +594,13 @@ const Education = () => {
                             setIsEditing(true);
                             setEditingRowIndex(index);
                           }}
-                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
                         >
-                          <HiPencil className="size-4" />
+                          <HiOutlinePencil className="size-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(index)}
-                          className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                          className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
                         >
                           <HiOutlineTrash className="size-4" />
                         </button>
@@ -612,12 +618,12 @@ const Education = () => {
       {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-3 sm:p-6 rounded-xl border border-gray-200"
+          className="bg-white p-3 sm:p-6 rounded-2xl border border-[#3E98C7]/15"
         >
           {/* Step 1: Select Qualification Level */}
-          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-[#3E98C7]/5 rounded-xl border border-[#3E98C7]/20">
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <span className="text-2xl sm:text-3xl">🎓</span>
+              <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-[#3E98C7]" />
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 1: Select Qualification Level</h3>
                 <p className="text-xs sm:text-sm text-gray-600">Choose your education level / शिक्षा स्तर चुनें</p>
@@ -627,7 +633,7 @@ const Education = () => {
             <select
               value={selectedQualification}
               onChange={handleQualificationChange}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm sm:text-base font-medium"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm sm:text-base font-medium"
             >
               <option value="" disabled>
                 Select Qualification Level / योग्यता स्तर चुनें
@@ -663,9 +669,9 @@ const Education = () => {
             <>
               {/* Step 2: Stream/Degree Type Selection (for Intermediate, Bachelor, Master) */}
               {selectedQualification === "Intermediate" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 animate-fadeIn">
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-green-50/50 rounded-xl border border-green-200/60 animate-fadeIn">
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <span className="text-2xl sm:text-3xl">📚</span>
+                    <HiOutlineBookOpen className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Stream</h3>
                       <p className="text-xs sm:text-sm text-gray-600">Choose your intermediate stream / अपनी स्ट्रीम चुनें</p>
@@ -675,7 +681,7 @@ const Education = () => {
                   <select
                     value={selectedStream}
                     onChange={(e) => setSelectedStream(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-sm sm:text-base font-medium"
                     required
                   >
                     <option value="">Select Stream / स्ट्रीम चुनें</option>
@@ -689,9 +695,9 @@ const Education = () => {
               )}
 
               {selectedQualification === "Bachelor" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 animate-fadeIn">
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-purple-50/50 rounded-xl border border-purple-200/60 animate-fadeIn">
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <span className="text-2xl sm:text-3xl">🎯</span>
+                    <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
                       <p className="text-xs sm:text-sm text-gray-600">Choose your bachelor's degree / स्नातक डिग्री चुनें</p>
@@ -701,7 +707,7 @@ const Education = () => {
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm sm:text-base font-medium"
                     required
                   >
                     <option value="">Select Degree / डिग्री चुनें</option>
@@ -716,7 +722,7 @@ const Education = () => {
                     <input
                       type="text"
                       placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
-                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
                       {...register("customDegree", { 
                         required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
                       })}
@@ -726,9 +732,9 @@ const Education = () => {
               )}
 
               {selectedQualification === "Master" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 animate-fadeIn">
+                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-orange-50/50 rounded-xl border border-orange-200/60 animate-fadeIn">
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <span className="text-2xl sm:text-3xl">🏆</span>
+                    <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600" />
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
                       <p className="text-xs sm:text-sm text-gray-600">Choose your master's degree / मास्टर डिग्री चुनें</p>
@@ -738,7 +744,7 @@ const Education = () => {
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm sm:text-base font-medium"
                     required
                   >
                     <option value="">Select Degree / डिग्री चुनें</option>
@@ -753,7 +759,7 @@ const Education = () => {
                     <input
                       type="text"
                       placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
-                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
+                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
                       {...register("customDegree", { 
                         required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
                       })}
@@ -763,9 +769,9 @@ const Education = () => {
               )}
 
               {/* Step 3: Basic Information */}
-              <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border-2 border-teal-200 animate-fadeIn">
+              <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-teal-50/50 rounded-xl border border-teal-200/60 animate-fadeIn">
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <span className="text-2xl sm:text-3xl">📝</span>
+                  <HiOutlineClipboard className="w-7 h-7 sm:w-8 sm:h-8 text-teal-600" />
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-gray-900">
                       Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "3" : "2"}: Basic Information
@@ -782,7 +788,7 @@ const Education = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="University Name / विश्वविद्यालय का नाम"
+                  placeholder="Institution Name / संस्थान का नाम"
                   className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
                   {...register("institution", {
                     required: "Institution is required / संस्थान आवश्यक है",
@@ -886,15 +892,15 @@ const Education = () => {
           </div>
           </div>
 
-          {/* Step 4: Add Subjects with Marks */}
-          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-200 animate-fadeIn">
+          {/* Step 4: Add Subjects with Percentage */}
+          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-[#3E98C7]/8 rounded-xl border border-[#3E98C7]/25 animate-fadeIn">
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <span className="text-2xl sm:text-3xl">📊</span>
+              <HiOutlinePresentationChartBar className="w-7 h-7 sm:w-8 sm:h-8 text-[#3E98C7]" />
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Add Subjects & Marks
+                  Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Add Subjects & Percentage
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600">Add subjects with their marks / विषय और अंक जोड़ें</p>
+                <p className="text-xs sm:text-sm text-gray-600">Add subjects with their percentage / विषय और प्रतिशत जोड़ें</p>
               </div>
             </div>
             
@@ -912,7 +918,7 @@ const Education = () => {
                           setSubjectInput({ name: subject, marks: '' });
                         }
                       }}
-                      className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-white border-2 border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-all"
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-all"
                     >
                       {subject}
                     </button>
@@ -928,20 +934,22 @@ const Education = () => {
                   placeholder="Subject Name / विषय का नाम"
                   value={subjectInput.name}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
-                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm sm:text-base"
+                  className="md:w-3/6 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] text-sm sm:text-base"
                 />
                 <input
                   type="number"
-                  placeholder="Marks / अंक"
+                  placeholder="Percentage % / प्रतिशत"
                   value={subjectInput.marks}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
-                  className="w-full sm:w-32 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm sm:text-base"
+                  min="0"
+                  max="100"
+                  className="md:w-2/6 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] text-sm sm:text-base"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubject}
                   disabled={!subjectInput.name || !subjectInput.marks}
-                  className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-medium rounded-lg hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm sm:text-base"
+                  className="md:w-1/6 sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 text-sm sm:text-base"
                 >
                   Add / जोड़ें
                 </button>
@@ -951,24 +959,24 @@ const Education = () => {
               {selectedSubjects.length > 0 && (
                 <div className="mt-3 sm:mt-4">
                   <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Added Subjects / जोड़े गए विषय ({selectedSubjects.length}):</p>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     {selectedSubjects.map((subject, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border-2 border-yellow-300 rounded-lg shadow-sm"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white/90 border border-[#3E98C7]/25 rounded-lg shadow-sm hover:shadow-md transition-all"
                       >
-                        <span className="text-xs sm:text-sm font-medium text-gray-800">
+                        <span className="text-xs sm:text-sm font-semibold text-[#3E98C7]">
                           {subject.name}
                         </span>
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 sm:px-2 py-0.5 rounded-full font-semibold">
-                          {subject.marks}
+                        <span className="text-xs bg-[#3E98C7] text-white px-2 py-1 rounded-full font-bold">
+                          {subject.marks}%
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSubject(index)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all transform hover:scale-110"
                         >
-                          <IoClose className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <HiOutlineXMark className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       </div>
                     ))}
@@ -981,13 +989,16 @@ const Education = () => {
           )}
 
           {/* Form Actions */}
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-gray-200 flex flex-col sm:flex-row-reverse sm:justify-start gap-2 sm:gap-3">
+          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-[#3E98C7]/15 flex flex-col sm:flex-row-reverse sm:justify-start gap-2 sm:gap-3">
             <button
               type="submit"
               disabled={!selectedQualification}
-              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white font-bold text-sm sm:text-base rounded-xl shadow-md hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 order-2 sm:order-1"
+              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-bold text-sm sm:text-base rounded-xl shadow-md hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 order-2 sm:order-1"
             >
-              💾 Save Education / शिक्षा सहेजें
+              <div className="flex items-center justify-center gap-2">
+                <HiOutlineCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Save Education / शिक्षा सहेजें</span>
+              </div>
             </button>
             <button
               type="button"
@@ -1000,9 +1011,12 @@ const Education = () => {
                 reset();
                 dispatch(resetError());
               }}
-              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-[#3E98C7] text-[#3E98C7] font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm sm:text-base order-1 sm:order-2"
+              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 border border-[#3E98C7] text-[#3E98C7] hover:bg-[#3E98C7]/10 font-semibold rounded-xl transition-all text-sm sm:text-base order-1 sm:order-2"
             >
-              ✖ Cancel / रद्द करें
+              <div className="flex items-center justify-center gap-2">
+                <HiOutlineXCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Cancel / रद्द करें</span>
+              </div>
             </button>
           </div>
         </form>

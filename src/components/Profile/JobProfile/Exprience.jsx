@@ -9,8 +9,8 @@ import {
   postExprienceProfile,
   delExprienceProfile,
 } from "../../../features/jobProfileSlice";
-import { IoMdAddCircleOutline } from "react-icons/io";
-import { HiOutlineBriefcase, HiOutlineTrash, HiPencil } from "react-icons/hi";
+import { HiOutlinePlusCircle } from "react-icons/hi2";
+import { HiOutlineBriefcase, HiOutlineTrash, HiOutlinePencil } from "react-icons/hi";
 import moment from "moment";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
@@ -141,7 +141,7 @@ const Experience = () => {
   };
 
   return (
-    <div className="mt-8 py-6 rounded-xl bg-white border border-gray-200">
+    <div className="mt-8 py-6 rounded-xl bg-white border border-gray-200 shadow-lg">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -157,25 +157,26 @@ const Experience = () => {
       />
       {/* Enhanced Header */}
       {loading && (<Loader/>)}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b-2 border-[#3E98C7]/20 px-6">
         <div className="mb-3 sm:mb-0">
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] mb-1 flex items-center gap-2">
+            <HiOutlineBriefcase className="text-2xl" />
             Professional Experience
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             Manage your teaching positions and institutional experience
           </p>
         </div>
         {!isEditing && (
           <button
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] transition-colors rounded-lg shadow-sm hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] transition-all rounded-lg shadow-md hover:shadow-xl transform hover:scale-105"
             onClick={() => {
               reset();
               setIsEditing(true);
               setEditingIndex(null);
             }}
           >
-            <IoMdAddCircleOutline className="size-5" />
+            <HiOutlinePlusCircle className="size-5" />
             Add Experience
           </button>
         )}
@@ -183,9 +184,9 @@ const Experience = () => {
 
       {/* No Data State */}
       {experienceData.length < 1 && !isEditing && (
-        <div className="p-6 text-center rounded-xl bg-gray-50 border-2 border-dashed border-gray-200">
-          <HiOutlineBriefcase className="mx-auto size-12 text-gray-400 mb-3" />
-          <h3 className="text-gray-500 font-medium">No experience added yet</h3>
+        <div className="p-6 text-center rounded-xl bg-[#3E98C7]/5 border-2 border-dashed border-[#3E98C7]/30 mx-6">
+          <HiOutlineBriefcase className="mx-auto size-12 text-[#3E98C7]/60 mb-3" />
+          <h3 className="text-[#3E98C7] font-medium">No experience added yet</h3>
           <p className="text-sm text-gray-400 mt-1">
             Click 'Add Experience' to get started
           </p>
@@ -194,23 +195,23 @@ const Experience = () => {
 
       {/* Experience List */}
       {!isEditing ? (
-        <div className="space-y-4">
+        <div className="space-y-4 px-6">
           {experienceData.map((experience, index) => (
             <div
               key={index}
-              className="group relative p-5 rounded-xl border border-gray-200 hover:border-[#3E98C7]/30 transition-all duration-200 bg-white hover:shadow-sm"
+              className="group relative p-5 rounded-xl border-2 border-[#3E98C7]/20 hover:border-[#3E98C7]/40 transition-all duration-200 bg-white hover:shadow-lg"
             >
               {/* Action Buttons */}
               <div className="absolute bottom-2 right-4 flex gap-2 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => handleEdit(index)}
-                  className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-gray-100"
+                  className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
                 >
-                  <HiPencil className="size-5" />
+                  <HiOutlinePencil className="size-5" />
                 </button>
                 <button
                   onClick={() => handleDelete(index)}
-                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-gray-100"
+                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
                 >
                   <HiOutlineTrash className="size-5" />
                 </button>
@@ -256,7 +257,7 @@ const Experience = () => {
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-6 rounded-lg space-y-4 border mb-4"
+          className="bg-white p-6 rounded-xl space-y-6 border-2 border-[#3E98C7]/20 mb-4 mx-6 shadow-lg"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Institution Field */}
@@ -267,7 +268,7 @@ const Experience = () => {
               <input
                 type="text"
                 placeholder="Enter Institution"
-                className="w-full border-b border-gray-300 p-2 focus:outline-none focus:ring-blue-400"
+                className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 {...register("institution", {
                   required: "Institution is required",
                 })}
@@ -293,7 +294,7 @@ const Experience = () => {
               </label>
               <select
                 {...register("job_role", { required: "Job Role is required" })}
-                className="border-b border-gray-300 px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="border-2 border-gray-300 rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 defaultValue=""
               >
                 <option value="" disabled>
@@ -369,10 +370,10 @@ const Experience = () => {
                   type="date"
                   id="end_date"
                   name="end_date"
-                  className={`w-full px-4 py-2.5 border-b border-gray-300 focus:ring-2 ${
+                  className={`w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 ${
                     isEndDateDisabled
                       ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                      : "bg-white text-gray-700 focus:ring-[#3E98C7]"
+                      : "bg-white text-gray-700 focus:ring-[#3E98C7] focus:border-[#3E98C7]"
                   } transition-colors`}
                   {...register("end_date")}
                   disabled={isEndDateDisabled}
@@ -447,17 +448,17 @@ const Experience = () => {
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-4 items-center mt-2">
+          <div className="flex justify-end gap-4 items-center mt-6 pt-4 border-t-2 border-[#3E98C7]/20">
             <button
               type="button"
-              className="border border-[#3E98C7] text-[#3E98C7] py-1.5 px-5 rounded-lg"
+              className="border-2 border-[#3E98C7] text-[#3E98C7] py-2 px-6 rounded-lg hover:bg-[#3E98C7]/10 transition-all transform hover:scale-105"
               onClick={handleCancel}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all"
+              className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-medium rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
             >
               Save
             </button>
