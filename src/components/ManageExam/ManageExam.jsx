@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { fetchLevel } from '../../services/examServices';
-import { getExam } from '../../services/adminManageExam';
+import { deleteExam, getExam } from '../../services/adminManageExam';
 import { useSelector } from 'react-redux';
 import { FiPlus, FiBook, FiFileText, FiSearch, FiFilter, FiX, FiLayers, FiBookOpen } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
@@ -163,9 +163,10 @@ const ManageExam = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (examId) => {
+  const handleDelete = async (examId) => {
     if (window.confirm('Are you sure you want to delete this exam set?')) {
       setExamSets(prev => prev.filter(exam => exam.id !== examId));
+      let data = await deleteExam(examId);
       toast.success('Exam deleted successfully!');
     }
   };
