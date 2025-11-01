@@ -135,7 +135,7 @@ const HeroSection = () => {
       <div className="relative overflow-hidden">
         {/* Background Images */}
         <div
-          className="hidden md:block absolute inset-0 w-full h-full bg-cover bg-center"
+          className="hidden md:block absolute z-0 inset-0 w-full h-full bg-cover bg-center"
           style={{ backgroundImage: "url('Home3.png')" }}
         ></div>
         <img
@@ -145,7 +145,7 @@ const HeroSection = () => {
         />
 
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="pt-24 md:pt-40 pb-16 md:pb-24">
             <div className="text-center max-w-4xl mx-auto">
               {/* Heading */}
@@ -153,7 +153,7 @@ const HeroSection = () => {
                 <span className="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">
                   Private Teacher
                 </span>
-                <br />
+                <br/>
                 Provider Institute
               </h1>
 
@@ -200,7 +200,7 @@ const HeroSection = () => {
       </div>
 
       {/* Highlight Steps Section */}
-      <div className="relative z-10 bg-gradient-to-b from-teal-50 to-white py-16 md:py-24">
+      <div className="relative z-0 bg-gradient-to-b from-teal-50 to-white py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {highlightItems.map((item) => (

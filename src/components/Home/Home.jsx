@@ -8,8 +8,6 @@ import DetailSection from "../HomePage/DetailSection";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "./components/HeroSection";
 
-// New Teacher Instruction Section Component
-
 const Home = () => {
   const navigate = useNavigate();
 
