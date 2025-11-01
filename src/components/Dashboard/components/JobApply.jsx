@@ -18,18 +18,11 @@ const JobApply = () => {
   console.log("eligibilityData", eligibilityData);
   console.log("jobApply", jobApply);
 
-  // Combine both qualified offline exams and interview data
-  const eligibleExams = eligibilityData ? [
-    ...(eligibilityData.qualified_offline_exams || []),
-    ...(eligibilityData.interview || [])
-  ].filter(exam => exam.eligible === true) : [];
+  // Extract eligible exams from the new response structure
+  const eligibleExams = eligibilityData?.qualified_list ? 
+    eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
 
-  // Remove duplicates based on subject_id and class_category_id
-  const uniqueEligibleExams = eligibleExams.filter((exam, index, self) =>
-    index === self.findIndex(e => 
-      e.subject_id === exam.subject_id && e.class_category_id === exam.class_category_id
-    )
-  );
+  console.log("eligibleExams", eligibleExams);
 
   // Function to handle location success callback
   const handleLocationSuccess = () => {
@@ -189,7 +182,7 @@ const JobApply = () => {
         <JobPrefrenceLocation onLocationSuccess={handleLocationSuccess} />
       </div>
 
-      {uniqueEligibleExams && uniqueEligibleExams.length > 0 ? (
+      {eligibleExams && eligibleExams.length > 0 ? (
         <>
           <div className="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 shadow-sm">
             <div className="flex items-start">
@@ -197,7 +190,7 @@ const JobApply = () => {
               <div>
                 <h3 className="font-bold text-lg mb-1">Eligible Subjects for Application</h3>
                 <p className="text-sm">
-                  Below are the subjects you're eligible to apply for based on your exam results.
+                  Below are the subjects you're eligible to apply for based on your qualification.
                 </p>
               </div>
             </div>
@@ -215,6 +208,9 @@ const JobApply = () => {
                       Class Category
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Eligibility Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Application Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -223,7 +219,7 @@ const JobApply = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {uniqueEligibleExams.map((exam, index) => {
+                  {eligibleExams.map((exam, index) => {
                     const subjectId = exam.subject_id;
                     const classCategoryId = exam.class_category_id;
                     const subjectName = exam.subject_name;
@@ -254,6 +250,11 @@ const JobApply = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {className}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            Eligible
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {applicationStatus ? (
@@ -301,7 +302,7 @@ const JobApply = () => {
               <h3 className="font-bold text-lg mb-1">No Eligible Subjects</h3>
               <p className="text-sm">
                 You don't have any eligible subjects to apply for at the moment. 
-                Please complete and pass the required exams to become eligible.
+                Please complete your qualifications to become eligible for job applications.
               </p>
             </div>
           </div>
