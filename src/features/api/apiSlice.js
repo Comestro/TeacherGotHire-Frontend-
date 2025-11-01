@@ -34,6 +34,17 @@ export const apiSlice = createApi({
         console.log('Centers response from RTK Query:', response);
         return response;
       },
+    }),
+    getApplyEligibility: builder.query({
+      query: () => '/api/self/apply-eligibility/',
+      transformResponse: (response) => {
+        console.log('Apply eligibility response from RTK Query:', response);
+        return response;
+      },
+      transformErrorResponse: (response) => {
+        console.error('Error fetching apply eligibility:', response);
+        return response;
+      },
     })
   }),
   
@@ -43,4 +54,4 @@ export const apiSlice = createApi({
 
 
 // Export the auto-generated hook
-export const { useGetCentersQuery,useGetJobsApplyDetailsQuery} = apiSlice;
+export const { useGetCentersQuery, useGetJobsApplyDetailsQuery, useGetApplyEligibilityQuery } = apiSlice;
