@@ -12,6 +12,7 @@ import axios from "axios";
 import { getPincodeUrl } from "../../../store/configue";
 import { IoLocationSharp } from "react-icons/io5";
 import { HiOutlineTrash, HiPencil } from "react-icons/hi";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { toast } from "react-toastify";
 
 const JobPrefrenceLocation = ({ onLocationSuccess }) => {
@@ -341,49 +342,64 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   return (
     <>
       {bothConditonCheck ? (
-        <div className="px-5 mt-5 ">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-xl font-bold  text-gray-600">
-              Job Preference Locations
-            </h2>
-            {!isFormVisible && (
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-text">
+                Job Preference Locations
+                <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी की पसंदीदा स्थान</span>
+              </h2>
+              <p className="text-sm text-secondary mt-1">
+                {jobLocations.length} of 5 locations added
+              </p>
+            </div>
+            {!isFormVisible && jobLocations.length < 5 && (
               <button
                 onClick={handleShowAddForm}
-                className="px-4 py-2 text-sm font-semibold text-white bg-[#3E98C7] rounded flex items-center gap-1"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary hover:opacity-90 transition-opacity"
+                aria-label="Add new location"
               >
-                Add
-                <IoLocationSharp className="size-4 mt-1" />
+                <IoLocationSharp className="h-5 w-5" aria-hidden="true" />
+                Add Location
               </button>
             )}
           </div>
           
           {jobLocations.length > 0 && !isFormVisible && (
-            <div className="px-5 gap-4 ">
+            <div className="space-y-3 mb-6">
               {jobLocations.map((location, index) => (
-                <div key={index} className=" p-4 transition-shadow border-b">
-                  <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-medium text-gray-700">
-                      {location.area}
-                    </h2>
-                    <div className="flex space-x-4">
+                <div key={index} className="p-5 border border-secondary/30 rounded-lg bg-white hover:border-primary/40 transition-colors">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 mb-2">
+                        <IoLocationSharp className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
+                        <h3 className="text-base font-semibold text-text">
+                          {location.area || 'Area not specified'}
+                        </h3>
+                      </div>
+                      <p className="text-sm text-secondary leading-relaxed">
+                        {location.block && `${location.block}, `}{location.city}, {location.state} - {location.pincode}
+                      </p>
+                      <p className="text-xs text-secondary mt-1">
+                        Post Office: {location.post_office}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleEdit(index)}
-                        className="text-gray-500 hover:text-gray-600"
+                        className="p-2 text-secondary hover:text-primary hover:bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-colors"
+                        aria-label={`Edit location ${location.area || 'unnamed'}`}
                       >
-                        <HiPencil className="h-6 w-6" />
+                        <HiPencil className="h-5 w-5" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDelete(index)}
-                        className="text-red-500 hover:text-red-600"
+                        className="p-2 text-error hover:text-error/80 hover:bg-error-light rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-colors"
+                        aria-label={`Delete location ${location.area || 'unnamed'}`}
                       >
-                        <HiOutlineTrash className="h-6 w-6" />
+                        <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
                       </button>
                     </div>
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    <p>
-                      {`${location.block}, ${location.city}, ${location.state},  ${location.pincode}, Postoffice: ${location.post_office}`}
-                    </p>
                   </div>
                 </div>
               ))}
@@ -391,49 +407,51 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           )}
           
           {jobLocations.length == 0 && !isFormVisible && (
-            <div className="text-center py-8 border bg-slate-50 border-gray-200 rounded-md mt-2">
-              <p className="text-gray-600 text-xl font-semibold">
-                You haven't added any job preference locations yet!
-              </p>
-              <p className="text-gray-500 mt-2">
-                Choose up to{" "}
-                <span className="font-bold text-[#3E98C7]">
-                  5 preferred locations
-                </span>{" "}
-                to find jobs tailored to your choices.
+            <div className="text-center py-12 border bg-background border-secondary/30 rounded-lg">
+              <IoLocationSharp className="h-16 w-16 text-secondary mx-auto mb-4" aria-hidden="true" />
+              <h3 className="text-text text-xl font-semibold mb-2">
+                No locations added yet
+                <span className="ml-2 text-secondary text-sm font-normal">/ कोई स्थान नहीं जोड़ा गया</span>
+              </h3>
+              <p className="text-secondary mt-2 max-w-md mx-auto">
+                Add up to <span className="font-semibold text-primary">5 preferred locations</span> to help us match you with relevant job opportunities in your desired areas.
               </p>
             </div>
           )}
 
           {/* Form section */}
           {isFormVisible && (
-            <div className="bg-white border border-gray-200 p-6 rounded-md">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">
-                {isEditing ? "Edit Location" : "Add New Location"}
-              </h3>
+            <div className="bg-white border border-secondary/30 p-6 rounded-lg">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-text">
+                  {isEditing ? 'Edit Location' : 'Add New Location'}
+                  <span className="ml-2 text-secondary text-sm font-normal">
+                    {isEditing ? '/ स्थान संपादित करें' : '/ नया स्थान जोड़ें'}
+                  </span>
+                </h3>
+                <p className="text-sm text-secondary mt-1">Fill in the location details below</p>
+              </div>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                   {/* Pincode */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Pincode <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Pincode <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
                       {...register("pincode", { required: true })}
                       onChange={handlePincodeChange}
-                      className={`w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7] ${
-                        fieldErrors.pincode ? 'border-red-500' : ''
-                      }`}
+                      className={`w-full px-3 py-2 border ${fieldErrors.pincode ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
                       placeholder="Enter pincode"
                     />
                     {errors.pincode && (
-                      <p className="text-red-500 text-xs mt-2">
+                      <p className="text-error text-xs mt-2" aria-live="polite">
                         Pincode is required.
                       </p>
                     )}
                     {fieldErrors.pincode && (
-                      <p className="text-red-500 text-xs mt-2">
+                      <p className="text-error text-xs mt-2" aria-live="polite">
                         {fieldErrors.pincode}
                       </p>
                     )}
@@ -441,7 +459,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
                   {/* State */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       State
                     </label>
                     <input
@@ -449,13 +467,13 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                       {...register("state")}
                       readOnly
                       placeholder="Auto Filled"
-                      className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                      className="w-full px-3 py-2 border border-secondary/30 rounded-md bg-background text-secondary focus:outline-none"
                     />
                   </div>
 
                   {/* District */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       District
                     </label>
                     <input
@@ -463,33 +481,31 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                       {...register("city")}
                       readOnly
                       placeholder="Auto Filled"
-                      className="w-full px-4 py-2 border-b text-gray-600 focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                      className="w-full px-3 py-2 border border-secondary/30 rounded-md bg-background text-secondary focus:outline-none"
                     />
                   </div>
 
                   {/* Block */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Block
                     </label>
                     <input
                       type="text"
                       {...register("block")}
-                      className="w-full px-4 py-2 border-b focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full px-3 py-2 border border-secondary/30 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="Enter block"
                     />
                   </div>
 
                   {/* Post Office */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Post Office <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Post Office <span className="text-error">*</span>
                     </label>
                     <select
                       {...register("post_office", { required: true })}
-                      className={`w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7] ${
-                        fieldErrors.post_office ? 'border-red-500' : ''
-                      }`}
+                      className={`w-full px-3 py-2 border ${fieldErrors.post_office ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
                     >
                       <option value="">Select a Post Office</option>
                       {postOffices.map((office, index) => (
@@ -499,12 +515,12 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                       ))}
                     </select>
                     {errors.post_office && (
-                      <p className="text-red-500 text-xs mt-2">
+                      <p className="text-error text-xs mt-2" aria-live="polite">
                         Post office selection is required.
                       </p>
                     )}
                     {fieldErrors.post_office && (
-                      <p className="text-red-500 text-xs mt-2">
+                      <p className="text-error text-xs mt-2" aria-live="polite">
                         {fieldErrors.post_office}
                       </p>
                     )}
@@ -512,38 +528,37 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
                   {/* Area */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                    <label className="block text-sm font-medium text-text mb-2">
                       Area
                     </label>
                     <input
                       type="text"
                       {...register("area")}
                       onChange={handleAreaChange}
-                      className={`w-full px-4 py-2 border-b focus:outline-none focus:ring-[#3E98C7] focus:border-[#3E98C7] ${
-                        fieldErrors.area ? 'border-red-500 border-2' : ''
-                      }`}
+                      className={`w-full px-3 py-2 border ${fieldErrors.area ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
                       placeholder="Enter area"
                     />
                     {fieldErrors.area && (
-                      <p className="text-red-500 text-sm mt-2 font-medium">
-                        ⚠️ {fieldErrors.area}
-                      </p>
+                      <div className="flex items-start gap-2 text-error text-sm mt-2" aria-live="polite">
+                        <HiOutlineExclamationTriangle className="h-4 w-4 mt-0.5" aria-hidden="true" />
+                        <span>{fieldErrors.area}</span>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-end items-center space-x-4">
+                <div className="flex justify-end items-center gap-3 pt-4">
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg shadow "
+                    className="px-6 py-2.5 text-sm font-medium text-secondary border border-secondary/40 rounded-md bg-transparent hover:bg-background focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-secondary transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 text-sm font-medium text-white bg-[#3E98C7] rounded-lg shadow focus:ring-4 focus:ring-teal-300"
+                    className="px-6 py-2.5 text-sm font-medium text-white bg-primary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary hover:opacity-90 transition-opacity"
                   >
                     {isEditing ? "Update Location" : "Add Location"}
                   </button>
@@ -554,8 +569,11 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
           {/* Display API errors */}
           {apiError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-600 text-sm">{apiError}</p>
+            <div className="mt-4 p-4 bg-error-light border border-error/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <HiOutlineExclamationTriangle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-error text-sm" aria-live="polite">{apiError}</p>
+              </div>
             </div>
           )}
         </div>

@@ -1,28 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { postJobApply } from "../../../features/examQuesSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation";
 import { useGetJobsApplyDetailsQuery, useGetApplyEligibilityQuery } from "../../../features/api/apiSlice";
+import {
+  HiOutlineExclamationTriangle,
+  HiOutlineInformationCircle,
+  HiOutlineXCircle,
+  HiOutlineCheckCircle,
+  HiOutlineMapPin,
+} from "react-icons/hi2";
 
 const JobApply = () => {
   const dispatch = useDispatch();
-  const [appliedSubjects, setAppliedSubjects] = useState([]);
   const [showLocationFirst, setShowLocationFirst] = useState(false);
 
   // Get eligibility data using the new endpoint
   const { data: eligibilityData, isLoading: isEligibilityLoading, error: eligibilityError } = useGetApplyEligibilityQuery();
   const { data: jobApply, isLoading: isJobApplyLoading, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
 
-  console.log("eligibilityData", eligibilityData);
-  console.log("jobApply", jobApply);
+  // console.log("eligibilityData", eligibilityData);
+  // console.log("jobApply", jobApply);
 
   // Extract eligible exams from the new response structure
   const eligibleExams = eligibilityData?.qualified_list ? 
     eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
 
-  console.log("eligibleExams", eligibleExams);
+  // console.log("eligibleExams", eligibleExams);
 
   // Function to handle location success callback
   const handleLocationSuccess = () => {
@@ -130,9 +136,10 @@ const JobApply = () => {
 
   if (isEligibilityLoading || isJobApplyLoading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col justify-center items-center h-64 gap-3">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-transparent border-b-primary"></div>
+          <p className="text-sm text-secondary">Loading job applications...</p>
         </div>
       </div>
     );
@@ -140,15 +147,13 @@ const JobApply = () => {
 
   if (eligibilityError) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="p-4 bg-red-50 text-red-800 rounded-lg border border-red-200 shadow-sm">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-5 bg-error-light text-error-text rounded-lg border border-error/30">
           <div className="flex items-start">
-            <div className="flex-shrink-0 text-red-500 text-xl mr-3">❌</div>
+            <HiOutlineXCircle className="mt-0.5 mr-3 h-6 w-6 text-error flex-shrink-0" aria-hidden="true" />
             <div>
-              <h3 className="font-bold text-lg mb-1">Error Loading Data</h3>
-              <p className="text-sm">
-                Unable to load eligibility data. Please try again later.
-              </p>
+              <h3 className="font-semibold text-base mb-1">Error loading data</h3>
+              <p className="text-sm">Unable to load eligibility data. Please try again later.</p>
             </div>
           </div>
         </div>
@@ -157,68 +162,71 @@ const JobApply = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Page header */}
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold text-text">
+          Job Applications
+          <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी आवेदन</span>
+        </h1>
+        <p className="mt-2 text-sm text-secondary">Apply to eligible subjects after setting your job preference location.</p>
+      </header>
       {/* Job Preference Location Warning */}
       {showLocationFirst && (
-        <div className="mb-6 p-4 bg-orange-50 text-orange-800 rounded-lg border border-orange-200 shadow-sm">
+        <div className="mb-6 p-5 bg-warning-light text-warning rounded-lg border border-warning/30 animate-pulse">
           <div className="flex items-start">
-            <div className="flex-shrink-0 text-orange-500 text-xl mr-3">⚠️</div>
+            <HiOutlineExclamationTriangle className="mt-0.5 mr-3 h-6 w-6 text-warning flex-shrink-0" aria-hidden="true" />
             <div>
-              <h3 className="font-bold text-lg mb-1">Job Preference Required</h3>
-              <p className="text-sm">
-                Please set your job preference location below before applying for any position.
-              </p>
+              <h3 className="font-semibold text-base mb-1">Job preference required</h3>
+              <p className="text-sm">Please set your job preference location below before applying for any position.</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Job Preference Location Component - Move to top */}
-      <div id="job-preference-location" className={`mb-6 ${showLocationFirst ? 'ring-2 ring-orange-300 rounded-lg p-4' : ''}`}>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Job Preference Location</h2>
-          <p className="text-sm text-gray-600">Set your preferred job locations before applying</p>
-        </div>
+      <div id="job-preference-location" className={`mb-8 border py-5  rounded-lg p-4`}>
         <JobPrefrenceLocation onLocationSuccess={handleLocationSuccess} />
       </div>
 
       {eligibleExams && eligibleExams.length > 0 ? (
-        <>
-          <div className="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 shadow-sm">
+        <div className="border p-4 rounded-lg">
+          <div className="mb-6 p-5 bg-background text-text rounded-lg ">
             <div className="flex items-start">
-              <div className="flex-shrink-0 text-blue-500 text-xl mr-3">📊</div>
+              <HiOutlineInformationCircle className="mt-0.5 mr-3 h-6 w-6 text-primary flex-shrink-0" aria-hidden="true" />
               <div>
-                <h3 className="font-bold text-lg mb-1">Eligible Subjects for Application</h3>
-                <p className="text-sm">
-                  Below are the subjects you're eligible to apply for based on your qualification.
-                </p>
+                <h3 className="font-semibold text-base mb-1">Eligible subjects for application
+                  <span className="ml-2 text-secondary text-sm font-normal">/ आवेदन हेतु पात्र विषय</span>
+                </h3>
+                <p className="text-sm text-secondary">Below are the subjects you're eligible to apply for based on your qualification.</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+          <div className="bg-white rounded-lg overflow-hidden border border-secondary/30">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-secondary/20">
+                <caption className="sr-only">Eligible subjects list</caption>
+                <thead className="bg-background">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Subject
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Class Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Eligibility Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Application Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-secondary/20">
                   {eligibleExams.map((exam, index) => {
                     const subjectId = exam.subject_id;
                     const classCategoryId = exam.class_category_id;
@@ -243,31 +251,33 @@ const JobApply = () => {
                     return (
                       <tr
                         key={`${subjectId}-${classCategoryId}-${index}`}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-background/50 transition-colors"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text">
                           {subjectName}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                           {className}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-success-light text-success rounded-full text-xs font-medium">
+                            <HiOutlineCheckCircle className="h-4 w-4" aria-hidden="true" />
                             Eligible
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                           {applicationStatus ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-success-light text-success rounded-full text-xs font-medium">
+                              <HiOutlineCheckCircle className="h-4 w-4" aria-hidden="true" />
                               Applied
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
+                            <span className="px-2 py-1 bg-background text-secondary rounded-full text-xs font-medium border border-secondary/40">
                               Not Applied
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                           <button
                             onClick={() =>
                               handleApply(
@@ -277,10 +287,11 @@ const JobApply = () => {
                                 applicationStatus
                               )
                             }
-                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            aria-label={`${applicationStatus ? 'Revoke application' : 'Apply to'} ${subjectName}`}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                               applicationStatus
-                                ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                                : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                                ? 'bg-error hover:opacity-90 focus:ring-error'
+                                : 'bg-primary hover:opacity-90 focus:ring-primary'
                             }`}
                           >
                             {applicationStatus ? 'Revoke Apply' : 'Apply'}
@@ -293,18 +304,15 @@ const JobApply = () => {
               </table>
             </div>
           </div>
-        </>
+        </div>
       ) : (
-        <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200 shadow-sm">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 text-yellow-500 text-xl mr-3">ℹ️</div>
-            <div>
-              <h3 className="font-bold text-lg mb-1">No Eligible Subjects</h3>
-              <p className="text-sm">
-                You don't have any eligible subjects to apply for at the moment. 
-                Please complete your qualifications to become eligible for job applications.
-              </p>
-            </div>
+        <div className="p-6 bg-background rounded-lg border border-secondary/30 text-center">
+          <div className="flex flex-col items-center max-w-md mx-auto">
+            <HiOutlineInformationCircle className="h-12 w-12 text-secondary mb-4" aria-hidden="true" />
+            <h3 className="font-semibold text-lg mb-2 text-text">No eligible subjects
+              <span className="ml-2 text-secondary text-sm font-normal">/ कोई पात्र विषय नहीं</span>
+            </h3>
+            <p className="text-sm text-secondary">You don't have any eligible subjects to apply for at the moment. Please complete your qualifications to become eligible for job applications.</p>
           </div>
         </div>
       )}

@@ -242,7 +242,7 @@ function TeacherDashboard() {
         {/* Interview eligibility and status banner */}
         <div className="px-4 sm:px-6 pt-4">
           {shouldShowInterviewSection && (
-            <div className="rounded-xl border border-primary bg-primary p-4 sm:p-6 mb-4">
+            <div className="rounded-xl border border-success bg-green-100 p-4 sm:p-6 mb-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   {hasScheduledInterview ? (
@@ -297,9 +297,9 @@ function TeacherDashboard() {
                     </div>
                   ) : isEligibleForInterview ? (
                     <div>
-                      <div className="text-sm font-semibold text-primary">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
+                      <div className="text-xl font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
                       <p className="mt-1 text-gray-700">
-                        <span className="font-medium">Level 2 पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
+                        <span className="font-sm">Level 2 पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
                         <br className="hidden sm:block" />
                         <span className="text-gray-600">Level 2 passed. Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
                       </p>
@@ -307,7 +307,7 @@ function TeacherDashboard() {
                         <button
                           type="button"
                           onClick={scrollToInterview}
-                          className="inline-flex items-center px-5 py-2.5 rounded-md bg-primary text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
+                          className="inline-flex items-center px-5 py-2.5 rounded-md bg-green-700 text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
                         >
                           <FaCalendarAlt className="mr-2" />
                           इंटरव्यू शेड्यूल करें | Schedule Interview
