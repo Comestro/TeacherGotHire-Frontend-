@@ -242,7 +242,7 @@ function TeacherDashboard() {
         {/* Interview eligibility and status banner */}
         <div className="px-4 sm:px-6 pt-4">
           {shouldShowInterviewSection && (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-6 mb-4 shadow-sm">
+            <div className="rounded-xl border border-primary bg-primary p-4 sm:p-6 mb-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   {hasScheduledInterview ? (
@@ -275,7 +275,7 @@ function TeacherDashboard() {
                         <button
                           type="button"
                           onClick={scrollToInterview}
-                          className="inline-flex items-center px-4 py-2 rounded-md border border-primary/30 text-primary hover:bg-primary/10"
+                          className="inline-flex items-center px-4 py-2 rounded-md border border-primary text-primary hover:bg-primary/10"
                         >
                           Manage Interviews
                         </button>

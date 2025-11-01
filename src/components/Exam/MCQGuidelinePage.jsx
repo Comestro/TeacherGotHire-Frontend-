@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAllQues} from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
+import { HiOutlineArrowLeft, HiOutlineClipboardDocumentList, HiOutlineExclamationTriangle, HiOutlineGlobeAlt, HiOutlineLanguage } from "react-icons/hi2";
+import { HiOutlineArrowRight, HiOutlineBookOpen, HiOutlineCheck, HiOutlineCheckCircle, HiOutlineClock, HiOutlineCog, HiOutlineDesktopComputer, HiOutlineEye, HiOutlineLightningBolt, HiOutlineRefresh, HiOutlineSpeakerphone, HiOutlineSupport, HiOutlineUpload } from "react-icons/hi";
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -85,215 +87,184 @@ const MCQGuidelinePage = () => {
 
   // Modified ExamCente
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800">
+    <div className="min-h-screen bg-background text-text">
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="= mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
             <Link
               to="/teacher"
-              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-all duration-200 group"
+              className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span className="font-semibold text-sm sm:text-base">Back / वापस</span>
+              <HiOutlineArrowLeft className="h-5 w-5" />
+              <span className="font-semibold text-sm sm:text-base">Back</span>
             </Link>
             
-            <div className="text-center flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                📋 Exam Guidelines
+            <div className="flex items-center gap-2">
+              <HiOutlineClipboardDocumentList className="h-6 w-6 text-primary" />
+              <h1 className="text-lg sm:text-xl font-bold text-text">
+                Exam Guidelines
               </h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">परीक्षा दिशानिर्देश</p>
             </div>
-            
-            <div className="w-20 sm:w-24"></div>
           </div>
         </div>
       </header>
 
+    
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Guidelines Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8 mb-6 border-2 border-indigo-100">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-gradient-to-r from-indigo-200 to-purple-200">
-              <span className="text-3xl sm:text-4xl">📝</span>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  Important Instructions / महत्वपूर्ण निर्देश
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  Please read carefully before starting / शुरू करने से पहले ध्यान से पढ़ें
-                </p>
-              </div>
+      <main className="container mx-auto px-4 py-6 max-w-8xl">
+        <div className="flex flex-col md:flex-row items-start gap-6">
+          {/* Guidelines Card - English */}
+          <div className="flex flex-1 flex-col gap-4 w-full md:w-3/4">
+            <div className="bg-white flex-1 rounded-lg p-5  sm:p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-4 ">
+              <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
+              <h2 className="text-lg sm:text-xl font-bold text-text">
+                Important Instructions
+              </h2>
             </div>
             
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">🌐</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Ensure you have a stable internet connection.</strong> / सुनिश्चित करें कि आपका इंटरनेट कनेक्शन स्थिर है।
-                </span>
+            <ul className="space-y-1 text-sm sm:text-base text-secondary">
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Ensure stable internet connection and use latest Chrome/Firefox browser</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">🌍</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Use the latest version of Google Chrome or Mozilla Firefox</strong> for the best experience. / सर्वोत्तम अनुभव के लिए Google Chrome या Mozilla Firefox के नवीनतम संस्करण का उपयोग करें।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Keep your device fully charged or plugged in</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-l-4 border-yellow-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">🔋</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Make sure your device is fully charged</strong> or connected to a power source. / सुनिश्चित करें कि आपका डिवाइस पूरी तरह चार्ज है या बिजली के स्रोत से जुड़ा हुआ है।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Read each question carefully before answering</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">📖</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Read each question carefully</strong> before answering. / प्रत्येक प्रश्न का उत्तर देने से पहले ध्यानपूर्वक पढ़ें।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-warning mt-0.5">•</span>
+                <span><strong>Cannot go back</strong> to previous questions once you proceed</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">⚠️</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>You cannot go back to previous questions</strong> once you move to the next one. / एक बार अगले प्रश्न पर जाने के बाद, आप पिछले प्रश्न पर वापस नहीं जा सकते।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Manage your time - each question has a time limit</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border-l-4 border-indigo-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">⏰</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Manage your time wisely</strong> - each question has a time limit. / अपने समय का बुद्धिमानी से प्रबंधन करें; प्रत्येक प्रश्न की समय सीमा होती है।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-error mt-0.5">•</span>
+                <span><strong>Do not refresh</strong> the page or use browser back button</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border-l-4 border-red-600 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">🚫</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Do not refresh the page</strong> or press the back button on your browser. / पेज को रीफ्रेश न करें और न ही ब्राउज़र का बैक बटन दबाएँ।
-                </span>
-                </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border-l-4 border-teal-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">✅</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Review your answers</strong> if allowed before submitting. / यदि अनुमति हो तो सबमिट करने से पहले अपने उत्तरों की समीक्षा करें।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Review answers before submitting (if allowed)</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border-l-4 border-green-600 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">📤</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Click the "Submit" button</strong> to finish the test. / टेस्ट समाप्त करने के लिए "Submit" बटन पर क्लिक करें।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>Contact support immediately if you encounter technical issues</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-l-4 border-orange-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">🆘</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>If you encounter technical issues</strong>, contact support immediately. / यदि आपको कोई तकनीकी समस्या आती है, तो तुरंत सहायता से संपर्क करें।
-                </span>
+            </ul>
+            <br />
+            <div className="flex items-center gap-2 mb-4">
+              <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
+              <h2 className="text-lg sm:text-xl font-bold text-text">
+                महत्वपूर्ण निर्देश
+              </h2>
+            </div>
+            
+            <ul className="space-y-1 text-sm sm:text-base text-secondary">
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>सुनिश्चित करें कि आपका इंटरनेट कनेक्शन स्थिर है और नवीनतम Chrome/Firefox ब्राउज़र का उपयोग करें</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border-l-4 border-purple-600 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">👁️</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Ensure no external assistance</strong> is used - tests are monitored for fairness. / सुनिश्चित करें कि कोई बाहरी सहायता नहीं ली जा रही है; परीक्षाएं निष्पक्षता के लिए निगरानी की जाती हैं।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>अपने डिवाइस को पूरी तरह चार्ज रखें या प्लग इन करें</span>
               </li>
-              <li className="flex items-start gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all">
-                <span className="text-xl flex-shrink-0">📢</span>
-                <span className="text-sm sm:text-base text-gray-700">
-                  <strong>Report incorrect questions</strong> immediately. / गलत प्रश्नों की तुरंत रिपोर्ट करें।
-                </span>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>उत्तर देने से पहले प्रत्येक प्रश्न को ध्यानपूर्वक पढ़ें</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-warning mt-0.5">•</span>
+                <span><strong>वापस नहीं जा सकते</strong> - एक बार आगे बढ़ने के बाद पिछले प्रश्न पर</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>अपने समय का प्रबंधन करें - प्रत्येक प्रश्न की समय सीमा है</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-error mt-0.5">•</span>
+                <span><strong>रीफ्रेश न करें</strong> पेज को और न ही ब्राउज़र बैक बटन का उपयोग करें</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>सबमिट करने से पहले उत्तरों की समीक्षा करें (यदि अनुमति हो)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span>तकनीकी समस्या आने पर तुरंत सहायता से संपर्क करें</span>
               </li>
             </ul>
           </div>
+          </div>
 
           {/* Configuration Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8 mb-6 border-2 border-purple-100">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl">⚙️</span>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Exam Configuration / परीक्षा कॉन्फ़िगरेशन
-              </h2>
-            </div>
+          <div className="bg-white w-full md:w-1/4 rounded-lg p-5 sm:p-6 border border-gray-200">
+            <h3 className="text-base sm:text-lg font-bold text-text mb-4">Select Language</h3>
 
-            {/* Language Selector */}
-            <div className="mb-6">
-              <label htmlFor="language" className="flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800 mb-3">
-                <span className="text-2xl">🌐</span>
-                Choose Language / भाषा चुनें:
-              </label>
+            <div className="space-y-4">
               <select
                 id="language"
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
-                className="w-full p-3 sm:p-4 text-sm sm:text-base border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 font-medium transition-all hover:shadow-md"
+                className="w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all"
               >
                 <option value="" disabled>
-                  Select Language / भाषा चुनें
+                  Choose language...
                 </option>
                 <option value="Hindi" disabled={subjectName === "English"}>
-                  🇮🇳 हिन्दी (Hindi)
+                  Hindi
                 </option>
                 <option value="English" disabled={subjectName === "Hindi"}>
-                  🇬🇧 English (अंग्रेज़ी)
+                  English
                 </option>
               </select>
-            </div>
 
-            {/* Checkbox for Agreement */}
-            <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 sm:p-5 rounded-xl border-2 border-teal-300">
-              <label className="flex items-start gap-3 cursor-pointer group">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="mt-1 h-5 w-5 sm:h-6 sm:w-6 text-teal-600 border-2 border-gray-400 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer transition-all"
+                  className="mt-0.5 h-5 w-5 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary cursor-pointer"
                   required
                   checked={isChecked}
                   onChange={handleCheckboxChange}
                 />
-                <span className="text-sm sm:text-base text-gray-800 font-medium group-hover:text-teal-700 transition-colors">
-                  ✓ I have read and agree to all the guidelines / मैंने सभी दिशा-निर्देश पढ़ लिए हैं और उनसे सहमत हूँ।
+                <span className="text-sm text-secondary">
+                  I have read and agree to all the guidelines
                 </span>
               </label>
+
+              <button
+                onClick={handleProceedClick}
+                disabled={loading || !selectedLanguage || !isChecked}
+                className={`w-full ${
+                  selectedLanguage && isChecked
+                    ? "bg-primary hover:bg-primary/90"
+                    : "bg-gray-300 cursor-not-allowed"
+                } text-white px-6 py-3 rounded-lg font-semibold text-base transition-all flex items-center justify-center gap-2`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Start Exam</span>
+                    <HiOutlineArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          {/* Proceed Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={handleProceedClick}
-              disabled={loading || !selectedLanguage || !isChecked}
-              className={`${
-                selectedLanguage && isChecked
-                  ? "bg-gradient-to-r from-teal-500 to-green-500 hover:from-teal-600 hover:to-green-600 shadow-lg hover:shadow-2xl transform hover:scale-105"
-                  : "bg-gray-400 cursor-not-allowed opacity-60"
-              } text-white px-8 sm:px-12 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all duration-300 flex items-center gap-3 disabled:transform-none disabled:shadow-none`}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Proceeding... / आगे बढ़ रहे हैं...</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-2xl">🚀</span>
-                  <span>Proceed to Exam / परीक्षा शुरू करें</span>
-                  <span className="text-2xl">→</span>
-                </>
-              )}
-            </button>
-          </div>
           {
             card && <ExamCenterModal
             selectedLanguage = {selectedLanguage}
@@ -311,13 +282,10 @@ const MCQGuidelinePage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t-2 border-gray-200 py-4 sm:py-6 mt-8">
+      <footer className="bg-white border-t border-gray-200 py-4 mt-10">
         <div className="container mx-auto text-center px-4">
-          <p className="text-xs sm:text-sm text-gray-600 font-medium">
-            &copy; 2024 Comestro. All rights reserved. / सर्वाधिकार सुरक्षित।
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            📧 Need help? Contact support / सहायता चाहिए? समर्थन से संपर्क करें
+          <p className="text-xs text-secondary">
+            &copy; 2024 PTP Institute. Need help? Contact support
           </p>
         </div>
       </footer>

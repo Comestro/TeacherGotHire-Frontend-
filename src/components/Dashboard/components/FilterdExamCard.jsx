@@ -789,23 +789,17 @@ const FilterdExamCard = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
-            className="bg-white rounded-lg border border-secondary/30 overflow-hidden mb-6 sm:mb-8"
+            className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8"
           >
             <div className="bg-background p-6 sm:p-8 text-center">
               <div className="max-w-lg mx-auto">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-text rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                   <FaGraduationCap className="text-white text-2xl sm:text-3xl" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">Start Your Assessment</h3> {/* Adjust text size/margin */}
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">Start Your Assessment / परीक्षा शुरू करें</h3> {/* Adjust text size/margin */}
                 <p className="text-sm sm:text-base text-gray-600"> {/* Adjust text size */}
-                  Follow the steps above: select category, subject, and level to begin.
+                  Follow the steps above: select category, subject, and level to begin.  ऊपर दिए गए चरणों का पालन करें: शुरू करने के लिए श्रेणी, विषय और स्तर चुनें।
                 </p>
-                <div className="mt-4 sm:mt-6"> {/* Adjust margin */}
-                  <div className="inline-flex items-center justify-center bg-primary/10 text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm sm:text-base">
-                    <FaArrowRight className="animate-pulse mr-2" aria-hidden="true" />
-                    Select a Category to begin
-                  </div>
-                </div>
               </div>
             </div>
 
