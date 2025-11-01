@@ -4,6 +4,7 @@ import { getApiUrl } from "../../store/configue";
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
+     baseUrl: getApiUrl(), // Add this lin
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("access_token");
       if (token) {

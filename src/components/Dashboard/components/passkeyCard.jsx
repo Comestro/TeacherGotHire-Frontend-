@@ -39,6 +39,8 @@ const ExamCenterModal = ({
     skip: !isOpen || isverifyCard,
   });
 
+  console.log("centers", centers);
+
   // Redux state for other data
   const { passkeyresponse, error } = useSelector((state) => state.examQues);
   const { examCards } = useSelector((state) => state.exam);
