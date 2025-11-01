@@ -168,12 +168,12 @@ const Steppers = () => {
 
       {/* Filters Section */}
       <div className="py-5 px-4 bg-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Class Category</label>
             <div className="relative">
               <select
-                className="w-full py-2.5 pl-3 pr-10 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700 text-sm"
+                className="w-full py-2.5 pl-3 pr-10 border-2 border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700 text-sm"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -188,7 +188,7 @@ const Steppers = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
             <div className="relative">
               <select
-                className="w-full py-2.5 pl-3 pr-10 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700 text-sm disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full py-2.5 pl-3 pr-10 border-2 border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700 text-sm disabled:bg-gray-50 disabled:text-gray-500"
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 disabled={!selectedCategory}

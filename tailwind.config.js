@@ -4,7 +4,23 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",],
   theme: {
     extend: {
-      fontFamily:{
+      colors: {
+        primary: "#1E3A8A",   // Navy Blue
+        secondary: "#64748B", // Cool Gray
+        accent: "#06B6D4",    // Soft Cyan
+        background: "#F8FAFC",// White Smoke
+        text: "#1E293B",      // Graphite
+            // Error colors
+        error: "#DC2626",       // Main red
+        "error-light": "#FEE2E2", // Light background for alerts
+        "error-text": "#7F1D1D",  // Deep red for text
+         warning: "#F59E0B",
+        "warning-light": "#FEF3C7",
+
+        success: "#16A34A",
+        "success-light": "#DCFCE7",
+      },
+      fontFamily: {
         hindi: ['"Noto Sans Devanagari"', 'sans-serif'],
       },
       lineHeight: {

@@ -1,15 +1,16 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLevel } from "../../../services/examQuesServices";
 import { examCard } from "../../../features/examSlice";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { setError } from "../../../features/examSlice";
-import { 
-  FaGraduationCap, FaLayerGroup, FaBookOpen, 
-  FaArrowRight, FaSpinner, FaExclamationCircle, 
+import {
+  FaGraduationCap, FaLayerGroup, FaBookOpen,
+  FaArrowRight, FaSpinner, FaExclamationCircle,
   FaCheckCircle, FaAngleRight, FaChevronLeft,
-  FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock
+  FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock,
+  FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp
 } from "react-icons/fa";
 
 const FilterdExamCard = () => {
@@ -21,7 +22,7 @@ const FilterdExamCard = () => {
   );
   const { examCards, error } = useSelector((state) => state?.exam);
   const { attempts } = useSelector((state) => state.examQues);
-  
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
@@ -33,9 +34,10 @@ const FilterdExamCard = () => {
   const [showSubjectPanel, setShowSubjectPanel] = useState(false);
   const [showLevelPanel, setShowLevelPanel] = useState(false);
   const examReadyRef = useRef(null); // Create a ref for the target section
-  
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
+
   // Determine qualified Level 2 subjects
-  const qualifiedSubjects = attempts?.filter(item => 
+  const qualifiedSubjects = attempts?.filter(item =>
     item?.exam?.level_code === 2 && item?.isqualified === true
   ).map(item => ({
     subjectId: item?.exam?.subject_id,
@@ -57,10 +59,10 @@ const FilterdExamCard = () => {
 
     fetchData();
   }, []);
-  
+
   // Helper functions to check qualifications
   const checkLevelQualification = (categoryId, subjectId, levelCode) => {
-    return attempts?.some(attempt => 
+    return attempts?.some(attempt =>
       attempt?.exam?.class_category_id === categoryId &&
       attempt?.exam?.subject_id === subjectId &&
       attempt?.exam?.level_code === levelCode &&
@@ -75,7 +77,7 @@ const FilterdExamCard = () => {
   };
 
   const getInterviewStatus = (categoryId, subjectId) => {
-    const relevantAttempt = attempts?.find(attempt => 
+    const relevantAttempt = attempts?.find(attempt =>
       attempt?.exam?.class_category_id === categoryId &&
       attempt?.exam?.subject_id === subjectId &&
       attempt?.exam?.level_code === 2.0
@@ -83,7 +85,7 @@ const FilterdExamCard = () => {
 
     if (!relevantAttempt?.interviews?.length) return null;
 
-    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort((a, b) => 
+    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort((a, b) =>
       new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
     );
 
@@ -115,6 +117,7 @@ const FilterdExamCard = () => {
       return;
     }
 
+    // Check Level 1 requirement for Level 2.0 and above
     if (level?.level_code >= 2.0) {
       const isLevel1Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -128,6 +131,7 @@ const FilterdExamCard = () => {
       }
     }
 
+    // Check Level 2.0 (online) requirement for Level 2.5 (center exam)
     if (level?.level_code === 2.5) {
       const isOnlineLevel2Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -136,7 +140,7 @@ const FilterdExamCard = () => {
       );
 
       if (!isOnlineLevel2Qualified) {
-        setErrors("You must complete online Level 2 first");
+        setErrors("You must complete Level 2 (Online) first");
         return;
       }
     }
@@ -176,12 +180,49 @@ const FilterdExamCard = () => {
   const handleExam = () => {
     navigate("/exam");
   };
-  
+
+  // Retry loading the exam with the last selection
+  const retryExamLoad = async () => {
+    if (!selectedCategory || !selectedSubject || !selectedLevel) {
+      // If selection is incomplete, guide user back to selection panels
+      setShowCategoryPanel(!selectedCategory);
+      setShowSubjectPanel(!!selectedCategory && !selectedSubject);
+      setShowLevelPanel(!!selectedCategory && !!selectedSubject);
+      return;
+    }
+    try {
+      setIsLoading(true);
+      dispatch(setError(null));
+      const payload = {
+        subject_id: selectedSubject?.id,
+        class_category_id: selectedCategory?.id,
+        level_id: selectedLevel?.id,
+      };
+      await dispatch(examCard(payload)).unwrap();
+      setExamReady(true);
+    } catch (e) {
+      // Error will be reflected from redux `error`
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const copyErrorDetails = async () => {
+    try {
+      const text = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch (_) {
+      // no-op if clipboard not available
+    }
+  };
+
   const handleBackToCategories = () => {
     setShowCategoryPanel(true);
     setShowSubjectPanel(false);
   };
-  
+
   const handleBackToSubjects = () => {
     setShowSubjectPanel(true);
     setShowLevelPanel(false);
@@ -205,121 +246,31 @@ const FilterdExamCard = () => {
     }
   }, [examReady]);
 
-  return (
-    <div className="bg-gray-50 min-h-screen py-6 sm:py-8 px-4"> {/* Adjust padding */}
-       {/* Assessment Process Info */}
-            <div className="p-4 sm:p-6 border-t border-sky-100"> {/* Adjust padding, Changed border from blue */}
-              <h4 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">Assessment Process / मूल्यांकन प्रक्रिया:</h4> {/* Adjust text size */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"> {/* Adjust gap */}
-                {/* Level 1 Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-sky-600"> {/* Adjust margin, Changed from blue */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-sky-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">1</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Level 1 / स्तर 1</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Basic concepts assessment / बुनियादी अवधारणा मूल्यांकन</p> {/* Adjust text size */}
-                </div>
-                {/* Level 2 Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-cyan-600"> {/* Adjust margin, Changed from indigo */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-cyan-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">2</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Level 2 / स्तर 2</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Advanced problem solving / उन्नत समस्या समाधान</p> {/* Adjust text size */}
-                </div>
-                {/* Interview Info */}
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2 text-teal-600"> {/* Adjust margin, Kept teal */}
-                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-teal-100 rounded-full flex items-center justify-center mr-2 text-xs font-bold flex-shrink-0">3</span> {/* Adjust size */}
-                    <h5 className="font-medium text-sm sm:text-base">Interview / साक्षात्कार</h5> {/* Adjust text size */}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600">Final teaching ability showcase / अंतिम शिक्षण क्षमता प्रदर्शन</p> {/* Adjust text size */}
-                </div>
-              </div>
-            </div>
-            <div className="p-5">
-    
-        
-        {/* Progress Indicator */}
-        <div className="mb-6 sm:mb-8 bg-white rounded-lg p-4 border border-gray-200"> {/* Remove shadow, use rounded-lg */}
-          <div className="flex items-center">
-            {/* Category Step */}
-            <div 
-              className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-colors duration-300 ${ // Adjust size
-                showCategoryPanel 
-                  ? 'bg-sky-600 text-white' // Changed from blue-600
-                  : selectedCategory 
-                    ? 'bg-sky-100 text-sky-600 border-2 border-sky-300' // Changed from blue
-                    : 'bg-gray-100 text-gray-400'
-              }`}
-              aria-current={showCategoryPanel ? "step" : undefined} // Add aria-current
-            >
-              <FaGraduationCap className={`text-sm sm:text-base ${selectedCategory ? 'animate-pulse' : ''}`} aria-hidden="true" />
-            </div>
-            {/* Connector */}
-            <div className={`flex-1 h-0.5 sm:h-1 mx-1 sm:mx-2 transition-colors duration-300 ${ // Adjust size/margin
-              selectedCategory ? 'bg-gradient-to-r from-sky-500 to-cyan-500' : 'bg-gray-200' // Changed gradient
-            }`}></div>
-            
-            {/* Subject Step */}
-            <div 
-              className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-colors duration-300 ${ // Adjust size
-                showSubjectPanel 
-                  ? 'bg-cyan-600 text-white' // Changed from indigo-600
-                  : selectedSubject 
-                    ? 'bg-cyan-100 text-cyan-600 border-2 border-cyan-300' // Changed from indigo
-                    : 'bg-gray-100 text-gray-400'
-              }`}
-              aria-current={showSubjectPanel ? "step" : undefined} // Add aria-current
-            >
-              <FaBookOpen className={`text-sm sm:text-base ${selectedSubject ? 'animate-pulse' : ''}`} aria-hidden="true" />
-            </div>
-            {/* Connector */}
-            <div className={`flex-1 h-0.5 sm:h-1 mx-1 sm:mx-2 transition-colors duration-300 ${ // Adjust size/margin
-              selectedSubject ? 'bg-gradient-to-r from-cyan-500 to-teal-500' : 'bg-gray-200' // Changed gradient (kept teal end)
-            }`}></div>
-            
-            {/* Level Step */}
-            <div 
-              className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-colors duration-300 ${ // Adjust size
-                showLevelPanel 
-                  ? 'bg-teal-600 text-white' // Kept teal
-                  : selectedLevel 
-                    ? 'bg-teal-100 text-teal-600 border-2 border-teal-300' // Kept teal
-                    : 'bg-gray-100 text-gray-400'
-              }`}
-              aria-current={showLevelPanel ? "step" : undefined} // Add aria-current
-            >
-              <FaLayerGroup className={`text-sm sm:text-base ${selectedLevel ? 'animate-pulse' : ''}`} aria-hidden="true" />
-            </div>
-          </div>
-          
-          {/* Step Labels */}
-          <div className="flex justify-between mt-2 sm:mt-3 text-xs sm:text-sm font-medium"> {/* Adjust margin/text size */}
-            <div 
-              className={`w-1/3 text-center transition-colors duration-300 ${
-                showCategoryPanel ? 'text-sky-700' : selectedCategory ? 'text-sky-600' : 'text-gray-500' // Changed from blue
-              }`}
-            >
-              Category / वर्ग
-            </div>
-            <div 
-              className={`w-1/3 text-center transition-colors duration-300 ${
-                showSubjectPanel ? 'text-cyan-700' : selectedSubject ? 'text-cyan-600' : 'text-gray-500' // Changed from indigo
-              }`}
-            >
-              Subject / विषय
-            </div>
-            <div 
-              className={`w-1/3 text-center transition-colors duration-300 ${
-                showLevelPanel ? 'text-teal-700' : selectedLevel ? 'text-teal-600' : 'text-gray-500' // Kept teal
-              }`}
-            >
-              Level / स्तर
-            </div>
-          </div>
-        </div>
+  // Derived progress for the Assessment Process stepper
+  const hasLevel1Qualified = useMemo(() => (
+    selectedCategory && selectedSubject
+      ? checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0)
+      : false
+  ), [selectedCategory, selectedSubject, attempts]);
 
+  const hasLevel2Qualified = useMemo(() => (
+    selectedCategory && selectedSubject
+      ? checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0)
+      : false
+  ), [selectedCategory, selectedSubject, attempts]);
+
+  const currentStep = useMemo(() => {
+    if (selectedLevel?.level_code === 2.5) return 3;
+    if (selectedLevel?.level_code === 2.0 || hasLevel2Qualified) return 2;
+    if (selectedLevel?.level_code === 1.0 || hasLevel1Qualified) return 1;
+    return 0;
+  }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
+
+  return (
+    <div className="bg-background min-h-screen w-full flex flex-col md:flex-row gap-0">
+      {/* Main selection column */}
+      <div className="w-full md:w-8/12 lg:w-9/12">
+      
         <AnimatePresence mode="wait">
           {/* Category Panel */}
           {showCategoryPanel && (
@@ -328,16 +279,16 @@ const FilterdExamCard = () => {
               {...pageTransition}
               className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
-              <div className="bg-gradient-to-r from-sky-600 to-sky-500 p-4 sm:p-6 text-white"> {/* Adjust padding, Changed gradient from blue */}
+              <div className="bg-background p-3 text-text">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                   <FaGraduationCap className="mr-2 sm:mr-3" aria-hidden="true" />
                   Select Class Category / वर्ग चुनें
                 </h2>
-                <p className="text-sky-100 mt-1 text-sm sm:text-base"> {/* Adjust text size, Changed from blue */}
+                <p className="text-text mt-1 text-sm sm:text-base"> {/* Adjust text size, Changed from blue */}
                   Choose from your profile preferences / अपनी प्रोफ़ाइल प्राथमिकताओं में से चुनें
                 </p>
               </div>
-              
+
               <div className="p-4 sm:p-6"> {/* Adjust padding */}
                 {classCategories?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"> {/* Adjust gap */}
@@ -349,21 +300,21 @@ const FilterdExamCard = () => {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleCategorySelect(category)}
                         className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
-                          selectedCategory?.id === category.id 
+                          selectedCategory?.id === category.id
                             ? 'border-sky-500 ring-sky-300 focus:ring-sky-500' // Changed from blue
                             : 'border-gray-200 hover:border-sky-300 focus:ring-sky-500' // Changed from blue
-                        }`}
+                          }`}
                         aria-pressed={selectedCategory?.id === category.id} // Add aria-pressed
                       >
                         <div className={`p-3 sm:p-4 transition-colors duration-200 ${ // Adjust padding
                           selectedCategory?.id === category.id ? 'bg-sky-50' : 'bg-white' // Changed from blue
-                        }`}>
+                          }`}>
                           <div className="flex items-start">
                             <div className={`p-2 sm:p-3 rounded-md mr-3 flex-shrink-0 transition-colors duration-200 ${ // Adjust padding/radius
-                              selectedCategory?.id === category.id 
+                              selectedCategory?.id === category.id
                                 ? 'bg-sky-500 text-white' // Changed from blue
                                 : 'bg-sky-100 text-sky-600' // Changed from blue
-                            }`}>
+                              }`}>
                               <FaGraduationCap size={20} sm:size={24} aria-hidden="true" /> {/* Adjust size */}
                             </div>
                             <div>
@@ -391,7 +342,7 @@ const FilterdExamCard = () => {
                     <button
                       type="button" // Add type
                       onClick={() => navigate('/teacher/job-profile')}
-                      className="px-4 sm:px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition-colors border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500" // Adjust padding/radius, add focus, remove shadow, Changed from blue
+                      className="px-4 sm:px-6 py-2 bg-primary text-white rounded-md hover:opacity-90 transition-colors border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                     >
                       Update Profile
                     </button>
@@ -400,7 +351,7 @@ const FilterdExamCard = () => {
               </div>
             </motion.div>
           )}
-          
+
           {/* Subject Panel */}
           {showSubjectPanel && (
             <motion.div
@@ -408,7 +359,7 @@ const FilterdExamCard = () => {
               {...pageTransition}
               className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
-              <div className="bg-gradient-to-r from-cyan-600 to-cyan-500 p-4 sm:p-6 text-white"> {/* Adjust padding, Changed gradient from indigo */}
+              <div className="bg-background p-4 sm:p-6 text-text">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                     <FaBookOpen className="mr-2 sm:mr-3" aria-hidden="true" />
@@ -417,24 +368,24 @@ const FilterdExamCard = () => {
                   <button
                     type="button" // Add type
                     onClick={handleBackToCategories}
-                    className="bg-cyan-700/70 hover:bg-cyan-700 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white" // Adjust padding/size/focus, Changed from indigo
+                    className="bg-primary text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                     aria-label="Back to categories" // Add aria-label
                   >
                     <FaChevronLeft className="mr-1" aria-hidden="true" />
                     Back
                   </button>
                 </div>
-                <p className="text-cyan-100 mt-1 text-sm sm:text-base"> {/* Adjust text size, Changed from indigo */}
+                <p className="text-text mt-1 text-sm sm:text-base">
                   Choose a subject from <span className="font-medium">{selectedCategory?.name}</span>
                 </p>
               </div>
-              
+
               <div className="p-4 sm:p-6"> {/* Adjust padding */}
                 {selectedCategory?.subjects?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"> {/* Adjust gap */}
                     {selectedCategory?.subjects?.map((subject) => {
                       const isQualified = isSubjectQualifiedForInterview(subject?.id, selectedCategory?.id);
-                      
+
                       return (
                         <motion.button // Change to button
                           key={subject?.id}
@@ -443,40 +394,40 @@ const FilterdExamCard = () => {
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleSubjectSelect(subject)}
                           className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
-                            selectedSubject?.id === subject?.id 
-                              ? 'border-cyan-500 ring-cyan-300 focus:ring-cyan-500' // Changed from indigo
-                              : 'border-gray-200 hover:border-cyan-300 focus:ring-cyan-500' // Changed from indigo
-                          }`}
+                            selectedSubject?.id === subject?.id
+                              ? 'border-primary ring-primary/30 focus:ring-primary'
+                              : 'border-gray-200 hover:border-primary/50 focus:ring-primary'
+                            }`}
                           aria-pressed={selectedSubject?.id === subject?.id} // Add aria-pressed
                         >
                           {isQualified && (
                             <div className="absolute top-0 right-0 z-10"> {/* Adjust position slightly */}
-                              <div className="bg-green-500 text-white text-xs font-bold py-0.5 px-2 rounded-bl-lg"> {/* Simpler badge */}
+                              <div className="bg-success text-white text-xs font-bold py-0.5 px-2 rounded-bl-lg"> {/* Simpler badge */}
                                 QUALIFIED
                               </div>
                             </div>
                           )}
-                          
+
                           <div className={`p-3 sm:p-4 transition-colors duration-200 ${ // Adjust padding
-                            selectedSubject?.id === subject?.id ? 'bg-cyan-50' : 'bg-white' // Changed from indigo
-                          }`}>
+                            selectedSubject?.id === subject?.id ? 'bg-primary/5' : 'bg-white'
+                            }`}>
                             <div className="flex items-start">
                               <div className={`p-2 sm:p-3 rounded-md mr-3 flex-shrink-0 transition-colors duration-200 ${ // Adjust padding/radius
-                                selectedSubject?.id === subject?.id 
-                                  ? 'bg-cyan-500 text-white' // Changed from indigo
+                                selectedSubject?.id === subject?.id
+                                  ? 'bg-primary text-white'
                                   : isQualified
-                                    ? 'bg-green-100 text-green-600' // Kept green
-                                    : 'bg-cyan-100 text-cyan-600' // Changed from indigo
-                              }`}>
+                                    ? 'bg-accent text-white'
+                                    : 'bg-primary/10 text-primary'
+                                }`}>
                                 <FaBookOpen size={20} sm:size={24} aria-hidden="true" /> {/* Adjust size */}
                               </div>
                               <div>
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-800"> {/* Adjust text size */}
                                   {subject?.subject_name}
                                 </h3>
-                                
+
                                 {isQualified && (
-                                  <div className="flex items-center text-green-600 text-xs sm:text-sm mt-1.5 sm:mt-2"> {/* Adjust size/margin */}
+                                  <div className="flex items-center text-success text-xs sm:text-sm mt-1.5 sm:mt-2"> {/* Adjust size/margin */}
                                     <FaCheckCircle className="mr-1" aria-hidden="true" />
                                     <span>Interview eligible</span>
                                   </div>
@@ -490,8 +441,8 @@ const FilterdExamCard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 sm:py-12"> {/* Adjust padding */}
-                     <div className="bg-cyan-50 p-3 sm:p-4 rounded-full inline-block mb-4"> {/* Adjust padding, Changed from indigo */}
-                      <FaExclamationCircle className="text-cyan-500 text-2xl sm:text-3xl" aria-hidden="true" /> {/* Adjust size, Changed from indigo */}
+                    <div className="bg-primary/10 p-3 sm:p-4 rounded-full inline-block mb-4">
+                      <FaExclamationCircle className="text-primary text-2xl sm:text-3xl" aria-hidden="true" />
                     </div>
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Subjects Available</h3>
                     <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto">
@@ -502,7 +453,7 @@ const FilterdExamCard = () => {
               </div>
             </motion.div>
           )}
-          
+
           {/* Level Panel */}
           {showLevelPanel && (
             <motion.div
@@ -510,7 +461,7 @@ const FilterdExamCard = () => {
               {...pageTransition}
               className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
-              <div className="bg-gradient-to-r from-teal-600 to-teal-500 p-4 sm:p-6 text-white"> {/* Adjust padding, Kept teal */}
+              <div className="bg-background p-4 sm:p-6 text-text">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                     <FaLayerGroup className="mr-2 sm:mr-3" aria-hidden="true" />
@@ -519,32 +470,51 @@ const FilterdExamCard = () => {
                   <button
                     type="button" // Add type
                     onClick={handleBackToSubjects}
-                    className="bg-teal-700/70 hover:bg-teal-700 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white" // Adjust padding/size/focus, Kept teal
+                    className="bg-primary text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                     aria-label="Back to subjects" // Add aria-label
                   >
                     <FaChevronLeft className="mr-1" aria-hidden="true" />
                     Back
                   </button>
                 </div>
-                <p className="text-teal-100 mt-1 text-sm sm:text-base"> {/* Adjust text size, Kept teal */}
+                <p className="text-text mt-1 text-sm sm:text-base">
                   Choose the assessment level for <span className="font-medium">{selectedSubject?.subject_name}</span>
                 </p>
               </div>
-              
-              <div className="p-4 sm:p-6"> {/* Adjust padding */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"> {/* Adjust gap */}
+
+              <div className="p-4 sm:p-3">
+                {/* Info banner for Level 2.5 eligibility */}
+                {checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0) && (
+                  <div className="mb-4 sm:mb-2 p-2 sm:px-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <FaCheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-success mt-0.5" aria-hidden="true" />
+                      </div>
+                      <div className="ml-3 flex-1 text-success">
+                        <h3 className="text-sm sm:text-base font-semibold">
+                          Congratulations! You're now eligible for Level 2.5
+                        </h3>
+                        <p className="mt-1 text-xs sm:text-sm text-text">
+                          You've passed Level 2 (Online). You can now take Level 2.5 at an exam center for in-person verification, and you're also eligible to schedule your interview!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 p-3">
                   {levels.map((level) => {
                     const isQualified = checkLevelQualification(
                       selectedCategory?.id,
-                      selectedSubject?.id, 
+                      selectedSubject?.id,
                       level?.level_code
                     );
-                    
+
                     const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
-                    const isLocked = 
+                    const isLocked =
                       (level?.level_code === 2.0 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0)) ||
                       (level?.level_code === 2.5 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0));
-                    
+
                     return (
                       <motion.button // Change to button
                         key={level?.id}
@@ -553,46 +523,39 @@ const FilterdExamCard = () => {
                         whileTap={!isLocked ? { scale: 0.98 } : {}}
                         onClick={() => !isLocked && handleLevelSelect(level)}
                         disabled={isLocked} // Add disabled attribute
-                        className={`rounded-lg border-2 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
-                          isLocked 
-                            ? 'opacity-60 cursor-not-allowed' 
-                            : 'cursor-pointer hover:border-teal-400 focus:ring-teal-500' // Kept teal
-                        } ${
-                          selectedLevel?.id === level?.id 
-                            ? 'border-teal-500 ring-teal-300 focus:ring-teal-500' // Kept teal
+                        className={`rounded-lg border-2 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                          isLocked
+                            ? 'opacity-60 cursor-not-allowed'
+                            : 'cursor-pointer hover:border-primary/60 focus:ring-primary'
+                          } ${selectedLevel?.id === level?.id
+                            ? 'border-primary ring-primary/30 focus:ring-primary'
                             : isQualified
-                              ? 'border-green-400 bg-green-50/50 hover:border-green-500 focus:ring-green-500' // Kept green
-                              : 'border-gray-200 hover:border-gray-300 focus:ring-teal-500' // Kept teal focus
-                        }`}
+                              ? 'border-success-light bg-success-light/50 hover:border-success focus:ring-success'
+                              : 'border-gray-200 hover:border-gray-300 focus:ring-primary'
+                          }`}
                         aria-pressed={selectedLevel?.id === level?.id} // Add aria-pressed
                       >
                         {isLocked && (
                           <div className="absolute inset-0 bg-gray-500/30 backdrop-blur-[1px] z-10 flex items-center justify-center p-2">
-                            <div className="bg-gray-800/90 text-white text-xs sm:text-sm font-medium py-1 px-2 sm:py-1.5 sm:px-3 rounded-md text-center"> {/* Adjust padding/size */}
-                              {level?.level_code === 2.0 
-                                ? "Complete Level 1 First" 
-                                : "Complete Level 2 First"}
+                            <div className="bg-gray-800/90 text-white text-xs sm:text-sm font-medium py-1 px-2 sm:py-1.5 sm:px-3 rounded-md text-center">
+                              {level?.level_code === 2.0
+                                ? "Complete Level 1 First"
+                                : level?.level_code === 2.5
+                                  ? "Complete Level 2 (Online) First"
+                                  : "Complete Previous Level First"}
                             </div>
                           </div>
                         )}
-                        
-                        <div className={`p-4 sm:p-5 transition-colors duration-200 ${ // Adjust padding
-                          selectedLevel?.id === level?.id ? 'bg-teal-50/70' : '' // Kept teal
-                        }`}>
+
+                        <div className={`p-4 sm:p-5 transition-colors duration-200 ${
+                          selectedLevel?.id === level?.id ? 'bg-primary/5' : ''
+                          }`}>
                           <div className="flex items-start">
-                            <div className={`p-3 sm:p-4 rounded-lg flex-shrink-0 mr-3 sm:mr-4 transition-colors duration-200 ${ // Adjust padding/radius
-                              selectedLevel?.id === level?.id 
-                                ? 'bg-teal-500 text-white' // Kept teal
-                                : isQualified
-                                  ? 'bg-green-100 text-green-600' // Kept green
-                                  : 'bg-teal-100 text-teal-600' // Kept teal
-                            }`}>
-                              <FaLayerGroup size={20} sm:size={24} aria-hidden="true" /> {/* Adjust size */}
-                            </div>
+
                             <div className="flex-1">
                               <div className="flex flex-col sm:flex-row justify-between items-start gap-1 mb-1.5 sm:mb-2"> {/* Adjust layout/gap */}
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">{level?.name}</h3> {/* Adjust text size */}
-                                {level?.level_code && (
+                                {/* {level?.level_code && (
                                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full order-none sm:order-1 ${ // Adjust padding
                                     level?.level_code === 1.0 ? 'bg-sky-100 text-sky-700' // Changed from blue
                                     : level?.level_code === 2.0 ? 'bg-cyan-100 text-cyan-700' // Changed from purple
@@ -600,30 +563,30 @@ const FilterdExamCard = () => {
                                   }`}>
                                     Level {level?.level_code}
                                   </span>
-                                )}
+                                )} */}
                               </div>
-                              <p className="text-sm text-gray-600 mb-2 sm:mb-3"> {/* Adjust text size/margin */}
+                              <p className="text-sm text-gray-600 mb-2 sm:mb-3">
                                 {level?.level_code === 1.0 && "Basic concepts assessment for beginners"}
-                                {level?.level_code === 2.0 && "Advanced problem solving techniques"}
-                                {level?.level_code === 2.5 && "Specialized interview preparation assessment"}
+                                {level?.level_code === 2.0 && "Advanced problem solving - Online assessment"}
+                                {level?.level_code === 2.5 && "Exam center assessment - In-person verification"}
                                 {!level?.level_code && "Standard assessment level"}
                               </p>
-                              
+
                               {/* Status Badges */}
                               <div className="flex flex-wrap gap-2">
                                 {isQualified && (
-                                  <div className="flex items-center text-green-700 bg-green-100 py-1 px-2.5 rounded-md border border-green-200 text-xs sm:text-sm"> {/* Adjust padding/size */}
+                                  <div className="flex items-center text-green-700 bg-green-100 py-1 px-2.5 rounded-md border border-green-200 text-xs"> {/* Adjust padding/size */}
                                     <FaCheckCircle className="mr-1.5" aria-hidden="true" />
                                     <span className="font-medium">Qualified</span>
                                   </div>
                                 )}
-                                
+
                                 {level?.level_code === 2.0 && interviewStatus && (
-                                  <div className={`flex items-center py-1 px-2.5 rounded-md border text-xs sm:text-sm ${ // Adjust padding/size
-                                    interviewStatus === 'fulfilled' ? 'text-green-700 bg-green-100 border-green-200' // Kept green
-                                    : interviewStatus === 'scheduled' ? 'text-sky-700 bg-sky-100 border-sky-200' // Changed from blue
-                                    : 'text-amber-700 bg-amber-100 border-amber-200' // Kept amber
-                                  }`}>
+                                  <div className={`flex items-center py-1 px-2.5 rounded-md border text-xs ${ // Adjust padding/size
+                                    interviewStatus === 'fulfilled' ? 'text-green-700 bg-green-100 border-green-200'
+                                      : interviewStatus === 'scheduled' ? 'text-primary bg-primary/10 border-primary/30'
+                                        : 'text-amber-700 bg-amber-100 border-amber-200' // Kept amber
+                                    }`}>
                                     {interviewStatus === 'fulfilled' && <FaCheckCircle className="mr-1.5" aria-hidden="true" />}
                                     {interviewStatus === 'scheduled' && <FaCalendarAlt className="mr-1.5" aria-hidden="true" />}
                                     {interviewStatus === 'pending' && <FaClock className="mr-1.5" aria-hidden="true" />}
@@ -644,18 +607,18 @@ const FilterdExamCard = () => {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Loading Overlay */}
         {isLoading && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"> {/* Adjust background */}
-            <motion.div 
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 text-center max-w-sm mx-auto" // Use border, rounded-lg
+              className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 text-center max-w-sm mx-auto"
             >
               <div className="relative mb-4 sm:mb-6"> {/* Adjust margin */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-100 rounded-full mx-auto flex items-center justify-center"> {/* Adjust size, Changed from blue */}
-                  <FaSpinner className="text-cyan-600 text-2xl sm:text-3xl animate-spin" aria-hidden="true" /> {/* Adjust size, Changed from blue */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-accent/20 rounded-full mx-auto flex items-center justify-center">
+                  <FaSpinner className="text-accent text-2xl sm:text-3xl animate-spin" aria-hidden="true" />
                 </div>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Preparing Exam</h3> {/* Adjust text size */}
@@ -671,24 +634,65 @@ const FilterdExamCard = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 rounded-lg border border-red-300 p-4 sm:p-6 mb-6 sm:mb-8" // Kept red
-            role="alert" // Add role
+            className="rounded-xl border-2 border-error-light bg-error-light to-white p-4 sm:p-6 mb-6 sm:mb-8"
+            role="alert"
+            aria-live="assertive"
           >
-            <div className="flex items-start">
-              <div className="bg-red-100 p-2 sm:p-3 rounded-md flex-shrink-0"> {/* Adjust padding/radius */}
-                <FaExclamationCircle className="text-red-500 text-lg sm:text-xl" aria-hidden="true" /> {/* Adjust size */}
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full bg-error text-white">
+                <FaExclamationCircle aria-hidden="true" />
               </div>
-              <div className="ml-3 sm:ml-4 flex-1"> {/* Adjust margin */}
-                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Error Loading Exam</h3> {/* Adjust text size */}
-                <p className="mt-1 sm:mt-2 text-sm sm:text-base text-red-700">{error}</p> {/* Adjust margin/text size */}
-                <div className="mt-3 sm:mt-4"> {/* Adjust margin */}
+              <div className="flex-1">
+                <h3 className="text-base sm:text-lg font-semibold text-error">
+                  We couldn’t prepare your exam / हम आपकी परीक्षा तैयार नहीं कर सके
+                </h3>
+                <p className="mt-1 text-xs sm:text-sm text-error">
+                  <strong>Error: </strong>{typeof error === 'string' ? error : JSON.stringify(error, null, 2)}
+                </p>
+
+                {/* Context chips */}
+                {(selectedCategory || selectedSubject || selectedLevel) && (
+                  <div className="flex flex-wrap gap-2 sm:gap-3 mt-3">
+                    {selectedCategory && (
+                      <span className="inline-flex items-center gap-2 px-2.5 py-1 text-xs">
+                        <FaGraduationCap className="text-error" aria-hidden="true" />
+                        {selectedCategory?.name}
+                      </span>
+                    )}
+                    {selectedSubject && (
+                      <span className="inline-flex items-center gap-2 px-2.5 py-1 text-xs">
+                        <FaBookOpen className="text-error" aria-hidden="true" />
+                        {selectedSubject?.subject_name}
+                      </span>
+                    )}
+                    {selectedLevel && (
+                      <span className="inline-flex items-center gap-2 px-2.5 py-1 text-xs">
+                        <FaLayerGroup className="text-error" aria-hidden="true" />
+                        {selectedLevel?.name}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+
+
+                {/* Actions */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
-                    type="button" // Add type
-                    onClick={resetSelection}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-100 rounded-md text-red-700 hover:bg-red-200 transition-all text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:ring-offset-red-50" // Adjust padding/size/focus
+                    type="button"
+                    onClick={retryExamLoad}
+                    className="inline-flex items-center justify-center px-4 py-2 bg-error text-white rounded-md hover:bg-error text-sm font-semibold"
                   >
-                    Reset Selections
+                    <FaRedo className="mr-2" aria-hidden="true" /> Retry / पुनः प्रयास करें
                   </button>
+                  <button
+                    type="button"
+                    onClick={resetSelection}
+                    className="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-800 rounded-md hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm font-medium" 
+                  >
+                    <FaChevronLeft className="mr-2" aria-hidden="true" /> Change Selection
+                  </button>
+
                 </div>
               </div>
             </div>
@@ -698,107 +702,121 @@ const FilterdExamCard = () => {
         {/* Exam Ready Section */}
         {examReady && !error && (
           <motion.div
-            id="exam-ready-section" // Add ID for scrolling
-            ref={examReadyRef} // Attach the ref
+            id="exam-ready-section"
+            ref={examReadyRef}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg border-2 border-green-300 overflow-hidden" // Use rounded-lg, adjust border
+            className="bg-white rounded-xl border-2 border-primary/30 overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-4 sm:p-6 text-white"> {/* Adjust padding */}
-              <div className="flex items-center">
-                <div className="bg-white/20 p-2 sm:p-3 rounded-md mr-3 sm:mr-4"> {/* Adjust padding/radius/margin */}
-                  <FaCheckCircle className="text-white text-xl sm:text-2xl" aria-hidden="true" /> {/* Adjust size */}
+            {/* Header */}
+            <div className="p-4 sm:p-5 border-b border-primary/20 bg-primary/5">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary text-white">
+                  <FaCheckCircle aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold">Ready to Begin</h3> {/* Adjust text size */}
-                  <p className="text-green-100 text-sm sm:text-base">Selections made successfully</p> {/* Adjust text size */}
+                  <h3 className="text-base sm:text-lg font-semibold text-text">
+                    You’re all set / आप शुरू करने के लिए तैयार हैं
+                  </h3>
+                  <p className="text-xs sm:text-sm text-secondary mt-0.5">
+                    Review your selections below and start your assessment
+                    / नीचे अपनी चयनित जानकारी देखें और परीक्षा शुरू करें
+                  </p>
                 </div>
               </div>
             </div>
-            
-            <div className="p-4 sm:p-6"> {/* Adjust padding */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6"> {/* Adjust gap/margin */}
-                {/* Selected Category */}
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 transition-all"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2"> {/* Adjust margin */}
-                    <FaGraduationCap className="text-sky-600 mr-2 text-sm sm:text-base" aria-hidden="true" /> {/* Adjust size, Changed from blue */}
-                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Category</p>
-                  </div>
-                  <p className="text-base sm:text-lg font-semibold text-gray-800">{selectedCategory?.name}</p> {/* Adjust text size */}
-                </div>
-                {/* Selected Subject */}
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 transition-all"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2"> {/* Adjust margin */}
-                    <FaBookOpen className="text-cyan-600 mr-2 text-sm sm:text-base" aria-hidden="true" /> {/* Adjust size, Changed from indigo */}
-                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Subject</p>
-                  </div>
-                  <p className="text-base sm:text-lg font-semibold text-gray-800">{selectedSubject?.subject_name}</p> {/* Adjust text size */}
-                </div>
-                {/* Selected Level */}
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 transition-all"> {/* Adjust padding/radius */}
-                  <div className="flex items-center mb-1 sm:mb-2"> {/* Adjust margin */}
-                    <FaLayerGroup className="text-teal-600 mr-2 text-sm sm:text-base" aria-hidden="true" /> {/* Adjust size, Kept teal */}
-                    <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">Level</p>
-                  </div>
-                  <p className="text-base sm:text-lg font-semibold text-gray-800">{selectedLevel?.name}</p> {/* Adjust text size */}
-                </div>
+
+            {/* Body */}
+            <div className="p-4 sm:p-6">
+              {/* Chips summary */}
+              <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5">
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-text border border-primary/20 text-xs sm:text-sm">
+                  <FaGraduationCap className="text-primary" aria-hidden="true" />
+                  {selectedCategory?.name || '—'}
+                </span>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-text border border-primary/20 text-xs sm:text-sm">
+                  <FaBookOpen className="text-primary" aria-hidden="true" />
+                  {selectedSubject?.subject_name || '—'}
+                </span>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-text border border-primary/20 text-xs sm:text-sm">
+                  <FaLayerGroup className="text-primary" aria-hidden="true" />
+                  {selectedLevel?.name || '—'}
+                </span>
+                {/* Mode chip derived from selected level */}
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-text border border-secondary/30 text-xs sm:text-sm">
+                  <span className="inline-block w-2 h-2 rounded-full bg-secondary" aria-hidden="true"></span>
+                  {selectedLevel?.level_code === 2.5 ? 'Center Exam' : 'Online Exam'}
+                </span>
               </div>
-              
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4"> {/* Adjust layout/gap */}
+
+              {/* Helpful note */}
+              <div className="mb-4 sm:mb-6 text-xs sm:text-sm text-gray-600">
+                • Make sure you’re in a quiet environment and have stable internet.
+                <br className="hidden sm:block" />
+                • परीक्षा शुरू करने से पहले शांत वातावरण और स्थिर इंटरनेट सुनिश्चित करें।
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3">
                 <motion.button
-                  type="button" // Add type
+                  type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={resetSelection}
-                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all font-medium flex items-center justify-center text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Adjust padding/size/focus, Changed focus ring from indigo
+                  className="w-full sm:w-auto px-4 sm:px-5 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all font-medium flex items-center justify-center text-sm"
                 >
-                  <FaChevronLeft className="w-4 h-4 mr-2" aria-hidden="true" /> {/* Use ChevronLeft */}
-                  Change Selection
+                  <FaChevronLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Change Selection / चयन बदलें
                 </motion.button>
-                
+
                 <motion.button
-                  type="button" // Add type
+                  type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExam}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-md border border-transparent transition-all font-medium flex items-center justify-center text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" // Kept green
+                  className="w-full sm:w-auto px-6 sm:px-7 py-2.5 bg-primary hover:opacity-90 text-white rounded-md border border-transparent transition-all font-semibold flex items-center justify-center text-sm"
                 >
-                  Start Exam
+                  Start Exam / परीक्षा शुरू करें
                   <FaArrowRight className="ml-2" aria-hidden="true" />
                 </motion.button>
               </div>
             </div>
           </motion.div>
         )}
-        
+
         {/* Initial State / Welcome Message */}
         {!selectedCategory && !selectedSubject && !selectedLevel && !error && !examReady && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
-            className="bg-white rounded-lg border border-sky-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow, Changed border from blue
+            className="bg-white rounded-lg border border-secondary/30 overflow-hidden mb-6 sm:mb-8"
           >
-            <div className="bg-gradient-to-br from-sky-50 to-cyan-50 p-6 sm:p-8 text-center"> {/* Adjust padding, Changed gradient from blue/indigo */}
+            <div className="bg-background p-6 sm:p-8 text-center">
               <div className="max-w-lg mx-auto">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sky-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6"> {/* Adjust size/margin, Changed from blue */}
-                  <FaGraduationCap className="text-white text-2xl sm:text-3xl" aria-hidden="true" /> {/* Adjust size */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <FaGraduationCap className="text-white text-2xl sm:text-3xl" aria-hidden="true" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">Start Your Assessment</h3> {/* Adjust text size/margin */}
                 <p className="text-sm sm:text-base text-gray-600"> {/* Adjust text size */}
                   Follow the steps above: select category, subject, and level to begin.
                 </p>
                 <div className="mt-4 sm:mt-6"> {/* Adjust margin */}
-                  <div className="inline-flex items-center justify-center bg-sky-100 text-sky-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm sm:text-base"> {/* Adjust padding/radius/size, Changed from blue */}
+                  <div className="inline-flex items-center justify-center bg-primary/10 text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm sm:text-base">
                     <FaArrowRight className="animate-pulse mr-2" aria-hidden="true" />
                     Select a Category to begin
                   </div>
                 </div>
               </div>
             </div>
-            
-           
+
+
           </motion.div>
         )}
+      </div>
+
+      {/* Assessment Process column */}
+      <div className="w-full md:w-4/12 lg:w-3/12  mt-6 md:mt-0">
+        <img src="/process.png" alt="Assessment Process" className="w-full h-auto" />
       </div>
     </div>
   );

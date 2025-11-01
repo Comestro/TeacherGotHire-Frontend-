@@ -302,14 +302,16 @@ const InterviewCard = () => {
         )}
       </AnimatePresence>
       
-      {/* Page Header */}
+      {/* Header with bilingual title */}
       <div className="mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
           <FaVideo className="mr-2 sm:mr-3 text-cyan-600" />
-          Interview Management
+          <span>इंटरव्यू प्रबंधन | Interview Management</span>
         </h1>
-        <p className="text-gray-600 mt-1 text-sm sm:text-base">
-          Schedule and manage your teaching qualification interviews
+        <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
+          <span className="font-medium text-gray-700">अपना शिक्षण योग्यता इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।</span>
+          <br className="hidden sm:block" />
+          <span className="text-gray-500">Schedule your teaching qualification interview and apply for jobs in schools/institutes.</span>
         </p>
       </div>
       
@@ -375,10 +377,10 @@ const InterviewCard = () => {
               Subject
             </label>
             <select
-              id="subject-filter" // Add id
+              id="subject-filter"
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
+              className="block w-full rounded-md border-2 border-gray-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 sm:text-sm py-2.5 px-3 bg-white"
             >
               <option value="all">All Subjects</option>
               {activeTab === "qualified" 
@@ -398,10 +400,10 @@ const InterviewCard = () => {
               Class Category
             </label>
             <select
-              id="class-category-filter" // Add id
+              id="class-category-filter"
               value={classCategoryFilter}
               onChange={(e) => setClassCategoryFilter(e.target.value)}
-              className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
+              className="block w-full rounded-md border-2 border-gray-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 sm:text-sm py-2.5 px-3 bg-white"
             >
               <option value="all">All Classes</option>
               {activeTab === "qualified" 
@@ -422,10 +424,10 @@ const InterviewCard = () => {
                 Status
               </label>
               <select
-                id="status-filter" // Add id
+                id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full rounded-md border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm py-2 px-3" // Adjust padding
+                className="block w-full rounded-md border-2 border-gray-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 sm:text-sm py-2.5 px-3 bg-white"
               >
                 <option value="all">All Statuses</option>
                 <option value="requested">Pending</option>
@@ -613,7 +615,7 @@ const InterviewCard = () => {
                         </label>
                         <div className="relative">
                           <Flatpickr
-                            id="datetime-picker" // Add id
+                            id="datetime-picker"
                             options={{
                               enableTime: true,
                               dateFormat: "Y-m-d H:i:S",
@@ -629,7 +631,7 @@ const InterviewCard = () => {
                                 .replace(/\.\d+Z/, "");
                               setSelectedDateTime(formatted);
                             }}
-                            className="block w-full px-3 sm:px-4 py-2 sm:py-2.5 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" // Adjust padding, use rounded-md
+                            className="block w-full px-3 sm:px-4 py-2.5 pr-10 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-white"
                             placeholder="Select date and time"
                           />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"> {/* Add pointer-events-none */}

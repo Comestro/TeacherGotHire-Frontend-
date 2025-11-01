@@ -24,7 +24,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#3E98C7] to-[#2A6F97] text-white shadow-md -z-10 md:z-0">
+    <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-primary text-white shadow-md">
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <button

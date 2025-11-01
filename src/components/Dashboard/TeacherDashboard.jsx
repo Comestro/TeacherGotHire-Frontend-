@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -22,6 +22,7 @@ import InterviewCard from "./components/InterviewCard";
 import { attemptsExam } from "../../features/examQuesSlice";
 import PrefrenceProfile from "../Profile/JobProfile/PrefrenceProfile";
 import { getPrefrence } from "../../features/jobProfileSlice";
+import { FaCalendarAlt } from "react-icons/fa";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
@@ -29,24 +30,22 @@ function TeacherDashboard() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showInterviewHistory, setShowInterviewHistory] = useState(false);
   const inputRef = useRef(null);
 
   const { basicData } = useSelector((state) => state.personalProfile);
-  const {  attempts } = useSelector(
-      (state) => state.examQues
-    );
+  const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   
-  console.log("attempts",attempts);
-  
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(attemptsExam());
     dispatch(getPrefrence());
-  },[dispatch]);
+    dispatch(getInterview());
+  }, [dispatch]);
 
-  const qualifiedExamNames = attempts
-  .filter(item => item?.exam?.level_code === 2 && item.isqualified)
-  .map(item => item.exam.name);
+  const qualifiedExamNames = (attempts || [])
+    .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
+    .map(item => item?.exam?.name);
 
   console.log("qualifiedExamNames",qualifiedExamNames);
   
@@ -101,6 +100,51 @@ function TeacherDashboard() {
       "Add mobile number",
       "Add education details",
     ],
+  };
+
+  // Derive interview state for summary banner (placed here, not inside handlers)
+  const interviews = useMemo(() => Array.isArray(interviewData) ? interviewData : [], [interviewData]);
+  const hasScheduledInterview = useMemo(() => interviews.some(i => i?.status === "scheduled"), [interviews]);
+  const hasRequestedInterview = useMemo(() => interviews.some(i => i?.status === "requested" || i?.status === "pending"), [interviews]);
+  const nextInterview = useMemo(() => {
+    const upcoming = interviews
+      .filter(i => i?.status === "scheduled" && i?.time)
+      .sort((a,b) => new Date(a.time) - new Date(b.time));
+    return upcoming[0] || null;
+  }, [interviews]);
+  
+  // Check if teacher has completed interview with passing grade (6+)
+  // Source 1: Dedicated interview list from store (examQues.interview)
+  const hasPassedInterviewFromInterviews = useMemo(() => {
+    return interviews.some(i =>
+      i?.status === "fulfilled" &&
+      i?.grade &&
+      parseInt(i.grade) >= 6
+    );
+  }, [interviews]);
+
+  // Source 2: Attempts array may include embedded interviews per attempt
+  // If any attempt (typically Level 2) has a fulfilled interview with grade >= 6, treat as passed
+  const hasPassedInterviewFromAttempts = useMemo(() => {
+    if (!Array.isArray(attempts)) return false;
+    return attempts.some((att) => {
+      const levelOk = att?.exam?.level_code === 2 || att?.exam?.level_name?.includes("Level - 2");
+      const intvs = Array.isArray(att?.interviews) ? att.interviews : [];
+      return levelOk && intvs.some(iv => iv?.status === "fulfilled" && iv?.grade != null && parseInt(iv.grade) >= 6);
+    });
+  }, [attempts]);
+
+  // Final pass status: either source indicates a passing interview
+  const hasPassedInterview = hasPassedInterviewFromInterviews || hasPassedInterviewFromAttempts;
+
+  const isEligibleForInterview = qualifiedExamNames.length > 0 && !hasPassedInterview;
+  // Show interview section if there are active (scheduled/requested) interviews or eligible but not passed
+  const shouldShowInterviewSection = hasScheduledInterview || hasRequestedInterview || (isEligibleForInterview && !hasPassedInterview);
+  const interviewSectionRef = useRef(null);
+  const scrollToInterview = () => {
+    if (interviewSectionRef.current) {
+      interviewSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const PhoneNumberModal = () => {
@@ -195,6 +239,87 @@ function TeacherDashboard() {
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
 
       <div className="min-h-screen">
+        {/* Interview eligibility and status banner */}
+        <div className="px-4 sm:px-6 pt-4">
+          {shouldShowInterviewSection && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-6 mb-4 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  {hasScheduledInterview ? (
+                    <div>
+                      <div className="text-sm font-semibold text-primary">आपका आगामी इंटरव्यू | You have an upcoming interview</div>
+                      {nextInterview && (
+                        <div className="mt-1 text-gray-700">
+                          <span className="font-medium">{nextInterview?.class_category?.name}</span>
+                          {" "}·{" "}
+                          <span>{nextInterview?.subject?.subject_name}</span>
+                          {nextInterview?.time && (
+                            <>
+                              {" "}·{" "}
+                              <span>{new Date(nextInterview.time).toLocaleString()}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {nextInterview?.link && (
+                          <a
+                            href={nextInterview.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:opacity-90"
+                          >
+                            Join Interview
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={scrollToInterview}
+                          className="inline-flex items-center px-4 py-2 rounded-md border border-primary/30 text-primary hover:bg-primary/10"
+                        >
+                          Manage Interviews
+                        </button>
+                      </div>
+                    </div>
+                  ) : hasRequestedInterview ? (
+                    <div>
+                      <div className="text-sm font-semibold text-amber-700">इंटरव्यू अनुरोध स्वीकृति लंबित | Interview request pending approval</div>
+                      <p className="mt-1 text-gray-700">आपके इंटरव्यू की तारीख तय होने पर हम आपको सूचित करेंगे। | We will notify you once your interview is scheduled.</p>
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={scrollToInterview}
+                          className="inline-flex items-center px-4 py-2 rounded-md border border-amber-300 text-amber-700 hover:bg-amber-100"
+                        >
+                          View Request
+                        </button>
+                      </div>
+                    </div>
+                  ) : isEligibleForInterview ? (
+                    <div>
+                      <div className="text-sm font-semibold text-primary">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
+                      <p className="mt-1 text-gray-700">
+                        <span className="font-medium">Level 2 पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
+                        <br className="hidden sm:block" />
+                        <span className="text-gray-600">Level 2 passed. Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
+                      </p>
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={scrollToInterview}
+                          className="inline-flex items-center px-5 py-2.5 rounded-md bg-primary text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
+                        >
+                          <FaCalendarAlt className="mr-2" />
+                          इंटरव्यू शेड्यूल करें | Schedule Interview
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         {/* Show preference form if user doesn't have class categories */}
         {!hasClassCategories ? (
           <div className=" p-4 sm:p-6">
@@ -202,20 +327,44 @@ function TeacherDashboard() {
           </div>
         ) : (
           <>
-            {/* <div className="md:px-6 md:py-5">
-                <TeacherDashboardCard />
-            </div> */}
-         
-            <div className="">
+            {/* Interview management placed prominently at the top when eligible or existing interviews */}
+            {shouldShowInterviewSection && (
+              <div ref={interviewSectionRef} className="md:px-6 md:py-4">
+                <InterviewCard />
+              </div>
+            )}
+            
+            {/* Show less prominent interview history for completed interviews */}
+            {hasPassedInterview && interviews.length > 0 && !shouldShowInterviewSection && (
+              <div className="md:px-6 md:py-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 flex items-center">
+                        <FaCalendarAlt className="mr-2 text-gray-500" />
+                        Interview History
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">View your completed interviews</p>
+                    </div>
+                    <button
+                      onClick={scrollToInterview}
+                      className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+                    >
+                      View History
+                    </button>
+                  </div>
+                </div>
+                <div ref={interviewSectionRef} className="hidden">
+                  <InterviewCard />
+                </div>
+              </div>
+            )}
+
+            {/* Other dashboard content */}
+            <div className="md:px-6 md:p-2">
               {/* <ExamManagement /> */}
               <FilterdExamCard/>
             </div>
-           {qualifiedExamNames.length>0 && (
-            <div className="md:px-6">
-            <InterviewCard />
-          </div>
-           ) 
-            }
           </>
         )}
       </div>
