@@ -194,7 +194,7 @@ function ExamManagement() {
 
       // Validate input
       if (!subject?.id || !subject?.subject_name) {
-        console.error("Invalid subject selection");
+        
         return;
       }
 
@@ -223,7 +223,7 @@ function ExamManagement() {
             return true;
           })
           .catch((error) => {
-            console.error("Failed to fetch exam sets:", error);
+            
             setLoading(false);
             return false;
           });
@@ -232,7 +232,7 @@ function ExamManagement() {
         return false;
       }
     } catch (error) {
-      console.error("Error in subject change handler:", error);
+      
       // Optionally reset subject selection
       setSelectedSubject(null);
       setSelectedSubjectName("");
@@ -305,7 +305,7 @@ function ExamManagement() {
       // setSelectedDateTime('');
       // alert("Interview scheduled successfully!");
     } catch (error) {
-      console.error("Failed to schedule interview:", error);
+      
 
       // Handle specific error cases
       if (error.message.includes("time slot")) {
@@ -363,7 +363,7 @@ function ExamManagement() {
       // Navigate after successful operation
       navigate("/teacher");
     } catch (error) {
-      console.error("Passkey generation failed:", error);
+      
 
       // Handle different error cases
       if (error.message.includes("network")) {
@@ -413,7 +413,7 @@ function ExamManagement() {
       alert("Verification successful! You can now proceed with the exam.");
       navigate("/exam");
     } catch (error) {
-      console.error("Verification failed:", error);
+      
       alert("An error occurred during verification. Please try again.");
     }
   };

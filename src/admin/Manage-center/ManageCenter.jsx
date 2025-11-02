@@ -135,7 +135,7 @@ const ManageCenter = () => {
       setExamCenters(Array.isArray(response) ? response : []);
       showSnackbar("Exam centers loaded successfully", "success");
     } catch (error) {
-      console.error("Error fetching exam centers:", error);
+      
       showSnackbar("Error fetching exam centers", "error");
       setExamCenters([]);
     } finally {
@@ -229,16 +229,16 @@ const ManageCenter = () => {
         );
         showSnackbar(`Exam center ${updatedStatus ? 'activated' : 'deactivated'} successfully`, "success");
       } else {
-        console.error("Status not updated in response:", response);
+        
         showSnackbar("Server did not update exam center status", "error");
       }
     } catch (error) {
-      console.error("Error updating center status:", error);
+      
       
       // Log more detailed error information
       if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
+        
+        
       }
       
       showSnackbar("Error updating exam center status", "error");
@@ -259,7 +259,7 @@ const ManageCenter = () => {
       setExamCenters(examCenters.filter((center) => center.id !== centerToDelete.id));
       showSnackbar("Exam center deleted successfully", "success");
     } catch (error) {
-      console.error("Error deleting exam center:", error);
+      
       showSnackbar("Error deleting exam center", "error");
     } finally {
       setIsSubmitting(false);
@@ -354,9 +354,9 @@ const ManageCenter = () => {
       setIsModalOpen(false);
       fetchExamCenters();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      
       if (error.response) {
-        console.error("Error response data:", error.response.data);
+        
       }
       showSnackbar("Error saving exam center", "error");
     } finally {
@@ -413,7 +413,7 @@ const ManageCenter = () => {
         showSnackbar("Invalid pincode", "error");
       }
     } catch (error) {
-      console.error("Error fetching postal data:", error);
+      
       setFormData((prevData) => ({
         ...prevData,
         city: "",

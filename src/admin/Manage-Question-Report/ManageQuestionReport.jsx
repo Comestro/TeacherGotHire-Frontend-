@@ -23,7 +23,7 @@ const safeFormatDate = (dateValue, format = 'MMM DD, YYYY') => {
     try {
         return moment(dateValue).format(format);
     } catch (error) {
-        console.error('Date formatting error:', error);
+        
         return '—';
     }
 };
@@ -103,7 +103,7 @@ const ManageQuestionReport = () => {
             setError(null);
             showSnackbar("Reports fetched successfully", "success");
         } catch (err) {
-            console.error("Error fetching reports:", err);
+            
             const errorMessage = err.response?.data?.detail || 'Failed to fetch reports';
             setError(errorMessage);
             showSnackbar(errorMessage, 'error');
@@ -161,7 +161,7 @@ const ManageQuestionReport = () => {
             showSnackbar(`Report has been marked as ${newStatus} successfully`);
             handleCloseDetails();
         } catch (err) {
-            console.error("Error updating report:", err);
+            
             const errorMessage = err.response?.data?.detail ||
                 (err.response?.data ? JSON.stringify(err.response.data) : `Failed to update report status`);
             showSnackbar(errorMessage, 'error');
@@ -229,7 +229,7 @@ const ManageQuestionReport = () => {
                     reportDate.isSameOrAfter(moment(dateRange[0])) &&
                     reportDate.isSameOrBefore(moment(dateRange[1]));
             } catch (error) {
-                console.error('Date comparison error:', error);
+                
                 dateMatch = false;
             }
         }

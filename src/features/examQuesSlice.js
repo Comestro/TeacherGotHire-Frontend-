@@ -105,7 +105,7 @@ export const getExamSet = createAsyncThunk(
     { level_id, subject_id, type, class_category_id },
     { rejectWithValue }
   ) => {
-    console.error("exa", { level_id, subject_id, class_category_id });
+    
     try {
       const data = await fetchExam({
         level_id,

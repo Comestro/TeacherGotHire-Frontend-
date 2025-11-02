@@ -17,7 +17,7 @@ class EqErrorBoundary extends React.Component {
     return { hasError: true };
   }
   componentDidCatch(err, info) {
-    console.error("EquationEditor error:", err, info);
+    
   }
   render() {
     if (!this.state.hasError) return this.props.children;
@@ -166,7 +166,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
             });
           }
         } catch (error) {
-          console.error("Error finding corresponding question:", error);
+          
         }
       };
 
@@ -283,7 +283,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
       toast.success("Successfully translated to Hindi (LaTeX preserved)");
     } catch (error) {
-      console.error("Manual translation failed:", error);
+      
       toast.error("Failed to translate content. Please try again.");
     } finally {
       setIsTranslating(false);
@@ -543,7 +543,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       await onSubmit(formData);
       
     } catch (error) {
-      console.error("Submission failed:", error);
+      
       toast.error("Failed to save question");
     } finally {
       setIsSubmitting(false);
@@ -573,7 +573,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           }));
         }
       } catch (error) {
-        console.error("Translation failed:", error);
+        
       } finally {
         setIsTranslating(false);
       }
@@ -601,7 +601,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
               updatedWords[i] = translated;
               hasTranslation = true;
             } catch (error) {
-              console.warn("Failed to translate:", word);
+              
             }
           }
         }
@@ -622,7 +622,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           }
         }
       } catch (error) {
-        console.error("Bulk translation failed:", error);
+        
       } finally {
         setIsTranslating(false);
       }

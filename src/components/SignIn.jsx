@@ -104,7 +104,7 @@ function Login() {
         navigate("/admin/dashboard");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      
 
       // Check if error is related to account verification
       const errorMessage = err.message || "An error occurred during login";
@@ -158,7 +158,7 @@ function Login() {
         autoClose: 3000,
       });
     } catch (err) {
-      console.error("Error resending OTP:", err);
+      
       toast.error(err.message || "Failed to send verification code", {
         position: "top-right",
         autoClose: 3000,

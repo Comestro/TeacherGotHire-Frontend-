@@ -112,7 +112,7 @@ const ManageTeacherApplied = () => {
             const response = await getClassCategory();
             setClassCategoryOptions(response.map((category) => category.name));
         } catch (err) {
-            console.error("Error fetching class categories:", err);
+            
         }
     };
     // Fetch job types
@@ -121,7 +121,7 @@ const ManageTeacherApplied = () => {
             const response = await getTeacherjobType();
             setJobTypeOptions(response.map((jobType) => jobType.teacher_job_name));
         } catch (err) {
-            console.error("Error fetching job types:", err);
+            
         }
     };
     useEffect(() => {
@@ -157,7 +157,7 @@ const ManageTeacherApplied = () => {
                 setApplications(formattedData);
                 setError(null);
             } catch (err) {
-                console.error("Error fetching job applications:", err);
+                
                 setError("Failed to load teacher applications. Please try again later.");
                 setSnackbar({
                     open: true,

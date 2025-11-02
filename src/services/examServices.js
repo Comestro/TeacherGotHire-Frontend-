@@ -28,7 +28,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      console.error("Unauthorized: Logging out the user");
+      
       localStorage.removeItem("access_token"); // Clear the token
       window.location.href = "/signin"; // Redirect to login page
     }
@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
 //     
 //     return response.data;
 //   } catch (err) {
-//     console.error("error:", err.response?.data || err);
+//     
 //     throw err;
 //   }
 // };
@@ -59,7 +59,7 @@ export const addExamCard = async ({ subject_id, class_category_id, level_id }) =
     
     return response.data;
   } catch (err) {
-    console.error("Error fetching exam cards:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -69,7 +69,7 @@ export const fetchLevel = async () => {
     const response = await apiClient.get(`/api/admin/level/`);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -79,7 +79,7 @@ export const checkPasskey = async (exam) => {
     
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };

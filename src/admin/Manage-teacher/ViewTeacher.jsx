@@ -216,7 +216,7 @@ const ViewTeacherAdmin = () => {
           document.title = "Teacher Profile";
         }
       } catch (error) {
-        console.error("Error fetching teacher data:", error);
+        
         setError("Failed to load teacher data. Please try again later.");
         setTeacherData(null);
         document.title = "Error | Teacher Profile";
@@ -256,7 +256,7 @@ const ViewTeacherAdmin = () => {
     setTimeout(() => {
       const contentElement = document.getElementById("teacher-pdf-content");
       if (!contentElement) {
-        console.error("PDF content element not found");
+        
         setDownloadLoading(false);
         setOpenDownloadModal(false);
 
@@ -324,7 +324,7 @@ const ViewTeacherAdmin = () => {
           setOpenSnackbar(true);
         })
         .catch((error) => {
-          console.error("Error generating PDF:", error);
+          
           setNotificationMessage({
             type: "error",
             text: "Failed to generate PDF. Please try again."

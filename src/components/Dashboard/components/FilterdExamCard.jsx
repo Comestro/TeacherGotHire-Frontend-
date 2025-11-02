@@ -53,7 +53,7 @@ const FilterdExamCard = () => {
         const levels = await fetchLevel();
         setLevels(levels);
       } catch (error) {
-        console.error("Error fetching levels:", error);
+        
       }
     };
 
@@ -159,7 +159,7 @@ const FilterdExamCard = () => {
       await dispatch(examCard(payload)).unwrap();
       setExamReady(true);
     } catch (err) {
-      console.error("Failed to load exam:", err);
+      
       setErrors("Failed to load exam data. Please try again.");
     } finally {
       setIsLoading(false);

@@ -113,7 +113,7 @@ export default function AdminDashboard() {
         const response = await getDashboardData();
         setMockData(response);
       } catch (error) {
-        console.error(error);
+        
       }
     };
 

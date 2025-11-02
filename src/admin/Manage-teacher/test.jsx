@@ -18,7 +18,7 @@ export default function test() {
           setOpenDownloadModal(false); // Close the modal immediately after initiating the download
         })
         .catch((error) => {
-          console.error("Error generating PDF:", error);
+          
           setOpenDownloadModal(false);
         });
     }, 100);

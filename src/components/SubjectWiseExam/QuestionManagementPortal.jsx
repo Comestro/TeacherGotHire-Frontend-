@@ -99,7 +99,7 @@ useEffect(() => {
       setLevel(data);
     })
     .catch(error => {
-      console.error("Error fetching level:", error);
+      
     });
 }, []);
   
@@ -122,7 +122,7 @@ useEffect(() => {
         await dispatch(getSetterInfo());
         // await dispatc(getLevels());
       } catch (error) {
-        console.error("Error fetching data:", error);
+        
         toast.error("Failed to load data. Please try again.");
       }
     };
@@ -300,7 +300,7 @@ useEffect(() => {
       setExamSetModalOpen(false);
     } catch (err) {
       toast.error("Error: " + (err.message || "Failed to save exam set"));
-      console.error("Error:", err);
+      
     }
   };
 
@@ -345,7 +345,7 @@ useEffect(() => {
         toast.success("Exam set deleted successfully!");
       } catch (err) {
         toast.error("Error: " + (err.message || "Failed to delete exam set"));
-        console.error("Error:", err);
+        
       }
     }
   };
@@ -465,7 +465,7 @@ useEffect(() => {
       setQuestionModalOpen(false);
     } catch (error) {
       toast.error(error.message || "Failed to submit question");
-      console.error("API Error:", error);
+      
     } finally {
       setIsSubmitting(false);
     }
@@ -501,7 +501,7 @@ useEffect(() => {
         toast.success("Question deleted successfully!");
       } catch (error) {
         toast.error("Error: " + (error.message || "Failed to delete question"));
-        console.error("Error:", error);
+        
       }
     }
   };
@@ -519,7 +519,7 @@ useEffect(() => {
       }));
     } catch (error) {
       toast.error("Error fetching questions: " + error.message);
-      console.error("Error:", error);
+      
     }
   };
 

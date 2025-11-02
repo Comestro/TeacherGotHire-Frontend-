@@ -34,7 +34,7 @@ export const handleLogout = (dispatch, navigate) => {
       navigate("/signin");
     })
     .catch((error) => {
-      console.error("Logout failed:", error);
+      
       toast.error("Failed to logout");
     });
 };

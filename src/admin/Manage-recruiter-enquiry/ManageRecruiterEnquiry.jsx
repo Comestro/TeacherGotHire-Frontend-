@@ -102,7 +102,7 @@ const ManageRecruiterEnquiry = () => {
                 setInquiries(transformedInquiries);
                 setFilteredInquiries(transformedInquiries);
             } catch (error) {
-                console.error("Error fetching recruiter inquiries:", error);
+                
             }
         };
 

@@ -64,7 +64,7 @@ const Skills = () => {
       setSuggestions([]);
       toast.success("Skill added successfully!");
     } catch (error) {
-      console.error("Error adding skill:", error);
+      
       toast.error(error.response?.data?.message || "Failed to add skill");
     }
   };
@@ -75,7 +75,7 @@ const Skills = () => {
       dispatch(getSkillsProfile());
       toast.success("Skill removed successfully!");
     } catch (error) {
-      console.error("Error removing skill:", error);
+      
       toast.error(error.response?.data?.message || "Failed to remove skill");
     }
   };

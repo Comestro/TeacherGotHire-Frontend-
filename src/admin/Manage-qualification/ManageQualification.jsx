@@ -79,7 +79,7 @@ const ManageQualification = () => {
       setQualifications(Array.isArray(data) ? data : []);
       setFilteredQualifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching qualifications:", error);
+      
       showSnackbar(
         error.response?.data?.message || "Failed to load qualifications. Please try again.",
         "error"
@@ -152,7 +152,7 @@ const ManageQualification = () => {
         );
       }
     } catch (error) {
-      console.error("Error deleting qualification:", error);
+      
       handleApiError(error, "Failed to delete qualification.");
     } finally {
       setSubmitting(false);
@@ -174,7 +174,7 @@ const ManageQualification = () => {
       showSnackbar(`${selectedQualifications.length} qualifications deleted successfully.`);
       setSelectedQualifications([]);
     } catch (error) {
-      console.error("Error bulk deleting qualifications:", error);
+      
       handleApiError(error, "Failed to delete selected qualifications.");
     } finally {
       setSubmitting(false);
@@ -260,7 +260,7 @@ const ManageQualification = () => {
       }
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Error saving qualification:", error);
+      
       handleApiError(
         error, 
         `Failed to ${currentQualification.id ? 'update' : 'add'} qualification. Please try again.`

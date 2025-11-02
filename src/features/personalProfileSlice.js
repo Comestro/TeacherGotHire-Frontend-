@@ -70,7 +70,7 @@ export const getAddress = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchAddressProfile();
-     // console.log("data",data)
+     // 
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -87,7 +87,7 @@ export const postAddress = createAsyncThunk(
   async (addressData, { rejectWithValue }) => {
     try {
       const data = await addAddressProfile(addressData);
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -100,7 +100,7 @@ export const putAddress = createAsyncThunk(
   async (updateData, { rejectWithValue }) => {
     try {
       const data = await updateAddressProfile(updateData);
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     }catch (error) {
@@ -115,7 +115,7 @@ export const getProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchPersonalProfile();
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -132,7 +132,7 @@ export const postProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await updatePersonalProfile(personalData);
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -170,7 +170,7 @@ const personalProfileSlice = createSlice({
           
           state.basicData = action.payload; 
           // Update profile data
-          console.log(action.payload)
+          
         })
         // Handle rejected state
         .addCase(getBasic.rejected, (state, action) => {

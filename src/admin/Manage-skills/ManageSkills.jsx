@@ -56,7 +56,7 @@ const ManageSkills = () => {
       setSkills(Array.isArray(data) ? data : []);
       setFilteredSkills(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching skills:", error);
+      
       showSnackbar(
         error.response?.data?.message || "Failed to load skills. Please try again.",
         "error"
@@ -112,7 +112,7 @@ const ManageSkills = () => {
       showSnackbar(`Skill "${selectedToDelete.name}" deleted successfully`);
       fetchSkills();
     } catch (error) {
-      console.error("Error deleting skill:", error);
+      
       handleApiError(error, "Failed to delete skill");
     } finally {
       setSubmitting(false);
@@ -131,7 +131,7 @@ const ManageSkills = () => {
       fetchSkills();
       setSelectedSkills([]);
     } catch (error) {
-      console.error("Error bulk deleting skills:", error);
+      
       handleApiError(error, "Failed to delete selected skills");
     } finally {
       setSubmitting(false);
@@ -216,7 +216,7 @@ const ManageSkills = () => {
       fetchSkills();
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Error saving skill:", error);
+      
       handleApiError(
         error, 
         `Failed to ${currentSkill.id ? 'update' : 'add'} skill. Please try again.`

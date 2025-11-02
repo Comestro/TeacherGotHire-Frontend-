@@ -95,7 +95,7 @@ const Experience = () => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      console.warn(err);
+      
       setErrors(err);
       toast.error(err.response?.data?.message || "Failed to save experience");
     }

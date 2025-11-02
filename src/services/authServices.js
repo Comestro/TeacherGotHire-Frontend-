@@ -86,7 +86,7 @@ export const createaccount = async (userDetails) => {
     
     return response;
   } catch (error) {
-    console.error("Error in createaccount:", error);
+    
 
     // Rethrow error so it can be caught in `signup`
     throw error;
@@ -190,7 +190,7 @@ export const resetPassword = async (uidb64, token, newPassword) =>
     try {
       // Step 1: Call the logout API first
       await apiClient.post("/api/logout/").catch((err) => {
-        console.error("Logout API call failed:", err);
+        
         // Even if the API fails, proceed with local logout
       });
   
@@ -204,7 +204,7 @@ export const resetPassword = async (uidb64, token, newPassword) =>
   
       return { success: true };
     } catch (err) {
-      console.error("Error during logout:", err);
+      
       // Still return success since we've cleared local state
       return { success: true };
     }

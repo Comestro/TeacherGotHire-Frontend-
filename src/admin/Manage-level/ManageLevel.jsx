@@ -74,7 +74,7 @@ const ManageLevel = () => {
       const data = await getLevel();
       setLevels(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching levels:", error);
+      
       showSnackbar(
         error.response?.data?.message || "Failed to fetch levels. Please try again.",
         "error"
@@ -223,7 +223,7 @@ const ManageLevel = () => {
       showSnackbar(`Level "${newLevelData.name}" added successfully!`);
       handleCloseAddDialog();
     } catch (error) {
-      console.error("Error saving level:", error);
+      
 
       if (error.response?.data) {
         const responseData = error.response.data;
@@ -274,7 +274,7 @@ const ManageLevel = () => {
       showSnackbar(`Level "${updatedLevel.name}" updated successfully!`);
       handleCloseEditDialog();
     } catch (error) {
-      console.error("Error updating level:", error);
+      
 
       if (error.response?.data) {
         const responseData = error.response.data;

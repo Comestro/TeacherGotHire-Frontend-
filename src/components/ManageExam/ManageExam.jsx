@@ -69,7 +69,7 @@ const ManageExam = () => {
         
       } catch (error) {
         toast.error('Failed to fetch exam sets');
-        console.error('Error fetching exams:', error);
+        
       } finally {
         setLoading(false);
       }
@@ -209,7 +209,7 @@ const ManageExam = () => {
       setExamForQuestions(null);
       
     } catch (error) {
-      console.error("Error adding question:", error);
+      
       toast.error(error.response?.data?.message || "Failed to add question");
     } finally {
       setLoading(false);

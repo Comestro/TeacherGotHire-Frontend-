@@ -28,7 +28,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      console.error('Unauthorized: Logging out the user');
+      
       localStorage.removeItem('access_token'); // Clear the token
       window.location.href = '/signin'; // Redirect to login page
     }
@@ -43,7 +43,7 @@ export const fetchSubjects = async()=>{
      return JSON.parse(JSON.stringify(response));
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }

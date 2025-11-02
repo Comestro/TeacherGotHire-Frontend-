@@ -22,12 +22,12 @@ const SkillsCard = ({ userId }) => {
             .map(id => skillsData.find(skill => skill.id === id));
           setSkills(uniqueSkills);
         } else {
-          console.error('Unexpected response structure:', response);
+          
           setSkills([]);
         }
       })
       .catch(error => {
-        console.error('Error fetching skills:', error);
+        
         setSkills([]);
       })
       .finally(() => {

@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      console.error('Unauthorized: Logging out the user');
+      
       localStorage.removeItem('access_token'); // Clear the token
       window.location.href = '/signin'; // Redirect to login page
     }
@@ -82,7 +82,7 @@ export const updateBasicProfile = async(personaldata)=>{
      return JSON.parse(JSON.stringify(response)); 
   }
      catch (err) {
-         console.error(' error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -94,7 +94,7 @@ export const fetchBasicProfile = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -107,7 +107,7 @@ export const updateAddressProfile = async(addressdata)=>{
   }
   catch (err) {
   
-    console.error("API Error:", err.response?.data || err.message);
+    
 
     // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
@@ -126,7 +126,7 @@ console.log("adress",addressdata)
   }
   catch (err) {
   
-    console.error("API Error:", err.response?.data || err.message);
+    
 
     // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
@@ -140,11 +140,11 @@ console.log("adress",addressdata)
 export const fetchAddressProfile = async()=>{
   try{
     const response = await apiClient.get('/api/self/teacherAddress/');
-     console.log("res",response)
+     
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -155,7 +155,7 @@ export const fetchCompleteProfile = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }

@@ -88,7 +88,7 @@ const ManageSubject = () => {
       setFilteredSubjects(subjectsData);
       setClasses(classesData);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      
       showSnackbar(
         error.response?.data?.message || "Failed to load data. Please try again later.",
         "error"
@@ -153,7 +153,7 @@ const ManageSubject = () => {
       setOpenDeleteDialog(false);
       setSelectedToDelete(null);
     } catch (error) {
-      console.error("Error deleting subject:", error);
+      
 
       // Extract specific error message if available
       if (error.response?.data) {
@@ -189,7 +189,7 @@ const ManageSubject = () => {
       fetchData();
       setSelectedSubjects([]);
     } catch (error) {
-      console.error("Error bulk deleting subjects:", error);
+      
 
       // Extract specific error message if available
       if (error.response?.data) {
@@ -263,7 +263,7 @@ const ManageSubject = () => {
         fetchData();
       }
     } catch (error) {
-      console.error("Error saving subject:", error);
+      
 
       // Handle specific error formats from the server
       if (error.response?.data) {

@@ -52,7 +52,7 @@ const ExamCenterModal = ({
       
     }
     if (centersError) {
-      console.error("RTK Query centers error:", centersError);
+      
       toast.error("Failed to load exam centers. Please try again.");
     }
   }, [centers, centersError]);

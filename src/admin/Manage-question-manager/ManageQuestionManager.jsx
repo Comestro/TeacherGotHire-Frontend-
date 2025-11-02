@@ -122,25 +122,25 @@ const ManageQuestionManager = () => {
       if (Array.isArray(managersResponse)) {
         setManagers(managersResponse);
       } else {
-        console.error("Invalid managers data:", managersResponse);
+        
         setError("Failed to fetch managers");
       }
 
       if (Array.isArray(subjectsResponse)) {
         setAvailableSubjects(subjectsResponse);
       } else {
-        console.error("Invalid subjects data:", subjectsResponse);
+        
         setError("Failed to fetch subjects");
       }
 
       if (Array.isArray(classesResponse)) {
         setClassCategories(classesResponse);
       } else {
-        console.error("Invalid class categories data:", classesResponse);
+        
         setError("Failed to fetch class categories");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      
       setError("An error occurred while fetching data");
     } finally {
       setLoading(false);
@@ -282,7 +282,7 @@ const ManageQuestionManager = () => {
         throw new Error(isEditMode ? "Failed to update manager" : "Failed to assign manager");
       }
     } catch (error) {
-      console.error("Error saving manager:", error);
+      
 
       let errorMessage = "Failed to save changes";
 
@@ -339,7 +339,7 @@ const ManageQuestionManager = () => {
 
       await fetchData();
     } catch (error) {
-      console.error("Error deleting manager:", error);
+      
       setNotification({
         open: true,
         message: `Error: ${error.response?.data?.detail || error.message || "Failed to delete manager"}`,
@@ -397,7 +397,7 @@ const ManageQuestionManager = () => {
       }
     } catch (error) {
       // Error handling remains the same
-      console.error("Error updating status:", error);
+      
 
       let errorMessage = "Failed to update status";
 

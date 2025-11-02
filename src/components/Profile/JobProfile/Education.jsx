@@ -337,7 +337,7 @@ const Education = () => {
       setSelectedDegreeType("");
       reset();
     } catch (err) {
-      console.error("Error:", err);
+      
       // Handle different error formats
       let errorMessage = "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
       
@@ -429,7 +429,7 @@ const Education = () => {
       fetchProfile();
       toast.success("Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!");
     } catch (err) {
-      console.error("Error:", err);
+      
       toast.error(err.response?.data?.message || "Failed to delete education details / शिक्षा विवरण हटाने में विफल");
     }
   };

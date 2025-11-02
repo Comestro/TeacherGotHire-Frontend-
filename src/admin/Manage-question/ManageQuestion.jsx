@@ -90,7 +90,7 @@ const ManageQuestion = () => {
         const difficultyLevelsData = await getLevel();
         setDifficultyLevels(difficultyLevelsData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        
       }
     };
 
@@ -126,7 +126,7 @@ const ManageQuestion = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error deleting question:", error);
+      
       setNotification({
         open: true,
         message: "Error deleting question.",
@@ -148,7 +148,7 @@ const ManageQuestion = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error deleting selected questions:", error);
+      
       setNotification({
         open: true,
         message: "Error deleting selected questions.",
@@ -186,7 +186,7 @@ const ManageQuestion = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error saving question:", error);
+      
       setNotification({
         open: true,
         message: "Error saving question.",
@@ -228,7 +228,7 @@ const ManageQuestion = () => {
           type: "success",
         });
       } catch (error) {
-        console.error("Error adding subject:", error);
+        
         setNotification({
           open: true,
           message: "Error adding subject.",
@@ -250,7 +250,7 @@ const ManageQuestion = () => {
           type: "success",
         });
       } catch (error) {
-        console.error("Error adding class category:", error);
+        
         setNotification({
           open: true,
           message: "Error adding class category.",
@@ -273,7 +273,7 @@ const ManageQuestion = () => {
           type: "success",
         });
       } catch (error) {
-        console.error("Error adding level:", error);
+        
         setNotification({
           open: true,
           message: "Error adding level.",

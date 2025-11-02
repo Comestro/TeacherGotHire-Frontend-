@@ -25,7 +25,7 @@ class EqErrorBoundary extends React.Component {
     return { hasError: true };
   }
   componentDidCatch(err, info) {
-    console.error("EquationEditor error:", err, info);
+    
   }
   render() {
     // When no error, render children (the real editor)
@@ -395,7 +395,7 @@ const QuestionForm = () => {
       toast.success("Successfully translated to Hindi (LaTeX preserved)");
       
     } catch (error) {
-      console.error("Manual translation failed:", error);
+      
       toast.error("Failed to translate content. Please try again.");
     } finally {
       setIsTranslating(false);
@@ -475,7 +475,7 @@ const QuestionForm = () => {
         throw new Error("Failed to create questions");
       }
     } catch (error) {
-      console.error("Submission failed:", error);
+      
       toast.error(error.response?.data?.message || "Failed to add questions");
     } finally {
       setIsSubmitting(false);
@@ -659,7 +659,7 @@ const QuestionForm = () => {
         }
         toast.success("Translation completed (LaTeX preserved)");
       } catch (error) {
-        console.error("Translation failed:", error);
+        
         toast.error("Failed to translate text");
       } finally {
         setIsTranslating(false);
@@ -690,7 +690,7 @@ const QuestionForm = () => {
               updatedWords[i] = translated;
               hasTranslation = true;
             } catch (error) {
-              console.warn("Failed to translate:", word);
+              
             }
           }
         }
@@ -712,7 +712,7 @@ const QuestionForm = () => {
           }
         }
       } catch (error) {
-        console.error("Bulk translation failed:", error);
+        
       } finally {
         setIsTranslating(false);
       }

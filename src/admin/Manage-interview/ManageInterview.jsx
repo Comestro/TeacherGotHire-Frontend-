@@ -238,7 +238,7 @@ const InterviewManagement = () => {
             setFilteredTeachers(data);
             setLoading(false);
         } catch (err) {
-            console.error("Error fetching interviews:", err);
+            
             setError(err.message || "Error fetching interviews");
             setLoading(false);
         }

@@ -39,7 +39,7 @@ export const translateText = async (text, sourceLang, targetLang) => {
 
     return response.data.translated || text;
   } catch (error) {
-    console.error("Translation error:", error);
+    
     throw error;
   }
 };
@@ -57,7 +57,7 @@ export const reorderQuestions = async (orderedIds) => {
     }
     throw new Error("Failed to reorder questions");
   } catch (error) {
-    console.error("Error reordering questions:", error);
+    
     throw error.response?.data || {
       message: "Failed to reorder questions",
     };
@@ -84,7 +84,7 @@ const apiService = {
       const response = await axiosInstance.get(endpoint);
       return response.data;
     } catch (error) {
-      console.error(`Error getting data from ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -94,7 +94,7 @@ const apiService = {
       const response = await axiosInstance.get(`${endpoint}/${id}/`);
       return response.data;
     } catch (error) {
-      console.error(`Error getting data by id from ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -105,7 +105,7 @@ const apiService = {
       const response = await axiosInstance.post(`${endpoint}/`, data);
       return response.data;
     } catch (error) {
-      console.error(`Error creating data in ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -115,7 +115,7 @@ const apiService = {
       const response = await axiosInstance.put(`${endpoint}/${id}/`, data);
       return response.data;
     } catch (error) {
-      console.error(`Error updating data in ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -125,7 +125,7 @@ const apiService = {
       const response = await axiosInstance.patch(`${endpoint}/${id}/`, data);
       return response.data;
     } catch (error) {
-      console.error(`Error patching data in ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -135,7 +135,7 @@ const apiService = {
       const response = await axiosInstance.delete(`${endpoint}/${id}/`);
       return response.data;
     } catch (error) {
-      console.error(`Error deleting data from ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -147,7 +147,7 @@ const apiService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`Error bulk deleting data from ${endpoint}:`, error);
+      
       throw error;
     }
   },
@@ -157,7 +157,7 @@ const apiService = {
       const response = await axiosInstance.delete(endpoint);
       return response.data;
     } catch (error) {
-      console.error(`Error deleting all data from ${endpoint}:`, error);
+      
       throw error;
     }
   },

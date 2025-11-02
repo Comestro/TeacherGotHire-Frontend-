@@ -14,7 +14,7 @@ export const getSubjects = createAsyncThunk(
     "getSubjects", async (_, { rejectWithValue }) => {
       try {
         const data = await fetchSubjects();
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -42,7 +42,7 @@ export const getSubjects = createAsyncThunk(
         .addCase(getSubjects.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.subjects = action.payload; 
-          console.log(action.payload)
+          
         })
         .addCase(getSubjects.rejected, (state, action) => {
           state.status = "failed";

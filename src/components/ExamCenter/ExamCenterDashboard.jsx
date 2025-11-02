@@ -55,7 +55,7 @@ const ExamCenterDashboard = () => {
       // Optionally, show a success message
       alert("User approved successfully!");
     } catch (error) {
-      console.error("Error approving user:", error);
+      
       alert("Failed to approve the user. Please try again.");
     }
   };

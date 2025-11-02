@@ -96,7 +96,7 @@ const ManageTeacherJobType = () => {
       setFilteredJobTypes(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch job types:", err);
+      
       setError("Failed to load job types. Please try again later.");
       showSnackbar("Failed to load job types. Please try again later.", "error");
     } finally {
@@ -191,7 +191,7 @@ const ManageTeacherJobType = () => {
       }
       handleCloseEditDialog();
     } catch (error) {
-      console.error("Failed to save job type:", error);
+      
 
       if (error.response?.data) {
         const responseData = error.response.data;
@@ -241,7 +241,7 @@ const ManageTeacherJobType = () => {
       showSnackbar(`Job type "${selectedJob.jobrole_name}" deleted successfully`);
       handleCloseDeleteDialog();
     } catch (error) {
-      console.error("Failed to delete job type:", error);
+      
 
       if (error.response?.data) {
         if (typeof error.response.data === 'string') {

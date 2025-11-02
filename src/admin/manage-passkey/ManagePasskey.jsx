@@ -171,7 +171,7 @@ const PasskeyManagement = () => {
       }));
       setData(processedData);
     } catch (error) {
-      console.error("Error fetching passkey data:", error);
+      
       setSnackbar({
         open: true,
         message: "Failed to fetch passkey data. Please try again.",
@@ -242,7 +242,7 @@ const PasskeyManagement = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error approving request:", error);
+      
       setSnackbar({
         open: true,
         message: "Failed to approve passkey. Please try again.",
@@ -284,7 +284,7 @@ const PasskeyManagement = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error rejecting request:", error);
+      
       setSnackbar({
         open: true,
         message: "Failed to reject passkey. Please try again.",

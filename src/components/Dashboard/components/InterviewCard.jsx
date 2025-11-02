@@ -158,7 +158,7 @@ const InterviewCard = () => {
       dispatch(getInterview());
       
     } catch (error) {
-      console.error("Failed to schedule interview:", error);
+      
       
       // Handle specific error cases with user-friendly messages
       if (error?.message && error.message?.includes("time slot")) {

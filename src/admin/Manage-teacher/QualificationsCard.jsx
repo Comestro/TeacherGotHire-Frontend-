@@ -35,12 +35,12 @@ const QualificationsCard = ({ userId }) => {
           };
           setQualifications([formattedQualification]);
         } else {
-          console.error('Unexpected response structure:', response);
+          
           setQualifications([]);
         }
       })
       .catch(error => {
-        console.error('Error fetching qualifications:', error);
+        
         setQualifications([]);
       })
       .finally(() => {

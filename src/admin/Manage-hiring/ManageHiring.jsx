@@ -91,7 +91,7 @@ const ManageHiringRequests = () => {
           setData(formatData);
         }
       } catch (error) {
-        console.error("Error fetching hire requests:", error);
+        
       } finally {
         setLoading(false);
       }
@@ -136,7 +136,7 @@ const ManageHiringRequests = () => {
       setSnackbarOpen(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error approving request:", error);
+      
       setSnackbarMessage("Failed to approve request.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -161,7 +161,7 @@ const ManageHiringRequests = () => {
       setSnackbarOpen(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error rejecting request:", error);
+      
       setSnackbarMessage("Failed to reject request.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);

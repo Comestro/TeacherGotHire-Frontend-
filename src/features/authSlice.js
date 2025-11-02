@@ -94,7 +94,7 @@ export const userLogout = createAsyncThunk(
       await logout();
       return { success: true };
     } catch (error) {
-      console.error("Error in userLogout:", error);
+      
       // Still return success since local logout was done in the service
       return { success: true };
     }

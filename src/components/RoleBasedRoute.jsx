@@ -37,7 +37,7 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
         setUserRole(response.data.role);
       })
       .catch((error) => {
-        console.error("Error fetching user data:", error);
+        
         setUserRole(null);
       })
       .finally(() => {

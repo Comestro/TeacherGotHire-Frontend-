@@ -28,7 +28,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      console.error("Unauthorized: Logging out the user");
+      
       localStorage.removeItem("access_token"); // Clear the token
       window.location.href = "/signin"; // Redirect to login page
     }
@@ -41,7 +41,7 @@ export const fetchLevel = async () => {
     const response = await apiClient.get(`/api/admin/level/`);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -63,7 +63,7 @@ export const fetchExam = async ({
     });
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -79,7 +79,7 @@ export const fetchQuestion = async ({ exam_id, language }) => {
     
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -95,7 +95,7 @@ export const Attempts = async (params= {}) => {
     
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -126,7 +126,7 @@ export const addResult = async({
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 };
@@ -136,7 +136,7 @@ export const GeneratePasskey = async ({user_id,exam_id,center_id}) => {
     const response = await apiClient.post(`/api/generate-passkey/`,{user_id,exam_id,center_id});
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -145,7 +145,7 @@ export const getGeneratedPasskey = async () => {
     const response = await apiClient.get(`/api/generate-passkey/`);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -158,7 +158,7 @@ export const VerifyPasscode = async ({exam_id,entered_passcode}) => {
     
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data?.error || err);
+    
     throw err;
   }
 };
@@ -169,7 +169,7 @@ export const AddInterview = async ({subject,time,class_category,level}) => {
     const response = await apiClient.post(`/api/self/interview/`,{subject,time,class_category,level});
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -179,7 +179,7 @@ export const Interview = async () => {
     const response = await apiClient.get(`/api/self/interview/`);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -190,7 +190,7 @@ export const ReportReason = async () => {
     console.log("reason",response)
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -200,7 +200,7 @@ export const AddReport = async ({question,issue_type}) => {
     const response = await apiClient.post(`/api/self/report/`,{question,issue_type});
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -211,7 +211,7 @@ export const AllCenter = async () => {
     console.log("allcenter",response)
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -220,7 +220,7 @@ export const Approved = async ({user_id,exam_id}) => {
     const response = await apiClient.post(`/api/approve-passkey/`,{user_id,exam_id});
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -231,7 +231,7 @@ export const fetchCenterUser= async () => {
     console.log("centerUser",response.data)
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -241,7 +241,7 @@ export const createExamSet= async (payload) => {
     const response = await apiClient.post(`/api/examsetter/`,payload);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -250,7 +250,7 @@ export const editExamSet= async ({ payload, id }) => {
     const response = await apiClient.put(`/api/examsetter/${id}/`,payload);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -262,7 +262,7 @@ export const setterExamSet= async () => {
     return response.data;
     
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -272,7 +272,7 @@ export const delExamSet= async (id) => {
     const response = await apiClient.delete(`/api/examsetter/${id}/`);
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -283,7 +283,7 @@ export const addQuestionToExamSet= async (payload) => {
     return response.data;
     
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -296,7 +296,7 @@ export const editQuestionToExamSet= async ( questionId, payload) => {
     return response.data;
     
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -309,7 +309,7 @@ export const getQuestionForExamSet= async ( questionId) => {
     return response.data;
     
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -321,7 +321,7 @@ export const getAssignUserSubject= async () => {
     return response.data;
     
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -332,7 +332,7 @@ export const jobApply= async ({subject, class_category}) => {
       `,{subject, class_category});
     return response.data;
   } catch (err) {
-    console.error("error:", err.response?.data || err);
+    
     throw err;
   }
 };
@@ -342,7 +342,7 @@ export const fetchQuestionsByExamSet = async (examSetId) => {
     const response = await axios.get(`${API_URL}/exam/questions/${examSetId}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching questions by exam set:", error);
+    
     throw error;
   }
 };

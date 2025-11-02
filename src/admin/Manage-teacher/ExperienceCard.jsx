@@ -37,11 +37,11 @@ const ExperienceCard = ({ userId }) => {
           }));
           setExperience(formattedExperiences);
         } else {
-          console.error('Unexpected response structure:', response);
+          
           setExperience([]);
         }
       } catch (error) {
-        console.error('Error fetching experience:', error);
+        
         setExperience([]);
       } finally {
         setLoading(false);

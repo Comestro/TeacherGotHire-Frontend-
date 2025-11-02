@@ -38,7 +38,7 @@ export const reorderQuestions = async (questionIds) => {
     
     return response.data;
   } catch (error) {
-    console.error("Error reordering questions:", error);
+    
     throw error;
   }
 };

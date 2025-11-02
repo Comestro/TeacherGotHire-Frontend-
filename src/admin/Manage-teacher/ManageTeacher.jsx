@@ -171,11 +171,11 @@ const ManageTeacher = () => {
           });
         }
       } else {
-        console.error("Error fetching teacher data: ", response);
+        
         setError("Failed to load teacher data. Please try again later.");
       }
     } catch (error) {
-      console.error("Error fetching teacher data: ", error);
+      
       setError("An error occurred while fetching data");
     } finally {
       setLoading(false);
@@ -194,7 +194,7 @@ const ManageTeacher = () => {
           setQualifications(response);
         }
       } catch (error) {
-        console.error("Error fetching qualifications:", error);
+        
       }
     };
 
@@ -205,7 +205,7 @@ const ManageTeacher = () => {
           setSubjects(response);
         }
       } catch (error) {
-        console.error("Error fetching subjects:", error);
+        
       }
     };
 
@@ -277,7 +277,7 @@ const ManageTeacher = () => {
         });
       }
     } catch (error) {
-      console.error("Error updating teacher status:", error);
+      
       setNotification({
         open: true,
         message: `Failed to update status: ${error.message || "Unknown error"}`,

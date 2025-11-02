@@ -126,7 +126,7 @@ export const getPrefrence= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchTeacherPrefrence();
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -143,7 +143,7 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await updateTeacherPrefrence(prefrenceData);
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -160,7 +160,7 @@ export const postPrefrence = createAsyncThunk(
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchTeacherJobPrefrenceLocation();
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -177,7 +177,7 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await updateTeacherJobPrefrenceLocation(prefrenceData);
-        console.log("data",data)
+        
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -193,7 +193,7 @@ export const postPrefrence = createAsyncThunk(
       try {
         console.log("edit",prefrenceData)
         const data = await editTeacherJobPrefrenceLocation(prefrenceData);
-        console.log("data",data)
+        
          // Filter out the deleted location
        
         return data; // Return the updated profile data
@@ -210,7 +210,7 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await deleteTeacherJobPrefrenceLocation(prefrenceData);
-        console.log("data",data)
+        
          // Filter out the deleted location
        
         return data; // Return the updated profile data
@@ -229,7 +229,7 @@ export const getEducationProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchEducationProfile();
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -246,7 +246,7 @@ export const postEducationProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await addEducationProfile(personalData);
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -279,7 +279,7 @@ export const delEducationProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await deleteEducationProfile(personalData);
-      console.log("data",data)
+      
        // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -314,7 +314,7 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await updateSkillsProfile(personalData);
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -331,7 +331,7 @@ export const getSkillsProfile = createAsyncThunk(
     async (skillToRemove, { rejectWithValue }) => {
       try {
         const data = await deleteSkillProfile(skillToRemove);
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -348,7 +348,7 @@ export const getSkillsProfile = createAsyncThunk(
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchExprienceProfile ();
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -365,7 +365,7 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await addExprienceProfile(personalData);
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -380,7 +380,7 @@ export const getSkillsProfile = createAsyncThunk(
       try {
         console.log("putexpe",{payload, id })
         const data = await updateExprienceProfile({payload, id });
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -397,7 +397,7 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await deleteExprienceProfile(personalData);
-        console.log("data",data)
+        
          // Call the service
         return data; // Return the updated profile data
       } catch (error) {
@@ -683,7 +683,7 @@ const jobProfileSlice = createSlice({
       //   state.skillsData = action.payload; // Update profile data
       //   //Object.assign(state, action.payload);
       //   //console.log(profileData)
-      //   console.log(action.payload)
+      //   
       // })
       // .addCase(postSkillsProfile.rejected, (state, action) => {
       //   state.status = "failed";

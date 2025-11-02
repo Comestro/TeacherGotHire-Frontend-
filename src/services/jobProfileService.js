@@ -32,7 +32,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      console.error('Unauthorized: Logging out the user');
+      
       localStorage.removeItem('access_token'); // Clear the token
       window.location.href = '/signin'; // Redirect to login page
     }
@@ -47,7 +47,7 @@ export const fetchClassCategory = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -59,7 +59,7 @@ export const fetchJobRole = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -71,7 +71,7 @@ export const fetchTeacherJobRole = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -83,7 +83,7 @@ export const fetchSubject = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -94,7 +94,7 @@ export const fetchQualification = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -105,7 +105,7 @@ export const fetchAllSkills = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -119,7 +119,7 @@ export const updateEducationProfile = async({payload, id })=>{
      }
         catch (err) {
   
-            console.error("API Error:", err.response?.data || err.message);
+            
         
             // Extract validation errors
             const errorMessage = err.response?.data && typeof err.response.data === "object"
@@ -139,7 +139,7 @@ export const addEducationProfile = async(expriencedata)=>{
   }
   catch (err) {
   
-    console.error("API Error:", err.response?.data || err.message);
+    
 
     // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
@@ -156,7 +156,7 @@ export const fetchEducationProfile = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -169,7 +169,7 @@ export const deleteEducationProfile = async(expriencedata)=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -181,7 +181,7 @@ export const updateSkillsProfile = async(skillsdata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -192,7 +192,7 @@ export const fetchSkillsProfile = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -203,7 +203,7 @@ export const deleteSkillProfile = async(skillToRemove)=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -216,7 +216,7 @@ export const updateExprienceProfile = async({payload, id})=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -237,7 +237,7 @@ export const fetchExprienceProfile = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -249,7 +249,7 @@ export const deleteExprienceProfile = async(expriencedata)=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -262,7 +262,7 @@ export const updateTeacherPrefrence = async(prefrenceData)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -273,7 +273,7 @@ export const fetchTeacherPrefrence = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }
@@ -285,7 +285,7 @@ export const updateTeacherJobPrefrenceLocation = async(prefrenceData)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -297,7 +297,7 @@ export const editTeacherJobPrefrenceLocation = async(prefrenceData)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -309,7 +309,7 @@ export const deleteTeacherJobPrefrenceLocation = async(locationId)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
-            console.error('Registration error:', err.response?.data || err);
+            
             throw err;
   }
 }
@@ -321,7 +321,7 @@ export const fetchTeacherJobPrefrenceLocation = async()=>{
      return response.data;
   }
      catch (err) {
-         console.error('error:', err.response?.data || err);
+         
          throw err;
   }
 }

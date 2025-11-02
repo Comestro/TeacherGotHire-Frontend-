@@ -250,7 +250,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
         );
       }
     } catch (error) {
-      console.error("Submission error:", error);
+      
       if (
         error.response?.data?.contact?.includes("This field must be unique.")
       ) {

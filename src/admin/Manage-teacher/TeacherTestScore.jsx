@@ -124,11 +124,11 @@ const TeacherTestScorePage = ({ userId }) => {
           const uniqueSubjects = [...new Set(allRecords.map(record => record.subject))];
           setSubjects(uniqueSubjects);
         } else {
-          console.error('Unexpected response structure:', response);
+          
           setTestScores([]);
         }
       } catch (error) {
-        console.error("Error fetching test scores:", error);
+        
         setTestScores([]);
       } finally {
         setLoading(false);

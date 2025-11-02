@@ -105,7 +105,7 @@ const ManageRecruiter = () => {
             type: "success",
           });
         } else {
-          console.error('Unexpected response structure:', response);
+          
           setError('Failed to load recruiter data. Please try again.');
           setNotification({
             open: true,
@@ -115,7 +115,7 @@ const ManageRecruiter = () => {
         }
       })
       .catch(error => {
-        console.error('Error fetching recruiters:', error);
+        
         setError('An error occurred while fetching data.');
         setNotification({
           open: true,

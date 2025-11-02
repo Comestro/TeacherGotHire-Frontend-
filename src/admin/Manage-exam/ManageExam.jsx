@@ -339,7 +339,7 @@ const ExamManagement = () => {
         });
         setUniqueUsers(Array.from(users).sort());
       } catch (error) {
-        console.error("Error processing unique users:", error);
+        
         setUniqueUsers([]);
       }
     }
@@ -354,7 +354,7 @@ const ExamManagement = () => {
       }
       return "Admin";
     } catch (error) {
-      console.error("Error getting assigned user name:", error);
+      
       return "Unknown";
     }
   };
@@ -366,7 +366,7 @@ const ExamManagement = () => {
       response.sort((a, b) => b.id - a.id);
       setExams(response);
     } catch (error) {
-      console.error("Error fetching exams:", error);
+      
       const errorMessage = error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
@@ -383,7 +383,7 @@ const ExamManagement = () => {
         const response = await getSubjects();
         setSubjects(response);
       } catch (error) {
-        console.error("Error fetching subjects:", error);
+        
         showSnackbar("Failed to load subjects", "error");
       }
     };
@@ -396,7 +396,7 @@ const ExamManagement = () => {
         const response = await getClassCategory();
         setClassCategories(response);
       } catch (error) {
-        console.error("Error fetching class categories:", error);
+        
         showSnackbar("Failed to load class categories", "error");
       }
     };
@@ -409,7 +409,7 @@ const ExamManagement = () => {
         const response = await getLevel();
         setLevels(response);
       } catch (error) {
-        console.error("Error fetching levels:", error);
+        
         showSnackbar("Failed to load levels", "error");
       }
     };
@@ -551,7 +551,7 @@ const ExamManagement = () => {
       await fetchExams();
       setOpenAddModal(false);
     } catch (error) {
-      console.error("Error saving exam:", error);
+      
       const errorMessage = error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
@@ -575,7 +575,7 @@ const ExamManagement = () => {
       setOpenDeleteModal(false);
       showSnackbar(response.message || "Exam deleted successfully!");
     } catch (error) {
-      console.error("Error deleting exam:", error);
+      
       showSnackbar(error);
     } finally {
       setLoading(false);
@@ -646,7 +646,7 @@ const ExamManagement = () => {
       await fetchExams();
       setOpenStatusConfirmation(false);
     } catch (error) {
-      console.error("Error updating exam status:", error);
+      
       showSnackbar("Failed to update exam status", "error");
     } finally {
       setLoading(false);
@@ -659,7 +659,7 @@ const ExamManagement = () => {
       await fetchExams();
       showSnackbar("Data refreshed successfully", "success");
     } catch (error) {
-      console.error("Error refreshing data:", error);
+      
       showSnackbar("Failed to refresh data", "error");
     } finally {
       setLoading(false);

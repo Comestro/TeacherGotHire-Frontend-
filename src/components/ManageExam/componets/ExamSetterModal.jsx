@@ -105,7 +105,7 @@ const ExamSetterModal = ({
       onClose();
     } catch (error) {
       toast.error(error.message || 'Failed to save exam set');
-      console.error('API Error:', error);
+      
     } finally {
       setIsSubmitting(false);
     }

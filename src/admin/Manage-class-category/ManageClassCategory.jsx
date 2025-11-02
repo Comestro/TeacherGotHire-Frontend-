@@ -93,7 +93,7 @@ const ManageClassCategory = () => {
       setCategories(processedData);
       setRowCount(processedData.length);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      
       const errorMessage = error.response?.data?.message || "Failed to fetch class categories";
       setError(errorMessage);
       showSnackbar(errorMessage, "error");
@@ -204,7 +204,7 @@ const ManageClassCategory = () => {
         handleCloseAddEditModal();
       }
     } catch (error) {
-      console.error("Error saving category:", error);
+      
 
       if (error.response?.data) {
         const responseData = error.response.data;
@@ -240,7 +240,7 @@ const ManageClassCategory = () => {
       showSnackbar(`Category "${selectedCategory.name}" deleted successfully!`);
       handleCloseDeleteModal();
     } catch (error) {
-      console.error("Error deleting category:", error);
+      
 
       if (error.response?.data) {
         if (error.response.data.message) {
@@ -270,7 +270,7 @@ const ManageClassCategory = () => {
       setSelectedCategories([]);
       showSnackbar(`${selectedCategories.length} categories deleted successfully!`);
     } catch (error) {
-      console.error("Error bulk deleting categories:", error);
+      
 
       if (error.response?.data) {
         if (error.response.data.message) {

@@ -92,7 +92,7 @@ const ManageQuestion = () => {
         setQuestions(response.questions || []);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching exam:", error);
+        
         toast.error("Failed to fetch exam details");
         setLoading(false);
         navigate("/manage-exam");
@@ -217,7 +217,7 @@ const ManageQuestion = () => {
       await refreshExamData();
       
     } catch (error) {
-      console.error('Error reordering questions:', error);
+      
       toast.error('Failed to reorder questions');
       await refreshExamData();
     } finally {
@@ -284,7 +284,7 @@ const ManageQuestion = () => {
         setQuestions(response.questions || []);
       }
     } catch (error) {
-      console.error("Error refreshing exam data:", error);
+      
       toast.error("Failed to refresh exam data");
     }
   };
@@ -404,7 +404,7 @@ const ManageQuestion = () => {
       // Fetch fresh exam data to update all stats
       await refreshExamData();
     } catch (error) {
-      console.error("Error saving question:", error);
+      
       toast.error(error.response?.data?.error || "Failed to save question");
     }
   };
@@ -425,7 +425,7 @@ const ManageQuestion = () => {
         // Refresh exam data to update stats
         await refreshExamData();
       } catch (error) {
-        console.error("Delete error:", error);
+        
         toast.error(error.response?.data?.error || "Failed to delete question");
       }
     }

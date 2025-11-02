@@ -119,7 +119,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           setPostOffices([]);
         }
       } catch (error) {
-        console.error("Error fetching pincode details:", error);
+        
         setApiError("Failed to fetch pincode details.");
       }
     } else {
@@ -178,9 +178,9 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       setIsFormVisible(false);
       setEditingRowIndex(null);
     } catch (err) {
-      console.error("Complete error object structure:");
-      console.error(err);
-      console.error("Stringified error:", JSON.stringify(err, null, 2));
+      
+      
+      
       
       // Most aggressive approach - check every possible path
       let errorFound = false;
@@ -304,7 +304,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           }
         }
       } catch (error) {
-        console.error("Error fetching pincode details for edit:", error);
+        
       }
     }
     
@@ -325,7 +325,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
       fetchjobrefrence();
     } catch (err) {
-      console.error("Error deleting location:", err);
+      
       setApiError("Failed to delete location. Please try again.");
     }
   };

@@ -109,7 +109,7 @@ const QuestionManagement = () => {
       setIsEditing(false);
       setEditingIndex(null);
     } catch (err) {
-      console.error("Error:", err);
+      
     }
   };
 
@@ -126,7 +126,7 @@ const QuestionManagement = () => {
       await dispatch(deleteExamSet(id)).unwrap();
       dispatch(getExamSets());
     } catch (err) {
-      console.error("Error:", err);
+      
     }
   };
 
@@ -180,7 +180,7 @@ const QuestionManagement = () => {
       });
       setEditingQuestionIndex(null);
     } catch (error) {
-      console.error("API Error:", error);
+      
       toast.error(error.message || "Failed to submit question");
     } finally {
       setIsSubmitting(false);
@@ -252,7 +252,7 @@ const QuestionManagement = () => {
       });
       setEditingQuestionId(questionId);
     } else {
-      console.error("Question not found with ID:", questionId);
+      
       toast.error("Question not found!");
     }
   };
@@ -286,7 +286,7 @@ const QuestionManagement = () => {
   //       toast.success("Question updated successfully!");
   //     })
   //     .catch((error) => {
-  //       console.error("Error updating question:", error);
+  //       
   //       toast.error(error.message || "Failed to update question");
   //     });
   // };
@@ -320,7 +320,7 @@ const QuestionManagement = () => {
         toast.success("Question updated successfully!");
       })
       .catch((error) => {
-        console.error("Error updating question:", error);
+        
         toast.error(error.message || "Failed to update question");
       });
   }, [dispatch, filteredQuestions]); // Add all dependencies used inside

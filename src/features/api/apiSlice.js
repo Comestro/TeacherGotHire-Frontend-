@@ -24,7 +24,7 @@ export const apiSlice = createApi({
       },
       // Add error handling
       transformErrorResponse: (response) => {
-        console.error('Error fetching centers:', response);
+        
         return response;
       },
     }),
@@ -42,7 +42,7 @@ export const apiSlice = createApi({
         return response;
       },
       transformErrorResponse: (response) => {
-        console.error('Error fetching apply eligibility:', response);
+        
         return response;
       },
     })
