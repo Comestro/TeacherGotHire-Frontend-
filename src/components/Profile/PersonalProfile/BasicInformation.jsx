@@ -10,7 +10,7 @@ import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX } from "r
 
 // English -> Hindi label map
 const hiLabels = {
-  Profile: "प्रोफ़ाइल",
+  "Profile Picture": "प्रोफ़ाइल चित्र",
   "Basic Information": "मूलभूत जानकारी",
   Name: "नाम",
   "Email Address": "ईमेल पता",
@@ -75,7 +75,7 @@ const EditableField = ({
             <img
               src={value || "/images/profile.jpg"}
               alt="Profile"
-              className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-gray-200"
+              className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border border-[#3E98C7]/30 shadow-sm"
             />
             <button
               onClick={() => onToggleEdit(true)}
@@ -87,7 +87,7 @@ const EditableField = ({
         </div>
       );
     }
-    return <p className="text-gray-700 text-sm sm:text-base break-words">{value || "N/A"}</p>;
+    return <p className={`text-gray-700 text-sm sm:text-base break-word ${label !== "Email Address" ? "capitalize" : ""}`}>{value || "N/A"}</p>;
   };
 
   const renderEditor = () => {
@@ -96,7 +96,7 @@ const EditableField = ({
         <select
           value={tempValue || ""}
           onChange={(e) => setTempValue(e.target.value)}
-          className="border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base"
+          className="border border-[#3E98C7]/30 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base"
         >
           <option value="">{`Select ${bi(label)}`}</option>
           {(options || []).map((option) => (
@@ -114,14 +114,14 @@ const EditableField = ({
             type="file"
             accept="image/*"
             onChange={(e) => setTempValue(e.target.files && e.target.files[0])}
-            className="border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#3E98C7]/10 file:text-[#2E87A7] hover:file:bg-[#3E98C7]/20"
+            className="border border-[#3E98C7]/30 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#3E98C7]/10 file:text-[#2E87A7] hover:file:bg-[#3E98C7]/20"
           />
           {tempValue && tempValue instanceof File && (
             <div className="flex items-center gap-2">
               <img
                 src={URL.createObjectURL(tempValue)}
                 alt="Preview"
-                className="w-12 h-12 rounded-full object-cover border-2 border-teal-200"
+                className="w-12 h-12 rounded-full object-cover border border-[#3E98C7]/30 shadow-sm"
               />
               <span className="text-xs text-gray-500">{tempValue.name}</span>
             </div>
@@ -142,8 +142,9 @@ const EditableField = ({
               setTempValue(e.target.value);
             }
           }}
-          className={`border-2 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
-            error ? "border-red-500" : "border-gray-300"
+          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
+          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
+            error ? "border-red-500" : "border-[#3E98C7]/30"
           }`}
         />
         {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
@@ -152,10 +153,10 @@ const EditableField = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 sm:py-4 gap-3 sm:gap-0">
+    <div className="group bg-white/70 backdrop-blur-[1px] border border-[#3E98C7]/15 rounded-xl px-4 py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:border-[#3E98C7]/40 hover:shadow-sm transition-all">
       <div className="flex flex-col sm:flex-row sm:items-center flex-1 min-w-0">
         <div className="flex items-center mb-2 sm:mb-0">
-          <p className="text-gray-700 font-medium w-full sm:w-48 lg:w-64 text-sm sm:text-base truncate">
+          <p className="text-gray-700 font-semibold w-full sm:w-48 lg:w-64 text-sm sm:text-base truncate">
             {bi(label)}:
           </p>
         </div>
@@ -167,14 +168,14 @@ const EditableField = ({
             <>
               <button
                 onClick={handleCancel}
-                className="px-3 py-2 text-xs sm:text-sm text-gray-700 font-semibold bg-white border-2 border-gray-300 hover:border-gray-400 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+                className="px-3 py-2 text-xs sm:text-sm text-gray-700 font-semibold bg-white border border-gray-300 hover:border-gray-400 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2"
               >
                 <HiOutlineX className="w-4 h-4" />
                 {bi("Cancel")}
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-xl transition-all flex items-center gap-2"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2"
               >
                 <HiOutlineCheck className="w-4 h-4" />
                 {bi("Save")}
@@ -183,7 +184,7 @@ const EditableField = ({
           ) : (
             <button
               onClick={() => onToggleEdit(true)}
-              className="text-gray-700 font-medium text-xs sm:text-sm px-3 sm:px-4 border-2 border-gray-200 py-1.5 sm:py-1 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+              className="text-gray-700 font-medium text-xs sm:text-sm px-3 sm:px-4 border border-gray-200 bg-white py-1.5 sm:py-1 rounded-lg hover:border-[#3E98C7]/40 hover:bg-[#3E98C7]/5 transition-colors flex items-center gap-2"
             >
               <HiOutlinePencilAlt className="w-4 h-4" />
               {label === "Profile" ? bi("Edit Profile") : bi("Edit")}
@@ -266,7 +267,7 @@ const BasicInformation = () => {
 
   const fields = [
     {
-      label: "Profile",
+      label: "Profile Picture",
       field: "profile_picture",
       inputType: "file",
       value: basicData.profile_picture,
@@ -276,12 +277,7 @@ const BasicInformation = () => {
       field: "Fname",
       value: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
     },
-    {
-      label: "Email Address",
-      field: "email",
-      value: profile.email,
-      inputType: "email",
-    },
+   
     {
       label: "Contact No",
       field: "phone_number",
@@ -339,7 +335,7 @@ const BasicInformation = () => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
+    <div className="bg-gradient-to-br from-white to-[#F7FBFE] rounded-2xl border border-[#3E98C7]/20 shadow-sm">
       <ToastContainer
         position="top-right"
         autoClose={1000}
@@ -356,10 +352,12 @@ const BasicInformation = () => {
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b-2 border-[#3E98C7]/20 px-6 pt-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 px-6 pt-6 pb-4 border-b border-[#3E98C7]/20 bg-[#3E98C7]/5 rounded-t-2xl">
         <div className="mb-2 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] flex items-center gap-2">
-            <HiOutlineUser className="w-7 h-7 text-[#3E98C7]" />
+          <h2 className="text-xl sm:text-2xl font-bold text-[#2A6476] flex items-center gap-3">
+            <span className="p-2 bg-white/70 rounded-xl border border-[#3E98C7]/30">
+              <HiOutlineUser className="w-6 h-6 text-[#3E98C7]" />
+            </span>
             {bi("Basic Information")}
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
@@ -368,10 +366,11 @@ const BasicInformation = () => {
         </div>
       </div>
 
-      <div className="px-6 pb-6 space-y-1">
-        {fields.map((f) => (
-          <React.Fragment key={f.field}>
+      <div className="px-6 pb-6">
+        <div className="grid grid-cols-1 gap-4">
+          {fields.map((f) => (
             <EditableField
+              key={f.field}
               label={f.label}
               field={f.field}
               value={f.value}
@@ -382,9 +381,8 @@ const BasicInformation = () => {
               options={f.options}
               error={errors[f.field]}
             />
-            <hr className="border-[#3E98C7]/10" />
-          </React.Fragment>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

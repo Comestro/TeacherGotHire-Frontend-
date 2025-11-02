@@ -96,7 +96,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl sm:mx-0 p-6 border border-gray-200 mt-8 shadow-lg">
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/30 p-6 md:p-8 shadow-sm">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -111,28 +111,31 @@ const Skills = () => {
         theme="light"
       />
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 border-b-2 border-[#3E98C7]/20">
-        <div className="mb-3 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] flex items-center gap-2">
-            <HiOutlineClipboardDocumentList className="text-2xl" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 mb-6 border-b border-secondary/20">
+        <div className="mb-4 sm:mb-0">
+          <h2 className="text-2xl font-bold text-text mb-2 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <HiOutlineClipboardDocumentList className="text-2xl text-primary" aria-hidden="true" />
+            </div>
             Skills & Expertise
+            <span className="ml-2 text-secondary text-sm font-normal">/ कौशल और विशेषज्ञता</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <p className="text-sm text-secondary ml-14">
             Showcase your core competencies and technical abilities
           </p>
         </div>
         <button
-          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
+          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? (
             <>
-              <HiOutlineXMark className="size-5" />
+              <HiOutlineXMark className="h-5 w-5" aria-hidden="true" />
               Cancel
             </>
           ) : (
             <>
-              <HiOutlinePlus className="size-5" />
+              <HiOutlinePlus className="h-5 w-5" aria-hidden="true" />
               Add Skill
             </>
           )}
@@ -179,28 +182,32 @@ const Skills = () => {
 
       {/* Skills List */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-text/70 uppercase tracking-wide">
           Current Skills
         </h3>
         {teacherSkill.length === 0 ? (
-          <div className="p-4 text-center rounded-xl bg-[#3E98C7]/5 border border-dashed border-[#3E98C7]/25">
-            <HiOutlineClipboardDocumentList className="mx-auto size-8 text-[#3E98C7]/60 mb-2" />
-            <p className="text-[#3E98C7]">No skills added yet</p>
+          <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/30">
+            <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+              <HiOutlineClipboardDocumentList className="h-10 w-10 text-primary" aria-hidden="true" />
+            </div>
+            <h3 className="text-text font-bold text-lg mb-1">No skills added yet</h3>
+            <p className="text-sm text-secondary">Add skills to showcase your expertise</p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-3">
             {teacherSkill.map((skill, index) => (
               <div
                 key={index}
-                className="flex items-center bg-[#3E98C7]/10 text-[#3E98C7] px-4 py-2 rounded-full border-2 border-[#3E98C7]/40 hover:border-[#3E98C7]/60 hover:bg-[#3E98C7]/20 transition-all transform hover:scale-105"
+                className="flex items-center bg-primary/10 text-primary px-4 py-2.5 rounded-full border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all duration-200 shadow-sm hover:shadow-md"
               >
-                <HiOutlineCheckBadge className="size-5 mr-2 text-[#3E98C7]" />
-                <span className="text-sm font-medium">{skill.skill.name}</span>
+                <HiOutlineCheckBadge className="h-5 w-5 mr-2 text-primary" aria-hidden="true" />
+                <span className="text-sm font-semibold">{skill.skill.name}</span>
                 <button
                   onClick={() => handleRemoveSelectedSkill(skill)}
-                  className="ml-2 text-gray-400 hover:text-red-500 rounded-full p-1 transition-all transform hover:scale-110"
+                  className="ml-3 text-error hover:text-error/80 rounded-full p-1 transition-all hover:bg-error/10 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error"
+                  aria-label={`Remove ${skill.skill.name}`}
                 >
-                  <HiOutlineXMark className="size-5" />
+                  <HiOutlineXMark className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
             ))}

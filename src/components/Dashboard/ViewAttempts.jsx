@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { attemptsExam } from "../../features/examQuesSlice";
-import { MdOutlineMenuBook } from "react-icons/md";
+import { 
+  HiOutlineDocumentText, 
+  HiOutlineCheckCircle, 
+  HiOutlineXCircle,
+  HiOutlineClock,
+  HiOutlineExclamationTriangle,
+  HiOutlineChevronDown,
+  HiOutlineFolderOpen,
+  HiOutlineBookOpen
+} from "react-icons/hi2";
 
 function ViewAttempts() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -67,21 +76,28 @@ function ViewAttempts() {
   }, [selectedCategory, apiOutput2]);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h1 className="text-2xl text-[#3E98C7] font-bold flex items-center gap-2">
-            <MdOutlineMenuBook className="size-7" />
-            Exam Attempts
-          </h1>
+    <div className="p-6 max-w-8xl mx-auto">
+      <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/20 p-8 shadow-sm">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-text flex items-center gap-3 mb-2">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <HiOutlineDocumentText className="h-7 w-7 text-primary" aria-hidden="true" />
+              </div>
+              Exam Attempts
+              <span className="ml-2 text-secondary text-base font-normal">/ परीक्षा प्रयास</span>
+            </h1>
+            <p className="text-sm text-secondary ml-14">View all your exam attempts and interview records</p>
+          </div>
           
-          <div className="w-full md:w-72">
-            <label className="block text-gray-700 mb-2 text-sm font-medium">
-              Select Class Category
+          <div className="w-full lg:w-80">
+            <label className="block text-text font-semibold mb-2 text-sm">
+              Filter by Category
+              <span className="ml-2 text-secondary text-xs font-normal">/ श्रेणी द्वारा फ़िल्टर करें</span>
             </label>
             <div className="relative">
               <select
-                className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full appearance-none bg-white border-2 border-secondary/30 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium text-text"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -92,10 +108,8 @@ function ViewAttempts() {
                   </option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+              <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                <HiOutlineChevronDown className="h-5 w-5 text-secondary" aria-hidden="true" />
               </div>
             </div>
           </div>
@@ -103,14 +117,17 @@ function ViewAttempts() {
 
         {apiOutput2?.some(result => result.exam === null) && (
           <div className="mb-6">
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="text-sm text-yellow-700">
-                  Some exam results are invalid or incomplete and have been filtered out.
-                </p>
+            <div className="bg-warning/5 border-2 border-warning/30 p-5 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-warning/10 rounded-lg flex-shrink-0">
+                  <HiOutlineExclamationTriangle className="h-5 w-5 text-warning" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-warning mb-1">Data Notice</h3>
+                  <p className="text-sm text-warning/80">
+                    Some exam results are invalid or incomplete and have been filtered out from the display.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -118,17 +135,26 @@ function ViewAttempts() {
 
         {selectedCategory && (
           <div className="space-y-6">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-              </svg>
-              <h2 className="text-gray-700 font-medium">
-                Showing results for: {selectedCategory === "All" ? "All Categories" : selectedCategory}
-              </h2>
+            <div className="flex items-center gap-3 px-5 py-3 bg-primary/5 rounded-lg border border-primary/20">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <HiOutlineFolderOpen className="h-5 w-5 text-primary" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-xs text-secondary font-medium uppercase tracking-wider">Showing Results For</p>
+                <h2 className="text-text font-bold">
+                  {selectedCategory === "All" ? "All Categories" : selectedCategory}
+                </h2>
+              </div>
             </div>
 
             {subjects.length === 0 ? (
-              <p className="px-5">No exam results found.</p>
+              <div className="text-center py-16 bg-background/50 rounded-xl border-2 border-dashed border-secondary/30">
+                <div className="p-4 bg-secondary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                  <HiOutlineDocumentText className="h-10 w-10 text-secondary" aria-hidden="true" />
+                </div>
+                <h3 className="text-text text-xl font-bold mb-2">No exam results found</h3>
+                <p className="text-secondary">Try selecting a different category or take an exam to see your results here.</p>
+              </div>
             ) : (
               subjects.map((subject) => (
                 <SubjectResults
@@ -229,13 +255,13 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
   if (!allRows.length) return null;
 
   return (
-    <div className="mb-8">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b bg-gray-50">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+    <div className="mb-6">
+      <div className="bg-white rounded-xl border border-secondary/30 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="p-5 border-b border-secondary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <h3 className="text-xl font-bold text-text flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <HiOutlineBookOpen className="h-6 w-6 text-primary" aria-hidden="true" />
+            </div>
             {subject}
           </h3>
         </div>
@@ -243,50 +269,96 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-[#E5F1F9] text-[#3E98C7] text-sm font-semibold">
-                <th className="py-2 px-4 border-b">Record Type</th>
-                <th className="py-2 px-4 border-b">Class Category</th>
-                <th className="py-2 px-4 border-b">Subject</th>
-                <th className="py-2 px-4 border-b">Level</th>
-                <th className="py-2 px-4 border-b">Language</th>
-                <th className="py-2 px-4 border-b">Result/Status</th>
-                <th className="py-2 px-4 border-b">Score</th>
-                <th className="py-2 px-4 border-b">Attempt Count</th>
-                <th className="py-2 px-4 border-b">Date</th>
+              <tr className="bg-gradient-to-br from-background to-background/50">
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Record Type</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Class Category</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Subject</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Level</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Language</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Result/Status</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Score</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Attempt</th>
+                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Date</th>
               </tr>
             </thead>
             <tbody>
               {allRows.map((row, index) => {
-                const statusColor = 
-                  row.type === "Interview" 
-                    ? row.status === "Completed" ? "text-green-600" 
-                    : row.status === "Scheduled" ? "text-blue-600"
-                    : row.status === "Requested" ? "text-yellow-600"
-                    : "text-gray-600"
-                    : row.status === "Passed" ? "text-green-600" : "text-red-600";
+                // Determine status styling
+                let statusBadge;
+                if (row.type === "Interview") {
+                  if (row.status === "Completed") {
+                    statusBadge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
+                        <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                        Completed
+                      </span>
+                    );
+                  } else if (row.status === "Scheduled") {
+                    statusBadge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20">
+                        <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+                        Scheduled
+                      </span>
+                    );
+                  } else if (row.status === "Requested") {
+                    statusBadge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning rounded-full text-xs font-semibold border border-warning/20">
+                        <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+                        Requested
+                      </span>
+                    );
+                  } else {
+                    statusBadge = (
+                      <span className="inline-flex items-center px-3 py-1.5 bg-background text-secondary rounded-full text-xs font-semibold border border-secondary/30">
+                        {row.status}
+                      </span>
+                    );
+                  }
+                } else {
+                  if (row.status === "Passed") {
+                    statusBadge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
+                        <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                        Passed
+                      </span>
+                    );
+                  } else {
+                    statusBadge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-error/10 text-error rounded-full text-xs font-semibold border border-error/20">
+                        <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                        Failed
+                      </span>
+                    );
+                  }
+                }
                 
                 return (
                 <tr 
                   key={index} 
-                  className={`text-sm ${
-                    row.type === "Interview" ? "bg-gray-50" : ""
+                  className={`text-sm hover:bg-primary/5 transition-all duration-200 ${
+                    row.type === "Interview" ? "bg-background/30" : ""
                   }`}
                 >
-                  <td className="py-2 px-4 border-b text-center font-medium">
-                    {row.type}
+                  <td className="py-4 px-6 border-b border-secondary/10">
+                    <span className="font-semibold text-text">
+                      {row.type}
+                    </span>
                   </td>
-                  <td className="py-2 px-4 border-b text-center">{row.classCategory}</td>
-                  <td className="py-2 px-4 border-b text-center">{row.subject}</td>
-                  <td className="py-2 px-4 border-b text-center">{row.level}</td>
-                  <td className="py-2 px-4 border-b text-center">{row.language}</td>
-                  <td className={`py-2 px-4 border-b text-center ${statusColor}`}>
-                    {row.status}
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.classCategory}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70 font-medium">{row.subject}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.level}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.language}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10">
+                    {statusBadge}
                   </td>
-                  <td className="py-2 px-4 border-b text-center">{row.score}</td>
-                  <td className="py-2 px-4 border-b text-center">{row.attemptCount}</td>
-                  <td className="py-2 px-4 border-b text-center">{row.date}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10">
+                    <span className="font-semibold text-text">{row.score}</span>
+                  </td>
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.attemptCount}</td>
+                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.date}</td>
                 </tr>
               )})}
+
             </tbody>
           </table>
         </div>

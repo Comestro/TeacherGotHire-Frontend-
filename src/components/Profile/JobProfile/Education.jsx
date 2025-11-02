@@ -11,7 +11,7 @@ import {
 } from "../../../features/jobProfileSlice";
 import { HiOutlineAcademicCap, HiOutlineTrash, HiOutlinePencil, HiOutlineBookOpen, HiOutlinePresentationChartBar, HiOutlineClipboard } from "react-icons/hi";
 import { HiOutlinePlusCircle, HiOutlineXMark, HiOutlineXCircle } from "react-icons/hi2";
-import { HiOutlineCheck } from "react-icons/hi";
+import { HiOutlineCheck, HiOutlineEye } from "react-icons/hi";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -48,6 +48,8 @@ const Education = () => {
   // Add new state for subject selections
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
+  const [viewDetailsModal, setViewDetailsModal] = useState(false);
+  const [selectedEducation, setSelectedEducation] = useState(null);
 
   // Define streams for Intermediate
   const intermediateStreams = [
@@ -163,9 +165,9 @@ const Education = () => {
 
   // Add this function to determine the next allowed qualification levels
   const getNextAllowedQualificationLevels = (existingEducations) => {
-    // If no education exists yet, allow all education levels to start with
+    // If no education exists yet, only allow level 1 (Matriculation)
     if (!existingEducations || existingEducations.length === 0) {
-      return Object.values(qualificationOrder); // Allow all qualification levels initially
+      return [1]; // Only allow Matriculation to start
     }
     
     // Track which levels already exist in the user's education
@@ -193,11 +195,27 @@ const Education = () => {
       }
     });
     
-    // Convert to array for easier checking
-    const existingLevelsArray = Array.from(existingLevels);
+    // Get the maximum level the user has
+    const maxLevel = existingLevels.size > 0 ? Math.max(...Array.from(existingLevels)) : 0;
     
-    // Allow any qualification level that doesn't already exist
-    return Object.values(qualificationOrder).filter(level => !existingLevels.has(level));
+    // For adding new education:
+    // 1. Can add the next level only (maxLevel + 1)
+    // 2. Can also add any missing levels before maxLevel
+    const allowedLevels = [];
+    
+    // Add all missing levels from 1 to maxLevel
+    for (let i = 1; i <= maxLevel; i++) {
+      if (!existingLevels.has(i)) {
+        allowedLevels.push(i);
+      }
+    }
+    
+    // Add the next level if it's within our defined range (1-6)
+    if (maxLevel < 6 && !allowedLevels.includes(maxLevel + 1)) {
+      allowedLevels.push(maxLevel + 1);
+    }
+    
+    return allowedLevels;
   };
 
   // Function to sort qualifications for the dropdown
@@ -363,18 +381,61 @@ const Education = () => {
 
   const handleDelete = async (index) => {
     try {
+      // Get the qualification level of the education being deleted
+      const educationToDelete = educationData[index];
+      let qualName = "";
+      
+      if (educationToDelete.qualification?.name) {
+        qualName = educationToDelete.qualification.name;
+      } else if (typeof educationToDelete.qualification === 'string') {
+        qualName = educationToDelete.qualification;
+      } else {
+        qualName = educationToDelete.qualification_name || "";
+      }
+      
+      const levelToDelete = qualificationOrder[qualName] || 0;
+      
+      // Check if there are any higher level qualifications
+      const hasHigherLevels = educationData.some((edu, idx) => {
+        if (idx === index) return false; // Skip the one being deleted
+        
+        let eduQualName = "";
+        if (edu.qualification?.name) {
+          eduQualName = edu.qualification.name;
+        } else if (typeof edu.qualification === 'string') {
+          eduQualName = edu.qualification;
+        } else {
+          eduQualName = edu.qualification_name || "";
+        }
+        
+        const eduLevel = qualificationOrder[eduQualName] || 0;
+        return eduLevel > levelToDelete;
+      });
+      
+      // If there are higher levels, prevent deletion
+      if (hasHigherLevels) {
+        toast.error(
+          "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।",
+          {
+            autoClose: 4000,
+            position: "top-center"
+          }
+        );
+        return;
+      }
+      
       const id = educationData[index].id;
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
-      toast.success("Education details deleted successfully!");
+      toast.success("Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!");
     } catch (err) {
       console.error("Error:", err);
-      toast.error(err.response?.data?.message || "Failed to delete education details");
+      toast.error(err.response?.data?.message || "Failed to delete education details / शिक्षा विवरण हटाने में विफल");
     }
   };
 
   return (
-    <div className="px-2 sm:px-4 lg:px-6 mt-4 sm:mt-8 py-4 sm:py-6 rounded-2xl bg-white border border-gray-100">
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/30 p-6 md:p-8 shadow-sm">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -390,25 +451,28 @@ const Education = () => {
       />
       {/* Enhanced Header */}
       {loading && <Loader />}
-      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-[#3E98C7]/15">
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-8 pb-6 border-b border-secondary/20">
         <div className="mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] mb-1 flex items-center gap-2">
-            <HiOutlineAcademicCap className="text-2xl" />
+          <h2 className="text-2xl font-bold text-text mb-2 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <HiOutlineAcademicCap className="text-2xl text-primary" aria-hidden="true" />
+            </div>
             Education Background
+            <span className="ml-2 text-secondary text-sm font-normal">/ शैक्षिक पृष्ठभूमि</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500">
+          <p className="text-sm text-secondary ml-14">
             Manage your academic qualifications and educational history
           </p>
         </div>
         {!isEditing && (
           <button
-            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] transition-all rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary w-full sm:w-auto"
             onClick={() => {
               reset();
               setIsEditing(true);
             }}
           >
-            <HiOutlinePlusCircle className="size-4 sm:size-5" />
+            <HiOutlinePlusCircle className="h-5 w-5" aria-hidden="true" />
             <span className="whitespace-nowrap">Add Education</span>
           </button>
         )}
@@ -416,12 +480,18 @@ const Education = () => {
 
       {/* No Data State */}
       {educationData.length < 1 && !isEditing && (
-        <div className="p-4 sm:p-6 text-center rounded-xl bg-[#3E98C7]/5 border border-dashed border-[#3E98C7]/25">
-          <HiOutlineAcademicCap className="mx-auto size-10 sm:size-12 text-[#3E98C7]/60 mb-2 sm:mb-3" />
-          <h3 className="text-[#3E98C7] font-medium text-sm sm:text-base">No education added yet</h3>
-          <p className="text-xs sm:text-sm text-gray-400 mt-1">
+        <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/30">
+          <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <HiOutlineAcademicCap className="h-10 w-10 text-primary" aria-hidden="true" />
+          </div>
+          <h3 className="text-text font-bold text-lg mb-1">No education added yet</h3>
+          <p className="text-sm text-secondary mb-3">
             Click 'Add Education' to get started
           </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+            <HiOutlineAcademicCap className="h-5 w-5" />
+            <span className="font-medium">Start with Matriculation / मैट्रिक से शुरू करें</span>
+          </div>
         </div>
       )}
 
@@ -490,26 +560,18 @@ const Education = () => {
                     <p className="font-medium text-gray-700">{education.grade_or_percentage || "N/A"}</p>
                   </div>
                   
-                  {education.subjects && education.subjects.length > 0 && (
-                    <div>
-                      <span className="text-gray-500">Subjects:</span>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {education.subjects.map((subject, idx) => (
-                          <div 
-                            key={idx} 
-                            className="flex items-center justify-between px-3 py-2 bg-white/80 border border-[#3E98C7]/20 rounded-lg min-w-[100px] shadow-sm"
-                          >
-                            <span className="text-xs font-semibold text-[#3E98C7] mr-2">
-                              {subject.name}
-                            </span>
-                            <span className="text-xs font-bold text-white bg-[#3E98C7] px-2 py-1 rounded-full">
-                              {subject.marks}%
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div className="pt-2 mt-2 border-t border-gray-200">
+                    <button
+                      onClick={() => {
+                        setSelectedEducation(education);
+                        setViewDetailsModal(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#3E98C7]/10 hover:bg-[#3E98C7]/20 text-[#3E98C7] rounded-lg transition-all font-medium text-xs"
+                    >
+                      <HiOutlineEye className="size-4" />
+                      View Full Details
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -526,7 +588,6 @@ const Education = () => {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Passing Year</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Institution</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Board/University</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Subjects</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Result/Marks(%)</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Actions</th>
                 </tr>
@@ -563,27 +624,6 @@ const Education = () => {
                       {education.board_or_university || "N/A"}
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
-                      <div className="flex flex-col gap-2 max-w-xs">
-                        {education.subjects && education.subjects.length > 0 ? (
-                          education.subjects.map((subject, idx) => (
-                            <div 
-                              key={idx} 
-                              className="flex items-center justify-between px-3 py-2 bg-white/90 border border-[#3E98C7]/20 rounded-lg min-w-[120px] shadow-sm"
-                            >
-                              <span className="text-xs font-semibold text-[#3E98C7]">
-                                {subject.name}
-                              </span>
-                              <span className="text-xs font-bold text-white bg-[#3E98C7] px-2 py-1 rounded-full ml-2">
-                                {subject.marks}%
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-gray-400 text-xs">No subjects added</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
                       {education.grade_or_percentage || "N/A"}
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
@@ -604,6 +644,16 @@ const Education = () => {
                         >
                           <HiOutlineTrash className="size-4" />
                         </button>
+                        <button
+                          onClick={() => {
+                            setSelectedEducation(education);
+                            setViewDetailsModal(true);
+                          }}
+                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
+                          title="View Full Details"
+                        >
+                          <HiOutlineEye className="size-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -618,22 +668,23 @@ const Education = () => {
       {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-3 sm:p-6 rounded-2xl border border-[#3E98C7]/15"
+          className="bg-gradient-to-br from-white to-background/20 p-4 sm:p-6 rounded-xl border border-secondary/30 shadow-sm"
         >
           {/* Step 1: Select Qualification Level */}
-          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-[#3E98C7]/5 rounded-xl border border-[#3E98C7]/20">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-[#3E98C7]" />
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 1: Select Qualification Level</h3>
-                <p className="text-xs sm:text-sm text-gray-600">Choose your education level / शिक्षा स्तर चुनें</p>
+          <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-primary/10 rounded-lg">
+                <HiOutlineAcademicCap className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-text">Step 1: Qualification Level <span className="text-secondary font-normal">/ योग्यता स्तर</span></h3>
               </div>
             </div>
             
             <select
               value={selectedQualification}
               onChange={handleQualificationChange}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm sm:text-base font-medium"
+              className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm font-medium transition-all"
             >
               <option value="" disabled>
                 Select Qualification Level / योग्यता स्तर चुनें
@@ -651,6 +702,20 @@ const Education = () => {
                   educationData[editingIndex]?.qualification?.name === role.name;
                 const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
                 
+                // Helper to get disabled reason
+                const getDisabledReason = () => {
+                  if (alreadyAdded) return " (Already added / पहले से जोड़ा गया)";
+                  if (!allowedLevels.includes(qualLevel)) {
+                    if (educationData.length === 0 && qualLevel !== 1) {
+                      return " (Add Matriculation first / पहले मैट्रिक जोड़ें)";
+                    }
+                    if (qualLevel > Math.max(...allowedLevels)) {
+                      return " (Complete previous levels first / पहले पिछला स्तर पूरा करें)";
+                    }
+                  }
+                  return "";
+                };
+                
                 return (
                   <option 
                     key={role.id} 
@@ -658,7 +723,7 @@ const Education = () => {
                     disabled={!isEnabled}
                     className={!isEnabled ? "text-gray-400" : ""}
                   >
-                    {role.name} {alreadyAdded ? "(Already added / पहले से जोड़ा गया)" : ""}
+                    {role.name}{getDisabledReason()}
                   </option>
                 );
               })}
@@ -669,19 +734,18 @@ const Education = () => {
             <>
               {/* Step 2: Stream/Degree Type Selection (for Intermediate, Bachelor, Master) */}
               {selectedQualification === "Intermediate" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-green-50/50 rounded-xl border border-green-200/60 animate-fadeIn">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <HiOutlineBookOpen className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Stream</h3>
-                      <p className="text-xs sm:text-sm text-gray-600">Choose your intermediate stream / अपनी स्ट्रीम चुनें</p>
+                <div className="mb-4 p-4 bg-accent/5 rounded-lg border border-accent/20 animate-fadeIn">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 bg-accent/10 rounded-lg">
+                      <HiOutlineBookOpen className="w-5 h-5 text-accent" />
                     </div>
+                    <h3 className="text-sm font-bold text-text">Step 2: Select Stream <span className="text-secondary font-normal">/ स्ट्रीम चुनें</span></h3>
                   </div>
                   
                   <select
                     value={selectedStream}
                     onChange={(e) => setSelectedStream(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent bg-white text-sm font-medium transition-all"
                     required
                   >
                     <option value="">Select Stream / स्ट्रीम चुनें</option>
@@ -695,19 +759,18 @@ const Education = () => {
               )}
 
               {selectedQualification === "Bachelor" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-purple-50/50 rounded-xl border border-purple-200/60 animate-fadeIn">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
-                      <p className="text-xs sm:text-sm text-gray-600">Choose your bachelor's degree / स्नातक डिग्री चुनें</p>
+                <div className="mb-4 p-4 bg-accent/5 rounded-lg border border-accent/20 animate-fadeIn">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 bg-accent/10 rounded-lg">
+                      <HiOutlineAcademicCap className="w-5 h-5 text-accent" />
                     </div>
+                    <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
                   </div>
                   
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent bg-white text-sm font-medium transition-all"
                     required
                   >
                     <option value="">Select Degree / डिग्री चुनें</option>
@@ -721,8 +784,8 @@ const Education = () => {
                   {selectedDegreeType === "Other" && (
                     <input
                       type="text"
-                      placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
-                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                      placeholder="Enter degree name / डिग्री का नाम"
+                      className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
                       {...register("customDegree", { 
                         required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
                       })}
@@ -732,19 +795,18 @@ const Education = () => {
               )}
 
               {selectedQualification === "Master" && (
-                <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-orange-50/50 rounded-xl border border-orange-200/60 animate-fadeIn">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <HiOutlineAcademicCap className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600" />
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900">Step 2: Select Degree Type</h3>
-                      <p className="text-xs sm:text-sm text-gray-600">Choose your master's degree / मास्टर डिग्री चुनें</p>
+                <div className="mb-4 p-4 bg-accent/5 rounded-lg border border-accent/20 animate-fadeIn">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 bg-accent/10 rounded-lg">
+                      <HiOutlineAcademicCap className="w-5 h-5 text-accent" />
                     </div>
+                    <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
                   </div>
                   
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-sm sm:text-base font-medium"
+                    className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent bg-white text-sm font-medium transition-all"
                     required
                   >
                     <option value="">Select Degree / डिग्री चुनें</option>
@@ -758,8 +820,8 @@ const Education = () => {
                   {selectedDegreeType === "Other" && (
                     <input
                       type="text"
-                      placeholder="Enter your degree name / अपनी डिग्री का नाम दर्ज करें"
-                      className="w-full mt-2 sm:mt-3 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
+                      placeholder="Enter degree name / डिग्री का नाम"
+                      className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
                       {...register("customDegree", { 
                         required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
                       })}
@@ -769,102 +831,102 @@ const Education = () => {
               )}
 
               {/* Step 3: Basic Information */}
-              <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-teal-50/50 rounded-xl border border-teal-200/60 animate-fadeIn">
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <HiOutlineClipboard className="w-7 h-7 sm:w-8 sm:h-8 text-teal-600" />
-                  <div>
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                      Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "3" : "2"}: Basic Information
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Enter your academic details / अपनी शैक्षणिक जानकारी दर्ज करें</p>
+              <div className="mb-4 p-4 bg-secondary/5 rounded-lg border border-secondary/20 animate-fadeIn">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-secondary/10 rounded-lg">
+                    <HiOutlineClipboard className="w-5 h-5 text-secondary" />
                   </div>
+                  <h3 className="text-sm font-bold text-text">
+                    Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "3" : "2"}: Basic Information
+                    <span className="text-secondary font-normal ml-1">/ जानकारी</span>
+                  </h3>
                 </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                  Institution <span className="text-red-500">*</span>
+                <label className="block text-xs font-medium text-text mb-1">
+                  Institution <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Institution Name / संस्थान का नाम"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  placeholder="Institution Name"
+                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
                   {...register("institution", {
-                    required: "Institution is required / संस्थान आवश्यक है",
+                    required: "Institution is required",
                   })}
                 />
                 {errors.institution && (
-                  <span className="text-red-500 text-xs sm:text-sm">
+                  <span className="text-error text-xs mt-0.5 block">
                     {errors.institution.message}
                   </span>
                 )}
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <label className="block text-xs font-medium text-text mb-1">
                   Board/University
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter board or university name / बोर्ड या विश्वविद्यालय का नाम"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  placeholder="Board/University Name"
+                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
                   {...register("board_or_university")}
                 />
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <label className="block text-xs font-medium text-text mb-1">
                   Session
                 </label>
                 <input
                   type="text"
-                  placeholder="YYYY-YY (e.g., 2020-22)"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  placeholder="2020-22"
+                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
                   {...register("session")}
                 />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                  Year of Passing <span className="text-red-500">*</span>
+                <label className="block text-xs font-medium text-text mb-1">
+                  Year <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="YYYY"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
                   maxLength={4}
                   {...register("year_of_passing", {
-                    required: "Year is required / वर्ष आवश्यक है",
+                    required: "Year is required",
                     pattern: {
                       value: /^\d{4}$/,
-                      message: "Please enter a valid 4-digit year (e.g., 2023)",
+                      message: "Valid 4-digit year",
                     },
                     validate: (value) => {
                       const currentYear = new Date().getFullYear();
                       if (value < 1900 || value > currentYear) {
-                        return `Year must be between 1900 and ${currentYear}`;
+                        return `Year: 1900-${currentYear}`;
                       }
                       return true;
                     },
                   })}
                 />
                 {errors.year_of_passing && (
-                  <p className="text-red-500 text-xs sm:text-sm mt-1">
+                  <p className="text-error text-xs mt-0.5">
                     {errors.year_of_passing.message}
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                  Grade/Percentage <span className="text-red-500">*</span>
+                <label className="block text-xs font-medium text-text mb-1">
+                  Grade/% <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter grade or percentage / ग्रेड या प्रतिशत"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+                  placeholder="Grade or %"
+                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
                   {...register("grade_or_percentage", {
-                    required: "Grade or percentage is required",
+                    required: "Required",
                     validate: (value) => {
                       const isGrade = /^[A-Da-d]$/.test(value);
                       const isPercentage = /^\d{1,3}%?$/.test(value);
@@ -876,14 +938,14 @@ const Education = () => {
                         if (numericValue >= 0 && numericValue <= 100) {
                           return true;
                         }
-                        return "Percentage must be between 0% and 100%";
+                        return "0-100%";
                       }
-                      return "Please enter a valid grade (A, B, C, D) or a percentage (0-100%)";
+                      return "Grade (A-D) or %";
                     },
                   })}
                 />
                 {errors.grade_or_percentage && (
-                  <p className="text-red-500 text-xs sm:text-sm mt-1">
+                  <p className="text-error text-xs mt-0.5">
                     {errors.grade_or_percentage.message}
                   </p>
                 )}
@@ -893,22 +955,22 @@ const Education = () => {
           </div>
 
           {/* Step 4: Add Subjects with Percentage */}
-          <div className="mb-6 sm:mb-8 p-3 sm:p-5 bg-[#3E98C7]/8 rounded-xl border border-[#3E98C7]/25 animate-fadeIn">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <HiOutlinePresentationChartBar className="w-7 h-7 sm:w-8 sm:h-8 text-[#3E98C7]" />
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Add Subjects & Percentage
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600">Add subjects with their percentage / विषय और प्रतिशत जोड़ें</p>
+          <div className="mb-4 p-4 bg-success/5 rounded-lg border border-success/20 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-success/10 rounded-lg">
+                <HiOutlinePresentationChartBar className="w-5 h-5 text-success" />
               </div>
+              <h3 className="text-sm font-bold text-text">
+                Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Subjects
+                <span className="text-secondary font-normal ml-1">/ विषय (Optional)</span>
+              </h3>
             </div>
             
             {/* Quick Add for Matric Subjects */}
             {selectedQualification === "Matriculation" && (
-              <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Quick Select Common Subjects / सामान्य विषय चुनें:</p>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <div className="mb-3 p-2.5 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-xs font-medium text-text mb-2">Quick Select:</p>
+                <div className="flex flex-wrap gap-1.5">
                   {matricSubjects.map((subject) => (
                     <button
                       key={subject}
@@ -918,7 +980,7 @@ const Education = () => {
                           setSubjectInput({ name: subject, marks: '' });
                         }
                       }}
-                      className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-all"
+                      className="px-2 py-1 text-xs bg-white border border-primary/30 text-primary rounded hover:bg-primary/10 transition-all"
                     >
                       {subject}
                     </button>
@@ -927,56 +989,56 @@ const Education = () => {
               </div>
             )}
             
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="space-y-2">
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Subject Name / विषय का नाम"
+                  placeholder="Subject Name"
                   value={subjectInput.name}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
-                  className="md:w-3/6 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] text-sm sm:text-base"
+                  className="flex-1 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
                 />
                 <input
                   type="number"
-                  placeholder="Percentage % / प्रतिशत"
+                  placeholder="%"
                   value={subjectInput.marks}
                   onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
                   min="0"
                   max="100"
-                  className="md:w-2/6 px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] text-sm sm:text-base"
+                  className="w-20 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubject}
                   disabled={!subjectInput.name || !subjectInput.marks}
-                  className="md:w-1/6 sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 text-sm sm:text-base"
+                  className="px-4 py-2 bg-success hover:bg-success/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
                 >
-                  Add / जोड़ें
+                  Add
                 </button>
               </div>
               
               {/* Selected Subjects List */}
               {selectedSubjects.length > 0 && (
-                <div className="mt-3 sm:mt-4">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Added Subjects / जोड़े गए विषय ({selectedSubjects.length}):</p>
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                <div>
+                  <p className="text-xs font-medium text-text mb-2">Added ({selectedSubjects.length}):</p>
+                  <div className="flex flex-wrap gap-2">
                     {selectedSubjects.map((subject, index) => (
                       <div 
                         key={index}
-                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white/90 border border-[#3E98C7]/25 rounded-lg shadow-sm hover:shadow-md transition-all"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-success/30 rounded-lg shadow-sm hover:shadow transition-all"
                       >
-                        <span className="text-xs sm:text-sm font-semibold text-[#3E98C7]">
+                        <span className="text-xs font-semibold text-text">
                           {subject.name}
                         </span>
-                        <span className="text-xs bg-[#3E98C7] text-white px-2 py-1 rounded-full font-bold">
+                        <span className="text-xs bg-success text-white px-2 py-0.5 rounded-full font-bold">
                           {subject.marks}%
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSubject(index)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all transform hover:scale-110"
+                          className="text-error hover:text-error/80 rounded-full p-0.5 transition-all"
                         >
-                          <HiOutlineXMark className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <HiOutlineXMark className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ))}
@@ -989,17 +1051,7 @@ const Education = () => {
           )}
 
           {/* Form Actions */}
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-[#3E98C7]/15 flex flex-col sm:flex-row-reverse sm:justify-start gap-2 sm:gap-3">
-            <button
-              type="submit"
-              disabled={!selectedQualification}
-              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-bold text-sm sm:text-base rounded-xl shadow-md hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 order-2 sm:order-1"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <HiOutlineCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Save Education / शिक्षा सहेजें</span>
-              </div>
-            </button>
+          <div className="mt-4 pt-4 border-t border-secondary/20 flex flex-col-reverse sm:flex-row gap-2">
             <button
               type="button"
               onClick={() => {
@@ -1011,15 +1063,150 @@ const Education = () => {
                 reset();
                 dispatch(resetError());
               }}
-              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 border border-[#3E98C7] text-[#3E98C7] hover:bg-[#3E98C7]/10 font-semibold rounded-xl transition-all text-sm sm:text-base order-1 sm:order-2"
+              className="flex-1 sm:flex-none px-4 py-2.5 border border-secondary/30 text-secondary hover:bg-secondary/10 font-medium rounded-lg transition-all text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!selectedQualification}
+              className="flex-1 sm:flex-none px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               <div className="flex items-center justify-center gap-2">
-                <HiOutlineXCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Cancel / रद्द करें</span>
+                <HiOutlineCheck className="w-4 h-4" />
+                <span>Save Education</span>
               </div>
             </button>
           </div>
         </form>
+      )}
+
+      {/* View Details Modal */}
+      {viewDetailsModal && selectedEducation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setViewDetailsModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <HiOutlineAcademicCap className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Education Details</h3>
+                    <p className="text-sm text-white/80">Complete qualification information</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setViewDetailsModal(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                >
+                  <HiOutlineXMark className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Qualification Header */}
+              <div className="bg-gradient-to-br from-[#3E98C7]/10 to-purple-50 p-4 rounded-xl border border-[#3E98C7]/20">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-1">
+                      {selectedEducation.qualification?.name || "N/A"}
+                    </h4>
+                    {selectedEducation.stream_or_degree && (
+                      <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-800 rounded-full text-sm font-semibold">
+                        {selectedEducation.stream_or_degree}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-600">Year of Passing</div>
+                    <div className="text-xl font-bold text-[#3E98C7]">{selectedEducation.year_of_passing}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Basic Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <HiOutlineBookOpen className="h-5 w-5 text-[#3E98C7]" />
+                    <span className="text-sm font-semibold text-gray-600">Institution</span>
+                  </div>
+                  <p className="text-gray-900 font-medium">{selectedEducation.institution || "N/A"}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <HiOutlineAcademicCap className="h-5 w-5 text-[#3E98C7]" />
+                    <span className="text-sm font-semibold text-gray-600">Board/University</span>
+                  </div>
+                  <p className="text-gray-900 font-medium">{selectedEducation.board_or_university || "N/A"}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <HiOutlineClipboard className="h-5 w-5 text-[#3E98C7]" />
+                    <span className="text-sm font-semibold text-gray-600">Session</span>
+                  </div>
+                  <p className="text-gray-900 font-medium">{selectedEducation.session || "N/A"}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <HiOutlinePresentationChartBar className="h-5 w-5 text-[#3E98C7]" />
+                    <span className="text-sm font-semibold text-gray-600">Grade/Percentage</span>
+                  </div>
+                  <p className="text-gray-900 font-medium">{selectedEducation.grade_or_percentage || "N/A"}</p>
+                </div>
+              </div>
+
+              {/* Subjects Section */}
+              {selectedEducation.subjects && selectedEducation.subjects.length > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <HiOutlinePresentationChartBar className="h-6 w-6 text-[#3E98C7]" />
+                    <h5 className="text-lg font-bold text-gray-900">Subjects & Percentage</h5>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {selectedEducation.subjects.map((subject, idx) => (
+                      <div 
+                        key={idx} 
+                        className="flex items-center justify-between px-4 py-3 bg-white border border-[#3E98C7]/30 rounded-lg shadow-sm hover:shadow-md transition-all"
+                      >
+                        <span className="text-sm font-semibold text-gray-700">
+                          {subject.name}
+                        </span>
+                        <span className="text-sm font-bold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] px-3 py-1.5 rounded-full">
+                          {subject.marks}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(!selectedEducation.subjects || selectedEducation.subjects.length === 0) && (
+                <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                  <HiOutlinePresentationChartBar className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">No subjects added for this qualification</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-gray-50 p-4 rounded-b-2xl border-t border-gray-200">
+              <button
+                onClick={() => setViewDetailsModal(false)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

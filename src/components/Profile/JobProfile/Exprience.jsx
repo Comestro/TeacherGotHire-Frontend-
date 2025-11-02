@@ -141,7 +141,7 @@ const Experience = () => {
   };
 
   return (
-    <div className="mt-8 py-6 rounded-xl bg-white border border-gray-200 shadow-lg">
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/30 p-6 md:p-8 shadow-sm">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -157,26 +157,29 @@ const Experience = () => {
       />
       {/* Enhanced Header */}
       {loading && (<Loader/>)}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b-2 border-[#3E98C7]/20 px-6">
-        <div className="mb-3 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#3E98C7] mb-1 flex items-center gap-2">
-            <HiOutlineBriefcase className="text-2xl" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 pb-6 border-b border-secondary/20">
+        <div className="mb-4 sm:mb-0">
+          <h2 className="text-2xl font-bold text-text mb-2 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <HiOutlineBriefcase className="text-2xl text-primary" aria-hidden="true" />
+            </div>
             Professional Experience
+            <span className="ml-2 text-secondary text-sm font-normal">/ पेशेवर अनुभव</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500">
+          <p className="text-sm text-secondary ml-14">
             Manage your teaching positions and institutional experience
           </p>
         </div>
         {!isEditing && (
           <button
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] transition-all rounded-lg shadow-md hover:shadow-xl transform hover:scale-105"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             onClick={() => {
               reset();
               setIsEditing(true);
               setEditingIndex(null);
             }}
           >
-            <HiOutlinePlusCircle className="size-5" />
+            <HiOutlinePlusCircle className="h-5 w-5" aria-hidden="true" />
             Add Experience
           </button>
         )}
@@ -184,10 +187,12 @@ const Experience = () => {
 
       {/* No Data State */}
       {experienceData.length < 1 && !isEditing && (
-        <div className="p-6 text-center rounded-xl bg-[#3E98C7]/5 border-2 border-dashed border-[#3E98C7]/30 mx-6">
-          <HiOutlineBriefcase className="mx-auto size-12 text-[#3E98C7]/60 mb-3" />
-          <h3 className="text-[#3E98C7] font-medium">No experience added yet</h3>
-          <p className="text-sm text-gray-400 mt-1">
+        <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/30">
+          <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <HiOutlineBriefcase className="h-10 w-10 text-primary" aria-hidden="true" />
+          </div>
+          <h3 className="text-text font-bold text-lg mb-1">No experience added yet</h3>
+          <p className="text-sm text-secondary">
             Click 'Add Experience' to get started
           </p>
         </div>
@@ -195,60 +200,53 @@ const Experience = () => {
 
       {/* Experience List */}
       {!isEditing ? (
-        <div className="space-y-4 px-6">
+        <div className="space-y-4">
           {experienceData.map((experience, index) => (
             <div
               key={index}
-              className="group relative p-5 rounded-xl border-2 border-[#3E98C7]/20 hover:border-[#3E98C7]/40 transition-all duration-200 bg-white hover:shadow-lg"
+              className="group relative p-6 rounded-xl border border-secondary/30 hover:border-primary/40 transition-all duration-200 bg-gradient-to-br from-white to-background/30 hover:shadow-md"
             >
               {/* Action Buttons */}
-              <div className="absolute bottom-2 right-4 flex gap-2 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 flex gap-2">
                 <button
                   onClick={() => handleEdit(index)}
-                  className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
+                  className="p-2 text-secondary hover:text-primary hover:bg-primary/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all duration-200"
+                  aria-label="Edit experience"
                 >
-                  <HiOutlinePencil className="size-5" />
+                  <HiOutlinePencil className="h-5 w-5" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => handleDelete(index)}
-                  className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
+                  className="p-2 text-error hover:text-error/80 hover:bg-error/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-all duration-200"
+                  aria-label="Delete experience"
                 >
-                  <HiOutlineTrash className="size-5" />
+                  <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
 
               <div className="flex items-start gap-4">
                 {/* Institution Logo */}
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#3E98C7] to-[#67B3DA] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
                   {experience.institution?.[0] || "N/A"}
                 </div>
 
                 {/* Experience Details */}
-                <div className="flex-1 min-w-0">
-                  {/* <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {experience.institution || "N/A"}
-                      </h3>
-                      <p className="text-sm text-[#3E98C7] font-medium">
-                        {experience.role?.jobrole_name || "N/A"}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-500 whitespace-nowrap">
-                      {formatDate(experience.start_date)} –{" "}
-                      {formatDate(experience.end_date)}
+                <div className="flex-1 min-w-0 pr-20">
+                  <h3 className="text-lg font-bold text-text mb-1">
+                    {experience.institution || "N/A"}
+                  </h3>
+                  <p className="text-sm text-primary font-semibold mb-2">
+                    {experience.role?.jobrole_name || "N/A"}
+                  </p>
+                  <p className="text-sm text-secondary mb-3">
+                    {formatDate(experience.start_date)} – {formatDate(experience.end_date)}
+                  </p>
+
+                  {experience.description && (
+                    <p className="text-sm text-text/70 line-clamp-2">
+                      {experience.description}
                     </p>
-                  </div> */}
-
-                  {/* Description & Achievements */}
-                  <div className="space-y-2">
-                    {experience.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {/* {experience.description} */}
-                      </p>
-                    )}
-
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
