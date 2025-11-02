@@ -343,20 +343,25 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
     <>
       {bothConditonCheck ? (
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-text">
-                Job Preference Locations
-                <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी की पसंदीदा स्थान</span>
-              </h2>
-              <p className="text-sm text-secondary mt-1">
-                {jobLocations.length} of 5 locations added
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-xl font-bold text-text">
+                  Job Preference Locations
+                  <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी की पसंदीदा स्थान</span>
+                </h2>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full border border-primary/20">
+                  {jobLocations.length} / 5
+                </span>
+              </div>
+              <p className="text-sm text-secondary">
+                Add your preferred work locations to match with relevant opportunities
               </p>
             </div>
             {!isFormVisible && jobLocations.length < 5 && (
               <button
                 onClick={handleShowAddForm}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary hover:opacity-90 transition-opacity"
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
                 aria-label="Add new location"
               >
                 <IoLocationSharp className="h-5 w-5" aria-hidden="true" />
@@ -366,35 +371,47 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           </div>
           
           {jobLocations.length > 0 && !isFormVisible && (
-            <div className="space-y-3 mb-6">
+            <div className="grid gap-4 mb-6">
               {jobLocations.map((location, index) => (
-                <div key={index} className="p-5 border border-secondary/30 rounded-lg bg-white hover:border-primary/40 transition-colors">
+                <div key={index} className="group p-6 border border-secondary/30 rounded-xl bg-gradient-to-br from-white to-background/30 hover:border-primary/40 hover:shadow-md transition-all duration-200">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2 mb-2">
-                        <IoLocationSharp className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
-                        <h3 className="text-base font-semibold text-text">
-                          {location.area || 'Area not specified'}
-                        </h3>
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                          <IoLocationSharp className="h-5 w-5 text-primary" aria-hidden="true" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-text mb-1">
+                            {location.area || 'Area not specified'}
+                          </h3>
+                          <p className="text-sm text-text/70 leading-relaxed">
+                            {location.block && <><span className="font-medium">{location.block}</span>, </>}
+                            {location.city}, {location.state}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="inline-flex items-center text-xs text-secondary">
+                              <span className="font-medium">PIN:</span>
+                              <span className="ml-1 font-semibold">{location.pincode}</span>
+                            </span>
+                            <span className="text-secondary">•</span>
+                            <span className="text-xs text-secondary">
+                              <span className="font-medium">Post Office:</span> {location.post_office}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-secondary leading-relaxed">
-                        {location.block && `${location.block}, `}{location.city}, {location.state} - {location.pincode}
-                      </p>
-                      <p className="text-xs text-secondary mt-1">
-                        Post Office: {location.post_office}
-                      </p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleEdit(index)}
-                        className="p-2 text-secondary hover:text-primary hover:bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-colors"
+                        className="p-2.5 text-secondary hover:text-primary hover:bg-primary/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all duration-200"
                         aria-label={`Edit location ${location.area || 'unnamed'}`}
                       >
                         <HiPencil className="h-5 w-5" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDelete(index)}
-                        className="p-2 text-error hover:text-error/80 hover:bg-error-light rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-colors"
+                        className="p-2.5 text-error hover:text-error/80 hover:bg-error/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-all duration-200"
                         aria-label={`Delete location ${location.area || 'unnamed'}`}
                       >
                         <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
@@ -407,43 +424,47 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           )}
           
           {jobLocations.length == 0 && !isFormVisible && (
-            <div className="text-center py-12 border bg-background border-secondary/30 rounded-lg">
-              <IoLocationSharp className="h-16 w-16 text-secondary mx-auto mb-4" aria-hidden="true" />
-              <h3 className="text-text text-xl font-semibold mb-2">
+            <div className="text-center py-16 border-2 border-dashed bg-gradient-to-br from-background to-background/50 border-secondary/30 rounded-xl">
+              <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-5 flex items-center justify-center">
+                <IoLocationSharp className="h-10 w-10 text-primary" aria-hidden="true" />
+              </div>
+              <h3 className="text-text text-xl font-bold mb-2">
                 No locations added yet
                 <span className="ml-2 text-secondary text-sm font-normal">/ कोई स्थान नहीं जोड़ा गया</span>
               </h3>
-              <p className="text-secondary mt-2 max-w-md mx-auto">
-                Add up to <span className="font-semibold text-primary">5 preferred locations</span> to help us match you with relevant job opportunities in your desired areas.
+              <p className="text-secondary mt-2 max-w-md mx-auto leading-relaxed">
+                Add up to <span className="font-bold text-primary">5 preferred locations</span> to help us match you with relevant job opportunities in your desired areas.
               </p>
             </div>
           )}
 
           {/* Form section */}
           {isFormVisible && (
-            <div className="bg-white border border-secondary/30 p-6 rounded-lg">
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-text">
+            <div className="bg-gradient-to-br from-white to-background/30 border border-secondary/30 p-8 rounded-xl shadow-sm">
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-text mb-1">
                   {isEditing ? 'Edit Location' : 'Add New Location'}
                   <span className="ml-2 text-secondary text-sm font-normal">
                     {isEditing ? '/ स्थान संपादित करें' : '/ नया स्थान जोड़ें'}
                   </span>
                 </h3>
-                <p className="text-sm text-secondary mt-1">Fill in the location details below</p>
+                <p className="text-sm text-secondary mt-2">Fill in the location details below to add your preferred work area</p>
               </div>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
                   {/* Pincode */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       Pincode <span className="text-error">*</span>
                     </label>
                     <input
                       type="text"
                       {...register("pincode", { required: true })}
                       onChange={handlePincodeChange}
-                      className={`w-full px-3 py-2 border ${fieldErrors.pincode ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                      placeholder="Enter pincode"
+                      className={`w-full px-4 py-3 border ${
+                        fieldErrors.pincode ? 'border-error' : 'border-secondary/30'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
+                      placeholder="Enter 6-digit pincode"
                     />
                     {errors.pincode && (
                       <p className="text-error text-xs mt-2" aria-live="polite">
@@ -459,7 +480,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
                   {/* State */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       State
                     </label>
                     <input
@@ -467,13 +488,13 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                       {...register("state")}
                       readOnly
                       placeholder="Auto Filled"
-                      className="w-full px-3 py-2 border border-secondary/30 rounded-md bg-background text-secondary focus:outline-none"
+                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg bg-background/50 text-secondary focus:outline-none cursor-not-allowed"
                     />
                   </div>
 
                   {/* District */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       District
                     </label>
                     <input
@@ -481,31 +502,33 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                       {...register("city")}
                       readOnly
                       placeholder="Auto Filled"
-                      className="w-full px-3 py-2 border border-secondary/30 rounded-md bg-background text-secondary focus:outline-none"
+                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg bg-background/50 text-secondary focus:outline-none cursor-not-allowed"
                     />
                   </div>
 
                   {/* Block */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       Block
                     </label>
                     <input
                       type="text"
                       {...register("block")}
-                      className="w-full px-3 py-2 border border-secondary/30 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Enter block"
+                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200"
+                      placeholder="Enter block name"
                     />
                   </div>
 
                   {/* Post Office */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       Post Office <span className="text-error">*</span>
                     </label>
                     <select
                       {...register("post_office", { required: true })}
-                      className={`w-full px-3 py-2 border ${fieldErrors.post_office ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                      className={`w-full px-4 py-3 border ${
+                        fieldErrors.post_office ? 'border-error' : 'border-secondary/30'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
                     >
                       <option value="">Select a Post Office</option>
                       {postOffices.map((office, index) => (
@@ -528,15 +551,17 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
                   {/* Area */}
                   <div>
-                    <label className="block text-sm font-medium text-text mb-2">
+                    <label className="block text-sm font-semibold text-text mb-2">
                       Area
                     </label>
                     <input
                       type="text"
                       {...register("area")}
                       onChange={handleAreaChange}
-                      className={`w-full px-3 py-2 border ${fieldErrors.area ? 'border-error' : 'border-secondary/30'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                      placeholder="Enter area"
+                      className={`w-full px-4 py-3 border ${
+                        fieldErrors.area ? 'border-error' : 'border-secondary/30'
+                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
+                      placeholder="Enter area/locality name"
                     />
                     {fieldErrors.area && (
                       <div className="flex items-start gap-2 text-error text-sm mt-2" aria-live="polite">
@@ -548,17 +573,17 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-end items-center gap-3 pt-4">
+                <div className="flex justify-end items-center gap-3 pt-6 border-t border-secondary/10">
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2.5 text-sm font-medium text-secondary border border-secondary/40 rounded-md bg-transparent hover:bg-background focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-secondary transition-colors"
+                    className="px-6 py-3 text-sm font-semibold text-secondary border-2 border-secondary/30 rounded-lg bg-transparent hover:bg-background hover:border-secondary/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-all duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 text-sm font-medium text-white bg-primary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary hover:opacity-90 transition-opacity"
+                    className="px-6 py-3 text-sm font-semibold text-white bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     {isEditing ? "Update Location" : "Add Location"}
                   </button>
@@ -569,10 +594,15 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
           {/* Display API errors */}
           {apiError && (
-            <div className="mt-4 p-4 bg-error-light border border-error/30 rounded-lg">
-              <div className="flex items-start gap-2">
-                <HiOutlineExclamationTriangle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-error text-sm" aria-live="polite">{apiError}</p>
+            <div className="mt-4 p-5 bg-error/5 border-2 border-error/30 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-error/10 rounded-lg flex-shrink-0">
+                  <HiOutlineExclamationTriangle className="h-5 w-5 text-error" aria-hidden="true" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-error mb-1">Error</h4>
+                  <p className="text-error/80 text-sm" aria-live="polite">{apiError}</p>
+                </div>
               </div>
             </div>
           )}

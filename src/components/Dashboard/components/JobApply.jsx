@@ -190,12 +190,14 @@ const JobApply = () => {
       </div>
 
       {eligibleExams && eligibleExams.length > 0 ? (
-        <div className="border p-4 rounded-lg">
-          <div className="mb-6 p-5 bg-background text-text rounded-lg ">
-            <div className="flex items-start">
-              <HiOutlineInformationCircle className="mt-0.5 mr-3 h-6 w-6 text-primary flex-shrink-0" aria-hidden="true" />
-              <div>
-                <h3 className="font-semibold text-base mb-1">Eligible subjects for application
+        <>
+          <div className="mb-6 p-5 bg-primary/5 border border-primary/20 text-text rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <HiOutlineInformationCircle className="h-5 w-5 text-primary" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-base text-text mb-1">Eligible subjects for application
                   <span className="ml-2 text-secondary text-sm font-normal">/ आवेदन हेतु पात्र विषय</span>
                 </h3>
                 <p className="text-sm text-secondary">Below are the subjects you're eligible to apply for based on your qualification.</p>
@@ -203,30 +205,30 @@ const JobApply = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg overflow-hidden border border-secondary/30">
+          <div className="bg-white rounded-xl overflow-hidden border border-secondary/30 shadow-sm">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-secondary/20">
+              <table className="min-w-full divide-y divide-secondary/10">
                 <caption className="sr-only">Eligible subjects list</caption>
-                <thead className="bg-background">
+                <thead className="bg-gradient-to-br from-background to-background/50">
                   <tr>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-text/70 uppercase tracking-wider">
                       Subject
                     </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-text/70 uppercase tracking-wider">
                       Class Category
                     </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-text/70 uppercase tracking-wider">
                       Eligibility Status
                     </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-text/70 uppercase tracking-wider">
                       Application Status
                     </th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-text/70 uppercase tracking-wider">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-secondary/20">
+                <tbody className="bg-white divide-y divide-secondary/10">
                   {eligibleExams.map((exam, index) => {
                     const subjectId = exam.subject_id;
                     const classCategoryId = exam.class_category_id;
@@ -251,33 +253,33 @@ const JobApply = () => {
                     return (
                       <tr
                         key={`${subjectId}-${classCategoryId}-${index}`}
-                        className="hover:bg-background/50 transition-colors"
+                        className="hover:bg-primary/5 transition-all duration-200 group"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-text">
                           {subjectName}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-text/70">
                           {className}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-success-light text-success rounded-full text-xs font-medium">
-                            <HiOutlineCheckCircle className="h-4 w-4" aria-hidden="true" />
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-text/70">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
+                            <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
                             Eligible
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-text/70">
                           {applicationStatus ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-success-light text-success rounded-full text-xs font-medium">
-                              <HiOutlineCheckCircle className="h-4 w-4" aria-hidden="true" />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
+                              <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
                               Applied
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-background text-secondary rounded-full text-xs font-medium border border-secondary/40">
+                            <span className="inline-flex items-center px-3 py-1.5 bg-background text-secondary rounded-full text-xs font-semibold border border-secondary/30">
                               Not Applied
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-text/70">
                           <button
                             onClick={() =>
                               handleApply(
@@ -288,13 +290,13 @@ const JobApply = () => {
                               )
                             }
                             aria-label={`${applicationStatus ? 'Revoke application' : 'Apply to'} ${subjectName}`}
-                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                            className={`inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md ${
                               applicationStatus
-                                ? 'bg-error hover:opacity-90 focus:ring-error'
-                                : 'bg-primary hover:opacity-90 focus:ring-primary'
+                                ? 'bg-error hover:bg-error/90 focus:ring-error'
+                                : 'bg-primary hover:bg-primary/90 focus:ring-primary'
                             }`}
                           >
-                            {applicationStatus ? 'Revoke Apply' : 'Apply'}
+                            {applicationStatus ? 'Revoke' : 'Apply Now'}
                           </button>
                         </td>
                       </tr>
@@ -304,15 +306,17 @@ const JobApply = () => {
               </table>
             </div>
           </div>
-        </div>
+        </>
       ) : (
-        <div className="p-6 bg-background rounded-lg border border-secondary/30 text-center">
+        <div className="p-8 bg-gradient-to-br from-background to-background/50 rounded-xl border border-secondary/30 text-center">
           <div className="flex flex-col items-center max-w-md mx-auto">
-            <HiOutlineInformationCircle className="h-12 w-12 text-secondary mb-4" aria-hidden="true" />
-            <h3 className="font-semibold text-lg mb-2 text-text">No eligible subjects
+            <div className="p-4 bg-warning/10 rounded-full mb-4">
+              <HiOutlineInformationCircle className="h-12 w-12 text-warning" aria-hidden="true" />
+            </div>
+            <h3 className="font-bold text-xl mb-2 text-text">No eligible subjects
               <span className="ml-2 text-secondary text-sm font-normal">/ कोई पात्र विषय नहीं</span>
             </h3>
-            <p className="text-sm text-secondary">You don't have any eligible subjects to apply for at the moment. Please complete your qualifications to become eligible for job applications.</p>
+            <p className="text-sm text-secondary leading-relaxed">You don't have any eligible subjects to apply for at the moment. Please complete your qualifications to become eligible for job applications.</p>
           </div>
         </div>
       )}
