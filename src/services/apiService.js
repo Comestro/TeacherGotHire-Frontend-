@@ -35,7 +35,7 @@ export const translateText = async (text, sourceLang, targetLang) => {
       dest: targetLang === "English" ? "en" : "hi",
     });
 
-    // console.log("Translation response:", response.data);
+    // 
 
     return response.data.translated || text;
   } catch (error) {
@@ -101,7 +101,7 @@ const apiService = {
 
   create: async (endpoint, data) => {
     try {
-      console.log("Creating data in endpoint:", endpoint, "with data:", data);
+      
       const response = await axiosInstance.post(`${endpoint}/`, data);
       return response.data;
     } catch (error) {

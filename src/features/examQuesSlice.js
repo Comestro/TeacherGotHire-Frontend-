@@ -60,7 +60,7 @@ export const getLevels = createAsyncThunk(
 
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -78,12 +78,12 @@ export const getLevels = createAsyncThunk(
 export const getAllQues = createAsyncThunk(
   "getAllQues",
   async ({ exam_id, language }, { rejectWithValue }) => {
-    console.log("exam_id, language ", exam_id, language);
+    
     try {
       const data = await fetchQuestion({ exam_id, language });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -113,10 +113,10 @@ export const getExamSet = createAsyncThunk(
         type,
         class_category_id,
       });
-      console.log("examSet", data);
+      
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -138,7 +138,7 @@ export const postResult = createAsyncThunk(
     { exam, correct_answer, incorrect_answer, is_unanswered, language },
     { rejectWithValue }
   ) => {
-    console.log("result", { correct_answer, incorrect_answer, is_unanswered });
+    
     try {
       const data = await addResult({
         exam,
@@ -180,7 +180,7 @@ export const postResult = createAsyncThunk(
             const data = await Interview();
              return data; 
           } catch (error) {
-            console.log('Error in getLevels:', error);
+            
             let errorMessage = 'An error occurred';
             if (error.response && error.response.data && error.response.data.message) {
               errorMessage = error.response.data.message;
@@ -204,7 +204,7 @@ export const attemptsExam = createAsyncThunk(
       const data = await Attempts(params);
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -226,7 +226,7 @@ export const getReport = createAsyncThunk(
       const data = await ReportReason();
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -244,12 +244,12 @@ export const getReport = createAsyncThunk(
 export const generatePasskey = createAsyncThunk(
   "generatePasskey",
   async ({  exam_id, center_id }, { rejectWithValue }) => {
-    console.log("generate password", {  exam_id, center_id });
+    
     try {
       const data = await GeneratePasskey({  exam_id, center_id });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -270,7 +270,7 @@ export const getgeneratedPasskey = createAsyncThunk(
       const data = await getGeneratedPasskey();
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -292,10 +292,10 @@ export const getAllCenter = createAsyncThunk(
     console.log("seghjkljgfdzs")
     try {
       const data = await AllCenter();
-      console.log("data", data);
+      
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -318,7 +318,7 @@ export const verifyPasscode = createAsyncThunk(
       const data = await VerifyPasscode({ exam_id, entered_passcode });
       return data;
     } catch (error) {
-      console.log("Error verfiy:", error);
+      
       let errorMessage = "An error occurred";
       if (error.response && error.response.data.error) {
         errorMessage = error.response.data.error;
@@ -337,7 +337,7 @@ export const approveCenterUser = createAsyncThunk(
       const data = await Approved({ user_id, exam_id });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -360,7 +360,7 @@ export const getAllCenterUser = createAsyncThunk(
       const data = await fetchCenterUser();
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -380,12 +380,12 @@ export const postExamSet = createAsyncThunk(
   "postExamSet",
 
   async (payload, { rejectWithValue }) => {
-    console.log("setter", payload);
+    
     try {
       const data = await createExamSet(payload);
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -408,7 +408,7 @@ export const getExamSets = createAsyncThunk(
       const data = await setterExamSet();
       return data;
     } catch (error) {
-      console.log("Error in getExamSets:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -431,7 +431,7 @@ export const putExamSet = createAsyncThunk(
       const data = await editExamSet({ payload, id });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -454,7 +454,7 @@ export const deleteExamSet = createAsyncThunk(
       const data = await delExamSet(id);
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -478,7 +478,7 @@ export const postReport = createAsyncThunk(
       const data = await AddReport({ question, issue_type });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -502,7 +502,7 @@ export const postJobApply = createAsyncThunk(
       const data = await jobApply({ subject, class_category });
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (error.response.data.error) {
         errorMessage = error.response.data.error;
@@ -518,12 +518,12 @@ export const postQuestionToExamSet = createAsyncThunk(
   "postQuestionToExamSet",
 
   async (payload, { rejectWithValue }) => {
-    console.log("setter", payload);
+    
     try {
       const data = await addQuestionToExamSet(payload);
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -543,12 +543,12 @@ export const putQuestionToExamSet = createAsyncThunk(
   "putQuestionToExamSet",
 
   async ({ questionId, payload }, { rejectWithValue }) => {
-    console.log(" question update in slice", payload);
+    
     try {
       const data = await editQuestionToExamSet(questionId, payload);
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -571,7 +571,7 @@ export const getQuestionToExamSet = createAsyncThunk(
       const data = await fetchQuestionsByExamSet(examSetId);
       return data;
     } catch (error) {
-      console.log("Error in getQuestionToExamSet:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -592,10 +592,10 @@ export const getSetterInfo = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await getAssignUserSubject();
-      console.log('Setter User API Response:', data);
+      
       return data;
     } catch (error) {
-      console.log("Error in getSetterInfo:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -616,11 +616,11 @@ const examQuesSlice = createSlice({
   reducers: {
     setSubject(state, action) {
       state.subject = action.payload;
-      console.log("action", action.payload);
+      
     },
     setExam(state, action) {
       state.exam = action.payload;
-      console.log("action", action.payload);
+      
     },
     setLanguage(state, action) {
       state.language = action.payload;
@@ -645,7 +645,7 @@ const examQuesSlice = createSlice({
       .addCase(getLevels.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.levels = action.payload;
-        console.log("levels", action.payload);
+        
       })
       .addCase(getLevels.rejected, (state, action) => {
         state.status = "failed";
@@ -678,7 +678,7 @@ const examQuesSlice = createSlice({
       .addCase(attemptsExam.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.attempts = action.payload;
-        console.log("action.payload", action.payload);
+        
       })
       .addCase(attemptsExam.rejected, (state, action) => {
         state.status = "failed";
@@ -693,7 +693,7 @@ const examQuesSlice = createSlice({
       .addCase(getExamSet.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.examSet = action.payload;
-        console.log("examset", action.payload);
+        
       })
       .addCase(getExamSet.rejected, (state, action) => {
         state.status = "failed";
@@ -709,7 +709,7 @@ const examQuesSlice = createSlice({
       .addCase(getExamSets.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.setterExamSet = action.payload;
-        console.log("examset", action.payload);
+        
       })
       .addCase(getExamSets.rejected, (state, action) => {
         state.status = "failed";
@@ -754,7 +754,7 @@ const examQuesSlice = createSlice({
       .addCase(getAllCenter.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.allcenter = action.payload;
-        console.log("allcenter", action.payload);
+        
       })
       .addCase(getAllCenter.rejected, (state, action) => {
         state.status = "failed";
@@ -770,7 +770,7 @@ const examQuesSlice = createSlice({
       .addCase(getAllCenterUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.centerUser = action.payload;
-        console.log("centerUser", action.payload);
+        
       })
       .addCase(getAllCenterUser.rejected, (state, action) => {
         state.status = "failed";
@@ -853,7 +853,7 @@ const examQuesSlice = createSlice({
       .addCase(postJobApply.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.jobApply = action.payload;
-        console.log("jobapply", action.payload);
+        
       })
       .addCase(postJobApply.rejected, (state, action) => {
         state.status = "failed";
@@ -871,7 +871,7 @@ const examQuesSlice = createSlice({
         state.loading = false;
         state.status = "succeeded";
         state.setterInfo = action.payload;
-        console.log("setterInfo updated in Redux store:", action.payload);
+        
       })
       .addCase(getSetterInfo.rejected, (state, action) => {
         state.loading = false;

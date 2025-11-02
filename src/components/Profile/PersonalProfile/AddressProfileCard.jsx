@@ -42,7 +42,7 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const [postOffice, setPostOffice] = useState([]);
   const { error } = useSelector((state) => state.personalProfile);
 
-  console.log("postOffice data from state", postOffice);
+  
 
   useEffect(() => {
     if (addressData) reset(addressData);
@@ -301,15 +301,15 @@ const AddressProfileCard = () => {
   }, []);
 
   const handleSave = async (data) => {
-    console.log("archana", data);
+    
     const payload = { ...data, address_type: isEditingType };
-    console.log("arcPayload", payload);
+    
     setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
         await dispatch(putAddress(payload)).unwrap();
       } else {
-        console.log("arcPayload", payload);
+        
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");

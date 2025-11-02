@@ -26,8 +26,8 @@ const Education = () => {
   const { error, educationData } = useSelector(
     (state) => state.jobProfile || []
   );
-  console.log("Education Data", educationData);
-  console.log("Error:", error);
+  
+  
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
@@ -285,7 +285,7 @@ const Education = () => {
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
-      console.log("data", data);
+      
       setLoading(true);
       
       // Send only base qualification to API

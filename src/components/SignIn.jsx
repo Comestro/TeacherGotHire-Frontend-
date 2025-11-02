@@ -147,7 +147,7 @@ function Login() {
     setLoading(true);
 
     try {
-      console.log("Resending OTP for:", emailToUse);
+      
       await resendTeacherOtp(emailToUse);
 
       setTimer(30);

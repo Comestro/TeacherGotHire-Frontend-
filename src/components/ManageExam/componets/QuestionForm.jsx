@@ -365,8 +365,8 @@ const QuestionForm = () => {
         return;
       }
 
-      console.log("Starting manual translation...");
-      console.log("Source English Question:", englishQuestion);
+      
+      
 
       // Prepare translation requests for all fields while preserving LaTeX
       const translationPromises = [
@@ -393,7 +393,7 @@ const QuestionForm = () => {
       }));
 
       toast.success("Successfully translated to Hindi (LaTeX preserved)");
-      console.log("Manual translation completed successfully (LaTeX preserved)");
+      
     } catch (error) {
       console.error("Manual translation failed:", error);
       toast.error("Failed to translate content. Please try again.");
@@ -464,7 +464,7 @@ const QuestionForm = () => {
         questions: questionsToSubmit,
       };
 
-      console.log("Prepared payload for submission:", payload);
+      
 
       const response = await createNewQuestion(payload);
 

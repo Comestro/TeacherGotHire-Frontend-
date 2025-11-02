@@ -28,14 +28,14 @@ export const reorderQuestions = async (questionIds) => {
       order: questionIds
     };
     
-    console.log("Sending reorder payload:", payload);
+    
     
     const response = await axiosInstance.post(
       `/admin/teacher/api/questions/reorder/`,
       payload
     );
     
-    console.log("Reorder response:", response.data);
+    
     return response.data;
   } catch (error) {
     console.error("Error reordering questions:", error);

@@ -7,7 +7,7 @@ const AttemptCard = () => {
   const dispatch = useDispatch();
   const { levels, attemptCount } = useSelector((state) => state.examQues);
 
-  console.log("Attempt count in card", attemptCount);
+  
 
   useEffect(() => {
     dispatch(attemptsCount());

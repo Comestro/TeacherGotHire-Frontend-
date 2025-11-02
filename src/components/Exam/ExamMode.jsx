@@ -28,7 +28,7 @@ const ExamMode = () => {
   }, [])
 
   const user_id = userData.id
-  console.log("attempts",attempts);
+  
   const pass_exam_id = attempts
     ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
     ?.exam?.id;

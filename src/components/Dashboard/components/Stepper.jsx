@@ -129,7 +129,7 @@ const Steppers = () => {
   const progressValue = Math.round(calculateProgress());
   const nextStep = getNextStep();
 
-  console.log("Filtered Attempts:", filteredAttempts);
+  
 
   return (
     <div className="bg-white rounded shadow-sm overflow-hidden mb-4">

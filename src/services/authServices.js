@@ -59,7 +59,7 @@ const handleApiError = async (err) => {
 const postRequest = async (url, payload) => {
   try {
     const response = await apiClient.post(url, payload);
-    console.log("response", response);
+    
     return response.data;
   } catch (err) {
     handleApiError(err);
@@ -83,7 +83,7 @@ const getRequest = async (url) => {
 export const createaccount = async (userDetails) => {
   try {
     const response = await postRequest("/api/register/teacher/", userDetails);
-    console.log("response", response);
+    
     return response;
   } catch (error) {
     console.error("Error in createaccount:", error);

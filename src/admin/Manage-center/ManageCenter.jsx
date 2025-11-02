@@ -204,18 +204,18 @@ const ManageCenter = () => {
   const handleToggleStatus = async (center) => {
     try {
       const updatedStatus = !center.status;
-      console.log("Current status:", center.status);
-      console.log("Attempting to update to:", updatedStatus);
+      
+      
 
       // Simple payload with just status
       const payload = {
         status: updatedStatus
       };
       
-      console.log("Sending payload:", JSON.stringify(payload));
+      
       
       const response = await updateCenterManager(center.id, payload);
-      console.log("Response from server:", response);
+      
 
       // Verify if the status was actually updated in the response
       if (response && response.status === updatedStatus) {
@@ -342,7 +342,7 @@ const ManageCenter = () => {
         };
       }
 
-      console.log("Submitting payload:", JSON.stringify(payload));
+      
     
       if (selectedCenter) {
         await updateCenterManager(selectedCenter.id, payload);

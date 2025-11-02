@@ -47,7 +47,7 @@ function TeacherDashboard() {
     .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
     .map(item => item?.exam?.name);
 
-  console.log("qualifiedExamNames",qualifiedExamNames);
+  
   
   // Check if user has class categories set up
   const hasClassCategories = teacherprefrence?.class_category?.length > 0;

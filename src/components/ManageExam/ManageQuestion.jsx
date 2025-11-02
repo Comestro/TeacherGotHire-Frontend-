@@ -86,7 +86,7 @@ const ManageQuestion = () => {
 
         // Fetch fresh exam data using examId
         const response = await getExamById(examData.id);
-        console.log("Fetched Exam Data:", response);
+        
 
         setExam(response);
         setQuestions(response.questions || []);
@@ -173,7 +173,7 @@ const ManageQuestion = () => {
       
       if (oldIndex === -1 || newIndex === -1) return;
 
-      console.log(`Moving question from position ${oldIndex} to ${newIndex}`);
+      
       
       // Create a new array with the items reordered
       const reorderedQuestions = arrayMove(
@@ -191,7 +191,7 @@ const ManageQuestion = () => {
       // Extract just the IDs in the new order for the API call
       const orderedIds = updatedQuestions.map(q => q.id);
       
-      console.log("New order of IDs:", orderedIds);
+      
       
       // Call the API with the ordered IDs
       await reorderQuestions(orderedIds);

@@ -43,7 +43,7 @@ apiClient.interceptors.response.use(
 export const fetchClassCategory = async()=>{
   try{
      const response = await apiClient.get('/api/admin/classcategory/');
-     console.log("getclass:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -55,7 +55,7 @@ export const fetchClassCategory = async()=>{
 export const fetchJobRole = async()=>{
   try{
      const response = await apiClient.get('/api/admin/role/');
-    //console.log("getrole:",response.data);
+    //
      return response.data;
   }
      catch (err) {
@@ -67,7 +67,7 @@ export const fetchJobRole = async()=>{
 export const fetchTeacherJobRole = async()=>{
   try{
      const response = await apiClient.get('/api/admin/teacherjobtype/');
-     //console.log("getteacherrole:",response.data);
+     //
      return response.data;
   }
      catch (err) {
@@ -79,7 +79,7 @@ export const fetchTeacherJobRole = async()=>{
 export const fetchSubject = async()=>{
   try{
      const response = await apiClient.get('/api/admin/subject/');
-    // console.log("getsubject:",response.data);
+    // 
      return response.data;
   }
      catch (err) {
@@ -114,7 +114,7 @@ export const updateEducationProfile = async({payload, id })=>{
      try{
         console.log("payload",payload,id)
         const response = await apiClient.put(`api/self/teacherqualification/${id}/`,payload);
-        console.log("eduresponse",response);
+        
         return JSON.parse(JSON.stringify(response)); 
      }
         catch (err) {
@@ -134,7 +134,7 @@ export const updateEducationProfile = async({payload, id })=>{
 export const addEducationProfile = async(expriencedata)=>{
   try{
     const response = await apiClient.post('api/self/teacherqualification/',expriencedata);
-    console.log(response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
@@ -152,7 +152,7 @@ export const addEducationProfile = async(expriencedata)=>{
 export const fetchEducationProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/teacherqualification/');
-     console.log("get data:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -165,7 +165,7 @@ export const deleteEducationProfile = async(expriencedata)=>{
   try{
 
      const response = await apiClient.delete(`api/self/teacherqualification/${expriencedata.id}/`,expriencedata.data);
-     console.log("get data:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -175,9 +175,9 @@ export const deleteEducationProfile = async(expriencedata)=>{
 }
 export const updateSkillsProfile = async(skillsdata)=>{
   try{
-    // console.log("data sadique ", skillsdata);
+    // 
     const response = await apiClient.post('api/self/teacherskill/',skillsdata);
-    console.log(response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -188,7 +188,7 @@ export const updateSkillsProfile = async(skillsdata)=>{
 export const fetchSkillsProfile = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherskill/');
-     console.log("get data:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -212,7 +212,7 @@ export const updateExprienceProfile = async({payload, id})=>{
   try{
     console.log("expput",{payload, id})
     const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
-    console.log("exp_response",response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -223,7 +223,7 @@ export const updateExprienceProfile = async({payload, id})=>{
 export const addExprienceProfile = async(expriencedata)=>{
   try{
     const response = await apiClient.post('api/self/teacherexperience/',expriencedata);
-    console.log(response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -233,7 +233,7 @@ export const addExprienceProfile = async(expriencedata)=>{
 export const fetchExprienceProfile = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherexperience/');
-     console.log("get data:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -245,7 +245,7 @@ export const fetchExprienceProfile = async()=>{
 export const deleteExprienceProfile = async(expriencedata)=>{
   try{
      const response = await apiClient.delete(`api/self/teacherexperience/${expriencedata.id}/`,expriencedata.data);
-     console.log("get data:",response.data);
+     
      return response.data;
   }
      catch (err) {
@@ -258,7 +258,7 @@ export const deleteExprienceProfile = async(expriencedata)=>{
 export const updateTeacherPrefrence = async(prefrenceData)=>{
   try{
     const response = await apiClient.put('api/self/teacherpreference/',prefrenceData);
-    // console.log("teacher refrence",response.data);
+    // 
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -269,7 +269,7 @@ export const updateTeacherPrefrence = async(prefrenceData)=>{
 export const fetchTeacherPrefrence = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherpreference/');
-    //  console.log("get data:",response.data);
+    //  
      return response.data;
   }
      catch (err) {
@@ -281,7 +281,7 @@ export const fetchTeacherPrefrence = async()=>{
 export const updateTeacherJobPrefrenceLocation = async(prefrenceData)=>{
   try{
     const response = await apiClient.post('api/self/teacherjobpreferencelocation/',prefrenceData);
-    console.log("teacher location refrence",response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -293,7 +293,7 @@ export const editTeacherJobPrefrenceLocation = async(prefrenceData)=>{
   try{
     console.log("edir",prefrenceData.id)
     const response = await apiClient.put(`api/self/teacherjobpreferencelocation/${prefrenceData.id}/`,prefrenceData.editData);
-    console.log("Edit teacher location refrence",response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -305,7 +305,7 @@ export const editTeacherJobPrefrenceLocation = async(prefrenceData)=>{
 export const deleteTeacherJobPrefrenceLocation = async(locationId)=>{
   try{
     const response = await apiClient.delete(`api/self/teacherjobpreferencelocation/${locationId.id}/`);
-    console.log("teacher location refrence",response.data);
+    
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -317,7 +317,7 @@ export const deleteTeacherJobPrefrenceLocation = async(locationId)=>{
 export const fetchTeacherJobPrefrenceLocation = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherjobpreferencelocation/');
-    console.log("get teacher location refrence:",response.data);
+    
      return response.data;
   }
      catch (err) {

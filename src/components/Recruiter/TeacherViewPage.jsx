@@ -17,10 +17,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const TeacherViewPage = () => {
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("Auth Usre Data: ", profile);
+  
   const { id } = useParams();
   const [teacher, setTeacher] = useState({});
-  console.log("Initial teacher state:", teacher);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
@@ -34,7 +34,7 @@ const TeacherViewPage = () => {
     const loadTeacher = async () => {
       try {
         const data = await fetchSingleTeacherById(id);
-        console.log("Fetched teacher data:", data);
+        
         setTeacher(data);
         setLoading(false);
       } catch (err) {

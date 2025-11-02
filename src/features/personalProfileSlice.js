@@ -169,7 +169,7 @@ const personalProfileSlice = createSlice({
           state.status = "succeeded";
           
           state.basicData = action.payload; 
-          console.log("hi",action.payload);// Update profile data
+          // Update profile data
           console.log(action.payload)
         })
         // Handle rejected state
@@ -211,7 +211,7 @@ const personalProfileSlice = createSlice({
           state.address = action.payload; // Update profile data
           //Object.assign(state, action.payload);
           //console.log(profileData)
-          console.log("address",action.payload);
+          
         })
         // Handle rejected state
         .addCase(getAddress.rejected, (state, action) => {

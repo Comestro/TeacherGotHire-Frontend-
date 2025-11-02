@@ -37,8 +37,8 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
     dispatch(getTeacherjobType());
   }, [dispatch]);
 
-  console.log("classCategories in recruiter", classCategories);
-  console.log("job roles in recruiter", teacherjobRole);
+  
+  
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

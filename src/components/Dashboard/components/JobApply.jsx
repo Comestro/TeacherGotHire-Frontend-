@@ -21,14 +21,14 @@ const JobApply = () => {
   const { data: eligibilityData, isLoading: isEligibilityLoading, error: eligibilityError } = useGetApplyEligibilityQuery();
   const { data: jobApply, isLoading: isJobApplyLoading, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
 
-  // console.log("eligibilityData", eligibilityData);
-  // console.log("jobApply", jobApply);
+  // 
+  // 
 
   // Extract eligible exams from the new response structure
   const eligibleExams = eligibilityData?.qualified_list ? 
     eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
 
-  // console.log("eligibleExams", eligibleExams);
+  // 
 
   // Function to handle location success callback
   const handleLocationSuccess = () => {
@@ -77,7 +77,7 @@ const JobApply = () => {
         }
       );
     } catch (error) {
-      console.log("Application error:", error);
+      
       
       // Extract error message from different possible error structures
       let errorMessage = "Please try again";

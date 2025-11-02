@@ -24,12 +24,12 @@ axiosInstance.interceptors.request.use(
 export const fetchTeachers = createAsyncThunk(
   "teachers/fetchTeachers",
   async (filters, { rejectWithValue }) => {
-    console.log("filter data in slice", filters);
+    
     try {
       const response = await axiosInstance.get("/api/admin/teacher/", {
         params: filters,
       });
-      // console.log("filter data in slice", response.data);
+      // 
       return response.data; 
     } catch (error) {
       return rejectWithValue(
@@ -46,7 +46,7 @@ export const searchTeachers = createAsyncThunk(
       const response = await axiosInstance.get("/api/admin/teacherSearch/", {
         params: { search: searchValue },
       });
-      console.log("search data in slice", response.data);
+      
       return response.data;
     } catch (error) {}
   }

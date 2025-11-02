@@ -51,7 +51,7 @@ const TeacherTestScorePage = ({ userId }) => {
     const fetchTestScores = async () => {
       try {
         const response = await getTeacherScorecard(userId);
-        console.log('Raw API output:', response);
+        
         
         // Check for invalid data
         const hasInvalidData = response?.some(test => test.exam === null);

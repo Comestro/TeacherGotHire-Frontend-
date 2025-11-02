@@ -536,7 +536,7 @@ const jobProfileSlice = createSlice({
         .addCase(getPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrence = action.payload; // Update profile data
-          //console.log("prefrence",action.payload);
+          //
         })
         .addCase(getPrefrence.rejected, (state, action) => {
           state.status = "failed";
@@ -555,7 +555,7 @@ const jobProfileSlice = createSlice({
       .addCase(getJobPrefrence.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.prefrenceLocation = action.payload; // Update profile data
-        console.log("prefrenceLocation",action.payload);
+        
       })
       .addCase(getJobPrefrence.rejected, (state, action) => {
         state.status = "failed";
@@ -571,7 +571,7 @@ const jobProfileSlice = createSlice({
         .addCase(postJobPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrenceLocation = action.payload; // Update profile data
-          console.log("prefrenceLocation",action.payload);
+          
         })
         .addCase(postJobPrefrence.rejected, (state, action) => {
           state.status = "failed";
@@ -587,7 +587,7 @@ const jobProfileSlice = createSlice({
         .addCase(deleteJobPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrenceLocation = action.payload; // Update profile data
-          console.log("deleteLocation",action.payload);
+          
         })
         .addCase(deleteJobPrefrence.rejected, (state, action) => {
           state.status = "failed";
@@ -603,7 +603,7 @@ const jobProfileSlice = createSlice({
         .addCase(editJobPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrenceLocation = action.payload; // Update profile data
-          console.log("deleteLocation",action.payload);
+          
         })
         .addCase(editJobPrefrence.rejected, (state, action) => {
           state.status = "failed";

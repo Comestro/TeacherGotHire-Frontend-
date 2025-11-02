@@ -143,7 +143,6 @@ const EditableField = ({
             }
           }}
           className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
-          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
             error ? "border-red-500" : "border-[#3E98C7]/30"
           }`}
         />

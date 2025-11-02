@@ -31,7 +31,7 @@ const Experience = () => {
   );
 
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  console.log("job", jobRole);
+  
 
   // State Variables
   const [isEndDateDisabled, setIsEndDateDisabled] = useState(false);

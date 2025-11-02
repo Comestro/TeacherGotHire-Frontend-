@@ -38,9 +38,9 @@ const ExamPortal = () => {
   });
   const exam = allQuestion.id;
 
-  console.log("language", language);
-  console.log("allqustion", allQuestion);
-  console.log("questions", questions);
+  
+  
+  
 
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -64,7 +64,7 @@ const ExamPortal = () => {
           : [...prevSelected, optionId] // Add if not selected
     );
   };
-  console.log("selectedOption", selectedOption);
+  
 
   const handleSubmits = () => {
     e?.preventDefault(); // Optional prevention for form submission
@@ -154,8 +154,8 @@ const ExamPortal = () => {
       incorrect_answer,
       is_unanswered,
     });
-    console.log("Checking results", results);
-    console.log("language", language);
+    
+    
     
     dispatch(
       postResult({

@@ -189,7 +189,7 @@ const ViewTeacherAdmin = () => {
       setError(null);
       try {
         const response = await getTeacherProfile(id);
-        console.log("API Response:", response);
+        
 
         // Map the API field names to the expected property names
         const mappedData = {
@@ -243,7 +243,7 @@ const ViewTeacherAdmin = () => {
       return;
     }
 
-    console.log("Teacher data for PDF:", teacherData);
+    
 
     // Make sure we have name data - check both mapped and original fields
     const firstName = teacherData.firstName || teacherData.Fname || "Teacher";

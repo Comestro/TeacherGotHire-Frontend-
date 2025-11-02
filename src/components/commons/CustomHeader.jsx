@@ -9,7 +9,7 @@ import { IoMdHome } from "react-icons/io";
 const CustomHeader = ({ isOpen, setIsOpen }) => {
 
   const profile = useSelector((state) => state.auth.userData || {});
-  console.log("login page data", profile);
+  
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-teal-600 text-white shadow-md -z-10 md:z-0">

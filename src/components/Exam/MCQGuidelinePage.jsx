@@ -37,7 +37,7 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
-    console.log("Selected Language:", language);
+    
   };
 
   const handleProceedClick = async (e) => {
@@ -53,7 +53,7 @@ const MCQGuidelinePage = () => {
         const examid = examCards?.id;
         // Check passkey status
         const response = await checkPasskey({ exam: examid });
-        console.log("Passkey check response:", response);
+        
 
         if (response?.passkey === true) {
           // If passkey exists, show verification with center info

@@ -83,7 +83,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       try {
         const response = await apiClient.get("/api/public/classcategory/");
         setSubject(response.data);
-        console.log("Class category and subject:", response.data);
+        
         setLoading(false);
       } catch (error) {
         setError(error.message);

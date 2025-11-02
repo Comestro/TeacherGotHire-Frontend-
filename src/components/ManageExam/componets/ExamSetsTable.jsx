@@ -16,7 +16,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
     });
   };
 
-  console.log('ExamSetsTable received examSets:', examSets.map(exam => ({ id: exam.id, set_name: exam.set_name, level: exam.level?.name })));
+  
 
   // Group exams by class category and subject
   const groupedExams = examSets.reduce((acc, exam) => {

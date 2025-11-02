@@ -42,26 +42,26 @@ function ViewAttempts() {
 
   useEffect(() => {
     // Add debug logs
-    console.log('Raw API Output:', apiOutput2);
+    
 
     // Filter results based on selected category with more lenient filtering
     const validResults = apiOutput2?.filter(result => {
       // Log invalid results to help debugging
       if (!result?.exam) {
-        console.log('Invalid result:', result);
+        
         return false;
       }
       return true;
     }) || [];
 
-    console.log('Valid Results:', validResults);
+    
 
     const results = validResults.filter((result) => {
       if (selectedCategory === "All") return true;
       return result.exam?.class_category_name === selectedCategory;
     });
 
-    console.log('Filtered Results:', results);
+    
     setFilteredExamResults(results);
     
     // More lenient subject extraction
@@ -71,7 +71,7 @@ function ViewAttempts() {
         .map(result => result.exam?.subjet_name || result.exam?.subject_name)
     )];
 
-    console.log('Subject Names:', subjectNames);
+    
     setSubjects(subjectNames);
   }, [selectedCategory, apiOutput2]);
 

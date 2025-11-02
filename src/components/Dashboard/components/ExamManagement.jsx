@@ -39,7 +39,7 @@ function ExamManagement() {
   const { examSet, allcenter, attempts, error } = useSelector(
     (state) => state.examQues
   );
-  console.log("attempts", attempts);
+  
 
   const getFirstQualifiedOccurrences = () => {
     const seenPairs = new Set(); // Track seen subject-category pairs
@@ -67,7 +67,7 @@ function ExamManagement() {
   };
 
   const firstQualifiedExams = getFirstQualifiedOccurrences();
-  console.log("firstQualifiedExam", firstQualifiedExams);
+  
 
   const level1ExamSets = examSet?.exams?.filter(
     (exam) => exam.level.level_code == 1.0
@@ -81,16 +81,16 @@ function ExamManagement() {
 
   const interviewEligible = examSet?.interview_details;
 
-  console.log(" level1ExamSets", level1ExamSets);
-  console.log("level2OfflineExamSets", level2OfflineExamSets);
-  console.log("level2OnlineExamSets", level2OnlineExamSets);
+  
+  
+  
   const { userData } = useSelector((state) => state?.auth);
   const { interview, exam, passkeyresponse, verifyresponse } = useSelector(
     (state) => state.examQues
   );
-  console.log("interview", interview);
-  console.log("passkeyrespone", passkeyresponse);
-  console.log("examSet", examSet);
+  
+  
+  
   const exams = verifyresponse?.offline_exam;
   const isProfileComplete =
     basicData &&
@@ -105,7 +105,7 @@ function ExamManagement() {
         (typeof val === "string" && val.trim() !== "")
     );
 
-  console.log("isProfileComplete", isProfileComplete);
+  
   const [activeTab, setActiveTab] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -170,7 +170,7 @@ function ExamManagement() {
 
   // Handle category switch
   const handleCategoryChange = (category) => {
-    console.log("category", category);
+    
     setActiveTab(category?.id); // Update activeTab
     setSelectedSubject(""); // Reset subject on category change
   };
@@ -178,14 +178,14 @@ function ExamManagement() {
   useEffect(() => {
     if (activeTab !== null) {
       const subject = prefrence?.prefered_subject || [];
-      console.log("subject", subject);
+      
 
       const filteredSubjects = subject.filter(
         (subject) => subject.class_category === activeTab
       );
 
       setFilteredSubjects(filteredSubjects);
-      console.log("filteredSubjects", filteredSubjects);
+      
     }
   }, [activeTab]); // Runs on mount and when activeTab changes
   const handleSubjectChange = (e) => {
@@ -206,7 +206,7 @@ function ExamManagement() {
         id: subject.id,
         name: subject.subject_name,
       });
-      console.log("centerSelectionPopup", centerSelectionPopup);
+      
       setLoading(true);
 
       if (activeTab) {
@@ -218,7 +218,7 @@ function ExamManagement() {
         )
           .unwrap()
           .then(() => {
-            console.log("Exam set fetched successfully");
+            
             setLoading(false);
             return true;
           })
@@ -228,7 +228,7 @@ function ExamManagement() {
             return false;
           });
       } else {
-        console.log("Not qualified - skipping dispatch");
+        
         return false;
       }
     } catch (error) {
@@ -239,7 +239,7 @@ function ExamManagement() {
     }
   };
   // useEffect(() => {
-  //   console.log(" interviewEligible state:", interviewEligible);
+  //   
   // }, [interviewEligible]);
 
   // useEffect(() => {
@@ -251,10 +251,10 @@ function ExamManagement() {
   //           exam.subjectId === selectedSubject
   //       );
   //       setInterviewEligible(isQualified);
-  //       console.log("Eligibility updated:", isQualified);
+  //       
   //     }
   //   };
-  //   console.log("ACTUAL interviewEligible state:", interviewEligible);
+  //   
   //   checkEligibility();
   // }, [activeTab, selectedSubject, firstQualifiedExams]);
 
@@ -290,7 +290,7 @@ function ExamManagement() {
         })
       ).unwrap(); // Using unwrap() to properly handle the Promise
 
-      console.log("Interview scheduled successfully:", result);
+      
       dispatch(
         getExamSet({
           subject_id: selectedSubject,
@@ -332,7 +332,7 @@ function ExamManagement() {
     event.preventDefault();
 
     try {
-      console.log("Generating passkey for exam:", exam);
+      
       setExam(exam);
 
       // Validate center selection
@@ -341,7 +341,7 @@ function ExamManagement() {
         return;
       }
 
-      console.log("Selected center ID:", selectedCenterId);
+      
       // Dispatch the passkey generation action
       const result = await dispatch(
         generatePasskey({
@@ -352,7 +352,7 @@ function ExamManagement() {
       ).unwrap(); // Using unwrap() to properly handle the Promise
 
       // Only proceed if successful
-      console.log("Passkey generated successfully:", result);
+      
 
       // Clear reminders and update UI
       localStorage.removeItem("showReminder");
@@ -383,7 +383,7 @@ function ExamManagement() {
 
   const handleverifyPasskey = async (event) => {
     event.preventDefault();
-    console.log("Verification code submitted:", passcode);
+    
 
     if (!passcode) {
       alert("Please enter a verification code");
@@ -391,7 +391,7 @@ function ExamManagement() {
     }
 
     try {
-      console.log("userid", user_id);
+      
       // Dispatch the verification action and wait for response
       const result = await dispatch(
         verifyPasscode({

@@ -20,7 +20,7 @@ const UnauthorizedAccess = () => {
   }, [dispatch, navigate]);
 
   const handleSupportClick = () => {
-    console.log("Contacting support");
+    
   };
 
   return (

@@ -70,13 +70,13 @@ export const fetchExam = async ({
 
 export const fetchQuestion = async ({ exam_id, language }) => {
   try {
-    console.log("ExamId and Language", { exam_id, language });
+    
     const response = await apiClient.get(`/api/self/exam/${exam_id}/`, {
       params: {
         language,
       },
     });
-    console.log("ques", response);
+    
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);
@@ -92,7 +92,7 @@ export const Attempts = async (params= {}) => {
         level_code: params.level_code
       }
     });
-    console.log("attempts result from services", response);
+    
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

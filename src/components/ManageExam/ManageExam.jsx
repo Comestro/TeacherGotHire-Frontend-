@@ -52,7 +52,7 @@ const ManageExam = () => {
         const response = await fetchLevel();
         setLevel(response);
       } catch (error) {
-        console.log(error);
+        
       }
     };
     
@@ -66,7 +66,7 @@ const ManageExam = () => {
         setLoading(true);
         const response = await getExam();
         setExamSets(response);
-        console.log("Fetched exam sets:", response);
+        
       } catch (error) {
         toast.error('Failed to fetch exam sets');
         console.error('Error fetching exams:', error);
@@ -234,7 +234,7 @@ const ManageExam = () => {
 
   // Enhanced handleExamCreated function to show more feedback
   const handleExamCreated = (newExam) => {
-    console.log("New exam created:", newExam);
+    
     toast.success('Exam created successfully!');
     setRefreshTrigger(prev => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success
@@ -243,7 +243,7 @@ const ManageExam = () => {
 
   // Enhanced handleExamUpdated function
   const handleExamUpdated = (updatedExam) => {
-    console.log("Exam updated:", updatedExam);
+    
     toast.success('Exam updated successfully!');
     setRefreshTrigger(prev => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success

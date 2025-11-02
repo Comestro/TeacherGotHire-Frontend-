@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
 export const fetchSubjects = async()=>{
   try{
      const response = await apiClient.get('/api/admin/subject/');
-     console.log("get data:",response.data);
+     
      return JSON.parse(JSON.stringify(response));
   }
      catch (err) {

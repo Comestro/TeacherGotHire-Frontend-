@@ -39,17 +39,17 @@ const ExamCenterModal = ({
     skip: !isOpen || isverifyCard,
   });
 
-  console.log("centers", centers);
+  
 
   // Redux state for other data
   const { passkeyresponse, error } = useSelector((state) => state.examQues);
   const { examCards } = useSelector((state) => state.exam);
-  console.log("error", error);
+  
 
   // Debug log for centers data
   useEffect(() => {
     if (centers) {
-      console.log("Centers from RTK Query:", centers);
+      
     }
     if (centersError) {
       console.error("RTK Query centers error:", centersError);
@@ -86,7 +86,7 @@ const ExamCenterModal = ({
       }
 
       toast.success("Verification successful!");
-      console.log("selectedLanguage", selectedLanguage);
+      
       await dispatch(
         getAllQues({
           exam_id: examCards?.id,

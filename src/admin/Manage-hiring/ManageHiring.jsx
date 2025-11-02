@@ -77,7 +77,7 @@ const ManageHiringRequests = () => {
     const fetchData = async () => {
       try {
         const response = await getHireRequest();
-        console.log("Response: ", response);
+        
         if (Array.isArray(response)) {
           const formatData = response.map((item) => ({
             id: item.id,

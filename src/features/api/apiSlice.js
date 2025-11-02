@@ -19,7 +19,7 @@ export const apiSlice = createApi({
     getCenters: builder.query({
       query: () => '/api/admin/examcenter/',
       transformResponse: (response) => {
-        console.log('Centers response from RTK Query:', response);
+        
         return response;
       },
       // Add error handling
@@ -31,14 +31,14 @@ export const apiSlice = createApi({
     getJobsApplyDetails: builder.query({
       query:()=>'/api/self/apply/',
       transformResponse: (response) => {
-        console.log('Centers response from RTK Query:', response);
+        
         return response;
       },
     }),
     getApplyEligibility: builder.query({
       query: () => '/api/self/apply-eligibility/',
       transformResponse: (response) => {
-        console.log('Apply eligibility response from RTK Query:', response);
+        
         return response;
       },
       transformErrorResponse: (response) => {

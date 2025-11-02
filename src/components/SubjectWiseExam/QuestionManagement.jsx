@@ -133,7 +133,7 @@ const QuestionManagement = () => {
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    console.log("correctAnswer", currentQuestion);
+    
     const payload = {
       text: currentQuestion.text,
       options: currentQuestion.options,

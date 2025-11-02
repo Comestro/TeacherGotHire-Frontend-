@@ -102,14 +102,14 @@ useEffect(() => {
       console.error("Error fetching level:", error);
     });
 }, []);
-  console.log("Levels:", levels);
+  
   // Update these console logs to avoid undefined errors
   useEffect(() => {
     if (setterUser) {
-      console.log('exam setter user response', setterUser);
+      
     }
     if (setterExamSet) {
-      console.log('exam setter response', setterExamSet);
+      
     }
   }, [setterUser, setterExamSet]);
 

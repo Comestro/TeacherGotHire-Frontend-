@@ -15,7 +15,7 @@ export const examCard = createAsyncThunk(
 
       return data;
     } catch (error) {
-      console.log("Error in getLevels:", error);
+      
       let errorMessage = "An error occurred";
       if (
         error.response &&
@@ -50,7 +50,7 @@ const examSlice = createSlice({
               .addCase(examCard.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.examCards = action.payload;
-                console.log("examCard", action.payload);
+                
               })
               .addCase(examCard.rejected, (state, action) => {
                 state.status = "failed";

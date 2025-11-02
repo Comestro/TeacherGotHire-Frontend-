@@ -18,13 +18,13 @@ import { toast } from "react-toastify";
 const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const dispatch = useDispatch();
   const teacherprefrence = useSelector((state) => state?.jobProfile.prefrence);
-  console.log("teacherprefrence", teacherprefrence);
+  
   const jobLocations = useSelector(
     (state) => state.jobProfile.prefrenceLocation || []
   );
   const { attempts, interview } = useSelector((state) => state.examQues);
   const {userData} = useSelector((state)=>state.auth)
-  console.log("interview",attempts );
+  
 
   const passedOfflineExam =  attempts?.some(
     (attempt) => attempt?.isqualified === true && attempt?.exam?.type === "offline"
@@ -96,7 +96,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       try {
         setApiError("");
         const response = await axios.get(`${getPincodeUrl()}${pincode}`);
-        console.log("response", response);
+        
 
         if (response.data && response.data[0].Status === "Success") {
           const postOffices = response.data[0].PostOffice; // Array of post offices
@@ -161,7 +161,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
         ).unwrap();
         fetchjobrefrence();
       } else {
-        console.log("Dispatching location data:", locationData);
+        
         await dispatch(postJobPrefrence(locationData)).unwrap();
         fetchjobrefrence();
         
@@ -210,7 +210,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
             if (Array.isArray(areaError)) {
               areaError = areaError[0];
             }
-            console.log("Found area error:", areaError);
+            
             setFieldErrors({ area: areaError });
             errorFound = true;
             
@@ -240,7 +240,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           const match = errorStr.match(pattern);
           if (match) {
             const message = match[1] || "This area name already exists.";
-            console.log("Found area error via regex:", message);
+            
             setFieldErrors({ area: message });
             
             toast.error(`Area Error: ${message}`, {
@@ -316,9 +316,9 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
   const handleDelete = async (index) => {
     try {
-      console.log("index", index);
+      
       const locationToDelete = jobLocations[index].id;
-      console.log("locationid", locationToDelete);
+      
       await dispatch(
         deleteJobPrefrence({ id: locationToDelete, delete: true })
       ).unwrap();

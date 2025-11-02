@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
 // export const addExamCard = async ({subject_id,class_category_id,level_id}) => {
 //   try {
 //     const response = await apiClient.post(`api/self/new/exam/exam/`,{subject_id,class_category_id,level_id});
-//     console.log("Exam Card", response);
+//     
 //     return response.data;
 //   } catch (err) {
 //     console.error("error:", err.response?.data || err);
@@ -56,7 +56,7 @@ export const addExamCard = async ({ subject_id, class_category_id, level_id }) =
     if (level_id) params.append('level_id', level_id);
 
     const response = await apiClient.get(`api/self/new/exam/exam/?${params.toString()}`);
-    console.log("Fetched Exam Cards", response);
+    
     return response.data;
   } catch (err) {
     console.error("Error fetching exam cards:", err.response?.data || err);
@@ -76,7 +76,7 @@ export const fetchLevel = async () => {
 export const checkPasskey = async (exam) => {
   try {
     const response = await apiClient.post(`/api/check-passkey/`,exam);
-    console.log("exam", response);
+    
     return response.data;
   } catch (err) {
     console.error("error:", err.response?.data || err);

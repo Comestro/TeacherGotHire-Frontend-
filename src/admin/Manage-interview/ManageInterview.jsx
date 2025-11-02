@@ -192,7 +192,7 @@ const InterviewManagement = () => {
         setLoading(true);
         try {
             const response = await getInterview();
-            console.log("API response:", response);
+            
 
             const data = response.map(item => {
                 const status = determineStatus(item);
@@ -233,7 +233,7 @@ const InterviewManagement = () => {
                 };
             });
 
-            console.log("Processed data:", data);
+            
             setInterviewData(data);
             setFilteredTeachers(data);
             setLoading(false);

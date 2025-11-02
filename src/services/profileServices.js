@@ -90,7 +90,7 @@ export const updateBasicProfile = async(personaldata)=>{
 export const fetchBasicProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/basicProfile/');
-    // console.log("get profile image:",response.data.profile_picture);
+    // 
      return response.data;
   }
      catch (err) {
