@@ -103,7 +103,6 @@ useEffect(() => {
     });
 }, []);
   
-  // Update these console logs to avoid undefined errors
   useEffect(() => {
     if (setterUser) {
       

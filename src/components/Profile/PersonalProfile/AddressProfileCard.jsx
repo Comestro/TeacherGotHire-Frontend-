@@ -42,8 +42,6 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   const [postOffice, setPostOffice] = useState([]);
   const { error } = useSelector((state) => state.personalProfile);
 
-  
-
   useEffect(() => {
     if (addressData) reset(addressData);
   }, [addressData, reset]);
@@ -73,24 +71,33 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="px-5 py-4 rounded-md border">
-      <h3 className="text-lg font-semibold text-[#3E98C7] mb-4">
-        {type === "current" ? "Edit Current Address" : "Edit Permanent Address"}
-      </h3>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl border border-[#3E98C7]/20 shadow-md p-0">
+      {/* Form Header */}
+      <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-[#3E98C7]/10 to-[#67B3DA]/10 rounded-t-xl border-b border-[#3E98C7]/10">
+        <FaLocationDot className="w-6 h-6 text-[#3E98C7]" />
+        <h3 className="text-lg font-bold text-[#3E98C7]">
+          {type === "current" ? "Edit Current Address" : "Edit Permanent Address"}
+        </h3>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 px-6 py-6">
         {/* Pincode Field */}
-        <div className="flex flex-col gap-2">
-          <label className="text-md  text-gray-400">Pincode*</label>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-semibold text-primary">
+            Pincode{" "}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
+          </label>
           <input
             {...register("pincode", { required: "Pincode is required" })}
             placeholder="Enter Pincode"
             onChange={handlePincodeChange}
-            className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+            className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm font-medium transition-all"
           />
           {errors.pincode && (
-            <p className="text-red-500 text-sm">{errors.pincode.message}</p>
+            <p className="text-error text-xs mt-0.5">{errors.pincode.message}</p>
           )}
-          {error && <span className="text-red-500 text-sm">{error}</span>}
+          {error && <span className="text-error text-xs">{error}</span>}
           {loadingPincode && (
             <div className="mt-2">
               <Loader />
@@ -99,33 +106,48 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
         </div>
 
         {/* State and District Fields */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-md text-gray-400">State*</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-primary">
+              State{" "}
+              <span className="text-error" aria-hidden="true">
+                *
+              </span>
+            </label>
             <input
               {...register("state")}
               placeholder="State"
               readOnly
-              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full px-3 py-2 border border-secondary/30 rounded-lg bg-gray-100 text-sm font-medium cursor-not-allowed"
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-md  text-gray-400">District*</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-primary">
+              District{" "}
+              <span className="text-error" aria-hidden="true">
+                *
+              </span>
+            </label>
             <input
               {...register("district")}
               placeholder="District"
               readOnly
-              className="w-full border-b cursor-not-allowed border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full px-3 py-2 border border-secondary/30 rounded-lg bg-gray-100 text-sm font-medium cursor-not-allowed"
             />
           </div>
         </div>
 
         {postOffice.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <label className="text-md text-gray-400">Post Office*</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-primary">
+              Post Office{" "}
+              <span className="text-error" aria-hidden="true">
+                *
+              </span>
+            </label>
             <select
               {...register("postoffice")}
-              className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+              className="w-full px-3 py-2 border border-secondary/30 rounded-lg bg-white text-sm font-medium"
             >
               <option value="">Select Post Office</option>
               {postOffice.map((office, index) => (
@@ -135,35 +157,38 @@ const AddressForm = ({ type, addressData, onSubmit, onCancel }) => {
               ))}
             </select>
             {errors.post_office && (
-              <p className="text-red-500 text-sm">
-                {errors.post_office.message}
-              </p>
+              <p className="text-error text-xs mt-0.5">{errors.post_office.message}</p>
             )}
           </div>
         )}
 
         {/* Area Field */}
-        <div className="flex flex-col gap-2">
-          <label className="text-md text-gray-400">Area*</label>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-semibold text-primary">
+            Area{" "}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
+          </label>
           <input
             {...register("area")}
             placeholder="Area"
-            className="w-full border-b border-gray-200 px-2 pb-1 focus:outline-none"
+            className="w-full px-3 py-2 border border-secondary/30 rounded-lg bg-white text-sm font-medium"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end gap-3 pt-4 border-t border-secondary/20">
           <button
             type="button"
-            onClick={handleCancel} // Use handleCancel instead of onCancel
-            className="px-6 py-1.5 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all"
+            onClick={handleCancel}
+            className="px-5 py-2 border border-secondary/30 text-secondary hover:bg-secondary/10 font-medium rounded-lg transition-all text-sm"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-6 py-1.5 bg-[#3E98C7] text-white rounded-lg hover:bg-[#3579a0] transition-all"
+            className="px-6 py-2 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             Save
           </button>
@@ -277,7 +302,7 @@ const AddressProfileCard = () => {
       personalProfile.current_address.district ||
       personalProfile.current_address.state ||
       personalProfile.current_address.pincode)
-  );  
+  );
 
   const addressesMatch = useMemo(() => {
     if (!personalProfile.current_address || !personalProfile.permanent_address) {
@@ -301,15 +326,13 @@ const AddressProfileCard = () => {
   }, []);
 
   const handleSave = async (data) => {
-    
     const payload = { ...data, address_type: isEditingType };
-    
+
     setLoading(true);
     try {
       if (personalProfile?.[`${isEditingType}_address`]) {
         await dispatch(putAddress(payload)).unwrap();
       } else {
-        
         await dispatch(postAddress(payload)).unwrap();
       }
       toast.success("Address saved successfully");
@@ -359,13 +382,22 @@ const AddressProfileCard = () => {
   }, [isEditingType]);
 
   return (
-    <div className="space-y-4 mt-5  border border-[#3E98C7]/20 p-5 rounded-lg">
+    <div className="space-y-4 mt-5 border border-[#3E98C7]/30 p-6 rounded-2xl bg-gradient-to-br from-white to-blue-50 shadow-md">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-white ">
+      <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 bg-gradient-to-r from-[#3E98C7]/10 to-[#67B3DA]/10 rounded-xl px-4 py-3 border border-[#3E98C7]/20 mb-2">
+        <div className="flex items-center gap-3">
+          <FaLocationDot className="w-6 h-6 text-[#3E98C7]" />
+          <Heading level={3} className="text-xl font-bold text-[#3E98C7]">
+            Address Information
+          </Heading>
+        </div>
         <div className="flex-1">
-          <p className="flex items-start gap-2 text-xs">
-            <strong>Note:</strong> Both addresses are required for verification
-            purposes.
+          <p className="flex items-start gap-2 text-xs text-gray-600">
+            <FaInfoCircle className="w-4 h-4 text-[#3E98C7]" />
+            <span>
+              <strong>Note:</strong> Both addresses are required for verification
+              purposes.
+            </span>
           </p>
         </div>
       </div>
@@ -380,17 +412,19 @@ const AddressProfileCard = () => {
 
         <div
           ref={formRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {/* Current Address */}
           <div className="md:col-span-1">
             {isEditingType === "current" ? (
-              <AddressForm
-                type="current"
-                addressData={personalProfile.current_address}
-                onSubmit={handleSave}
-                onCancel={() => setIsEditingType(null)}
-              />
+              <div className="bg-white rounded-xl shadow-lg border border-[#3E98C7]/20 p-5 animate-fadeIn">
+                <AddressForm
+                  type="current"
+                  addressData={personalProfile.current_address}
+                  onSubmit={handleSave}
+                  onCancel={() => setIsEditingType(null)}
+                />
+              </div>
             ) : (
               <AddressCard
                 title="Current Address"
@@ -404,12 +438,14 @@ const AddressProfileCard = () => {
           {/* Permanent Address */}
           <div className="md:col-span-1">
             {isEditingType === "permanent" ? (
-              <AddressForm
-                type="permanent"
-                addressData={personalProfile.permanent_address}
-                onSubmit={handleSave}
-                onCancel={() => setIsEditingType(null)}
-              />
+              <div className="bg-white rounded-xl shadow-lg border border-[#3E98C7]/20 p-5 animate-fadeIn">
+                <AddressForm
+                  type="permanent"
+                  addressData={personalProfile.permanent_address}
+                  onSubmit={handleSave}
+                  onCancel={() => setIsEditingType(null)}
+                />
+              </div>
             ) : (
               <AddressCard
                 title="Permanent Address"

@@ -44,7 +44,6 @@ const MCQGuidelinePage = () => {
     e.preventDefault();
 
     if (!selectedLanguage || !isChecked) return;
-  console.log("selected",selectedLanguage)
     try {
       setIsLoading(true);
       setError(null);

@@ -59,7 +59,6 @@ export const recruiterPostData = createAsyncThunk(
         email,
         password,
       });
-      //console.log("gedata",data)
       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
@@ -76,8 +75,6 @@ export const getResendOtp = createAsyncThunk(
   async (email, { rejectWithValue }) => {
     try {
       const data = await resendOtp(email);
-      //console.log("gedata",data)
-      // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({

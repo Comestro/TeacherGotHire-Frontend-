@@ -112,7 +112,6 @@ export const fetchAllSkills = async()=>{
 
 export const updateEducationProfile = async({payload, id })=>{
      try{
-        console.log("payload",payload,id)
         const response = await apiClient.put(`api/self/teacherqualification/${id}/`,payload);
         
         return JSON.parse(JSON.stringify(response)); 
@@ -198,7 +197,6 @@ export const fetchSkillsProfile = async()=>{
 }
 export const deleteSkillProfile = async(skillToRemove)=>{
   try{
-     console.log("sikll",skillToRemove)
      const response = await apiClient.delete(`api/self/teacherskill/${skillToRemove.id}/`,skillToRemove.name);
      return response.data;
   }
@@ -210,7 +208,6 @@ export const deleteSkillProfile = async(skillToRemove)=>{
 
 export const updateExprienceProfile = async({payload, id})=>{
   try{
-    console.log("expput",{payload, id})
     const response = await apiClient.put(`api/self/teacherexperience/${id}/`,payload);
     
     return JSON.parse(JSON.stringify(response));
@@ -291,7 +288,6 @@ export const updateTeacherJobPrefrenceLocation = async(prefrenceData)=>{
 }
 export const editTeacherJobPrefrenceLocation = async(prefrenceData)=>{
   try{
-    console.log("edir",prefrenceData.id)
     const response = await apiClient.put(`api/self/teacherjobpreferencelocation/${prefrenceData.id}/`,prefrenceData.editData);
     
     return JSON.parse(JSON.stringify(response));

@@ -361,7 +361,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
             {!isFormVisible && jobLocations.length < 5 && (
               <button
                 onClick={handleShowAddForm}
-                className="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200  hover:"
                 aria-label="Add new location"
               >
                 <IoLocationSharp className="h-5 w-5" aria-hidden="true" />
@@ -373,51 +373,62 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           {jobLocations.length > 0 && !isFormVisible && (
             <div className="grid gap-4 mb-6">
               {jobLocations.map((location, index) => (
-                <div key={index} className="group p-6 border border-secondary/30 rounded-xl bg-gradient-to-br from-white to-background/30 hover:border-primary/40 hover:shadow-md transition-all duration-200">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                          <IoLocationSharp className="h-5 w-5 text-primary" aria-hidden="true" />
+                <div key={index} className="group relative overflow-hidden border border-secondary/20 rounded-2xl bg-white hover:border-primary/30 hover: transition-all duration-300">
+                  {/* Gradient accent bar */}
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-[#67B3DA]"></div>
+                  
+                  <div className="p-6 pl-8">
+                    <div className="flex justify-between items-start gap-6">
+                      <div className="flex-1 min-w-0">
+                        {/* Location Header */}
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="p-3 bg-gradient-to-br from-primary/10 to-[#67B3DA]/10 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                            <IoLocationSharp className="h-6 w-6 text-primary" aria-hidden="true" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold text-text mb-2 group-hover:text-primary transition-colors duration-200">
+                              {location.area || 'Area not specified'}
+                            </h3>
+                            <p className="text-sm text-text/60 leading-relaxed">
+                              {location.block && <><span className="font-semibold text-text/80">{location.block}</span> • </>}
+                              <span className="font-medium">{location.city}</span>, {location.state}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-text mb-1">
-                            {location.area || 'Area not specified'}
-                          </h3>
-                          <p className="text-sm text-text/70 leading-relaxed">
-                            {location.block && <><span className="font-medium">{location.block}</span>, </>}
-                            {location.city}, {location.state}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="inline-flex items-center text-xs text-secondary">
-                              <span className="font-medium">PIN:</span>
-                              <span className="ml-1 font-semibold">{location.pincode}</span>
-                            </span>
-                            <span className="text-secondary">•</span>
-                            <span className="text-xs text-secondary">
-                              <span className="font-medium">Post Office:</span> {location.post_office}
-                            </span>
+                        
+                        {/* Location Details */}
+                        <div className="flex flex-wrap items-center gap-4 pl-1">
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-lg">
+                            <span className="text-xs font-medium text-primary/70">PIN Code</span>
+                            <span className="text-sm font-bold text-primary">{location.pincode}</span>
+                          </div>
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/5 border border-secondary/20 rounded-lg">
+                            <span className="text-xs font-medium text-secondary/70">Post Office</span>
+                            <span className="text-sm font-semibold text-secondary">{location.post_office}</span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEdit(index)}
-                        className="p-2.5 text-secondary hover:text-primary hover:bg-primary/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all duration-200"
-                        aria-label={`Edit location ${location.area || 'unnamed'}`}
-                      >
-                        <HiPencil className="h-5 w-5" aria-hidden="true" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(index)}
-                        className="p-2.5 text-error hover:text-error/80 hover:bg-error/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-all duration-200"
-                        aria-label={`Delete location ${location.area || 'unnamed'}`}
-                      >
-                        <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
-                      </button>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleEdit(index)}
+                          className="p-2.5 text-secondary hover:text-white hover:bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all duration-200  hover:"
+                          aria-label={`Edit location ${location.area || 'unnamed'}`}
+                        >
+                          <HiPencil className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(index)}
+                          className="p-2.5 text-error/70 hover:text-white hover:bg-error rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-all duration-200  hover:"
+                          aria-label={`Delete location ${location.area || 'unnamed'}`}
+                        >
+                          <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                  
                 </div>
               ))}
             </div>
@@ -440,7 +451,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
           {/* Form section */}
           {isFormVisible && (
-            <div className="bg-gradient-to-br from-white to-background/30 border border-secondary/30 p-8 rounded-xl shadow-sm">
+            <div className="bg-gradient-to-br from-white to-background/30 border border-secondary/30 p-8 rounded-xl ">
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-text mb-1">
                   {isEditing ? 'Edit Location' : 'Add New Location'}
@@ -583,7 +594,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 text-sm font-semibold text-white bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="px-6 py-3 text-sm font-semibold text-white bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200  hover:"
                   >
                     {isEditing ? "Update Location" : "Add Location"}
                   </button>

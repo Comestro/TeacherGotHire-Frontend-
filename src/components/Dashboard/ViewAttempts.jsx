@@ -21,7 +21,6 @@ function ViewAttempts() {
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
   const dispatch = useDispatch();
 
-  console.log('attempt count checking', apiOutput2)
 
   // Get unique attempted categories with better null handling
   const attemptedCategories = [

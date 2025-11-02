@@ -202,10 +202,7 @@ function ExamManagement() {
       setSelectedSubject(subject.id);
       setSelectedSubjectName(subject.subject_name);
 
-      console.log("Selected subject:", {
-        id: subject.id,
-        name: subject.subject_name,
-      });
+      
       
       setLoading(true);
 

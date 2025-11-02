@@ -38,7 +38,6 @@ const ExamCenterDashboard = () => {
     return matchesStatus && matchesDate;
   });
 
-  console.log("centeruser",centerUser)
   // Handle approve button click
   const handleApprove = async (userId) => {
     try {

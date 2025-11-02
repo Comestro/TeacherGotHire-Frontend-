@@ -77,7 +77,6 @@ export const requestTeacher = async (payload) => {
 
 export const updateBasicProfile = async(personaldata)=>{
   try{
-    console.log("profile image services", personaldata)
      const response = await apiClient.put('/api/self/basicProfile/',personaldata);
      return JSON.parse(JSON.stringify(response)); 
   }
@@ -100,9 +99,7 @@ export const fetchBasicProfile = async()=>{
 }
 export const updateAddressProfile = async(addressdata)=>{
   try{
-  console.log("adress",addressdata)
     const response = await apiClient.put(`/api/self/teacherAddress/`,addressdata);
-    // console.log("adressresponse",response )
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
@@ -119,7 +116,6 @@ export const updateAddressProfile = async(addressdata)=>{
 }
 export const addAddressProfile = async(addressdata)=>{
   try{
-console.log("adress",addressdata)
     const response = await apiClient.post('/api/self/teacherAddress/',addressdata);
     
     return JSON.parse(JSON.stringify(response));
@@ -131,9 +127,8 @@ console.log("adress",addressdata)
     // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
         ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
-        : err.message || "Failed to update Adress profile";
+        : err.message || "Failed to update Address profile";
 
-    console.log("errorMessage",errorMessage)
     throw new Error(errorMessage);
   }
 }

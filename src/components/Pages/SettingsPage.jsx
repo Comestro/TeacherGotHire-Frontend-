@@ -83,118 +83,131 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-5 px-4 sm:px-6 lg:px-6">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-2xl text-gray-900 mb-5 flex items-center gap-3">
-          <FiUser className="w-6 h-6 text-indigo-600" />
-          <span>Account Settings</span>
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 py-8 px-4 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-8xl">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-[#3E98C7]/10 to-[#67B3DA]/10 rounded-xl border border-[#3E98C7]/20">
+            <FiUser className="w-7 h-7 text-primary" />
+            <h1 className="text-2xl font-bold text-primary">Account Settings</h1>
+          </div>
+        </div>
 
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {error && (
+          <div className="text-error mb-4">
+            {typeof error === "string"
+              ? error
+              : error?.message || JSON.stringify(error)}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="bg-white shadow rounded-md p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="bg-white  rounded-2xl p-8">
           <div className="mb-10">
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-6 mb-8">
               <div className="relative group">
-                {userData.profile_picture ? (
-                  <img
-                    src={
-                      userData.profile_picture instanceof File
-                        ? URL.createObjectURL(userData.profile_picture)
-                        : userData.profile_picture
-                    }
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary to-[#67B3DA] p-1 flex items-center justify-center">
+                  {userData.profile_picture ? (
+                    <img
+                      src={
+                        userData.profile_picture instanceof File
+                          ? URL.createObjectURL(userData.profile_picture)
+                          : userData.profile_picture
+                      }
+                      alt="Profile"
+                      className="w-26 h-26 rounded-full object-cover border-4 border-white "
+                    />
+                  ) : (
+                    <MdAccountCircle className="w-26 h-26 text-gray-300" />
+                  )}
+                  <label
+                    htmlFor="profile-photo"
+                    className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <MdPhotoCamera className="w-8 h-8 text-white" />
+                  </label>
+                  <input
+                    id="profile-photo"
+                    type="file"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                    accept="image/*"
                   />
-                ) : (
-                  <MdAccountCircle className="w-24 h-24 text-gray-400" />
-                )}
-                <label
-                  htmlFor="profile-photo"
-                  className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                >
-                  <MdPhotoCamera className="w-8 h-8 text-white" />
-                </label>
-                <input
-                  id="profile-photo"
-                  type="file"
-                  className="hidden"
-                  onChange={handlePhotoChange}
-                  accept="image/*"
-                />
+                </div>
+                <div className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2  border-2 border-white">
+                  <MdPhotoCamera className="w-5 h-5" />
+                </div>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-text">
                   {`${userData.Fname} ${userData.Lname}`}
                 </h2>
-                <p className="text-gray-500">{userData.email}</p>
+                <p className="text-secondary">{userData.email}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-8">
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FiUser className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-bold text-primary flex items-center gap-2">
+                <FiUser className="w-5 h-5 text-primary" />
                 Personal Information
               </h3>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">First Name</label>
+                  <label className="text-xs font-semibold text-secondary">First Name</label>
                   <input
                     type="text"
                     name="Fname"
                     value={userData.Fname}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Enter your first name"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Last Name</label>
+                  <label className="text-xs font-semibold text-secondary">Last Name</label>
                   <input
                     type="text"
                     name="Lname"
                     value={userData.Lname}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Enter your last name"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                  <label className="text-xs font-semibold text-secondary">Phone Number</label>
                   <input
                     type="tel"
                     name="phone_number"
                     value={userData.phone_number}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Enter your phone number"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Date of Birth</label>
+                  <label className="text-xs font-semibold text-secondary">Date of Birth</label>
                   <input
                     type="date"
                     name="date_of_birth"
                     value={userData.date_of_birth}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                   />
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
-                  <label className="text-sm font-medium text-gray-700">Bio</label>
+                  <label className="text-xs font-semibold text-secondary">Bio</label>
                   <textarea
                     name="bio"
                     value={userData.bio}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -202,19 +215,19 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FiBriefcase className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-bold text-primary flex items-center gap-2">
+                <FiBriefcase className="w-5 h-5 text-primary" />
                 Additional Information
               </h3>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Gender</label>
+                  <label className="text-xs font-semibold text-secondary">Gender</label>
                   <select
                     name="gender"
                     value={userData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -224,12 +237,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Marital Status</label>
+                  <label className="text-xs font-semibold text-secondary">Marital Status</label>
                   <select
                     name="marital_status"
                     value={userData.marital_status}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                   >
                     <option value="">Select Marital Status</option>
                     <option value="single">Single</option>
@@ -239,25 +252,25 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Language</label>
+                  <label className="text-xs font-semibold text-secondary">Language</label>
                   <input
                     type="text"
                     name="language"
                     value={userData.language}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Preferred language"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Religion</label>
+                  <label className="text-xs font-semibold text-secondary">Religion</label>
                   <input
                     type="text"
                     name="religion"
                     value={userData.religion}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-secondary/30 focus:border-primary focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                     placeholder="Your religion"
                   />
                 </div>
@@ -268,14 +281,14 @@ export default function SettingsPage() {
           <div className="mt-12 flex justify-end gap-4">
             <button
               type="button"
-              className="px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-all"
+              className="px-6 py-2 border border-secondary/30 text-secondary hover:bg-secondary/10 font-medium rounded-lg transition-all text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-[#3E98C7] text-white rounded-lg font-medium flex items-center gap-2 transition-transform hover:scale-[1.02] disabled:opacity-50"
+              className="px-6 py-2 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg  transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

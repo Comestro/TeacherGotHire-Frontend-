@@ -49,7 +49,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
 
         {/* Notifications Button with Badge */}
         <div className="relative">
-          <button
+          {/* <button
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Notifications"
             onClick={() => setShowNotifications(!showNotifications)}
@@ -60,7 +60,7 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
                 {unreadCount}
               </span>
             )}
-          </button>
+          </button> */}
 
           {/* Notifications Dropdown */}
           {showNotifications && (

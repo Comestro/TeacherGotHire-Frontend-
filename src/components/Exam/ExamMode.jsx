@@ -12,7 +12,6 @@ const ExamMode = () => {
   const [selectedCenterId, setSelectedCenterId] = useState(""); // State to store selected center ID
   const {exam}= useSelector((state) => state.examQues);
     const exam_id = exam?.id; 
-  console.log("allcenter",allcenter)
 
   const handleCenterChange = (e) => {
     setSelectedCenterId(e.target.value); // Update the selected center ID
@@ -37,7 +36,6 @@ const ExamMode = () => {
   const handleGeneratePasskey = async(event) => {
     event.preventDefault();
     if (selectedCenterId  && pass_exam_id) {
-      console.log("selectedCenterId",selectedCenterId)
       dispatch(generatePasskey({ user_id, exam_id,center_id:selectedCenterId}));
       navigate('/teacher');
     } else {

@@ -109,12 +109,7 @@ export const addResult = async({
   language,
 })=>{
   try{
-    console.log("result",{
-      correct_answer,
-      incorrect_answer,
-      is_unanswered,
-      language
-    })
+    
      const response = await apiClient.post(`/api/self/teacherexamresult/`,{
       exam,
       correct_answer,
@@ -187,7 +182,6 @@ export const Interview = async () => {
 export const ReportReason = async () => {
   try {
     const response = await apiClient.get(`/api/admin/reason/`);
-    console.log("reason",response)
     return response.data;
   } catch (err) {
     
@@ -208,7 +202,6 @@ export const AddReport = async ({question,issue_type}) => {
 export const AllCenter = async () => {
   try {
     const response = await apiClient.get(`/api/admin/examcenter/`);
-    console.log("allcenter",response)
     return response.data;
   } catch (err) {
     
@@ -228,7 +221,6 @@ export const Approved = async ({user_id,exam_id}) => {
 export const fetchCenterUser= async () => {
   try {
     const response = await apiClient.get(`/api/examcenter/teachers/`);
-    console.log("centerUser",response.data)
     return response.data;
   } catch (err) {
     
@@ -258,7 +250,6 @@ export const editExamSet= async ({ payload, id }) => {
 export const setterExamSet= async () => {
   try {
     const response = await apiClient.get(`/api/examsetter/`);
-    console.log("ExamSetter",response)
     return response.data;
     
   } catch (err) {
@@ -279,7 +270,6 @@ export const delExamSet= async (id) => {
 export const addQuestionToExamSet= async (payload) => {
   try {
     const response = await apiClient.post(`/api/examsetter/question/`,payload);
-    console.log("ExamSetter",response)
     return response.data;
     
   } catch (err) {
@@ -289,10 +279,8 @@ export const addQuestionToExamSet= async (payload) => {
 };
 
 export const editQuestionToExamSet= async ( questionId, payload) => {
-  console.log("payload in service for update question", payload)
   try {
     const response = await apiClient.put(`/api/examsetter/question/${questionId}/`, payload);
-    console.log("ExamSetter",response)
     return response.data;
     
   } catch (err) {
@@ -302,10 +290,8 @@ export const editQuestionToExamSet= async ( questionId, payload) => {
 };
 
 export const getQuestionForExamSet= async ( questionId) => {
-  console.log("payload in service for update question", payload)
   try {
     const response = await apiClient.get(`/api/examsetter/question/${questionId}/`);
-    console.log("ExamSetter",response)
     return response.data;
     
   } catch (err) {
@@ -317,7 +303,6 @@ export const getQuestionForExamSet= async ( questionId) => {
 export const getAssignUserSubject= async () => {
   try {
     const response = await apiClient.get(`/api/self/assigneduser/`);
-    console.log("Assignuser",response)
     return response.data;
     
   } catch (err) {

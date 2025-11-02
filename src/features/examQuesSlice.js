@@ -55,7 +55,6 @@ export const getLevels = createAsyncThunk(
   "getLevels",
   async ({ rejectWithValue }) => {
     try {
-      console.log("gfhj")
       const data = await fetchLevel();
 
       return data;
@@ -160,7 +159,6 @@ export const postResult = createAsyncThunk(
     export const postInterview= createAsyncThunk(
       "postInterview",
       async ({ subject,time,class_category,level}, { rejectWithValue }) => {
-        console.log("interview",{ subject,time,class_category,level})
         try {
           const data = await AddInterview({ subject,time,class_category,level});
            return data; 
@@ -289,7 +287,6 @@ export const getAllCenter = createAsyncThunk(
   "getAllCenter",
   
   async ({ rejectWithValue }) => {
-    console.log("seghjkljgfdzs")
     try {
       const data = await AllCenter();
       
