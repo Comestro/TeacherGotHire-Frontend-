@@ -342,285 +342,198 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   return (
     <>
       {bothConditonCheck ? (
-        <div className="mb-6">
-          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold text-text">
-                  Job Preference Locations
-                  <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी की पसंदीदा स्थान</span>
-                </h2>
-                <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full border border-primary/20">
-                  {jobLocations.length} / 5
+        <div className="space-y-4 flex-1">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-text">
+                  Job Locations
+                  <span className="ml-2 text-secondary text-xs font-normal">/ नौकरी स्थान</span>
+                </h3>
+                <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                  {jobLocations.length}/5
                 </span>
               </div>
-              <p className="text-sm text-secondary">
-                Add your preferred work locations to match with relevant opportunities
-              </p>
+              <p className="text-xs text-secondary mt-0.5">Preferred work locations</p>
             </div>
             {!isFormVisible && jobLocations.length < 5 && (
               <button
                 onClick={handleShowAddForm}
-                className="px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200  hover:"
-                aria-label="Add new location"
+                className="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-md flex items-center gap-1.5 hover:bg-primary/90 transition-colors"
               >
-                <IoLocationSharp className="h-5 w-5" aria-hidden="true" />
-                Add Location
+                <IoLocationSharp className="h-3.5 w-3.5" />
+                Add Job Location
               </button>
             )}
           </div>
-          
+
+          {/* Locations List */}
           {jobLocations.length > 0 && !isFormVisible && (
-            <div className="grid gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-3">
               {jobLocations.map((location, index) => (
-                <div key={index} className="group relative overflow-hidden border border-secondary/20 rounded-2xl bg-white hover:border-primary/30 hover: transition-all duration-300">
-                  {/* Gradient accent bar */}
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-[#67B3DA]"></div>
-                  
-                  <div className="p-6 pl-8">
-                    <div className="flex justify-between items-start gap-6">
-                      <div className="flex-1 min-w-0">
-                        {/* Location Header */}
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="p-3 bg-gradient-to-br from-primary/10 to-[#67B3DA]/10 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                            <IoLocationSharp className="h-6 w-6 text-primary" aria-hidden="true" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-text mb-2 group-hover:text-primary transition-colors duration-200">
-                              {location.area || 'Area not specified'}
-                            </h3>
-                            <p className="text-sm text-text/60 leading-relaxed">
-                              {location.block && <><span className="font-semibold text-text/80">{location.block}</span> • </>}
-                              <span className="font-medium">{location.city}</span>, {location.state}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Location Details */}
-                        <div className="flex flex-wrap items-center gap-4 pl-1">
-                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-lg">
-                            <span className="text-xs font-medium text-primary/70">PIN Code</span>
-                            <span className="text-sm font-bold text-primary">{location.pincode}</span>
-                          </div>
-                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/5 border border-secondary/20 rounded-lg">
-                            <span className="text-xs font-medium text-secondary/70">Post Office</span>
-                            <span className="text-sm font-semibold text-secondary">{location.post_office}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Action Buttons */}
-                      <div className="flex flex-col gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => handleEdit(index)}
-                          className="p-2.5 text-secondary hover:text-white hover:bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all duration-200  hover:"
-                          aria-label={`Edit location ${location.area || 'unnamed'}`}
-                        >
-                          <HiPencil className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(index)}
-                          className="p-2.5 text-error/70 hover:text-white hover:bg-error rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error transition-all duration-200  hover:"
-                          aria-label={`Delete location ${location.area || 'unnamed'}`}
-                        >
-                          <HiOutlineTrash className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                      </div>
+                <div key={index} className="group border border-secondary/20 rounded-lg bg-white hover:border-primary/30 transition-colors p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-text text-sm truncate mb-1">
+                        {location.area || 'Area not specified'}
+                      </h4>
+                      <p className="text-xs text-secondary truncate">
+                        {location.city}, {location.state}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 ml-2">
+                      <button
+                        onClick={() => handleEdit(index)}
+                        className="p-1 text-secondary hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                      >
+                        <HiPencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="p-1 text-error/70 hover:text-error hover:bg-error/10 rounded transition-colors"
+                      >
+                        <HiOutlineTrash className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
-                  
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-primary font-medium">{location.pincode}</span>
+                    <span className="text-secondary">•</span>
+                    <span className="text-secondary truncate">{location.post_office}</span>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-          
-          {jobLocations.length == 0 && !isFormVisible && (
-            <div className="text-center py-16 border-2 border-dashed bg-gradient-to-br from-background to-background/50 border-secondary/30 rounded-xl">
-              <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-5 flex items-center justify-center">
-                <IoLocationSharp className="h-10 w-10 text-primary" aria-hidden="true" />
-              </div>
-              <h3 className="text-text text-xl font-bold mb-2">
-                No locations added yet
-                <span className="ml-2 text-secondary text-sm font-normal">/ कोई स्थान नहीं जोड़ा गया</span>
-              </h3>
-              <p className="text-secondary mt-2 max-w-md mx-auto leading-relaxed">
-                Add up to <span className="font-bold text-primary">5 preferred locations</span> to help us match you with relevant job opportunities in your desired areas.
-              </p>
+
+          {/* Empty State */}
+          {jobLocations.length === 0 && !isFormVisible && (
+            <div className="text-center py-6 border-2 border-dashed border-secondary/20 rounded-lg bg-secondary/5">
+              <IoLocationSharp className="h-8 w-8 text-secondary mx-auto mb-2" />
+              <p className="text-sm text-secondary">No locations added</p>
+              <p className="text-xs text-secondary/70 mt-1">Add up to 5 preferred locations</p>
             </div>
           )}
 
-          {/* Form section */}
+          {/* Compact Form */}
           {isFormVisible && (
-            <div className="bg-gradient-to-br from-white to-background/30 border border-secondary/30 p-8 rounded-xl ">
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-text mb-1">
-                  {isEditing ? 'Edit Location' : 'Add New Location'}
-                  <span className="ml-2 text-secondary text-sm font-normal">
-                    {isEditing ? '/ स्थान संपादित करें' : '/ नया स्थान जोड़ें'}
-                  </span>
-                </h3>
-                <p className="text-sm text-secondary mt-2">Fill in the location details below to add your preferred work area</p>
-              </div>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
-                  {/* Pincode */}
+            <div className="border border-secondary/20 rounded-lg bg-white p-4">
+              <h4 className="font-medium text-text mb-3 text-sm">
+                {isEditing ? 'Edit Location' : 'Add Location'}
+              </h4>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      Pincode <span className="text-error">*</span>
-                    </label>
                     <input
                       type="text"
                       {...register("pincode", { required: true })}
                       onChange={handlePincodeChange}
-                      className={`w-full px-4 py-3 border ${
+                      className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent ${
                         fieldErrors.pincode ? 'border-error' : 'border-secondary/30'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
-                      placeholder="Enter 6-digit pincode"
+                      }`}
+                      placeholder="Pincode *"
                     />
-                    {errors.pincode && (
-                      <p className="text-error text-xs mt-2" aria-live="polite">
-                        Pincode is required.
-                      </p>
-                    )}
-                    {fieldErrors.pincode && (
-                      <p className="text-error text-xs mt-2" aria-live="polite">
-                        {fieldErrors.pincode}
+                    {(errors.pincode || fieldErrors.pincode) && (
+                      <p className="text-error text-xs mt-1">
+                        {fieldErrors.pincode || 'Required'}
                       </p>
                     )}
                   </div>
 
-                  {/* State */}
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      State
-                    </label>
                     <input
                       type="text"
                       {...register("state")}
                       readOnly
-                      placeholder="Auto Filled"
-                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg bg-background/50 text-secondary focus:outline-none cursor-not-allowed"
+                      className="w-full px-3 py-2 text-sm border border-secondary/30 rounded-md bg-secondary/5 text-secondary"
+                      placeholder="State"
                     />
                   </div>
 
-                  {/* District */}
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      District
-                    </label>
                     <input
                       type="text"
                       {...register("city")}
                       readOnly
-                      placeholder="Auto Filled"
-                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg bg-background/50 text-secondary focus:outline-none cursor-not-allowed"
+                      className="w-full px-3 py-2 text-sm border border-secondary/30 rounded-md bg-secondary/5 text-secondary"
+                      placeholder="District"
                     />
                   </div>
 
-                  {/* Block */}
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      Block
-                    </label>
                     <input
                       type="text"
                       {...register("block")}
-                      className="w-full px-4 py-3 border border-secondary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200"
-                      placeholder="Enter block name"
+                      className="w-full px-3 py-2 text-sm border border-secondary/30 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                      placeholder="Block"
                     />
                   </div>
 
-                  {/* Post Office */}
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      Post Office <span className="text-error">*</span>
-                    </label>
                     <select
                       {...register("post_office", { required: true })}
-                      className={`w-full px-4 py-3 border ${
+                      className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent ${
                         fieldErrors.post_office ? 'border-error' : 'border-secondary/30'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
+                      }`}
                     >
-                      <option value="">Select a Post Office</option>
+                      <option value="">Post Office *</option>
                       {postOffices.map((office, index) => (
                         <option key={index} value={office.Name}>
                           {office.Name}
                         </option>
                       ))}
                     </select>
-                    {errors.post_office && (
-                      <p className="text-error text-xs mt-2" aria-live="polite">
-                        Post office selection is required.
-                      </p>
-                    )}
-                    {fieldErrors.post_office && (
-                      <p className="text-error text-xs mt-2" aria-live="polite">
-                        {fieldErrors.post_office}
+                    {(errors.post_office || fieldErrors.post_office) && (
+                      <p className="text-error text-xs mt-1">
+                        {fieldErrors.post_office || 'Required'}
                       </p>
                     )}
                   </div>
 
-                  {/* Area */}
                   <div>
-                    <label className="block text-sm font-semibold text-text mb-2">
-                      Area
-                    </label>
                     <input
                       type="text"
                       {...register("area")}
                       onChange={handleAreaChange}
-                      className={`w-full px-4 py-3 border ${
+                      className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent ${
                         fieldErrors.area ? 'border-error' : 'border-secondary/30'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white transition-all duration-200`}
-                      placeholder="Enter area/locality name"
+                      }`}
+                      placeholder="Area"
                     />
                     {fieldErrors.area && (
-                      <div className="flex items-start gap-2 text-error text-sm mt-2" aria-live="polite">
-                        <HiOutlineExclamationTriangle className="h-4 w-4 mt-0.5" aria-hidden="true" />
-                        <span>{fieldErrors.area}</span>
-                      </div>
+                      <p className="text-error text-xs mt-1">{fieldErrors.area}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Buttons */}
-                <div className="flex justify-end items-center gap-3 pt-6 border-t border-secondary/10">
+                <div className="flex gap-2 pt-2">
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-3 text-sm font-semibold text-secondary border-2 border-secondary/30 rounded-lg bg-transparent hover:bg-background hover:border-secondary/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-all duration-200"
+                    className="flex-1 px-3 py-2 text-sm font-medium text-secondary border border-secondary/30 rounded-md hover:bg-secondary/5 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 text-sm font-semibold text-white bg-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:bg-primary/90 transition-all duration-200  hover:"
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors"
                   >
-                    {isEditing ? "Update Location" : "Add Location"}
+                    {isEditing ? "Update" : "Add"}
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {/* Display API errors */}
+          {/* Error Display */}
           {apiError && (
-            <div className="mt-4 p-5 bg-error/5 border-2 border-error/30 rounded-xl">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-error/10 rounded-lg flex-shrink-0">
-                  <HiOutlineExclamationTriangle className="h-5 w-5 text-error" aria-hidden="true" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-error mb-1">Error</h4>
-                  <p className="text-error/80 text-sm" aria-live="polite">{apiError}</p>
-                </div>
-              </div>
+            <div className="p-3 bg-error/10 border border-error/20 rounded-lg">
+              <p className="text-error text-sm">{apiError}</p>
             </div>
           )}
         </div>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </>
   );
 };

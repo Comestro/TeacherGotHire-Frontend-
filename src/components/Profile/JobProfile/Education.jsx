@@ -56,6 +56,7 @@ const Education = () => {
     { value: "Science", label: "I.Sc - Intermediate Science" },
     { value: "Commerce", label: "I.Com - Intermediate Commerce" },
     { value: "Arts", label: "I.A - Intermediate Arts" },
+    { value: "Other", label: "Other" },
   ];
 
   // Define degree types for Bachelor's
@@ -435,7 +436,7 @@ const Education = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/30 p-6 md:p-8 shadow-sm">
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -451,16 +452,16 @@ const Education = () => {
       />
       {/* Enhanced Header */}
       {loading && <Loader />}
-      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-8 pb-6 border-b border-secondary/20">
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-secondary/20">
         <div className="mb-0">
-          <h2 className="text-2xl font-bold text-text mb-2 flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
+          <h2 className="text-2xl font-bold text-text flex items-center gap-3">
+            <div className="bg-primary/10 rounded-lg">
               <HiOutlineAcademicCap className="text-2xl text-primary" aria-hidden="true" />
             </div>
             Education Background
             <span className="ml-2 text-secondary text-sm font-normal">/ शैक्षिक पृष्ठभूमि</span>
           </h2>
-          <p className="text-sm text-secondary ml-14">
+          <p className="text-sm text-secondary ml-9">
             Manage your academic qualifications and educational history
           </p>
         </div>
@@ -480,7 +481,7 @@ const Education = () => {
 
       {/* No Data State */}
       {educationData.length < 1 && !isEditing && (
-        <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/30">
+        <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/10">
           <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
             <HiOutlineAcademicCap className="h-10 w-10 text-primary" aria-hidden="true" />
           </div>
@@ -668,7 +669,7 @@ const Education = () => {
       {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-gradient-to-br from-white to-background/20 p-4 sm:p-6 rounded-xl border border-secondary/30 shadow-sm"
+          className="bg-gradient-to-br from-white to-background/20 p-4 rounded-xl border border-secondary/30 shadow-sm"
         >
           {/* Step 1: Select Qualification Level */}
           <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
@@ -951,7 +952,7 @@ const Education = () => {
                 )}
               </div>
             </div>
-          </div>
+            </div>
           </div>
 
           {/* Step 4: Add Subjects with Percentage */}

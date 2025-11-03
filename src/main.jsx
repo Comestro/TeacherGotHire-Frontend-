@@ -8,7 +8,7 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-     <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+     <PersistGate persistor={persistor}>
       <App />
     </PersistGate>
   </StrictMode>,

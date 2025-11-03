@@ -10,7 +10,7 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { updateTeacherPrefrence } from "../../../services/jobProfileService";
-import { HiOutlineExclamationCircle, HiOutlinePencil, HiOutlineArrowRight, HiOutlineArrowLeft, HiOutlineCheck, HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineBriefcase, HiOutlineUserGroup, HiOutlineClock } from "react-icons/hi";
+import { HiOutlineExclamationCircle, HiOutlinePencil, HiOutlineArrowRight, HiOutlineArrowLeft, HiOutlineCheck, HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineUserGroup } from "react-icons/hi";
 import { HiOutlineXMark } from "react-icons/hi2";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
@@ -21,30 +21,20 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
-  const [displayedJobTypes, setDisplayedJobTypes] = useState([]);
+  const totalSteps = 3;
 
   useEffect(() => {
     dispatch(getClassCategory());
     dispatch(getJob());
-    dispatch(getTeacherjobType());
     dispatch(getPrefrence());
   }, [dispatch]);
 
   const category = useSelector((state) => state?.jobProfile?.classCategories);
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  const teacherjobRole = useSelector((state) => state.jobProfile.teacherjobRole);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const { error } = useSelector((state) => state.jobProfile);
 
   const [isEditingPrefrence, setIsEditingPrefrence] = useState(forceEdit);
-
-  // Update displayed job types when they're loaded or when step changes
-  useEffect(() => {
-    if (currentStep >= 3 && teacherjobRole && teacherjobRole.length > 0) {
-      setDisplayedJobTypes(teacherjobRole);
-    }
-  }, [currentStep, teacherjobRole]);
 
   const {
     register,
@@ -60,7 +50,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       class_category: [],
       job_role: ["4"], // Teacher ID as string
       prefered_subject: [],
-      teacher_job_type: [],
     },
     mode: "onChange",
   });
@@ -87,7 +76,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         class_category: (teacherprefrence.class_category || []).map(item => String(item.id)),
         job_role: updatedJobRoles,
         prefered_subject: (teacherprefrence.prefered_subject || []).map(item => String(item.id)),
-        teacher_job_type: (teacherprefrence.teacher_job_type || []).map(item => String(item.id)),
       });
     }
   }, [teacherprefrence, reset]);
@@ -141,10 +129,13 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         if (!isValid) toast.error("Please select at least one subject / कम से कम एक विषय चुनें");
         break;
       case 3:
-        isValid = await trigger("job_role");
-        break;
-      case 4:
-        isValid = true; // Teacher job type is optional
+        const jobRoleValues = getValues("job_role");
+        if (!jobRoleValues || jobRoleValues.length === 0) {
+          toast.error("Please select at least one job role / कम से कम एक नौकरी की भूमिका चुनें");
+          isValid = false;
+        } else {
+          isValid = true;
+        }
         break;
       default:
         isValid = true;
@@ -172,15 +163,12 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
     setIsLoading(true);
     try {
-      const teacherId = "4";
       const submitData = {
         ...data,
-        job_role: data.job_role.includes(teacherId) 
+        job_role: data.job_role.includes("4") 
           ? data.job_role 
-          : [...data.job_role, teacherId], // Ensure Teacher is always included
+          : [...data.job_role, "4"], // Ensure Teacher is always included
       };
-
-      await updateTeacherPrefrence(submitData);
       dispatch(postPrefrence(submitData));
       fetchPreferences();
       setIsEditingPrefrence(false);
@@ -213,13 +201,13 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         theme="light"
       />
       {isLoading && <Loader />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b border-gray-200 px-6 pt-6">
-        <div className="mb-2 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-text flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-200 px-4 pt-4">
+        <div className="sm:mb-0">
+          <h2 className="text-2xl font-bold text-text flex items-center gap-3">
             <HiOutlineAcademicCap className="w-7 h-7 text-text" />
             Teaching Preferences / शिक्षण प्राथमिकताएं
           </h2>
-          <p className="text-xs sm:text-sm text-secondary mt-1">
+          <p className="text-xs sm:text-sm text-secondary ml-9">
             Manage your teaching preferences / अपनी शिक्षण प्राथमिकताओं को प्रबंधित करें
           </p>
         </div>
@@ -247,11 +235,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         )}
       </div>
 
-      <div className="px-6 pb-6">
-        <div className="mb-4">
+      <div className="px-4 pb-4">
+        <div className="mb-3">
         {!isEditingPrefrence && !forceEdit ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
                 {
                   title: "कक्षा श्रेणी / Class Category",
@@ -262,23 +250,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   value:
                     teacherprefrence?.class_category?.length > 0
                       ? teacherprefrence.class_category.map(
-                          (class_category) => class_category.name
+                          (class_category) => class_category.name + " class"
                         )
                       : ["Not Provided"],
                 },
-                {
-                  title: "नौकरी की भूमिका / Job Role",
-                  type: "role",
-                  icon: HiOutlineUserGroup,
-                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
-                  borderColor: "border-[#3E98C7]/30",
-                  value:
-                    teacherprefrence?.job_role?.length > 0
-                      ? teacherprefrence.job_role.map(
-                          (jobrole) => jobrole.jobrole_name
-                        )
-                      : ["Teacher"],
-                },
+               
                 {
                   title: "विषय / Subject",
                   type: "subject",
@@ -306,23 +282,23 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                           },
                         ],
                 },
-                {
-                  title: "नौकरी का प्रकार / Job Type",
-                  type: "jobtype",
-                  icon: HiOutlineBriefcase,
+                 {
+                  title: "नौकरी की भूमिका / Job Role",
+                  type: "role",
+                  icon: HiOutlineUserGroup,
                   color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
                   borderColor: "border-[#3E98C7]/30",
                   value:
-                    teacherprefrence?.teacher_job_type?.length > 0
-                      ? teacherprefrence.teacher_job_type.map(
-                          (jobtype) => jobtype.teacher_job_name
+                    teacherprefrence?.job_role?.length > 0
+                      ? teacherprefrence.job_role.map(
+                          (jobrole) => jobrole.jobrole_name
                         )
-                      : ["Not Provided"],
+                      : ["Teacher"],
                 },
               ].map((item, index) => (
                 <div
                   key={index}
-                  className="bg-background p-4 sm:p-5 rounded-lg border border-gray-200 hover:border-accent/50 transition-all"
+                  className="bg-background p-3 sm:p-4 rounded-lg border border-gray-200 hover:border-accent/50 transition-all"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <item.icon className="w-6 h-6 text-accent" />
@@ -371,11 +347,15 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
           </div>
         ) : (
           <div className="bg-white">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }} className="space-y-4">
               {/* Stepper Header */}
-              <div className="bg-background p-4 sm:p-5 rounded-lg border border-gray-200">
+              <div className="bg-background p-3 sm:p-4 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  {[1, 2, 3, 4].map((step) => (
+                  {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
                     <React.Fragment key={step}>
                       <div className="flex flex-col items-center">
                         <div
@@ -395,10 +375,9 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                           {step === 1 && "Class"}
                           {step === 2 && "Subject"}
                           {step === 3 && "Role"}
-                          {step === 4 && "Job Type"}
                         </span>
                       </div>
-                      {step < 4 && (
+                      {step < totalSteps && (
                         <div className={`flex-1 h-1.5 mx-2 sm:mx-3 rounded-full transition-all duration-500 ${
                           currentStep > step ? "bg-success" : "bg-gray-300"
                         }`} />
@@ -422,24 +401,22 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     {currentStep === 1 && "Class / कक्षा"}
                     {currentStep === 2 && "Subject / विषय"}
                     {currentStep === 3 && "Role / भूमिका"}
-                    {currentStep === 4 && "Job Type / नौकरी"}
                   </p>
                 </div>
               </div>
 
               {/* Step Content */}
-              <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 min-h-[360px]">
-                {/* Step 1: Class Category */}
+              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 min-h-[280px]">
                 {currentStep === 1 && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <HiOutlineAcademicCap className="w-8 h-8 text-primary" />
+                  <div className="space-y-2 animate-fadeIn">
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <HiOutlineAcademicCap className="w-7 h-7 text-primary" />
                         <h3 className="text-lg sm:text-xl font-bold text-text">
                           Select Class Category / कक्षा श्रेणी चुनें
                         </h3>
                       </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-11">
+                      <p className="text-xs sm:text-sm text-secondary ml-9">
                         Choose the educational levels / शिक्षा के स्तर का चयन करें
                       </p>
                     </div>
@@ -447,7 +424,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       {category?.map((cat) => (
                         <label
                           key={cat.id}
-                          className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
+                          className="flex items-center space-x-2 p-2.5 sm:p-3 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
                         >
                           <input
                             type="checkbox"
@@ -474,15 +451,15 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
                 {/* Step 2: Preferred Subjects */}
                 {currentStep === 2 && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <HiOutlineBookOpen className="w-8 h-8 text-primary" />
+                  <div className="space-y-2 animate-fadeIn">
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <HiOutlineBookOpen className="w-7 h-7 text-primary" />
                         <h3 className="text-lg sm:text-xl font-bold text-text">
                           Select Preferred Subjects / पसंदीदा विषय चुनें
                         </h3>
                       </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-11">
+                      <p className="text-xs sm:text-sm text-secondary ml-9">
                         Choose subjects you can teach / जो विषय आप पढ़ा सकते हैं उन्हें चुनें
                       </p>
                     </div>
@@ -502,7 +479,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                           if (!categoryObj) return null;
 
                           return (
-                            <div key={categoryObj.id} className="space-y-2 bg-background p-3 rounded-lg border border-gray-200">
+                            <div key={categoryObj.id} className="space-y-2 bg-background p-2.5 rounded-lg border border-gray-200">
                               <h4 className="text-xs sm:text-sm font-bold text-primary mb-2 pb-1.5 border-b border-gray-200 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 bg-accent rounded-full"></span>
                                 {categoryObj.name}
@@ -511,7 +488,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                                 {categoryObj.subjects?.map((sub) => (
                                   <label
                                     key={sub.id}
-                                    className="flex items-center space-x-2 p-2.5 sm:p-3 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
+                                    className="flex items-center space-x-2 p-2 sm:p-2.5 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
                                   >
                                     <input
                                       type="checkbox"
@@ -543,15 +520,15 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
                 {/* Step 3: Job Role */}
                 {currentStep === 3 && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <HiOutlineUserGroup className="w-8 h-8 text-primary" />
+                  <div className="space-y-2 animate-fadeIn">
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <HiOutlineUserGroup className="w-7 h-7 text-primary" />
                         <h3 className="text-lg sm:text-xl font-bold text-text">
                           Select Job Role / नौकरी की भूमिका चुनें
                         </h3>
                       </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-11">
+                      <p className="text-xs sm:text-sm text-secondary ml-9">
                         Teacher is required, can add additional roles / शिक्षक आवश्यक है, अतिरिक्त भूमिकाएं जोड़ सकते हैं
                       </p>
                     </div>
@@ -564,84 +541,34 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                         ?.map((role) => (
                           <label
                             key={role.id}
-                            className={`flex items-center space-x-2 p-3 sm:p-4 rounded-lg border transition-all ${
-                              role.id === 4
-                                ? "bg-primary/10 border-primary cursor-not-allowed"
-                                : "bg-white hover:bg-primary/5 border-gray-200 hover:border-primary cursor-pointer"
-                            }`}
+                            className={`flex items-center space-x-2 p-2.5 sm:p-3 rounded-lg border transition-all "bg-white hover:bg-primary/5 border-gray-200 hover:border-primary cursor-pointer"
+                            `}
                           >
                             <input
                               type="checkbox"
                               {...register("job_role")}
                               value={role.id}
                               className="h-4 w-4 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary transition-all"
-                              disabled={role.id === 4}
                             />
                             <span className="text-xs sm:text-sm text-text font-semibold">
                               {role.jobrole_name}
-                              {role.id === 4 && (
-                                <span className="ml-1.5 text-xs text-primary font-bold bg-primary/20 px-1.5 py-0.5 rounded-md">
-                                  Required / आवश्यक ✓
-                                </span>
-                              )}
+                              
                             </span>
                           </label>
                         ))}
                     </div>
                   </div>
                 )}
-
-                {/* Step 4: Teacher Job Type */}
-                {currentStep === 4 && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <HiOutlineBriefcase className="w-8 h-8 text-primary" />
-                        <h3 className="text-lg sm:text-xl font-bold text-text">
-                          Select Job Type / नौकरी का प्रकार चुनें
-                        </h3>
-                      </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-11">
-                        Choose preferred employment type <span className="text-warning font-semibold">(Optional / वैकल्पिक)</span>
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
-                      {displayedJobTypes.length > 0 ? (
-                        displayedJobTypes.map((role) => (
-                          <label
-                            key={role.id}
-                            className="flex items-center space-x-2 p-3 sm:p-4 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              {...register("teacher_job_type")}
-                              value={role.id}
-                              className="h-4 w-4 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary transition-all"
-                            />
-                            <span className="text-xs sm:text-sm text-text font-semibold">
-                              {role.teacher_job_name}
-                            </span>
-                          </label>
-                        ))
-                      ) : (
-                        <div className="col-span-2 text-center py-8">
-                          <HiOutlineClock className="w-16 h-16 text-gray-400 mx-auto mb-2 animate-spin" />
-                          <p className="text-xs sm:text-sm text-secondary font-medium">Loading... / लोड हो रहा है...</p>
-                        </div>
-                      )}
-                    </div>
-                    {errors.teacher_job_type && (
-                      <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
-                        {errors.teacher_job_type.message}
-                      </div>
-                    )}
+                {currentStep === 3 && errors.job_role && (
+                  <div className="text-red-500 text-sm flex items-center mt-2">
+                    <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
+                    {errors.job_role.message}
                   </div>
                 )}
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 p-3 sm:p-4 bg-background rounded-lg border border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 p-2 sm:p-3 bg-background rounded-lg border border-gray-200">
                 {!forceEdit && (
                   <button
                     type="button"

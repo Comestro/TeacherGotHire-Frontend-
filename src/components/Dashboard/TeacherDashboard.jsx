@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import { getSubjects } from "../../features/dashboardSlice";
-import { CircularProgressbar } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
 import { getProfilCompletion } from "../../features/personalProfileSlice";
 import {
   getInterview,
-  setExam,
-  verifyPasscode,
 } from "../../features/examQuesSlice";
-import TeacherDashboardCard from "./components/TeacherDashboardCard";
-import ExamManagement from "./components/ExamManagement";
 import FilterdExamCard from "./components/FilterdExamCard"
 import { Helmet } from "react-helmet-async";
 import { updateBasicProfile } from "../../services/profileServices";
@@ -25,14 +18,16 @@ import { getPrefrence } from "../../features/jobProfileSlice";
 import { FaCalendarAlt } from "react-icons/fa";
 import { checkPasskey } from "../../services/examServices";
 import ExamCenterModal from "./components/passkeyCard";
+import PhoneNumberModal from "./components/PhoneNumberModal";
+import { useGetApplyEligibilityQuery, useGetJobsApplyDetailsQuery } from "../../features/api/apiSlice";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
-  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const navigate = useNavigate();
+  const [showPhoneModal, setShowPhoneModal] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showInterviewHistory, setShowInterviewHistory] = useState(false);
   const inputRef = useRef(null);
   const [passkeyStatus, setPasskeyStatus] = useState(null);
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
@@ -42,10 +37,31 @@ function TeacherDashboard() {
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const { examCards } = useSelector((state) => state?.exam);
 
+  // Get job eligibility and application status
+  const { data: eligibilityData, isLoading: eligibilityLoading } = useGetApplyEligibilityQuery();
+  const { data: jobApplyData, isLoading: jobApplyLoading } = useGetJobsApplyDetailsQuery();
+
+  // Memoize job application computations
+  const eligibleExams = useMemo(() =>
+    eligibilityData?.qualified_list?.filter(exam => exam.eligible === true) || [],
+    [eligibilityData]
+  );
+  const hasEligibleJobs = useMemo(() => eligibleExams.length > 0, [eligibleExams]);
+  const hasAppliedJobs = useMemo(() =>
+    jobApplyData?.some(job => job.status === true) || false,
+    [jobApplyData]
+  );
+  const appliedJobsCount = useMemo(() =>
+    jobApplyData?.filter(job => job.status === true).length || 0,
+    [jobApplyData]
+  );
+
   useEffect(() => {
+    // Initial data loading
     dispatch(attemptsExam());
     dispatch(getPrefrence());
     dispatch(getInterview());
+    dispatch(getSubjects());
   }, [dispatch]);
 
   // Check for pending passkey requests
@@ -67,24 +83,19 @@ function TeacherDashboard() {
     checkForPendingPasskey();
   }, [examCards]);
 
-  const qualifiedExamNames = (attempts || [])
-    .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
-    .map(item => item?.exam?.name);
+  // Memoize qualified exam names computation
+  const qualifiedExamNames = useMemo(() =>
+    (attempts || [])
+      .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
+      .map(item => item?.exam?.name),
+    [attempts]
+  );
 
-
-
-  // Check if user has class categories set up
-  const hasClassCategories = teacherprefrence?.class_category?.length > 0;
-
-  useEffect(() => {
-    dispatch(getSubjects());
-    // dispatch(getProfilCompletion()).then(() => {
-    //   // Show modal if phone number is not set
-    //   if (!basicData?.phone_number) {
-    //     setShowPhoneModal(true);
-    //   }
-    // });
-  }, [dispatch, basicData?.phone_number]);
+  // Memoize class categories check
+  const hasClassCategories = useMemo(() =>
+    teacherprefrence?.class_category?.length > 0,
+    [teacherprefrence?.class_category]
+  );
 
   const handleSubmitPhoneNumber = async (e) => {
     e.preventDefault();
@@ -171,75 +182,6 @@ function TeacherDashboard() {
     }
   };
 
-  const PhoneNumberModal = () => {
-    React.useEffect(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, []);
-
-    return (
-      <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Please Provide your Contact Number
-          </h2>
-          <form onSubmit={handleSubmitPhoneNumber}>
-            <div className="mb-4">
-              <label className="block text-teal-600 text-sm font-medium mb-2">
-                Phone Number*
-              </label>
-              <input
-                ref={inputRef}
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                required
-                placeholder="Enter 10-digit phone number"
-                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${error
-                    ? "border-red-500 focus:border-red-500"
-                    : "border-gray-200 focus:border-teal-600"
-                  }`}
-              />
-              {error && (
-                <p className="text-red-500 text-sm mt-1">{error}</p>
-              )}
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowPhoneModal(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || phoneNumber.length !== 10}
-                className={`px-5 py-2 text-white rounded-lg transition-all ${loading || phoneNumber.length !== 10
-                    ? "bg-teal-400 cursor-not-allowed"
-                    : "bg-teal-600 hover:bg-teal-700 hover:shadow-md"
-                  }`}
-              >
-                {loading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Saving...
-                  </span>
-                ) : (
-                  "Save"
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <Helmet>
@@ -258,7 +200,17 @@ function TeacherDashboard() {
         pauseOnHover
         theme="light"
       />
-      {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
+      {showPhoneModal && !basicData?.phone_number && (
+        <PhoneNumberModal
+          isOpen={showPhoneModal && !basicData?.phone_number}
+          onClose={() => setShowPhoneModal(false)}
+          phoneNumber={phoneNumber}
+          setPhoneNumber={setPhoneNumber}
+          error={error}
+          loading={loading}
+          onSubmit={handleSubmitPhoneNumber}
+        />
+      )}
 
       <div className="min-h-screen px-4 sm:px-6">
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
@@ -337,6 +289,91 @@ function TeacherDashboard() {
                   </div>
                 </div>
               )}
+            </div>
+            
+            {/* Job Application Status Banner */}
+            <div className="px-4 sm:px-6 pt-4">
+              {(eligibilityLoading || jobApplyLoading) ? (
+                <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="w-full">
+                      {/* Skeleton for title */}
+                      <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3 animate-pulse"></div>
+                      
+                      {/* Skeleton for content */}
+                      <div className="space-y-2 mb-4">
+                        <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                      </div>
+                      
+                      {/* Skeleton for button */}
+                      <div className="h-10 bg-gray-200 rounded-md w-48 animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+              ) : hasEligibleJobs ? (
+                <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${
+                  hasAppliedJobs
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-primary bg-primary/5"
+                }`}>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="w-full">
+                      {hasAppliedJobs ? (
+                        <>
+                          <div className="text-xl font-semibold text-blue-700">💼 नौकरी आवेदन सक्रिय | Job Applications Active</div>
+                          <div className="mt-2 text-gray-700">
+                            <p className="mb-1">
+                              आपने <span className="font-semibold">{appliedJobsCount}</span> पदों के लिए आवेदन किया है। 
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              You have applied for <span className="font-semibold">{appliedJobsCount}</span> job position(s). Your applications are being reviewed by recruiters.
+                              <br />
+                              आपके आवेदन की समीक्षा भर्तीकर्ताओं द्वारा की जा रही है।
+                            </p>
+                          </div>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => navigate("/teacher/job-apply")}
+                              className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                            >
+                              Manage Applications
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xl font-semibold text-primary">🎉 आप नौकरी के लिए आवेदन कर सकते हैं | You Can Apply for Jobs</div>
+                          <div className="mt-2 text-gray-700">
+                            <p className="mb-1">
+                              बधाई हो! आप <span className="font-semibold">{eligibleExams.length}</span> विषयों में नौकरी के लिए पात्र हैं।
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Congratulations! You are eligible to apply for jobs in <span className="font-semibold">{eligibleExams.length}</span> subject(s).
+                              <br />
+                              अभी आवेदन करें और स्कूल/संस्थानों से जुड़ें।
+                            </p>
+                          </div>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => navigate("/teacher/job-apply")}
+                              className="inline-flex items-center px-5 py-2.5 rounded-md bg-gradient-to-r from-primary to-blue-600 text-white hover:from-primary/90 hover:to-blue-500 shadow-md hover:shadow-lg transition-all"
+                            >
+                              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              Apply for Jobs Now
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
             
             {/* Interview eligibility and status banner */}
@@ -472,7 +509,6 @@ function TeacherDashboard() {
 
                 {/* Other dashboard content */}
                 <div className="md:px-6 md:p-2">
-                  {/* <ExamManagement /> */}
                   <FilterdExamCard />
                 </div>
               </>

@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#1E3A8A",   // Navy Blue
+        primary: "teal",   // Navy Blue
         secondary: "#64748B", // Cool Gray
         accent: "#06B6D4",    // Soft Cyan
         background: "#F8FAFC",// White Smoke

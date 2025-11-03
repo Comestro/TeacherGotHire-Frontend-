@@ -96,7 +96,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/30 p-6 md:p-8 shadow-sm">
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-100 p-4 md:p-6 shadow-sm">
        <ToastContainer 
         position="top-right" 
         autoClose={1000} 
@@ -111,9 +111,9 @@ const Skills = () => {
         theme="light"
       />
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 mb-6 border-b border-secondary/20">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-6 border-b border-secondary/20">
         <div className="mb-4 sm:mb-0">
-          <h2 className="text-2xl font-bold text-text mb-2 flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-text flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <HiOutlineClipboardDocumentList className="text-2xl text-primary" aria-hidden="true" />
             </div>
@@ -144,7 +144,7 @@ const Skills = () => {
 
       {/* Skill Input Form */}
       {showForm && (
-        <div className="mb-6 px-2">
+        <div className="mb-4 px-2">
           <form onSubmit={handleSubmit(onSubmit)} className="relative">
             <div className="flex gap-2">
               <input
@@ -186,7 +186,7 @@ const Skills = () => {
           Current Skills
         </h3>
         {teacherSkill.length === 0 ? (
-          <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/30">
+          <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/10">
             <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
               <HiOutlineClipboardDocumentList className="h-10 w-10 text-primary" aria-hidden="true" />
             </div>
