@@ -36,7 +36,7 @@ function TeacherDashboard() {
   const { basicData } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
-  
+
   useEffect(() => {
     dispatch(attemptsExam());
     dispatch(getPrefrence());
@@ -47,11 +47,11 @@ function TeacherDashboard() {
     .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
     .map(item => item?.exam?.name);
 
-  
-  
+
+
   // Check if user has class categories set up
   const hasClassCategories = teacherprefrence?.class_category?.length > 0;
-  
+
   useEffect(() => {
     dispatch(getSubjects());
     // dispatch(getProfilCompletion()).then(() => {
@@ -79,12 +79,12 @@ function TeacherDashboard() {
       setShowPhoneModal(false);
       dispatch(getProfilCompletion());
     } catch (err) {
-      const errorMessage = err.response?.data?.phone_number 
+      const errorMessage = err.response?.data?.phone_number
         ? Array.isArray(err.response.data.phone_number)
           ? err.response.data.phone_number[0]
           : err.response.data.phone_number
         : "An error occurred. Please try again.";
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -109,10 +109,10 @@ function TeacherDashboard() {
   const nextInterview = useMemo(() => {
     const upcoming = interviews
       .filter(i => i?.status === "scheduled" && i?.time)
-      .sort((a,b) => new Date(a.time) - new Date(b.time));
+      .sort((a, b) => new Date(a.time) - new Date(b.time));
     return upcoming[0] || null;
   }, [interviews]);
-  
+
   // Check if teacher has completed interview with passing grade (6+)
   // Source 1: Dedicated interview list from store (examQues.interview)
   const hasPassedInterviewFromInterviews = useMemo(() => {
@@ -153,7 +153,7 @@ function TeacherDashboard() {
         inputRef.current.focus();
       }
     }, []);
-  
+
     return (
       <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
@@ -172,11 +172,10 @@ function TeacherDashboard() {
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 required
                 placeholder="Enter 10-digit phone number"
-                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
-                  error 
-                    ? "border-red-500 focus:border-red-500" 
+                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${error
+                    ? "border-red-500 focus:border-red-500"
                     : "border-gray-200 focus:border-teal-600"
-                }`}
+                  }`}
               />
               {error && (
                 <p className="text-red-500 text-sm mt-1">{error}</p>
@@ -193,17 +192,16 @@ function TeacherDashboard() {
               <button
                 type="submit"
                 disabled={loading || phoneNumber.length !== 10}
-                className={`px-5 py-2 text-white rounded-lg transition-all ${
-                  loading || phoneNumber.length !== 10
+                className={`px-5 py-2 text-white rounded-lg transition-all ${loading || phoneNumber.length !== 10
                     ? "bg-teal-400 cursor-not-allowed"
                     : "bg-teal-600 hover:bg-teal-700 hover:shadow-md"
-                }`}
+                  }`}
               >
                 {loading ? (
                   <span className="flex items-center">
                     <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Saving...
                   </span>
@@ -223,9 +221,9 @@ function TeacherDashboard() {
       <Helmet>
         <title>PTPI | Teacher Dashboard</title>
       </Helmet>
-       <ToastContainer 
-        position="top-right" 
-        autoClose={1000} 
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
         closeButton={true}
         hideProgressBar={false}
         newestOnTop={false}
@@ -238,135 +236,154 @@ function TeacherDashboard() {
       />
       {showPhoneModal && !basicData?.phone_number && <PhoneNumberModal />}
 
-      <div className="min-h-screen">
-        {/* Interview eligibility and status banner */}
-        <div className="px-4 sm:px-6 pt-4">
-          {shouldShowInterviewSection && (
-            <div className="rounded-xl border border-success bg-green-100 p-4 sm:p-6 mb-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  {hasScheduledInterview ? (
+      <div className="min-h-screen px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
+          {/* Main Content Column (9/12) */}
+          <div className="w-full md:w-9/12 lg:w-9/12">
+            {/* Interview eligibility and status banner */}
+            <div className="px-4 sm:px-6 pt-4">
+              {shouldShowInterviewSection && (
+                <div className="rounded-xl border border-success bg-green-100 p-4 sm:p-6 mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
-                      <div className="text-sm font-semibold text-primary">आपका आगामी इंटरव्यू | You have an upcoming interview</div>
-                      {nextInterview && (
-                        <div className="mt-1 text-gray-700">
-                          <span className="font-medium">{nextInterview?.class_category?.name}</span>
-                          {" "}·{" "}
-                          <span>{nextInterview?.subject?.subject_name}</span>
-                          {nextInterview?.time && (
-                            <>
+                      {hasScheduledInterview ? (
+                        <div>
+                          <div className="text-xl font-semibold text-success">आपका आगामी इंटरव्यू | You have an upcoming interview</div>
+                          {nextInterview && (
+                            <div className="mt-1 text-gray-700">
+                              <span className="font-medium">Class Category: {nextInterview?.class_category?.name}</span>
                               {" "}·{" "}
-                              <span>{new Date(nextInterview.time).toLocaleString()}</span>
-                            </>
+                              <span>{nextInterview?.subject?.subject_name}</span>
+                              {nextInterview?.time && (
+                                <>
+                                  {" "}·{" "}
+                                  <span>
+                                    {new Date(nextInterview.time).toLocaleString('en-US', {
+                                      hour: 'numeric',
+                                      minute: 'numeric',
+                                      hour12: true,
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}
+                                  </span>                            </>
+                              )}
+                            </div>
                           )}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {nextInterview?.link && (
+                              <a
+                                href={nextInterview.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-4 py-2 rounded-md bg-success text-white hover:opacity-90"
+                              >
+                                Join Interview
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={scrollToInterview}
+                              className="inline-flex items-center px-4 py-2 rounded-md border border-success text-success hover:bg-success/10"
+                            >
+                              Manage Interviews
+                            </button>
+                          </div>
                         </div>
-                      )}
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {nextInterview?.link && (
-                          <a
-                            href={nextInterview.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:opacity-90"
-                          >
-                            Join Interview
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          onClick={scrollToInterview}
-                          className="inline-flex items-center px-4 py-2 rounded-md border border-primary text-primary hover:bg-primary/10"
-                        >
-                          Manage Interviews
-                        </button>
-                      </div>
+                      ) : hasRequestedInterview ? (
+                        <div>
+                          <div className="text-xl font-semibold text-success">इंटरव्यू अनुरोध स्वीकृति लंबित | Interview request pending approval</div>
+                          <p className="mt-1 text-gray-700">आपके इंटरव्यू की तारीख तय होने पर हम आपको सूचित करेंगे। | We will notify you once your interview is scheduled.</p>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={scrollToInterview}
+                              className="inline-flex items-center px-4 py-2 rounded-md bg-success/90 hover:bg-success text-white"
+                            >
+                              View Request
+                            </button>
+                          </div>
+                        </div>
+                      ) : isEligibleForInterview ? (
+                        <div>
+                          <div className="text-xl font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
+                          <p className="mt-1 text-gray-700">
+                            <span className="font-sm">Level 2 पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
+                            <br className="hidden sm:block" />
+                            <span className="text-gray-600">Level 2 passed. Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
+                          </p>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={scrollToInterview}
+                              className="inline-flex items-center px-5 py-2.5 rounded-md bg-green-700 text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
+                            >
+                              <FaCalendarAlt className="mr-2" />
+                              इंटरव्यू शेड्यूल करें | Schedule Interview
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                  ) : hasRequestedInterview ? (
-                    <div>
-                      <div className="text-sm font-semibold text-amber-700">इंटरव्यू अनुरोध स्वीकृति लंबित | Interview request pending approval</div>
-                      <p className="mt-1 text-gray-700">आपके इंटरव्यू की तारीख तय होने पर हम आपको सूचित करेंगे। | We will notify you once your interview is scheduled.</p>
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={scrollToInterview}
-                          className="inline-flex items-center px-4 py-2 rounded-md border border-amber-300 text-amber-700 hover:bg-amber-100"
-                        >
-                          View Request
-                        </button>
-                      </div>
-                    </div>
-                  ) : isEligibleForInterview ? (
-                    <div>
-                      <div className="text-xl font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
-                      <p className="mt-1 text-gray-700">
-                        <span className="font-sm">Level 2 पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
-                        <br className="hidden sm:block" />
-                        <span className="text-gray-600">Level 2 passed. Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
-                      </p>
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={scrollToInterview}
-                          className="inline-flex items-center px-5 py-2.5 rounded-md bg-green-700 text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
-                        >
-                          <FaCalendarAlt className="mr-2" />
-                          इंटरव्यू शेड्यूल करें | Schedule Interview
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Show preference form if user doesn't have class categories */}
-        {!hasClassCategories ? (
-          <div className=" p-4 sm:p-6">
-            <PrefrenceProfile forceEdit={true} />
-          </div>
-        ) : (
-          <>
-            {/* Interview management placed prominently at the top when eligible or existing interviews */}
-            {shouldShowInterviewSection && (
-              <div ref={interviewSectionRef} className="md:px-6 md:py-4">
-                <InterviewCard />
-              </div>
-            )}
-            
-            {/* Show less prominent interview history for completed interviews */}
-            {hasPassedInterview && interviews.length > 0 && !shouldShowInterviewSection && (
-              <div className="md:px-6 md:py-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-700 flex items-center">
-                        <FaCalendarAlt className="mr-2 text-gray-500" />
-                        Interview History
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">View your completed interviews</p>
-                    </div>
-                    <button
-                      onClick={scrollToInterview}
-                      className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-                    >
-                      View History
-                    </button>
                   </div>
                 </div>
-                <div ref={interviewSectionRef} className="hidden">
-                  <InterviewCard />
-                </div>
-              </div>
-            )}
-
-            {/* Other dashboard content */}
-            <div className="md:px-6 md:p-2">
-              {/* <ExamManagement /> */}
-              <FilterdExamCard/>
+              )}
             </div>
-          </>
-        )}
+
+
+            {/* Show preference form if user doesn't have class categories */}
+            {!hasClassCategories ? (
+              <div className=" p-4 sm:p-6">
+                <PrefrenceProfile forceEdit={true} />
+              </div>
+            ) : (
+              <>
+                {/* Interview management placed prominently at the top when eligible or existing interviews */}
+                {shouldShowInterviewSection && (
+                  <div ref={interviewSectionRef} className="md:px-6 md:py-4">
+                    <InterviewCard />
+                  </div>
+                )}
+
+                {/* Show less prominent interview history for completed interviews */}
+                {hasPassedInterview && interviews.length > 0 && !shouldShowInterviewSection && (
+                  <div className="md:px-6 md:py-4">
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700 flex items-center">
+                            <FaCalendarAlt className="mr-2 text-gray-500" />
+                            Interview History
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-1">View your completed interviews</p>
+                        </div>
+                        <button
+                          onClick={scrollToInterview}
+                          className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+                        >
+                          View History
+                        </button>
+                      </div>
+                    </div>
+                    <div ref={interviewSectionRef} className="hidden">
+                      <InterviewCard />
+                    </div>
+                  </div>
+                )}
+
+                {/* Other dashboard content */}
+                <div className="md:px-6 md:p-2">
+                  {/* <ExamManagement /> */}
+                  <FilterdExamCard />
+                </div>
+              </>
+            )}
+          </div>
+          {/* Assessment Process column (3/12) */}
+          <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0">
+            <img src="/process.png" alt="Assessment Process" className="w-full h-auto" />
+          </div>
+        </div>
       </div>
     </>
   );

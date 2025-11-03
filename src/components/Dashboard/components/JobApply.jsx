@@ -162,7 +162,7 @@ const JobApply = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-8xl mx-auto">
       {/* Page header */}
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-text">

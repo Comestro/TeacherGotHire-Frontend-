@@ -269,7 +269,7 @@ const FilterdExamCard = () => {
   return (
     <div className="bg-background min-h-screen w-full flex flex-col md:flex-row gap-0">
       {/* Main selection column */}
-      <div className="w-full md:w-8/12 lg:w-9/12">
+      <div className="w-full ">
       
         <AnimatePresence mode="wait">
           {/* Category Panel */}
@@ -806,11 +806,6 @@ const FilterdExamCard = () => {
 
           </motion.div>
         )}
-      </div>
-
-      {/* Assessment Process column */}
-      <div className="w-full md:w-4/12 lg:w-3/12  mt-6 md:mt-0">
-        <img src="/process.png" alt="Assessment Process" className="w-full h-auto" />
       </div>
     </div>
   );
