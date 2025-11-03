@@ -197,7 +197,8 @@ const InterviewCard = () => {
         month: "long",
         day: "numeric",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+        hour12: true
       };
       return new Date(dateString).toLocaleString(undefined, options);
     } catch (error) {
@@ -830,18 +831,7 @@ const InterviewCard = () => {
                                       {item?.class_category?.name} - {item?.subject?.subject_name}
                                     </h3>
                                     
-                                    <div className={`flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full order-none sm:order-1 ${getStatusColor(item.status)}`}>
-                                      {getStatusIcon(item.status)}
-                                      <span>
-                                        {item.status === "requested"
-                                          ? "Pending Approval"
-                                          : item.status === "scheduled"
-                                            ? "Scheduled"
-                                            : item.status === "fulfilled"
-                                              ? "Completed"
-                                              : "Cancelled"}
-                                      </span>
-                                    </div>
+                                    
                                   </div>
                                   
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-4"> {/* Adjust gap */}
@@ -880,25 +870,7 @@ const InterviewCard = () => {
                                       </a>
                                     )}
                                     
-                                    {item?.status === "scheduled" && (
-                                      <button
-                                        type="button"
-                                        className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500" // Adjust padding, add focus
-                                      >
-                                        <FaCalendarAlt className="mr-2 text-gray-500" aria-hidden="true" />
-                                        Add to Calendar
-                                      </button>
-                                    )}
-                                    
-                                    {item?.status === "fulfilled" && (
-                                      <button
-                                        type="button"
-                                        className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-100 text-sky-700 font-medium rounded-md hover:bg-sky-200 transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500" // Adjust padding, add focus
-                                      >
-                                        <FaClipboardList className="mr-2" aria-hidden="true" />
-                                        View Feedback
-                                      </button>
-                                    )}
+                                
                                     
                                     {item?.status === "requested" && (
                                       <div className="flex items-center text-gray-600 text-sm p-2 bg-amber-50 rounded-md border border-amber-200"> {/* Add background/border */}

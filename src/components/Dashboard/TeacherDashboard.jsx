@@ -23,6 +23,8 @@ import { attemptsExam } from "../../features/examQuesSlice";
 import PrefrenceProfile from "../Profile/JobProfile/PrefrenceProfile";
 import { getPrefrence } from "../../features/jobProfileSlice";
 import { FaCalendarAlt } from "react-icons/fa";
+import { checkPasskey } from "../../services/examServices";
+import ExamCenterModal from "./components/passkeyCard";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
@@ -32,16 +34,38 @@ function TeacherDashboard() {
   const [error, setError] = useState("");
   const [showInterviewHistory, setShowInterviewHistory] = useState(false);
   const inputRef = useRef(null);
+  const [passkeyStatus, setPasskeyStatus] = useState(null);
+  const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
 
   const { basicData } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
+  const { examCards } = useSelector((state) => state?.exam);
 
   useEffect(() => {
     dispatch(attemptsExam());
     dispatch(getPrefrence());
     dispatch(getInterview());
   }, [dispatch]);
+
+  // Check for pending passkey requests
+  useEffect(() => {
+    const checkForPendingPasskey = async () => {
+      if (examCards?.id && examCards?.type === "offline") {
+        try {
+          const response = await checkPasskey({ exam: examCards?.id });
+          if (response?.passkey === true && response?.center) {
+            setPasskeyStatus(response);
+          } else {
+            setPasskeyStatus(null);
+          }
+        } catch (error) {
+          setPasskeyStatus(null);
+        }
+      }
+    };
+    checkForPendingPasskey();
+  }, [examCards]);
 
   const qualifiedExamNames = (attempts || [])
     .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
@@ -240,6 +264,81 @@ function TeacherDashboard() {
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
+            {/* Passkey Request Status Banner */}
+            <div className="px-4 sm:px-6 pt-10">
+              {passkeyStatus?.passkey && passkeyStatus?.center && (
+                <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${
+                  passkeyStatus?.status === "fulfilled" 
+                    ? "border-green-400 bg-green-50" 
+                    : "border-yellow-400 bg-yellow-50"
+                }`}>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="w-full">
+                      {passkeyStatus?.status === "fulfilled" ? (
+                        <>
+                          <div className="text-xl font-semibold text-green-700">✅ पासकी स्वीकृत | Passkey Approved</div>
+                          <div className="mt-2 text-gray-700">
+                            <p className="mb-1">
+                              <span className="font-medium">Exam Center: </span>
+                              {passkeyStatus?.center?.name || passkeyStatus?.center?.center_name}
+                            </p>
+                            <p className="text-sm text-gray-600 mb-1">
+                              <span className="font-medium">Location: </span>
+                              {passkeyStatus?.center?.area && `${passkeyStatus.center.area}, `}
+                              {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-2">
+                              आपका पासकी अनुरोध स्वीकृत हो गया है। अब आप परीक्षा केंद्र से सत्यापन कोड प्राप्त करके परीक्षा शुरू कर सकते हैं।
+                              <br />
+                              Your passkey request has been approved by admin. You can now obtain the verification code from the exam center and start your exam.
+                            </p>
+                          </div>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => setIsExamCenterModalOpen(true)}
+                              className="inline-flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
+                            >
+                              Enter Verification Code & Start Exam
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xl font-semibold text-yellow-700">⏳ पासकी अनुरोध लंबित | Passkey Request Pending</div>
+                          <div className="mt-2 text-gray-700">
+                            <p className="mb-1">
+                              <span className="font-medium">Exam Center: </span>
+                              {passkeyStatus?.center?.name || passkeyStatus?.center?.center_name}
+                            </p>
+                            <p className="text-sm text-gray-600 mb-1">
+                              <span className="font-medium">Location: </span>
+                              {passkeyStatus?.center?.area && `${passkeyStatus.center.area}, `}
+                              {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-2">
+                              आपका पासकी अनुरोध सबमिट हो चुका है और एडमिन की स्वीकृति की प्रतीक्षा में है। स्वीकृति मिलते ही आपको सूचित किया जाएगा।
+                              <br />
+                              Your passkey request has been submitted and is awaiting admin approval. You will be notified once approved.
+                            </p>
+                          </div>
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              disabled
+                              className="inline-flex items-center px-4 py-2 rounded-md bg-gray-400 text-white cursor-not-allowed"
+                            >
+                              Waiting for Admin Approval
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             {/* Interview eligibility and status banner */}
             <div className="px-4 sm:px-6 pt-4">
               {shouldShowInterviewSection && (
@@ -385,6 +484,17 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Exam Center Modal for Passcode Verification */}
+      {isExamCenterModalOpen && (
+        <ExamCenterModal
+          isOpen={isExamCenterModalOpen}
+          onClose={() => setIsExamCenterModalOpen(false)}
+          examCards={examCards}
+          isverifyCard={true}
+          examCenterData={passkeyStatus?.center}
+        />
+      )}
     </>
   );
 }

@@ -12,6 +12,8 @@ import {
   FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock,
   FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp
 } from "react-icons/fa";
+import ExamCenterModal from "./passkeyCard";
+import { checkPasskey } from "../../../services/examServices";
 
 const FilterdExamCard = () => {
   const dispatch = useDispatch();
@@ -35,6 +37,12 @@ const FilterdExamCard = () => {
   const [showLevelPanel, setShowLevelPanel] = useState(false);
   const examReadyRef = useRef(null); // Create a ref for the target section
   const [showErrorDetails, setShowErrorDetails] = useState(false);
+  
+  // Exam center modal states
+  const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
+  const [showVerificationCard, setShowVerificationCard] = useState(false);
+  const [examCenterData, setExamCenterData] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState("");
 
   // Determine qualified Level 2 subjects
   const qualifiedSubjects = attempts?.filter(item =>
@@ -177,8 +185,29 @@ const FilterdExamCard = () => {
     setShowLevelPanel(false);
   };
 
-  const handleExam = () => {
-    navigate("/exam");
+  const handleExam = async () => {
+    // For Level 2.5 (offline exams), check passkey first
+    if (selectedLevel?.level_code === 2.5 && examCards?.type === "offline") {
+      try {
+        const examid = examCards?.id;
+        const response = await checkPasskey({ exam: examid });
+        
+        if (response?.passkey === true) {
+          // If passkey exists, show verification with center info
+          setExamCenterData(response.center);
+          setShowVerificationCard(true);
+        } else {
+          // If no passkey, show center selection
+          setShowVerificationCard(false);
+        }
+        setIsExamCenterModalOpen(true);
+      } catch (err) {
+        setErrors("Failed to check exam status. Please try again.");
+      }
+    } else {
+      // For online exams (Level 1, 2.0), go directly to exam guidelines
+      navigate("/exam");
+    }
   };
 
   // Retry loading the exam with the last selection
@@ -492,10 +521,10 @@ const FilterdExamCard = () => {
                       </div>
                       <div className="ml-3 flex-1 text-success">
                         <h3 className="text-sm sm:text-base font-semibold">
-                          Congratulations! You're now eligible for Level 2.5
+                          Congratulations! You're now eligible for Level 2.5 (from Exam Center) and Interview Scheduling.
                         </h3>
                         <p className="mt-1 text-xs sm:text-sm text-text">
-                          You've passed Level 2 (Online). You can now take Level 2.5 at an exam center for in-person verification, and you're also eligible to schedule your interview!
+                          You've passed Level 2. You can now take at an exam center for in-person verification, and you're also eligible to schedule your interview!
                         </p>
                       </div>
                     </div>
@@ -751,9 +780,19 @@ const FilterdExamCard = () => {
 
               {/* Helpful note */}
               <div className="mb-4 sm:mb-6 text-xs sm:text-sm text-gray-600">
-                • Make sure you’re in a quiet environment and have stable internet.
-                <br className="hidden sm:block" />
-                • परीक्षा शुरू करने से पहले शांत वातावरण और स्थिर इंटरनेट सुनिश्चित करें।
+                {selectedLevel?.level_code === 2.5 ? (
+                  <>
+                    • You've selected a Center Exam. You'll need to select a center and verify your passcode.
+                    <br className="hidden sm:block" />
+                    • आपने सेंटर परीक्षा चुनी है। आपको केंद्र चुनना होगा और अपना पासकोड सत्यापित करना होगा।
+                  </>
+                ) : (
+                  <>
+                    • Make sure you're in a quiet environment and have stable internet.
+                    <br className="hidden sm:block" />
+                    • परीक्षा शुरू करने से पहले शांत वातावरण और स्थिर इंटरनेट सुनिश्चित करें।
+                  </>
+                )}
               </div>
 
               {/* Actions */}
@@ -776,7 +815,7 @@ const FilterdExamCard = () => {
                   onClick={handleExam}
                   className="w-full sm:w-auto px-6 sm:px-7 py-2.5 bg-primary hover:opacity-90 text-white rounded-md border border-transparent transition-all font-semibold flex items-center justify-center text-sm"
                 >
-                  Start Exam / परीक्षा शुरू करें
+                  {selectedLevel?.level_code === 2.5 ? 'Proceed to Center Selection / केंद्र चयन के लिए आगे बढ़ें' : 'Start Exam / परीक्षा शुरू करें'}
                   <FaArrowRight className="ml-2" aria-hidden="true" />
                 </motion.button>
               </div>
@@ -807,6 +846,20 @@ const FilterdExamCard = () => {
           </motion.div>
         )}
       </div>
+      
+      {/* Exam Center Modal */}
+      {isExamCenterModalOpen && (
+        <ExamCenterModal
+          isOpen={isExamCenterModalOpen}
+          onClose={() => {
+            setIsExamCenterModalOpen(false);
+            setShowVerificationCard(false);
+          }}
+          isverifyCard={showVerificationCard}
+          examCenterData={examCenterData}
+          examCards={examCards}
+        />
+      )}
     </div>
   );
 };
