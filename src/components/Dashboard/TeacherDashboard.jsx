@@ -215,9 +215,9 @@ function TeacherDashboard() {
       <div className="min-h-screen px-4 sm:px-6">
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content Column (9/12) */}
-          <div className="w-full md:w-9/12 lg:w-9/12">
+          <div className="w-full md:w-9/12 lg:w-9/12 space-y-4">
             {/* Passkey Request Status Banner */}
-            <div className="px-4 sm:px-6 pt-10">
+            <div className="px-4 sm:px-6 pt-8">
               {passkeyStatus?.passkey && passkeyStatus?.center && (
                 <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${
                   passkeyStatus?.status === "fulfilled" 
@@ -289,11 +289,7 @@ function TeacherDashboard() {
                   </div>
                 </div>
               )}
-            </div>
-            
-            {/* Job Application Status Banner */}
-            <div className="px-4 sm:px-6 pt-4">
-              {(eligibilityLoading || jobApplyLoading) ? (
+            {(eligibilityLoading || jobApplyLoading) ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 mb-4">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="w-full">
@@ -377,7 +373,6 @@ function TeacherDashboard() {
             </div>
             
             {/* Interview eligibility and status banner */}
-            <div className="px-4 sm:px-6 pt-4">
               {shouldShowInterviewSection && (
                 <div className="rounded-xl border border-success bg-green-100 p-4 sm:p-6 mb-4">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -464,26 +459,22 @@ function TeacherDashboard() {
                   </div>
                 </div>
               )}
-            </div>
 
 
             {/* Show preference form if user doesn't have class categories */}
             {!hasClassCategories ? (
-              <div className=" p-4 sm:p-6">
+              <div className="">
                 <PrefrenceProfile forceEdit={true} />
               </div>
             ) : (
               <>
                 {/* Interview management placed prominently at the top when eligible or existing interviews */}
                 {shouldShowInterviewSection && (
-                  <div ref={interviewSectionRef} className="md:px-6 md:py-4">
                     <InterviewCard />
-                  </div>
                 )}
 
                 {/* Show less prominent interview history for completed interviews */}
                 {hasPassedInterview && interviews.length > 0 && !shouldShowInterviewSection && (
-                  <div className="md:px-6 md:py-4">
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -500,7 +491,6 @@ function TeacherDashboard() {
                           View History
                         </button>
                       </div>
-                    </div>
                     <div ref={interviewSectionRef} className="hidden">
                       <InterviewCard />
                     </div>
@@ -508,9 +498,7 @@ function TeacherDashboard() {
                 )}
 
                 {/* Other dashboard content */}
-                <div className="md:px-6 md:p-2">
                   <FilterdExamCard />
-                </div>
               </>
             )}
           </div>

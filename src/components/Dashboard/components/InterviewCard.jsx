@@ -29,8 +29,6 @@ const InterviewCard = () => {
   // New state for simplified date/time picker
   const [selectedDay, setSelectedDay] = useState(null); // Date object
   const [selectedTime, setSelectedTime] = useState(null); // 'HH:MM'
-  const [manualDate, setManualDate] = useState('');
-  const [manualTime, setManualTime] = useState('');
   
   // Filter states
   const [subjectFilter, setSubjectFilter] = useState("all");
@@ -38,6 +36,7 @@ const InterviewCard = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("qualified"); // "qualified" or "interviews"
   
   // Extract unique subjects and class categories for filter dropdowns
@@ -158,9 +157,7 @@ const InterviewCard = () => {
       setSelectedDateTime("");
       setSelectedDay(null);
       setSelectedTime(null);
-      setManualDate('');
-      setManualTime('');
-      setShowScheduleForm(false);
+      setIsModalOpen(false);
       
       // Refetch interviews
       dispatch(getInterview());
@@ -208,15 +205,7 @@ const InterviewCard = () => {
   
   const handleExamSelect = (examName) => {
     setSelectedExam(examName);
-    setShowScheduleForm(true);
-    
-    // Smooth scroll to schedule form
-    setTimeout(() => {
-      const scheduleForm = document.getElementById('schedule-form');
-      if (scheduleForm) {
-        scheduleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+    setIsModalOpen(true);
   };
   
   // Get the status badge color
@@ -515,198 +504,152 @@ const InterviewCard = () => {
                 </div>
               </div>
               
-              {/* Schedule Form */}
+              {/* Modal for Schedule Interview Form */}
               <AnimatePresence>
-                {showScheduleForm && selectedExam && (
+                {isModalOpen && selectedExam && (
                   <motion.div
-                    id="schedule-form"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    onClick={() => setIsModalOpen(false)}
                   >
-                    <div className="px-4 sm:px-6 py-3 sm:py-4 bg-primary text-white">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-base sm:text-lg font-medium flex items-center">
-                          <FaCalendarAlt className="mr-2" aria-hidden="true" />
-                          Schedule Interview
-                        </h2>
-                        <button
-                          type="button"
-                          onClick={() => setShowScheduleForm(false)}
-                          className="text-white/80 hover:text-white p-1 rounded focus:outline-none focus:ring-2 focus:ring-white"
-                          aria-label="Close scheduling form"
-                        >
-                          <FaTimes aria-hidden="true" />
-                        </button>
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="px-4 sm:px-6 py-3 sm:py-4 bg-primary text-white rounded-t-lg">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-base sm:text-lg font-medium flex items-center">
+                            <FaCalendarAlt className="mr-2" aria-hidden="true" />
+                            Schedule Interview
+                          </h2>
+                          <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="text-white/80 hover:text-white p-1 rounded focus:outline-none focus:ring-2 focus:ring-white"
+                            aria-label="Close scheduling form"
+                          >
+                            <FaTimes aria-hidden="true" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <form onSubmit={handleSubmit} className="p-4 sm:p-6">
-                      <div className="mb-4 sm:mb-6 bg-primary/10 p-3 sm:p-4 rounded-lg border border-primary/20">
-                        <div className="flex items-start">
-                          <FaChalkboardTeacher className="text-primary text-lg sm:text-xl mr-3 mt-1 flex-shrink-0" aria-hidden="true" />
-                          <div>
-                            <h4 className="font-medium text-sm sm:text-base text-gray-800">Selected Exam:</h4>
-                            <p className="text-primary font-semibold text-sm sm:text-base">{selectedExam}</p>
-                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                              Select a date and time for your virtual interview.
-                            </p>
+
+                      <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+                        <div className="mb-4 sm:mb-6 bg-primary/10 p-3 sm:p-4 rounded-lg border border-primary/20">
+                          <div className="flex items-start">
+                            <FaChalkboardTeacher className="text-primary text-lg sm:text-xl mr-3 mt-1 flex-shrink-0" aria-hidden="true" />
+                            <div>
+                              <h4 className="font-medium text-sm sm:text-base text-gray-800">Selected Exam:</h4>
+                              <p className="text-primary font-semibold text-sm sm:text-base">{selectedExam}</p>
+                              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                Select a date and time for your virtual interview.
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Date selection */}
-                      <div className="mb-4 sm:mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Pick a date</label>
-                        <div className="flex gap-2 overflow-x-auto pb-1">
-                          {days.map(({ date, label, isToday }, idx) => {
-                            const isSelected = selectedDay && isSameDay(selectedDay, date);
-                            return (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedDay(date);
-                                  setSelectedTime(null);
-                                  setManualDate('');
-                                  setManualTime('');
-                                  setSelectedDateTime('');
-                                }}
-                                className={`${isSelected ? 'bg-primary text-white border border-primary' : 'bg-white text-gray-700 border border-gray-300'} px-3 py-2 rounded-md whitespace-nowrap hover:bg-primary hover:text-white transition-colors`}
-                                aria-pressed={isSelected}
-                              >
-                                <span className="text-sm font-medium">{label}</span>
-                                {isToday && <span className="ml-2 text-xs opacity-90">Today</span>}
-                              </button>
-                            );
-                          })}
+                        {/* Date selection */}
+                        <div className="mb-4 sm:mb-6">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Pick a date</label>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {days.map(({ date, label, isToday }, idx) => {
+                              const isSelected = selectedDay && isSameDay(selectedDay, date);
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedDay(date);
+                                    setSelectedTime(null);
+                                    setSelectedDateTime('');
+                                  }}
+                                  className={`${isSelected ? 'bg-primary text-white border border-primary' : 'bg-white text-gray-700 border border-gray-300'} px-3 py-2 rounded-md whitespace-nowrap hover:bg-primary hover:text-white transition-colors`}
+                                  aria-pressed={isSelected}
+                                >
+                                  <span className="text-sm font-medium">{label}</span>
+                                  {isToday && <span className="ml-2 text-xs opacity-90">Today</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Time selection */}
-                      <div className="mb-4 sm:mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Pick a time</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                          {timeSlots.map(({ time, disabled }, i) => {
-                            const isSelected = selectedTime === time;
-                            return (
-                              <button
-                                key={i}
-                                type="button"
-                                disabled={disabled}
-                                onClick={() => {
-                                  if (disabled) return;
-                                  setSelectedTime(time);
-                                  setManualDate('');
-                                  setManualTime('');
-                                  if (selectedDay) {
-                                    setSelectedDateTime(formatLocalDateTime(selectedDay, time));
-                                  }
-                                }}
-                                className={`px-3 py-2 rounded-md border text-sm font-medium ${
-                                  disabled
-                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                    : isSelected
-                                      ? 'bg-primary text-white border-primary'
-                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-primary hover:text-white'
-                                }`}
-                              >
-                                {time}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {selectedDay && timeSlots.every(s => s.disabled) && (
-                          <p className="text-xs text-amber-600 mt-2">No slots left today. Please choose another date.</p>
-                        )}
-                      </div>
-
-                      {/* Divider */}
-                      <div className="flex items-center my-4">
-                        <div className="flex-grow border-t border-gray-200"></div>
-                        <span className="px-3 text-xs text-gray-500">or</span>
-                        <div className="flex-grow border-t border-gray-200"></div>
-                      </div>
-
-                      {/* Manual input fallback */}
-                      <div className="mb-4 sm:mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter date and time manually</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <input
-                            type="date"
-                            value={manualDate}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setManualDate(val);
-                              setSelectedDay(null);
-                              setSelectedTime(null);
-                              if (val && manualTime) {
-                                setSelectedDateTime(`${val} ${manualTime}:00`);
-                              } else {
-                                setSelectedDateTime('');
-                              }
-                            }}
-                            className="block w-full px-3 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-700"
-                          />
-                          <input
-                            type="time"
-                            value={manualTime}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setManualTime(val);
-                              setSelectedDay(null);
-                              setSelectedTime(null);
-                              if (manualDate && val) {
-                                setSelectedDateTime(`${manualDate} ${val}:00`);
-                              } else {
-                                setSelectedDateTime('');
-                              }
-                            }}
-                            className="block w-full px-3 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-700"
-                          />
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">We will save this in your local time zone.</p>
-                        {selectedDateTime && isInPast(selectedDateTime) && (
-                          <p className="text-xs text-error mt-1">Selected time is in the past. Please choose a future time.</p>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <button
-                          type="submit"
-                          disabled={!selectedDateTime || isSubmitting || isInPast(selectedDateTime)}
-                          className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-medium flex items-center justify-center transition-all duration-200 ${
-                            selectedDateTime && !isSubmitting && !isInPast(selectedDateTime)
-                              ? 'bg-primary hover:opacity-90 text-white border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
-                              : 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300'
-                          }`}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <FaCalendarCheck className="mr-2" aria-hidden="true" />
-                              Schedule Interview
-                            </>
+                        {/* Time selection */}
+                        <div className="mb-4 sm:mb-6">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Pick a time</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {timeSlots.map(({ time, disabled }, i) => {
+                              const isSelected = selectedTime === time;
+                              return (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  disabled={disabled}
+                                  onClick={() => {
+                                    if (disabled) return;
+                                    setSelectedTime(time);
+                                    if (selectedDay) {
+                                      setSelectedDateTime(formatLocalDateTime(selectedDay, time));
+                                    }
+                                  }}
+                                  className={`px-3 py-2 rounded-md border text-sm font-medium ${
+                                    disabled
+                                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                      : isSelected
+                                        ? 'bg-primary text-white border-primary'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-primary hover:text-white'
+                                  }`}
+                                >
+                                  {time}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {selectedDay && timeSlots.every(s => s.disabled) && (
+                            <p className="text-xs text-amber-600 mt-2">No slots left today. Please choose another date.</p>
                           )}
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => setShowScheduleForm(false)}
-                          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                          <button
+                            type="submit"
+                            disabled={!selectedDateTime || isSubmitting || isInPast(selectedDateTime)}
+                            className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-medium flex items-center justify-center transition-all duration-200 ${
+                              selectedDateTime && !isSubmitting && !isInPast(selectedDateTime)
+                                ? 'bg-primary hover:opacity-90 text-white border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
+                                : 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300'
+                            }`}
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <FaCalendarCheck className="mr-2" aria-hidden="true" />
+                                Schedule Interview
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
