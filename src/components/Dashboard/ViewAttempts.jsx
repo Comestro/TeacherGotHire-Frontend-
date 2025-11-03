@@ -75,11 +75,11 @@ function ViewAttempts() {
   }, [selectedCategory, apiOutput2]);
 
   return (
-    <div className="p-6 max-w-8xl mx-auto">
-      <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-secondary/20 p-8 shadow-sm">
+    <div className="md:max-w-8xl mx-auto">
+      <div className="p-3 md:p-8 shadow-sm">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-text flex items-center gap-3 mb-2">
+            <h1 className="text-xl font-bold text-text flex items-center gap-3 mb-2">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <HiOutlineDocumentText className="h-7 w-7 text-primary" aria-hidden="true" />
               </div>
@@ -103,7 +103,7 @@ function ViewAttempts() {
                 <option value="All">All Class Categories</option>
                 {attemptedCategories.map((category) => (
                   <option key={category} value={category}>
-                    {category}
+                    {category} class
                   </option>
                 ))}
               </select>
@@ -141,7 +141,7 @@ function ViewAttempts() {
               <div>
                 <p className="text-xs text-secondary font-medium uppercase tracking-wider">Showing Results For</p>
                 <h2 className="text-text font-bold">
-                  {selectedCategory === "All" ? "All Categories" : selectedCategory}
+                  {selectedCategory === "All" ? "All Categories" : selectedCategory + " class"}
                 </h2>
               </div>
             </div>
@@ -176,7 +176,8 @@ function getLevelOrder(levelName) {
   if (levelName.includes("1st")) return 1;
   if (levelName.includes("Online")) return 2;
   if (levelName.includes("Offline")) return 3;
-  return 4; // Interview level
+  if (levelName.includes("Interview")) return 5; // Interviews should be last
+  return 4; // Other levels
 }
 
 function SubjectResults({ subject, examResults, selectedCategory }) {
@@ -206,7 +207,7 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       language: result?.language || 'N/A',
       status: result?.isqualified ? "Passed" : "Failed",
       score: `${result?.calculate_percentage}%`,
-      date: new Date(result?.created_at).toLocaleDateString(),
+      date: new Date(result?.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(result?.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
       attemptCount: result?.attempt || '1',
     });
 
@@ -221,7 +222,7 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
             const interviewLevel = `Interview - ${result?.exam?.level_name}`;
             
             interviewRows.push({
-              levelOrder: 4, // Interview is always last
+              levelOrder: 5, // Interview is always last
               levelName: "Interview",
               type: "Interview",
               classCategory: interview?.class_category,
@@ -233,19 +234,25 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
                      interview?.status === "requested" ? "Requested" : interview?.status,
               score: interview?.grade ? `${interview.grade}/10` : 'N/A',
               attemptCount: interview?.attempt || '-',
-              date: interview?.time ? new Date(interview.time).toLocaleDateString() : '-',
-              interviewDate: interview?.created_at ? new Date(interview.created_at).toLocaleDateString() : '-',
+              date: interview?.time ? new Date(interview.time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(interview.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
+              interviewDate: interview?.created_at ? new Date(interview.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + new Date(interview.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
             });
           }
         });
     }
   });
 
-  // Combine and sort all rows
+  // Combine and sort all rows - interviews should be last
   const allRows = [...examRows, ...interviewRows].sort((a, b) => {
+    // Interviews always last
+    if (a.type === "Interview" && b.type !== "Interview") return 1;
+    if (a.type !== "Interview" && b.type === "Interview") return -1;
+    
+    // For same type, sort by level order
     if (a.levelOrder !== b.levelOrder) {
       return a.levelOrder - b.levelOrder;
     }
+    
     // For same level, sort by date descending
     return new Date(b.date) - new Date(a.date);
   });
@@ -269,15 +276,15 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-br from-background to-background/50">
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Record Type</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Class Category</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Subject</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Level</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Language</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Result/Status</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Score</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Attempt</th>
-                <th className="py-4 px-6 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Date</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Record Type</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Class Category</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Subject</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Level</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Language</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Result/Status</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Score</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Attempt</th>
+                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -338,23 +345,23 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
                     row.type === "Interview" ? "bg-background/30" : ""
                   }`}
                 >
-                  <td className="py-4 px-6 border-b border-secondary/10">
+                  <td className="py-3 px-2 border-b border-secondary/10">
                     <span className="font-semibold text-text">
                       {row.type}
                     </span>
                   </td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.classCategory}</td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70 font-medium">{row.subject}</td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.level}</td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.language}</td>
-                  <td className="py-4 px-6 border-b border-secondary/10">
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.classCategory}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70 font-medium">{row.subject}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.level}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.language}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10">
                     {statusBadge}
                   </td>
-                  <td className="py-4 px-6 border-b border-secondary/10">
+                  <td className="py-3 px-2 border-b border-secondary/10">
                     <span className="font-semibold text-text">{row.score}</span>
                   </td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.attemptCount}</td>
-                  <td className="py-4 px-6 border-b border-secondary/10 text-text/70">{row.date}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.attemptCount}</td>
+                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.date}</td>
                 </tr>
               )})}
 

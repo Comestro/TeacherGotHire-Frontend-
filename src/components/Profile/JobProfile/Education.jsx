@@ -454,7 +454,7 @@ const Education = () => {
       {loading && <Loader />}
       <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-secondary/20">
         <div className="mb-0">
-          <h2 className="text-2xl font-bold text-text flex items-center gap-3">
+          <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
             <div className="bg-primary/10 rounded-lg">
               <HiOutlineAcademicCap className="text-2xl text-primary" aria-hidden="true" />
             </div>

@@ -327,7 +327,7 @@ const InterviewCard = () => {
   const timeSlots = generateTimeSlots(selectedDay);
 
   return (
-    <div className="w-full bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
+    <div className="w-full bg-gray-50 p-3">
       <AnimatePresence>
         {notification && (
           <motion.div
@@ -374,7 +374,7 @@ const InterviewCard = () => {
       </AnimatePresence>
       
       {/* Header with bilingual title */}
-      <div className="mb-6">
+      <div className="mb-6 p-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
           <FaVideo className="mr-2 sm:mr-3 text-cyan-600" />
           <span>इंटरव्यू प्रबंधन | Interview Management</span>
@@ -382,41 +382,40 @@ const InterviewCard = () => {
         <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
           <span className="font-medium text-gray-700">अपना शिक्षण योग्यता इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।</span>
           <br className="hidden sm:block" />
-          <span className="text-gray-500">Schedule your teaching qualification interview and apply for jobs in schools/institutes.</span>
         </p>
       </div>
       
       {/* Tab Navigation */}
-      <div className="mb-6 border-b border-gray-200">
-        <div className="flex space-x-4 sm:space-x-8 overflow-x-auto"> {/* Allow horizontal scroll on small screens */}
+      <div className="mb-6">
+        <div className="flex space-x-2 sm:space-x-4 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("qualified")}
-            className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${ // Use whitespace-nowrap
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
               activeTab === "qualified"
-                ? "border-cyan-500 text-cyan-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
+                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
             }`}
-            role="tab" // Add role
-            aria-selected={activeTab === "qualified"} // Add aria-selected
+            role="tab"
+            aria-selected={activeTab === "qualified"}
           >
             <FaGraduationCap className={`mr-2 ${activeTab === "qualified" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
-            Qualified Exams
+            Qualified for Interview
           </button>
-          
+
           <button
             onClick={() => setActiveTab("interviews")}
-            className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${ // Use whitespace-nowrap
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap relative ${
               activeTab === "interviews"
-                ? "border-cyan-500 text-cyan-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
+                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
             }`}
-            role="tab" // Add role
-            aria-selected={activeTab === "interviews"} // Add aria-selected
+            role="tab"
+            aria-selected={activeTab === "interviews"}
           >
             <FaCalendarAlt className={`mr-2 ${activeTab === "interviews" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
             My Interviews
             {interview?.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-100 text-cyan-800">
+              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500 text-white">
                 {interview.length}
               </span>
             )}
@@ -433,26 +432,16 @@ const InterviewCard = () => {
                 <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4"> {/* Adjust padding */}
                   <h2 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
                     <FaGraduationCap className="mr-2 text-cyan-600" aria-hidden="true" />
-                    Qualified Exams
+                    Qualified Subjects
                   </h2>
                   <p className="mt-1 text-sm text-gray-500">
-                    Select an exam to schedule your interview
+                    Select and schedule your interview for the qualified subject.
                   </p>
                 </div>
                 
                 <div className="divide-y divide-gray-200">
                   {qualifiedSubjects.map((subject, index) => (
                     <div key={index} className="px-4 sm:px-6 py-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center">
-                          <FaBook className="mr-2 text-cyan-500" aria-hidden="true" />
-                          {subject}
-                        </h3>
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
-                          {subjectGroups[subject].length} {subjectGroups[subject].length === 1 ? 'exam' : 'exams'}
-                        </span>
-                      </div>
-                      
                       <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-2"> {/* Adjust gap */}
                         {subjectGroups[subject].map((item, examIndex) => (
                           <motion.button // Change to button for accessibility
@@ -477,10 +466,10 @@ const InterviewCard = () => {
                               </div>
                               
                               <div className="ml-3 flex-1">
-                                <div className="font-medium text-sm sm:text-base text-gray-800">{item.exam.name}</div>
+                                <div className="font-medium text-sm sm:text-base text-gray-800">{item.exam.class_category_name} - {item.exam.subject_name}</div>
                                 <div className="text-xs sm:text-sm text-gray-500 flex items-center mt-1">
                                   <FaGraduationCap className="mr-1 text-xs" aria-hidden="true" />
-                                  {item.exam.class_category_name}
+                                   Class : {item.exam.class_category_name}
                                 </div>
                                 <div className="mt-2">
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">

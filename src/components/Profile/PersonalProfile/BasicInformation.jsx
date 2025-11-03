@@ -334,7 +334,7 @@ const BasicInformation = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-white to-[#F7FBFE] rounded-2xl border border-[#3E98C7]/20 shadow-sm">
+    <div className="bg-gradient-to-br from-white to-[#F7FBFE]">
       <ToastContainer
         position="top-right"
         autoClose={1000}

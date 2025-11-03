@@ -296,7 +296,7 @@ const FilterdExamCard = () => {
   }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
 
   return (
-    <div className="bg-background min-h-screen w-full flex flex-col md:flex-row gap-0">
+    <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
       {/* Main selection column */}
       <div className="w-full ">
       

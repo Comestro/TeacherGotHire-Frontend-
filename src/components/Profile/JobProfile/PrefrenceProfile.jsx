@@ -203,7 +203,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       {isLoading && <Loader />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-200 px-4 pt-4">
         <div className="sm:mb-0">
-          <h2 className="text-2xl font-bold text-text flex items-center gap-3">
+          <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
             <HiOutlineAcademicCap className="w-7 h-7 text-text" />
             Teaching Preferences / शिक्षण प्राथमिकताएं
           </h2>
