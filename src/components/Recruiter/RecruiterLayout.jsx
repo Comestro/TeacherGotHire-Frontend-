@@ -11,13 +11,13 @@ const RecruiterLayout = () => {
       <Helmet>
         <title>PTPI | Recruiter Panel</title>
       </Helmet>
-      <div className='min:h-screen w-full"'>
+      <div className='min:h-screen w-full bg-background'>
         <TeacherRecruiterHeader isOpen={isOpen} setIsOpen={setIsOpen} />
-        <div className="flex w-full">
+        <div className="flex w-full mt-16">
           <div className="md:block">
             <RecruiterSidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
           </div>
-          <div className="w-full md:ml-72 mt-16">
+          <div className="w-full ">
             <Outlet />
           </div>
         </div>

@@ -1,10 +1,12 @@
 import React from "react";
+import { HiOutlineMail, HiOutlineLocationMarker, HiOutlineBriefcase, HiOutlineAcademicCap, HiOutlinePhone } from "react-icons/hi";
 
 const TeacherCard = ({ teacher }) => {
   const {
     Fname,
     Lname,
     email,
+    phone,
     teachersaddress,
     teacherexperiences,
     teacherqualifications,
@@ -12,76 +14,85 @@ const TeacherCard = ({ teacher }) => {
 
   // Get current address if exists
   const currentAddress =
-    teachersaddress?.find((addr) => addr.address_type === "current") || {};
+    teachersaddress?.find((addr) => addr.address_type === "current") || 
+    teachersaddress?.[0] || {};
+
+  // Get latest experience
+  const latestExperience = teacherexperiences?.[0];
+
+  // Get highest qualification
+  const highestQualification = teacherqualifications?.[0];
 
   return (
-    <div className="bg-gradient-to-r from-teal-500 to-blue-500 text-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow">
+    <div className="bg-white p-5 rounded-lg hover:scale-[1.02] transition-transform duration-300">
       {/* Header Section */}
-      <div className="flex items-center gap-4 border-b border-white pb-4">
-        <div className="flex-grow">
-          <h2 className="text-2xl font-extrabold">
-            {Fname} {Lname}
-          </h2>
-          <p className="text-sm">Email: {email}</p>
-        </div>
+      <div className="border-b pb-3 mb-4">
+        <h2 className="text-xl font-bold text-text">
+          {Fname} {Lname}
+        </h2>
       </div>
 
-      {/* Address Section */}
-      {currentAddress && (
-        <div className="mt-4 bg-white bg-opacity-20 p-4 rounded-md">
-          <h3 className="text-sm font-semibold">Address:</h3>
-          <p className="text-sm mt-1">
-            {currentAddress.village}, {currentAddress.block}, {currentAddress.district}, {currentAddress.state} - {currentAddress.pincode}
-          </p>
+      {/* Key Information */}
+      <div className="space-y-3">
+        {/* Email */}
+        <div className="flex items-start gap-3">
+          <HiOutlineMail className="text-accent mt-0.5 flex-shrink-0" size={18} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-secondary font-medium uppercase">Email</p>
+            <p className="text-sm text-text truncate">{email}</p>
+          </div>
         </div>
-      )}
 
-      {/* Experience Section */}
-      {teacherexperiences?.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold">Experience:</h3>
-          <ul className="mt-2 space-y-4">
-            {teacherexperiences.map((exp, index) => (
-              <li key={index} className="bg-white bg-opacity-20 p-4 rounded-md">
-                <p className="text-sm">
-                  <span className="font-medium">Institution:</span> {exp.institution}
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Role:</span> {exp.role.jobrole_name}
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Achievements:</span> {exp.achievements}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* Phone */}
+        {phone && (
+          <div className="flex items-start gap-3">
+            <HiOutlinePhone className="text-accent mt-0.5 flex-shrink-0" size={18} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-secondary font-medium uppercase">Phone</p>
+              <p className="text-sm text-text">{phone}</p>
+            </div>
+          </div>
+        )}
 
-      {/* Qualification Section */}
-      {teacherqualifications?.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold">Qualifications:</h3>
-          <ul className="mt-2 space-y-4">
-            {teacherqualifications.map((qual, index) => (
-              <li key={index} className="bg-white bg-opacity-20 p-4 rounded-md">
-                <p className="text-sm">
-                  <span className="font-medium">Qualification:</span> {qual.qualification.name}
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Institution:</span> {qual.institution}
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Year of Passing:</span> {qual.year_of_passing}
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Grade:</span> {qual.grade_or_percentage}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* Location */}
+        {currentAddress.district && (
+          <div className="flex items-start gap-3">
+            <HiOutlineLocationMarker className="text-accent mt-0.5 flex-shrink-0" size={18} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-secondary font-medium uppercase">Location</p>
+              <p className="text-sm text-text">
+                {currentAddress.district}, {currentAddress.state}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Job Role */}
+        {latestExperience && (
+          <div className="flex items-start gap-3">
+            <HiOutlineBriefcase className="text-accent mt-0.5 flex-shrink-0" size={18} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-secondary font-medium uppercase">Current Role</p>
+              <p className="text-sm text-text font-medium">{latestExperience.role?.jobrole_name || "N/A"}</p>
+              <p className="text-xs text-secondary mt-0.5">{latestExperience.institution}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Education */}
+        {highestQualification && (
+          <div className="flex items-start gap-3">
+            <HiOutlineAcademicCap className="text-accent mt-0.5 flex-shrink-0" size={18} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-secondary font-medium uppercase">Education</p>
+              <p className="text-sm text-text font-medium">{highestQualification.qualification?.name || "N/A"}</p>
+              <p className="text-xs text-secondary mt-0.5">
+                {highestQualification.institution} • {highestQualification.year_of_passing}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

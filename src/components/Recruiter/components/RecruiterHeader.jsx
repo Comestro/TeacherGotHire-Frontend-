@@ -72,110 +72,148 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   };
 
   return (
-    <header className="bg-white shadow fixed top-0 left-0 w-full z-50">
+    <header className="bg-white border-b border-gray-200 fixed top-0 left-0 w-full z-50">
       <TeacherRequestModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
       />
-      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-        {/* Mobile Menu Button and Logo */}
-        <div className="flex items-center gap-2">
-          <button
-            className="md:hidden text-gray-700 hover:text-teal-500 focus:outline-none"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <FiAlignLeft size={20} />
-          </button>
-
-          {/* Logo - Hidden on mobile */}
-          <Link
-            to="/"
-            className="hidden md:block text-2xl font-bold text-teal-500"
-          >
-            Teacher Recruiter
-          </Link>
-        </div>
-
-        {/* Search Bar - Visible on all screens */}
-        <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 flex-grow md:flex-grow-0 mx-2">
-          <input
-            type="text"
-            placeholder="Search teachers..."
-            className="bg-gray-100 focus:outline-none w-full md:w-60"
-            value={searchValue}
-            onChange={handleSearchChange}
-            onClick={() => handleSearchSubmit()}
-          />
-          <button
-            className="text-teal-500 hover:text-teal-600"
-            onClick={() => handleSearchSubmit()}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <button
-            onClick={() => setIsRequestModalOpen(true)}
-            className="hidden md:block bg-gradient-to-r from-teal-400 to-teal-500 hover:from-teal-500 hover:to-teal-600 text-white 
-            px-6 py-3 rounded-full text-sm font-semibold shadow hover:shadow-xl transition-all duration-300 
-            transform active:scale-95 hover:ring-4 hover:ring-teal-100/50
-            relative overflow-hidden group"
-          >
-            <div className="flex items-center space-x-2">
-            <FaChalkboardTeacher className="w-5 h-5 text-white" />
-            <span className="text-md font-semibold">Request Teacher</span>
-            </div>
-            {/* Animated background */}
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-          </button>
-
-          <div className="relative flex items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left Section: Mobile Menu Button and Logo */}
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
-              className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
-              onClick={toggleProfileMenu}
+              className="md:hidden text-text hover:text-primary focus:outline-none p-2 hover:bg-background rounded-lg transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle sidebar"
             >
-              <FaUserCircle className="w-8 h-8 text-teal-600" />
-              <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-gray-600">
-                  {profile?.Fname} {profile?.Lname}
-                </span>
-                <span className="text-sm text-gray-500 -mt-1">
-                  {profile?.email}
-                </span>
-              </div>
+              <FiAlignLeft size={22} />
             </button>
 
-            {isProfileMenuOpen && (
-              <div className="absolute right-0 top-14 w-56 bg-white border border-gray-200 shadow-lg rounded-md py-2 animate-fade-in">
-                <div className="px-4 py-2 border-b border-gray-200">
-                  <p className="text-sm text-gray-500">Recruiter Code</p>
-                  <p className="text-sm font-medium text-gray-700">
-                    {profile?.user_code}
-                  </p>
+            {/* Logo */}
+            <Link
+              to="/"
+              className="hidden md:flex items-center gap-2 text-xl font-bold text-primary hover:text-accent transition-colors"
+            >
+              <FaChalkboardTeacher className="w-7 h-7" />
+              <span>Teacher Recruiter</span>
+            </Link>
+          </div>
+
+          {/* Center Section: Search Bar */}
+          <div className="flex-1 max-w-2xl mx-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by name, email, location, or qualification..."
+                className="w-full bg-background border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg px-4 py-2.5 pl-10 text-sm text-text placeholder-secondary focus:outline-none transition-all"
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Right Section: Request Button and Profile */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Request Teacher Button */}
+            <button
+              onClick={() => setIsRequestModalOpen(true)}
+              className="hidden lg:flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+            >
+              <FaChalkboardTeacher className="w-4 h-4" />
+              <span>Request Teacher</span>
+            </button>
+
+            {/* Mobile Request Button */}
+            <button
+              onClick={() => setIsRequestModalOpen(true)}
+              className="lg:hidden p-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+              aria-label="Request teacher"
+            >
+              <FaChalkboardTeacher className="w-5 h-5" />
+            </button>
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-3 text-text hover:text-primary focus:outline-none transition-colors p-2 hover:bg-background rounded-lg"
+                onClick={toggleProfileMenu}
+                aria-label="Profile menu"
+              >
+                <div className="flex items-center gap-2">
+                  <FaUserCircle className="w-8 h-8 text-primary" />
+                  <div className="hidden md:flex flex-col items-start">
+                    <span className="text-sm font-semibold text-text leading-tight">
+                      {profile?.Fname} {profile?.Lname}
+                    </span>
+                    <span className="text-xs text-secondary leading-tight">
+                      Recruiter
+                    </span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => handleLogout(dispatch, navigate)}
-                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-100 hover:text-teal-600 transition"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 top-14 w-64 bg-white border border-gray-200 rounded-lg overflow-hidden animate-fade-in">
+                  {/* Profile Info */}
+                  <div className="px-4 py-3 bg-background border-b border-gray-200">
+                    <p className="text-xs text-secondary uppercase font-semibold mb-1">
+                      Account Details
+                    </p>
+                    <p className="text-sm font-semibold text-text">
+                      {profile?.Fname} {profile?.Lname}
+                    </p>
+                    <p className="text-xs text-secondary truncate mt-0.5">
+                      {profile?.email}
+                    </p>
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-secondary">Recruiter Code</p>
+                      <p className="text-sm font-medium text-primary">
+                        {profile?.user_code}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => handleLogout(dispatch, navigate)}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-text hover:bg-background hover:text-primary transition-colors font-medium"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                        />
+                      </svg>
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

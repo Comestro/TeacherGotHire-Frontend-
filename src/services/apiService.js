@@ -35,8 +35,6 @@ export const translateText = async (text, sourceLang, targetLang) => {
       dest: targetLang === "English" ? "en" : "hi",
     });
 
-    // 
-
     return response.data.translated || text;
   } catch (error) {
     

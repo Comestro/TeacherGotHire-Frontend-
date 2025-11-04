@@ -138,8 +138,7 @@ export const verifyOtp = async (payload) =>
 export const login = async (credentials) => {
   try {
     const response = await apiClient.post("/api/login/", credentials);
-    const { access_token, role,is_active } = response.data;
-
+    const { access_token, role,is_active } = response.data.data;
     if (!is_active) {
       
       toast.error("Your account is deactivated. Please contact the admin.", {

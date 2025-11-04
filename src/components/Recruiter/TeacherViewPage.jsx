@@ -153,7 +153,7 @@ const TeacherViewPage = () => {
     );
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-12">
+    <div className="bg-background min-h-screen pb-12">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -170,14 +170,14 @@ const TeacherViewPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
           to="/recruiter"
-          className="mb-6 inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors group"
+          className="mb-6 inline-flex items-center text-primary hover:text-accent transition-colors group font-semibold"
         >
           <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium">Back to Teachers List</span>
         </Link>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+        <div className="bg-white rounded-lg overflow-hidden mb-8">
           <div className="p-6">
             <div className="flex flex-col md:flex-row gap-8">
               {/* Profile Picture */}
@@ -188,7 +188,7 @@ const TeacherViewPage = () => {
                       teacher.profiles?.profile_picture || "/images/profile.jpg"
                     }
                     alt={`${teacher.Fname || "Teacher"}'s portrait`}
-                    className="w-full h-full rounded-full object-cover border-4 border-teal-500 shadow-lg"
+                    className="w-full h-full rounded-full object-cover"
                   />
                 </div>
               </div>
@@ -196,13 +196,13 @@ const TeacherViewPage = () => {
               {/* Basic Info */}
               <div className="flex-grow space-y-4 text-center md:text-left">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-text">
                     {teacher.Fname} {teacher.Lname}
                   </h1>
                   <div className="mt-2 space-y-1">
-                    <p className="text-gray-600 flex items-center justify-center md:justify-start">
+                    <p className="text-secondary flex items-center justify-center md:justify-start">
                       <svg
-                        className="w-5 h-5 mr-2 text-teal-500"
+                        className="w-5 h-5 mr-2 text-accent"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -216,9 +216,9 @@ const TeacherViewPage = () => {
                       </svg>
                       {teacher.email}
                     </p>
-                    <p className="text-gray-600 flex items-center justify-center md:justify-start">
+                    <p className="text-secondary flex items-center justify-center md:justify-start">
                       <svg
-                        className="w-5 h-5 mr-2 text-teal-500"
+                        className="w-5 h-5 mr-2 text-accent"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -236,9 +236,9 @@ const TeacherViewPage = () => {
                 </div>
 
                 <div className="border-t pt-4">
-                  <h2 className="font-semibold text-gray-700 mb-2 flex items-center justify-center md:justify-start">
+                  <h2 className="font-semibold text-text mb-2 flex items-center justify-center md:justify-start">
                     <svg
-                      className="w-5 h-5 mr-2 text-teal-500"
+                      className="w-5 h-5 mr-2 text-accent"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -258,7 +258,7 @@ const TeacherViewPage = () => {
                     </svg>
                     Contact Information
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-secondary">
                     <span className="font-medium">Address: </span>
                     {teacher.teachersaddress?.map((address, index) => (
                       <span key={index}>
@@ -278,16 +278,16 @@ const TeacherViewPage = () => {
         {/* Tabs Navigation */}
         <div
           ref={tabsRef}
-          className={`bg-white rounded-t-xl shadow-md transition-all duration-300 ${
-            stickyTabs ? "sticky top-0 z-10 shadow-md rounded-none" : ""
+          className={`bg-white rounded-t-lg transition-all duration-300 ${
+            stickyTabs ? "sticky top-0 z-10 rounded-none" : ""
           }`}
         >
           <div className="flex overflow-x-auto scrollbar-hide">
             <button
-              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-medium flex items-center ${
+              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-semibold flex items-center transition-colors ${
                 activeTab === "qualifications"
-                  ? "border-b-2 border-teal-500 text-teal-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-secondary hover:text-text"
               }`}
               onClick={() => setActiveTab("qualifications")}
             >
@@ -295,10 +295,10 @@ const TeacherViewPage = () => {
               <span>Qualifications</span>
             </button>
             <button
-              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-medium flex items-center ${
+              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-semibold flex items-center transition-colors ${
                 activeTab === "experience"
-                  ? "border-b-2 border-teal-500 text-teal-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-secondary hover:text-text"
               }`}
               onClick={() => setActiveTab("experience")}
             >
@@ -306,10 +306,10 @@ const TeacherViewPage = () => {
               <span>Experience</span>
             </button>
             <button
-              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-medium flex items-center ${
+              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-semibold flex items-center transition-colors ${
                 activeTab === "skills"
-                  ? "border-b-2 border-teal-500 text-teal-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-secondary hover:text-text"
               }`}
               onClick={() => setActiveTab("skills")}
             >
@@ -317,10 +317,10 @@ const TeacherViewPage = () => {
               <span>Skills</span>
             </button>
             <button
-              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-medium flex items-center ${
+              className={`px-4 py-4 sm:px-6 whitespace-nowrap text-sm font-semibold flex items-center transition-colors ${
                 activeTab === "preferences"
-                  ? "border-b-2 border-teal-500 text-teal-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-secondary hover:text-text"
               }`}
               onClick={() => setActiveTab("preferences")}
             >
@@ -331,11 +331,11 @@ const TeacherViewPage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-b-xl shadow-md p-6">
+        <div className="bg-white rounded-b-lg p-6">
           {activeTab === "qualifications" && (
             <div className="space-y-8">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-teal-600 flex items-center">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary flex items-center">
                   <FaGraduationCap className="mr-2" /> Qualifications
                 </h2>
                 {teacher.teacherqualifications?.length > 0 ? (
@@ -343,19 +343,19 @@ const TeacherViewPage = () => {
                     {teacher.teacherqualifications.map((qualification) => (
                       <div
                         key={qualification.id}
-                        className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow"
+                        className="p-4 bg-background rounded-lg hover:bg-primary/5 transition-colors"
                       >
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-semibold text-text">
                           {qualification.qualification.name}
                         </h3>
-                        <p className="text-gray-600">
+                        <p className="text-secondary">
                           {qualification.institution}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-md text-xs font-medium">
+                          <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                             {qualification.year_of_passing}
                           </span>
-                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-medium">
+                          <span className="bg-accent/10 text-accent px-3 py-1 rounded-full text-xs font-semibold">
                             {qualification.board}
                           </span>
                         </div>
@@ -363,7 +363,7 @@ const TeacherViewPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 italic">
+                  <p className="text-secondary italic">
                     No qualification information available
                   </p>
                 )}
@@ -373,7 +373,7 @@ const TeacherViewPage = () => {
 
           {activeTab === "experience" && (
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-teal-600 flex items-center">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary flex items-center">
                 <FaBriefcase className="mr-2" /> Experience
               </h2>
               {teacher.teacherexperiences?.length > 0 ? (
@@ -381,13 +381,13 @@ const TeacherViewPage = () => {
                   {teacher.teacherexperiences.map((experience) => (
                     <div
                       key={experience.id}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow"
+                      className="p-4 bg-background rounded-lg hover:bg-primary/5 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-semibold text-text">
                           {experience.company}
                         </h3>
-                        <div className="mt-1 sm:mt-0 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs">
+                        <div className="mt-1 sm:mt-0 bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-semibold">
                           {new Date(experience.start_date).toLocaleDateString()}{" "}
                           -{" "}
                           {experience.end_date
@@ -395,14 +395,14 @@ const TeacherViewPage = () => {
                             : "Present"}
                         </div>
                       </div>
-                      <p className="mt-2 text-gray-600">
+                      <p className="mt-2 text-secondary">
                         {experience.achievements}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">
+                <p className="text-secondary italic">
                   No experience information available
                 </p>
               )}
@@ -411,7 +411,7 @@ const TeacherViewPage = () => {
 
           {activeTab === "skills" && (
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-teal-600 flex items-center">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary flex items-center">
                 <FaLightbulb className="mr-2" /> Skills
               </h2>
               {teacher.teacherskill?.length > 0 ? (
@@ -419,14 +419,14 @@ const TeacherViewPage = () => {
                   {teacher.teacherskill.map((skill) => (
                     <span
                       key={skill.skill.id}
-                      className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium"
+                      className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold"
                     >
                       {skill.skill.name}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">
+                <p className="text-secondary italic">
                   No skill information available
                 </p>
               )}
@@ -435,17 +435,17 @@ const TeacherViewPage = () => {
 
           {activeTab === "preferences" && (
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-teal-600 flex items-center">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary flex items-center">
                 <FaChalkboardTeacher className="mr-2" /> Teaching Preferences
               </h2>
               {teacher.preferences?.length > 0 ? (
                 <div>
                   {teacher.preferences.map((preference) => (
                     <div key={preference.id} className="space-y-6">
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                      <div className="p-4 bg-background rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 text-text flex items-center">
                           <svg
-                            className="w-5 h-5 mr-2 text-purple-500"
+                            className="w-5 h-5 mr-2 text-accent"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -464,23 +464,23 @@ const TeacherViewPage = () => {
                             preference.prefered_subject.map((subject) => (
                               <span
                                 key={subject.id}
-                                className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+                                className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold"
                               >
                                 {subject.subject_name}
                               </span>
                             ))
                           ) : (
-                            <p className="text-gray-500 italic">
+                            <p className="text-secondary italic">
                               No preferred subjects listed
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                      <div className="p-4 bg-background rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 text-text flex items-center">
                           <svg
-                            className="w-5 h-5 mr-2 text-indigo-500"
+                            className="w-5 h-5 mr-2 text-accent"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -499,13 +499,13 @@ const TeacherViewPage = () => {
                             preference.class_category.map((category) => (
                               <span
                                 key={category.id}
-                                className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
+                                className="bg-accent/10 text-accent px-3 py-1.5 rounded-full text-sm font-semibold"
                               >
                                 {category.name}
                               </span>
                             ))
                           ) : (
-                            <p className="text-gray-500 italic">
+                            <p className="text-secondary italic">
                               No class categories listed
                             </p>
                           )}
@@ -515,7 +515,7 @@ const TeacherViewPage = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">
+                <p className="text-secondary italic">
                   No teaching preferences available
                 </p>
               )}
@@ -526,7 +526,7 @@ const TeacherViewPage = () => {
       {/* Fixed Request Teacher Button */}
       <div className="fixed bottom-8 right-8 flex flex-col items-end gap-2">
         <button
-          className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-full flex items-center space-x-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           onClick={handleRequestTeacher}
           disabled={isSubmitting || success}
         >
