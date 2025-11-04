@@ -17,8 +17,8 @@ const RecruiterLayout = () => {
           <div className="md:block">
             <RecruiterSidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
           </div>
-          <div className="w-full ">
-            <Outlet />
+          <div className={`w-full transition-all duration-300 ${isOpen ? 'md:ml-0' : 'md:ml-0'}`}>
+            <Outlet context={{ isOpen, setIsOpen }} />
           </div>
         </div>
       </div>

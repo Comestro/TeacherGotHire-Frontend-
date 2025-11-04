@@ -255,6 +255,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       language: false,
       totalMarks: false,
     });
+
+    if (!isDesktop) setIsOpen(false);
   };
 
   // Update filters when selections change
@@ -278,11 +280,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setFilters((prev) => ({ ...prev, subject: allSubjects }));
   }, [selectedSubjects]);
 
-  // Fetch teachers when filters change
-  useEffect(() => {
-    dispatch(fetchTeachers(filters));
-  }, [dispatch, filters]);
-
   // Animation variants for framer-motion
   const sidebarVariants = {
     open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
@@ -305,20 +302,13 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         )}
       </AnimatePresence>
 
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="md:hidden fixed left-0 top-20 bg-white z-30 p-3 rounded-r-lg"
-        aria-label="Open filters"
-      >
-        <MdFilterAlt className="text-primary text-xl" />
-      </button>
+      
 
       {/* Sidebar - Flipkart Style */}
       <motion.div
         ref={sidebarRef}
-        className=" left-0 top-16 bg-white overflow-y-auto
-            w-[85vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r"
+        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white flex flex-col
+            w-[90vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r border-gray-200 shadow-xl md:shadow-none"
         variants={sidebarVariants}
         initial={isDesktop ? "open" : "closed"}
         animate={(isOpen || isDesktop) ? "open" : "closed"}
@@ -338,7 +328,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
 
-        <div className="divide-y">
+        <div className="flex-1 overflow-y-auto">
+          <div className="divide-y">
           {/* Location Filter */}
           <div className="border-b">
             <button
@@ -1084,6 +1075,20 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               )}
             </AnimatePresence>
           </div>
+        </div>
+        </div>
+
+        {/* Apply Button */}
+        <div className="p-4 border-t bg-white">
+          <button
+            onClick={() => {
+              dispatch(fetchTeachers(filters));
+              if (!isDesktop) setIsOpen(false);
+            }}
+            className="w-full bg-primary text-white py-3 rounded font-semibold uppercase hover:bg-primary/90 transition-colors"
+          >
+            Apply Filters
+          </button>
         </div>
       </motion.div>
     </>

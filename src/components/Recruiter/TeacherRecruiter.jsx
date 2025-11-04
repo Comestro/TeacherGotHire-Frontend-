@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Loader from "./components/Loader";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { BsBriefcase, BsGeoAlt, BsGrid, BsList, BsArrowClockwise } from "react-icons/bs";
-import { MdSchool, MdFilterAltOff } from "react-icons/md";
+import { MdSchool, MdFilterAltOff, MdFilterAlt } from "react-icons/md";
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlineAcademicCap, HiOutlinePhone } from "react-icons/hi";
@@ -12,10 +12,13 @@ import { fetchTeachers } from "../../features/teacherFilterSlice";
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('list'); // 'card' or 'list'
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'card' : 'list'); // 'card' or 'list'
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
   const dispatch = useDispatch();
+
+  // Get sidebar state from layout context
+  const { isOpen, setIsOpen } = useOutletContext();
 
   const { data, status, error } = useSelector((state) => state.teachers);
 
@@ -24,6 +27,17 @@ const TeacherFilter = () => {
       setTeachers(data);
     }
   }, [data]);
+
+  // Handle screen size changes for view mode
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setViewMode(isMobile ? 'card' : 'list');
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -91,6 +105,14 @@ const TeacherFilter = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="md:hidden px-4 py-2 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center font-medium transition-colors"
+            aria-label="Open filters"
+          >
+            <MdFilterAlt className="mr-1.5" /> Filters
+          </button>
+
           <div className="flex bg-background rounded-lg p-1">
              <button
               onClick={() => setViewMode('list')}
