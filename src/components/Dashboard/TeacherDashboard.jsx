@@ -67,7 +67,6 @@ function TeacherDashboard() {
   // Check for pending passkey requests
   useEffect(() => {
     const checkForPendingPasskey = async () => {
-      if (examCards?.id && examCards?.type === "offline") {
         try {
           const response = await checkPasskey({ exam: examCards?.id });
           if (response?.passkey === true && response?.center) {
@@ -78,7 +77,6 @@ function TeacherDashboard() {
         } catch (error) {
           setPasskeyStatus(null);
         }
-      }
     };
     checkForPendingPasskey();
   }, [examCards]);
@@ -217,7 +215,7 @@ function TeacherDashboard() {
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12 space-y-4">
             {/* Passkey Request Status Banner */}
-            <div className="px-4 sm:px-6 pt-8">
+            <div className=" pt-8">
               {passkeyStatus?.passkey && passkeyStatus?.center && (
                 <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${
                   passkeyStatus?.status === "fulfilled" 
@@ -241,8 +239,6 @@ function TeacherDashboard() {
                             </p>
                             <p className="text-sm text-gray-600 mt-2">
                               आपका पासकी अनुरोध स्वीकृत हो गया है। अब आप परीक्षा केंद्र से सत्यापन कोड प्राप्त करके परीक्षा शुरू कर सकते हैं।
-                              <br />
-                              Your passkey request has been approved by admin. You can now obtain the verification code from the exam center and start your exam.
                             </p>
                           </div>
                           <div className="mt-3">
@@ -270,8 +266,6 @@ function TeacherDashboard() {
                             </p>
                             <p className="text-sm text-gray-600 mt-2">
                               आपका पासकी अनुरोध सबमिट हो चुका है और एडमिन की स्वीकृति की प्रतीक्षा में है। स्वीकृति मिलते ही आपको सूचित किया जाएगा।
-                              <br />
-                              Your passkey request has been submitted and is awaiting admin approval. You will be notified once approved.
                             </p>
                           </div>
                           <div className="mt-3">

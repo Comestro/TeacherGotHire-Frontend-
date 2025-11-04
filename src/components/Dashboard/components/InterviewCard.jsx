@@ -375,8 +375,8 @@ const InterviewCard = () => {
       
       {/* Header with bilingual title */}
       <div className="mb-6 p-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
-          <FaVideo className="mr-2 sm:mr-3 text-cyan-600" />
+        <h1 className="text-xl font-bold text-gray-900 flex items-center">
+          <FaVideo className="mr-2 sm:mr-3 text-gray-500" />
           <span>इंटरव्यू प्रबंधन | Interview Management</span>
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
@@ -386,7 +386,6 @@ const InterviewCard = () => {
       </div>
       
       {/* Tab Navigation */}
-      <div className="mb-6">
         <div className="flex space-x-2 sm:space-x-4 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("qualified")}
@@ -421,49 +420,31 @@ const InterviewCard = () => {
             )}
           </button>
         </div>
-      </div>
       
       {/* QUALIFIED EXAMS TAB */}
       {activeTab === "qualified" && (
         <div>
           {qualifiedSubjects.length > 0 ? (
             <>
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
-                <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4"> {/* Adjust padding */}
-                  <h2 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
-                    <FaGraduationCap className="mr-2 text-cyan-600" aria-hidden="true" />
-                    Qualified Subjects
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Select and schedule your interview for the qualified subject.
-                  </p>
-                </div>
-                
                 <div className="divide-y divide-gray-200">
                   {qualifiedSubjects.map((subject, index) => (
-                    <div key={index} className="px-4 sm:px-6 py-4">
+                    <div key={index} className=" py-4">
                       <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-2"> {/* Adjust gap */}
                         {subjectGroups[subject].map((item, examIndex) => (
                           <motion.button // Change to button for accessibility
                             key={examIndex}
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => handleExamSelect(item.exam.name)}
-                            className={`p-3 sm:p-4 border rounded-lg text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
+                            className={`p-3  sm:p-4 border border-success rounded-lg text-left w-full transition-all ${ // Use button styles, focus ring
                               selectedExam === item.exam.name
-                                ? 'border-cyan-500 bg-cyan-50 focus:ring-cyan-500'
-                                : 'border-gray-200 hover:border-cyan-300 hover:bg-cyan-50/30 focus:ring-cyan-500'
+                                ? 'border-cyan-500 bg-white focus:ring-cyan-500'
+                                : 'border-success hover:border-success hover:bg-success/30 focus:ring-success'
                             }`}
                             aria-pressed={selectedExam === item.exam.name} // Add aria-pressed
                           >
                             <div className="flex items-start">
-                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${ // Adjust size
-                                selectedExam === item.exam.name
-                                  ? 'bg-cyan-100 text-cyan-600'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}>
-                                <FaGraduationCap className="text-md sm:text-lg" aria-hidden="true" />
-                              </div>
+                            
                               
                               <div className="ml-3 flex-1">
                                 <div className="font-medium text-sm sm:text-base text-gray-800">{item.exam.class_category_name} - {item.exam.subject_name}</div>
@@ -480,7 +461,7 @@ const InterviewCard = () => {
                               </div>
                               
                               {selectedExam === item.exam.name && (
-                                <div className="bg-cyan-500 rounded-full p-1 ml-auto flex-shrink-0"> {/* Add flex-shrink-0 */}
+                                <div className="bg-success rounded-full p-1 ml-auto flex-shrink-0"> {/* Add flex-shrink-0 */}
                                   <FaCheck className="text-white text-xs" aria-hidden="true" />
                                 </div>
                               )}
@@ -491,7 +472,6 @@ const InterviewCard = () => {
                     </div>
                   ))}
                 </div>
-              </div>
               
               {/* Modal for Schedule Interview Form */}
               <AnimatePresence>
