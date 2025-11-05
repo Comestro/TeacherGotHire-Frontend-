@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BsGeoAlt, BsPersonWorkspace, BsCode, BsCheck, BsSearch, BsBriefcase } from "react-icons/bs";
+import { BsGeoAlt, BsPersonWorkspace, BsCode, BsCheck, BsSearch, BsBriefcase, BsGenderAmbiguous, BsPeople } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
-import { MdExpandMore, MdExpandLess, MdSchool, MdFilterAlt, MdCheckBox, MdCheckBoxOutlineBlank } from "react-icons/md";
+import { MdExpandMore, MdExpandLess, MdSchool, MdFilterAlt, MdCheckBox, MdCheckBoxOutlineBlank, MdSubject, MdCheck, MdFavorite, MdLanguage } from "react-icons/md";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -320,7 +320,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar - Flipkart Style */}
       <motion.div
         ref={sidebarRef}
-        className="fixed left-0  top-16 h-screen bg-white flex flex-col
+        className="fixed left-0 top-16 h-[93%] bg-white flex flex-col
             w-[90vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r border-gray-200 shadow-xl md:shadow-none"
         variants={sidebarVariants}
         initial={isDesktop ? "open" : "closed"}
@@ -759,7 +759,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("gender")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Gender</span>
+              <div className="flex items-center gap-2">
+                <BsGenderAmbiguous className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Gender</span>
+              </div>
               {expandedSections.gender ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 
@@ -924,7 +927,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("subjects")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Subjects</span>
+              <div className="flex items-center gap-2">
+                <MdSubject className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Subjects</span>
+              </div>
               {expandedSections.subjects ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 
@@ -1055,7 +1061,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("examStatus")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Exam Status</span>
+              <div className="flex items-center gap-2">
+                <MdCheck className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Exam Status</span>
+              </div>
               {expandedSections.examStatus ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 
@@ -1109,7 +1118,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("religion")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Religion</span>
+              <div className="flex items-center gap-2">
+                <BsPeople className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Religion</span>
+              </div>
               {expandedSections.religion ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 
@@ -1163,7 +1175,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("maritalStatus")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Marital Status</span>
+              <div className="flex items-center gap-2">
+                <MdFavorite className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Marital Status</span>
+              </div>
               {expandedSections.maritalStatus ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 
@@ -1217,7 +1232,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => toggleSection("language")}
               className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
             >
-              <span className="font-semibold text-text uppercase text-sm">Language</span>
+              <div className="flex items-center gap-2">
+                <MdLanguage className="text-text" size={16} />
+                <span className="font-semibold text-text uppercase text-sm">Language</span>
+              </div>
               {expandedSections.language ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
             </button>
 

@@ -240,7 +240,7 @@ const TeacherFilter = () => {
         <>
           {/* Card View */}
           {viewMode === 'card' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mx-auto">
               {currentTeachers.map((teacher) => {
                 // Get current address if exists
                 const currentAddress =
@@ -346,7 +346,7 @@ const TeacherFilter = () => {
 
           {/* List View */}
           {viewMode === 'list' && (
-            <div className="space-y-3 max-w-7xl mx-auto">
+            <div className="space-y-3 mx-auto">
               {currentTeachers.map((teacher) => {
                 // Get current address if exists
                 const currentAddress =
