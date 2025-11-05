@@ -1002,200 +1002,373 @@ const ManageQuestionManager = () => {
         </Card>
 
         {/* Add/Edit Modal */}
-        <Dialog
+        <Modal
           open={openModal}
           onClose={loadingAction ? undefined : handleCloseModal}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
-            elevation: 3,
-            sx: { borderRadius: 2 }
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
-          <DialogTitle>
-            <Typography variant="h6" fontWeight={600}>
-              {isEditMode ? "Edit Manager" : "Assign Question Manager"}
-            </Typography>
-          </DialogTitle>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '540px' },
+              maxWidth: '95%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+            }}
+          >
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {isEditMode ? <EditIcon /> : <PersonAddIcon />}
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {isEditMode ? "Edit Manager" : "Assign Question Manager"}
+                </Typography>
+              </Box>
+              {!loadingAction && (
+                <IconButton
+                  onClick={handleCloseModal}
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </Box>
 
-          <DialogContent dividers>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="First Name"
-                  name="Fname"
-                  fullWidth
-                  margin="normal"
-                  value={userData.Fname}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loadingAction}
-
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Last Name"
-                  name="Lname"
-                  fullWidth
-                  margin="normal"
-                  value={userData.Lname}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loadingAction}
-                  
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="Email"
-                  name="email"
-                  type="email"
-                  fullWidth
-                  margin="normal"
-                  value={userData.email}
-                  onChange={handleInputChange}
-                  required
-                  disabled={loadingAction}
-                
-                />
-              </Grid>
-
-              {!isEditMode && (
-                <Grid item xs={12}>
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
                   <TextField
-                    label="Password"
-                    name="password"
-                    type="password"
+                    label="First Name"
+                    name="Fname"
                     fullWidth
-                    margin="normal"
-                    value={userData.password}
+                    value={userData.Fname}
                     onChange={handleInputChange}
                     required
                     disabled={loadingAction}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
                   />
                 </Grid>
-              )}
-              <Grid item xs={12}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Class Categories</InputLabel>
-                  <Select
-                    multiple
-                    open={classCategorySelectOpen}
-                    onOpen={() => setClassCategorySelectOpen(true)}
-                    onClose={() => setClassCategorySelectOpen(false)}
-                    value={selectedClassCategories}
-                    onChange={(e, child) => handleClassCategoryChange(e, child)}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const category = classCategories.find(cat => cat.id === value);
-                          return (
-                            <Chip
-                              key={value}
-                              label={category ? category.name : value}
-                              size="small"
-                              color="primary"
-                              variant="outlined"
-                            />
-                          );
-                        })}
-                      </Box>
-                    )}
-                    disabled={loadingAction}
-                  >
-                    {getClassCategoriesWithSubjects().map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.name} ({category.subjects.length} subjects)
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
-              <Grid item xs={12}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Assign Subject(s)</InputLabel>
-                  <Select
-                    multiple
-                    open={subjectSelectOpen}
-                    onOpen={() => setSubjectSelectOpen(true)}
-                    onClose={() => setSubjectSelectOpen(false)}
-                    value={selectedSubjects}
-                    onChange={(e, child) => handleSubjectChange(e, child)}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                        {selected.map((value) => {
-                          const filteredSubjects = getFilteredSubjects();
-                          const subject = filteredSubjects.find(sub => sub.id === value);
-                          return (
-                            <Chip
-                              key={value}
-                              label={subject ? subject.subject_name : value}
-                              size="small"
-                              color="primary"
-                              variant="outlined"
-                            />
-                          );
-                        })}
-                      </Box>
-                    )}
-                    disabled={loadingAction || selectedClassCategories.length === 0}
-                  >
-                    {selectedClassCategories.length === 0 ? (
-                      <MenuItem disabled>Please select class categories first</MenuItem>
-                    ) : (
-                      getFilteredSubjects().map((subject) => (
-                        <MenuItem key={subject.id} value={subject.id}>
-                          {subject.subject_name} ({
-                            classCategories.find(cat => cat.id === subject.class_category)?.name || `Class ${subject.class_category}`
-                          })
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <Box display="flex" alignItems="center" mt={1}>
-                  <Typography variant="body2" color="text.secondary" mr={2}>
-                    Status:
-                  </Typography>
-                  <Switch
-                    checked={userData.is_verified}
-                    onChange={handleStatusChange}
-                    color="success"
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Name"
+                    name="Lname"
+                    fullWidth
+                    value={userData.Lname}
+                    onChange={handleInputChange}
+                    required
                     disabled={loadingAction}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
                   />
-                  <Typography variant="body2" ml={1}>
-                    {userData.is_verified ? "Active" : "Inactive"}
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </DialogContent>
+                </Grid>
 
-          <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-            <Button
-              onClick={handleCloseModal}
-              disabled={loadingAction}
-              variant="outlined"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSave}
-              disabled={loadingAction}
-              startIcon={loadingAction && <CircularProgress size={20} color="inherit" />}
-            >
-              {loadingAction ? 'Saving...' : isEditMode ? 'Update' : 'Save'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    fullWidth
+                    value={userData.email}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loadingAction}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
+                  />
+                </Grid>
+
+                {!isEditMode && (
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Password"
+                      name="password"
+                      type="password"
+                      fullWidth
+                      value={userData.password}
+                      onChange={handleInputChange}
+                      required
+                      disabled={loadingAction}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#0d9488',
+                          },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#0d9488',
+                        },
+                      }}
+                    />
+                  </Grid>
+                )}
+
+                <Grid item xs={12}>
+                  <FormControl 
+                    fullWidth
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
+                  >
+                    <InputLabel>Class Categories</InputLabel>
+                    <Select
+                      multiple
+                      open={classCategorySelectOpen}
+                      onOpen={() => setClassCategorySelectOpen(true)}
+                      onClose={() => setClassCategorySelectOpen(false)}
+                      value={selectedClassCategories}
+                      onChange={(e, child) => handleClassCategoryChange(e, child)}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                          {selected.map((value) => {
+                            const category = classCategories.find(cat => cat.id === value);
+                            return (
+                              <Chip
+                                key={value}
+                                label={category ? category.name : value}
+                                size="small"
+                                sx={{
+                                  bgcolor: alpha('#0d9488', 0.1),
+                                  color: '#0d9488',
+                                  fontWeight: 500,
+                                }}
+                              />
+                            );
+                          })}
+                        </Box>
+                      )}
+                      disabled={loadingAction}
+                    >
+                      {getClassCategoriesWithSubjects().map((category) => (
+                        <MenuItem key={category.id} value={category.id}>
+                          {category.name} ({category.subjects.length} subjects)
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl 
+                    fullWidth
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
+                  >
+                    <InputLabel>Assign Subject(s)</InputLabel>
+                    <Select
+                      multiple
+                      open={subjectSelectOpen}
+                      onOpen={() => setSubjectSelectOpen(true)}
+                      onClose={() => setSubjectSelectOpen(false)}
+                      value={selectedSubjects}
+                      onChange={(e, child) => handleSubjectChange(e, child)}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                          {selected.map((value) => {
+                            const filteredSubjects = getFilteredSubjects();
+                            const subject = filteredSubjects.find(sub => sub.id === value);
+                            const category = classCategories.find(cat => cat.id === subject?.class_category);
+                            const label = subject && category ? `${subject.subject_name} (${category.name})` : (subject?.subject_name || value);
+                            
+                            return (
+                              <Chip
+                                key={value}
+                                label={label}
+                                size="small"
+                                sx={{
+                                  bgcolor: alpha('#0d9488', 0.1),
+                                  color: '#0d9488',
+                                  fontWeight: 500,
+                                }}
+                              />
+                            );
+                          })}
+                        </Box>
+                      )}
+                      disabled={loadingAction || selectedClassCategories.length === 0}
+                    >
+                      {selectedClassCategories.length === 0 ? (
+                        <MenuItem disabled>Please select class categories first</MenuItem>
+                      ) : (
+                        getFilteredSubjects().map((subject) => {
+                          const category = classCategories.find(cat => cat.id === subject.class_category);
+                          return (
+                            <MenuItem key={subject.id} value={subject.id}>
+                              {subject.subject_name} ({category?.name || `Class ${subject.class_category}`})
+                            </MenuItem>
+                          );
+                        })
+                      )}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box display="flex" alignItems="center" mt={1}>
+                    <Typography variant="body2" color="text.secondary" mr={2} sx={{ fontWeight: 500 }}>
+                      Status:
+                    </Typography>
+                    <Switch
+                      checked={userData.is_verified}
+                      onChange={handleStatusChange}
+                      disabled={loadingAction}
+                      sx={{
+                        '& .MuiSwitch-switchBase.Mui-checked': {
+                          color: '#0d9488',
+                          '& + .MuiSwitch-track': {
+                            backgroundColor: '#0d9488',
+                          },
+                        },
+                      }}
+                    />
+                    <Typography variant="body2" ml={1} sx={{ fontWeight: 600 }}>
+                      {userData.is_verified ? "Active" : "Inactive"}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleCloseModal}
+                  disabled={loadingAction}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSave}
+                  disabled={loadingAction}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#0d9488',
+                    '&:hover': {
+                      bgcolor: '#0a7a6f',
+                    },
+                  }}
+                >
+                  {loadingAction ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : (
+                    <>
+                      {isEditMode ? (
+                        <>
+                          <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
+                          Update Manager
+                        </>
+                      ) : (
+                        <>
+                          <PersonAddIcon sx={{ mr: 1, fontSize: 20 }} />
+                          Assign Manager
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+        </Modal>
 
         {/* View Manager Details Dialog */}
         <Dialog
