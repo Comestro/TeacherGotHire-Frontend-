@@ -112,6 +112,19 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     };
   }, [isOpen, setIsOpen]);
 
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isOpen && !isDesktop) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isDesktop]);
+
   // Detect screen size changes
   useEffect(() => {
     const handleResize = () => {
