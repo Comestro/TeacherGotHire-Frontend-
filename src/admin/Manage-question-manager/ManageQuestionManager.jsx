@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Container,
   Typography,
   Box,
   Button,
@@ -24,14 +23,17 @@ import {
   Divider,
   CircularProgress,
   Grid,
-  alpha,
   Tooltip,
+  Stack,
+  Backdrop,
+  InputAdornment,
   Dialog,
-  DialogActions,
+  DialogTitle,
   DialogContent,
+  DialogActions,
   DialogContentText,
-  DialogTitle
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -39,16 +41,13 @@ import {
   PersonAdd as PersonAddIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Refresh as RefreshIcon,
+  CheckCircle as CheckCircleIcon,
+  WarningAmber as WarningAmberIcon,
+  Group as GroupIcon,
 } from "@mui/icons-material";
-import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarFilterButton,
-  GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbarDensitySelector
-} from "@mui/x-data-grid";
+import { DataGrid, GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import {
   getQuestionsManager,
@@ -57,6 +56,14 @@ import {
   deleteAssignedUserManager
 } from "../../services/adminManageQuestionManager";
 import { getClasses, getSubjects } from "../../services/adminSubujectApi";
+
+const CustomToolbar = ({ quickFilterValue }) => (
+  <GridToolbarContainer>
+    {/* simple toolbar: export + quickfilter placeholder - extend as needed */}
+    <Box sx={{ flex: 1 }} />
+    <GridToolbarExport />
+  </GridToolbarContainer>
+);
 
 const ManageQuestionManager = () => {
   const theme = useTheme();
@@ -71,11 +78,13 @@ const ManageQuestionManager = () => {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [classCategories, setClassCategories] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
   const [subjectSelectOpen, setSubjectSelectOpen] = useState(false);
   const [classCategorySelectOpen, setClassCategorySelectOpen] = useState(false);
+  const [sortModel, setSortModel] = useState([{ field: 'name', sort: 'asc' }]);
 
   // Add view dialog states
   const [openViewDialog, setOpenViewDialog] = useState(false);
@@ -88,11 +97,17 @@ const ManageQuestionManager = () => {
     severity: "success"
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [filterStatus, setFilterStatus] = useState("");
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [managerToDelete, setManagerToDelete] = useState(null);
+
+  // DataGrid local pagination state (used by your code references)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filterStatus, setFilterStatus] = useState("");
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [managerToDelete, setManagerToDelete] = useState(null);
 
   // Form data
   const [userData, setUserData] = useState({
@@ -108,10 +123,18 @@ const ManageQuestionManager = () => {
   // Fetch data on component mount
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // keep local page/rows sync with paginationModel
+    setPage(paginationModel.page ?? 0);
+    setRowsPerPage(paginationModel.pageSize ?? 10);
+  }, [paginationModel]);
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [managersResponse, subjectsResponse, classesResponse] = await Promise.all([
         getQuestionsManager(),
@@ -122,26 +145,29 @@ const ManageQuestionManager = () => {
       if (Array.isArray(managersResponse)) {
         setManagers(managersResponse);
       } else {
-        
+        setManagers([]);
         setError("Failed to fetch managers");
       }
 
       if (Array.isArray(subjectsResponse)) {
         setAvailableSubjects(subjectsResponse);
       } else {
-        
-        setError("Failed to fetch subjects");
+        setAvailableSubjects([]);
+        setError(prev => prev ? prev : "Failed to fetch subjects");
       }
 
       if (Array.isArray(classesResponse)) {
         setClassCategories(classesResponse);
       } else {
-        
-        setError("Failed to fetch class categories");
+        setClassCategories([]);
+        setError(prev => prev ? prev : "Failed to fetch class categories");
       }
-    } catch (error) {
-      
+    } catch (err) {
+      console.error(err);
       setError("An error occurred while fetching data");
+      setManagers([]);
+      setAvailableSubjects([]);
+      setClassCategories([]);
     } finally {
       setLoading(false);
     }
@@ -166,13 +192,13 @@ const ManageQuestionManager = () => {
       setSelectedManager(manager);
       setUserData({
         id: manager.id,
-        email: manager.user.email,
-        Fname: manager.user.Fname,
-        Lname: manager.user.Lname,
+        email: manager.user?.email || "",
+        Fname: manager.user?.Fname || "",
+        Lname: manager.user?.Lname || "",
         password: "",
-        is_verified: manager.status // Use status instead of user.is_verified
+        is_verified: manager.status ?? true // Use status instead of user.is_verified
       });
-      setSelectedSubjects(manager.subject.map(sub => sub.id));
+      setSelectedSubjects(Array.isArray(manager.subject) ? manager.subject.map(sub => sub.id) : []);
 
       if (manager.class_category && Array.isArray(manager.class_category)) {
         const validCategoryIds = manager.class_category
@@ -184,7 +210,7 @@ const ManageQuestionManager = () => {
 
         setSelectedClassCategories(validCategoryIds);
       } else {
-        const uniqueClassCategories = [...new Set(manager.subject.map(sub => sub.class_category))];
+        const uniqueClassCategories = Array.from(new Set((manager.subject || []).map(sub => sub.class_category)));
         const validCategoryIds = uniqueClassCategories
           .filter(catId => {
             const category = classCategories.find(cat => cat.id === catId);
@@ -212,6 +238,7 @@ const ManageQuestionManager = () => {
   };
 
   const handleCloseModal = () => {
+    if (loadingAction) return;
     setOpenModal(false);
     setIsEditMode(false);
     setSelectedManager(null);
@@ -219,7 +246,6 @@ const ManageQuestionManager = () => {
 
   const handleClassCategoryChange = (event, child) => {
     const selectedCategories = event.target.value;
-    const newCategoryId = child ? child.props.value : null;
     setSelectedClassCategories(selectedCategories);
     setSelectedSubjects([]);
     setClassCategorySelectOpen(false);
@@ -282,7 +308,7 @@ const ManageQuestionManager = () => {
         throw new Error(isEditMode ? "Failed to update manager" : "Failed to assign manager");
       }
     } catch (error) {
-      
+      console.error(error);
 
       let errorMessage = "Failed to save changes";
 
@@ -320,7 +346,7 @@ const ManageQuestionManager = () => {
   // Delete functionality
   const handleDeleteConfirmation = (manager) => {
     setManagerToDelete(manager);
-    setOpenDeleteDialog(true);
+    setOpenDeleteModal(true);
   };
 
   const handleDeleteManager = async () => {
@@ -339,7 +365,7 @@ const ManageQuestionManager = () => {
 
       await fetchData();
     } catch (error) {
-      
+      console.error(error);
       setNotification({
         open: true,
         message: `Error: ${error.response?.data?.detail || error.message || "Failed to delete manager"}`,
@@ -347,7 +373,7 @@ const ManageQuestionManager = () => {
       });
     } finally {
       setLoadingAction(false);
-      setOpenDeleteDialog(false);
+      setOpenDeleteModal(false);
       setManagerToDelete(null);
     }
   };
@@ -358,17 +384,17 @@ const ManageQuestionManager = () => {
       setLoadingAction(true);
       const updatedStatus = !manager.status; // Use status instead of user.is_verified
 
-      const classCategories = manager.class_category?.map(cat => cat.id) || [];
+      const classCategoriesPayload = manager.class_category?.map(cat => cat.id) || [];
 
       const payload = {
         user: {
-          email: manager.user.email,
-          Fname: manager.user.Fname,
-          Lname: manager.user.Lname,
+          email: manager.user?.email,
+          Fname: manager.user?.Fname,
+          Lname: manager.user?.Lname,
           is_verified: true // Keep user verified, only toggle status
         },
-        class_category: classCategories,
-        subject: manager.subject.map(sub => sub.id),
+        class_category: classCategoriesPayload,
+        subject: (manager.subject || []).map(sub => sub.id),
         status: updatedStatus // Update status field
       };
 
@@ -379,10 +405,10 @@ const ManageQuestionManager = () => {
         setManagers(prev =>
           prev.map(m =>
             m.id === manager.id
-              ? { 
-                  ...m, 
-                  status: updatedStatus  // Update the status field
-                }
+              ? {
+                ...m,
+                status: updatedStatus
+              }
               : m
           )
         );
@@ -396,9 +422,7 @@ const ManageQuestionManager = () => {
         throw new Error("Failed to update status");
       }
     } catch (error) {
-      // Error handling remains the same
-      
-
+      console.error(error);
       let errorMessage = "Failed to update status";
 
       if (error.response?.data) {
@@ -434,21 +458,24 @@ const ManageQuestionManager = () => {
 
   // Form input handlers
   const handleInputChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
+    setUserData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleStatusChange = (e) => {
-    setUserData({ ...userData, is_verified: e.target.checked });
+    setUserData(prev => ({ ...prev, is_verified: e.target.checked }));
   };
 
-  const handleSubjectChange = (event, value) => {
-    const selectedSubjectId = value.props.value;
+  const handleSubjectChange = (event, child) => {
+    const selectedSubjectId = child?.props?.value;
+    if (!selectedSubjectId) return;
 
-    if (selectedSubjects.includes(selectedSubjectId)) {
-      setSelectedSubjects(selectedSubjects.filter(id => id !== selectedSubjectId));
-    } else {
-      setSelectedSubjects([...selectedSubjects, selectedSubjectId]);
-    }
+    setSelectedSubjects(prev => {
+      if (prev.includes(selectedSubjectId)) {
+        return prev.filter(id => id !== selectedSubjectId);
+      } else {
+        return [...prev, selectedSubjectId];
+      }
+    });
 
     setSubjectSelectOpen(false);
   };
@@ -458,7 +485,7 @@ const ManageQuestionManager = () => {
 
     return classCategories
       .filter(category => selectedClassCategories.includes(category.id))
-      .flatMap(category => category.subjects);
+      .flatMap(category => category.subjects || []);
   };
 
   const getClassCategoriesWithSubjects = () => {
@@ -467,368 +494,173 @@ const ManageQuestionManager = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setPage(0); // Reset to first page when searching
+    setPaginationModel(prev => ({ ...prev, page: 0 }));
   };
 
   const getFilteredManagers = () => {
     if (!Array.isArray(managers)) return [];
-    
-    return managers.filter((manager) => {
-      const fullName = `${manager.user.Fname} ${manager.user.Lname}`.toLowerCase();
-      const searchTermLower = searchTerm.toLowerCase();
-      const emailMatch = manager.user.email.toLowerCase().includes(searchTermLower);
 
-      const subjectMatch = manager.subject.some((subject) =>
-        subject.subject_name.toLowerCase().includes(searchTermLower)
+    const searchTermLower = (searchTerm || "").toLowerCase();
+
+    return managers.filter((manager) => {
+      const first = manager.user?.Fname || "";
+      const last = manager.user?.Lname || "";
+      const fullName = `${first} ${last}`.toLowerCase();
+      const email = (manager.user?.email || "").toLowerCase();
+
+      const subjectMatch = (manager.subject || []).some((subject) =>
+        (subject.subject_name || "").toLowerCase().includes(searchTermLower)
       );
 
       const statusMatch =
         filterStatus === "" ||
-        (filterStatus === "active" && manager.status) || // Use status instead of user.is_verified
-        (filterStatus === "inactive" && !manager.status); // Use status instead of user.is_verified
+        (filterStatus === "active" && manager.status) ||
+        (filterStatus === "inactive" && !manager.status);
 
-      return (fullName.includes(searchTermLower) || emailMatch || subjectMatch) && statusMatch;
+      const nameOrEmailMatch = fullName.includes(searchTermLower) || email.includes(searchTermLower);
+
+      return (nameOrEmailMatch || subjectMatch) && statusMatch;
     });
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const handleFilterStatus = (e) => {
     setFilterStatus(e.target.value);
-    setPage(0);
+    setPaginationModel(prev => ({ ...prev, page: 0 }));
   };
 
   const filteredManagers = getFilteredManagers();
 
-  const getSubjectNames = (subjectIds) => {
-    return subjectIds
-      .map(id => {
-        const subject = availableSubjects.find(sub => sub.id === id);
-        return subject ? subject.subject_name : id;
-      })
-      .join(", ");
-  };
-
-  const renderMobileView = () => {
-    return (
-      <Box>
-        {filteredManagers
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-          .map((manager) => (
-            <Card
-              key={manager.user.id}
-              sx={{
-                mb: 2,
-                borderLeft: `4px solid ${manager.user.is_verified ? theme.palette.success.main : theme.palette.grey[500]}`
-              }}
-              variant="outlined"
-            >
-              <CardContent>
-                <Box mb={1}>
-                  <Typography variant="h6" component="h3">
-                    {manager.user.Fname} {manager.user.Lname}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {manager.user.email}
-                  </Typography>
-                </Box>
-
-                <Divider sx={{ my: 1 }} />
-
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Assigned Classes:
-                </Typography>
-                <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
-                  {manager.class_category && manager.class_category.map((cat) => (
-                    <Chip
-                      key={cat.id}
-                      label={cat.name}
-                      size="small"
-                      variant="outlined"
-                      color="secondary"
-                    />
-                  ))}
-                </Box>
-
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Assigned Subjects:
-                </Typography>
-                <Box 
-                  display="flex" 
-                  flexWrap="wrap" 
-                  gap={0.5} 
-                  mb={2}
-                  sx={{ 
-                    maxHeight: 100,
-                    overflow: 'auto',
-                    pb: 0.5
-                  }}
-                >
-                  {manager.subject.map((sub) => {
-                    const categoryId = sub.class_category;
-                    const category = manager.class_category?.find(cat => cat.id === categoryId);
-                    const categoryName = category ? category.name : `Class ${categoryId}`;
-
-                    return (
-                      <Chip
-                        key={sub.id}
-                        label={sub.subject_name}
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                        sx={{ mb: 0.5 }}
-                        onClick={() => alert(`Category: ${categoryName}`)}
-                      />
-                    );
-                  })}
-                </Box>
-
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box display="flex" alignItems="center">
-                    <Typography variant="body2" mr={1}>Status:</Typography>
-                    <Chip
-                      size="small"
-                      label={manager.status ? "Active" : "Inactive"} // Use status instead of user.is_verified
-                      color={manager.status ? "success" : "default"} // Use status instead of user.is_verified
-                    />
-                  </Box>
-                  <Box>
-                    <Switch
-                      checked={manager.status} // Use status instead of user.is_verified
-                      onChange={() => handleToggleStatus(manager)}
-                      color="success"
-                      size="small"
-                      disabled={loadingAction}
-                    />
-                  </Box>
-                </Box>
-              </CardContent>
-
-              <CardActions>
-                <Button
-                  size="small"
-                  startIcon={<VisibilityIcon />}
-                  onClick={() => handleOpenViewDialog(manager)}
-                >
-                  View
-                </Button>
-                <Button
-                  size="small"
-                  startIcon={<EditIcon />}
-                  onClick={() => handleOpenModal(true, manager)}
-                  disabled={loadingAction}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size="small"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={() => handleDeleteConfirmation(manager)}
-                  disabled={loadingAction}
-                >
-                  Delete
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
-      </Box>
-    );
-  };
-
-  // Enhance the custom toolbar
-  const CustomToolbar = () => {
-    const theme = useTheme();
-    
-    return (
-      <GridToolbarContainer 
-        sx={{ 
-          p: 2, 
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-          <GridToolbarColumnsButton 
-            sx={{ 
-              fontSize: '0.85rem', 
-              borderRadius: 1, 
-              color: theme.palette.text.primary,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              fontWeight: 500,
-              px: 2,
-              py: 0.75,
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              }
-            }}
-          />
-          <GridToolbarFilterButton 
-            sx={{ 
-              fontSize: '0.85rem', 
-              borderRadius: 1, 
-              color: theme.palette.text.primary,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              fontWeight: 500, 
-              px: 2,
-              py: 0.75,
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              }
-            }}
-          />
-          <GridToolbarDensitySelector 
-            sx={{ 
-              fontSize: '0.85rem', 
-              borderRadius: 1, 
-              color: theme.palette.text.primary,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              fontWeight: 500,
-              px: 2,
-              py: 0.75, 
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              }
-            }}
-          />
-          <GridToolbarExport 
-            sx={{ 
-              fontSize: '0.85rem', 
-              borderRadius: 1, 
-              color: theme.palette.text.primary,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              fontWeight: 500,
-              px: 2,
-              py: 0.75,
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              }
-            }}
-          />
-        </Box>
-      </GridToolbarContainer>
-    );
+  // Helper function to format subject with class category
+  const getSubjectWithCategory = (subject, classCategoriesList) => {
+    const category = classCategoriesList?.find(cat => cat.id === subject.class_category);
+    return category ? `${subject.subject_name} (${category.name})` : subject.subject_name;
   };
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
-        <Paper
-          elevation={0}
+      <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+        {/* Compact Header */}
+        <Box
           sx={{
-            p: { xs: 2, sm: 3 },
+            bgcolor: '#F8FAFC',
+            border: '2px solid #0d9488',
+            borderRadius: 3,
+            p: 2.5,
             mb: 3,
-            borderRadius: 2,
-            backgroundImage: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.paper, 0.5)})`,
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', md: 'center' },
-            gap: 2
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2,
           }}
         >
           <Box>
             <Typography
-              variant="h4"
+              variant="h5"
               sx={{
-                color: "primary.main",
                 fontWeight: 700,
-                fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                color: '#1E293B',
+                mb: 0.5,
               }}
             >
               Question Manager Assignment
             </Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
+            <Typography variant="body2" sx={{ color: '#64748B' }}>
               {filteredManagers.length} managers assigned
             </Typography>
           </Box>
 
           <Button
             variant="contained"
-            color="primary"
-            onClick={() => handleOpenModal(false)}
             startIcon={<PersonAddIcon />}
+            onClick={() => handleOpenModal(false)}
             disabled={loading || loadingAction}
             sx={{
-              boxShadow: 2,
+              bgcolor: '#0d9488',
               textTransform: 'none',
-              minWidth: { xs: '100%', sm: 'auto' }
+              fontWeight: 600,
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              '&:hover': {
+                bgcolor: '#0a7a6f',
+              },
             }}
           >
             Assign New Manager
           </Button>
-        </Paper>
+        </Box>
 
-        {/* Enhance search and filter section */}
-        <Paper
-          elevation={1}
+        {/* Search and Filter Card */}
+        <Card
+          elevation={0}
           sx={{
             mb: 3,
-            p: { xs: 2, sm: 3 },
-            borderRadius: 2,
-            boxShadow: theme.shadows[2]
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
           }}
         >
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={8}>
-              <TextField
-                placeholder="Search by name, email or subject..."
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+                alignItems: { xs: 'stretch', sm: 'center' },
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  placeholder="Search by name, email or subject..."
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: '#0d9488' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              <FormControl
                 variant="outlined"
-                fullWidth
                 size="small"
-                value={searchTerm}
-                onChange={handleSearch}
-                InputProps={{
-                  startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
-                  sx: {
-                    borderRadius: 1.5,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: alpha(theme.palette.divider, 0.8),
+                sx={{
+                  minWidth: { xs: '100%', sm: 180 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&:hover fieldset': {
+                      borderColor: '#0d9488',
                     },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0d9488',
                     },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                      borderWidth: 1.5,
-                    },
-                    height: 46,
-                    paddingLeft: 1.5,
                   },
                 }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <FormControl variant="outlined" fullWidth size="small">
+              >
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={filterStatus}
                   onChange={handleFilterStatus}
                   label="Status"
-                  startAdornment={<FilterIcon color="action" sx={{ mr: 1 }} />}
-                  sx={{
-                    borderRadius: 1.5,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                    height: 46,
-                    '& .MuiSelect-select': {
-                      paddingLeft: 1.5,
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: alpha(theme.palette.divider, 0.8),
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: theme.palette.primary.main,
-                    },
-                  }}
+                  startAdornment={<FilterIcon sx={{ mr: 1, color: '#0d9488' }} />}
                 >
                   <MenuItem value="">
                     <em>All Status</em>
@@ -837,29 +669,82 @@ const ManageQuestionManager = () => {
                   <MenuItem value="inactive">Inactive</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
-        </Paper>
 
-        <Paper
-          elevation={2}
+              <Tooltip title="Refresh Data">
+                <IconButton
+                  size="small"
+                  onClick={fetchData}
+                  sx={{
+                    bgcolor: alpha('#0d9488', 0.1),
+                    color: '#0d9488',
+                    '&:hover': {
+                      bgcolor: alpha('#0d9488', 0.2),
+                    },
+                  }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Main Content Card */}
+        <Card
+          elevation={0}
           sx={{
-            borderRadius: 2,
-            overflow: "hidden",
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            overflow: 'hidden',
           }}
         >
           {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={6} flexDirection="column" gap={2}>
-              <CircularProgress />
-              <Typography variant="body2" color="text.secondary">Loading managers data...</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8, flexDirection: 'column', gap: 2 }}>
+              <CircularProgress sx={{ color: '#0d9488' }} size={48} />
+              <Typography variant="body2" sx={{ color: '#64748B' }}>Loading managers data...</Typography>
             </Box>
           ) : error ? (
             <Box p={3} textAlign="center">
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : filteredManagers.length === 0 ? (
-            <Box p={3} textAlign="center">
-              <Alert severity="info">No managers found matching your criteria</Alert>
+            <Box
+              sx={{
+                textAlign: 'center',
+                py: 8,
+                px: 3,
+              }}
+            >
+              <GroupIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
+              <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
+                {searchTerm ? "No managers found" : "No managers yet"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                {searchTerm
+                  ? "Try adjusting your search terms"
+                  : "Get started by assigning your first question manager"}
+              </Typography>
+              {!searchTerm && (
+                <Button
+                  variant="contained"
+                  startIcon={<PersonAddIcon />}
+                  onClick={() => handleOpenModal(false)}
+                  sx={{
+                    bgcolor: '#0d9488',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    '&:hover': {
+                      bgcolor: '#0a7a6f',
+                    },
+                  }}
+                >
+                  Assign First Manager
+                </Button>
+              )}
             </Box>
           ) : (
             <>
@@ -868,7 +753,35 @@ const ManageQuestionManager = () => {
                   {renderMobileView()}
                 </Box>
               ) : (
-                <Box sx={{ height: 500, width: '100%' }}>
+                <Box
+                  sx={{
+                    height: 500,
+                    width: '100%',
+                    '& .MuiDataGrid-root': {
+                      border: 'none',
+                    },
+                    '& .MuiDataGrid-columnHeaders': {
+                      bgcolor: alpha('#0d9488', 0.05),
+                      borderBottom: '2px solid',
+                      borderColor: '#0d9488',
+                      '& .MuiDataGrid-columnHeaderTitle': {
+                        fontWeight: 700,
+                        color: '#1E293B',
+                      },
+                    },
+                    '& .MuiDataGrid-row': {
+                      '&:hover': {
+                        bgcolor: alpha('#0d9488', 0.04),
+                      },
+                    },
+                    '& .MuiCheckbox-root': {
+                      color: '#0d9488',
+                      '&.Mui-checked': {
+                        color: '#0d9488',
+                      },
+                    },
+                  }}
+                >
                   <DataGrid
                     rows={filteredManagers.map(manager => ({
                       id: manager.id,
@@ -881,49 +794,52 @@ const ManageQuestionManager = () => {
                     }))}
                     columns={[
                       {
+                        field: 'id',
+                        headerName: 'ID',
+                        width: 80,
+                        renderCell: (params) => (
+                          <Chip
+                            label={params.value}
+                            size="small"
+                            sx={{
+                              bgcolor: alpha('#0d9488', 0.1),
+                              color: '#0d9488',
+                              fontWeight: 600,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        ),
+                      },
+                      {
                         field: 'name',
                         headerName: 'Manager Name',
                         flex: 1.5,
                         minWidth: 180,
-                        sortable: true,
-                        filterable: true,
+                        renderCell: (params) => (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+                              {params.value}
+                            </Typography>
+                          </Box>
+                        ),
                       },
                       {
                         field: 'email',
                         headerName: 'Email',
-                        flex: 2,
+                        flex: 1.5,
                         minWidth: 200,
-                        sortable: true,
-                        filterable: true,
-                      },
-                      {
-                        field: 'classes',
-                        headerName: 'Classes',
-                        flex: 2,
-                        minWidth: 200,
-                        sortable: false,
-                        filterable: false,
                         renderCell: (params) => (
-                          <Box display="flex" flexWrap="wrap" gap={0.5}>
-                            {params.value && params.value.map((cat) => (
-                              <Chip
-                                key={cat.id}
-                                label={cat.name}
-                                size="small"
-                                variant="outlined"
-                                color="secondary"
-                                sx={{ m: 0.2 }}
-                              />
-                            ))}
-                          </Box>
+                          <Typography variant="body2" sx={{ color: '#64748B' }}>
+                            {params.value}
+                          </Typography>
                         ),
-                        hide: isTablet,
                       },
                       {
                         field: 'subjects',
-                        headerName: 'Subjects',
-                        flex: 2,
-                        minWidth: 220,
+                        headerName: 'Assigned Subjects',
+                        flex: 3,
+                        minWidth: 300,
                         sortable: false,
                         filterable: false,
                         renderCell: (params) => (
@@ -938,24 +854,24 @@ const ManageQuestionManager = () => {
                             }}
                           >
                             {params.value.map((sub) => {
-                              const categoryId = sub.class_category;
-                              const category = params.row.classes.find(cat => cat.id === categoryId);
-                              const categoryName = category ? category.name : `Class ${categoryId}`;
+                              const category = params.row.classes.find(cat => cat.id === sub.class_category);
+                              const label = category ? `${sub.subject_name} (${category.name})` : sub.subject_name;
 
                               return (
                                 <Tooltip 
                                   key={sub.id}
-                                  title={`${sub.subject_name} (${categoryName})`} 
+                                  title={`Subject: ${sub.subject_name} | Category: ${category?.name || 'N/A'}`} 
                                   arrow
                                 >
                                   <Chip
-                                    label={`${sub.subject_name}`}
+                                    label={label}
                                     size="small"
-                                    variant="outlined"
-                                    color="primary"
                                     sx={{ 
                                       m: 0.2,
-                                      maxWidth: 150,
+                                      maxWidth: 200,
+                                      bgcolor: alpha('#0d9488', 0.1),
+                                      color: '#0d9488',
+                                      fontWeight: 500,
                                       '& .MuiChip-label': {
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -968,42 +884,35 @@ const ManageQuestionManager = () => {
                             })}
                           </Box>
                         ),
-                        hide: isTablet,
                       },
                       {
                         field: 'status',
                         headerName: 'Status',
                         width: 170,
-                        sortable: true,
-                        filterable: true,
-                        type: 'boolean',
                         renderCell: (params) => (
                           <Box display="flex" alignItems="center" justifyContent="space-between" width="100%" px={1}>
                             <Chip
                               label={params.value ? "Active" : "Inactive"}
-                              color={params.value ? "success" : "default"}
                               size="small"
                               sx={{ 
                                 borderRadius: '4px',
-                                fontWeight: 500,
+                                fontWeight: 600,
                                 px: 1,
-                                '& .MuiChip-label': {
-                                  px: 0.5,
-                                }
+                                bgcolor: params.value ? alpha('#0d9488', 0.1) : alpha('#64748B', 0.1),
+                                color: params.value ? '#0d9488' : '#64748B',
                               }}
                             />
                             <Switch
                               checked={params.value}
                               onChange={() => handleToggleStatus(params.row.rawData)}
-                              color="success"
                               size="small"
                               disabled={loadingAction}
                               sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                  transform: 'translateX(14px)',
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+                                  color: '#0d9488',
+                                  '& + .MuiSwitch-track': {
+                                    backgroundColor: '#0d9488',
+                                  },
                                 },
                               }}
                             />
@@ -1016,13 +925,18 @@ const ManageQuestionManager = () => {
                         width: 150,
                         sortable: false,
                         filterable: false,
+                        disableColumnMenu: true,
                         renderCell: (params) => (
                           <Box display="flex" justifyContent="center" gap={1}>
                             <Tooltip title="View Details">
                               <IconButton
                                 size="small"
-                                color="info"
                                 onClick={() => handleOpenViewDialog(params.row.rawData)}
+                                sx={{
+                                  bgcolor: alpha('#06B6D4', 0.1),
+                                  color: '#06B6D4',
+                                  '&:hover': { bgcolor: alpha('#06B6D4', 0.2) },
+                                }}
                               >
                                 <VisibilityIcon fontSize="small" />
                               </IconButton>
@@ -1031,9 +945,13 @@ const ManageQuestionManager = () => {
                             <Tooltip title="Edit Manager">
                               <IconButton
                                 size="small"
-                                color="primary"
                                 onClick={() => handleOpenModal(true, params.row.rawData)}
                                 disabled={loadingAction}
+                                sx={{
+                                  bgcolor: alpha('#0d9488', 0.1),
+                                  color: '#0d9488',
+                                  '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
+                                }}
                               >
                                 <EditIcon fontSize="small" />
                               </IconButton>
@@ -1042,9 +960,13 @@ const ManageQuestionManager = () => {
                             <Tooltip title="Delete Manager">
                               <IconButton
                                 size="small"
-                                color="error"
                                 onClick={() => handleDeleteConfirmation(params.row.rawData)}
                                 disabled={loadingAction}
+                                sx={{
+                                  bgcolor: alpha('#ef4444', 0.1),
+                                  color: '#ef4444',
+                                  '&:hover': { bgcolor: alpha('#ef4444', 0.2) },
+                                }}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
@@ -1053,75 +975,23 @@ const ManageQuestionManager = () => {
                         ),
                       },
                     ]}
-                    initialState={{
-                      pagination: {
-                        paginationModel: {
-                          page: page,
-                          pageSize: rowsPerPage
-                        },
-                      },
-                      sorting: {
-                        sortModel: [{ field: 'name', sort: 'asc' }],
-                      },
-                      filter: {
-                        filterModel: {
-                          items: [],
-                          quickFilterValues: searchTerm ? [searchTerm] : [],
-                        },
-                      },
-                    }}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
                     pageSizeOptions={[5, 10, 25, 50]}
-                    onPaginationModelChange={(model) => {
-                      setPage(model.page);
-                      setRowsPerPage(model.pageSize);
-                    }}
-                    filterMode="client"
-                    slots={{
-                      toolbar: CustomToolbar,
-                      noRowsOverlay: () => (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
-                          <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
-                            No managers found
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" align="center">
-                            Try adjusting your search or filters
-                          </Typography>
-                        </Box>
-                      ),
-                    }}
+                    sortModel={sortModel}
+                    onSortModelChange={setSortModel}
+                    pagination
+                    disableRowSelectionOnClick
+                    loading={loading}
+                    autoHeight={false}
+                    getRowHeight={() => 'auto'}
+                    getEstimatedRowHeight={() => 60}
                     sx={{
-                      border: 'none',
-                      '& .MuiDataGrid-cell:focus': {
-                        outline: 'none',
-                      },
-                      '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                        fontWeight: 600,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                        paddingTop: '8px',
-                        paddingBottom: '8px',
+                      '& .MuiDataGrid-row': {
+                        minHeight: '52px!important',
                       },
                       '& .MuiDataGrid-cell': {
-                        paddingTop: '14px',
-                        paddingBottom: '14px',
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      },
-                      '& .MuiDataGrid-row': {
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                        },
-                      },
-                      '& .MuiDataGrid-row:nth-of-type(even)': {
-                        backgroundColor: theme.palette.mode === 'light' ? alpha(theme.palette.primary.main, 0.02) : alpha(theme.palette.background.paper, 0.2),
-                      },
-                      '& .MuiDataGrid-toolbarContainer': {
-                        padding: '16px',
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      },
-                      '& .MuiButton-root': {
-                        textTransform: 'none',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
+                        py: 1.5,
                       },
                     }}
                   />
@@ -1129,7 +999,7 @@ const ManageQuestionManager = () => {
               )}
             </>
           )}
-        </Paper>
+        </Card>
 
         {/* Add/Edit Modal */}
         <Dialog
@@ -1473,55 +1343,242 @@ const ManageQuestionManager = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => !loadingAction && setOpenDeleteDialog(false)}
+        {/* Delete Confirmation Modal */}
+        <Modal
+          open={openDeleteModal}
+          onClose={!loadingAction ? () => setOpenDeleteModal(false) : undefined}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
+          }}
         >
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete manager{' '}
-              <strong>
-                {managerToDelete ? `${managerToDelete.user.Fname} ${managerToDelete.user.Lname}` : ''}
-              </strong>?
-              This action cannot be undone.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setOpenDeleteDialog(false)}
-              disabled={loadingAction}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '440px' },
+              maxWidth: '95%',
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
             >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteManager}
-              color="error"
-              variant="contained"
-              disabled={loadingAction}
-              startIcon={loadingAction && <CircularProgress size={20} color="inherit" />}
-            >
-              {loadingAction ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <DeleteIcon />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Delete Manager
+                </Typography>
+              </Box>
+              {!loadingAction && (
+                <IconButton
+                  onClick={() => setOpenDeleteModal(false)}
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </Box>
 
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: alpha('#ef4444', 0.1),
+                  borderRadius: 2,
+                  p: 2.5,
+                  mb: 2.5,
+                  border: '1px solid',
+                  borderColor: alpha('#ef4444', 0.2),
+                }}
+              >
+                <Typography variant="body1" sx={{ mb: 1.5, color: '#1E293B', fontWeight: 500 }}>
+                  Are you sure you want to delete this manager?
+                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: '#fff',
+                    borderRadius: 1.5,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 0.5, fontSize: '0.75rem' }}>
+                    Manager Name
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
+                    {managerToDelete ? `${managerToDelete.user.Fname} ${managerToDelete.user.Lname}` : ''}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#64748B', mt: 0.5 }}>
+                    {managerToDelete?.user.email}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert
+                severity="warning"
+                icon={false}
+                sx={{
+                  borderRadius: 2,
+                  bgcolor: alpha('#f59e0b', 0.1),
+                  border: '1px solid',
+                  borderColor: alpha('#f59e0b', 0.2),
+                  '& .MuiAlert-message': {
+                    color: '#92400e',
+                  },
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  ⚠️ Warning: This action cannot be undone!
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                  All associated data will be permanently removed from the system.
+                </Typography>
+              </Alert>
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setOpenDeleteModal(false)}
+                  disabled={loadingAction}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleDeleteManager}
+                  disabled={loadingAction}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#ef4444',
+                    '&:hover': {
+                      bgcolor: '#dc2626',
+                    },
+                  }}
+                >
+                  {loadingAction ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : (
+                    <>
+                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Delete Permanently
+                    </>
+                  )}
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+        </Modal>
+
+        {/* Snackbar Notifications */}
         <Snackbar
           open={notification.open}
           autoHideDuration={6000}
           onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          sx={{ mt: { xs: 7, sm: 8 } }}
         >
           <Alert
             onClose={() => setNotification({ ...notification, open: false })}
             severity={notification.severity}
             variant="filled"
-            elevation={3}
+            elevation={6}
+            icon={notification.severity === 'success' ? <CheckCircleIcon /> : undefined}
+            sx={{
+              width: '100%',
+              minWidth: '300px',
+              borderRadius: 2,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+              '& .MuiAlert-message': {
+                maxWidth: '100%',
+                wordBreak: 'break-word',
+                fontWeight: 500,
+              },
+              ...(notification.severity === 'success' && {
+                bgcolor: '#0d9488',
+                color: '#F8FAFC',
+              }),
+            }}
           >
             {notification.message}
           </Alert>
         </Snackbar>
-      </Container>
+
+        {/* Loading Backdrop */}
+        <Backdrop
+          sx={{
+            color: '#F8FAFC',
+            zIndex: (theme) => theme.zIndex.drawer + 2,
+            backdropFilter: 'blur(4px)',
+            bgcolor: 'rgba(13, 148, 136, 0.2)',
+          }}
+          open={submitting}
+        >
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress
+              size={56}
+              thickness={4}
+              sx={{
+                color: '#0d9488',
+                mb: 2,
+              }}
+            />
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              Processing...
+            </Typography>
+          </Box>
+        </Backdrop>
+      </Box>
     </Layout>
   );
 };
