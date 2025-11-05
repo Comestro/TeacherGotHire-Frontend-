@@ -204,10 +204,34 @@ const BasicInformation = () => {
   const [errors, setErrors] = useState({});
   const [editingFields, setEditingFields] = useState({});
   const [loading, setLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    dispatch(getBasic()).catch((error) => console.error("Error:", error));
+    const fetchData = async () => {
+      try {
+        await dispatch(getBasic());
+        setDataLoaded(true);
+      } catch (error) {
+        console.error("Error:", error);
+        setDataLoaded(true); // Still set to true to prevent infinite loading
+      }
+    };
+    fetchData();
   }, [dispatch]);
+
+  // Reset editing fields when data changes or component unmounts
+  useEffect(() => {
+    return () => {
+      setEditingFields({});
+    };
+  }, []);
+
+  // Clear editing state when basicData changes
+  useEffect(() => {
+    if (dataLoaded) {
+      setEditingFields({});
+    }
+  }, [basicData, dataLoaded]);
 
   const toggleEditingField = (field, state) => {
     setEditingFields((prev) => ({ ...prev, [field]: state }));
@@ -276,7 +300,6 @@ const BasicInformation = () => {
       field: "Fname",
       value: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
     },
-   
     {
       label: "Contact No",
       field: "phone_number",
@@ -332,6 +355,11 @@ const BasicInformation = () => {
       ],
     },
   ];
+
+  // Don't render until data is loaded
+  if (!dataLoaded) {
+    return <Loader />;
+  }
 
   return (
     <div className="bg-gradient-to-br from-white to-[#F7FBFE]">
