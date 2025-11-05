@@ -22,11 +22,29 @@ const TeacherFilter = () => {
 
   const { data, status, error } = useSelector((state) => state.teachers);
 
+  // Utility functions for masking sensitive data
+  const maskPhoneNumber = (phone) => {
+    if (!phone || phone.length < 6) return phone;
+    return phone.slice(0, 4) + '****' + phone.slice(-2);
+  };
+
+  const maskEmail = (email) => {
+    if (!email) return email;
+    const [local, domain] = email.split('@');
+    if (!domain || local.length <= 2) return email;
+    return local.slice(0, 2) + '***@' + domain;
+  };
+
   useEffect(() => {
     if (data) {
       setTeachers(data);
     }
   }, [data]);
+
+  // Initial fetch of all teachers
+  useEffect(() => {
+    dispatch(fetchTeachers({}));
+  }, [dispatch]);
 
   // Handle screen size changes for view mode
   useEffect(() => {
@@ -53,6 +71,7 @@ const TeacherFilter = () => {
   // Refresh data
   const handleRefresh = () => {
     setLoading(true);
+    
     dispatch(fetchTeachers());
   };
 
@@ -202,7 +221,7 @@ const TeacherFilter = () => {
                         <HiOutlineMail className="text-accent mt-0.5 flex-shrink-0" size={18} />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-secondary font-medium uppercase">Email</p>
-                          <p className="text-sm text-text truncate">{teacher.email}</p>
+                          <p className="text-sm text-text truncate">{maskEmail(teacher.email)}</p>
                         </div>
                       </div>
 
@@ -212,7 +231,7 @@ const TeacherFilter = () => {
                           <HiOutlinePhone className="text-accent mt-0.5 flex-shrink-0" size={18} />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-secondary font-medium uppercase">Phone</p>
-                            <p className="text-sm text-text">{teacher.profiles.phone_number}</p>
+                            <p className="text-sm text-text">{maskPhoneNumber(teacher.profiles.phone_number)}</p>
                           </div>
                         </div>
                       )}
@@ -313,7 +332,7 @@ const TeacherFilter = () => {
                             <HiOutlineMail className="text-accent flex-shrink-0" size={16} />
                             <div className="min-w-0">
                               <p className="text-xs text-secondary font-medium">Email</p>
-                              <p className="text-text truncate">{teacher.email}</p>
+                              <p className="text-text truncate">{maskEmail(teacher.email)}</p>
                             </div>
                           </div>
 
@@ -323,7 +342,7 @@ const TeacherFilter = () => {
                               <HiOutlinePhone className="text-accent flex-shrink-0" size={16} />
                               <div className="min-w-0">
                                 <p className="text-xs text-secondary font-medium">Phone</p>
-                                <p className="text-text">{teacher.profiles.phone_number}</p>
+                                <p className="text-text">{maskPhoneNumber(teacher.profiles.phone_number)}</p>
                               </div>
                             </div>
                           )}

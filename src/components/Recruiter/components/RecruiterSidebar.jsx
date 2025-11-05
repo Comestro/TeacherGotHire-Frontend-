@@ -320,13 +320,238 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             <h2 className="text-lg font-bold text-text uppercase">Filters</h2>
             <button
               onClick={handleClear}
-              className="text-xs text-primary hover:text-accent font-semibold uppercase"
+              className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded transition-colors"
               aria-label="Clear all filters"
             >
               Clear All
             </button>
           </div>
         </div>
+
+        {/* Active Filters Section */}
+        {Object.values(filters).some(value => 
+          Array.isArray(value) ? value.length > 0 : (value.min || value.max)
+        ) && (
+          <div className="bg-blue-50 border-b px-4 py-3">
+            <h3 className="text-sm font-semibold text-text mb-2">Active Filters:</h3>
+            <div className="flex flex-wrap gap-2">
+              {/* Location filters */}
+              {filters.state.map((item, index) => (
+                <span key={`state-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  State: {item}
+                  <button onClick={() => handleRemoveValue('state', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+              {filters.district.map((item, index) => (
+                <span key={`district-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  District: {item}
+                  <button onClick={() => handleRemoveValue('district', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+              {filters.block.map((item, index) => (
+                <span key={`block-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  Block: {item}
+                  <button onClick={() => handleRemoveValue('block', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+              {filters.village.map((item, index) => (
+                <span key={`village-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  Village: {item}
+                  <button onClick={() => handleRemoveValue('village', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+              {filters.pincode.map((item, index) => (
+                <span key={`pincode-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  Pincode: {item}
+                  <button onClick={() => handleRemoveValue('pincode', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Qualification filters */}
+              {filters.qualification.map((item, index) => (
+                <span key={`qualification-${index}`} className="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                  Qualification: {item}
+                  <button onClick={() => {
+                    setSelectedQualifications(prev => prev.filter(q => q !== item));
+                  }} className="ml-1 text-green-600 hover:text-green-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Skill filters */}
+              {filters.skill.map((item, index) => (
+                <span key={`skill-${index}`} className="inline-flex items-center bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+                  Skill: {item}
+                  <button onClick={() => {
+                    setSelectedSkills(prev => prev.filter(s => s !== item));
+                  }} className="ml-1 text-purple-600 hover:text-purple-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Class Category filters */}
+              {filters.class_category.map((item, index) => (
+                <span key={`class_category-${index}`} className="inline-flex items-center bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
+                  Class: {item}
+                  <button onClick={() => {
+                    setSelectedClassCategories(prev => prev.filter(c => c !== item));
+                  }} className="ml-1 text-orange-600 hover:text-orange-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Subject filters */}
+              {filters.subject.map((item, index) => (
+                <span key={`subject-${index}`} className="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                  Subject: {item}
+                  <button onClick={() => {
+                    // Find which category this subject belongs to and remove it
+                    const category = Object.keys(selectedSubjects).find(cat => 
+                      selectedSubjects[cat]?.includes(item)
+                    );
+                    if (category) {
+                      setSelectedSubjects(prev => ({
+                        ...prev,
+                        [category]: prev[category]?.filter(s => s !== item) || []
+                      }));
+                    }
+                  }} className="ml-1 text-yellow-600 hover:text-yellow-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Experience filters */}
+              {(filters.experience_years.min || filters.experience_years.max) && (
+                <span className="inline-flex items-center bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs">
+                  Experience: {filters.experience_years.min || 0}-{filters.experience_years.max || '∞'} years
+                  <button onClick={() => setFilters(prev => ({
+                    ...prev,
+                    experience_years: { min: "", max: "" }
+                  }))} className="ml-1 text-indigo-600 hover:text-indigo-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              )}
+
+              {/* Gender filters */}
+              {filters.gender.map((item, index) => (
+                <span key={`gender-${index}`} className="inline-flex items-center bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs">
+                  Gender: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      gender: prev.gender.filter(g => g !== item)
+                    }));
+                  }} className="ml-1 text-pink-600 hover:text-pink-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Job Role filters */}
+              {filters.job_role.map((item, index) => (
+                <span key={`job_role-${index}`} className="inline-flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs">
+                  Job Role: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      job_role: prev.job_role.filter(j => j !== item)
+                    }));
+                  }} className="ml-1 text-teal-600 hover:text-teal-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Exam Status filters */}
+              {filters.exam_status.map((item, index) => (
+                <span key={`exam_status-${index}`} className="inline-flex items-center bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs">
+                  Exam Status: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      exam_status: prev.exam_status.filter(e => e !== item)
+                    }));
+                  }} className="ml-1 text-cyan-600 hover:text-cyan-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Religion filters */}
+              {filters.religion.map((item, index) => (
+                <span key={`religion-${index}`} className="inline-flex items-center bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                  Religion: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      religion: prev.religion.filter(r => r !== item)
+                    }));
+                  }} className="ml-1 text-gray-600 hover:text-gray-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Marital Status filters */}
+              {filters.marital_status.map((item, index) => (
+                <span key={`marital_status-${index}`} className="inline-flex items-center bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs">
+                  Marital Status: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      marital_status: prev.marital_status.filter(m => m !== item)
+                    }));
+                  }} className="ml-1 text-rose-600 hover:text-rose-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Language filters */}
+              {filters.language.map((item, index) => (
+                <span key={`language-${index}`} className="inline-flex items-center bg-lime-100 text-lime-800 px-2 py-1 rounded-full text-xs">
+                  Language: {item}
+                  <button onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      language: prev.language.filter(l => l !== item)
+                    }));
+                  }} className="ml-1 text-lime-600 hover:text-lime-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              ))}
+
+              {/* Total Marks filters */}
+              {(filters.total_marks.min || filters.total_marks.max) && (
+                <span className="inline-flex items-center bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs">
+                  Total Marks: {filters.total_marks.min || 0}-{filters.total_marks.max || '∞'}
+                  <button onClick={() => setFilters(prev => ({
+                    ...prev,
+                    total_marks: { min: "", max: "" }
+                  }))} className="ml-1 text-emerald-600 hover:text-emerald-800">
+                    <IoMdClose size={12} />
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto">
           <div className="divide-y">
