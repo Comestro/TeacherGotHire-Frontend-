@@ -189,7 +189,7 @@ const TeacherFilter = () => {
         </div>
 
         {/* Bottom Section - View Toggle and Clear Filters */}
-        <div className="flex items-center justify-between gap-3 p-4">
+        <div className="hidden md:flex items-center justify-between gap-3 p-4">
           {/* View Mode Toggle */}
           <div className="flex bg-background rounded-lg p-1 shadow-inner">
             <button

@@ -60,34 +60,26 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
               <FiAlignLeft size={22} />
             </button>
 
-            {/* Logo */}
+            {/* Logo - Visible on all screens */}
             <Link
               to="/"
-              className="hidden md:flex items-center gap-2 text-xl font-bold text-primary hover:text-accent transition-colors"
+              className="flex items-center gap-2 text-lg sm:text-xl font-bold text-primary hover:text-accent transition-colors"
             >
-              <FaChalkboardTeacher className="w-7 h-7" />
-              <span>Teacher Recruiter</span>
+              <FaChalkboardTeacher className="w-6 h-6 sm:w-7 sm:h-7" />
+              <span className="xs:inline sm:inline">PTPI Recruiter</span>
             </Link>
           </div>
 
           {/* Right Section: Request Button and Profile */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Request Teacher Button */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Request Teacher Button - Visible on all screens */}
             <button
               onClick={() => setIsRequestModalOpen(true)}
-              className="hidden lg:flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 bg-primary hover:bg-primary/90 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
             >
               <FaChalkboardTeacher className="w-4 h-4" />
-              <span>Request Teacher</span>
-            </button>
-
-            {/* Mobile Request Button */}
-            <button
-              onClick={() => setIsRequestModalOpen(true)}
-              className="lg:hidden p-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
-              aria-label="Request teacher"
-            >
-              <FaChalkboardTeacher className="w-5 h-5" />
+              <span className="hidden sm:inline">Request Teacher</span>
+              <span className="sm:hidden">Request</span>
             </button>
 
             {/* Profile Dropdown */}
