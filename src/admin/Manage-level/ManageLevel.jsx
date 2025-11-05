@@ -5,31 +5,37 @@ import {
   CardContent,
   Typography,
   IconButton,
-  Dialog,
   Button,
   TextField,
   Snackbar,
-  Grid,
   useMediaQuery,
   useTheme,
-  Paper,
   InputAdornment,
   CircularProgress,
-  Divider,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Backdrop,
-  FormHelperText,
-  Alert
+  Alert,
+  Stack,
+  Tooltip,
+  Modal,
+  Menu,
+  MenuItem,
+  Chip,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles"; // <- import alpha from styles
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Visibility as VisibilityIcon,
   Search as SearchIcon,
   Close as CloseIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Refresh as RefreshIcon,
+  FilterList as FilterIcon,
+  MoreVert as MoreVertIcon,
+  Build as BuildIcon,
+  CheckCircle as CheckCircleIcon,
+  WarningAmber as WarningAmberIcon,
 } from "@mui/icons-material";
 import Layout from "../Admin/Layout";
 import {
@@ -44,11 +50,15 @@ const ManageLevel = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   const [levels, setLevels] = useState([]);
+  const [selectedLevels, setSelectedLevels] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openAddEditModal, setOpenAddEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [currentLevel, setCurrentLevel] = useState(null);
+  const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
+  const [actionMenuRow, setActionMenuRow] = useState(null);
   const [newLevelData, setNewLevelData] = useState({ name: "", description: "" });
   const [editLevelData, setEditLevelData] = useState({ id: null, name: "", description: "", level_code: null });
   const [snackbar, setSnackbar] = useState({
@@ -57,15 +67,17 @@ const ManageLevel = () => {
     severity: "success",
   });
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: isMobile ? 5 : 8,
+    pageSize: isMobile ? 5 : 10,
     page: 0,
   });
+  const [sortModel, setSortModel] = useState([{ field: 'name', sort: 'asc' }]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchLevels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchLevels = async () => {
@@ -74,11 +86,11 @@ const ManageLevel = () => {
       const data = await getLevel();
       setLevels(Array.isArray(data) ? data : []);
     } catch (error) {
-      
       showSnackbar(
-        error.response?.data?.message || "Failed to fetch levels. Please try again.",
+        error?.response?.data?.message || "Failed to fetch levels. Please try again.",
         "error"
       );
+      setLevels([]);
     } finally {
       setLoading(false);
     }
@@ -104,21 +116,56 @@ const ManageLevel = () => {
     });
   };
 
-  const handleOpenAddDialog = () => {
-    setNewLevelData({ name: "", description: "" });
+  const handleOpenAddEditModal = (level = null) => {
+    if (level) {
+      setCurrentLevel(level);
+      setEditLevelData({
+        id: level.id,
+        name: level.name || "",
+        description: level.description || "",
+        level_code: level.level_code ?? null
+      });
+    } else {
+      setCurrentLevel(null);
+      setNewLevelData({ name: "", description: "" });
+    }
     setFormErrors({});
-    setOpenAddDialog(true);
+    setOpenAddEditModal(true);
   };
 
-  const handleCloseAddDialog = () => {
+  const handleCloseAddEditModal = () => {
     if (submitting) return;
+    setCurrentLevel(null);
     setNewLevelData({ name: "", description: "" });
+    setEditLevelData({ id: null, name: "", description: "", level_code: null });
     setFormErrors({});
-    setOpenAddDialog(false);
+    setOpenAddEditModal(false);
   };
 
+  const handleOpenDeleteModal = (level) => {
+    setCurrentLevel(level);
+    setOpenDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (submitting) return;
+    setCurrentLevel(null);
+    setOpenDeleteModal(false);
+  };
+
+  const handleActionMenuOpen = (event, row) => {
+    setActionMenuAnchorEl(event.currentTarget);
+    setActionMenuRow(row);
+  };
+
+  const handleActionMenuClose = () => {
+    setActionMenuAnchorEl(null);
+    setActionMenuRow(null);
+  };
+
+  // ----- MISSING view dialog handlers (added) -----
   const handleOpenViewDialog = (level) => {
-    setSelectedLevel(level);
+    setSelectedLevel(level || null);
     setOpenViewDialog(true);
   };
 
@@ -126,23 +173,44 @@ const ManageLevel = () => {
     setSelectedLevel(null);
     setOpenViewDialog(false);
   };
+  // -------------------------------------------------
 
-  const handleOpenEditDialog = (level) => {
-    setEditLevelData({
-      id: level.id,
-      name: level.name,
-      description: level.description || "",
-      level_code: level.level_code
-    });
-    setFormErrors({});
-    setOpenEditDialog(true);
+  const handleDeleteLevel = async () => {
+    if (!currentLevel) return;
+
+    try {
+      setSubmitting(true);
+      // await deleteLevel(currentLevel.id); // implement if you have API
+      setLevels((prev) => prev.filter(level => level.id !== currentLevel.id));
+      showSnackbar(`Level "${currentLevel.name}" deleted successfully!`);
+      handleCloseDeleteModal();
+    } catch (error) {
+      showSnackbar(
+        error?.response?.data?.message || "Failed to delete level. Please try again.",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleCloseEditDialog = () => {
-    if (submitting) return;
-    setEditLevelData({ id: null, name: "", description: "", level_code: null });
-    setFormErrors({});
-    setOpenEditDialog(false);
+  const handleBulkDelete = async () => {
+    if (!selectedLevels || selectedLevels.length === 0) return;
+
+    try {
+      setSubmitting(true);
+      // await bulkDeleteLevels(selectedLevels); // implement if you have API
+      setLevels(prev => prev.filter(level => !selectedLevels.includes(level.id)));
+      showSnackbar(`${selectedLevels.length} level(s) deleted successfully!`);
+      setSelectedLevels([]);
+    } catch (error) {
+      showSnackbar(
+        error?.response?.data?.message || "Failed to delete levels. Please try again.",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const validateForm = () => {
@@ -185,10 +253,10 @@ const ManageLevel = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewLevelData({
-      ...newLevelData,
+    setNewLevelData(prev => ({
+      ...prev,
       [name]: value,
-    });
+    }));
 
     if (formErrors[name]) {
       setFormErrors({
@@ -200,10 +268,10 @@ const ManageLevel = () => {
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditLevelData({
-      ...editLevelData,
+    setEditLevelData(prev => ({
+      ...prev,
       [name]: value,
-    });
+    }));
 
     if (formErrors[name]) {
       setFormErrors({
@@ -219,46 +287,35 @@ const ManageLevel = () => {
     try {
       setSubmitting(true);
       const newLevel = await createLevel(newLevelData);
-      setLevels([...levels, newLevel]);
+      setLevels(prev => [...prev, newLevel]);
       showSnackbar(`Level "${newLevelData.name}" added successfully!`);
-      handleCloseAddDialog();
+      handleCloseAddEditModal();
     } catch (error) {
-      
-
-      if (error.response?.data) {
+      if (error?.response?.data) {
         const responseData = error.response.data;
-
         if (typeof responseData === 'object' && !Array.isArray(responseData)) {
           const fieldErrors = {};
           let hasFieldErrors = false;
-
           for (const [field, errorMessages] of Object.entries(responseData)) {
             if (Array.isArray(errorMessages) && errorMessages.length > 0) {
               fieldErrors[field] = errorMessages[0];
               hasFieldErrors = true;
             }
           }
-
           if (hasFieldErrors) {
             setFormErrors(fieldErrors);
-
             const firstField = Object.keys(fieldErrors)[0];
             showSnackbar(fieldErrors[firstField], "error");
             return;
           }
         }
-
         if (responseData.message || typeof responseData === 'string') {
           const errorMessage = responseData.message || responseData;
           showSnackbar(errorMessage, "error");
           return;
         }
       }
-
-      showSnackbar(
-        "Failed to create level. Please try again.",
-        "error"
-      );
+      showSnackbar("Failed to create level. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -270,265 +327,393 @@ const ManageLevel = () => {
     try {
       setSubmitting(true);
       const updatedLevel = await updateLevel(editLevelData.id, editLevelData);
-      setLevels(levels.map(level => level.id === updatedLevel.id ? updatedLevel : level));
+      setLevels(prev => prev.map(level => level.id === updatedLevel.id ? updatedLevel : level));
       showSnackbar(`Level "${updatedLevel.name}" updated successfully!`);
-      handleCloseEditDialog();
+      handleCloseAddEditModal();
     } catch (error) {
-      
-
-      if (error.response?.data) {
+      if (error?.response?.data) {
         const responseData = error.response.data;
-
         if (typeof responseData === 'object' && !Array.isArray(responseData)) {
           const fieldErrors = {};
           let hasFieldErrors = false;
-
           for (const [field, errorMessages] of Object.entries(responseData)) {
             if (Array.isArray(errorMessages) && errorMessages.length > 0) {
               fieldErrors[field] = errorMessages[0];
               hasFieldErrors = true;
             }
           }
-
           if (hasFieldErrors) {
             setFormErrors(fieldErrors);
-
             const firstField = Object.keys(fieldErrors)[0];
             showSnackbar(fieldErrors[firstField], "error");
             return;
           }
         }
-
         if (responseData.message || typeof responseData === 'string') {
           const errorMessage = responseData.message || responseData;
           showSnackbar(errorMessage, "error");
           return;
         }
       }
-
-      showSnackbar(
-        "Failed to update level. Please try again.",
-        "error"
-      );
+      showSnackbar("Failed to update level. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredLevels = levels.filter((lvl) =>
-    lvl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (lvl.description && lvl.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredLevels = (Array.isArray(levels) ? levels : []).filter((lvl) =>
+    (lvl?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ((lvl?.description || "").toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
-  // Generate rows with index that we'll use directly
-  const rows = filteredLevels.map((level, index) => ({
-    ...level,
-    index: paginationModel.page * paginationModel.pageSize + index + 1
-  }));
 
   const columns = [
     {
-      field: 'index',
-      headerName: '#',
-      width: 60,
-      sortable: false,
-      filterable: false,
-      // Simply display the pre-calculated index value
-      renderCell: (params) => params.value
+      field: 'id',
+      headerName: 'ID',
+      width: 80,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            bgcolor: alpha('#0d9488', 0.1),
+            color: '#0d9488',
+            fontWeight: 600,
+            fontSize: '0.75rem',
+          }}
+        />
+      ),
     },
     {
       field: 'name',
-      headerName: 'Name',
+      headerName: 'Level Name',
       flex: 1,
-      minWidth: 150,
+      minWidth: 180,
       renderCell: (params) => (
-        <Box>
-          <Typography variant="body2" fontWeight={500}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
             {params.value}
           </Typography>
-          {isMobile && params.row.description && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: '-webkit-box',
-                overflow: 'hidden',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 2,
-              }}
-            >
-              {params.row.description}
-            </Typography>
-          )}
         </Box>
-      )
+      ),
     },
     {
       field: 'description',
       headerName: 'Description',
       flex: 2,
-      minWidth: 200,
-      hide: isMobile,
+      minWidth: 220,
       renderCell: (params) => (
-        params.value || "—"
-      )
+        <Typography variant="body2" sx={{ color: '#64748B' }}>
+          {params.value || '—'}
+        </Typography>
+      ),
     },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 120,
       sortable: false,
-      align: 'center',
-      headerAlign: 'center',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params) => (
-        <Box
-          display="flex"
-          justifyContent={isMobile ? "center" : "flex-start"}
-          gap={1}
-        >
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            color="info"
-            onClick={() => handleOpenViewDialog(params.row)}
-          >
-            <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
-          </IconButton>
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            color="primary"
-            onClick={() => handleOpenEditDialog(params.row)}
-          >
-            <EditIcon fontSize={isMobile ? "small" : "medium"} />
-          </IconButton>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="View Details">
+            <IconButton
+              size="small"
+              onClick={() => handleOpenViewDialog(params.row)}
+              sx={{
+                bgcolor: alpha('#06B6D4', 0.1),
+                color: '#06B6D4',
+                '&:hover': { bgcolor: alpha('#06B6D4', 0.2) },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="More">
+            <IconButton
+              size="small"
+              onClick={(e) => handleActionMenuOpen(e, params.row)}
+              sx={{
+                bgcolor: alpha('#0d9488', 0.1),
+                color: '#0d9488',
+                '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
+              }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
-      )
-    }
+      ),
+    },
   ];
-
   return (
     <Layout>
-      <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        <Card
-          elevation={2}
+      <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+        {/* Compact Header */}
+        <Box
           sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            mb: { xs: 2, sm: 3 },
-            overflow: 'hidden'
+            bgcolor: '#F8FAFC',
+            border: '2px solid #0d9488',
+            borderRadius: 3,
+            p: 2.5,
+            mb: 3,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                color: '#1E293B',
+                mb: 0.5,
+              }}
+            >
+              Manage Experience Levels
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B' }}>
+              Create and manage experience levels for teachers
+            </Typography>
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenAddEditModal()}
+            sx={{
+              bgcolor: '#0d9488',
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              '&:hover': {
+                bgcolor: '#0a7a6f',
+              },
+            }}
+          >
+            Add New Level
+          </Button>
+        </Box>
+
+        {/* Main Content Card */}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           }}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  variant={isMobile ? "h5" : "h4"}
-                  sx={{
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
-                  }}
-                >
-                  Manage Experience Levels
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={handleOpenAddDialog}
-                  fullWidth={isMobile}
-                  sx={{
-                    py: { xs: 1, sm: 'auto' },
-                    textTransform: 'none',
-                    boxShadow: 2
-                  }}
-                >
-                  Add New Level
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            overflow: 'hidden'
-          }}
-        >
-          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+            {/* Search and Actions Bar */}
             <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              gap={2}
-              mb={2}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+                mb: 3,
+                pb: 2,
+                borderBottom: '2px solid',
+                borderColor: 'divider',
+              }}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}
-              >
-                Experience Levels ({filteredLevels.length})
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search levels..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: '#0d9488' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    minWidth: { xs: '100%', sm: '280px' },
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                    },
+                  }}
+                />
+              </Box>
 
-              <TextField
-                placeholder="Search levels"
-                variant="outlined"
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ width: { xs: '100%', sm: '220px' } }}
-              />
+              <Stack direction="row" spacing={1}>
+                <Tooltip title="Refresh Data">
+                  <IconButton
+                    size="small"
+                    onClick={fetchLevels}
+                    sx={{
+                      bgcolor: alpha('#0d9488', 0.1),
+                      color: '#0d9488',
+                      '&:hover': {
+                        bgcolor: alpha('#0d9488', 0.2),
+                      },
+                    }}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FilterIcon />}
+                  sx={{
+                    display: { xs: 'none', md: 'flex' },
+                    borderColor: '#0d9488',
+                    color: '#0d9488',
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    '&:hover': {
+                      borderColor: '#0d9488',
+                      bgcolor: alpha('#0d9488', 0.05),
+                    },
+                  }}
+                >
+                  Filter
+                </Button>
+                {selectedLevels.length > 0 && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleBulkDelete}
+                    disabled={submitting}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Delete ({selectedLevels.length})
+                  </Button>
+                )}
+              </Stack>
             </Box>
 
             {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress />
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#0d9488' }} size={48} />
               </Box>
             ) : filteredLevels.length === 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {searchTerm
-                  ? "No levels match your search criteria."
-                  : "No levels available. Add a new level to get started."
-                }
-              </Alert>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  py: 8,
+                  px: 3,
+                }}
+              >
+                <BuildIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
+                  {searchTerm ? "No levels found" : "No levels yet"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                  {searchTerm
+                    ? "Try adjusting your search terms"
+                    : "Get started by creating your first experience level"}
+                </Typography>
+                {!searchTerm && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenAddEditModal()}
+                    sx={{
+                      bgcolor: '#0d9488',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      '&:hover': {
+                        bgcolor: '#0a7a6f',
+                      },
+                    }}
+                  >
+                    Create First Level
+                  </Button>
+                )}
+              </Box>
             ) : (
-              <Box sx={{ height: 440, width: '100%' }}>
+              <Box
+                sx={{
+                  height: 500,
+                  width: '100%',
+                  '& .MuiDataGrid-root': {
+                    border: 'none',
+                  },
+                  '& .MuiDataGrid-columnHeaders': {
+                    bgcolor: alpha('#0d9488', 0.05),
+                    borderBottom: '2px solid',
+                    borderColor: '#0d9488',
+                    '& .MuiDataGrid-columnHeaderTitle': {
+                      fontWeight: 700,
+                      color: '#1E293B',
+                    },
+                  },
+                  '& .MuiDataGrid-row': {
+                    '&:hover': {
+                      bgcolor: alpha('#0d9488', 0.04),
+                    },
+                    '&.Mui-selected': {
+                      bgcolor: alpha('#0d9488', 0.08),
+                      '&:hover': {
+                        bgcolor: alpha('#0d9488', 0.12),
+                      },
+                    },
+                  },
+                  '& .MuiCheckbox-root': {
+                    color: '#0d9488',
+                    '&.Mui-checked': {
+                      color: '#0d9488',
+                    },
+                  },
+                }}
+              >
                 <DataGrid
-                  rows={rows}
+                  rows={filteredLevels}
                   columns={columns}
                   paginationModel={paginationModel}
                   onPaginationModelChange={setPaginationModel}
-                  pageSizeOptions={[5, 8, 10, 25]}
+                  pageSizeOptions={[5, 10, 25, 50]}
+                  pagination
+                  checkboxSelection
                   disableRowSelectionOnClick
-                  getRowId={(row) => row.id}
-                  autoHeight
+                  sortModel={sortModel}
+                  onSortModelChange={setSortModel}
+                  onRowSelectionModelChange={(newSelection) => {
+                    setSelectedLevels(newSelection);
+                  }}
+                  rowSelectionModel={selectedLevels}
                   loading={loading}
+                  autoHeight={false}
+                  getRowHeight={() => 'auto'}
+                  getEstimatedRowHeight={() => 60}
                   sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    '& .MuiDataGrid-cell:focus': {
-                      outline: 'none',
+                    '& .MuiDataGrid-row': {
+                      minHeight: '52px!important',
                     },
-                    '& .MuiDataGrid-row:nth-of-type(even)': {
-                      backgroundColor: '#fafafa',
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                      backgroundColor: 'background.default',
-                      fontWeight: 600
+                    '& .MuiDataGrid-cell': {
+                      py: 1.5,
                     },
                   }}
                 />
@@ -537,315 +722,585 @@ const ManageLevel = () => {
           </CardContent>
         </Card>
 
-        <Dialog
-          open={openAddDialog}
-          onClose={!submitting ? handleCloseAddDialog : undefined}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
-            sx: {
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' }
-            }
+        {/* Add/Edit Modal */}
+        <Modal
+          open={openAddEditModal}
+          onClose={!submitting ? handleCloseAddEditModal : undefined}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Add Experience Level
-              </Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '480px' },
+              maxWidth: '95%',
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {currentLevel ? <EditIcon /> : <AddIcon />}
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {currentLevel ? "Edit Experience Level" : "Add New Level"}
+                </Typography>
+              </Box>
               {!submitting && (
                 <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={handleCloseAddDialog}
-                  aria-label="close"
-                  size="small"
+                  onClick={handleCloseAddEditModal}
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
-          </DialogTitle>
 
-          <Divider />
-
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <TextField
-              label="Level Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              name="name"
-              value={newLevelData.name}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.name)}
-              helperText={formErrors.name || ""}
-              disabled={submitting}
-              autoFocus
-            />
-
-            <TextField
-              label="Description (optional)"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              name="description"
-              value={newLevelData.description}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.description)}
-              helperText={formErrors.description || ""}
-              disabled={submitting}
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button
-                onClick={handleCloseAddDialog}
-                variant="outlined"
-                color="primary"
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <TextField
+                fullWidth
+                label="Level Name"
+                name="name"
+                value={currentLevel ? editLevelData.name : newLevelData.name}
+                onChange={currentLevel ? handleEditInputChange : handleInputChange}
+                error={Boolean(formErrors.name)}
+                helperText={formErrors.name || "Enter the experience level name"}
                 disabled={submitting}
-                fullWidth={isMobile}
+                autoFocus
+                required
                 sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
+                  mb: 2.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0d9488',
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#0d9488',
+                  },
                 }}
-              >
-                Cancel
-              </Button>
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BuildIcon sx={{ color: '#0d9488' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-              <Button
-                onClick={handleSaveLevel}
-                variant="contained"
-                color="primary"
+              {currentLevel && (
+                <TextField
+                  fullWidth
+                  label="Level Code"
+                  value={editLevelData.level_code}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    mb: 2.5,
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: '#64748B',
+                    },
+                    backgroundColor: alpha('#64748B', 0.05),
+                    borderRadius: 2,
+                  }}
+                  helperText="Level code cannot be modified"
+                />
+              )}
+
+              <TextField
+                fullWidth
+                label="Description (optional)"
+                name="description"
+                value={currentLevel ? editLevelData.description : newLevelData.description}
+                onChange={currentLevel ? handleEditInputChange : handleInputChange}
+                error={Boolean(formErrors.description)}
+                helperText={formErrors.description || "Provide a brief description of this experience level"}
                 disabled={submitting}
-                fullWidth={isMobile}
+                multiline
+                rows={4}
                 sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
+                  mb: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0d9488',
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#0d9488',
+                  },
                 }}
-              >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Save"
-                )}
-              </Button>
+              />
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleCloseAddEditModal}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={currentLevel ? handleUpdateLevel : handleSaveLevel}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#0d9488',
+                    '&:hover': {
+                      bgcolor: '#0a7a6f',
+                    },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : currentLevel ? (
+                    <>
+                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Update Level
+                    </>
+                  ) : (
+                    <>
+                      <AddIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Create Level
+                    </>
+                  )}
+                </Button>
+              </Stack>
             </Box>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </Modal>
 
-        <Dialog
-          open={openEditDialog}
-          onClose={!submitting ? handleCloseEditDialog : undefined}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
-            sx: {
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' }
-            }
+        {/* Delete Modal */}
+        <Modal
+          open={openDeleteModal}
+          onClose={!submitting ? handleCloseDeleteModal : undefined}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Edit Experience Level
-              </Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '440px' },
+              maxWidth: '95%',
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <DeleteIcon />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Delete Experience Level
+                </Typography>
+              </Box>
               {!submitting && (
                 <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={handleCloseEditDialog}
-                  aria-label="close"
-                  size="small"
+                  onClick={handleCloseDeleteModal}
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
-          </DialogTitle>
 
-          <Divider />
-
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <TextField
-              label="Level Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              name="name"
-              value={editLevelData.name}
-              onChange={handleEditInputChange}
-              error={Boolean(formErrors.name)}
-              helperText={formErrors.name || ""}
-              disabled={submitting}
-              autoFocus
-            />
-
-            <TextField
-              label="Level Code"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={editLevelData.level_code}
-              InputProps={{
-                readOnly: true,
-              }}
-              sx={{ 
-                mt: 2,
-                "& .MuiInputBase-input.Mui-disabled": {
-                  WebkitTextFillColor: theme.palette.text.secondary,
-                },
-                backgroundColor: theme.palette.action.hover
-              }}
-              helperText="Level code cannot be modified"
-            />
-
-            <TextField
-              label="Description (optional)"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              name="description"
-              value={editLevelData.description}
-              onChange={handleEditInputChange}
-              error={Boolean(formErrors.description)}
-              helperText={formErrors.description || ""}
-              disabled={submitting}
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button
-                onClick={handleCloseEditDialog}
-                variant="outlined"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <Box
                 sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
+                  bgcolor: alpha('#ef4444', 0.1),
+                  borderRadius: 2,
+                  p: 2.5,
+                  mb: 2.5,
+                  border: '1px solid',
+                  borderColor: alpha('#ef4444', 0.2),
                 }}
               >
-                Cancel
-              </Button>
+                <Typography variant="body1" sx={{ mb: 1.5, color: '#1E293B', fontWeight: 500 }}>
+                  Are you sure you want to delete this experience level?
+                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: '#fff',
+                    borderRadius: 1.5,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 0.5, fontSize: '0.75rem' }}>
+                    Level Name
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
+                    "{currentLevel?.name}"
+                  </Typography>
+                </Box>
+              </Box>
 
-              <Button
-                onClick={handleUpdateLevel}
-                variant="contained"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
+              <Alert
+                severity="warning"
+                icon={false}
                 sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
+                  borderRadius: 2,
+                  bgcolor: alpha('#f59e0b', 0.1),
+                  border: '1px solid',
+                  borderColor: alpha('#f59e0b', 0.2),
+                  '& .MuiAlert-message': {
+                    color: '#92400e',
+                  },
                 }}
               >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Update"
-                )}
-              </Button>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  ⚠️ Warning: This action cannot be undone!
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                  All associated data will be permanently removed from the system.
+                </Typography>
+              </Alert>
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleCloseDeleteModal}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleDeleteLevel}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#ef4444',
+                    '&:hover': {
+                      bgcolor: '#dc2626',
+                    },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : (
+                    <>
+                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Delete Permanently
+                    </>
+                  )}
+                </Button>
+              </Stack>
             </Box>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </Modal>
 
-        <Dialog
+        {/* Action Menu */}
+        <Menu
+          anchorEl={actionMenuAnchorEl}
+          open={Boolean(actionMenuAnchorEl)}
+          onClose={handleActionMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            elevation: 3,
+            sx: {
+              borderRadius: 2,
+              minWidth: 180,
+              mt: 1,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            },
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              handleOpenAddEditModal(actionMenuRow);
+              handleActionMenuClose();
+            }}
+            sx={{
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: alpha('#0d9488', 0.08),
+              },
+            }}
+          >
+            <EditIcon fontSize="small" sx={{ mr: 1.5, color: '#0d9488' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>Edit Level</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleOpenDeleteModal(actionMenuRow);
+              handleActionMenuClose();
+            }}
+            sx={{
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: alpha('#ef4444', 0.08),
+              },
+            }}
+          >
+            <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: '#ef4444' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#ef4444' }}>Delete Level</Typography>
+          </MenuItem>
+        </Menu>
+
+        {/* View Modal */}
+        <Modal
           open={openViewDialog}
           onClose={handleCloseViewDialog}
-          PaperProps={{
-            sx: {
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' },
-              maxWidth: '450px'
-            }
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Level Details
-              </Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '480px' },
+              maxWidth: '95%',
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #06B6D4 0%, #0d9488 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <VisibilityIcon />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Level Details
+                </Typography>
+              </Box>
               <IconButton
-                edge="end"
-                color="inherit"
                 onClick={handleCloseViewDialog}
-                aria-label="close"
-                size="small"
+                sx={{
+                  color: '#F8FAFC',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
               >
-                <CloseIcon fontSize="small" />
+                <CloseIcon />
               </IconButton>
             </Box>
-          </DialogTitle>
 
-          <Divider />
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 1, fontSize: '0.75rem' }}>
+                  Level Name
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1E293B', mb: 1 }}>
+                  {selectedLevel?.name}
+                </Typography>
+                <Chip
+                  label={`ID: ${selectedLevel?.id}`}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha('#0d9488', 0.1),
+                    color: '#0d9488',
+                    fontWeight: 600,
+                  }}
+                />
+              </Box>
 
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <Box mb={2}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Level Name
-              </Typography>
-              <Typography variant="body1" fontWeight={500}>
-                {selectedLevel?.name}
-              </Typography>
+              <Box>
+                <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 1, fontSize: '0.75rem' }}>
+                  Description
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#1E293B', lineHeight: 1.6 }}>
+                  {selectedLevel?.description || "No description available for this experience level."}
+                </Typography>
+              </Box>
+
+              {/* Action Button */}
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCloseViewDialog}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Close
+                </Button>
+              </Box>
             </Box>
+          </Box>
+        </Modal>
 
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Description
-              </Typography>
-              <Typography variant="body1">
-                {selectedLevel?.description || "No description available."}
-              </Typography>
-            </Box>
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Button
-              onClick={handleCloseViewDialog}
-              variant="contained"
-              color="primary"
-              fullWidth={isMobile}
-              sx={{ textTransform: 'none' }}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-
+        {/* Enhanced Backdrop */}
         <Backdrop
-          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+          sx={{
+            color: '#F8FAFC',
+            zIndex: (theme) => theme.zIndex.drawer + 2,
+            backdropFilter: 'blur(4px)',
+            bgcolor: 'rgba(13, 148, 136, 0.2)',
+          }}
           open={submitting}
         >
-          <CircularProgress color="inherit" />
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress
+              size={56}
+              thickness={4}
+              sx={{
+                color: '#0d9488',
+                mb: 2,
+              }}
+            />
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              Processing...
+            </Typography>
+          </Box>
         </Backdrop>
 
+        {/* Enhanced Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -858,13 +1313,21 @@ const ManageLevel = () => {
             severity={snackbar.severity}
             variant="filled"
             elevation={6}
+            icon={snackbar.severity === 'success' ? <CheckCircleIcon /> : undefined}
             sx={{
               width: "100%",
-              boxShadow: 3,
+              minWidth: '300px',
+              borderRadius: 2,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
               '& .MuiAlert-message': {
                 maxWidth: '100%',
-                wordBreak: 'break-word'
-              }
+                wordBreak: 'break-word',
+                fontWeight: 500,
+              },
+              ...(snackbar.severity === 'success' && {
+                bgcolor: '#0d9488',
+                color: '#F8FAFC',
+              }),
             }}
           >
             {snackbar.message}

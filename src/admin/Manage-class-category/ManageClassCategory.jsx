@@ -10,7 +10,7 @@ import {
   TextField,
   Tooltip,
   Snackbar,
-  Grid,
+  Grid2,
   useMediaQuery,
   useTheme,
   Paper,
@@ -21,6 +21,9 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
+  Chip,
+  Stack,
+  alpha,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -31,6 +34,8 @@ import {
   MoreVert as MoreIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
+  Category as CategoryIcon,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { Alert } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
@@ -307,40 +312,67 @@ const ManageClassCategory = () => {
     {
       field: 'id',
       headerName: 'ID',
-      width: 70,
+      width: 80,
       sortable: true,
+      renderCell: (params) => (
+        <Chip
+          label={`#${params.value}`}
+          size="small"
+          sx={{
+            bgcolor: alpha('#0d9488', 0.1),
+            color: '#0d9488',
+            fontWeight: 600,
+          }}
+        />
+      ),
     },
     {
       field: 'name',
-      headerName: 'Name',
+      headerName: 'Category Name',
       flex: 1,
-      minWidth: 150,
+      minWidth: 180,
       sortable: true,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: '#0d9488',
+            }}
+          />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+            {params.value}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'description',
       headerName: 'Description',
       flex: 1.5,
-      minWidth: 200,
+      minWidth: 220,
       sortable: true,
       renderCell: (params) => (
         params.value ? (
-          <Tooltip title={params.value} arrow>
+          <Tooltip title={params.value} arrow placement="top">
             <Typography
               variant="body2"
               sx={{
                 maxWidth: '100%',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis'
+                textOverflow: 'ellipsis',
+                color: '#64748B',
               }}
             >
               {params.value}
             </Typography>
           </Tooltip>
         ) : (
-          <Typography variant="body2" color="text.secondary" fontStyle="italic">
-            No description
+          <Typography variant="body2" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
+            No description provided
           </Typography>
         )
       ),
@@ -348,164 +380,343 @@ const ManageClassCategory = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 120,
+      width: 140,
       sortable: false,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
-        <Box>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleOpenAddEditModal(params.row)}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleOpenDeleteModal(params.row)}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={(e) => handleActionMenuOpen(e, params.row)}
-          >
-            <MoreIcon fontSize="small" />
-          </IconButton>
-        </Box>
+        <Stack direction="row" spacing={0.5}>
+          <Tooltip title="Edit Category" arrow>
+            <IconButton
+              size="small"
+              onClick={() => handleOpenAddEditModal(params.row)}
+              sx={{
+                color: '#0d9488',
+                bgcolor: alpha('#0d9488', 0.1),
+                '&:hover': {
+                  bgcolor: alpha('#0d9488', 0.2),
+                },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Category" arrow>
+            <IconButton
+              size="small"
+              onClick={() => handleOpenDeleteModal(params.row)}
+              sx={{
+                color: '#ef4444',
+                bgcolor: alpha('#ef4444', 0.1),
+                '&:hover': {
+                  bgcolor: alpha('#ef4444', 0.2),
+                },
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="More Options" arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => handleActionMenuOpen(e, params.row)}
+              sx={{
+                color: '#64748B',
+                bgcolor: alpha('#64748B', 0.1),
+                '&:hover': {
+                  bgcolor: alpha('#64748B', 0.2),
+                },
+              }}
+            >
+              <MoreIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       ),
     },
   ];
 
   return (
     <Layout>
-      <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        <Card
-          elevation={2}
+      <Box sx={{ width: '100%', mx: 'auto' }}>
+        {/* Modern Header Section */}
+        <Box
           sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            mb: { xs: 2, sm: 3 },
-            overflow: 'hidden'
+            borderRadius: 2,
+            p: { xs: 2, sm: 2.5 },
+            mb: 3,
+            border: '2px solid #0d9488',
+            bgcolor: '#fff',
+          }}
+        >
+          <Grid2 container spacing={2} alignItems="center">
+            <Grid2 size={{ xs: 12, sm: 8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 2,
+                    bgcolor: alpha('#0d9488', 0.1),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CategoryIcon sx={{ fontSize: 28, color: '#0d9488' }} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      color: '#1E293B',
+                      fontWeight: 700,
+                      fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                    }}
+                  >
+                    Class Categories
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#64748B',
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    }}
+                  >
+                    Manage and organize your class categories
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid2>
+            <Grid2 size={{ xs: 12, sm: 4 }} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenAddEditModal()}
+                fullWidth={isMobile}
+                sx={{
+                  bgcolor: '#0d9488',
+                  color: '#F8FAFC',
+                  py: 1.2,
+                  px: 3,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(13, 148, 136, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#0a7a6f',
+                    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.4)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Add New Category
+              </Button>
+            </Grid2>
+          </Grid2>
+        </Box>
+
+        {/* Main Content Card */}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            overflow: 'hidden',
           }}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  variant={isMobile ? "h5" : "h4"}
-                  sx={{
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
-                  }}
-                >
-                  Manage Class Categories
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenAddEditModal()}
-                  fullWidth={isMobile}
-                  sx={{
-                    py: { xs: 1, sm: 'auto' },
-                    textTransform: 'none',
-                    boxShadow: 2
-                  }}
-                >
-                  Add New Category
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            overflow: 'hidden'
-          }}
-        >
-          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+            {/* Search and Actions Bar */}
             <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              gap={2}
-              mb={2}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+                mb: 3,
+                pb: 2,
+                borderBottom: '2px solid',
+                borderColor: 'divider',
+              }}
             >
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                  }}
-                >
-                  Class Categories ({filteredCategories.length})
-                </Typography>
-                <IconButton 
-                  size="small" 
-                  color="primary" 
-                  onClick={fetchCategories}
-                  title="Refresh"
-                >
-                  <RefreshIcon fontSize="small" />
-                </IconButton>
-              </Box>
-
-              <Box display="flex" gap={2} width={{ xs: '100%', sm: 'auto' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <TextField
                   variant="outlined"
                   size="small"
-                  placeholder="Search categories"
+                  placeholder="Search categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon fontSize="small" />
+                        <SearchIcon sx={{ color: '#0d9488' }} />
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ width: { xs: '100%', sm: '220px' } }}
+                  sx={{
+                    minWidth: { xs: '100%', sm: '280px' },
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#0d9488',
+                      },
+                    },
+                  }}
                 />
+              </Box>
+
+              <Stack direction="row" spacing={1}>
+                <Tooltip title="Refresh Data">
+                  <IconButton
+                    size="small"
+                    onClick={fetchCategories}
+                    sx={{
+                      bgcolor: alpha('#0d9488', 0.1),
+                      color: '#0d9488',
+                      '&:hover': {
+                        bgcolor: alpha('#0d9488', 0.2),
+                      },
+                    }}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<FilterIcon />}
-                  sx={{ display: { xs: 'none', md: 'flex' } }}
+                  sx={{
+                    display: { xs: 'none', md: 'flex' },
+                    borderColor: '#0d9488',
+                    color: '#0d9488',
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    '&:hover': {
+                      borderColor: '#0d9488',
+                      bgcolor: alpha('#0d9488', 0.05),
+                    },
+                  }}
                 >
                   Filter
                 </Button>
-              </Box>
+                {selectedCategories.length > 0 && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleBulkDelete}
+                    disabled={submitting}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Delete ({selectedCategories.length})
+                  </Button>
+                )}
+              </Stack>
             </Box>
 
+            {/* Data Grid Section */}
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#0d9488' }} size={48} />
               </Box>
             ) : error && !filteredCategories.length ? (
-              <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-            ) : filteredCategories.length === 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {searchTerm ? "No categories match your search" : "No categories available. Create one to get started."}
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  borderRadius: 2,
+                  '& .MuiAlert-icon': { color: '#ef4444' }
+                }}
+              >
+                {error}
               </Alert>
+            ) : filteredCategories.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  py: 8,
+                  px: 3,
+                }}
+              >
+                <CategoryIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
+                  {searchTerm ? "No categories found" : "No categories yet"}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                  {searchTerm
+                    ? "Try adjusting your search terms"
+                    : "Get started by creating your first class category"}
+                </Typography>
+                {!searchTerm && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenAddEditModal()}
+                    sx={{
+                      bgcolor: '#0d9488',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: 2,
+                      '&:hover': {
+                        bgcolor: '#0a7a6f',
+                      },
+                    }}
+                  >
+                    Create First Category
+                  </Button>
+                )}
+              </Box>
             ) : (
               <Paper
                 elevation={0}
                 sx={{
                   border: '1px solid',
                   borderColor: 'divider',
-                  borderRadius: 1,
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  mb: 2,
-                  height: 440,
-                  width: '100%'
+                  height: 500,
+                  width: '100%',
+                  '& .MuiDataGrid-root': {
+                    border: 'none',
+                  },
+                  '& .MuiDataGrid-columnHeaders': {
+                    bgcolor: alpha('#0d9488', 0.05),
+                    borderBottom: '2px solid',
+                    borderColor: '#0d9488',
+                    '& .MuiDataGrid-columnHeaderTitle': {
+                      fontWeight: 700,
+                      color: '#1E293B',
+                    },
+                  },
+                  '& .MuiDataGrid-row': {
+                    '&:hover': {
+                      bgcolor: alpha('#0d9488', 0.04),
+                    },
+                    '&.Mui-selected': {
+                      bgcolor: alpha('#0d9488', 0.08),
+                      '&:hover': {
+                        bgcolor: alpha('#0d9488', 0.12),
+                      },
+                    },
+                  },
+                  '& .MuiCheckbox-root': {
+                    color: '#0d9488',
+                    '&.Mui-checked': {
+                      color: '#0d9488',
+                    },
+                  },
                 }}
               >
                 <DataGrid
@@ -529,43 +740,14 @@ const ManageClassCategory = () => {
                   getEstimatedRowHeight={() => 60}
                   sx={{
                     '& .MuiDataGrid-row': {
-                      minHeight: '48px!important',
+                      minHeight: '52px!important',
                     },
                     '& .MuiDataGrid-cell': {
-                      py: 1,
+                      py: 1.5,
                     },
                   }}
                 />
               </Paper>
-            )}
-
-            {filteredCategories.length > 0 && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'space-between',
-                  alignItems: { xs: 'stretch', sm: 'center' },
-                  gap: 2,
-                  mt: 2
-                }}
-              >
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleBulkDelete}
-                  disabled={selectedCategories.length === 0 || submitting}
-                  fullWidth={isMobile}
-                  sx={{
-                    py: { xs: 1, sm: 'auto' },
-                    textTransform: 'none',
-                    order: { xs: 2, sm: 1 }
-                  }}
-                >
-                  Delete Selected {selectedCategories.length > 0 && `(${selectedCategories.length})`}
-                </Button>
-              </Box>
             )}
           </CardContent>
         </Card>
@@ -576,36 +758,68 @@ const ManageClassCategory = () => {
           onClose={handleActionMenuClose}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            elevation: 3,
+            sx: {
+              borderRadius: 2,
+              minWidth: 180,
+              mt: 1,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            },
+          }}
         >
           <MenuItem 
             onClick={() => {
               handleOpenAddEditModal(actionMenuRow);
               handleActionMenuClose();
             }}
-            dense
+            sx={{
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: alpha('#0d9488', 0.08),
+              },
+            }}
           >
-            <EditIcon fontSize="small" color="primary" sx={{ mr: 1 }} /> Edit
+            <EditIcon fontSize="small" sx={{ mr: 1.5, color: '#0d9488' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>Edit Category</Typography>
           </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
           <MenuItem 
             onClick={() => {
               handleOpenDeleteModal(actionMenuRow);
               handleActionMenuClose();
             }}
-            dense
+            sx={{
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: alpha('#ef4444', 0.08),
+              },
+            }}
           >
-            <DeleteIcon fontSize="small" color="error" sx={{ mr: 1 }} /> Delete
+            <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: '#ef4444' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#ef4444' }}>Delete Category</Typography>
           </MenuItem>
-          <Divider />
+          <Divider sx={{ my: 0.5 }} />
           <MenuItem 
             onClick={() => {
               handleActionMenuClose();
             }}
-            dense
+            sx={{
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: alpha('#64748B', 0.08),
+              },
+            }}
           >
-            View Details
+            <CategoryIcon fontSize="small" sx={{ mr: 1.5, color: '#64748B' }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>View Details</Typography>
           </MenuItem>
         </Menu>
 
+        {/* Add/Edit Modal */}
         <Modal
           open={openAddEditModal}
           onClose={!submitting ? handleCloseAddEditModal : undefined}
@@ -613,6 +827,7 @@ const ManageClassCategory = () => {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
           <Box
@@ -621,107 +836,176 @@ const ManageClassCategory = () => {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '400px' },
+              width: { xs: '90%', sm: '480px' },
               maxWidth: '95%',
               bgcolor: 'background.paper',
-              boxShadow: 24,
-              borderRadius: 2,
-              p: { xs: 2.5, sm: 3 },
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {selectedCategory?.id ? "Edit Category" : "Add New Category"}
-              </Typography>
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {selectedCategory?.id ? <EditIcon /> : <AddIcon />}
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {selectedCategory?.id ? "Edit Category" : "Add New Category"}
+                </Typography>
+              </Box>
               {!submitting && (
                 <IconButton
-                  size="small"
                   onClick={handleCloseAddEditModal}
-                  aria-label="close"
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
 
-            <Divider sx={{ mb: 2 }} />
-
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Category Name"
-              name="name"
-              value={selectedCategory?.name || ""}
-              onChange={handleCategoryChange}
-              error={Boolean(formErrors.name)}
-              helperText={formErrors.name}
-              disabled={submitting}
-              InputProps={{
-                autoFocus: true,
-              }}
-            />
-
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Description (Optional)"
-              name="description"
-              value={selectedCategory?.description || ""}
-              onChange={handleCategoryChange}
-              error={Boolean(formErrors.description)}
-              helperText={formErrors.description}
-              disabled={submitting}
-              multiline
-              rows={3}
-              placeholder="Enter an optional description for this category"
-            />
-
-            <FormHelperText sx={{ mt: 0.5, px: 1.5, color: 'text.secondary' }}>
-              You can add a description to provide more information about this category
-            </FormHelperText>
-
-            <Box
-              mt={3}
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="flex-end"
-              gap={2}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleCloseAddEditModal}
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <TextField
+                fullWidth
+                label="Category Name"
+                name="name"
+                value={selectedCategory?.name || ""}
+                onChange={handleCategoryChange}
+                error={Boolean(formErrors.name)}
+                helperText={formErrors.name}
                 disabled={submitting}
-                fullWidth={isMobile}
+                autoFocus
+                required
                 sx={{
-                  textTransform: 'none',
-                  order: { xs: 2, sm: 1 }
+                  mb: 2.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0d9488',
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#0d9488',
+                  },
                 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSaveCategory}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CategoryIcon sx={{ color: '#0d9488' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Description (Optional)"
+                name="description"
+                value={selectedCategory?.description || ""}
+                onChange={handleCategoryChange}
+                error={Boolean(formErrors.description)}
+                helperText={formErrors.description || "Provide additional details about this category"}
                 disabled={submitting}
-                fullWidth={isMobile}
+                multiline
+                rows={4}
+                placeholder="Enter a detailed description..."
                 sx={{
-                  textTransform: 'none',
-                  order: { xs: 1, sm: 2 }
+                  mb: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0d9488',
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#0d9488',
+                  },
                 }}
-              >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : selectedCategory?.id ? (
-                  "Update"
-                ) : (
-                  "Save"
-                )}
-              </Button>
+              />
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleCloseAddEditModal}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSaveCategory}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#0d9488',
+                    '&:hover': {
+                      bgcolor: '#0a7a6f',
+                    },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : selectedCategory?.id ? (
+                    <>
+                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Update Category
+                    </>
+                  ) : (
+                    <>
+                      <AddIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Create Category
+                    </>
+                  )}
+                </Button>
+              </Stack>
             </Box>
           </Box>
         </Modal>
 
+        {/* Delete Modal */}
         <Modal
           open={openDeleteModal}
           onClose={!submitting ? handleCloseDeleteModal : undefined}
@@ -729,6 +1013,7 @@ const ManageClassCategory = () => {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
+            sx: { backdropFilter: 'blur(4px)' },
           }}
         >
           <Box
@@ -737,77 +1022,165 @@ const ManageClassCategory = () => {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '400px' },
+              width: { xs: '90%', sm: '440px' },
               maxWidth: '95%',
               bgcolor: 'background.paper',
-              boxShadow: 24,
-              borderRadius: 2,
-              p: { xs: 2.5, sm: 3 },
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
-                Delete Category
-              </Typography>
+            {/* Modal Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <DeleteIcon />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Delete Category
+                </Typography>
+              </Box>
               {!submitting && (
                 <IconButton
-                  size="small"
                   onClick={handleCloseDeleteModal}
-                  aria-label="close"
+                  sx={{
+                    color: '#F8FAFC',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
 
-            <Divider sx={{ mb: 2 }} />
-
-            <Typography variant="body1" mb={1}>
-              Are you sure you want to delete:
-            </Typography>
-            <Typography variant="subtitle1" fontWeight={600} mb={2}>
-              "{selectedCategory?.name}"
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              This action cannot be undone. All associated data will be permanently removed.
-            </Typography>
-
-            <Box
-              mt={2}
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="flex-end"
-              gap={2}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleCloseDeleteModal}
-                disabled={submitting}
-                fullWidth={isMobile}
+            {/* Modal Body */}
+            <Box sx={{ p: 3 }}>
+              <Box
                 sx={{
-                  textTransform: 'none',
-                  order: { xs: 2, sm: 1 }
+                  bgcolor: alpha('#ef4444', 0.1),
+                  borderRadius: 2,
+                  p: 2.5,
+                  mb: 2.5,
+                  border: '1px solid',
+                  borderColor: alpha('#ef4444', 0.2),
                 }}
               >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleDeleteCategory}
-                disabled={submitting}
-                fullWidth={isMobile}
+                <Typography variant="body1" sx={{ mb: 1.5, color: '#1E293B', fontWeight: 500 }}>
+                  Are you sure you want to delete this category?
+                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: '#fff',
+                    borderRadius: 1.5,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 0.5, fontSize: '0.75rem' }}>
+                    Category Name
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
+                    "{selectedCategory?.name}"
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert
+                severity="warning"
+                icon={false}
                 sx={{
-                  textTransform: 'none',
-                  order: { xs: 1, sm: 2 }
+                  borderRadius: 2,
+                  bgcolor: alpha('#f59e0b', 0.1),
+                  border: '1px solid',
+                  borderColor: alpha('#f59e0b', 0.2),
+                  '& .MuiAlert-message': {
+                    color: '#92400e',
+                  },
                 }}
               >
-                {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
-              </Button>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  ⚠️ Warning: This action cannot be undone!
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                  All associated data will be permanently removed from the system.
+                </Typography>
+              </Alert>
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleCloseDeleteModal}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderColor: '#64748B',
+                    color: '#64748B',
+                    '&:hover': {
+                      borderColor: '#64748B',
+                      bgcolor: alpha('#64748B', 0.05),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleDeleteCategory}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    bgcolor: '#ef4444',
+                    '&:hover': {
+                      bgcolor: '#dc2626',
+                    },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : (
+                    <>
+                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Delete Permanently
+                    </>
+                  )}
+                </Button>
+              </Stack>
             </Box>
           </Box>
         </Modal>
 
+        {/* Snackbar Notifications */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -820,24 +1193,50 @@ const ManageClassCategory = () => {
             severity={snackbar.severity}
             variant="filled"
             elevation={6}
+            icon={snackbar.severity === 'success' ? <CheckCircleIcon /> : undefined}
             sx={{
               width: "100%",
-              boxShadow: 3,
+              minWidth: '300px',
+              borderRadius: 2,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
               '& .MuiAlert-message': {
                 maxWidth: '100%',
-                wordBreak: 'break-word'
-              }
+                wordBreak: 'break-word',
+                fontWeight: 500,
+              },
+              ...(snackbar.severity === 'success' && {
+                bgcolor: '#0d9488',
+                color: '#F8FAFC',
+              }),
             }}
           >
             {snackbar.message}
           </Alert>
         </Snackbar>
 
+        {/* Loading Backdrop */}
         <Backdrop
-          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+          sx={{
+            color: '#F8FAFC',
+            zIndex: (theme) => theme.zIndex.drawer + 2,
+            backdropFilter: 'blur(4px)',
+            bgcolor: 'rgba(13, 148, 136, 0.2)',
+          }}
           open={submitting}
         >
-          <CircularProgress color="inherit" />
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress
+              size={56}
+              thickness={4}
+              sx={{
+                color: '#0d9488',
+                mb: 2,
+              }}
+            />
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              Processing...
+            </Typography>
+          </Box>
         </Backdrop>
       </Box>
     </Layout>

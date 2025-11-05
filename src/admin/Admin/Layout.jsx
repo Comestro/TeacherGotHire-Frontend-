@@ -7,10 +7,12 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import { useTheme, useMediaQuery } from "@mui/material";
 import Sidebar from "../Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -20,8 +22,8 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  background: 'linear-gradient(90deg, #1a237e 0%, #283593 50%, #303f9f 100%)',
-  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+  background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)',
+  boxShadow: '0 4px 20px 0 rgba(13, 148, 136, 0.25)',
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
@@ -46,9 +48,10 @@ const Main = styled(Box)(({ theme }) => ({
 }));
 
 export default function Layout({ children }) {
-  const [open, setOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [open, setOpen] = useState(!isMobile);
 
-  const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
   const location = useLocation();
   const path = location.pathname
@@ -65,16 +68,16 @@ export default function Layout({ children }) {
       overflow: "hidden" // This prevents horizontal scrollbar on the whole layout
     }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open && !isMobile}>
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            aria-label="toggle drawer"
+            onClick={() => setOpen(!open)}
             edge="start"
-            sx={{ marginRight: 5, ...(open && { display: "none" }) }}
+            sx={{ marginRight: 2 }}
           >
-            <MenuIcon />
+            {open ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
           <Typography
             variant="h6"
@@ -82,17 +85,34 @@ export default function Layout({ children }) {
             sx={{
               fontWeight: 500,
               letterSpacing: '0.5px',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+              textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+              flexGrow: 1
             }}
           >
             {path}
           </Typography>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} handleDrawerClose={handleDrawerClose} />
+      {isMobile ? (
+        <Sidebar
+          open={open}
+          handleDrawerClose={handleDrawerClose}
+          variant="temporary"
+        />
+      ) : (
+        open && (
+          <Sidebar
+            open={true}
+            handleDrawerClose={handleDrawerClose}
+            variant="permanent"
+          />
+        )
+      )}
       <Main
         component="main"
         sx={{
+          // Drawer is a flex sibling; let it consume width in persistent mode. No manual margin-left here.
+          ml: 0,
           width: '100%',
           overflowX: 'hidden !important',
           maxWidth: '100%',

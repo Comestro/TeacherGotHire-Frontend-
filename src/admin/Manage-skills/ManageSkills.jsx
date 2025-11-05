@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Button, TextField,
-  Checkbox, IconButton, Dialog, DialogActions, DialogContent, DialogTitle,
-  Box, Snackbar, Grid, Paper, useTheme, useMediaQuery, CircularProgress,
-  Divider, Backdrop, Card, CardContent, InputAdornment, Alert
+  IconButton, Box, Snackbar, Grid, Paper, useTheme, useMediaQuery, CircularProgress,
+  Divider, Backdrop, Card, CardContent, InputAdornment, Alert, Stack, Tooltip, Modal
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Add as AddIcon, 
   Edit as EditIcon, 
   Delete as DeleteIcon,
   Search as SearchIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Refresh as RefreshIcon,
+  FilterList as FilterListIcon,
+  Build as BuildIcon,
+  CheckCircle as CheckCircleIcon,
+  WarningAmber as WarningAmberIcon
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import Layout from "../Admin/Layout";
@@ -42,8 +47,11 @@ const ManageSkills = () => {
   const [submitting, setSubmitting] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedToDelete, setSelectedToDelete] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : 10;
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: isMobile ? 5 : 10 });
+
+  useEffect(() => {
+    setPaginationModel((prev) => ({ ...prev, pageSize: isMobile ? 5 : 10 }));
+  }, [isMobile]);
 
   useEffect(() => {
     fetchSkills();
@@ -255,67 +263,31 @@ const ManageSkills = () => {
     setCurrentPage(1);
   };
 
-  const handleCheckboxChange = (skillId) => {
-    setSelectedSkills((prev) => {
-      if (prev.includes(skillId)) {
-        return prev.filter(id => id !== skillId);
-      } else {
-        return [...prev, skillId];
-      }
-    });
-  };
-
   const columns = [
-    {
-      field: 'select',
-      headerName: '',
-      width: 50,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderHeader: () => (
-        <Checkbox
-          indeterminate={
-            selectedSkills.length > 0 &&
-            selectedSkills.length < filteredSkills.length
-          }
-          checked={
-            filteredSkills.length > 0 &&
-            selectedSkills.length === filteredSkills.length
-          }
-          onChange={(event) => {
-            if (event.target.checked) {
-              setSelectedSkills(filteredSkills.map(skill => skill.id));
-            } else {
-              setSelectedSkills([]);
-            }
-          }}
-          size={isMobile ? "small" : "medium"}
-        />
-      ),
-      renderCell: (params) => (
-        <Checkbox
-          checked={selectedSkills.includes(params.row.id)}
-          onChange={() => handleCheckboxChange(params.row.id)}
-          size={isMobile ? "small" : "medium"}
-        />
-      )
-    },
     {
       field: 'name',
       headerName: 'Skill Name',
       flex: 1,
-      minWidth: 150
+      minWidth: 180,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+            {params.value}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'description',
       headerName: 'Description',
       flex: 2,
-      minWidth: 200,
-      hide: isMobile,
+      minWidth: 220,
       renderCell: (params) => (
-        params.value || "—"
-      )
+        <Typography variant="body2" sx={{ color: '#64748B' }}>
+          {params.value || '—'}
+        </Typography>
+      ),
     },
     {
       field: 'actions',
@@ -325,405 +297,531 @@ const ManageSkills = () => {
       filterable: false,
       disableColumnMenu: true,
       renderCell: (params) => (
-        <Box display="flex" gap={1}>
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            color="primary"
-            onClick={() => handleEditSkill(params.row)}
-          >
-            <EditIcon fontSize={isMobile ? "small" : "medium"} />
-          </IconButton>
-          <IconButton
-            size={isMobile ? "small" : "medium"}
-            color="error"
-            onClick={() => handleConfirmDelete(params.row)}
-          >
-            <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-          </IconButton>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Edit">
+            <IconButton
+              size="small"
+              onClick={() => handleEditSkill(params.row)}
+              sx={{
+                bgcolor: alpha('#0d9488', 0.1),
+                color: '#0d9488',
+                '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              onClick={() => handleConfirmDelete(params.row)}
+              sx={{
+                bgcolor: alpha('#ef4444', 0.1),
+                color: '#ef4444',
+                '&:hover': { bgcolor: alpha('#ef4444', 0.2) },
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        <Card 
-          elevation={2} 
-          sx={{ 
-            borderRadius: { xs: 1, sm: 2 },
+      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2.5, md: 3 } }}>
+        {/* Compact Header */}
+        <Box
+          sx={{
+            border: '2px solid #0d9488',
+            borderRadius: 2,
+            p: { xs: 1.5, sm: 2 },
             mb: { xs: 2, sm: 3 },
-            overflow: 'hidden'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            bgcolor: '#fff',
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 800, color: '#1E293B' }}
+          >
+            Manage Skills
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddSkill}
+            sx={{
+              bgcolor: '#0d9488',
+              textTransform: 'none',
+              fontWeight: 700,
+              borderRadius: 2,
+              '&:hover': { bgcolor: '#0a7a6f' },
+            }}
+          >
+            Add Skill
+          </Button>
+        </Box>
+
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           }}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
-                <Typography 
-                  variant={isMobile ? "h5" : "h4"} 
-                  sx={{ 
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
-                  }}
-                >
-                  Manage Extra Skills
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddSkill}
-                  fullWidth={isMobile}
-                  sx={{ 
-                    py: { xs: 1, sm: 'auto' },
-                    textTransform: 'none',
-                    boxShadow: 2
-                  }}
-                >
-                  Add New Skill
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card 
-          elevation={2} 
-          sx={{ 
-            borderRadius: { xs: 1, sm: 2 },
-            overflow: 'hidden'
-          }}
-        >
-          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+            {/* Search and Actions Bar */}
             <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              gap={2}
-              mb={2}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+                mb: 3,
+                pb: 2,
+                borderBottom: '2px solid',
+                borderColor: 'divider',
+              }}
             >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}
-              >
-                Skills ({filteredSkills.length})
-              </Typography>
-              
-              <TextField
-                placeholder="Search skills"
-                variant="outlined"
-                size="small"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ width: { xs: '100%', sm: '220px' } }}
-              />
-            </Box>
-            
-            {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search skills..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: '#0d9488' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    minWidth: { xs: '100%', sm: '280px' },
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': { borderColor: '#0d9488' },
+                      '&.Mui-focused fieldset': { borderColor: '#0d9488' },
+                    },
+                  }}
+                />
               </Box>
-            ) : filteredSkills.length === 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {searchQuery 
-                  ? "No skills match your search criteria."
-                  : "No skills available. Add a new skill to get started."
-                }
-              </Alert>
-            ) : (
-              <>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    mb: 2,
-                    width: '100%',
-                    height: 440
-                  }}
-                >
-                  <DataGrid
-                    rows={filteredSkills}
-                    columns={columns}
-                    disableRowSelectionOnClick
-                    pagination
-                    paginationMode="client"
-                    rowCount={filteredSkills.length}
-                    pageSize={itemsPerPage}
-                    onPageChange={(page) => setCurrentPage(page + 1)}
-                    page={currentPage - 1}
-                    rowsPerPageOptions={[itemsPerPage]}
-                    checkboxSelection={false}
-                    disableColumnFilter
-                    disableColumnSelector
-                    disableDensitySelector
-                    disableColumnMenu
-                    loading={loading}
-                    getRowClassName={(params) => 
-                      params.indexRelativeToCurrentPage % 2 === 0 ? '' : 'even-row'
-                    }
+
+              <Stack direction="row" spacing={1}>
+                <Tooltip title="Refresh Data">
+                  <IconButton
+                    size="small"
+                    onClick={fetchSkills}
                     sx={{
-                      '& .MuiDataGrid-cell:focus': { outline: 'none' },
-                      '& .MuiDataGrid-columnHeader:focus': { outline: 'none' },
-                      '& .even-row': { backgroundColor: '#fafafa' },
-                      border: 'none',
-                      '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: 'background.default',
-                        fontWeight: 600
-                      },
-                      '& .MuiDataGrid-virtualScroller': {
-                        backgroundColor: 'background.paper',
-                      },
+                      bgcolor: alpha('#0d9488', 0.1),
+                      color: '#0d9488',
+                      '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
                     }}
-                  />
-                </Paper>
-                
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'stretch', sm: 'center' },
-                    gap: 2
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FilterListIcon />}
+                  sx={{
+                    display: { xs: 'none', md: 'flex' },
+                    borderColor: '#0d9488',
+                    color: '#0d9488',
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    '&:hover': { borderColor: '#0d9488', bgcolor: alpha('#0d9488', 0.05) },
                   }}
                 >
+                  Filter
+                </Button>
+                {selectedSkills.length > 0 && (
                   <Button
                     variant="contained"
+                    size="small"
                     color="error"
                     startIcon={<DeleteIcon />}
                     onClick={handleBulkDelete}
-                    disabled={selectedSkills.length === 0 || submitting}
-                    fullWidth={isMobile}
-                    sx={{ 
-                      py: { xs: 1, sm: 'auto' },
-                      textTransform: 'none',
-                      order: { xs: 2, sm: 1 }
+                    disabled={submitting}
+                    sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600 }}
+                  >
+                    Delete ({selectedSkills.length})
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+            
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#0d9488' }} size={48} />
+              </Box>
+            ) : filteredSkills.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
+                <BuildIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
+                  {searchQuery ? 'No skills found' : 'No skills yet'}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                  {searchQuery ? 'Try adjusting your search terms' : 'Get started by creating your first skill'}
+                </Typography>
+                {!searchQuery && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleAddSkill}
+                    sx={{
+                      bgcolor: '#0d9488', textTransform: 'none', fontWeight: 600, px: 4, py: 1.5, borderRadius: 2,
+                      '&:hover': { bgcolor: '#0a7a6f' },
                     }}
                   >
-                    Delete Selected {selectedSkills.length > 0 && `(${selectedSkills.length})`}
+                    Create First Skill
                   </Button>
-                </Box>
-              </>
+                )}
+              </Box>
+            ) : (
+              <Paper
+                elevation={0}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  height: 500,
+                  width: '100%',
+                  '& .MuiDataGrid-root': { border: 'none' },
+                  '& .MuiDataGrid-columnHeaders': {
+                    bgcolor: alpha('#0d9488', 0.05),
+                    borderBottom: '2px solid',
+                    borderColor: '#0d9488',
+                    '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, color: '#1E293B' },
+                  },
+                  '& .MuiDataGrid-row': {
+                    '&:hover': { bgcolor: alpha('#0d9488', 0.04) },
+                    '&.Mui-selected': {
+                      bgcolor: alpha('#0d9488', 0.08),
+                      '&:hover': { bgcolor: alpha('#0d9488', 0.12) },
+                    },
+                  },
+                  '& .MuiCheckbox-root': {
+                    color: '#0d9488',
+                    '&.Mui-checked': { color: '#0d9488' },
+                  },
+                }}
+              >
+                <DataGrid
+                  rows={filteredSkills}
+                  columns={columns}
+                  checkboxSelection
+                  disableRowSelectionOnClick
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={setPaginationModel}
+                  pageSizeOptions={[5, 10, 25, 50]}
+                  loading={loading}
+                  onRowSelectionModelChange={(model) => setSelectedSkills(model)}
+                  rowSelectionModel={selectedSkills}
+                  getRowHeight={() => 'auto'}
+                  getEstimatedRowHeight={() => 60}
+                  sx={{
+                    '& .MuiDataGrid-row': { minHeight: '52px!important' },
+                    '& .MuiDataGrid-cell': { py: 1.5 },
+                  }}
+                />
+              </Paper>
             )}
           </CardContent>
         </Card>
 
-        <Dialog 
-          open={isEditModalOpen} 
+        {/* Add/Edit Modal */}
+        <Modal
+          open={isEditModalOpen}
           onClose={() => !submitting && setIsEditModalOpen(false)}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
-            sx: { 
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' }
-            }
-          }}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{ timeout: 500, sx: { backdropFilter: 'blur(4px)' } }}
         >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {currentSkill && currentSkill.id ? "Edit Skill" : "Add Skill"}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '520px' },
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {currentSkill?.id ? 'Edit Skill' : 'Add New Skill'}
               </Typography>
               {!submitting && (
                 <IconButton
-                  edge="end"
-                  color="inherit"
                   onClick={() => setIsEditModalOpen(false)}
-                  aria-label="close"
-                  size="small"
+                  sx={{ color: '#F8FAFC', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
-          </DialogTitle>
-          
-          <Divider />
-          
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <TextField
-              label="Skill Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              name="name"
-              value={currentSkill?.name || ""}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.name)}
-              helperText={formErrors.name || ""}
-              disabled={submitting}
-              autoFocus
-            />
-            
-            <TextField
-              label="Description (optional)"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              name="description"
-              value={currentSkill?.description || ""}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.description)}
-              helperText={formErrors.description || ""}
-              disabled={submitting}
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-          
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box 
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button 
-                onClick={() => setIsEditModalOpen(false)} 
-                variant="outlined"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{ 
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
-              
-              <Button 
-                onClick={handleSaveSkill} 
-                variant="contained" 
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{ 
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
-                }}
-              >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : currentSkill?.id ? (
-                  "Update"
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
 
-        <Dialog
+            {/* Body */}
+            <Box sx={{ p: 3 }}>
+              <TextField
+                fullWidth
+                label="Skill Name"
+                name="name"
+                value={currentSkill?.name || ''}
+                onChange={handleInputChange}
+                error={Boolean(formErrors.name)}
+                helperText={formErrors.name || 'Enter the skill name'}
+                disabled={submitting}
+                autoFocus
+                required
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': { borderColor: '#0d9488' },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#0d9488' },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BuildIcon sx={{ color: '#0d9488' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Description (optional)"
+                name="description"
+                value={currentSkill?.description || ''}
+                onChange={handleInputChange}
+                error={Boolean(formErrors.description)}
+                helperText={formErrors.description || 'Up to 200 characters'}
+                disabled={submitting}
+                multiline
+                rows={4}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    '&.Mui-focused fieldset': { borderColor: '#0d9488' },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#0d9488' },
+                }}
+              />
+
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600,
+                    borderColor: '#64748B', color: '#64748B',
+                    '&:hover': { borderColor: '#64748B', bgcolor: alpha('#64748B', 0.05) },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSaveSkill}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600,
+                    bgcolor: '#0d9488', '&:hover': { bgcolor: '#0a7a6f' },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : currentSkill?.id ? (
+                    <>
+                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Update Skill
+                    </>
+                  ) : (
+                    <>
+                      <AddIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Create Skill
+                    </>
+                  )}
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+        </Modal>
+
+        {/* Delete Modal */}
+        <Modal
           open={openDeleteDialog}
           onClose={() => !submitting && setOpenDeleteDialog(false)}
-          PaperProps={{
-            sx: { 
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' },
-              maxWidth: '450px'
-            }
-          }}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{ timeout: 500, sx: { backdropFilter: 'blur(4px)' } }}
         >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '480px' },
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <Box
+              sx={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#F8FAFC',
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Delete Skill
               </Typography>
               {!submitting && (
                 <IconButton
-                  edge="end"
-                  color="inherit"
                   onClick={() => setOpenDeleteDialog(false)}
-                  aria-label="close"
-                  size="small"
+                  sx={{ color: '#F8FAFC', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon />
                 </IconButton>
               )}
             </Box>
-          </DialogTitle>
-          
-          <Divider />
-          
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <Typography variant="body1" mb={1}>
-              Are you sure you want to delete this skill:
-            </Typography>
-            <Typography variant="subtitle1" fontWeight={600} mb={2}>
-              "{selectedToDelete?.name}"
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              This action cannot be undone.
-            </Typography>
-          </DialogContent>
-          
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box 
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button 
-                onClick={() => setOpenDeleteDialog(false)} 
-                variant="outlined"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{ 
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
+
+            {/* Body */}
+            <Box sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: alpha('#ef4444', 0.1),
+                  borderRadius: 2,
+                  p: 2.5,
+                  mb: 2.5,
+                  border: '1px solid',
+                  borderColor: alpha('#ef4444', 0.2),
                 }}
               >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleDeleteSkill} 
-                variant="contained" 
-                color="error"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{ 
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
+                <Typography variant="body1" sx={{ mb: 1.5, color: '#1E293B', fontWeight: 500 }}>
+                  Are you sure you want to delete this skill?
+                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: '#fff',
+                    borderRadius: 1.5,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 0.5, fontSize: '0.75rem' }}>
+                    Skill Name
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
+                    "{selectedToDelete?.name}"
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Alert
+                severity="warning"
+                icon={false}
+                sx={{
+                  borderRadius: 2,
+                  bgcolor: alpha('#f59e0b', 0.1),
+                  border: '1px solid',
+                  borderColor: alpha('#f59e0b', 0.2),
+                  '& .MuiAlert-message': { color: '#92400e' },
                 }}
               >
-                {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
-              </Button>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  ⚠️ Warning: This action cannot be undone!
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                  All associated data will be permanently removed from the system.
+                </Typography>
+              </Alert>
+
+              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setOpenDeleteDialog(false)}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600,
+                    borderColor: '#64748B', color: '#64748B',
+                    '&:hover': { borderColor: '#64748B', bgcolor: alpha('#64748B', 0.05) },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleDeleteSkill}
+                  disabled={submitting}
+                  sx={{
+                    py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600,
+                    bgcolor: '#ef4444', '&:hover': { bgcolor: '#dc2626' },
+                  }}
+                >
+                  {submitting ? (
+                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+                  ) : (
+                    <>
+                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Delete Permanently
+                    </>
+                  )}
+                </Button>
+              </Stack>
             </Box>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </Modal>
 
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           sx={{ mt: { xs: 7, sm: 8 } }}
         >
           <Alert
@@ -731,13 +829,14 @@ const ManageSkills = () => {
             severity={snackbar.severity}
             variant="filled"
             elevation={6}
-            sx={{ 
-              width: "100%", 
-              boxShadow: 3,
-              '& .MuiAlert-message': {
-                maxWidth: '100%',
-                wordBreak: 'break-word'
-              }
+            icon={snackbar.severity === 'success' ? <CheckCircleIcon /> : undefined}
+            sx={{
+              width: '100%',
+              minWidth: '300px',
+              borderRadius: 2,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+              '& .MuiAlert-message': { maxWidth: '100%', wordBreak: 'break-word', fontWeight: 500 },
+              ...(snackbar.severity === 'success' && { bgcolor: '#0d9488', color: '#F8FAFC' }),
             }}
           >
             {snackbar.message}
@@ -745,10 +844,20 @@ const ManageSkills = () => {
         </Snackbar>
 
         <Backdrop
-          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+          sx={{
+            color: '#F8FAFC',
+            zIndex: (theme) => theme.zIndex.drawer + 2,
+            backdropFilter: 'blur(4px)',
+            bgcolor: 'rgba(13, 148, 136, 0.2)',
+          }}
           open={submitting}
         >
-          <CircularProgress color="inherit" />
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress size={56} thickness={4} sx={{ color: '#0d9488', mb: 2 }} />
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              Processing...
+            </Typography>
+          </Box>
         </Backdrop>
       </Container>
     </Layout>
