@@ -7,7 +7,7 @@ import { MdSchool, MdFilterAltOff, MdFilterAlt } from "react-icons/md";
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlineAcademicCap, HiOutlinePhone } from "react-icons/hi";
-import { fetchTeachers } from "../../features/teacherFilterSlice";
+import { fetchTeachers, searchTeachers } from "../../features/teacherFilterSlice";
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
@@ -15,6 +15,7 @@ const TeacherFilter = () => {
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'card' : 'list'); // 'card' or 'list'
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [searchValue, setSearchValue] = useState("");
   const dispatch = useDispatch();
 
   // Get sidebar state from layout context
@@ -56,6 +57,29 @@ const TeacherFilter = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Search functionality with debounce
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchValue.trim()) {
+        dispatch(searchTeachers(searchValue));
+      } else {
+        dispatch(fetchTeachers({}));
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchValue, dispatch]);
+
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchValue.trim()) {
+      dispatch(searchTeachers(searchValue));
+    }
+  };
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -115,52 +139,93 @@ const TeacherFilter = () => {
   return (
     <div className="w-full min-h-screen bg-background p-2 sm:p-4 relative">
       {/* Toolbar with view toggle, refresh, and clear filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-4 bg-white rounded-lg gap-2">
-        <div className="text-lg font-semibold text-text">
-          Teacher List
-          <span className="ml-2 text-sm text-secondary font-normal">
-            ({teachers.length} results)
-          </span>
+      <div className="bg-white rounded-lg shadow-sm mb-4">
+        {/* Top Section - Title, Search Bar and Mobile Filter Button */}
+        <div className="space-y-3 p-4 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h1 className="text-lg sm:text-xl font-bold text-text">Teacher List</h1>
+              <p className="text-xs sm:text-sm text-secondary font-normal mt-0.5">
+                {teachers.length} {teachers.length === 1 ? 'result' : 'results'} found
+              </p>
+            </div>
+            
+            {/* Mobile Filter Button */}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="md:hidden px-3 py-2 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center gap-1.5 font-medium transition-colors shadow-sm"
+              aria-label="Open filters"
+            >
+              <MdFilterAlt size={18} />
+              <span className="hidden xs:inline">Filters</span>
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by name, email, location, or qualification..."
+              className="w-full bg-background border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg px-4 py-2.5 pl-10 text-sm text-text placeholder-secondary focus:outline-none transition-all"
+              value={searchValue}
+              onChange={handleSearchChange}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
+              />
+            </svg>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-center">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="md:hidden px-4 py-2 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center font-medium transition-colors"
-            aria-label="Open filters"
-          >
-            <MdFilterAlt className="mr-1.5" /> Filters
-          </button>
-
-          <div className="flex bg-background rounded-lg p-1">
-             <button
+        {/* Bottom Section - View Toggle and Clear Filters */}
+        <div className="flex items-center justify-between gap-3 p-4">
+          {/* View Mode Toggle */}
+          <div className="flex bg-background rounded-lg p-1 shadow-inner">
+            <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors ${viewMode === 'list'
-                  ? 'bg-white text-primary'
+              className={`px-3 sm:px-4 py-2 rounded-md flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white text-primary shadow-sm'
                   : 'text-secondary hover:text-text'
-                }`}
+              }`}
+              aria-label="List view"
             >
-              <BsList className="mr-1.5" /> List
+              <BsList size={18} />
+              <span className="hidden sm:inline">List</span>
             </button>
             <button
               onClick={() => setViewMode('card')}
-              className={`px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors ${viewMode === 'card'
-                  ? 'bg-white text-primary'
+              className={`px-3 sm:px-4 py-2 rounded-md flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-all ${
+                viewMode === 'card'
+                  ? 'bg-white text-primary shadow-sm'
                   : 'text-secondary hover:text-text'
-                }`}
+              }`}
+              aria-label="Card view"
             >
-              <BsGrid className="mr-1.5" /> Card
+              <BsGrid size={18} />
+              <span className="hidden sm:inline">Card</span>
             </button>
-           
           </div>
 
-          
+          {/* Clear Filters Button */}
           <button
             onClick={handleClearFilters}
-            className="px-4 py-2 text-sm bg-white rounded-lg text-secondary hover:text-text hover:bg-background flex items-center font-medium transition-colors"
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-background hover:bg-red-50 border border-transparent hover:border-red-200 rounded-lg text-secondary hover:text-red-600 flex items-center gap-1.5 font-medium transition-all"
             aria-label="Clear filters"
           >
-            <MdFilterAltOff className="mr-1.5" /> Clear Filters
+            <MdFilterAltOff size={18} />
+            <span className="hidden sm:inline">Clear</span>
           </button>
         </div>
       </div>

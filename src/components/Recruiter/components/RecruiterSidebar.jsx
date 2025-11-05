@@ -307,7 +307,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar - Flipkart Style */}
       <motion.div
         ref={sidebarRef}
-        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white flex flex-col
+        className="fixed left-0  top-16 h-screen bg-white flex flex-col
             w-[90vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r border-gray-200 shadow-xl md:shadow-none"
         variants={sidebarVariants}
         initial={isDesktop ? "open" : "closed"}
@@ -318,13 +318,17 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         <div className="sticky top-0 bg-white z-10 border-b px-4 py-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-bold text-text uppercase">Filters</h2>
-            <button
-              onClick={handleClear}
-              className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded transition-colors"
-              aria-label="Clear all filters"
-            >
-              Clear All
-            </button>
+            {Object.values(filters).some(value => 
+              Array.isArray(value) ? value.length > 0 : (value.min || value.max)
+            ) && (
+              <button
+                onClick={handleClear}
+                className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded transition-colors"
+                aria-label="Clear all filters"
+              >
+                Clear All
+              </button>
+            )}
           </div>
         </div>
 
@@ -1303,8 +1307,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         </div>
         </div>
 
-        {/* Apply Button */}
-        <div className="p-4 border-t bg-white">
+        {/* Apply Button - Fixed at bottom */}
+        <div className="sticky bottom-0 p-4 border-t bg-white shadow-lg md:shadow-none">
           <button
             onClick={() => {
               dispatch(fetchTeachers(filters));

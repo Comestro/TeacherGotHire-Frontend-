@@ -7,10 +7,6 @@ import { getUserData } from "../../../features/authSlice";
 import { FiAlignLeft } from "react-icons/fi";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import {
-  fetchTeachers,
-  searchTeachers,
-} from "../../../features/teacherFilterSlice";
-import {
   getClassCategory,
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
@@ -22,8 +18,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
   const dispatch = useDispatch();
@@ -46,29 +40,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
-  };
-
-  // search work
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      if (searchValue.trim()) {
-        dispatch(searchTeachers(searchValue));
-      } else {
-        dispatch(fetchTeachers());
-      }
-    }, 500);
-
-    return () => clearTimeout(debounceTimer);
-  }, [searchValue, dispatch]);
-
-  const handleSearchChange = (e) => {
-    setSearchValue(e.target.value);
-  };
-
-  const handleSearchSubmit = () => {
-    if (searchValue.trim()) {
-      dispatch(searchTeachers(searchValue));
-    }
   };
 
   return (
@@ -97,34 +68,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
               <FaChalkboardTeacher className="w-7 h-7" />
               <span>Teacher Recruiter</span>
             </Link>
-          </div>
-
-          {/* Center Section: Search Bar */}
-          <div className="flex-1 max-w-2xl mx-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by name, email, location, or qualification..."
-                className="w-full bg-background border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg px-4 py-2.5 pl-10 text-sm text-text placeholder-secondary focus:outline-none transition-all"
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
-                />
-              </svg>
-            </div>
           </div>
 
           {/* Right Section: Request Button and Profile */}
