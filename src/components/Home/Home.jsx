@@ -22,7 +22,6 @@ const Home = () => {
       </Helmet>
 
       <HeroSection />
-      <h1>welcome world</h1>
       <TeacherSection onSelectRole={handleRoleSelection} />
       <SchoolSection onSelectRole={handleRoleSelection} />
       <ExamSection />
