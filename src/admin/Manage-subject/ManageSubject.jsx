@@ -454,34 +454,18 @@ const ManageSubject = () => {
 
   return (
     <Layout>
-      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: '1400px', mx: 'auto' }}>
+      <Box  sx={{ maxWidth: '1400px', mx: 'auto' }}>
         {/* Modern Header Section */}
         <Box
           sx={{
-            borderRadius: 2,
-            p: { xs: 2, sm: 2.5 },
             mb: 3,
-            border: '2px solid #0d9488',
             bgcolor: '#fff',
           }}
         >
           <Grid2 container spacing={2} alignItems="center">
             <Grid2 size={{ xs: 12, sm: 8 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2,
-                    bgcolor: alpha('#0d9488', 0.1),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SubjectIcon sx={{ fontSize: 28, color: '#0d9488' }} />
-                </Box>
-                <Box>
+                 <Box>
                   <Typography
                     variant="h5"
                     sx={{

@@ -331,18 +331,12 @@ const ManageSkills = () => {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2.5, md: 3 } }}>
         {/* Compact Header */}
         <Box
           sx={{
-            border: '2px solid #0d9488',
-            borderRadius: 2,
-            p: { xs: 1.5, sm: 2 },
             mb: { xs: 2, sm: 3 },
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 2,
             bgcolor: '#fff',
           }}
         >
@@ -859,7 +853,6 @@ const ManageSkills = () => {
             </Typography>
           </Box>
         </Backdrop>
-      </Container>
     </Layout>
   );
 };

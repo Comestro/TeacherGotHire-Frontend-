@@ -450,14 +450,10 @@ const ManageLevel = () => {
   ];
   return (
     <Layout>
-      <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+      <Box sx={{ width: '100%' }}>
         {/* Compact Header */}
         <Box
           sx={{
-            bgcolor: '#F8FAFC',
-            border: '2px solid #0d9488',
-            borderRadius: 3,
-            p: 2.5,
             mb: 3,
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
