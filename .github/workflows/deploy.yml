@@ -1,0 +1,44 @@
+name: 🚀 Auto Deploy to KVM2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --production
+
+      - name: Build the app
+        run: yarn build
+
+      - name: Deploy to KVM2 via SSH
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 147.93.30.100
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "build/*"
+          target: "/var/www/ptpinstitute/"
+
+      - name: Restart Nginx or PM2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 147.93.30.100
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/ptpinstitute
+            pm2 restart ptp-webhook
