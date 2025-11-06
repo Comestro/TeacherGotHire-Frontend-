@@ -405,7 +405,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                         height: 32,
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
                       }}
                     >
                       {item.icon}
