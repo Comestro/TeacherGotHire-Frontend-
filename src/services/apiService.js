@@ -3,6 +3,23 @@ import { getApiUrl } from "../store/configue";
 
 const API_URL = getApiUrl();
 
+// Helper function to get CSRF token from cookies
+const getCsrfToken = () => {
+  const name = 'csrftoken';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+};
+
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -11,13 +28,22 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Add a request interceptor to include the token dynamically
+// Add a request interceptor to include the token and CSRF token dynamically
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
       config.headers["Authorization"] = `Token ${token}`;
     }
+    
+    // Add CSRF token for state-changing methods
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+      }
+    }
+    
     return config;
   },
   (error) => {

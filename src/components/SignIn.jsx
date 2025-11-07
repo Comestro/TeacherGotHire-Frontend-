@@ -109,6 +109,19 @@ function Login() {
       // Check if error is related to account verification
       const errorMessage = err.message || "An error occurred during login";
 
+      // Handle CSRF token error specifically
+      if (errorMessage.toLowerCase().includes("csrf") || errorMessage.toLowerCase().includes("session expired")) {
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+        // Reload the page to get a fresh CSRF token
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        return;
+      }
+
       if (
         errorMessage.toLowerCase().includes("verify") ||
         errorMessage.toLowerCase().includes("verification") ||
