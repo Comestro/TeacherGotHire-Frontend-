@@ -30,6 +30,7 @@ import {
   Divider,
   Avatar,
   alpha,
+  Stack,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import {
@@ -40,15 +41,17 @@ import {
   GridToolbarDensitySelector
 } from '@mui/x-data-grid';
 import {
-  Visibility as ViewIcon,
-  GetApp as ExportIcon,
-  Email as EmailIcon,
-  FilterList as FilterIcon,
-  Search as SearchIcon,
-  Phone as PhoneIcon,
-  Person as PersonIcon,
-  VerifiedUser as VerifiedIcon,
-} from "@mui/icons-material";
+  MdVisibility as ViewIcon,
+  MdGetApp as ExportIcon,
+  MdEmail as EmailIcon,
+  MdFilterList as FilterIcon,
+  MdSearch as SearchIcon,
+  MdPhone as PhoneIcon,
+  MdPerson as PersonIcon,
+  MdVerifiedUser as VerifiedIcon,
+  MdRefresh,
+  MdAdd,
+} from "react-icons/md";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import Layout from "../Admin/Layout";
 import { getRecruiter } from "../../services/adminManageRecruiter";
@@ -257,7 +260,10 @@ const ManageRecruiter = () => {
           sx={{
             mb: 2,
             position: 'relative',
-            borderLeft: `4px solid ${theme.palette[getStatusColor(recruiter.status)].main}`
+            borderRadius: 3,
+            border: `1px solid ${alpha('#0d9488', 0.1)}`,
+            background: `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8fafc', 0.5)} 100%)`,
+            borderLeft: `4px solid ${recruiter.status === 'Verified' ? '#0d9488' : recruiter.status === 'Pending' ? '#f59e0b' : '#ef4444'}`
           }}
         >
           <CardContent>
@@ -267,7 +273,7 @@ const ManageRecruiter = () => {
                   src={recruiter.profilePic}
                   alt={getInitials(recruiter.name)}
                   sx={{
-                    bgcolor: theme.palette.primary.main,
+                    bgcolor: '#0d9488',
                     width: 40,
                     height: 40
                   }}
@@ -284,15 +290,19 @@ const ManageRecruiter = () => {
                 label={recruiter.status}
                 color={getStatusColor(recruiter.status)}
                 variant="outlined"
+                sx={{
+                  borderColor: recruiter.status === 'Verified' ? '#0d9488' : recruiter.status === 'Pending' ? '#f59e0b' : '#ef4444',
+                  color: recruiter.status === 'Verified' ? '#0d9488' : recruiter.status === 'Pending' ? '#f59e0b' : '#ef4444',
+                }}
               />
             </Box>
 
-            <Divider sx={{ my: 1 }} />
+            <Divider sx={{ my: 1, borderColor: alpha('#0d9488', 0.1) }} />
 
             <Grid container spacing={1}>
               <Grid item xs={12}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <EmailIcon fontSize="small" color="action" />
+                  <MdEmail size={16} color="#6b7280" />
                   <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
                     {recruiter.email}
                   </Typography>
@@ -301,14 +311,14 @@ const ManageRecruiter = () => {
 
               <Grid item xs={6}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <PhoneIcon fontSize="small" color="action" />
+                  <MdPhone size={16} color="#6b7280" />
                   <Typography variant="body2">{recruiter.phone}</Typography>
                 </Box>
               </Grid>
 
               <Grid item xs={6}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <PersonIcon fontSize="small" color="action" />
+                  <PersonIcon size={16} color="#6b7280" />
                   <Typography variant="body2">{recruiter.gender}</Typography>
                 </Box>
               </Grid>
@@ -318,10 +328,10 @@ const ManageRecruiter = () => {
               <Tooltip title="View Details">
                 <IconButton
                   size="small"
-                  color="primary"
+                  sx={{ color: '#0d9488' }}
                   onClick={() => handleViewRecruiter(recruiter)}
                 >
-                  <ViewIcon fontSize="small" />
+                  <MdVisibility size={18} />
                 </IconButton>
               </Tooltip>
 
@@ -343,9 +353,9 @@ const ManageRecruiter = () => {
                   size="small"
                   component="a"
                   href={`mailto:${recruiter.email}`}
-                  color="warning"
+                  sx={{ color: '#f59e0b' }}
                 >
-                  <EmailIcon fontSize="small" />
+                  <MdEmail size={18} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -356,15 +366,11 @@ const ManageRecruiter = () => {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
         {/* Header section */}
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
-            mb: 3,
-            borderRadius: 2,
-            backgroundImage: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.paper, 0.5)})`,
+            mb: 1,
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
@@ -372,36 +378,48 @@ const ManageRecruiter = () => {
             gap: 2
           }}
         >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: 'primary.main',
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', sm: '2.125rem' }
-              }}
-            >
-              Manage Recruiters
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
-              {handleFilterChange().length} recruiters found
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: '#0d9488', width: 48, height: 48 }}>
+              <PersonIcon />
+            </Avatar>
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  color: '#0d9488',
+                  fontWeight: 700,
+                  fontSize: { xs: '1.75rem', sm: '2.125rem' }
+                }}
+              >
+                Manage Recruiters
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mt={0.5}>
+                {handleFilterChange().length} recruiters found
+              </Typography>
+            </Box>
           </Box>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<ExportIcon />}
-            onClick={handleExportData}
-            disabled={handleFilterChange().length === 0 || loading}
-            sx={{
-              boxShadow: 2,
-              textTransform: 'none',
-              minWidth: { xs: '100%', sm: 'auto' }
-            }}
-          >
-            Export Data
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button variant="outlined" startIcon={<MdRefresh />} onClick={() => window.location.reload()}>
+              Refresh
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #0b7d6f 0%, #0891b2 100%)',
+                }
+              }}
+              startIcon={<ExportIcon />}
+              onClick={handleExportData}
+              disabled={handleFilterChange().length === 0 || loading}
+              textTransform="none"
+              minWidth={{ xs: '100%', sm: 'auto' }}
+            >
+              Export Data
+            </Button>
+          </Stack>
         </Paper>
 
         {/* Search and filter section */}
@@ -410,7 +428,9 @@ const ManageRecruiter = () => {
           sx={{
             mb: 3,
             p: { xs: 2, sm: 3 },
-            borderRadius: 2
+            borderRadius: 3,
+            border: `1px solid ${alpha('#0d9488', 0.1)}`,
+            background: `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8fafc', 0.5)} 100%)`,
           }}
         >
           <Grid container spacing={2} alignItems="center">
@@ -524,7 +544,7 @@ const ManageRecruiter = () => {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                bgcolor: theme.palette.primary.main,
+                                bgcolor: '#0d9488',
                               }}
                             >
                               {getInitials(params.row.name)}
@@ -757,7 +777,7 @@ const ManageRecruiter = () => {
                         px: 2,
                         py: 1.5,
                         whiteSpace: 'normal',
-                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        borderBottom: `1px solid ${alpha('#0d9488', 0.1)}`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
@@ -766,11 +786,9 @@ const ManageRecruiter = () => {
                         outline: 'none',
                       },
                       '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: theme.palette.mode === 'light' ? 
-                          alpha(theme.palette.primary.main, 0.05) : 
-                          theme.palette.background.default,
+                        background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06B6D4', 0.03)} 100%)`,
                         fontWeight: 600,
-                        borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        borderBottom: `2px solid ${alpha('#0d9488', 0.2)}`,
                         py: 2,
                       },
                       '& .MuiDataGrid-columnHeader': {
@@ -790,32 +808,24 @@ const ManageRecruiter = () => {
                       },
                       '& .MuiDataGrid-row': {
                         '&:hover': {
-                          backgroundColor: theme.palette.mode === 'light' ? 
-                            alpha(theme.palette.primary.main, 0.04) : 
-                            alpha(theme.palette.primary.main, 0.1),
+                          backgroundColor: alpha('#0d9488', 0.04),
                         },
                       },
                       '& .MuiDataGrid-row:nth-of-type(even)': {
-                        backgroundColor: theme.palette.mode === 'light' ? 
-                          alpha(theme.palette.background.default, 0.6) : 
-                          alpha(theme.palette.background.paper, 0.1),
+                        backgroundColor: alpha('#f8fafc', 0.6),
                       },
                       '& .MuiDataGrid-toolbarContainer': {
                         padding: 2,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        borderBottom: `1px solid ${alpha('#0d9488', 0.1)}`,
                       },
                       '& .MuiButton-root': {
                         textTransform: 'none',
                       },
                       '& .MuiDataGrid-virtualScroller': {
-                        backgroundColor: theme.palette.mode === 'light' ? 
-                          alpha(theme.palette.background.paper, 0.8) : 
-                          'transparent',
+                        backgroundColor: alpha('#ffffff', 0.8),
                       },
                       '& .MuiCheckbox-root': {
-                        color: theme.palette.mode === 'light' ? 
-                          theme.palette.text.secondary : 
-                          theme.palette.primary.light,
+                        color: alpha('#0d9488', 0.6),
                       },
                       // Center checkbox column
                       '& .MuiDataGrid-columnHeaderCheckbox, & .MuiDataGrid-cellCheckbox': {
@@ -863,11 +873,21 @@ const ManageRecruiter = () => {
           maxWidth="sm"
           PaperProps={{
             elevation: 3,
-            sx: { borderRadius: 2 }
+            sx: { 
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha('#f8fafc', 0.9)} 100%)`,
+              border: `1px solid ${alpha('#0d9488', 0.2)}`,
+            }
           }}
         >
-          <DialogTitle sx={{ pb: 1 }}>
-            <Typography variant="h6" fontWeight={600}>Recruiter Details</Typography>
+          <DialogTitle 
+            sx={{ 
+              pb: 1,
+              background: `linear-gradient(135deg, ${alpha('#0d9488', 0.1)} 0%, ${alpha('#06B6D4', 0.05)} 100%)`,
+              borderBottom: `1px solid ${alpha('#0d9488', 0.2)}`,
+            }}
+          >
+            <Typography variant="h6" fontWeight={600} sx={{ color: '#0d9488' }}>Recruiter Details</Typography>
           </DialogTitle>
 
           <DialogContent dividers>
@@ -880,7 +900,7 @@ const ManageRecruiter = () => {
                     sx={{
                       width: 100,
                       height: 100,
-                      bgcolor: theme.palette.primary.main,
+                      bgcolor: '#0d9488',
                       fontSize: '2.5rem',
                       boxShadow: 2
                     }}
@@ -946,11 +966,18 @@ const ManageRecruiter = () => {
             )}
           </DialogContent>
 
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
             <Button
               onClick={() => setIsViewModalOpen(false)}
               variant="outlined"
-              color="primary"
+              sx={{
+                borderColor: alpha('#0d9488', 0.3),
+                color: '#0d9488',
+                '&:hover': {
+                  borderColor: '#0d9488',
+                  backgroundColor: alpha('#0d9488', 0.04),
+                }
+              }}
             >
               Close
             </Button>
@@ -958,22 +985,31 @@ const ManageRecruiter = () => {
               <>
                 <Button
                   variant="contained"
-                  color="primary"
-                  startIcon={<WhatsAppIcon />}
                   component="a"
                   href={`https://api.whatsapp.com/send/?phone=${currentRecruiter.phone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ backgroundColor: '#25D366', '&:hover': { backgroundColor: '#128C7E' } }}
+                  sx={{ 
+                    backgroundColor: '#25D366', 
+                    '&:hover': { backgroundColor: '#128C7E' },
+                    textTransform: 'none'
+                  }}
+                  startIcon={<WhatsAppIcon />}
                 >
                   WhatsApp
                 </Button>
                 <Button
                   variant="contained"
-                  color="warning"
-                  startIcon={<EmailIcon />}
                   component="a"
                   href={`mailto:${currentRecruiter.email}`}
+                  sx={{
+                    background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #0b7d6f 0%, #0891b2 100%)',
+                    },
+                    textTransform: 'none'
+                  }}
+                  startIcon={<MdEmail />}
                 >
                   Email
                 </Button>
@@ -999,7 +1035,6 @@ const ManageRecruiter = () => {
             {notification.message}
           </Alert>
         </Snackbar>
-      </Container>
     </Layout>
   );
 };
