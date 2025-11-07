@@ -5,6 +5,23 @@ import { userLogout } from "../features/authSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Helper function to get CSRF token from cookies
+const getCsrfToken = () => {
+  const name = 'csrftoken';
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+};
+
 const apiClient = axios.create({
   baseURL: getApiUrl(),
   headers: {
@@ -14,13 +31,22 @@ const apiClient = axios.create({
   maxBodyLength: Infinity, // For large payloads
 });
 
-// Interceptor to add token to every request
+// Interceptor to add token and CSRF token to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
+    
+    // Add CSRF token for state-changing methods
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+      }
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -137,8 +163,18 @@ export const verifyOtp = async (payload) =>
 
 export const login = async (credentials) => {
   try {
+    // First, make a GET request to get CSRF token if needed
+    if (!getCsrfToken()) {
+      try {
+        await apiClient.get('/api/csrf/');
+      } catch (csrfErr) {
+        // If CSRF endpoint doesn't exist, continue anyway
+        console.warn('CSRF token fetch failed, continuing with login');
+      }
+    }
+    
     const response = await apiClient.post("/api/login/", credentials);
-    const { access_token, role,is_active } = response.data.data;
+    const { access_token, role, is_active } = response.data.data;
     if (!is_active) {
       
       toast.error("Your account is deactivated. Please contact the admin.", {
@@ -159,6 +195,18 @@ export const login = async (credentials) => {
     return response.data;
   } catch (err) {
     if (err.response?.data) {
+      // Handle CSRF error specifically
+      if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
+        const csrfError = err.response.data.errors.find(e => e.code === 'error' && e.detail?.includes('CSRF'));
+        if (csrfError) {
+          // Clear any stale tokens and retry
+          document.cookie.split(";").forEach((c) => {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+          });
+          throw new Error('Session expired. Please refresh the page and try again.');
+        }
+      }
+      
       // Handle string response
       if (typeof err.response.data === 'string') {
         throw new Error(err.response.data);
@@ -196,8 +244,13 @@ export const resetPassword = async (uidb64, token, newPassword) =>
       // Step 2: Clear local storage after the API call
       localStorage.removeItem("access_token");
       localStorage.removeItem("role");
+      
+      // Step 3: Clear all cookies including CSRF token
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
   
-      // Step 3: Clear redux persist state
+      // Step 4: Clear redux persist state
       await persistor.purge();
       await persistor.flush();
   

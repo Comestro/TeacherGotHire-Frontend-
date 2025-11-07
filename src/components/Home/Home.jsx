@@ -20,11 +20,10 @@ const Home = () => {
       <Helmet>
         <title>Home | PTPI</title>
       </Helmet>
-
       <HeroSection />
       <TeacherSection onSelectRole={handleRoleSelection} />
       <SchoolSection onSelectRole={handleRoleSelection} />
-      <ExamSection />
+      <ExamSection /> 
       <FeaturesSection />
       <DetailSection />
     </>

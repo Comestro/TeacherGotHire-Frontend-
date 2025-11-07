@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -23,1930 +23,877 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
-  Container,
-  Chip,
-  Menu,
-  Tooltip,
   Paper,
   Avatar,
+  Chip,
+  Menu,
+  MenuItem as MuiMenuItem,
   Divider,
-  Badge,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Switch,
-  FormControlLabel
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
+  Tooltip,
+  Badge,
+  Stack,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 import {
-  FaPlus,
-  FaFilter,
+  MdAdd,
+  MdRefresh,
+  MdFilterList,
+  MdClear,
+  MdViewList,
+  MdGridView,
+  MdExpandLess,
+  MdExpandMore,
+} from 'react-icons/md';
+import {
   FaSearch,
   FaEye,
   FaEllipsisV,
   FaCheck,
   FaTimes,
-  FaUser,
-  FaClock,
+  FaTrash,
   FaBookOpen,
   FaLayerGroup,
   FaSchool,
-  FaPencilAlt,
-  FaTrash,
+  FaClock,
   FaListUl,
   FaFileAlt,
-  FaSync,
-  FaTh,
-  FaQuestionCircle,
-  FaDatabase,
-  FaTable,
-  FaThLarge,
-  FaLaptop
-} from "react-icons/fa";
-import { MdAdd, MdRefresh, MdFilterList, MdClear, MdAssignment, MdTimeline, MdViewList, MdGridView, MdExpandLess, MdExpandMore } from 'react-icons/md';
-import Layout from "../Admin/Layout";
-import {
-  getExam,
-  deleteExam,
-  createExam,
-  updateExam,
-} from "../../services/adminManageExam";
-import { getSubjects } from "../../services/adminSubujectApi";
-import { getClassCategory } from "../../services/adminClassCategoryApi";
-import { getLevel } from "../../services/adminManageLevel";
-import Loader from "../../components/Loader";
-import { Link } from "react-router-dom";
+  FaLaptop,
+} from 'react-icons/fa';
+import Layout from '../Admin/Layout';
+import Loader from '../../components/Loader';
+import { Link } from 'react-router-dom';
+// services (these are kept as imports; your existing service functions are reused)
+import { getExam, deleteExam, createExam, updateExam } from '../../services/adminManageExam';
+import { getSubjects } from '../../services/adminSubujectApi';
+import { getClassCategory } from '../../services/adminClassCategoryApi';
+import { getLevel } from '../../services/adminManageLevel';
 
+/*
+  Redesigned ExamManagement component with Approve/Reject actions added.
+  - Added handleAccept and handleReject functions
+  - Exposed Approve (check) and Reject (times) buttons in Card and Table views
+  - Confirmation dialog is bypassed for quick approve/reject; you can add a Dialog if you prefer extra confirmation
+*/
+
+// ---------- Styled components (kept minimal) ----------
 const StyledModal = styled(Modal)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   padding: theme.spacing(1),
 }));
 
 const ModalContent = styled(Box)(({ theme }) => ({
-  backgroundColor: "#fff",
-  borderRadius: "10px",
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: 10,
   padding: theme.spacing(3),
-  minWidth: "300px",
-  width: "90%",
-  maxWidth: "600px",
-  maxHeight: "90vh",
-  overflow: "auto",
+  width: 'min(720px, 95%)',
+  maxHeight: '90vh',
+  overflow: 'auto',
 }));
 
-const FilterContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  padding: theme.spacing(3),
-  backgroundColor: '#f8f9fa',
-  borderRadius: '10px',
-  boxShadow: 'rgba(0, 0, 0, 0.04) 0px 3px 5px',
-  width: '100%',
-  border: '1px solid #e0e0e0',
-}));
-
-const FilterSection = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  width: '100%',
-}));
-
-const FilterTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  color: theme.palette.text.primary,
-  fontSize: '0.9rem',
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  marginBottom: theme.spacing(0.5),
-}));
-
-const FilterBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    backgroundColor: theme.palette.primary.main,
-    color: 'white',
-    fontSize: '0.7rem',
-    minWidth: '18px',
-    height: '18px',
-    padding: '0 5px',
-  },
-}));
-
-const HeaderActionButton = styled(Button)(({ theme }) => ({
-  fontWeight: 500,
-  borderRadius: '8px',
-  textTransform: 'none',
-  boxShadow: 'none',
-  padding: theme.spacing(1, 2),
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
-    transform: 'translateY(-2px)',
-  },
+const FilterPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: 12,
+  backgroundColor: '#fff',
+  border: '1px solid #e6e6e6',
 }));
 
 const ExamCard = styled(Card)(({ theme, status }) => ({
+  borderRadius: 12,
+  border: status ? '1px solid rgba(76,175,80,0.18)' : '1px solid rgba(255,152,0,0.12)',
+  background: status ? 'rgba(76,175,80,0.02)' : 'transparent',
   height: '100%',
-  marginBottom: theme?.spacing(2) || 16,
-  transition: "all 0.3s ease",
-  borderRadius: '12px',
-  "&:hover": {
-    transform: "translateY(-3px)",
-    boxShadow: "0px 8px 20px rgba(0,0,0,0.08)",
-  },
-  border: status ? "1px solid rgba(76, 175, 80, 0.3)" : "1px solid rgba(255, 152, 0, 0.3)",
-  position: "relative",
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-  backgroundColor: status ? 'rgba(76, 175, 80, 0.02)' : 'rgba(255, 152, 0, 0.02)',
 }));
 
-const StyledCardContent = styled(CardContent)(({ theme }) => ({
-  flexGrow: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  padding: theme.spacing(2.5),
-  '&:last-child': {
-    paddingBottom: theme.spacing(2.5),
-  },
-}));
+// ---------- Helper small components ----------
+const StatusChip = ({ approved }) => (
+  <Chip
+    label={approved ? 'Approved' : 'Pending'}
+    size="small"
+    sx={{
+      bgcolor: approved ? '#e8f5e9' : '#fff3e0',
+      color: approved ? '#2e7d32' : '#ef6c00',
+      fontWeight: 600,
+    }}
+  />
+);
 
-const StatusChip = styled(Chip)(({ theme, status }) => ({
-  position: "absolute",
-  top: theme.spacing(1.5),
-  right: theme.spacing(1.5),
-  backgroundColor: status ? "#4CAF50" : "#FF9800",
-  color: "white",
-  fontWeight: 600,
-  fontSize: '0.75rem',
-  height: '24px',
-  boxShadow: '0px 2px 4px rgba(0,0,0,0.1)',
-  zIndex: 1,
-}));
-
-const InfoItem = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "flex-start",
-  marginBottom: theme.spacing(1.5),
-  gap: theme.spacing(1),
-  "& svg": {
-    color: theme.palette.primary.main,
-    minWidth: 20,
-    marginTop: 3,
-  },
-  "& .MuiTypography-root": {
-    wordBreak: "break-word",
-    lineHeight: 1.4,
-  }
-}));
-
-const ViewToggleButton = styled(Button)(({ theme, active }) => ({
-  minWidth: '42px',
-  height: '36px',
-  padding: theme.spacing(0.75, 1.25),
-  borderRadius: '6px',
-  color: active ? theme.palette.primary.dark : theme.palette.text.secondary,
-  backgroundColor: active ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
-  border: active ? `1px solid ${theme.palette.primary.main}` : '1px solid #e0e0e0',
-  '&:hover': {
-    backgroundColor: active ? 'rgba(25, 118, 210, 0.18)' : 'rgba(0, 0, 0, 0.04)',
-  },
-  transition: 'all 0.2s ease',
-}));
-
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: '12px',
-  boxShadow: 'none',
-  border: '1px solid #e0e0e0',
-  '& .MuiTableCell-head': {
-    backgroundColor: '#f5f5f5',
-    color: theme.palette.text.primary,
-    fontWeight: 600,
-    fontSize: '0.875rem',
-    padding: theme.spacing(1.5),
-  },
-  '& .MuiTableRow-root': {
-    '&:nth-of-type(even)': {
-      backgroundColor: 'rgba(0, 0, 0, 0.01)',
-    },
-    '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-    },
-  },
-  '& .MuiTableCell-body': {
-    fontSize: '0.875rem',
-    padding: theme.spacing(1.5),
-  },
-}));
-
-const CollapsibleFilterContainer = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-  transition: 'all 0.3s ease',
-  overflow: 'hidden',
-  width: '100%',
-}));
-
-const MobileFilterButton = styled(Button)(({ theme, isActive }) => ({
-  borderRadius: '8px',
-  padding: theme.spacing(1),
-  textTransform: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  width: '100%',
-  boxShadow: 'none',
-  border: '1px solid #e0e0e0',
-  backgroundColor: isActive ? 'rgba(25, 118, 210, 0.08)' : '#fff',
-  color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
-  fontWeight: 500,
-  '&:hover': {
-    backgroundColor: isActive ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)',
-  }
-}));
-
-const ExamManagement = () => {
+// ---------- Main component ----------
+export default function ExamManagement() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [exams, setExams] = useState([]);
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [openViewModal, setOpenViewModal] = useState(false);
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [selectedExam, setSelectedExam] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [classCategories, setClassCategories] = useState([]);
+
+  // UI state
+  const [viewMode, setViewMode] = useState('card');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(true);
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("");
-  const [selectedClassCategory, setSelectedClassCategory] = useState("");
-  const [selectedType, setSelectedType] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [subjects, setSubjects] = useState([]);
-  const [classCategories, setClassCategories] = useState([]);
-  const [levels, setLevels] = useState([]);
+
+  // filter values are IDs where applicable
+  const [filterClassCategoryId, setFilterClassCategoryId] = useState('');
+  const [filterSubjectId, setFilterSubjectId] = useState('');
+  const [filterLevelId, setFilterLevelId] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterAddedBy, setFilterAddedBy] = useState('');
+
+  // form/modal state
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [selectedExam, setSelectedExam] = useState(null);
   const [formData, setFormData] = useState({
-    name: "",
-    subject: "",
-    class_category: "",
-    level: "",
-    total_marks: "",
-    duration: "",
-    type: "",
+    name: '',
+    subject: '',
+    class_category: '',
+    level: '',
+    total_marks: '',
+    duration: '',
+    type: '',
   });
   const [formErrors, setFormErrors] = useState({});
+
+  // menu & snackbar
   const [actionMenuAnchor, setActionMenuAnchor] = useState(null);
   const [menuExam, setMenuExam] = useState(null);
-  const [openStatusConfirmation, setOpenStatusConfirmation] = useState(false);
-  const [statusAction, setStatusAction] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedAddedBy, setSelectedAddedBy] = useState("");
-  const [uniqueUsers, setUniqueUsers] = useState([]);
-  const [viewMode, setViewMode] = useState('card');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  useEffect(() => {
-    fetchExams();
-  }, []);
-
-  useEffect(() => {
-    setSelectedSubject("");
-  }, [selectedClassCategory]);
-
-  useEffect(() => {
-    if (exams.length > 0) {
-      try {
-        const users = new Set();
-        exams.forEach(exam => {
-          const user = getAssignedUserName(exam);
-          if (user && user !== "Unknown") {
-            users.add(user);
-          }
-        });
-        setUniqueUsers(Array.from(users).sort());
-      } catch (error) {
-        
-        setUniqueUsers([]);
-      }
-    }
+  // small derived set of unique users (by name)
+  const uniqueUsers = useMemo(() => {
+    const setNames = new Set();
+    exams.forEach((ex) => {
+      const assigned = ex.assigneduser?.user;
+      const name = assigned ? `${assigned.Fname || ''} ${assigned.Lname || ''}`.trim() : 'Admin';
+      if (name) setNames.add(name);
+    });
+    return Array.from(setNames).sort();
   }, [exams]);
 
-  const getAssignedUserName = (exam) => {
-    try {
-      if (exam.assigneduser && exam.assigneduser.user) {
-        const firstName = exam.assigneduser.user.Fname || '';
-        const lastName = exam.assigneduser.user.Lname || '';
-        return `${firstName} ${lastName}`.trim() || "Unknown";
-      }
-      return "Admin";
-    } catch (error) {
-      
-      return "Unknown";
-    }
-  };
+  // -------------- data fetching --------------
+  useEffect(() => {
+    loadAll();
+  }, []);
 
-  const fetchExams = async () => {
-    setLoading(true);
+  const loadAll = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
-      const response = await getExam();
-      response.sort((a, b) => b.id - a.id);
-      setExams(response);
-    } catch (error) {
+      const [examResp, subjectResp, classResp, levelResp] = await Promise.all([
+        getExam(),
+        getSubjects(),
+        getClassCategory(),
+        getLevel(),
+      ]);
+
+      // sort newest first if responses are arrays
+      setExams(Array.isArray(examResp) ? examResp.sort((a, b) => b.id - a.id) : []);
+      setSubjects(Array.isArray(subjectResp) ? subjectResp : []);
+      setClassCategories(Array.isArray(classResp) ? classResp : []);
+      setLevels(Array.isArray(levelResp) ? levelResp : []);
       
-      const errorMessage = error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to load exams";
-      showSnackbar(errorMessage, "error");
+      if (isRefresh) {
+        showSnackbar('Data refreshed successfully', 'success');
+      }
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Failed to load data', 'error');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const response = await getSubjects();
-        setSubjects(response);
-      } catch (error) {
-        
-        showSnackbar("Failed to load subjects", "error");
-      }
-    };
-    fetchSubjects();
-  }, []);
+  // -------------- helpers --------------
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
-  useEffect(() => {
-    const fetchClassCategories = async () => {
-      try {
-        const response = await getClassCategory();
-        setClassCategories(response);
-      } catch (error) {
-        
-        showSnackbar("Failed to load class categories", "error");
-      }
-    };
-    fetchClassCategories();
-  }, []);
+  const getAssignedUserName = (exam) => {
+    const usr = exam.assigneduser?.user;
+    if (!usr) return 'Admin';
+    return `${usr.Fname || ''} ${usr.Lname || ''}`.trim() || 'Admin';
+  };
 
-  useEffect(() => {
-    const fetchLevels = async () => {
-      try {
-        const response = await getLevel();
-        setLevels(response);
-      } catch (error) {
-        
-        showSnackbar("Failed to load levels", "error");
-      }
-    };
-    fetchLevels();
-  }, []);
+  // -------------- filtering (memoized) --------------
+  const filteredExams = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return exams.filter((exam) => {
+      // search by name or id
+      const matchesQuery = !q || exam.name.toLowerCase().includes(q) || String(exam.id).includes(q);
+
+      const matchesClass = !filterClassCategoryId || exam.class_category?.id === filterClassCategoryId;
+      const matchesSub = !filterSubjectId || exam.subject?.id === filterSubjectId;
+      const matchesLevel = !filterLevelId || exam.level?.id === filterLevelId;
+      const matchesType = !filterType || exam.type === filterType;
+      const matchesStatus = filterStatus === '' ? true : exam.status === (filterStatus === 'true');
+      const matchesAdded = !filterAddedBy || getAssignedUserName(exam) === filterAddedBy;
+
+      return (
+        matchesQuery &&
+        matchesClass &&
+        matchesSub &&
+        matchesLevel &&
+        matchesType &&
+        matchesStatus &&
+        matchesAdded
+      );
+    });
+  }, [exams, searchQuery, filterClassCategoryId, filterSubjectId, filterLevelId, filterType, filterStatus, filterAddedBy]);
+
+  // -------------- CRUD actions (create/update/delete) --------------
+  const handleOpenAdd = () => {
+    setSelectedExam(null);
+    setFormData({ name: '', subject: '', class_category: '', level: '', total_marks: '', duration: '', type: '' });
+    setFormErrors({});
+    setOpenAddModal(true);
+  };
+
+  const handleEdit = (exam) => {
+    setSelectedExam(exam);
+    setFormData({
+      name: exam.name || '',
+      subject: exam.subject?.id || '',
+      class_category: exam.class_category?.id || '',
+      level: exam.level?.id || '',
+      total_marks: exam.total_marks || '',
+      duration: exam.duration || '',
+      type: exam.type || '',
+    });
+    setFormErrors({});
+    setOpenAddModal(true);
+  };
 
   const validateForm = () => {
-    const errors = {};
-    if (!formData.class_category) errors.class_category = "Class category is required";
-    if (!formData.subject) errors.subject = "Subject is required";
-    if (!formData.level) errors.level = "Level is required";
+    const errs = {};
+    if (!formData.class_category) errs.class_category = 'Required';
+    if (!formData.subject) errs.subject = 'Required';
+    if (!formData.level) errs.level = 'Required';
+    if (!formData.total_marks || Number(formData.total_marks) <= 0) errs.total_marks = 'Must be > 0';
+    if (!formData.duration || Number(formData.duration) <= 0) errs.duration = 'Must be > 0';
 
-    if (!formData.total_marks) {
-      errors.total_marks = "Total marks is required";
-    } else if (isNaN(formData.total_marks) || parseInt(formData.total_marks) <= 0) {
-      errors.total_marks = "Total marks must be a positive number";
-    }
+    const selectedLevel = levels.find((l) => l.id === Number(formData.level));
+    if (selectedLevel && selectedLevel.level_code >= 2.0 && !formData.type) errs.type = 'Required for this level';
 
-    if (!formData.duration) {
-      errors.duration = "Duration is required";
-    } else if (isNaN(formData.duration) || parseInt(formData.duration) <= 0) {
-      errors.duration = "Duration must be a positive number";
-    }
-
-    const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
-    if (selectedLevel && selectedLevel.level_code >= 2.0 && !formData.type) {
-      errors.type = "Type is required for this level";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    const newFormData = { ...formData, [name]: value };
-
-    if (name === "level") {
-      const selectedLevel = levels.find(level => level.id === parseInt(value));
-      if (selectedLevel && selectedLevel.level_code < 2.0) {
-        newFormData.type = "";
-      }
-    }
-
-    if (name === "class_category") {
-      newFormData.subject = "";
-    }
-
-    setFormData(newFormData);
-
-    const newErrors = { ...formErrors };
-
-    if (name === 'name' && !value.trim()) {
-      newErrors.name = "Exam name is required";
-    } else if (name === 'total_marks') {
-      if (!value) {
-        newErrors.total_marks = "Total marks is required";
-      } else if (isNaN(value) || parseInt(value) <= 0) {
-        newErrors.total_marks = "Total marks must be a positive number";
-      } else {
-        delete newErrors.total_marks;
-      }
-    } else if (name === 'duration') {
-      if (!value) {
-        newErrors.duration = "Duration is required";
-      } else if (isNaN(value) || parseInt(value) <= 0) {
-        newErrors.duration = "Duration must be a positive number";
-      } else {
-        delete newErrors.duration;
-      }
-    } else if (name === 'type') {
-      const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
-      if (selectedLevel && selectedLevel.level_code >= 2.0 && !value) {
-        newErrors.type = "Type is required for this level";
-      } else {
-        delete newErrors.type;
-      }
-    } else {
-      delete newErrors[name];
-    }
-
-    setFormErrors(newErrors);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const showSnackbar = (message, severity = "success") => {
-    if (message && typeof message === 'object' && message.response) {
-      const serverMessage = message.response.data?.message ||
-        message.response.data?.error ||
-        "An error occurred";
-      setSnackbar({
-        open: true,
-        message: serverMessage,
-        severity: "error",
-      });
-    } else {
-      setSnackbar({
-        open: true,
-        message,
-        severity,
-      });
-    }
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSave = async () => {
     if (!validateForm()) return;
-    setLoading(true);
+    
+    const snackbarMsg = selectedExam ? 'Updating exam...' : 'Creating exam...';
+    showSnackbar(snackbarMsg, 'info');
+    
     try {
       const payload = {
+        name: formData.name,
         subject: formData.subject,
         class_category: formData.class_category,
         level: formData.level,
         total_marks: formData.total_marks,
         duration: formData.duration,
-        type: undefined
+        type: undefined,
       };
-      
-      const selectedLevel = levels.find(level => level.id === parseInt(formData.level));
-      if (selectedLevel && selectedLevel.level_code >= 2.0) {
-        payload.type = formData.type;
-      }
+      const selectedLvl = levels.find((l) => l.id === Number(formData.level));
+      if (selectedLvl && selectedLvl.level_code >= 2.0) payload.type = formData.type;
 
       if (selectedExam) {
-        const response = await updateExam(selectedExam.id, payload);
-        showSnackbar(response.message || "Exam updated successfully!");
+        await updateExam(selectedExam.id, payload);
+        showSnackbar('Exam updated successfully', 'success');
       } else {
-        const response = await createExam(payload);
-        showSnackbar(response.message || "Exam created successfully!");
+        await createExam(payload);
+        showSnackbar('Exam created successfully', 'success');
       }
-
-      await fetchExams();
       setOpenAddModal(false);
-    } catch (error) {
-      
-      const errorMessage = error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Failed to save exam";
-      showSnackbar(errorMessage, "error");
-    } finally {
-      setLoading(false);
+      await loadAll();
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Save failed', 'error');
     }
   };
 
-  const handleDelete = () => {
-    setOpenDeleteModal(true);
-    setActionMenuAnchor(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    setLoading(true);
+  const handleDelete = async (examToDelete) => {
+    if (!window.confirm('Delete this exam? This cannot be undone.')) return;
+    
+    showSnackbar('Deleting exam...', 'info');
+    
     try {
-      const response = await deleteExam(menuExam.id);
-      await fetchExams();
-      setOpenDeleteModal(false);
-      showSnackbar(response.message || "Exam deleted successfully!");
-    } catch (error) {
-      
-      showSnackbar(error);
-    } finally {
-      setLoading(false);
+      await deleteExam(examToDelete.id);
+      // Optimistically update UI
+      setExams(exams.filter(e => e.id !== examToDelete.id));
+      showSnackbar('Exam deleted successfully', 'success');
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Delete failed', 'error');
+      // Reload on error to sync state
+      await loadAll();
     }
   };
 
-  const handleAddNew = () => {
-    setSelectedExam(null);
-    setFormData({
-      name: "",
-      subject: "",
-      class_category: "",
-      level: "",
-      total_marks: "",
-      duration: "",
-      type: "",
-    });
-    setFormErrors({});
-    setOpenAddModal(true);
-  };
-
-  const handleEdit = () => {
-    setSelectedExam(menuExam);
-    setFormData({
-      subject: menuExam.subject.id,
-      class_category: menuExam.class_category.id,
-      level: menuExam.level.id,
-      total_marks: menuExam.total_marks,
-      duration: menuExam.duration,
-      type: menuExam.level.level_code >= 2.0 ? menuExam.type : "",
-    });
-    setFormErrors({});
-    setOpenAddModal(true);
-    setActionMenuAnchor(null);
-  };
-
-  const handleOpenMenu = (event, exam) => {
-    setActionMenuAnchor(event.currentTarget);
-    setMenuExam(exam);
-  };
-
-  const handleCloseMenu = () => {
-    setActionMenuAnchor(null);
-  };
-
-  const handleStatusChange = (action) => {
-    setStatusAction(action);
-    setOpenStatusConfirmation(true);
-    setActionMenuAnchor(null);
-  };
-
-  const handleConfirmStatusChange = async () => {
-    setLoading(true);
+  // ---------- New: Approve / Reject handlers ----------
+  const handleAccept = async (examToAccept) => {
+    if (!examToAccept) return;
+    
+    showSnackbar('Approving exam...', 'info');
+    
     try {
-      const payload = {
-        status: statusAction === 'accept'
-      };
-
-      const response = await updateExam(menuExam.id, payload);
-
-      showSnackbar(
-        statusAction === 'accept'
-          ? "Exam accepted successfully!"
-          : "Exam rejected successfully!",
-        "success"
-      );
-
-      await fetchExams();
-      setOpenStatusConfirmation(false);
-    } catch (error) {
-      
-      showSnackbar("Failed to update exam status", "error");
-    } finally {
-      setLoading(false);
+      await updateExam(examToAccept.id, { status: true });
+      // Optimistically update UI
+      setExams(exams.map(e => e.id === examToAccept.id ? { ...e, status: true } : e));
+      showSnackbar('Exam approved successfully', 'success');
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Approve failed', 'error');
+      // Reload on error to sync state
+      await loadAll();
     }
   };
 
-  const refreshData = async () => {
-    setLoading(true);
+  const handleReject = async (examToReject) => {
+    if (!examToReject) return;
+    
+    showSnackbar('Rejecting exam...', 'info');
+    
     try {
-      await fetchExams();
-      showSnackbar("Data refreshed successfully", "success");
-    } catch (error) {
-      
-      showSnackbar("Failed to refresh data", "error");
-    } finally {
-      setLoading(false);
+      await updateExam(examToReject.id, { status: false });
+      // Optimistically update UI
+      setExams(exams.map(e => e.id === examToReject.id ? { ...e, status: false } : e));
+      showSnackbar('Exam rejected successfully', 'warning');
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Reject failed', 'error');
+      // Reload on error to sync state
+      await loadAll();
     }
   };
 
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (selectedSubject) count++;
-    if (selectedLevel) count++;
-    if (selectedClassCategory) count++;
-    if (selectedType) count++;
-    if (selectedStatus) count++;
-    if (selectedAddedBy) count++;
-    return count;
+  // -------------- pagination handlers --------------
+  const handleChangePage = (e, newPage) => setPage(newPage);
+  const handleChangeRowsPerPage = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setPage(0);
   };
 
-  const filteredExams = exams.filter((exam) => {
-    const examUser = getAssignedUserName(exam);
+  // small helper to reset filters
+  const clearAllFilters = () => {
+    setFilterClassCategoryId('');
+    setFilterSubjectId('');
+    setFilterLevelId('');
+    setFilterType('');
+    setFilterStatus('');
+    setFilterAddedBy('');
+    setSearchQuery('');
+  };
 
-    return (
-      (exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        exam.id.toString().includes(searchQuery)) &&
-      (selectedSubject
-        ? exam.subject.subject_name === selectedSubject
-        : true) &&
-      (selectedLevel ? exam.level.name === selectedLevel : true) &&
-      (selectedClassCategory
-        ? exam.class_category.name === selectedClassCategory
-        : true) &&
-      (selectedType ? exam.type === selectedType : true) &&
-      (selectedStatus !== ""
-        ? exam.status === (selectedStatus === "true")
-        : true) &&
-      (selectedAddedBy !== ""
-        ? examUser === selectedAddedBy
-        : true)
-    );
-  });
-
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading && exams.length === 0) return <Loader />;
 
   return (
     <Layout>
-      <Container maxWidth="xl">
-        <Box sx={{
-          p: { xs: 2, sm: 3 },
-          backgroundColor: '#F9FAFC',
-          minHeight: '100vh'
-        }}>
-          {/* Header Section Redesign */}
-          <Paper
-            elevation={0}
+      <Box sx={{ p: { xs: 2, sm: 3 }, backgroundColor: '#F9FAFC', minHeight: '100vh', position: 'relative' }}>
+        {/* Loading overlay during refresh */}
+        {refreshing && (
+          <Box
             sx={{
-              p: { xs: 2, sm: 3 },
-              mb: 3,
-              borderRadius: '12px',
-              border: '1px solid #e0e0e0',
-              backgroundColor: '#fff',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              zIndex: 9999,
               display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', md: 'center' },
-              gap: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar
-                sx={{
-                  bgcolor: theme.palette.primary.dark,
-                  width: { xs: 40, md: 48 },
-                  height: { xs: 40, md: 48 },
-                  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 6px'
-                }}
-              >
-                <MdAssignment size={24} />
-              </Avatar>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 600,
-                    color: '#263238',
-                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-                    lineHeight: 1.2
-                  }}
-                >
-                  Manage Exams
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 0.5 }}
-                >
-                  Create, edit and manage your exam sets
-                </Typography>
-              </Box>
+            <Loader />
+          </Box>
+        )}
+        {/* header */}
+        <Box sx={{ p: 2, mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Avatar sx={{ bgcolor: "teal" }}>
+              <FaFileAlt color='white'/>
+            </Avatar>
+            <Box>
+              <Typography variant="h5" fontWeight={700}>Manage Exams</Typography>
+              <Typography variant="body2" color="text.primary">Create, edit and manage your exam sets</Typography>
+            </Box>
+          </Box>
+
+          <Stack direction="row" spacing={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 0.5, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+              <Tooltip title="Card view"><IconButton onClick={() => setViewMode('card')} color={viewMode === 'card' ? 'primary' : 'default'}><MdGridView /></IconButton></Tooltip>
+              <Tooltip title="Table view"><IconButton onClick={() => setViewMode('table')} color={viewMode === 'table' ? 'primary' : 'default'}><MdViewList /></IconButton></Tooltip>
             </Box>
 
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              {/* View toggle buttons */}
-              <Box sx={{
-                display: 'flex',
-                mr: { xs: 1, sm: 2 },
-                backgroundColor: '#f3f6f9',
-                borderRadius: '8px',
-                p: 0.5,
-                border: '1px solid #e0e0e0',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-              }}>
-                <Tooltip title="Card View" arrow placement="top">
-                  <ViewToggleButton
-                    size="small"
-                    onClick={() => setViewMode('card')}
-                    active={viewMode === 'card'}
-                    aria-label="Card View"
-                    sx={{
-                      mr: 0.5,
-                      color: viewMode === 'card' ? theme.palette.primary.main : theme.palette.text.secondary,
-                      '&:hover': {
-                        backgroundColor: viewMode === 'card'
-                          ? 'rgba(25, 118, 210, 0.18)'
-                          : 'rgba(0, 0, 0, 0.04)',
-                      }
-                    }}
-                  >
-                    <MdGridView size={20} />
-                  </ViewToggleButton>
-                </Tooltip>
-                <Tooltip title="Table View" arrow placement="top">
-                  <ViewToggleButton
-                    size="small"
-                    onClick={() => setViewMode('table')}
-                    active={viewMode === 'table'}
-                    aria-label="Table View"
-                    sx={{
-                      color: viewMode === 'table' ? theme.palette.primary.main : theme.palette.text.secondary,
-                      '&:hover': {
-                        backgroundColor: viewMode === 'table'
-                          ? 'rgba(25, 118, 210, 0.18)'
-                          : 'rgba(0, 0, 0, 0.04)',
-                      }
-                    }}
-                  >
-                    <MdViewList size={20} />
-                  </ViewToggleButton>
-                </Tooltip>
-              </Box>
+            <Button 
+              variant="outlined" 
+              startIcon={<MdRefresh />} 
+              onClick={() => loadAll(true)}
+              disabled={refreshing}
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            <Button variant="contained" startIcon={<MdAdd />} onClick={handleOpenAdd}>Add New</Button>
+          </Stack>
+        </Box>
 
-              <HeaderActionButton
-                variant="outlined"
-                color="primary"
-                startIcon={<MdRefresh size={20} />}
-                onClick={refreshData}
-                size={isMobile ? "small" : "medium"}
-              >
-                {isMobile ? "" : "Refresh"}
-              </HeaderActionButton>
-              <HeaderActionButton
-                variant="contained"
-                startIcon={<MdAdd size={20} />}
-                onClick={handleAddNew}
-                size={isMobile ? "small" : "medium"}
-                sx={{
-                  bgcolor: theme.palette.primary.dark,
-                  '&:hover': {
-                    bgcolor: theme.palette.primary.main,
-                  }
-                }}
-              >
-                {isMobile ? "Add" : "Add New Exam"}
-              </HeaderActionButton>
-            </Stack>
-          </Paper>
-
-          {/* Search and Filters Section */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2, sm: 3 },
-              mb: 3,
-              borderRadius: '12px',
-              border: '1px solid #e0e0e0',
-              backgroundColor: '#fff'
-            }}
-          >
-            {/* Search and clear button layout */}
-            <Grid container spacing={2}>
+        {/* search + filters */}
+        <Paper 
+          elevation={0}
+          sx={{ 
+            mb: 3, 
+            p: 2.5, 
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: '#fff'
+          }}
+        >
+          <Stack spacing={2.5}>
+            {/* Search and Action Buttons Row */}
+            <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={8}>
                 <TextField
-                  label="Search Exams"
-                  variant="outlined"
                   fullWidth
+                  placeholder="Search by exam name or ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  size="small"
                   InputProps={{
-                    startAdornment: <FaSearch style={{ marginRight: 8, color: '#757575' }} />,
-                    endAdornment: searchQuery ? (
-                      <IconButton
-                        size="small"
-                        onClick={() => setSearchQuery("")}
-                        sx={{ color: 'text.secondary' }}
-                      >
-                        <MdClear />
-                      </IconButton>
-                    ) : null,
-                    sx: { borderRadius: '8px' }
+                    startAdornment: (
+                      <Box sx={{ display: 'flex', alignItems: 'center', mr: 1, color: 'text.secondary' }}>
+                        <FaSearch />
+                      </Box>
+                    ),
                   }}
-                  placeholder="Search by exam name or ID..."
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      '& fieldset': {
-                        borderColor: '#e0e0e0',
-                      },
                       '&:hover fieldset': {
-                        borderColor: '#bdbdbd',
+                        borderColor: 'teal',
                       },
-                    }
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'teal',
+                      },
+                    },
                   }}
                 />
               </Grid>
 
-              {/* Clear Filters Button Column */}
               <Grid item xs={12} md={4}>
-                <Box sx={{ display: 'flex', height: '100%', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<MdClear />}
-                    onClick={() => {
-                      setSelectedSubject("");
-                      setSelectedClassCategory("");
-                      setSelectedLevel("");
-                      setSelectedType("");
-                      setSelectedStatus("");
-                      setSelectedAddedBy("");
-                    }}
-                    disabled={getActiveFilterCount() === 0}
-                    fullWidth
+                <Stack direction="row" spacing={1}>
+                  <Button 
+                    fullWidth 
+                    variant="outlined" 
+                    startIcon={<MdClear />} 
+                    onClick={clearAllFilters}
                     sx={{
-                      borderRadius: '8px',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      height: '100%',
-                      borderColor: getActiveFilterCount() > 0 ? 'primary.main' : '#e0e0e0',
-                      color: getActiveFilterCount() > 0 ? 'primary.main' : 'text.disabled',
+                      borderColor: 'divider',
+                      color: 'text.secondary',
+                      '&:hover': {
+                        borderColor: 'text.secondary',
+                        backgroundColor: 'action.hover',
+                      },
                     }}
                   >
-                    {getActiveFilterCount() > 0 ? (
-                      <>
-                        Clear Filters
-                        <Chip
-                          size="small"
-                          label={getActiveFilterCount()}
-                          color="primary"
-                          sx={{ ml: 1, height: 22 }}
-                        />
-                      </>
-                    ) : "No Filters Applied"}
+                    Clear
                   </Button>
-
-                  {searchQuery && (
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => setSearchQuery("")}
-                      sx={{
-                        borderRadius: '8px',
-                        minWidth: 'auto',
-                        width: 'auto',
-                        px: 1.5,
-                        height: '100%'
-                      }}
-                    >
-                      <MdClear />
-                    </Button>
-                  )}
-                </Box>
+                  <Button 
+                    fullWidth
+                    variant="contained" 
+                    onClick={() => setShowFilters((s) => !s)} 
+                    startIcon={<MdFilterList />}
+                    endIcon={showFilters ? <MdExpandLess /> : <MdExpandMore />}
+                    sx={{
+                      backgroundColor: 'teal',
+                      '&:hover': {
+                        backgroundColor: '#0d8478',
+                      },
+                    }}
+                  >
+                    Filters
+                  </Button>
+                </Stack>
               </Grid>
             </Grid>
 
-            {/* Mobile filter toggle button */}
-            {isMobile && (
-              <Box sx={{ mt: 2 }}>
-                <MobileFilterButton
-                  onClick={() => setShowFilters(!showFilters)}
-                  isActive={showFilters && getActiveFilterCount() > 0}
-                  startIcon={<MdFilterList />}
-                  variant="outlined"
-                >
-                  Filters {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
-                  {getActiveFilterCount() > 0 ? (
-                    <Chip
-                      size="small"
-                      label={getActiveFilterCount()}
-                      color="primary"
-                      sx={{ ml: 1, height: 22 }}
-                    />
-                  ) : (
-                    <IconButton size="small" sx={{ p: 0, ml: 1 }}>
-                      {showFilters ? <MdExpandLess /> : <MdExpandMore />}
-                    </IconButton>
-                  )}
-                </MobileFilterButton>
-              </Box>
-            )}
-
-            <CollapsibleFilterContainer
-              sx={{
-                maxHeight: showFilters ? '1000px' : isMobile ? '0px' : '1000px',
-                visibility: showFilters || !isMobile ? 'visible' : 'hidden',
-                mt: 2,
-                opacity: showFilters || !isMobile ? 1 : 0,
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <Box sx={{
-                p: 2,
-                backgroundColor: '#f8f9fa',
-                borderRadius: '10px',
-                border: '1px solid #e0e0e0',
-              }}>
-                {/* Filter Header */}
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  mb: 2,
-                  pb: 1.5,
-                  borderBottom: '1px solid #eeeeee'
-                }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <MdFilterList /> Filter Options
-                      {getActiveFilterCount() > 0 && (
-                        <Chip
-                          size="small"
-                          label={getActiveFilterCount()}
-                          color="primary"
-                          sx={{ fontWeight: 600 }}
-                        />
-                      )}
-                    </Box>
-                  </Typography>
-
-                  {getActiveFilterCount() > 0 && (
-                    <Button
-                      size="small"
-                      startIcon={<MdClear size={16} />}
-                      onClick={() => {
-                        setSelectedSubject("");
-                        setSelectedClassCategory("");
-                        setSelectedLevel("");
-                        setSelectedType("");
-                        setSelectedStatus("");
-                        setSelectedAddedBy("");
-                      }}
-                      sx={{
-                        textTransform: 'none',
-                        color: theme.palette.grey[700],
-                        fontWeight: 500,
-                      }}
-                    >
-                      Clear All
-                    </Button>
-                  )}
-                </Box>
-
-                {/* Main Filters - Optimized Layout with Added By & Type */}
+            {/* Filter Options - Collapsible */}
+            {showFilters && (
+              <Box
+                sx={{
+                  pt: 1.5,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Class Category</InputLabel>
-                      <Select
-                        label="Class Category"
-                        value={selectedClassCategory}
-                        onChange={(e) => setSelectedClassCategory(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
+                      <InputLabel>Class</InputLabel>
+                      <Select 
+                        value={filterClassCategoryId} 
+                        label="Class" 
+                        onChange={(e) => setFilterClassCategoryId(e.target.value)}
+                        sx={{
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
+                        }}
                       >
-                        <MenuItem value="">
-                          <em>All Categories</em>
-                        </MenuItem>
-                        {classCategories.map((classCategory, index) => (
-                          <MenuItem key={index + 1} value={classCategory.name}>
-                            {classCategory.name}
-                          </MenuItem>
+                        <MenuItem value="">All Classes</MenuItem>
+                        {classCategories.map((c) => (
+                          <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                         ))}
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Subject</InputLabel>
-                      <Select
-                        label="Subject"
-                        value={selectedSubject}
-                        onChange={(e) => setSelectedSubject(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
+                      <Select 
+                        value={filterSubjectId} 
+                        label="Subject" 
+                        onChange={(e) => setFilterSubjectId(e.target.value)}
+                        sx={{
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
+                        }}
                       >
-                        <MenuItem value="">
-                          <em>All Subjects</em>
-                        </MenuItem>
+                        <MenuItem value="">All Subjects</MenuItem>
                         {subjects
-                          .filter(subject =>
-                            selectedClassCategory ?
-                              classCategories.find(cat => cat.name === selectedClassCategory)?.subjects
-                                .some(s => s.id === subject.id) :
-                              true
-                          )
-                          .map((subject) => (
-                            <MenuItem key={subject.id} value={subject.subject_name}>
-                              {subject.subject_name}
-                            </MenuItem>
+                          .filter((s) => !filterClassCategoryId || s.class_category === filterClassCategoryId)
+                          .map((s) => (
+                            <MenuItem key={s.id} value={s.id}>{s.subject_name}</MenuItem>
                           ))}
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Level</InputLabel>
-                      <Select
-                        label="Level"
-                        value={selectedLevel}
-                        onChange={(e) => setSelectedLevel(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
+                      <Select 
+                        value={filterLevelId} 
+                        label="Level" 
+                        onChange={(e) => setFilterLevelId(e.target.value)}
+                        sx={{
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
+                        }}
                       >
-                        <MenuItem value="">
-                          <em>All Levels</em>
-                        </MenuItem>
-                        {levels.map((level, index) => (
-                          <MenuItem key={index + 1} value={level.name}>
-                            {level.name}
-                          </MenuItem>
-                        ))}
+                        <MenuItem value="">All Levels</MenuItem>
+                        {levels.map((l) => <MenuItem key={l.id} value={l.id}>{l.name}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        label="Status"
-                        value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
+                      <InputLabel>Type</InputLabel>
+                      <Select 
+                        value={filterType} 
+                        label="Type" 
+                        onChange={(e) => setFilterType(e.target.value)}
+                        sx={{
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
+                        }}
                       >
-                        <MenuItem value="">
-                          <em>All Status</em>
-                        </MenuItem>
-                        <MenuItem value="true" sx={{ color: '#4CAF50' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaCheck size={12} /> Approved
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="false" sx={{ color: '#FF9800' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaClock size={12} /> Pending
-                          </Box>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  {/* Moved to the filter section for both mobile and desktop */}
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Added By</InputLabel>
-                      <Select
-                        label="Added By"
-                        value={selectedAddedBy}
-                        onChange={(e) => setSelectedAddedBy(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
-                      >
-                        <MenuItem value="">
-                          <em>All Users</em>
-                        </MenuItem>
-                        {uniqueUsers.map((user) => (
-                          <MenuItem key={user} value={user}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar
-                                sx={{
-                                  width: 24,
-                                  height: 24,
-                                  fontSize: '0.75rem',
-                                  bgcolor: theme.palette.primary.dark
-                                }}
-                              >
-                                {user.charAt(0)}
-                              </Avatar>
-                              {user}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={isMobile ? 6 : 2}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Exam Type</InputLabel>
-                      <Select
-                        label="Exam Type"
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                        sx={{ borderRadius: '8px' }}
-                      >
-                        <MenuItem value="">
-                          <em>All Types</em>
-                        </MenuItem>
+                        <MenuItem value="">All Types</MenuItem>
                         <MenuItem value="online">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaLaptop size={12} /> Online
+                            <FaLaptop size={14} /> Online
                           </Box>
                         </MenuItem>
                         <MenuItem value="offline">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaFileAlt size={12} /> Offline
+                            <FaSchool size={14} /> Offline
                           </Box>
                         </MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
-                </Grid>
 
-                {/* Active Filters */}
-                {getActiveFilterCount() > 0 && (
-                  <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {selectedSubject && (
-                      <Chip
-                        label={`Subject: ${selectedSubject}`}
-                        onDelete={() => setSelectedSubject("")}
-                        size="small"
-                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                      />
-                    )}
-                    {selectedClassCategory && (
-                      <Chip
-                        label={`Class: ${selectedClassCategory}`}
-                        onDelete={() => setSelectedClassCategory("")}
-                        size="small"
-                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                      />
-                    )}
-                    {selectedLevel && (
-                      <Chip
-                        label={`Level: ${selectedLevel}`}
-                        onDelete={() => setSelectedLevel("")}
-                        size="small"
-                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                      />
-                    )}
-                    {selectedType && (
-                      <Chip
-                        label={`Type: ${selectedType === "online" ? "Online" : "Offline"}`}
-                        onDelete={() => setSelectedType("")}
-                        size="small"
-                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                      />
-                    )}
-                    {selectedStatus && (
-                      <Chip
-                        label={`Status: ${selectedStatus === "true" ? "Approved" : "Pending"}`}
-                        onDelete={() => setSelectedStatus("")}
-                        size="small"
+                  <Grid item xs={12} sm={6} md={2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Status</InputLabel>
+                      <Select 
+                        value={filterStatus} 
+                        label="Status" 
+                        onChange={(e) => setFilterStatus(e.target.value)}
                         sx={{
-                          bgcolor: selectedStatus === "true" ? '#e8f5e9' : '#fff3e0',
-                          color: selectedStatus === "true" ? '#2e7d32' : '#ef6c00'
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
                         }}
-                      />
-                    )}
-                    {selectedAddedBy && (
-                      <Chip
-                        label={`User: ${selectedAddedBy}`}
-                        onDelete={() => setSelectedAddedBy("")}
-                        size="small"
-                        sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}
-                        avatar={
-                          <Avatar sx={{ bgcolor: theme.palette.primary.main, color: 'white' }}>
-                            {selectedAddedBy.charAt(0)}
-                          </Avatar>
-                        }
-                      />
-                    )}
-                  </Box>
-                )}
-              </Box>
-            </CollapsibleFilterContainer>
-          </Paper>
-
-          {/* Rest of the component remains unchanged */}
-          {filteredExams.length === 0 ? (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 4,
-                textAlign: 'center',
-                backgroundColor: '#fff',
-                borderRadius: '8px',
-                mt: 2,
-                border: '1px solid #e0e0e0',
-              }}
-            >
-              <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
-                <FaSearch style={{ fontSize: '2.5rem', opacity: 0.4, color: '#757575' }} />
-              </Box>
-              <Typography variant="h6" gutterBottom fontWeight={500} color="#424242">
-                No exams found
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: '500px', mx: 'auto' }}>
-                Try adjusting your search criteria or filters to find what you're looking for
-              </Typography>
-              {(searchQuery || selectedSubject || selectedLevel || selectedClassCategory ||
-                selectedType || selectedStatus || selectedAddedBy) && (
-                  <Button
-                    startIcon={<FaTimes />}
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSelectedSubject("");
-                      setSelectedClassCategory("");
-                      setSelectedLevel("");
-                      setSelectedType("");
-                      setSelectedStatus("");
-                      setSelectedAddedBy("");
-                    }}
-                    sx={{
-                      borderRadius: '6px',
-                      textTransform: 'none',
-                      fontWeight: 500
-                    }}
-                  >
-                    Clear All Filters
-                  </Button>
-                )}
-            </Paper>
-          ) : (
-            <>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Showing {filteredExams.length} {filteredExams.length === 1 ? 'exam' : 'exams'}
-                  {(searchQuery || selectedSubject || selectedLevel || selectedClassCategory ||
-                    selectedType || selectedStatus || selectedAddedBy) && ' with applied filters'}
-                </Typography>
-              </Box>
-
-              {viewMode === 'card' ? (
-                <Grid container spacing={2.5}>
-                  {filteredExams
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((exam) => (
-                      <Grid item xs={12} sm={6} md={6} lg={6} key={exam.id}>
-                        <ExamCard status={exam.status} elevation={0}>
-                          <StatusChip
-                            label={exam.status ? "Approved" : "Pending"}
-                            status={exam.status}
-                            size="small"
-                            icon={exam.status ? <FaCheck size={10} /> : <FaClock size={10} />}
-                          />
-                          <StyledCardContent>
-                            <Link to={`/admin/exam/${exam.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                              <Typography
-                                variant="h6"
-                                component="h2"
-                                sx={{
-                                  mb: 2,
-                                  fontWeight: 600,
-                                  pr: { xs: 11, sm: 9 },
-                                  fontSize: { xs: '1rem', sm: '1.125rem' },
-                                  lineHeight: 1.3,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  color: '#1a237e',
-                                  '&:hover': {
-                                    color: theme.palette.primary.main
-                                  },
-                                  position: 'relative',
-                                  zIndex: 0,
-                                }}
-                              >
-                                {exam.name}
-                              </Typography>
-
-                              <Grid container spacing={1.5} sx={{ mb: 1 }}>
-                                <Grid item xs={12} sm={6}>
-                                  <InfoItem>
-                                    <FaBookOpen size={14} />
-                                    <Box>
-                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                        Subject
-                                      </Typography>
-                                      <Typography variant="body2" fontWeight={500}>
-                                        {exam.subject.subject_name}
-                                      </Typography>
-                                    </Box>
-                                  </InfoItem>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                  <InfoItem>
-                                    <FaLayerGroup size={14} />
-                                    <Box>
-                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                        Level
-                                      </Typography>
-                                      <Typography variant="body2" fontWeight={500}>
-                                        {exam.level.name}
-                                      </Typography>
-                                    </Box>
-                                  </InfoItem>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                  <InfoItem>
-                                    <FaSchool size={14} />
-                                    <Box>
-                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                        Class
-                                      </Typography>
-                                      <Typography variant="body2" fontWeight={500}>
-                                        {exam.class_category.name}
-                                      </Typography>
-                                    </Box>
-                                  </InfoItem>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                  <InfoItem>
-                                    <FaClock size={14} />
-                                    <Box>
-                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                        Duration
-                                      </Typography>
-                                      <Typography variant="body2" fontWeight={500}>
-                                        {exam.duration} min
-                                      </Typography>
-                                    </Box>
-                                  </InfoItem>
-                                </Grid>
-                              </Grid>
-
-                              <Box sx={{
-                                mt: 1,
-                                mb: 2,
-                                p: 1.5,
-                                borderRadius: '6px',
-                                backgroundColor: '#f5f5f5',
-                                border: '1px solid #eaeaea'
-                              }}>
-                                <InfoItem sx={{ mb: 0 }}>
-                                  <FaListUl size={14} />
-                                  <Box sx={{ width: '100%' }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 0.5 }}>
-                                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                                        Questions
-                                      </Typography>
-                                      <Typography variant="caption" fontWeight={600} color="primary">
-                                        {exam.questions?.length || 0} total
-                                      </Typography>
-                                    </Box>
-
-                                    {exam.questions?.length > 0 && (
-                                      <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'flex-start',
-                                        gap: 1.5
-                                      }}>
-                                        <Tooltip title="English Questions">
-                                          <Chip
-                                            size="small"
-                                            label={`${exam.questions.filter(q => q.language === "English").length || 0} EN`}
-                                            sx={{
-                                              height: '20px',
-                                              fontSize: '0.7rem',
-                                              fontWeight: 600,
-                                              backgroundColor: theme.palette.primary.light,
-                                              color: theme.palette.primary.dark
-                                            }}
-                                          />
-                                        </Tooltip>
-                                        <Tooltip title="Hindi Questions">
-                                          <Chip
-                                            size="small"
-                                            label={`${exam.questions.filter(q => q.language === "Hindi").length || 0} HI`}
-                                            sx={{
-                                              height: '20px',
-                                              fontSize: '0.7rem',
-                                              fontWeight: 600,
-                                              backgroundColor: theme.palette.secondary.light,
-                                              color: theme.palette.secondary.dark
-                                            }}
-                                          />
-                                        </Tooltip>
-                                      </Box>
-                                    )}
-                                  </Box>
-                                </InfoItem>
-                              </Box>
-                            </Link>
-
-                            <Box sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              mt: 'auto',
-                              pt: 2,
-                              borderTop: '1px solid #eaeaea'
-                            }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Tooltip title={`Added by ${getAssignedUserName(exam)}`}>
-                                  <Avatar
-                                    sx={{
-                                      width: 28,
-                                      height: 28,
-                                      mr: 1,
-                                      bgcolor: theme.palette.primary.main,
-                                      fontSize: '0.8rem',
-                                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                    }}
-                                  >
-                                    {getAssignedUserName(exam).charAt(0)}
-                                  </Avatar>
-                                </Tooltip>
-                                <Typography variant="body2" noWrap sx={{ maxWidth: '150px' }}>
-                                  {getAssignedUserName(exam)}
-                                </Typography>
-                              </Box>
-
-                              <Box>
-                                <Tooltip title="View Details">
-                                  <IconButton
-                                    component={Link}
-                                    to={`/admin/exam/${exam.id}`}
-                                    color="primary"
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: 'rgba(33, 150, 243, 0.08)',
-                                      mr: 1,
-                                      '&:hover': {
-                                        backgroundColor: 'rgba(33, 150, 243, 0.15)',
-                                      }
-                                    }}
-                                  >
-                                    <FaEye size={14} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="More Actions">
-                                  <IconButton
-                                    onClick={(e) => handleOpenMenu(e, exam)}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                      '&:hover': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                                      }
-                                    }}
-                                  >
-                                    <FaEllipsisV size={14} />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </Box>
-                          </StyledCardContent>
-                        </ExamCard>
-                      </Grid>
-                    ))}
-                </Grid>
-              ) : (
-                <StyledTableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Subject</TableCell>
-                        <TableCell>Level</TableCell>
-                        <TableCell>Class</TableCell>
-                        <TableCell>Duration</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredExams
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((exam) => (
-                          <TableRow key={exam.id}>
-                            <TableCell>{exam.id}</TableCell>
-                            <TableCell>{exam.name}</TableCell>
-                            <TableCell>{exam.subject.subject_name}</TableCell>
-                            <TableCell>{exam.level.name}</TableCell>
-                            <TableCell>{exam.class_category.name}</TableCell>
-                            <TableCell>{exam.duration} min</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={exam.status ? "Approved" : "Pending"}
-                                size="small"
-                                sx={{
-                                  bgcolor: exam.status ? '#e8f5e9' : '#fff3e0',
-                                  color: exam.status ? '#2e7d32' : '#ef6c00',
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Tooltip title="View Details">
-                                <IconButton
-                                  component={Link}
-                                  to={`/admin/exam/${exam.id}`}
-                                  color="primary"
-                                  size="small"
-                                  sx={{
-                                    backgroundColor: 'rgba(33, 150, 243, 0.08)',
-                                    mr: 1,
-                                    '&:hover': {
-                                      backgroundColor: 'rgba(33, 150, 243, 0.15)',
-                                    }
-                                  }}
-                                >
-                                  <FaEye size={14} />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="More Actions">
-                                <IconButton
-                                  onClick={(e) => handleOpenMenu(e, exam)}
-                                  size="small"
-                                  sx={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                    '&:hover': {
-                                      backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                                    }
-                                  }}
-                                >
-                                  <FaEllipsisV size={14} />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </StyledTableContainer>
-              )}
-
-              <Paper
-                elevation={0}
-                sx={{
-                  mt: 3,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  border: '1px solid #e0e0e0',
-                  overflow: 'hidden'
-                }}
-              >
-                <TablePagination
-                  component="div"
-                  count={filteredExams.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  rowsPerPageOptions={isMobile ? [10, 20] : [10, 20, 40]}
-                  labelRowsPerPage={isMobile ? "Rows:" : "Exams per page:"}
-                  labelDisplayedRows={({ from, to, count }) =>
-                    isMobile ? `${from}-${to} of ${count}` : `${from}-${to} of ${count} exams`
-                  }
-                  sx={{
-                    '.MuiTablePagination-selectLabel': {
-                      display: { xs: 'none', sm: 'block' }
-                    },
-                    '.MuiTablePagination-select': {
-                      paddingTop: '0.5rem',
-                      paddingBottom: '0.5rem'
-                    }
-                  }}
-                />
-              </Paper>
-            </>
-          )}
-
-          <Menu
-            anchorEl={actionMenuAnchor}
-            open={Boolean(actionMenuAnchor)}
-            onClose={handleCloseMenu}
-            PaperProps={{
-              elevation: 3,
-              sx: {
-                minWidth: 200,
-                borderRadius: '8px',
-                mt: 1,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }
-            }}
-          >
-            <MenuItem onClick={handleEdit} sx={{ py: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <FaPencilAlt size={14} color={theme.palette.primary.main} />
-                <Typography variant="body2" fontWeight={500}>Edit Exam</Typography>
-              </Box>
-            </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('accept')} disabled={menuExam?.status} sx={{ py: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#4CAF50' }}>
-                <FaCheck size={14} />
-                <Typography variant="body2" fontWeight={500}>Accept Exam</Typography>
-              </Box>
-            </MenuItem>
-            <MenuItem onClick={() => handleStatusChange('reject')} disabled={!menuExam?.status} sx={{ py: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#FF9800' }}>
-                <FaTimes size={14} />
-                <Typography variant="body2" fontWeight={500}>Reject Exam</Typography>
-              </Box>
-            </MenuItem>
-            <Divider sx={{ my: 1 }} />
-            <MenuItem onClick={handleDelete} sx={{ py: 1.5, color: theme.palette.error.main }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <FaTrash size={14} />
-                <Typography variant="body2" fontWeight={500}>Delete Exam</Typography>
-              </Box>
-            </MenuItem>
-          </Menu>
-
-          <StyledModal
-            open={openAddModal}
-            onClose={() => {
-              if (!loading) setOpenAddModal(false);
-            }}
-          >
-            <ModalContent sx={{ borderRadius: '10px' }}>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#37474f' }}>
-                {selectedExam ? "Edit Exam Set" : "Add New Exam Set"}
-              </Typography>
-              <Grid container spacing={2.5}>
-                <Grid item xs={12}>
-                  <FormControl fullWidth error={!!formErrors.class_category}>
-                    <InputLabel>Class Category *</InputLabel>
-                    <Select
-                      name="class_category"
-                      value={formData.class_category}
-                      onChange={handleFormChange}
-                      disabled={loading}
-                      sx={{ borderRadius: '8px' }}
-                    >
-                      {classCategories.map((classCategory) => (
-                        <MenuItem key={classCategory.id} value={classCategory.id}>
-                          {classCategory.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formErrors.class_category && (
-                      <FormHelperText>{formErrors.class_category}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth error={!!formErrors.subject}>
-                    <InputLabel>Subject *</InputLabel>
-                    <Select
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleFormChange}
-                      disabled={!formData.class_category || loading}
-                      sx={{ borderRadius: '8px' }}
-                    >
-                      {subjects
-                        .filter((subject) => subject.class_category === formData.class_category)
-                        .map((subject) => (
-                          <MenuItem key={subject.id} value={subject.id}>
-                            {subject.subject_name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {formErrors.subject && (
-                      <FormHelperText>{formErrors.subject}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth error={!!formErrors.level}>
-                    <InputLabel>Level *</InputLabel>
-                    <Select
-                      name="level"
-                      value={formData.level}
-                      onChange={handleFormChange}
-                      disabled={loading}
-                      sx={{ borderRadius: '8px' }}
-                    >
-                      {levels.map((level) => (
-                        <MenuItem key={level.id} value={level.id}>
-                          {level.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formErrors.level && (
-                      <FormHelperText>{formErrors.level}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Total Marks *"
-                    name="total_marks"
-                    value={formData.total_marks}
-                    onChange={handleFormChange}
-                    error={!!formErrors.total_marks}
-                    helperText={formErrors.total_marks}
-                    type="number"
-                    InputProps={{ sx: { borderRadius: '8px' } }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Duration (minutes) *"
-                    name="duration"
-                    value={formData.duration}
-                    onChange={handleFormChange}
-                    error={!!formErrors.duration}
-                    helperText={formErrors.duration}
-                    type="number"
-                    InputProps={{ sx: { borderRadius: '8px' } }}
-                  />
-                </Grid>
-                {formData.level && levels.find(level => level.id === parseInt(formData.level))?.level_code >= 2.0 && (
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={!!formErrors.type}>
-                      <InputLabel>Type *</InputLabel>
-                      <Select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleFormChange}
-                        disabled={loading}
-                        sx={{ borderRadius: '8px' }}
                       >
-                        <MenuItem value="online">Online</MenuItem>
-                        <MenuItem value="offline">Offline</MenuItem>
+                        <MenuItem value="">All Status</MenuItem>
+                        <MenuItem value="true">
+                          <Chip label="Approved" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32' }} />
+                        </MenuItem>
+                        <MenuItem value="false">
+                          <Chip label="Pending" size="small" sx={{ bgcolor: '#fff3e0', color: '#ef6c00' }} />
+                        </MenuItem>
                       </Select>
-                      {formErrors.type && (
-                        <FormHelperText>{formErrors.type}</FormHelperText>
-                      )}
                     </FormControl>
                   </Grid>
-                )}
-              </Grid>
-              <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenAddModal(false)}
-                  disabled={loading}
-                  sx={{
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 500
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSave}
-                  disabled={loading}
-                  sx={{
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    px: 3
-                  }}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </Button>
+
+                  <Grid item xs={12} sm={6} md={2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Added By</InputLabel>
+                      <Select 
+                        value={filterAddedBy} 
+                        label="Added By" 
+                        onChange={(e) => setFilterAddedBy(e.target.value)}
+                        sx={{
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'teal',
+                          },
+                        }}
+                      >
+                        <MenuItem value="">All Users</MenuItem>
+                        {uniqueUsers.map((u) => <MenuItem key={u} value={u}>{u}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
               </Box>
-            </ModalContent>
-          </StyledModal>
+            )}
+          </Stack>
+        </Paper>
 
-          <Dialog
-            open={openDeleteModal}
-            onClose={() => {
-              if (!loading) setOpenDeleteModal(false);
-            }}
-            PaperProps={{
-              sx: { borderRadius: '10px' }
-            }}
-          >
-            <DialogTitle sx={{ fontWeight: 600, pb: 1 }}>Delete Exam</DialogTitle>
-            <DialogContent>
-              <Typography variant="body2">
-                Are you sure you want to delete this exam set? This action cannot be undone.
-              </Typography>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, pt: 1 }}>
-              <Button
-                onClick={() => setOpenDeleteModal(false)}
-                disabled={loading}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmDelete}
-                color="error"
-                disabled={loading}
-                variant="contained"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                {loading ? "Deleting..." : "Delete"}
-              </Button>
-            </DialogActions>
-          </Dialog>
+        {/* list / table */}
+        {filteredExams.length === 0 ? (
+          <Paper sx={{ p: 6, textAlign: 'center' }}>
+            <Typography variant="h6">No exams found</Typography>
+            <Typography variant="body2" color="text.secondary">Try adjusting filters or add a new exam.</Typography>
+          </Paper>
+        ) : (
+          <>
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="body2">Showing {filteredExams.length} {filteredExams.length === 1 ? 'exam' : 'exams'}</Typography>
+            </Box>
 
-          <Dialog
-            open={openStatusConfirmation}
-            onClose={() => {
-              if (!loading) setOpenStatusConfirmation(false);
-            }}
-            PaperProps={{
-              sx: { borderRadius: '10px' }
-            }}
-          >
-            <DialogTitle sx={{ fontWeight: 600, pb: 1 }}>
-              {statusAction === 'accept' ? 'Accept' : 'Reject'} Exam
-            </DialogTitle>
-            <DialogContent>
-              <Typography variant="body2">
-                Are you sure you want to {statusAction === 'accept' ? 'accept' : 'reject'} this exam set?
-              </Typography>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, pt: 1 }}>
-              <Button
-                onClick={() => setOpenStatusConfirmation(false)}
-                disabled={loading}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmStatusChange}
-                color={statusAction === 'accept' ? "primary" : "warning"}
-                disabled={loading}
-                variant="contained"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                {loading ? "Processing..." : statusAction === 'accept' ? 'Accept' : 'Reject'}
-              </Button>
-            </DialogActions>
-          </Dialog>
+            {viewMode === 'card' ? (
+              <Grid container spacing={2}>
+                {filteredExams.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((exam) => (
+                  <Grid item xs={12} sm={6} md={6} key={exam.id}>
+                    <ExamCard status={exam.status}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Box>
+                            <Typography variant="h6" sx={{ mb: 1 }}>{exam.name}</Typography>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                              <Chip label={exam.subject?.subject_name || '-'} size="small" />
+                              <Chip label={exam.level?.name || '-'} size="small" />
+                              <Chip label={exam.class_category?.name || '-'} size="small" />
+                            </Box>
+                          </Box>
 
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={6000}
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          >
-            <Alert
-              severity={snackbar.severity}
-              variant="filled"
-              sx={{
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                borderRadius: '8px',
-                alignItems: 'center'
-              }}
-            >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
-        </Box>
-      </Container>
+                          <Box sx={{ textAlign: 'right' }}>
+                            <StatusChip approved={exam.status} />
+                            <Box sx={{ mt: 1 }}>
+                              {/* APPROVE / REJECT buttons added here */}
+                              <Tooltip title={exam.status ? 'Already approved' : 'Approve exam'}>
+                                <span>
+                                  <IconButton
+                                    onClick={() => handleAccept(exam)}
+                                    disabled={exam.status}
+                                    size="small"
+                                    sx={{ mr: 0.5 }}
+                                  >
+                                    <FaCheck />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+
+                              <Tooltip title={!exam.status ? 'Already pending' : 'Reject exam'}>
+                                <span>
+                                  <IconButton
+                                    onClick={() => handleReject(exam)}
+                                    disabled={!exam.status}
+                                    size="small"
+                                    sx={{ mr: 0.5 }}
+                                  >
+                                    <FaTimes />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+
+                              <Tooltip title="View details"><IconButton component={Link} to={`/admin/exam/${exam.id}`}><FaEye /></IconButton></Tooltip>
+                              <Tooltip title="More"><IconButton onClick={(e) => { setActionMenuAnchor(e.currentTarget); setMenuExam(exam); }}><FaEllipsisV /></IconButton></Tooltip>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2">{exam.questions?.length || 0} questions</Typography>
+                          <Typography variant="caption">{exam.duration} min</Typography>
+                        </Box>
+                      </CardContent>
+                    </ExamCard>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>ID</TableCell>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Subject</TableCell>
+                      <TableCell>Level</TableCell>
+                      <TableCell>Class</TableCell>
+                      <TableCell>Duration</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredExams.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((exam) => (
+                      <TableRow key={exam.id}>
+                        <TableCell>{exam.id}</TableCell>
+                        <TableCell>{exam.name}</TableCell>
+                        <TableCell>{exam.subject?.subject_name}</TableCell>
+                        <TableCell>{exam.level?.name}</TableCell>
+                        <TableCell>{exam.class_category?.name}</TableCell>
+                        <TableCell>{exam.duration} min</TableCell>
+                        <TableCell><StatusChip approved={exam.status} /></TableCell>
+                        <TableCell>
+                          {/* APPROVE / REJECT buttons added to table actions */}
+                          <Tooltip title={exam.status ? 'Already approved' : 'Approve exam'}>
+                            <span>
+                              <IconButton onClick={() => handleAccept(exam)} disabled={exam.status} size="small" sx={{ mr: 0.5 }}>
+                                <FaCheck />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={!exam.status ? 'Already pending' : 'Reject exam'}>
+                            <span>
+                              <IconButton onClick={() => handleReject(exam)} disabled={!exam.status} size="small" sx={{ mr: 0.5 }}>
+                                <FaTimes />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+
+                          <Tooltip title="View"><IconButton component={Link} to={`/admin/exam/${exam.id}`}><FaEye /></IconButton></Tooltip>
+                          <Tooltip title="Edit"><IconButton onClick={() => handleEdit(exam)}><MdClear /></IconButton></Tooltip>
+                          <Tooltip title="Delete"><IconButton onClick={() => handleDelete(exam)}><FaTrash /></IconButton></Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+
+            <Box sx={{ mt: 2 }}>
+              <TablePagination
+                component="div"
+                count={filteredExams.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={isMobile ? [5, 10] : [10, 20, 40]}
+              />
+            </Box>
+          </>
+        )}
+
+        {/* action menu */}
+        <Menu anchorEl={actionMenuAnchor} open={Boolean(actionMenuAnchor)} onClose={() => setActionMenuAnchor(null)}>
+          <MuiMenuItem onClick={() => { handleEdit(menuExam); setActionMenuAnchor(null); }}>Edit</MuiMenuItem>
+          <MuiMenuItem onClick={async () => { await handleDelete(menuExam); setActionMenuAnchor(null); }}>Delete</MuiMenuItem>
+        </Menu>
+
+        {/* add/edit modal */}
+        <StyledModal open={openAddModal} onClose={() => setOpenAddModal(false)}>
+          <ModalContent>
+            <Typography variant="h6" sx={{ mb: 2 }}>{selectedExam ? 'Edit Exam' : 'Add Exam'}</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <FormControl fullWidth error={!!formErrors.class_category}>
+                  <InputLabel>Class Category *</InputLabel>
+                  <Select name="class_category" value={formData.class_category} onChange={(e) => setFormData({ ...formData, class_category: e.target.value })}>
+                    {classCategories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                  </Select>
+                  {formErrors.class_category && <FormHelperText>{formErrors.class_category}</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!formErrors.subject}>
+                  <InputLabel>Subject *</InputLabel>
+                  <Select name="subject" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })}>
+                    {subjects.filter(s => !formData.class_category || s.class_category === formData.class_category).map((s) => <MenuItem key={s.id} value={s.id}>{s.subject_name}</MenuItem>)}
+                  </Select>
+                  {formErrors.subject && <FormHelperText>{formErrors.subject}</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!formErrors.level}>
+                  <InputLabel>Level *</InputLabel>
+                  <Select name="level" value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })}>
+                    {levels.map((l) => <MenuItem key={l.id} value={l.id}>{l.name}</MenuItem>)}
+                  </Select>
+                  {formErrors.level && <FormHelperText>{formErrors.level}</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField label="Total Marks" type="number" fullWidth value={formData.total_marks} onChange={(e) => setFormData({ ...formData, total_marks: e.target.value })} error={!!formErrors.total_marks} helperText={formErrors.total_marks} />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField label="Duration (minutes)" type="number" fullWidth value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} error={!!formErrors.duration} helperText={formErrors.duration} />
+              </Grid>
+
+              {Number(formData.level) && levels.find(l => l.id === Number(formData.level))?.level_code >= 2.0 && (
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!formErrors.type}>
+                    <InputLabel>Type *</InputLabel>
+                    <Select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+                      <MenuItem value="online">Online</MenuItem>
+                      <MenuItem value="offline">Offline</MenuItem>
+                    </Select>
+                    {formErrors.type && <FormHelperText>{formErrors.type}</FormHelperText>}
+                  </FormControl>
+                </Grid>
+              )}
+            </Grid>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+              <Button variant="outlined" onClick={() => setOpenAddModal(false)}>Cancel</Button>
+              <Button variant="contained" onClick={handleSave}>{loading ? 'Saving...' : 'Save'}</Button>
+            </Box>
+          </ModalContent>
+        </StyledModal>
+
+        {/* snackbar */}
+        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
+        </Snackbar>
+      </Box>
     </Layout>
   );
 }
-
-export default ExamManagement;

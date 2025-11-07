@@ -67,14 +67,17 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
 
     return (
         <Paper
-            elevation={isHovered ? 5 : 3}
+            elevation={0}
             sx={{
                 mb: 3,
                 borderRadius: 2,
                 transition: 'all 0.2s ease',
-                borderLeft: `4px solid ${question.language === "English" ? theme.palette.info.main : theme.palette.secondary.main}`,
+                border: '1px solid',
+                borderColor: isHovered ? (question.language === "English" ? 'teal' : '#9c27b0') : 'divider',
+                borderLeft: `4px solid ${question.language === "English" ? 'teal' : '#9c27b0'}`,
+                backgroundColor: '#fff',
                 '&:hover': {
-                    boxShadow: 6,
+                    boxShadow: question.language === "English" ? '0 4px 12px rgba(13, 148, 136, 0.15)' : '0 4px 12px rgba(156, 39, 176, 0.15)',
                     transform: 'translateY(-2px)',
                 },
                 position: 'relative',
@@ -94,23 +97,28 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                         <Typography
                             variant="h6"
-                            color="primary"
                             gutterBottom={isMobile}
-                            fontWeight="medium"
+                            fontWeight={600}
                             sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 1
+                                gap: 1,
+                                color: '#1E293B'
                             }}
                         >
-                            <Assessment fontSize="small" />
+                            <Assessment fontSize="small" sx={{ color: 'teal' }} />
                             Question {index + 1}
                         </Typography>
                         <Chip
                             label={question.language}
                             size="small"
-                            color={question.language === "English" ? "info" : "secondary"}
-                            sx={{ mb: isMobile ? 1 : 0 }}
+                            sx={{ 
+                                mb: isMobile ? 1 : 0,
+                                backgroundColor: question.language === "English" ? 'rgba(13, 148, 136, 0.1)' : 'rgba(156, 39, 176, 0.1)',
+                                color: question.language === "English" ? 'teal' : '#9c27b0',
+                                fontWeight: 600,
+                                borderRadius: 1.5
+                            }}
                         />
                     </Box>
 
@@ -118,17 +126,20 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
                         display: "flex",
                         mt: isMobile ? 1 : 0,
                         alignSelf: isMobile ? 'flex-end' : 'center',
-                        gap: 0.5
+                        gap: 1
                     }}>
                         <Tooltip title="Edit Question" arrow>
                             <IconButton
                                 onClick={() => onEdit(question)}
-                                color="primary"
                                 size="small"
                                 sx={{
                                     border: '1px solid',
-                                    borderColor: 'primary.light',
-                                    '&:hover': { bgcolor: 'primary.50' }
+                                    borderColor: 'divider',
+                                    color: 'teal',
+                                    '&:hover': { 
+                                        bgcolor: 'rgba(13, 148, 136, 0.08)',
+                                        borderColor: 'teal'
+                                    }
                                 }}
                             >
                                 <Edit fontSize="small" />
@@ -137,12 +148,15 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
                         <Tooltip title="Delete Question" arrow>
                             <IconButton
                                 onClick={() => onDelete(question.id)}
-                                color="error"
                                 size="small"
                                 sx={{
                                     border: '1px solid',
-                                    borderColor: 'error.light',
-                                    '&:hover': { bgcolor: 'error.50' }
+                                    borderColor: 'divider',
+                                    color: 'error.main',
+                                    '&:hover': { 
+                                        bgcolor: 'rgba(211, 47, 47, 0.08)',
+                                        borderColor: 'error.main'
+                                    }
                                 }}
                             >
                                 <Delete fontSize="small" />
@@ -468,7 +482,17 @@ const ExamDetails = () => {
     return (
         <Layout>
             <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3 } }}>
-                <Box sx={{ mb: 2 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        mb: 3,
+                        p: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: '#F8FAFC',
+                        border: '1px solid',
+                        borderColor: 'divider'
+                    }}
+                >
                     <Breadcrumbs separator={<NavigateNext fontSize="small" />} aria-label="breadcrumb">
                         <Link
                             to="/admin/dashboard"
@@ -476,8 +500,11 @@ const ExamDetails = () => {
                                 textDecoration: 'none',
                                 color: theme.palette.text.secondary,
                                 display: 'flex',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                transition: 'color 0.2s',
                             }}
+                            onMouseEnter={(e) => e.target.style.color = 'teal'}
+                            onMouseLeave={(e) => e.target.style.color = theme.palette.text.secondary}
                         >
                             Dashboard
                         </Link>
@@ -487,20 +514,29 @@ const ExamDetails = () => {
                                 textDecoration: 'none',
                                 color: theme.palette.text.secondary,
                                 display: 'flex',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                transition: 'color 0.2s',
                             }}
+                            onMouseEnter={(e) => e.target.style.color = 'teal'}
+                            onMouseLeave={(e) => e.target.style.color = theme.palette.text.secondary}
                         >
-                            Exam set
+                            Exam Set
                         </Link>
-                        <Typography color="primary" sx={{ fontWeight: 500 }}>
+                        <Typography color="teal" sx={{ fontWeight: 600 }}>
                             {exam?.subject?.subject_name || "Exam"} Details
                         </Typography>
                     </Breadcrumbs>
-                </Box>
+                </Paper>
 
-                <Box
+                <Paper
+                    elevation={0}
                     sx={{
-                        mb: 4,
+                        mb: 3,
+                        p: 2.5,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        backgroundColor: '#fff',
                         display: 'flex',
                         flexDirection: { xs: 'column', sm: 'row' },
                         justifyContent: 'space-between',
@@ -508,132 +544,202 @@ const ExamDetails = () => {
                         gap: 2
                     }}
                 >
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<FaArrowLeft />}
-                            onClick={handleBackToExams}
-                            sx={{ borderRadius: 8, px: 2 }}
-                        >
-                            Back
-                        </Button>
-                        <Typography
-                            variant={isMobile ? "h5" : "h4"}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
                             sx={{
-                                mb: { sm: 0 },
-                                fontWeight: 600,
-                                color: 'primary.dark'
+                                width: 48,
+                                height: 48,
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}
                         >
-                            {exam?.subject?.subject_name || "Exam"} Details
-                        </Typography>
+                            <Assessment sx={{ color: 'teal', fontSize: 28 }} />
+                        </Box>
+                        <Box>
+                            <Typography
+                                variant={isMobile ? "h6" : "h5"}
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#1E293B',
+                                    mb: 0.5
+                                }}
+                            >
+                                {exam?.subject?.subject_name || "Exam"} Details
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Manage questions and exam configuration
+                            </Typography>
+                        </Box>
                     </Box>
-                </Box>
+                    <Button
+                        variant="outlined"
+                        startIcon={<FaArrowLeft />}
+                        onClick={handleBackToExams}
+                        sx={{
+                            borderRadius: 2,
+                            px: 3,
+                            borderColor: 'divider',
+                            color: 'text.secondary',
+                            '&:hover': {
+                                borderColor: 'teal',
+                                backgroundColor: 'rgba(13, 148, 136, 0.04)',
+                                color: 'teal'
+                            }
+                        }}
+                    >
+                        Back to Exams
+                    </Button>
+                </Paper>
 
                 <Grid container spacing={3}>
                     {/* Basic Info Card */}
                     <Grid item xs={12} md={6} lg={4}>
                         <Paper
-                            elevation={2}
+                            elevation={0}
                             sx={{
                                 p: 3,
                                 borderRadius: 2,
                                 height: '100%',
                                 border: '1px solid',
                                 borderColor: 'divider',
-                                transition: 'transform 0.2s ease-in-out',
+                                backgroundColor: '#fff',
+                                transition: 'all 0.2s ease-in-out',
                                 '&:hover': {
-                                    transform: 'translateY(-4px)',
-                                    boxShadow: 4
+                                    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.15)',
+                                    borderColor: 'rgba(13, 148, 136, 0.3)'
                                 }
                             }}
                         >
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                mb: 2,
-                                gap: 1
+                                mb: 3,
+                                gap: 1.5
                             }}>
-                                <School color="primary" />
-                                <Typography variant="h6" color="primary.main" fontWeight="medium">
+                                <Box
+                                    sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '10px',
+                                        backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <School sx={{ color: 'teal', fontSize: 24 }} />
+                                </Box>
+                                <Typography variant="h6" sx={{ color: '#1E293B', fontWeight: 600 }}>
                                     Exam Information
                                 </Typography>
                             </Box>
 
-                            <Divider sx={{ mb: 2 }} />
+                            <Divider sx={{ mb: 3 }} />
 
-                            <Grid container spacing={2}>
+                            <Grid container spacing={2.5}>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Subject
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
+                                    <Typography variant="body1" fontWeight={600} sx={{ color: '#1E293B', mt: 0.5 }}>
                                         {exam?.subject?.subject_name || "N/A"}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Level
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
+                                    <Typography variant="body1" fontWeight={600} sx={{ color: '#1E293B', mt: 0.5 }}>
                                         {exam?.level?.name || "N/A"}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Class Category
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
+                                    <Typography variant="body1" fontWeight={600} sx={{ color: '#1E293B', mt: 0.5 }}>
                                         {exam?.class_category?.name || "N/A"}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Type
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {exam?.type || "N/A"}
-                                    </Typography>
+                                    <Chip 
+                                        label={exam?.type || "N/A"} 
+                                        size="small" 
+                                        sx={{ 
+                                            mt: 0.5,
+                                            textTransform: 'capitalize',
+                                            fontWeight: 600,
+                                            backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                                            color: 'teal'
+                                        }} 
+                                    />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Total Marks
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
+                                    <Typography variant="body1" fontWeight={600} sx={{ color: '#1E293B', mt: 0.5 }}>
                                         {exam?.total_marks || "N/A"}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Typography variant="subtitle2" color="text.secondary">
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
                                         Duration
                                     </Typography>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {exam?.duration || "N/A"} minutes
+                                    <Typography variant="body1" fontWeight={600} sx={{ color: '#1E293B', mt: 0.5 }}>
+                                        {exam?.duration || "N/A"} min
                                     </Typography>
                                 </Grid>
                             </Grid>
 
                             {/* Summary of questions */}
-                            <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
-                                <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <InfoOutlined fontSize="small" color="info" />
+                            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+                                <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 600, color: '#1E293B' }}>
+                                    <InfoOutlined fontSize="small" sx={{ color: 'teal' }} />
                                     Questions Summary
                                 </Typography>
-                                <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                                <Stack direction="row" spacing={1.5} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1.5 }}>
                                     <Chip
                                         label={`English: ${questionCounts.English}`}
-                                        color="info"
                                         variant={selectedLanguage === "English" ? "filled" : "outlined"}
                                         onClick={() => setSelectedLanguage("English")}
-                                        sx={{ borderRadius: 1 }}
+                                        sx={{ 
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            px: 1,
+                                            cursor: 'pointer',
+                                            backgroundColor: selectedLanguage === "English" ? 'rgba(13, 148, 136, 0.1)' : 'transparent',
+                                            color: selectedLanguage === "English" ? 'teal' : 'text.secondary',
+                                            borderColor: selectedLanguage === "English" ? 'teal' : 'divider',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(13, 148, 136, 0.15)',
+                                                borderColor: 'teal'
+                                            }
+                                        }}
                                     />
                                     <Chip
                                         label={`Hindi: ${questionCounts.Hindi}`}
-                                        color="secondary"
                                         variant={selectedLanguage === "Hindi" ? "filled" : "outlined"}
                                         onClick={() => setSelectedLanguage("Hindi")}
-                                        sx={{ borderRadius: 1 }}
+                                        sx={{ 
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            px: 1,
+                                            cursor: 'pointer',
+                                            backgroundColor: selectedLanguage === "Hindi" ? 'rgba(156, 39, 176, 0.1)' : 'transparent',
+                                            color: selectedLanguage === "Hindi" ? '#9c27b0' : 'text.secondary',
+                                            borderColor: selectedLanguage === "Hindi" ? '#9c27b0' : 'divider',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(156, 39, 176, 0.15)',
+                                                borderColor: '#9c27b0'
+                                            }
+                                        }}
                                     />
                                 </Stack>
                             </Box>
@@ -642,13 +748,19 @@ const ExamDetails = () => {
 
                     {/* Questions Section */}
                     <Grid item xs={12} md={6} lg={8}>
-                        <Box
+                        <Paper
+                            elevation={0}
                             sx={{
+                                p: 2.5,
+                                mb: 3,
+                                borderRadius: 2,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                backgroundColor: '#fff',
                                 display: "flex",
                                 flexDirection: { xs: "column", sm: "row" },
                                 justifyContent: "space-between",
                                 alignItems: { xs: "stretch", sm: "center" },
-                                mb: 3,
                                 gap: 2
                             }}
                         >
@@ -664,23 +776,30 @@ const ExamDetails = () => {
                                     sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1,
-                                        color: 'text.primary'
+                                        gap: 1.5,
+                                        color: '#1E293B',
+                                        fontWeight: 600
                                     }}
                                 >
                                     <Badge
                                         badgeContent={filteredQuestions.length}
-                                        color={selectedLanguage === "English" ? "info" : "secondary"}
+                                        sx={{
+                                            '& .MuiBadge-badge': {
+                                                backgroundColor: selectedLanguage === "English" ? 'teal' : '#9c27b0',
+                                                color: '#fff',
+                                                fontWeight: 600
+                                            }
+                                        }}
                                         showZero
                                     >
-                                        <Assessment />
+                                        <Assessment sx={{ color: 'teal' }} />
                                     </Badge>
                                     {selectedLanguage} Questions
                                 </Typography>
 
                                 <FormControl
                                     sx={{
-                                        minWidth: 120,
+                                        minWidth: 130,
                                         flex: { xs: 1, sm: 'none' }
                                     }}
                                     size="small"
@@ -690,6 +809,11 @@ const ExamDetails = () => {
                                         value={selectedLanguage}
                                         label="Language"
                                         onChange={(e) => setSelectedLanguage(e.target.value)}
+                                        sx={{
+                                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: 'teal',
+                                            },
+                                        }}
                                     >
                                         <MenuItem value="English">English</MenuItem>
                                         <MenuItem value="Hindi">Hindi</MenuItem>
@@ -699,23 +823,25 @@ const ExamDetails = () => {
 
                             <Button
                                 variant="contained"
-                                color="primary"
                                 startIcon={<Add />}
                                 onClick={handleAddQuestion}
                                 fullWidth={isMobile}
                                 sx={{
-                                    borderRadius: 8,
+                                    borderRadius: 2,
                                     px: 3,
-                                    py: isMobile ? 1 : 'inherit',
-                                    boxShadow: 2,
+                                    py: 1,
+                                    backgroundColor: 'teal',
+                                    fontWeight: 600,
+                                    textTransform: 'none',
                                     '&:hover': {
-                                        boxShadow: 4
+                                        backgroundColor: '#0d8478',
+                                        boxShadow: '0 4px 12px rgba(13, 148, 136, 0.3)'
                                     }
                                 }}
                             >
                                 Add Question
                             </Button>
-                        </Box>
+                        </Paper>
 
                         {filteredQuestions.length > 0 ? (
                             filteredQuestions.map((question, index) => (
@@ -779,12 +905,12 @@ const ExamDetails = () => {
                     }}
                 >
                     <DialogTitle sx={{
-                        bgcolor: editQuestion ? 'warning.50' : 'primary.50',
-                        color: editQuestion ? 'warning.dark' : 'primary.dark',
+                        bgcolor: editQuestion ? 'rgba(255, 152, 0, 0.08)' : 'rgba(13, 148, 136, 0.08)',
+                        color: editQuestion ? '#ed6c02' : 'teal',
                         px: { xs: 2, sm: 3 },
-                        py: 2,
-                        borderBottom: '1px solid',
-                        borderColor: editQuestion ? 'warning.light' : 'primary.light',
+                        py: 2.5,
+                        borderBottom: '2px solid',
+                        borderColor: editQuestion ? '#ed6c02' : 'teal',
                     }}>
                         {isMobile && (
                             <IconButton
@@ -1003,12 +1129,15 @@ const ExamDetails = () => {
                                 </Button>
                                 <Button
                                     variant="contained"
-                                    color={editQuestion ? "warning" : "primary"}
                                     onClick={handleSaveQuestion}
                                     disabled={formSubmitting}
                                     sx={{
                                         px: 4,
-                                        fontWeight: 500
+                                        fontWeight: 600,
+                                        backgroundColor: editQuestion ? '#ed6c02' : 'teal',
+                                        '&:hover': {
+                                            backgroundColor: editQuestion ? '#e65100' : '#0d8478'
+                                        }
                                     }}
                                 >
                                     {formSubmitting ? (
