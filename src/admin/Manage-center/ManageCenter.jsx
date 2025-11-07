@@ -566,8 +566,9 @@ export default function ManageCenter() {
           ) : isMobile ? (
             <Box p={2}>{renderMobileCards()}</Box>
           ) : (
-            <Box sx={{ height: 560, width: "100%" }}>
+            <Box sx={{width: "100%" }}>
               <DataGrid
+                
                 rows={dgRows}
                 columns={[
                   { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
@@ -578,7 +579,6 @@ export default function ManageCenter() {
                     headerName: "Manager",
                     flex: 1,
                     minWidth: 170,
-                    renderCell: (p) => <Box><Typography>{p.value || "Not assigned"}</Typography><Typography variant="caption" color="text.secondary">{p.row.email || ""}</Typography></Box>,
                   },
                   {
                     field: "status",

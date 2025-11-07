@@ -31,6 +31,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  alpha,
 } from "@mui/material";
 // Import DataGrid components
 import { 
@@ -42,16 +43,25 @@ import {
   GridToolbarDensitySelector
 } from "@mui/x-data-grid";
 import {
-  Visibility as ViewIcon,
-  GetApp as ExportIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  FilterList as FilterIcon,
-  Check as CheckIcon,
-  Clear as ClearIcon,
-  HelpOutline as HelpIcon,
-  PersonAdd as PersonAddIcon,
-} from "@mui/icons-material";
+  MdVisibility as ViewIcon,
+  MdGetApp as ExportIcon,
+  MdSearch as SearchIcon,
+  MdRefresh as RefreshIcon,
+  MdFilterList as FilterIcon,
+  MdCheck as CheckIcon,
+  MdClear as ClearIcon,
+  MdHelpOutline as HelpIcon,
+  MdPersonAdd as PersonAddIcon,
+  MdEdit as EditIcon,
+  MdDelete as DeleteIcon,
+  MdPerson as PersonIcon,
+  MdLocationOn as LocationIcon,
+  MdSchool as SchoolIcon,
+  MdEmail as EmailIcon,
+  MdGridView as GridViewIcon,
+  MdViewList as ListViewIcon,
+} from "react-icons/md";
+import { FaUserGraduate, FaMapMarkerAlt, FaEnvelope, FaFilter } from "react-icons/fa";
 import { styled } from "@mui/material/styles";
 import Layout from "../Admin/Layout";
 import { getTeacher, updateTeacher } from "../../services/adminTeacherApi";
@@ -69,31 +79,63 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const TeacherAvatar = styled(Avatar)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
+  backgroundColor: '#0d9488',
   width: 40,
   height: 40,
   fontWeight: 600,
+  boxShadow: `0 2px 8px ${alpha('#0d9488', 0.3)}`,
 }));
 
 const StatusChip = styled(Chip)(({ theme, active }) => ({
   fontWeight: 500,
   backgroundColor: active === "true" || active === true ? 
-    theme.palette.success.main : theme.palette.error.main,
-  color: '#fff',
+    alpha('#10b981', 0.1) : alpha('#ef4444', 0.1),
+  color: active === "true" || active === true ? '#059669' : '#dc2626',
+  border: `1px solid ${active === "true" || active === true ? '#10b981' : '#ef4444'}`,
   '&:hover': {
     backgroundColor: active === "true" || active === true ? 
-      theme.palette.success.main : theme.palette.error.main,
+      alpha('#10b981', 0.15) : alpha('#ef4444', 0.15),
   }
 }));
 
 const FilterPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: theme.spacing(2),
+  background: `linear-gradient(135deg, ${alpha('#0d9488', 0.02)} 0%, ${alpha('#06b6d4', 0.02)} 100%)`,
+  border: `1px solid ${alpha('#0d9488', 0.1)}`,
   transition: 'all 0.3s ease',
   '&:hover': {
-    boxShadow: theme.shadows[4],
+    boxShadow: `0 8px 32px ${alpha('#0d9488', 0.1)}`,
+    border: `1px solid ${alpha('#0d9488', 0.2)}`,
   }
+}));
+
+const TeacherCard = styled(Card)(({ theme, active }) => ({
+  borderRadius: theme.spacing(2),
+  border: `1px solid ${alpha(active ? '#10b981' : '#ef4444', 0.2)}`,
+  background: `linear-gradient(135deg, ${alpha(active ? '#10b981' : '#ef4444', 0.02)} 0%, ${alpha('#ffffff', 0.8)} 100%)`,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 12px 40px ${alpha(active ? '#10b981' : '#ef4444', 0.15)}`,
+  }
+}));
+
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    borderRadius: theme.spacing(3),
+    background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06b6d4', 0.05)} 100%)`,
+    backdropFilter: 'blur(10px)',
+  }
+}));
+
+const GradientHeader = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
+  color: 'white',
+  padding: theme.spacing(2),
+  borderRadius: `${theme.spacing(2)} ${theme.spacing(2)} 0 0`,
+  margin: `-${theme.spacing(3)} -${theme.spacing(3)} ${theme.spacing(3)} -${theme.spacing(3)}`,
 }));
 
 const ManageTeacher = () => {
@@ -425,18 +467,12 @@ const ManageTeacher = () => {
     const initials = `${teacher.Fname?.charAt(0) || ''}${teacher.Lname?.charAt(0) || ''}`;
 
     return (
-      <Card
+      <TeacherCard
         key={teacher.id}
+        active={teacher.is_active}
         sx={{
           mb: 2,
-          borderRadius: 2,
-          boxShadow: 2,
-          borderLeft: `5px solid ${teacher.is_active ? theme.palette.success.main : theme.palette.error.main}`,
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-3px)',
-            boxShadow: 4,
-          }
+          borderLeft: `5px solid ${teacher.is_active ? '#10b981' : '#ef4444'}`,
         }}
       >
         <CardContent>
@@ -451,33 +487,38 @@ const ManageTeacher = () => {
                     setSelectedTeachers(selectedTeachers.filter((id) => id !== teacher.id));
                   }
                 }}
-                sx={{ p: 0, mr: 1 }}
+                sx={{ p: 0, mr: 1, color: '#0d9488' }}
               />
               <TeacherAvatar>{initials}</TeacherAvatar>
               <Box ml={1}>
                 <Typography variant="subtitle1" fontWeight={600} sx={{ lineHeight: 1.2 }}>
                   {`${teacher.Fname || ''} ${teacher.Lname || ''}`}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {teacher.email || ''}
-                </Typography>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <EmailIcon size={14} color="#6b7280" />
+                  <Typography variant="body2" color="textSecondary">
+                    {teacher.email || ''}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
             <StatusChip
               label={teacher.is_active ? "Active" : "Inactive"}
               active={teacher.is_active}
               size="small"
-              sx={{ color: '#fff' }}
             />
           </Box>
 
-          <Divider sx={{ my: 1.5 }} />
+          <Divider sx={{ my: 1.5, borderColor: alpha('#0d9488', 0.1) }} />
 
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                Qualifications:
-              </Typography>
+              <Box display="flex" alignItems="center" gap={1}>
+                <SchoolIcon color="#0d9488" size={16} />
+                <Typography variant="caption" color="textSecondary" display="block">
+                  Qualifications:
+                </Typography>
+              </Box>
               <Typography variant="body2">
                 {(teacher.teacherqualifications || [])
                   .map((q) => q?.qualification?.name || '')
@@ -487,9 +528,12 @@ const ManageTeacher = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="caption" color="textSecondary" display="block">
-                Location:
-              </Typography>
+              <Box display="flex" alignItems="center" gap={1}>
+                <LocationIcon color="#0d9488" size={16} />
+                <Typography variant="caption" color="textSecondary" display="block">
+                  Location:
+                </Typography>
+              </Box>
               <Typography variant="body2">
                 {(teacher.teachersaddress || [])
                   .map((address) => address?.state || '')
@@ -515,14 +559,14 @@ const ManageTeacher = () => {
                 component={Link}
                 to={`/admin/view/teacher/${teacher.id}`}
                 size="small"
-                color="primary"
+                sx={{ color: '#0d9488' }}
               >
                 <ViewIcon fontSize="small" />
               </IconButton>
             </Box>
           </Box>
         </CardContent>
-      </Card>
+      </TeacherCard>
     );
   };
 
@@ -555,6 +599,8 @@ const ManageTeacher = () => {
       headerName: 'ID',
       width: 70,
       hide: isMobile,
+      headerAlign: 'center',
+      align: 'center',
     },
     {
       field: 'name',
@@ -565,7 +611,7 @@ const ManageTeacher = () => {
         const initials = `${params.row.Fname?.charAt(0) || ''}${params.row.Lname?.charAt(0) || ''}`;
         return (
           <Box display="flex" alignItems="center">
-            <TeacherAvatar>{initials}</TeacherAvatar>
+            <TeacherAvatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>{initials}</TeacherAvatar>
             <Box ml={1}>
               <Typography variant="subtitle2" fontWeight={600}>
                 {`${params.row.Fname || ''} ${params.row.Lname || ''}`}
@@ -584,6 +630,12 @@ const ManageTeacher = () => {
       headerName: 'Email',
       flex: 1,
       minWidth: 220,
+      renderCell: (params) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <EmailIcon size={16} color="#6b7280" />
+          <Typography variant="body2">{params.row.email || ''}</Typography>
+        </Box>
+      ),
       sortable: true,
     },
     {
@@ -597,7 +649,12 @@ const ManageTeacher = () => {
           .map((q) => q?.qualification?.name || '')
           .filter(Boolean)
           .join(", ");
-        return <span>{qualifications || 'N/A'}</span>;
+        return (
+          <Box display="flex" alignItems="center" gap={1}>
+            <SchoolIcon size={16} color="#0d9488" />
+            <Typography variant="body2">{qualifications || 'N/A'}</Typography>
+          </Box>
+        );
       },
       sortable: false,
     },
@@ -612,7 +669,12 @@ const ManageTeacher = () => {
           .map((address) => address?.state || '')
           .filter(Boolean)
           .join(", ");
-        return <span>{locations || 'N/A'}</span>;
+        return (
+          <Box display="flex" alignItems="center" gap={1}>
+            <LocationIcon size={16} color="#0d9488" />
+            <Typography variant="body2">{locations || 'N/A'}</Typography>
+          </Box>
+        );
       },
       sortable: false,
     },
@@ -620,10 +682,12 @@ const ManageTeacher = () => {
       field: 'is_active',
       headerName: 'Status',
       width: 120,
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
         <StatusChip
           label={params.row.is_active ? "Active" : "Inactive"}
-          active={params.row.is_active ? "true" : "false"} // Fix: convert to string
+          active={params.row.is_active ? "true" : "false"}
           size="small"
         />
       ),
@@ -633,6 +697,8 @@ const ManageTeacher = () => {
       field: 'actions',
       headerName: 'Actions',
       width: 120,
+      headerAlign: 'center',
+      align: 'center',
       sortable: false,
       renderCell: (params) => (
         <Box display="flex" alignItems="center" gap={1}>
@@ -641,7 +707,12 @@ const ManageTeacher = () => {
               component={Link}
               to={`/admin/view/teacher/${params.row.id}`}
               size="small"
-              color="primary"
+              sx={{ 
+                color: '#0d9488',
+                '&:hover': {
+                  backgroundColor: alpha('#0d9488', 0.1),
+                }
+              }}
             >
               <ViewIcon fontSize="small" />
             </IconButton>
@@ -663,63 +734,83 @@ const ManageTeacher = () => {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
         {/* Header section with stats */}
-        <Box
-          display="flex"
-          flexDirection={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          gap={2}
-          mb={3}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            mb: 3, 
+          }}
         >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: "primary.main",
-                fontWeight: 700,
-                fontSize: { xs: "1.75rem", sm: "2.125rem" },
-              }}
-            >
-              Manage Teachers
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-              {teachers.length} teachers registered • {activeTeachers} active • {inactiveTeachers} inactive
-            </Typography>
-          </Box>
+          <Box
+            display="flex"
+            flexDirection={{ xs: 'column', md: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', md: 'center' }}
+            gap={2}
+          >
+            <Box display="flex" alignItems="center" gap={2}>
+              <Avatar sx={{ bgcolor: '#0d9488', width: 56, height: 56 }}>
+                <FaUserGraduate size={28} />
+              </Avatar>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: "#0d9488",
+                    fontWeight: 700,
+                    fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                  }}
+                >
+                  Manage Teachers
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {teachers.length} teachers registered • {activeTeachers} active • {inactiveTeachers} inactive
+                </Typography>
+              </Box>
+            </Box>
 
-          <Box display="flex" gap={2} width={{ xs: '100%', md: 'auto' }}>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={refreshing}
-              sx={{
-                textTransform: 'none',
-                minWidth: { xs: '50%', md: 'auto' }
-              }}
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<ExportIcon />}
-              onClick={handleExportData}
-              sx={{
-                boxShadow: 2,
-                textTransform: 'none',
-                minWidth: { xs: '50%', md: 'auto' }
-              }}
-            >
-              Export Data
-            </Button>
+            <Box display="flex" gap={2} width={{ xs: '100%', md: 'auto' }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                disabled={refreshing}
+                sx={{
+                  textTransform: 'none',
+                  borderColor: alpha('#0d9488', 0.3),
+                  color: '#0d9488',
+                  '&:hover': {
+                    borderColor: '#0d9488',
+                    backgroundColor: alpha('#0d9488', 0.05),
+                  },
+                  minWidth: { xs: '50%', md: 'auto' }
+                }}
+              >
+                {refreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
+              <Button
+                variant="contained"
+                sx={{
+                  background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
+                  boxShadow: `0 4px 20px ${alpha('#0d9488', 0.3)}`,
+                  textTransform: 'none',
+                  '&:hover': {
+                    background: `linear-gradient(135deg, #0a7c6a 0%, #0891b2 100%)`,
+                    boxShadow: `0 6px 25px ${alpha('#0d9488', 0.4)}`,
+                  },
+                  minWidth: { xs: '50%', md: 'auto' }
+                }}
+                startIcon={<ExportIcon />}
+                onClick={handleExportData}
+              >
+                Export Data
+              </Button>
+            </Box>
           </Box>
-        </Box>
+        </Paper>
 
         {/* Search bar */}
-        <FilterPaper elevation={2}>
+        <FilterPaper elevation={0}>
           <Box mb={2}>
             <TextField
               fullWidth
@@ -730,7 +821,7 @@ const ManageTeacher = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon color="action" />
+                    <SearchIcon color="#0d9488" />
                   </InputAdornment>
                 ),
                 endAdornment: searchQuery && (
@@ -738,27 +829,41 @@ const ManageTeacher = () => {
                     <IconButton
                       size="small"
                       onClick={() => setSearchQuery("")}
+                      sx={{ color: '#0d9488' }}
                     >
                       <ClearIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: alpha('#0d9488', 0.5),
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0d9488',
+                  },
+                }
+              }}
             />
           </Box>
 
           {/* Filter section with toggle for mobile */}
           <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle1" fontWeight={600} color="text.primary">
-              Filters
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <FaFilter color="#0d9488" />
+              <Typography variant="subtitle1" fontWeight={600} color="#0d9488">
+                Filters
+              </Typography>
+            </Box>
             {isMobile && (
               <Button
                 startIcon={<FilterIcon />}
                 onClick={() => setExpandedFilters(!expandedFilters)}
                 size="small"
-                color="inherit"
+                sx={{ color: '#0d9488' }}
               >
                 {expandedFilters ? 'Hide Filters' : 'Show Filters'}
               </Button>
@@ -770,7 +875,10 @@ const ManageTeacher = () => {
             <Grid container spacing={2}>
               {/* Qualification Filter */}
               <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body2" fontWeight={500} gutterBottom>Qualification</Typography>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <SchoolIcon color="#0d9488" size={16} />
+                  <Typography variant="body2" fontWeight={500} color="#0d9488">Qualification</Typography>
+                </Box>
                 <FormControl variant="outlined" fullWidth size="small">
                   <Select
                     value={selectedQualification}
@@ -779,6 +887,17 @@ const ManageTeacher = () => {
                     renderValue={(selected) => {
                       if (!selected) return "All Qualifications";
                       return selected;
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.3),
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.5),
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#0d9488',
+                      },
                     }}
                   >
                     <MenuItem value="">All Qualifications</MenuItem>
@@ -793,7 +912,10 @@ const ManageTeacher = () => {
 
               {/* Subject Filter */}
               <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body2" fontWeight={500} gutterBottom>Subject</Typography>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <FaUserGraduate color="#0d9488" size={14} />
+                  <Typography variant="body2" fontWeight={500} color="#0d9488">Subject</Typography>
+                </Box>
                 <FormControl variant="outlined" fullWidth size="small">
                   <Select
                     value={selectedSubject}
@@ -802,6 +924,17 @@ const ManageTeacher = () => {
                     renderValue={(selected) => {
                       if (!selected) return "All Subjects";
                       return selected;
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.3),
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.5),
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#0d9488',
+                      },
                     }}
                   >
                     <MenuItem value="">All Subjects</MenuItem>
@@ -816,7 +949,10 @@ const ManageTeacher = () => {
 
               {/* Location Filter */}
               <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body2" fontWeight={500} gutterBottom>Location</Typography>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <LocationIcon color="#0d9488" />
+                  <Typography variant="body2" fontWeight={500} color="#0d9488">Location</Typography>
+                </Box>
                 <FormControl variant="outlined" fullWidth size="small">
                   <Select
                     value={selectedLocation}
@@ -825,6 +961,17 @@ const ManageTeacher = () => {
                     renderValue={(selected) => {
                       if (!selected) return "All Locations";
                       return selected;
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.3),
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.5),
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#0d9488',
+                      },
                     }}
                   >
                     <MenuItem value="">All Locations</MenuItem>
@@ -839,7 +986,10 @@ const ManageTeacher = () => {
 
               {/* Status Filter */}
               <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body2" fontWeight={500} gutterBottom>Status</Typography>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <CheckIcon color="#0d9488" />
+                  <Typography variant="body2" fontWeight={500} color="#0d9488">Status</Typography>
+                </Box>
                 <FormControl variant="outlined" fullWidth size="small">
                   <Select
                     value={selectedStatus}
@@ -848,6 +998,17 @@ const ManageTeacher = () => {
                     renderValue={(selected) => {
                       if (!selected) return "All Status";
                       return selected === "approved" ? "Active" : selected === "rejected" ? "Inactive" : "All Statuses";
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.3),
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#0d9488', 0.5),
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#0d9488',
+                      },
                     }}
                   >
                     <MenuItem value="">All Status</MenuItem>
@@ -875,7 +1036,12 @@ const ManageTeacher = () => {
                     setSelectedStatus("");
                   }}
                   startIcon={<ClearIcon fontSize="small" />}
-                  color="primary"
+                  sx={{
+                    color: '#0d9488',
+                    '&:hover': {
+                      backgroundColor: alpha('#0d9488', 0.1),
+                    }
+                  }}
                 >
                   Clear filters
                 </Button>
@@ -886,10 +1052,12 @@ const ManageTeacher = () => {
 
         {/* Teachers List/Table */}
         <Paper
-          elevation={3}
+          elevation={0}
           sx={{
-            borderRadius: 2,
+            borderRadius: 3,
             overflow: "hidden",
+            background: `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8fafc', 0.9)} 100%)`,
+            border: `1px solid ${alpha('#0d9488', 0.1)}`,
             transition: "all 0.3s ease"
           }}
         >
@@ -904,26 +1072,39 @@ const ManageTeacher = () => {
               </Grid>
             </Box>
           ) : error ? (
-            <Box p={3} textAlign="center">
-              <Alert
-                severity="error"
-                sx={{ mb: 2 }}
-                action={
-                  <Button color="inherit" size="small" onClick={handleRefresh}>
-                    Try Again
-                  </Button>
-                }
-              >
+            <Box p={4} textAlign="center">
+              <Box mb={2}>
+                <HelpIcon fontSize="large" sx={{ fontSize: 60, opacity: 0.5, color: '#ef4444' }} />
+              </Box>
+              <Typography variant="h6" color="error" gutterBottom>
+                Failed to Load Teachers
+              </Typography>
+              <Typography variant="body2" color="textSecondary" paragraph>
                 {error}
-              </Alert>
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                sx={{
+                  borderColor: '#0d9488',
+                  color: '#0d9488',
+                  '&:hover': {
+                    borderColor: '#0d9488',
+                    backgroundColor: alpha('#0d9488', 0.1),
+                  }
+                }}
+              >
+                Try Again
+              </Button>
             </Box>
           ) : filteredTeachers.length === 0 ? (
             <Box p={4} textAlign="center">
               <Box mb={2}>
                 {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus ? (
-                  <HelpIcon fontSize="large" color="action" sx={{ fontSize: 60, opacity: 0.5 }} />
+                  <HelpIcon sx={{ fontSize: 60, opacity: 0.5, color: '#f59e0b' }} />
                 ) : (
-                  <PersonAddIcon fontSize="large" color="primary" sx={{ fontSize: 60, opacity: 0.7 }} />
+                  <PersonIcon sx={{ fontSize: 60, opacity: 0.7, color: '#0d9488' }} />
                 )}
               </Box>
               <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -939,7 +1120,6 @@ const ManageTeacher = () => {
               {(searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus) && (
                 <Button
                   variant="outlined"
-                  color="primary"
                   startIcon={<ClearIcon />}
                   onClick={() => {
                     setSearchQuery("");
@@ -948,7 +1128,14 @@ const ManageTeacher = () => {
                     setSelectedLocation("");
                     setSelectedStatus("");
                   }}
-                  sx={{ mt: 1 }}
+                  sx={{
+                    borderColor: '#0d9488',
+                    color: '#0d9488',
+                    '&:hover': {
+                      borderColor: '#0d9488',
+                      backgroundColor: alpha('#0d9488', 0.1),
+                    }
+                  }}
                 >
                   Clear all filters
                 </Button>
@@ -1008,18 +1195,41 @@ const ManageTeacher = () => {
                     outline: 'none',
                   },
                   '& .MuiDataGrid-columnHeaders': {
-                    backgroundColor: theme.palette.background.default,
+                    background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06b6d4', 0.05)} 100%)`,
+                    borderBottom: `2px solid ${alpha('#0d9488', 0.2)}`,
                     fontWeight: 600,
+                    color: '#0d9488',
                   },
                   '& .MuiDataGrid-row:nth-of-type(even)': {
-                    backgroundColor: theme.palette.action.hover,
+                    backgroundColor: alpha('#f8fafc', 0.5),
+                  },
+                  '& .MuiDataGrid-row:hover': {
+                    backgroundColor: alpha('#0d9488', 0.05),
+                  },
+                  '& .MuiDataGrid-row.Mui-selected': {
+                    backgroundColor: alpha('#0d9488', 0.1),
+                    '&:hover': {
+                      backgroundColor: alpha('#0d9488', 0.15),
+                    },
+                  },
+                  '& .MuiDataGrid-footerContainer': {
+                    borderTop: `1px solid ${alpha('#0d9488', 0.1)}`,
+                    backgroundColor: alpha('#f8fafc', 0.5),
+                  },
+                  '& .MuiTablePagination-root': {
+                    color: '#0d9488',
+                  },
+                  '& .MuiCheckbox-root': {
+                    color: alpha('#0d9488', 0.6),
+                    '&.Mui-checked': {
+                      color: '#0d9488',
+                    },
                   },
                 }}
               />
             </Box>
           )}
         </Paper>
-      </Container>
 
       {/* Snackbar notification */}
 
@@ -1037,34 +1247,42 @@ const ManageTeacher = () => {
       </Snackbar>
 
       {/* Confirm status change dialog */}
-      <Dialog
+      <StyledDialog
         open={confirmStatusChange.open}
         onClose={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
       >
-        <DialogTitle>
-          Confirm Status Change
-        </DialogTitle>
-        <DialogContent>
+        <GradientHeader>
+          <Typography variant="h6" fontWeight={600}>
+            Confirm Status Change
+          </Typography>
+        </GradientHeader>
+        <DialogContent sx={{ mt: 2 }}>
           <Typography>
             Are you sure you want to {confirmStatusChange.currentStatus ? "deactivate" : "activate"} the selected teacher?
           </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button
             onClick={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
-            color="primary"
+            sx={{ color: '#0d9488' }}
           >
             Cancel
           </Button>
           <Button
             onClick={() => handleToggleStatus(confirmStatusChange.id, confirmStatusChange.currentStatus)}
-            color="error"
+            variant="contained"
+            sx={{
+              background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
+              '&:hover': {
+                background: `linear-gradient(135deg, #0a7c6a 0%, #0891b2 100%)`,
+              }
+            }}
             disabled={processingStatus}
           >
             {processingStatus ? "Processing..." : "Confirm"}
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
     </Layout>
   );
 }
