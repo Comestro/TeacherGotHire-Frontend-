@@ -81,18 +81,21 @@ const ManageHiringRequests = () => {
       setLoading(true);
       try {
         const response = await getHireRequest();
-        
         if (Array.isArray(response)) {
           const formatData = response.map((item) => ({
             id: item.id,
-            recruiterName: item.recruiter_id,
-            teacherName: item.teacher_id,
+            recruiterName: item.recruiter_id.Fname + " " + item.recruiter_id.Lname,
+            teacherName: item.teacher_id.Fname + " " + item.teacher_id.Lname,
+            // Provide fields that DataGrid may read directly (params.value)
+            recruiter: formatName(item.recruiter_id.Fname + " " + item.recruiter_id.Lname),
+            teacher: formatName(item.teacher_id.Fname + " " + item.teacher_id.Lname),
             role: item.role,
             subjects: item.subject,
             status: item.status,
             requestDate: item.date,
           }));
           setData(formatData);
+          console.log("Fetched hiring requests:", formatData);
           setFilteredData(formatData);
         }
       } catch (error) {
@@ -302,19 +305,25 @@ const ManageHiringRequests = () => {
       flex: 1,
       minWidth: 180,
       valueGetter: (params) => {
-        // DataGrid may call valueGetter with undefined params in some cases;
-        // guard against that and return a safe fallback.
-        if (!params || !params.row) return 'N/A';
-        return formatName(params.row.recruiterName);
+        // params can sometimes be an empty object during internal DataGrid operations.
+        // Prefer the explicit row value, but fall back to params.value (if DataGrid provided it).
+        const row = params?.row;
+        const raw = row?.recruiterName ?? params?.value;
+        if (raw == null || raw === '') return 'N/A';
+        return formatName(raw);
       },
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-            {params.value}
-          </Typography>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const raw = params?.row?.recruiter ?? params?.row?.recruiterName ?? params?.value;
+        const display = raw == null || raw === '' ? '—' : formatName(raw);
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+              {display}
+            </Typography>
+          </Box>
+        );
+      },
     },
     {
       field: 'teacher',
@@ -322,14 +331,20 @@ const ManageHiringRequests = () => {
       flex: 1,
       minWidth: 180,
       valueGetter: (params) => {
-        if (!params || !params.row) return 'N/A';
-        return formatName(params.row.teacherName);
+        const row = params?.row;
+        const raw = row?.teacherName ?? params?.value;
+        if (raw == null || raw === '') return 'N/A';
+        return formatName(raw);
       },
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-          {params.value}
-        </Typography>
-      ),
+      renderCell: (params) => {
+        const raw = params?.row?.teacher ?? params?.row?.teacherName ?? params?.value;
+        const display = raw == null || raw === '' ? '—' : formatName(raw);
+        return (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
+            {display}
+          </Typography>
+        );
+      },
     },
     {
       field: 'role',
@@ -348,8 +363,8 @@ const ManageHiringRequests = () => {
       minWidth: 200,
       valueGetter: (params) => {
         const row = params?.row;
-        if (!row) return 'N/A';
-        const subjects = row.subjects;
+        const subjectsRaw = row?.subjects ?? params?.value;
+        const subjects = Array.isArray(subjectsRaw) ? subjectsRaw : undefined;
         if (!Array.isArray(subjects) || subjects.length === 0) return 'N/A';
         return subjects.map((subject) => subject?.subject_name ?? String(subject)).join(', ');
       },
@@ -604,7 +619,6 @@ const ManageHiringRequests = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
                 overflow: 'hidden',
-                height: 500,
                 width: '100%',
                 '& .MuiDataGrid-root': { border: 'none' },
                 '& .MuiDataGrid-columnHeaders': {

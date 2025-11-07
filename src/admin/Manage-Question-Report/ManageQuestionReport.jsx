@@ -1,987 +1,674 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
-    Box, Typography, Card, CardContent, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, Paper, Chip, IconButton,
-    Button, TextField, MenuItem, Select, FormControl, InputLabel,
-    Dialog, DialogActions, DialogContent, DialogTitle, Drawer,
-    useMediaQuery, Grid, Divider, Tooltip, Snackbar, Alert,
-    CircularProgress, InputAdornment, SwipeableDrawer, Stack
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+  Box,
+  Typography,
+  Container,
+  Paper,
+  TextField,
+  Button,
+  IconButton,
+  Chip,
+  Drawer,
+  Grid,
+  Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Stack,
+  Tooltip,
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import {
-    Search, FilterList, Sort, MoreVert, Check, Close,
-    KeyboardArrowDown, KeyboardArrowUp, CalendarToday,
-    Delete, Edit, Visibility, ExpandMore, Refresh, GetApp
-} from '@mui/icons-material';
-import moment from 'moment';
-import Layout from '../Admin/Layout';
-import { getQuestionReport, updateQuestionReport, deleteQuestionReport, patchQuestionReport } from '../../services/adminManageQuestionReport';
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Refresh as RefreshIcon,
+  GetApp as GetAppIcon,
+  Visibility as VisibilityIcon,
+  Check as CheckIcon,
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import moment from "moment";
+import Layout from "../Admin/Layout";
+import {
+  getQuestionReport,
+  updateQuestionReport,
+  // deleteQuestionReport,
+  // patchQuestionReport,
+} from "../../services/adminManageQuestionReport";
 
-// Helper function to safely format dates
-const safeFormatDate = (dateValue, format = 'MMM DD, YYYY') => {
-    if (!dateValue) return '—';
-    try {
-        return moment(dateValue).format(format);
-    } catch (error) {
-        
-        return '—';
-    }
+// ------------------------
+// Helpers
+// ------------------------
+const safeFormatDate = (dateValue, format = "MMM DD, YYYY") => {
+  if (!dateValue) return "—";
+  try {
+    return moment(dateValue).format(format);
+  } catch {
+    return "—";
+  }
 };
 
-// Status color mapping based on API response format
-const statusColors = {
-    true: '#f9a825',
-    false: '#388e3c',
-};
+const safeText = (v, fallback = "—") =>
+  v === null || v === undefined || v === "" ? fallback : v;
 
-// Status labels mapping for display
-const statusLabels = {
-    true: 'Open',
-    false: 'Done'
-};
-
-
-// Issue type mapping for better display
 const issueTypeMapping = {
-    "question wrong": "Question is incorrect",
-    "incorrect answer": "Answer is incorrect",
-    "offensive content": "Offensive content",
-    "duplicate question": "Duplicate question",
-    "typo error": "Typographical error",
-    "other": "Other issue"
+  "question wrong": "Question is incorrect",
+  "incorrect answer": "Answer is incorrect",
+  "offensive content": "Offensive content",
+  "duplicate question": "Duplicate question",
+  "typo error": "Typographical error",
+  other: "Other issue",
 };
 
-const ManageQuestionReport = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-    // State variables
-    const [reports, setReports] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [reasonFilter, setReasonFilter] = useState('all');
-    const [dateRange, setDateRange] = useState([null, null]);
-    const [sortOrder, setSortOrder] = useState('newest');
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [detailsOpen, setDetailsOpen] = useState(false);
-    const [expandedRow, setExpandedRow] = useState(null);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [filtersOpen, setFiltersOpen] = useState(!isMobile);
-    const [adminNotes, setAdminNotes] = useState('');
-    const [processing, setProcessing] = useState(false);
-
-    // Snackbar state
-    const [snackbar, setSnackbar] = useState({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
-
-    // Handle closing snackbar
-    const handleCloseSnackbar = () => {
-        setSnackbar(prev => ({ ...prev, open: false }));
-    };
-
-    // Show snackbar message
-    const showSnackbar = (message, severity = 'success') => {
-        setSnackbar({
-            open: true,
-            message,
-            severity
-        });
-    };
-
-    // Fetch reports from API
-    const fetchReports = async () => {
-        setLoading(true);
-        try {
-            const data = await getQuestionReport();
-            setReports(data || []);  // Changed from response.data to just data
-            setError(null);
-            showSnackbar("Reports fetched successfully", "success");
-        } catch (err) {
-            
-            const errorMessage = err.response?.data?.detail || 'Failed to fetch reports';
-            setError(errorMessage);
-            showSnackbar(errorMessage, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchReports();
-    }, []);
-
-    // Handle opening detail view
-    const handleViewDetails = (report) => {
-        setSelectedReport(report);
-        setAdminNotes(''); // Reset notes when opening a new report
-        setDetailsOpen(true);
-    };
-
-    // Handle closing detail view
-    const handleCloseDetails = () => {
-        setDetailsOpen(false);
-        setSelectedReport(null);
-    };
-
-    // Handle status change
-    const handleStatusChange = async (reportId, newStatus) => {
-        if (!reportId) return;
-
-        const reportToUpdate = reports.find(r => r.id === reportId);
-        if (!reportToUpdate) {
-            showSnackbar("Report not found", "error");
-            return;
-        }
-
-        setProcessing(true);
-        try {
-            // Convert status text to the correct boolean format for API
-            const statusValue = newStatus === 'Done' ? false : true;
-
-            // Include the required fields from the original report
-            const updateData = {
-                status: statusValue,
-                question: reportToUpdate.question?.id,
-                issue_type: reportToUpdate.issue_type?.map(issue => issue.id)
-            };
-
-            await updateQuestionReport(reportId, updateData);
-
-            // Update local state
-            setReports(reports.map(report =>
-                report.id === reportId ? { ...report, status: statusValue } : report
-            ));
-
-            showSnackbar(`Report has been marked as ${newStatus} successfully`);
-            handleCloseDetails();
-        } catch (err) {
-            
-            const errorMessage = err.response?.data?.detail ||
-                (err.response?.data ? JSON.stringify(err.response.data) : `Failed to update report status`);
-            showSnackbar(errorMessage, 'error');
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-
-    // Get unique issue types from reports for filter dropdown
-    const getUniqueIssueTypes = () => {
-        const issueTypes = new Set();
-        reports.forEach(report => {
-            if (report.issue_type && report.issue_type.length > 0) {
-                report.issue_type.forEach(issue => {
-                    if (issue.issue_type) {
-                        issueTypes.add(issue.issue_type);
-                    }
-                });
-            }
-        });
-        return Array.from(issueTypes);
-    };
-
-    // Format issue types for display
-    const formatIssueTypes = (issueTypeArray) => {
-        if (!issueTypeArray || !issueTypeArray.length) return 'Not specified';
-
-        return issueTypeArray.map(issue => {
-            const displayText = issueTypeMapping[issue.issue_type] || issue.issue_type;
-            return displayText;
-        }).join(', ');
-    };
-
-    // Filter reports based on search and filters
-    const filteredReports = reports.filter(report => {
-        if (!report) return false;
-
-        // Search term filter
-        const reportedByName = `${report.user?.Fname || ''} ${report.user?.Lname || ''}`.trim();
-        const searchMatch =
-            (report.question?.text?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-            (reportedByName.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-            (report.user?.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-
-        // Status filter
-        let statusMatch = statusFilter === 'all';
-        if (statusFilter === 'Pending') {
-            statusMatch = report.status === true;
-        } else if (statusFilter === 'Resolved') {
-            statusMatch = report.status === false;
-        }
-
-        // Reason filter
-        const reasonMatch = reasonFilter === 'all' ||
-            (report.issue_type?.some(issue => issue.issue_type === reasonFilter));
-
-        // Date range filter
-        let dateMatch = true;
-        if (dateRange[0] && dateRange[1] && report.created_at) {
-            try {
-                const reportDate = moment(report.created_at);
-                dateMatch =
-                    reportDate.isValid() &&
-                    reportDate.isSameOrAfter(moment(dateRange[0])) &&
-                    reportDate.isSameOrBefore(moment(dateRange[1]));
-            } catch (error) {
-                
-                dateMatch = false;
-            }
-        }
-
-        return searchMatch && statusMatch && reasonMatch && dateMatch;
-    });
-
-    // Sort reports based on sort order
-    const sortedReports = [...filteredReports].sort((a, b) => {
-        if (!a || !b) return 0;
-
-        if (sortOrder === 'newest') {
-            return moment(b?.created_at || 0).diff(moment(a?.created_at || 0));
-        } else if (sortOrder === 'oldest') {
-            return moment(a?.created_at || 0).diff(moment(b?.created_at || 0));
-        } else if (sortOrder === 'status') {
-            const statusPriority = { false: 1, 'rejected': 2, true: 3 };
-            return (statusPriority[a?.status] || 0) - (statusPriority[b?.status] || 0);
-        }
-        return 0;
-    });
-
-    // Pagination
-    const paginatedReports = sortedReports.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-    );
-
-    // Get status counts for statistics
-    const getStatusCounts = () => {
-        return {
-            total: reports.length,
-            pending: reports.filter(r => r.status === true).length,
-            resolved: reports.filter(r => r.status === false).length
-        };
-    };
-
-    const statusCounts = getStatusCounts();
-
-    const renderMobileView = () => {
-        return (
-            <Box sx={{ mt: 2 }}>
-                {paginatedReports.map((report) => (
-                    <Card
-                        key={report.id}
-                        sx={{
-                            mb: 2,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderLeft: `4px solid ${statusColors[report.status]}`
-                        }}
-                    >
-                        <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    ID: {report.id}
-                                </Typography>
-                                <Chip
-                                    label={statusLabels[report.status] || 'Unknown'}
-                                    size="small"
-                                    sx={{
-                                        backgroundColor: statusColors[report.status] || '#ccc',
-                                        color: 'white'
-                                    }}
-                                />
-                            </Box>
-
-                            <Typography variant="body1" sx={{ fontWeight: 'medium', mb: 1 }}>
-                                {report.question?.text?.length > 100
-                                    ? `${report.question.text.substring(0, 100)}...`
-                                    : report.question?.text || 'No question text available'}
-                            </Typography>
-
-                            <Grid container spacing={1} sx={{ mb: 1 }}>
-                                <Grid item xs={6}>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Reported By:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        {`${report.user?.Fname || ''} ${report.user?.Lname || ''}`.trim() || 'Unknown'}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Issue:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        {formatIssueTypes(report.issue_type)}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Date:
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        {safeFormatDate(report.created_at)}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                <Button
-                                    startIcon={<Visibility />}
-                                    onClick={() => handleViewDetails(report)}
-                                    size="small"
-                                >
-                                    View
-                                </Button>
-                                {report.status === true && (
-                                    <Button
-                                        startIcon={<Check />}
-                                        color="success"
-                                        onClick={() => handleStatusChange(report.id, 'Done')}
-                                        size="small"
-                                        disabled={processing}
-                                    >
-                                        Mark Done
-                                    </Button>
-                                )}
-                            </Box>
-
-                        </CardContent>
-                    </Card>
-                ))}
-            </Box>
-        );
-    };
-
-    const renderDesktopView = () => {
-        return (
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
-                <Table aria-label="question reports table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell />
-                            <TableCell>ID</TableCell>
-                            <TableCell>Reported Question</TableCell>
-                            <TableCell>Reported By</TableCell>
-                            <TableCell>Issue</TableCell>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell align="center">Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {paginatedReports.map((report) => (
-                            <React.Fragment key={report.id}>
-                                <TableRow
-                                    sx={{
-                                        '&:hover': { backgroundColor: theme.palette.action.hover },
-                                        borderLeft: `4px solid ${statusColors[report.status] || '#ccc'}`
-                                    }}
-                                >
-                                    <TableCell>
-                                        <IconButton
-                                            aria-label="expand row"
-                                            size="small"
-                                            onClick={() => setExpandedRow(expandedRow === report.id ? null : report.id)}
-                                        >
-                                            {expandedRow === report.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                                        </IconButton>
-                                    </TableCell>
-                                    <TableCell component="th" scope="row">
-                                        REP01-00{report.id}
-                                    </TableCell>
-                                    <TableCell>
-                                        {report.question?.text?.length > 50
-                                            ? `${report.question.text.substring(0, 50)}...`
-                                            : report.question?.text || 'N/A'}
-                                    </TableCell>
-                                    <TableCell>{`${report.user?.Fname || ''} ${report.user?.Lname || ''}`.trim() || 'Unknown'}</TableCell>
-                                    <TableCell>{formatIssueTypes(report.issue_type)}</TableCell>
-                                    <TableCell>{safeFormatDate(report.created_at)}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={statusLabels[report.status] || 'Unknown'}
-                                            size="small"
-                                            sx={{
-                                                backgroundColor: statusColors[report.status] || '#ccc',
-                                                color: 'white'
-                                            }}
-                                        />
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                            <Tooltip title="View Details">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => handleViewDetails(report)}
-                                                >
-                                                    <Visibility fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            {report.status === true && (
-                                                <Tooltip title="Mark as Done">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="success"
-                                                        onClick={() => handleStatusChange(report.id, 'Done')}
-                                                        disabled={processing}
-                                                    >
-                                                        <Check fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                        </Box>
-                                    </TableCell>
-
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell colSpan={8} sx={{ py: 0, border: 0 }}>
-                                        {expandedRow === report.id && (
-                                            <Box sx={{ p: 2, backgroundColor: theme.palette.action.hover }}>
-                                                <Typography variant="subtitle2" gutterBottom>
-                                                    Question Details:
-                                                </Typography>
-                                                <Typography variant="body2" paragraph>
-                                                    <strong>Full Question:</strong> {report.question?.text || 'N/A'}
-                                                </Typography>
-                                                <Typography variant="body2" paragraph>
-                                                    <strong>Options:</strong> {report.question?.options?.join(', ') || 'N/A'}
-                                                </Typography>
-                                                <Typography variant="body2" paragraph>
-                                                    <strong>Correct Answer:</strong> {
-                                                        report.question?.options &&
-                                                        report.question.correct_option >= 0 &&
-                                                        report.question.options[report.question.correct_option]
-                                                    }
-                                                </Typography>
-                                                <Typography variant="body2" paragraph>
-                                                    <strong>Solution:</strong> {report.question?.solution || 'No solution provided'}
-                                                </Typography>
-                                                <Typography variant="subtitle2" gutterBottom>
-                                                    Reporter Information:
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    <strong>Email:</strong> {report.user?.email || 'N/A'}
-                                                </Typography>
-                                            </Box>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            </React.Fragment>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        );
-    };
-
-    const renderFilters = () => {
-        const uniqueIssueTypes = getUniqueIssueTypes();
-
-        return (
-            <Box sx={{
-                mb: 2,
-                p: 2,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 1,
-                backgroundColor: 'background.paper',
-                display: filtersOpen ? 'block' : 'none'
-            }}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={3}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                value={statusFilter}
-                                label="Status"
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                            >
-                                <MenuItem value="all">All Statuses</MenuItem>
-                                <MenuItem value="Pending">Pending</MenuItem>
-                                <MenuItem value="Resolved">Resolved</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Issue Type</InputLabel>
-                            <Select
-                                value={reasonFilter}
-                                label="Issue Type"
-                                onChange={(e) => setReasonFilter(e.target.value)}
-                            >
-                                <MenuItem value="all">All Issues</MenuItem>
-                                {uniqueIssueTypes.map((issueType) => (
-                                    <MenuItem key={issueType} value={issueType}>
-                                        {issueTypeMapping[issueType] || issueType}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Sort By</InputLabel>
-                            <Select
-                                value={sortOrder}
-                                label="Sort By"
-                                onChange={(e) => setSortOrder(e.target.value)}
-                            >
-                                <MenuItem value="newest">Newest First</MenuItem>
-                                <MenuItem value="oldest">Oldest First</MenuItem>
-                                <MenuItem value="status">By Status</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<Refresh />}
-                            fullWidth
-                            onClick={() => {
-                                setSearchTerm('');
-                                setStatusFilter('all');
-                                setReasonFilter('all');
-                                setDateRange([null, null]);
-                                setSortOrder('newest');
-                            }}
-                        >
-                            Reset Filters
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Box>
-        );
-    };
-
-    return (
-        <Layout>
-            <Box sx={{ p: { xs: 2, md: 3 } }}>
-                {/* Snackbar for notifications */}
-                <Snackbar
-                    open={snackbar.open}
-                    autoHideDuration={6000}
-                    onClose={handleCloseSnackbar}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                    <Alert
-                        onClose={handleCloseSnackbar}
-                        severity={snackbar.severity}
-                        sx={{ width: '100%' }}
-                        variant="filled"
-                    >
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-
-                {/* Header Section */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Manage Question Reports
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                        Review and manage reported questions submitted by users.
-                    </Typography>
-                </Box>
-
-                {/* Search and Filter Controls */}
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: { xs: 'stretch', md: 'center' },
-                    gap: 2,
-                    mb: 2
-                }}>
-                    <TextField
-                        placeholder="Search questions, reporters..."
-                        variant="outlined"
-                        fullWidth={isMobile}
-                        size="small"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search />
-                                </InputAdornment>
-                            ),
-                        }}
-                        sx={{ flexGrow: 1 }}
-                    />
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<FilterList />}
-                        onClick={() => setFiltersOpen(!filtersOpen)}
-                        sx={{ minWidth: 120 }}
-                    >
-                        {filtersOpen ? 'Hide Filters' : 'Show Filters'}
-                    </Button>
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<Refresh />}
-                        sx={{ minWidth: 120 }}
-                        onClick={fetchReports}
-                        disabled={loading}
-                    >
-                        Refresh
-                    </Button>
-                </Box>
-
-                {/* Filters Section */}
-                {renderFilters()}
-
-                {/* Stats Summary */}
-                <Box sx={{ mb: 3 }}>
-                    <Grid container spacing={2}>
-                        {[
-                            { label: 'Total Reports', count: statusCounts.total, color: theme.palette.primary.main },
-                            { label: 'Pending', count: statusCounts.pending, color: statusColors[true] },
-                            { label: 'Resolved', count: statusCounts.resolved, color: statusColors[false] }
-                        ].map((stat) => (
-                            <Grid item xs={6} sm={4} key={stat.label}>
-                                <Card sx={{
-                                    p: 2,
-                                    textAlign: 'center',
-                                    borderTop: `3px solid ${stat.color}`
-                                }}>
-                                    <Typography variant="h4" component="div">
-                                        {stat.count}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {stat.label}
-                                    </Typography>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Box>
-
-                {/* Reports List */}
-                {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                        <CircularProgress />
-                    </Box>
-                ) : error ? (
-                    <Card sx={{ p: 4, textAlign: 'center' }}>
-                        <Typography variant="body1" color="error">
-                            {error}
-                        </Typography>
-                        <Button
-                            variant="outlined"
-                            sx={{ mt: 2 }}
-                            onClick={fetchReports}
-                        >
-                            Retry
-                        </Button>
-                    </Card>
-                ) : paginatedReports.length === 0 ? (
-                    <Card sx={{ p: 4, textAlign: 'center' }}>
-                        <Typography variant="body1" color="text.secondary">
-                            No reports found matching your criteria.
-                        </Typography>
-                    </Card>
-                ) : (
-                    isMobile ? renderMobileView() : renderDesktopView()
-                )}
-
-                {/* Pagination */}
-                {!loading && filteredReports.length > 0 && (
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mt: 3,
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        gap: 2
-                    }}>
-                        <Typography variant="body2" color="text.secondary">
-                            Showing {Math.min(page * rowsPerPage + 1, filteredReports.length)} - {Math.min((page + 1) * rowsPerPage, filteredReports.length)} of {filteredReports.length} reports
-                        </Typography>
-
-                        <Stack direction="row" spacing={1}>
-                            <Button
-                                disabled={page === 0}
-                                onClick={() => setPage(page - 1)}
-                                variant="outlined"
-                                size="small"
-                            >
-                                Previous
-                            </Button>
-                            <Button
-                                disabled={(page + 1) * rowsPerPage >= filteredReports.length}
-                                onClick={() => setPage(page + 1)}
-                                variant="outlined"
-                                size="small"
-                            >
-                                Next
-                            </Button>
-                        </Stack>
-                    </Box>
-                )}
-
-                {/* Detail Modal/Drawer */}
-                {isMobile ? (
-                    <SwipeableDrawer
-                        anchor="bottom"
-                        open={detailsOpen}
-                        onClose={handleCloseDetails}
-                        onOpen={() => { }}
-                        PaperProps={{
-                            sx: {
-                                height: '80%',
-                                borderTopLeftRadius: 16,
-                                borderTopRightRadius: 16,
-                            }
-                        }}
-                    >
-                        {selectedReport && (
-                            <Box sx={{ p: 2 }}>
-                                <Box sx={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    mb: 2
-                                }}>
-                                    <Typography variant="h6">
-                                        Report Details
-                                    </Typography>
-                                    <Chip
-                                        label={statusLabels[selectedReport.status] || 'Unknown'}
-                                        sx={{
-                                            backgroundColor: statusColors[selectedReport.status] || '#ccc',
-                                            color: 'white'
-                                        }}
-                                    />
-                                </Box>
-
-                                <Divider sx={{ mb: 2 }} />
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Report ID
-                                </Typography>
-                                <Typography variant="body1" paragraph>
-                                    {selectedReport.id}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Reported Question
-                                </Typography>
-                                <Typography variant="body1" paragraph>
-                                    {selectedReport.question?.text || 'N/A'}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Options
-                                </Typography>
-                                <Box sx={{ mb: 2 }}>
-                                    {selectedReport.question?.options?.map((option, index) => (
-                                        <Typography
-                                            key={index}
-                                            variant="body1"
-                                            sx={{
-                                                fontWeight: index === selectedReport.question?.correct_option ? 'bold' : 'normal',
-                                                color: index === selectedReport.question?.correct_option ? 'success.main' : 'text.primary'
-                                            }}
-                                        >
-                                            {index + 1}. {option} {index === selectedReport.question?.correct_option ? '(Correct)' : ''}
-                                        </Typography>
-                                    ))}
-                                </Box>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Reported By
-                                </Typography>
-                                <Typography variant="body1">
-                                    {`${selectedReport.user?.Fname || ''} ${selectedReport.user?.Lname || ''}`.trim() || 'Unknown'}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Reported At
-                                </Typography>
-                                <Typography variant="body1">
-                                    {safeFormatDate(selectedReport.created_at)}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Issue Type
-                                </Typography>
-
-                                <Typography variant="body1" paragraph>
-                                    {formatIssueTypes(selectedReport.issue_type)}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Description
-                                </Typography>
-
-                                <Typography variant="body1" paragraph>
-                                    {selectedReport.description || 'No description provided'}
-                                </Typography>
-
-                                <Typography variant="subtitle2" color="text.secondary">
-                                    Admin Notes
-                                </Typography>
-
-                                <TextField
-                                    multiline
-                                    rows={4}
-                                    fullWidth
-                                    variant="outlined"
-                                    placeholder="Add notes for this report..."
-                                    value={adminNotes}
-                                    onChange={(e) => setAdminNotes(e.target.value)}
-                                    sx={{ mb: 2 }}
-                                />
-
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                    <Button
-                                        variant="outlined"
-                                        onClick={handleCloseDetails}
-                                    >
-                                        Close
-                                    </Button>
-                                    {selectedReport.status === true && (
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            onClick={() => handleStatusChange(selectedReport.id, 'Done')}
-                                            disabled={processing}
-                                        >
-                                            Mark as Done
-                                        </Button>
-                                    )}
-                                </Box>
-                            </Box>
-                        )}
-                    </SwipeableDrawer>
-                ) : (
-
-                    <Dialog
-                        open={detailsOpen}
-                        onClose={handleCloseDetails}
-                        fullWidth
-                        maxWidth="md"
-                    >
-                        {selectedReport && (
-                            <>
-                                <DialogTitle>
-                                    Report Details
-                                </DialogTitle>
-                                <DialogContent>
-                                    <Box sx={{ p: 2 }}>
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Report ID
-                                        </Typography>
-                                        <Typography variant="body1" paragraph>
-                                            {selectedReport.id}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Reported Question
-                                        </Typography>
-                                        <Typography variant="body1" paragraph>
-                                            {selectedReport.question?.text || 'N/A'}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Options
-                                        </Typography>
-                                        <Box sx={{ mb: 2 }}>
-                                            {selectedReport.question?.options?.map((option, index) => (
-                                                <Typography
-                                                    key={index}
-                                                    variant="body1"
-                                                    sx={{
-                                                        fontWeight: index === selectedReport.question?.correct_option ? 'bold' : 'normal',
-                                                        color: index === selectedReport.question?.correct_option ? 'success.main' : 'text.primary'
-                                                    }}
-                                                >
-                                                    {index + 1}. {option} {index === selectedReport.question?.correct_option ? '(Correct)' : ''}
-                                                </Typography>
-                                            ))}
-                                        </Box>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Reported By
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            {`${selectedReport.user?.Fname || ''} ${selectedReport.user?.Lname || ''}`.trim() || 'Unknown'}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Reported At
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            {safeFormatDate(selectedReport.created_at)}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Issue Type
-                                        </Typography>
-
-                                        <Typography variant="body1" paragraph>
-                                            {formatIssueTypes(selectedReport.issue_type)}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Description
-                                        </Typography>
-
-                                        <Typography variant="body1" paragraph>
-                                            {selectedReport.description || 'No description provided'}
-                                        </Typography>
-
-                                        <Typography variant="subtitle2" color="text.secondary">
-                                            Admin Notes
-                                        </Typography>
-
-                                        <TextField
-                                            multiline
-                                            rows={4}
-                                            fullWidth
-                                            variant="outlined"
-                                            placeholder="Add notes for this report..."
-                                            value={adminNotes}
-                                            onChange={(e) => setAdminNotes(e.target.value)}
-                                            sx={{ mb: 2 }}
-                                        />
-                                    </Box>
-
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button
-                                        onClick={handleCloseDetails}
-                                        color="primary"
-                                    >
-                                        Close
-                                    </Button>
-                                    {selectedReport.status === true && (
-                                        <Button
-                                            onClick={() => handleStatusChange(selectedReport.id, 'Done')}
-                                            color="success"
-                                            disabled={processing}
-                                            variant="contained"
-                                        >
-                                            Mark as Done
-                                        </Button>
-                                    )}
-                                </DialogActions>
-                            </>
-                        )}
-                    </Dialog>
-                )}
-            </Box>
-        </Layout>
-    );
+const statusColors = {
+  true: "#f9a825", // pending
+  false: "#388e3c", // done
+};
+
+const statusLabels = {
+  true: "Open",
+  false: "Done",
+};
+
+// small debounce hook
+function useDebounced(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  const timer = useRef();
+  useEffect(() => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer.current);
+  }, [value, delay]);
+  return debounced;
 }
 
-export default ManageQuestionReport;
+// format issue helpers
+const formatIssueTypes = (issueTypeArray) => {
+  if (!issueTypeArray || !issueTypeArray.length) return "Not specified";
+  return issueTypeArray
+    .map((issue) => issueTypeMapping[issue?.issue_type] || issue?.issue_type || "Unknown")
+    .join(", ");
+};
+
+// ------------------------
+// Component
+// ------------------------
+export default function ManageQuestionReport() {
+  const theme = useTheme();
+  const isMobile = /xs|sm/.test(theme.breakpoints.values ? "lg" : ""); // not used heavily, kept for parity
+
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounced(searchTerm, 300);
+
+  const [statusFilter, setStatusFilter] = useState("all"); // all / Pending / Resolved
+  const [issueFilter, setIssueFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest"); // newest / oldest / status
+
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
+  // pagination + table controls
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // detail panel
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [adminNotes, setAdminNotes] = useState("");
+
+  // snackbar
+  const [snack, setSnack] = useState({ open: false, msg: "", severity: "success" });
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const showSnack = (msg, severity = "success") => setSnack({ open: true, msg, severity });
+
+  const fetchReports = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getQuestionReport();
+      // Ensure array
+      const normalized = Array.isArray(data) ? data : data?.data ?? [];
+      setReports(
+        normalized.map((r) => ({
+          ...r,
+          // normalize missing nested structures
+          question: r.question || null,
+          user: r.user || null,
+        }))
+      );
+      showSnack("Reports loaded", "success");
+    } catch (err) {
+      const message = err?.response?.data?.detail || err?.message || "Failed to fetch reports";
+      setError(message);
+      showSnack(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Derived lists
+  const uniqueIssueTypes = useMemo(() => {
+    const set = new Set();
+    reports.forEach((r) =>
+      (r.issue_type || []).forEach((i) => i?.issue_type && set.add(i.issue_type))
+    );
+    return Array.from(set);
+  }, [reports]);
+
+  // Filtering & sorting pipeline
+  const filtered = useMemo(() => {
+    const q = (debouncedSearch || "").toLowerCase().trim();
+
+    let out = reports.filter(Boolean);
+
+    if (statusFilter !== "all") {
+      if (statusFilter === "Pending") out = out.filter((r) => r.status === true);
+      else if (statusFilter === "Resolved") out = out.filter((r) => r.status === false);
+    }
+
+    if (issueFilter !== "all") {
+      out = out.filter((r) =>
+        (r.issue_type || []).some((it) => it?.issue_type === issueFilter)
+      );
+    }
+
+    if (q) {
+      out = out.filter((r) => {
+        const reportedBy = `${r.user?.Fname || ""} ${r.user?.Lname || ""}`.toLowerCase();
+        const questionText = (r.question?.text || "").toLowerCase();
+        const email = (r.user?.email || "").toLowerCase();
+        return (
+          questionText.includes(q) ||
+          reportedBy.includes(q) ||
+          email.includes(q) ||
+          (r.issue_type || []).some((it) => (it?.issue_type || "").toLowerCase().includes(q))
+        );
+      });
+    }
+
+    // sort
+    out.sort((a, b) => {
+      if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
+      if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
+      if (sortOrder === "status") {
+        // Open(true) first
+        const score = (r) => (r.status === true ? 1 : r.status === false ? 3 : 2);
+        return score(a) - score(b);
+      }
+      return 0;
+    });
+
+    return out;
+  }, [reports, debouncedSearch, statusFilter, issueFilter, sortOrder]);
+
+  // pagination slice
+  const paginated = useMemo(() => {
+    const start = page * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  // DataGrid columns (keeps content accessible and uses autoHeight)
+  const columns = useMemo(
+    () => [
+      {
+        field: "id",
+        headerName: "Report ID",
+        width: 110,
+        renderCell: (params) => `REP01-00${params.value}`,
+      },
+      {
+        field: "question",
+        headerName: "Question",
+        flex: 1.6,
+        minWidth: 300,
+        renderCell: (params) => (
+          <Box sx={{ pr: 1 }}>
+            <Typography sx={{ fontWeight: 600 }}>
+              {safeText(params.value?.text, "No question text")}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {params.row.question?.text?.length > 120
+                ? `${params.row.question.text.substring(0, 120)}…`
+                : params.row.question?.text || ""}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        field: "reporter",
+        headerName: "Reported By",
+        width: 180,
+        renderCell: (params) => (
+          <Box>
+            <Typography>{`${params.row.user?.Fname || ""} ${params.row.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {params.row.user?.email || "—"}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        field: "issue_type",
+        headerName: "Issue",
+        width: 220,
+        renderCell: (params) => (
+          <Typography variant="body2">
+            {formatIssueTypes(params.value)}
+          </Typography>
+        ),
+      },
+      {
+        field: "created_at",
+        headerName: "Date",
+        width: 140,
+        renderCell: (params) => safeFormatDate(params.value, "MMM DD, YYYY HH:mm"),
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        width: 120,
+        renderCell: (params) => (
+          <Chip
+            label={statusLabels[params.value] ?? "Unknown"}
+            size="small"
+            sx={{
+              bgcolor: statusColors[String(params.value)] ?? "#999",
+              color: "#fff",
+            }}
+          />
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 120,
+        sortable: false,
+        renderCell: (params) => (
+          <Stack direction="row" spacing={0.5}>
+            <Tooltip title="View details">
+              <IconButton size="small" onClick={() => openReportDetails(params.row)}>
+                <VisibilityIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            {params.row.status === true && (
+              <Tooltip title="Mark Done">
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => confirmAndMarkDone(params.row)}
+                    disabled={processing}
+                    color="success"
+                  >
+                    <CheckIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+          </Stack>
+        ),
+      },
+    ],
+    [processing]
+  );
+
+  // open details
+  const openReportDetails = (row) => {
+    setSelectedReport(row);
+    setAdminNotes("");
+    setDrawerOpen(true);
+  };
+
+  const closeReportDetails = () => {
+    setSelectedReport(null);
+    setDrawerOpen(false);
+  };
+
+  // mark done with confirm
+  const confirmAndMarkDone = async (row) => {
+    // simple confirm
+    const ok = window.confirm(`Mark report REP01-00${row.id} as Done?`);
+    if (!ok) return;
+    await markAsDone(row.id);
+  };
+
+  const markAsDone = async (id) => {
+    setProcessing(true);
+    try {
+      // API expects boolean false to indicate resolved in your earlier code
+      const reportToUpdate = reports.find((r) => r.id === id);
+      if (!reportToUpdate) throw new Error("Report not found");
+
+      const payload = {
+        status: false,
+        question: reportToUpdate.question?.id,
+        issue_type: (reportToUpdate.issue_type || []).map((i) => i.id),
+      };
+
+      await updateQuestionReport(id, payload);
+
+      // local update
+      setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: false } : r)));
+      showSnack(`Report REP01-00${id} marked as Done`);
+      // If detail panel open for this report, close it
+      if (selectedReport?.id === id) closeReportDetails();
+    } catch (err) {
+      const msg = err?.response?.data?.detail || err?.message || "Failed to update report";
+      showSnack(msg, "error");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Save admin notes locally (no API specified in your snippet)
+  const saveAdminNotes = () => {
+    if (!selectedReport) return;
+    setReports((prev) =>
+      prev.map((r) => (r.id === selectedReport.id ? { ...r, admin_notes: adminNotes || r.admin_notes } : r))
+    );
+    showSnack("Notes saved (locally)");
+  };
+
+  // CSV export
+  const exportCsv = () => {
+    const headers = ["Report ID", "Question", "Reporter", "Email", "Issue", "Date", "Status"];
+    const rows = filtered.map((r) => [
+      `REP01-00${r.id}`,
+      `"${(r.question?.text || "").replace(/"/g, '""')}"`,
+      `"${(`${r.user?.Fname || ""} ${r.user?.Lname || ""}`).trim()}"`,
+      `"${r.user?.email || ""}"`,
+      `"${formatIssueTypes(r.issue_type).replace(/"/g, '""')}"`,
+      `"${safeFormatDate(r.created_at, "YYYY-MM-DD HH:mm")}"`,
+      `"${statusLabels[r.status] ?? r.status}"`,
+    ]);
+    const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encoded = encodeURI(csv);
+    const a = document.createElement("a");
+    a.href = encoded;
+    a.download = `question_reports_${moment().format("YYYY-MM-DD")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  // UI pieces
+  const statusCounts = useMemo(() => {
+    const total = reports.length;
+    const pending = reports.filter((r) => r.status === true).length;
+    const resolved = reports.filter((r) => r.status === false).length;
+    return { total, pending, resolved };
+  }, [reports]);
+
+  return (
+    <Layout>
+        {/* Snackbar */}
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={4500}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} variant="filled">
+            {snack.msg}
+          </Alert>
+        </Snackbar>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" fontWeight={700} color="teal">
+            Manage Question Reports
+          </Typography>
+          <Typography color="text.secondary">Review reported questions and resolve issues.</Typography>
+        </Box>
+
+        {/* Controls */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search question text, reporter, email or issue..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+              <Tooltip title="Refresh">
+                <IconButton onClick={fetchReports} disabled={loading}><RefreshIcon /></IconButton>
+              </Tooltip>
+              <Tooltip title="Export CSV">
+                <IconButton onClick={exportCsv}><GetAppIcon /></IconButton>
+              </Tooltip>
+
+              <Button
+                startIcon={<FilterListIcon />}
+                variant={filtersOpen ? "contained" : "outlined"}
+                onClick={() => setFiltersOpen((s) => !s)}
+              >
+                {filtersOpen ? "Hide Filters" : "Show Filters"}
+              </Button>
+            </Grid>
+
+            {filtersOpen && (
+              <Grid item xs={12}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} sm={4} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Status</InputLabel>
+                      <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="Pending">Pending</MenuItem>
+                        <MenuItem value="Resolved">Resolved</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Issue</InputLabel>
+                      <Select value={issueFilter} label="Issue" onChange={(e) => setIssueFilter(e.target.value)}>
+                        <MenuItem value="all">All Issues</MenuItem>
+                        {uniqueIssueTypes.map((it) => (
+                          <MenuItem key={it} value={it}>
+                            {issueTypeMapping[it] || it}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Sort</InputLabel>
+                      <Select value={sortOrder} label="Sort" onChange={(e) => setSortOrder(e.target.value)}>
+                        <MenuItem value="newest">Newest First</MenuItem>
+                        <MenuItem value="oldest">Oldest First</MenuItem>
+                        <MenuItem value="status">By Status</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={3} sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setStatusFilter("all");
+                        setIssueFilter("all");
+                        setSortOrder("newest");
+                      }}
+                      fullWidth
+                    >
+                      Reset
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            )}
+          </Grid>
+        </Paper>
+
+        {/* Stats */}
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid item xs={12} sm={4}>
+            <Paper sx={{ p: 2, textAlign: "center" }}>
+              <Typography variant="h5" fontWeight={700}>{statusCounts.total}</Typography>
+              <Typography color="text.secondary">Total Reports</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={6} sm={4}>
+            <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.true}` }}>
+              <Typography variant="h5" fontWeight={700}>{statusCounts.pending}</Typography>
+              <Typography color="text.secondary">Pending</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={6} sm={4}>
+            <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.false}` }}>
+              <Typography variant="h5" fontWeight={700}>{statusCounts.resolved}</Typography>
+              <Typography color="text.secondary">Resolved</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Content: DataGrid or skeleton / empty */}
+        <Paper sx={{ p: 0 }}>
+          {loading ? (
+            <Box sx={{ p: 6, textAlign: "center" }}>
+              <CircularProgress />
+            </Box>
+          ) : filtered.length === 0 ? (
+            <Box sx={{ p: 6, textAlign: "center" }}>
+              <Typography color="text.secondary">No reports found matching your criteria.</Typography>
+            </Box>
+          ) : (
+            <Box sx={{ width: "100%" }}>
+              {/* DataGrid with autoHeight and auto row height so long texts are visible */}
+              <DataGrid
+                rows={filtered}
+                columns={columns}
+                autoHeight
+                getRowId={(r) => r.id}
+                pageSize={pageSize}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                pagination
+                paginationMode="client"
+                onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(0); }}
+                page={page}
+                onPageChange={(p) => setPage(p)}
+                density="standard"
+                disableSelectionOnClick
+                sx={{
+                  border: "none",
+                  "& .MuiDataGrid-columnHeaders": {
+                    background: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
+                    fontWeight: 700,
+                  },
+                  "& .MuiDataGrid-cell": {
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    alignItems: "flex-start",
+                    py: 1.5,
+                  },
+                }}
+                getRowHeight={() => "auto"}
+              />
+            </Box>
+          )}
+        </Paper>
+
+        {/* Details Drawer */}
+        <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} PaperProps={{ sx: { width: { xs: "100%", sm: 560 } } }}>
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+              <Typography variant="h6">Report Details</Typography>
+              <Chip label={selectedReport ? statusLabels[selectedReport.status] : "—"} sx={{ bgcolor: selectedReport ? statusColors[String(selectedReport.status)] : "#999", color: "#fff" }} />
+            </Box>
+
+            {selectedReport ? (
+              <>
+                <Divider sx={{ mb: 2 }} />
+
+                <Typography variant="subtitle2" color="text.secondary">Report ID</Typography>
+                <Typography sx={{ mb: 1 }}>REP01-00{selectedReport.id}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Reported Question</Typography>
+                <Typography sx={{ mb: 1 }}>{selectedReport.question?.text || "N/A"}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Options</Typography>
+                <Box sx={{ mb: 1 }}>
+                  {(selectedReport.question?.options || []).map((opt, idx) => (
+                    <Typography key={idx} sx={{ fontWeight: selectedReport.question?.correct_option === idx ? 700 : 400 }}>
+                      {idx + 1}. {opt} {selectedReport.question?.correct_option === idx ? "(Correct)" : ""}
+                    </Typography>
+                  ))}
+                </Box>
+
+                <Typography variant="subtitle2" color="text.secondary">Reported By</Typography>
+                <Typography sx={{ mb: 1 }}>{`${selectedReport.user?.Fname || ""} ${selectedReport.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Reported At</Typography>
+                <Typography sx={{ mb: 1 }}>{safeFormatDate(selectedReport.created_at, "MMM DD, YYYY HH:mm")}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Issue Type</Typography>
+                <Typography sx={{ mb: 1 }}>{formatIssueTypes(selectedReport.issue_type)}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Description</Typography>
+                <Typography sx={{ mb: 1 }}>{selectedReport.description || "No description provided"}</Typography>
+
+                <Typography variant="subtitle2" color="text.secondary">Admin Notes</Typography>
+                <TextField
+                  multiline
+                  rows={4}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  placeholder="Add notes..."
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                />
+
+                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                  <Button onClick={() => { saveAdminNotes(); closeReportDetails(); }} variant="outlined">Save & Close</Button>
+                  {selectedReport.status === true && (
+                    <Button onClick={() => confirmAndMarkDone(selectedReport)} variant="contained" color="success" disabled={processing}>
+                      {processing ? <CircularProgress size={18} color="inherit" /> : "Mark Done"}
+                    </Button>
+                  )}
+                </Box>
+              </>
+            ) : (
+              <Box sx={{ p: 2 }}>
+                <Typography color="text.secondary">No report selected</Typography>
+              </Box>
+            )}
+          </Box>
+        </Drawer>
+
+        {/* Confirm dialog example (optional) */}
+        <Dialog open={Boolean(processing && false)} /* hidden by default */ onClose={() => {}}>
+          <DialogTitle>Processing</DialogTitle>
+          <DialogContent>
+            <Typography>Working…</Typography>
+          </DialogContent>
+        </Dialog>
+    </Layout>
+  );
+}

@@ -73,6 +73,7 @@ import { getExam, deleteExam, createExam, updateExam } from '../../services/admi
 import { getSubjects } from '../../services/adminSubujectApi';
 import { getClassCategory } from '../../services/adminClassCategoryApi';
 import { getLevel } from '../../services/adminManageLevel';
+import apiService from '../../services/apiService';
 
 /*
   Redesigned ExamManagement component with Approve/Reject actions added.
@@ -130,9 +131,9 @@ export default function ExamManagement() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [exams, setExams] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [levels, setLevels] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
@@ -175,8 +176,7 @@ export default function ExamManagement() {
   const uniqueUsers = useMemo(() => {
     const setNames = new Set();
     exams.forEach((ex) => {
-      const assigned = ex.assigneduser?.user;
-      const name = assigned ? `${assigned.Fname || ''} ${assigned.Lname || ''}`.trim() : 'Admin';
+      const name = ex.assigneduser_name || 'Admin';
       if (name) setNames.add(name);
     });
     return Array.from(setNames).sort();
@@ -184,38 +184,32 @@ export default function ExamManagement() {
 
   // -------------- data fetching --------------
   useEffect(() => {
-    loadAll();
-  }, []);
+    loadAll(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
-  const loadAll = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, filterClassCategoryId, filterSubjectId, filterLevelId, filterType, filterStatus, filterAddedBy]);
+
+  const loadAll = async (currentPage = 0, currentRowsPerPage = 10) => {
+    setLoading(true);
     try {
-      const [examResp, subjectResp, classResp, levelResp] = await Promise.all([
-        getExam(),
+      const examResp = await apiService.getAll(`api/examsetter/?page=${currentPage + 1}&page_size=${currentRowsPerPage}`);
+      const [subjectResp, classResp, levelResp] = await Promise.all([
         getSubjects(),
         getClassCategory(),
-        getLevel(),
+        getLevel(), 
       ]);
 
-      // sort newest first if responses are arrays
-      setExams(Array.isArray(examResp) ? examResp.sort((a, b) => b.id - a.id) : []);
+      setExams(Array.isArray(examResp.results) ? examResp.results : []);
+      setTotalCount(examResp.count || 0);
       setSubjects(Array.isArray(subjectResp) ? subjectResp : []);
       setClassCategories(Array.isArray(classResp) ? classResp : []);
       setLevels(Array.isArray(levelResp) ? levelResp : []);
-      
-      if (isRefresh) {
-        showSnackbar('Data refreshed successfully', 'success');
-      }
     } catch (err) {
-      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Failed to load data', 'error');
+      showSnackbar(err?.response?.data?.message || err.message || 'Failed to load data', 'error');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -225,9 +219,7 @@ export default function ExamManagement() {
   };
 
   const getAssignedUserName = (exam) => {
-    const usr = exam.assigneduser?.user;
-    if (!usr) return 'Admin';
-    return `${usr.Fname || ''} ${usr.Lname || ''}`.trim() || 'Admin';
+    return exam.assigneduser_name || 'Admin';
   };
 
   // -------------- filtering (memoized) --------------
@@ -237,9 +229,9 @@ export default function ExamManagement() {
       // search by name or id
       const matchesQuery = !q || exam.name.toLowerCase().includes(q) || String(exam.id).includes(q);
 
-      const matchesClass = !filterClassCategoryId || exam.class_category?.id === filterClassCategoryId;
-      const matchesSub = !filterSubjectId || exam.subject?.id === filterSubjectId;
-      const matchesLevel = !filterLevelId || exam.level?.id === filterLevelId;
+      const matchesClass = !filterClassCategoryId || exam.class_category === classCategories.find(c=>c.id===filterClassCategoryId)?.name;
+      const matchesSub = !filterSubjectId || exam.subject === subjects.find(s=>s.id===filterSubjectId)?.subject_name;
+      const matchesLevel = !filterLevelId || exam.level === levels.find(l=>l.id===filterLevelId)?.name;
       const matchesType = !filterType || exam.type === filterType;
       const matchesStatus = filterStatus === '' ? true : exam.status === (filterStatus === 'true');
       const matchesAdded = !filterAddedBy || getAssignedUserName(exam) === filterAddedBy;
@@ -254,7 +246,7 @@ export default function ExamManagement() {
         matchesAdded
       );
     });
-  }, [exams, searchQuery, filterClassCategoryId, filterSubjectId, filterLevelId, filterType, filterStatus, filterAddedBy]);
+  }, [exams, searchQuery, filterClassCategoryId, filterSubjectId, filterLevelId, filterType, filterStatus, filterAddedBy, classCategories, subjects, levels]);
 
   // -------------- CRUD actions (create/update/delete) --------------
   const handleOpenAdd = () => {
@@ -268,9 +260,9 @@ export default function ExamManagement() {
     setSelectedExam(exam);
     setFormData({
       name: exam.name || '',
-      subject: exam.subject?.id || '',
-      class_category: exam.class_category?.id || '',
-      level: exam.level?.id || '',
+      subject: subjects.find(s=>s.subject_name === exam.subject)?.id || '',
+      class_category: classCategories.find(c=>c.name === exam.class_category)?.id || '',
+      level: levels.find(l=>l.name === exam.level)?.id || '',
       total_marks: exam.total_marks || '',
       duration: exam.duration || '',
       type: exam.type || '',
@@ -296,10 +288,7 @@ export default function ExamManagement() {
 
   const handleSave = async () => {
     if (!validateForm()) return;
-    
-    const snackbarMsg = selectedExam ? 'Updating exam...' : 'Creating exam...';
-    showSnackbar(snackbarMsg, 'info');
-    
+    setLoading(true);
     try {
       const payload = {
         name: formData.name,
@@ -315,67 +304,60 @@ export default function ExamManagement() {
 
       if (selectedExam) {
         await updateExam(selectedExam.id, payload);
-        showSnackbar('Exam updated successfully', 'success');
+        showSnackbar('Exam updated');
       } else {
         await createExam(payload);
-        showSnackbar('Exam created successfully', 'success');
+        showSnackbar('Exam created');
       }
+      await loadAll(page, rowsPerPage);
       setOpenAddModal(false);
-      await loadAll();
     } catch (err) {
-      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Save failed', 'error');
+      showSnackbar(err?.response?.data?.message || err.message || 'Save failed', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (examToDelete) => {
     if (!window.confirm('Delete this exam? This cannot be undone.')) return;
-    
-    showSnackbar('Deleting exam...', 'info');
-    
+    setLoading(true);
     try {
       await deleteExam(examToDelete.id);
-      // Optimistically update UI
-      setExams(exams.filter(e => e.id !== examToDelete.id));
-      showSnackbar('Exam deleted successfully', 'success');
+      showSnackbar('Exam deleted');
+      await loadAll(page, rowsPerPage);
     } catch (err) {
-      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Delete failed', 'error');
-      // Reload on error to sync state
-      await loadAll();
+      showSnackbar(err?.response?.data?.message || err.message || 'Delete failed', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   // ---------- New: Approve / Reject handlers ----------
   const handleAccept = async (examToAccept) => {
     if (!examToAccept) return;
-    
-    showSnackbar('Approving exam...', 'info');
-    
+    setLoading(true);
     try {
       await updateExam(examToAccept.id, { status: true });
-      // Optimistically update UI
-      setExams(exams.map(e => e.id === examToAccept.id ? { ...e, status: true } : e));
-      showSnackbar('Exam approved successfully', 'success');
+      showSnackbar('Exam approved', 'success');
+      await loadAll(page, rowsPerPage);
     } catch (err) {
-      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Approve failed', 'error');
-      // Reload on error to sync state
-      await loadAll();
+      showSnackbar(err?.response?.data?.message || err.message || 'Approve failed', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReject = async (examToReject) => {
     if (!examToReject) return;
-    
-    showSnackbar('Rejecting exam...', 'info');
-    
+    setLoading(true);
     try {
       await updateExam(examToReject.id, { status: false });
-      // Optimistically update UI
-      setExams(exams.map(e => e.id === examToReject.id ? { ...e, status: false } : e));
-      showSnackbar('Exam rejected successfully', 'warning');
+      showSnackbar('Exam rejected', 'warning');
+      await loadAll(page, rowsPerPage);
     } catch (err) {
-      showSnackbar(err?.response?.data?.error || err?.response?.data?.message || err.message || 'Reject failed', 'error');
-      // Reload on error to sync state
-      await loadAll();
+      showSnackbar(err?.response?.data?.message || err.message || 'Reject failed', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -397,163 +379,67 @@ export default function ExamManagement() {
     setSearchQuery('');
   };
 
-  if (loading && exams.length === 0) return <Loader />;
+  if (loading) return <Loader />;
 
   return (
     <Layout>
-      <Box sx={{ p: { xs: 2, sm: 3 }, backgroundColor: '#F9FAFC', minHeight: '100vh', position: 'relative' }}>
-        {/* Loading overlay during refresh */}
-        {refreshing && (
-          <Box
-            sx={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Loader />
-          </Box>
-        )}
+      <Box>
         {/* header */}
-        <Box sx={{ p: 2, mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Paper sx={{ p: 2, mb: 3,  display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Avatar sx={{ bgcolor: "teal" }}>
-              <FaFileAlt color='white'/>
+            <Avatar sx={{ bgcolor: "teal"}}>
+              <FaFileAlt />
             </Avatar>
             <Box>
               <Typography variant="h5" fontWeight={700}>Manage Exams</Typography>
-              <Typography variant="body2" color="text.primary">Create, edit and manage your exam sets</Typography>
+              <Typography variant="body2" color="text.secondary">Create, edit and manage your exam sets</Typography>
             </Box>
           </Box>
 
           <Stack direction="row" spacing={1}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 0.5, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-              <Tooltip title="Card view"><IconButton onClick={() => setViewMode('card')} color={viewMode === 'card' ? 'primary' : 'default'}><MdGridView /></IconButton></Tooltip>
-              <Tooltip title="Table view"><IconButton onClick={() => setViewMode('table')} color={viewMode === 'table' ? 'primary' : 'default'}><MdViewList /></IconButton></Tooltip>
+              <Tooltip title="Card view"><IconButton onClick={() => setViewMode('card')} color={viewMode === 'card' ? 'teal' : 'default'}><MdGridView /></IconButton></Tooltip>
+              <Tooltip title="Table view"><IconButton onClick={() => setViewMode('table')} color={viewMode === 'table' ? 'teal' : 'default'}><MdViewList /></IconButton></Tooltip>
             </Box>
 
-            <Button 
-              variant="outlined" 
-              startIcon={<MdRefresh />} 
-              onClick={() => loadAll(true)}
-              disabled={refreshing}
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-            <Button variant="contained" startIcon={<MdAdd />} onClick={handleOpenAdd}>Add New</Button>
+            <Button  color='teal' startIcon={<MdRefresh />} onClick={loadAll}>Refresh</Button>
+            <Button variant="contained" color='teal' startIcon={<MdAdd />} onClick={handleOpenAdd}>Add New</Button>
           </Stack>
-        </Box>
+        </Paper>
 
         {/* search + filters */}
-        <Paper 
-          elevation={0}
-          sx={{ 
-            mb: 3, 
-            p: 2.5, 
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: '#fff'
-          }}
-        >
-          <Stack spacing={2.5}>
-            {/* Search and Action Buttons Row */}
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={8}>
-                <TextField
-                  fullWidth
-                  placeholder="Search by exam name or ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <Box sx={{ display: 'flex', alignItems: 'center', mr: 1, color: 'text.secondary' }}>
-                        <FaSearch />
-                      </Box>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: 'teal',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: 'teal',
-                      },
-                    },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Stack direction="row" spacing={1}>
-                  <Button 
-                    fullWidth 
-                    variant="outlined" 
-                    startIcon={<MdClear />} 
-                    onClick={clearAllFilters}
-                    sx={{
-                      borderColor: 'divider',
-                      color: 'text.secondary',
-                      '&:hover': {
-                        borderColor: 'text.secondary',
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  >
-                    Clear
-                  </Button>
-                  <Button 
-                    fullWidth
-                    variant="contained" 
-                    onClick={() => setShowFilters((s) => !s)} 
-                    startIcon={<MdFilterList />}
-                    endIcon={showFilters ? <MdExpandLess /> : <MdExpandMore />}
-                    sx={{
-                      backgroundColor: 'teal',
-                      '&:hover': {
-                        backgroundColor: '#0d8478',
-                      },
-                    }}
-                  >
-                    Filters
-                  </Button>
-                </Stack>
-              </Grid>
+        <FilterPaper sx={{ mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                placeholder="Search by exam name or id"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{ startAdornment: <FaSearch style={{ marginRight: 8 }} /> }}
+                size="small"
+              />
             </Grid>
 
-            {/* Filter Options - Collapsible */}
+            <Grid item xs={12} md={4}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button fullWidth variant="outlined" startIcon={<MdClear />} onClick={clearAllFilters}>
+                  Clear Filters
+                </Button>
+                <Button variant="contained" onClick={() => setShowFilters((s) => !s)} startIcon={showFilters ? <MdExpandLess /> : <MdExpandMore />}>
+                  {isMobile ? 'Filters' : 'Toggle Filters'}
+                </Button>
+              </Box>
+            </Grid>
+
             {showFilters && (
-              <Box
-                sx={{
-                  pt: 1.5,
-                  borderTop: '1px solid',
-                  borderColor: 'divider',
-                }}
-              >
-                <Grid container spacing={2}>
+              <Grid item xs={12} sx={{ mt: 1 }}>
+                <Grid container spacing={1}>
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Class</InputLabel>
-                      <Select 
-                        value={filterClassCategoryId} 
-                        label="Class" 
-                        onChange={(e) => setFilterClassCategoryId(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Classes</MenuItem>
+                      <Select value={filterClassCategoryId} label="Class" onChange={(e) => setFilterClassCategoryId(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
                         {classCategories.map((c) => (
                           <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                         ))}
@@ -564,17 +450,8 @@ export default function ExamManagement() {
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Subject</InputLabel>
-                      <Select 
-                        value={filterSubjectId} 
-                        label="Subject" 
-                        onChange={(e) => setFilterSubjectId(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Subjects</MenuItem>
+                      <Select value={filterSubjectId} label="Subject" onChange={(e) => setFilterSubjectId(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
                         {subjects
                           .filter((s) => !filterClassCategoryId || s.class_category === filterClassCategoryId)
                           .map((s) => (
@@ -587,17 +464,8 @@ export default function ExamManagement() {
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Level</InputLabel>
-                      <Select 
-                        value={filterLevelId} 
-                        label="Level" 
-                        onChange={(e) => setFilterLevelId(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Levels</MenuItem>
+                      <Select value={filterLevelId} label="Level" onChange={(e) => setFilterLevelId(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
                         {levels.map((l) => <MenuItem key={l.id} value={l.id}>{l.name}</MenuItem>)}
                       </Select>
                     </FormControl>
@@ -606,27 +474,10 @@ export default function ExamManagement() {
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Type</InputLabel>
-                      <Select 
-                        value={filterType} 
-                        label="Type" 
-                        onChange={(e) => setFilterType(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Types</MenuItem>
-                        <MenuItem value="online">
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaLaptop size={14} /> Online
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="offline">
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FaSchool size={14} /> Offline
-                          </Box>
-                        </MenuItem>
+                      <Select value={filterType} label="Type" onChange={(e) => setFilterType(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
+                        <MenuItem value="online">Online</MenuItem>
+                        <MenuItem value="offline">Offline</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -634,23 +485,10 @@ export default function ExamManagement() {
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Status</InputLabel>
-                      <Select 
-                        value={filterStatus} 
-                        label="Status" 
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Status</MenuItem>
-                        <MenuItem value="true">
-                          <Chip label="Approved" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32' }} />
-                        </MenuItem>
-                        <MenuItem value="false">
-                          <Chip label="Pending" size="small" sx={{ bgcolor: '#fff3e0', color: '#ef6c00' }} />
-                        </MenuItem>
+                      <Select value={filterStatus} label="Status" onChange={(e) => setFilterStatus(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
+                        <MenuItem value="true">Approved</MenuItem>
+                        <MenuItem value="false">Pending</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -658,26 +496,17 @@ export default function ExamManagement() {
                   <Grid item xs={12} sm={6} md={2}>
                     <FormControl fullWidth size="small">
                       <InputLabel>Added By</InputLabel>
-                      <Select 
-                        value={filterAddedBy} 
-                        label="Added By" 
-                        onChange={(e) => setFilterAddedBy(e.target.value)}
-                        sx={{
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'teal',
-                          },
-                        }}
-                      >
-                        <MenuItem value="">All Users</MenuItem>
+                      <Select value={filterAddedBy} label="Added By" onChange={(e) => setFilterAddedBy(e.target.value)}>
+                        <MenuItem value="">All</MenuItem>
                         {uniqueUsers.map((u) => <MenuItem key={u} value={u}>{u}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
                 </Grid>
-              </Box>
+              </Grid>
             )}
-          </Stack>
-        </Paper>
+          </Grid>
+        </FilterPaper>
 
         {/* list / table */}
         {filteredExams.length === 0 ? (
@@ -688,12 +517,12 @@ export default function ExamManagement() {
         ) : (
           <>
             <Box sx={{ mb: 1 }}>
-              <Typography variant="body2">Showing {filteredExams.length} {filteredExams.length === 1 ? 'exam' : 'exams'}</Typography>
+              <Typography variant="body2">Showing {filteredExams.length} of {totalCount} {totalCount === 1 ? 'exam' : 'exams'}</Typography>
             </Box>
 
             {viewMode === 'card' ? (
               <Grid container spacing={2}>
-                {filteredExams.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((exam) => (
+                {filteredExams.map((exam) => (
                   <Grid item xs={12} sm={6} md={6} key={exam.id}>
                     <ExamCard status={exam.status}>
                       <CardContent>
@@ -701,9 +530,9 @@ export default function ExamManagement() {
                           <Box>
                             <Typography variant="h6" sx={{ mb: 1 }}>{exam.name}</Typography>
                             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                              <Chip label={exam.subject?.subject_name || '-'} size="small" />
-                              <Chip label={exam.level?.name || '-'} size="small" />
-                              <Chip label={exam.class_category?.name || '-'} size="small" />
+                              <Chip label={exam.subject || '-'} size="small" />
+                              <Chip label={exam.level || '-'} size="small" />
+                              <Chip label={exam.class_category || '-'} size="small" />
                             </Box>
                           </Box>
 
@@ -744,7 +573,7 @@ export default function ExamManagement() {
                         </Box>
 
                         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="body2">{exam.questions?.length || 0} questions</Typography>
+                          <Typography variant="body2">{exam.total_questions || 0} questions</Typography>
                           <Typography variant="caption">{exam.duration} min</Typography>
                         </Box>
                       </CardContent>
@@ -753,7 +582,7 @@ export default function ExamManagement() {
                 ))}
               </Grid>
             ) : (
-              <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+              <TableContainer component={Paper} sx={{ borderRadius: 2, '& .MuiTableCell-root': { whiteSpace: 'normal', wordBreak: 'break-word', verticalAlign: 'top', paddingTop: 12, paddingBottom: 12 }, '& .MuiTableRow-root': { '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } } }}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -768,13 +597,13 @@ export default function ExamManagement() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredExams.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((exam) => (
+                    {filteredExams.map((exam) => (
                       <TableRow key={exam.id}>
                         <TableCell>{exam.id}</TableCell>
                         <TableCell>{exam.name}</TableCell>
-                        <TableCell>{exam.subject?.subject_name}</TableCell>
-                        <TableCell>{exam.level?.name}</TableCell>
-                        <TableCell>{exam.class_category?.name}</TableCell>
+                        <TableCell>{exam.subject}</TableCell>
+                        <TableCell>{exam.level}</TableCell>
+                        <TableCell>{exam.class_category}</TableCell>
                         <TableCell>{exam.duration} min</TableCell>
                         <TableCell><StatusChip approved={exam.status} /></TableCell>
                         <TableCell>
@@ -808,7 +637,7 @@ export default function ExamManagement() {
             <Box sx={{ mt: 2 }}>
               <TablePagination
                 component="div"
-                count={filteredExams.length}
+                count={totalCount}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}

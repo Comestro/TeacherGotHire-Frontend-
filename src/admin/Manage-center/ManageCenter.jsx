@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Container,
   Typography,
@@ -20,7 +20,6 @@ import {
   FormControlLabel,
   Snackbar,
   Alert,
-  TablePagination,
   useTheme,
   useMediaQuery,
   Grid,
@@ -30,7 +29,7 @@ import {
   Divider,
   CircularProgress,
   Tooltip,
-  alpha
+  alpha,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -39,54 +38,78 @@ import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
   Phone as PhoneIcon,
-  Mail as EmailIcon
+  Mail as EmailIcon,
+  EditOff as EditOffIcon,
 } from "@mui/icons-material";
-// Additional imports for DataGrid
-import { 
-  DataGrid, 
-  GridToolbarContainer, 
-  GridToolbarFilterButton, 
-  GridToolbarColumnsButton, 
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
   GridToolbarDensitySelector,
-  GridToolbarExport 
+  GridToolbarExport,
 } from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
-import { createCenterManager, deleteCenterManager, getManageCenter, updateCenterManager } from "../../services/adminManageCenterApi";
-import axios from 'axios';
+import {
+  createCenterManager,
+  deleteCenterManager,
+  getManageCenter,
+  updateCenterManager,
+} from "../../services/adminManageCenterApi";
+import axios from "axios";
 
-const ManageCenter = () => {
+/**
+ * ManageCenter (refactor + redesign)
+ *
+ * Key improvements:
+ * - debounce search
+ * - memoized filtered list
+ * - improved form validation / feedback
+ * - optimistic updates for toggle/update/delete
+ * - DataGrid pagination + toolbar
+ * - clearer pincode lookup UX
+ */
+
+// tiny debounce hook
+function useDebounce(value, delay = 300) {
+  const [v, setV] = useState(value);
+  const t = useRef(null);
+  useEffect(() => {
+    clearTimeout(t.current);
+    t.current = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t.current);
+  }, [value, delay]);
+  return v;
+}
+
+export default function ManageCenter() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Move CustomToolbar inside the component to access the theme
-  const CustomToolbar = () => {
-    return (
-      <GridToolbarContainer sx={{ p: 1 }}>
-        <GridToolbarColumnsButton 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarFilterButton 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarDensitySelector 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-        <GridToolbarExport 
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
-        />
-      </GridToolbarContainer>
-    );
-  };
+  // toolbar for DataGrid
+  const CustomToolbar = () => (
+    <GridToolbarContainer sx={{ gap: 1, p: 1 }}>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarDensitySelector />
+      <GridToolbarExport />
+    </GridToolbarContainer>
+  );
 
+  // data + loading
   const [examCenters, setExamCenters] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [filterStatus, setFilterStatus] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [formData, setFormData] = useState({
+  const [pageState, setPageState] = useState({ page: 0, pageSize: 10 });
+
+  // form
+  const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
@@ -99,71 +122,65 @@ const ManageCenter = () => {
     area: "",
     status: false,
   });
-  const [filteredCenters, setFilteredCenters] = useState([]);
-
-  const [validationErrors, setValidationErrors] = useState({});
-  const [pincodeStatus, setPincodeStatus] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [loadingPincode, setLoadingPincode] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [isLoading, setIsLoading] = useState(true);
+  const [pincodeStatus, setPincodeStatus] = useState(null); // null | 'success' | 'error'
+
+  // deletes / submit
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [centerToDelete, setCenterToDelete] = useState(null);
+
+  // snack
+  const [snack, setSnack] = useState({ open: false, msg: "", severity: "success" });
 
   useEffect(() => {
     fetchExamCenters();
   }, []);
 
-  useEffect(() => {
-    // Update filteredCenters whenever examCenters, searchTerm, or filterStatus changes
-    const filtered = examCenters.filter(
-      (center) =>
-        (center.center_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.state?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filterStatus === "" || (filterStatus === "active" ? true : false) === center.status)
-    );
-    setFilteredCenters(filtered);
-  }, [examCenters, searchTerm, filterStatus]);
+  const showSnack = (msg, severity = "success") => setSnack({ open: true, msg, severity });
+  const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
 
+  // fetch centers
   const fetchExamCenters = async () => {
     setIsLoading(true);
     try {
-      const response = await getManageCenter();
-      setExamCenters(Array.isArray(response) ? response : []);
-      showSnackbar("Exam centers loaded successfully", "success");
-    } catch (error) {
-      
-      showSnackbar("Error fetching exam centers", "error");
+      const res = await getManageCenter();
+      const list = Array.isArray(res) ? res : res?.data ?? [];
+      setExamCenters(list);
+      showSnack("Exam centers loaded", "success");
+    } catch (err) {
+      console.error("fetchExamCenters:", err);
       setExamCenters([]);
+      showSnack("Failed to load exam centers", "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(0); // Reset to first page when searching
-  };
+  // derived filtered centers
+  const filteredCenters = useMemo(() => {
+    const q = (debouncedSearch || "").trim().toLowerCase();
+    return examCenters.filter((c) => {
+      const matchesQ =
+        !q ||
+        (c.center_name || "").toLowerCase().includes(q) ||
+        (c.city || "").toLowerCase().includes(q) ||
+        (c.state || "").toLowerCase().includes(q) ||
+        (c.user?.email || "").toLowerCase().includes(q) ||
+        (c.user?.Fname || "").toLowerCase().includes(q) ||
+        (c.user?.Lname || "").toLowerCase().includes(q);
+      const matchesStatus =
+        !filterStatus ||
+        (filterStatus === "active" ? Boolean(c.status) : !Boolean(c.status));
+      return matchesQ && matchesStatus;
+    });
+  }, [examCenters, debouncedSearch, filterStatus]);
 
-  const handleFilterStatus = (e) => {
-    setFilterStatus(e.target.value);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleAddCenter = () => {
+  // ---------- Handlers: CRUD & actions ----------
+  const openAddModal = () => {
     setSelectedCenter(null);
-    setFormData({
+    setForm({
       username: "",
       email: "",
       password: "",
@@ -176,370 +193,316 @@ const ManageCenter = () => {
       area: "",
       status: false,
     });
-    setValidationErrors({});
+    setFormErrors({});
     setPincodeStatus(null);
     setIsModalOpen(true);
   };
 
-  const handleEditCenter = (center) => {
+  const openEditModal = (center) => {
     setSelectedCenter(center);
-    setFormData({
+    setForm({
       username: center.user?.username || "",
       email: center.user?.email || "",
-      password: "", // Leave password empty for edit
+      password: "",
       Fname: center.user?.Fname || "",
       Lname: center.user?.Lname || "",
       center_name: center.center_name || "",
-      pincode: center.pincode || "",
+      pincode: String(center.pincode || ""),
       state: center.state || "",
       city: center.city || "",
       area: center.area || "",
-      status: center.status || false,
+      status: Boolean(center.status),
     });
-    setValidationErrors({});
+    setFormErrors({});
     setPincodeStatus(null);
     setIsModalOpen(true);
   };
 
+  // toggle status (optimistic)
   const handleToggleStatus = async (center) => {
+    const updated = !center.status;
+    // optimistic update
+    setExamCenters((prev) => prev.map((c) => (c.id === center.id ? { ...c, status: updated } : c)));
     try {
-      const updatedStatus = !center.status;
-      
-      
-
-      // Simple payload with just status
-      const payload = {
-        status: updatedStatus
-      };
-      
-      
-      
-      const response = await updateCenterManager(center.id, payload);
-      
-
-      // Verify if the status was actually updated in the response
-      if (response && response.status === updatedStatus) {
-        // Update local state
-        setExamCenters(prevCenters =>
-          prevCenters.map(c =>
-            c.id === center.id
-              ? { ...c, status: updatedStatus }
-              : c
-          )
-        );
-        showSnackbar(`Exam center ${updatedStatus ? 'activated' : 'deactivated'} successfully`, "success");
-      } else {
-        
-        showSnackbar("Server did not update exam center status", "error");
-      }
-    } catch (error) {
-      
-      
-      // Log more detailed error information
-      if (error.response) {
-        
-        
-      }
-      
-      showSnackbar("Error updating exam center status", "error");
+      const payload = { status: updated };
+      await updateCenterManager(center.id, payload);
+      showSnack(`Center ${updated ? "activated" : "deactivated"}`, "success");
+    } catch (err) {
+      console.error("toggleStatus error:", err);
+      // revert on error
+      setExamCenters((prev) => prev.map((c) => (c.id === center.id ? { ...c, status: center.status } : c)));
+      showSnack("Failed to update status", "error");
     }
   };
 
-  const handleDeleteConfirmation = (center) => {
+  // delete
+  const confirmDelete = (center) => {
     setCenterToDelete(center);
-    setDeleteDialogOpen(true);
+    setDeleteConfirmOpen(true);
   };
 
   const handleDeleteCenter = async () => {
     if (!centerToDelete) return;
-
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
       await deleteCenterManager(centerToDelete.id);
-      setExamCenters(examCenters.filter((center) => center.id !== centerToDelete.id));
-      showSnackbar("Exam center deleted successfully", "success");
-    } catch (error) {
-      
-      showSnackbar("Error deleting exam center", "error");
+      setExamCenters((prev) => prev.filter((c) => c.id !== centerToDelete.id));
+      showSnack("Exam center deleted", "success");
+    } catch (err) {
+      console.error("delete error:", err);
+      showSnack("Failed to delete center", "error");
     } finally {
       setIsSubmitting(false);
-      setDeleteDialogOpen(false);
+      setDeleteConfirmOpen(false);
       setCenterToDelete(null);
     }
   };
 
-  const validateForm = () => {
-    let errors = {};
-    
-    // Only validate user information if we're adding a new center (not editing)
+  // form validation
+  const validate = () => {
+    const errors = {};
+    // when adding new center, require user info
     if (!selectedCenter) {
-      if (!formData.username) errors.username = "Username is required";
-      if (!formData.email) errors.email = "Email is required";
-      else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = "Email is invalid";
-      if (!formData.Fname) errors.Fname = "First Name is required";
-      if (!formData.Lname) errors.Lname = "Last Name is required";
-      
-      // Only validate password if adding a new center
-      if (!formData.password) {
-        errors.password = "Password is required for new centers";
-      }
+      if (!form.username) errors.username = "Username required";
+      if (!form.email) errors.email = "Email required";
+      else if (!/^\S+@\S+\.\S+$/.test(form.email)) errors.email = "Invalid email";
+      if (!form.password) errors.password = "Password required";
+      if (!form.Fname) errors.Fname = "First name required";
+      if (!form.Lname) errors.Lname = "Last name required";
     }
-    
-    // Always validate center information
-    if (!formData.center_name) errors.center_name = "Center Name is required";
-    if (!formData.area) errors.area = "Area is required";
-    if (!formData.pincode) errors.pincode = "Pincode is required";
-    else if (!/^\d{6}$/.test(formData.pincode)) errors.pincode = "Pincode must be a 6-digit number";
-    if (!formData.city) errors.city = "City is required";
-    if (!formData.state) errors.state = "State is required";
-  
-    setValidationErrors(errors);
+    // center info
+    if (!form.center_name) errors.center_name = "Center name required";
+    if (!form.area) errors.area = "Area required";
+    if (!form.pincode) errors.pincode = "Pincode required";
+    else if (!/^\d{6}$/.test(form.pincode)) errors.pincode = "Pincode must be 6 digits";
+    if (!form.city) errors.city = "City required";
+    if (!form.state) errors.state = "State required";
+    setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      showSnackbar("Please correct the errors in the form", "error");
+  // submit create/update
+  const handleSubmit = async (ev) => {
+    ev.preventDefault();
+    if (!validate()) {
+      showSnack("Please fix form errors", "error");
       return;
     }
+    setIsSubmitting(true);
 
     try {
-      setIsSubmitting(true);
-      
-      // Different payload structure based on whether we're adding or editing
-      let payload;
-      
       if (selectedCenter) {
-        // For editing existing center, use a flat structure
-        payload = {
-          user: selectedCenter.user?.id,  // Include user ID as per your Postman example
-          center_name: formData.center_name,
-          pincode: formData.pincode,
-          state: formData.state,
-          city: formData.city,
-          area: formData.area,
-          status: formData.status
+        // update existing center
+        const payload = {
+          // include only what backend expects for update
+          user: selectedCenter.user?.id,
+          center_name: form.center_name,
+          pincode: form.pincode,
+          state: form.state,
+          city: form.city,
+          area: form.area,
+          status: form.status,
         };
+        await updateCenterManager(selectedCenter.id, payload);
+        // optimistic local update
+        setExamCenters((prev) => prev.map((c) => (c.id === selectedCenter.id ? { ...c, ...payload } : c)));
+        showSnack("Exam center updated", "success");
       } else {
-        // For new center, include both user and center information
-        payload = {
+        // create new center (structure expected by your API earlier)
+        const payload = {
           user: {
-            username: formData.username,
-            email: formData.email,
-            Fname: formData.Fname,
-            Lname: formData.Lname,
-            password: formData.password,
+            username: form.username,
+            email: form.email,
+            Fname: form.Fname,
+            Lname: form.Lname,
+            password: form.password,
           },
           exam_center: {
-            center_name: formData.center_name,
-            pincode: formData.pincode,
-            state: formData.state,
-            city: formData.city,
-            area: formData.area,
-            status: formData.status,
+            center_name: form.center_name,
+            pincode: form.pincode,
+            state: form.state,
+            city: form.city,
+            area: form.area,
+            status: form.status,
           },
         };
-      }
-
-      
-    
-      if (selectedCenter) {
-        await updateCenterManager(selectedCenter.id, payload);
-        showSnackbar("Exam center updated successfully", "success");
-      } else {
-        await createCenterManager(payload);
-        showSnackbar("Exam center created successfully", "success");
+        const created = await createCenterManager(payload);
+        // append returned center if API returns it, otherwise refetch
+        if (created && created.id) {
+          setExamCenters((prev) => [created, ...prev]);
+        } else {
+          await fetchExamCenters();
+        }
+        showSnack("Exam center created", "success");
       }
       setIsModalOpen(false);
-      fetchExamCenters();
-    } catch (error) {
-      
-      if (error.response) {
-        
-      }
-      showSnackbar("Error saving exam center", "error");
+    } catch (err) {
+      console.error("submit error:", err);
+      showSnack("Failed to save exam center", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    let updatedValue = type === "checkbox" ? checked : value;
-
-    if (name === "pincode") {
-      if (!/^\d*$/.test(value)) return; // Only allow digits
-      if (value.length > 6) return; // Limit to 6 characters
-      updatedValue = value; // Keep it as a string
+  // pincode fetch
+  const handleFetchPostal = async (pin) => {
+    if (!/^\d{6}$/.test(pin)) {
+      setPincodeStatus("error");
+      return;
     }
-
-    setFormData({
-      ...formData,
-      [name]: updatedValue,
-    });
-
-    setValidationErrors({ ...validationErrors, [name]: "" });
-
-    if (name === "pincode" && value.length === 6) {
-      fetchPostalData(value);
-    }
-  };
-
-  const fetchPostalData = async (pincode) => {
     setLoadingPincode(true);
     setPincodeStatus(null);
     try {
-      const response = await axios.get(`${import.meta.env.VITE_POSTAL_API_URL}${pincode}`);
-      if (response.data && response.data[0].Status === "Success") {
-        const postOffice = response.data[0].PostOffice[0];
-        setFormData((prevData) => ({
-          ...prevData,
-          city: postOffice.District,
-          state: postOffice.State,
-          pincode: pincode.toString(), // Ensure it's stored as a string
-        }));
-        setPincodeStatus("success");
-        showSnackbar("Pincode details fetched successfully", "success");
+      const url = `${import.meta.env.VITE_POSTAL_API_URL || "https://api.postalpincode.in/pincode/"}${pin}`;
+      const res = await axios.get(url);
+      // typical India postal API returns array with Status and PostOffice
+      if (res?.data?.[0]?.Status === "Success") {
+        const post = res.data[0].PostOffice?.[0];
+        if (post) {
+          setForm((f) => ({ ...f, city: post.District || f.city, state: post.State || f.state }));
+          setPincodeStatus("success");
+          showSnack("Pincode resolved", "success");
+        } else {
+          setPincodeStatus("error");
+          showSnack("No post office found for this pincode", "error");
+        }
       } else {
-        setFormData((prevData) => ({
-          ...prevData,
-          city: "",
-          state: "",
-          pincode: pincode.toString(), // Ensure it's stored as a string
-        }));
         setPincodeStatus("error");
-        showSnackbar("Invalid pincode", "error");
+        showSnack("Invalid pincode", "error");
       }
-    } catch (error) {
-      
-      setFormData((prevData) => ({
-        ...prevData,
-        city: "",
-        state: "",
-        pincode: pincode.toString(), // Ensure it's stored as a string
-      }));
+    } catch (err) {
+      console.error("postal fetch error:", err);
       setPincodeStatus("error");
-      showSnackbar("Error fetching postal data", "error");
+      showSnack("Error checking pincode", "error");
     } finally {
       setLoadingPincode(false);
     }
   };
 
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
-
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
+  // input change
+  const handleInput = (e) => {
+    const { name, value, type, checked } = e.target;
+    const val = type === "checkbox" ? checked : value;
+    // restrict pincode numeric length
+    if (name === "pincode") {
+      if (!/^\d*$/.test(val) || val.length > 6) return;
     }
-    setSnackbarOpen(false);
+    setForm((f) => ({ ...f, [name]: val }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (name === "pincode" && val.length === 6) {
+      handleFetchPostal(val);
+    }
   };
 
-  // Render mobile card view
-  const renderMobileCards = () => {
-    return filteredCenters
-      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-      .map((center) => (
-        <Card key={center.id} sx={{ mb: 2, borderRadius: 2, overflow: 'hidden', borderLeft: `4px solid ${center.status ? theme.palette.success.main : theme.palette.grey[400]}` }} elevation={2}>
-          <CardContent>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {center.center_name}
-              </Typography>
-              <Chip
-                label={center.status ? "Active" : "Inactive"}
-                color={center.status ? "success" : "default"}
-                size="small"
-              />
-            </Box>
-
-            <Divider sx={{ mb: 2 }} />
-
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
-              <Typography variant="body2">{`${center.area}, ${center.city}, ${center.state}`}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
-              <Typography variant="body2">{center.pincode}</Typography>
-            </Box>
-
-            {center.user && (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <EmailIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
-                <Typography variant="body2">{center.user.email}</Typography>
-              </Box>
-            )}
-          </CardContent>
-
-          <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-            <Box>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={center.status}
-                    onChange={() => handleToggleStatus(center)}
-                    size="small"
-                    color="success"
-                  />
-                }
-                label={<Typography variant="body2">Active</Typography>}
-              />
-            </Box>
-
-            <Box>
-              <Tooltip title="Edit Center">
-                <IconButton color="primary" onClick={() => handleEditCenter(center)} size="small">
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Delete Center">
-                <IconButton color="error" onClick={() => handleDeleteConfirmation(center)} size="small">
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </CardActions>
-        </Card>
-      ));
+  // CSV export helper (small)
+  const exportCsv = () => {
+    const rows = filteredCenters.map((c) => [
+      c.id,
+      c.center_name,
+      c.area,
+      c.city,
+      c.state,
+      c.pincode,
+      c.user?.email || "",
+      c.status ? "Active" : "Inactive",
+    ]);
+    const header = ["ID", "Center", "Area", "City", "State", "Pincode", "Manager Email", "Status"];
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    const a = document.createElement("a");
+    a.href = uri;
+    a.download = `exam_centers_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
+
+  // Render card for mobile
+  const renderMobileCards = () =>
+    filteredCenters.slice(pageState.page * pageState.pageSize, (pageState.page + 1) * pageState.pageSize).map((center) => (
+      <Card
+        key={center.id}
+        sx={{
+          mb: 2,
+          borderRadius: 2,
+          overflow: "hidden",
+          borderLeft: `4px solid ${center.status ? theme.palette.success.main : theme.palette.grey[300]}`,
+        }}
+      >
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {center.center_name}
+            </Typography>
+            <Chip label={center.status ? "Active" : "Inactive"} color={center.status ? "success" : "default"} size="small" />
+          </Box>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <Box display="flex" alignItems="center" mb={1}>
+            <LocationIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+            <Typography variant="body2">{`${center.area}, ${center.city}, ${center.state}`}</Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" mb={1}>
+            <PhoneIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+            <Typography variant="body2">{center.pincode}</Typography>
+          </Box>
+
+          {center.user && (
+            <Box display="flex" alignItems="center">
+              <EmailIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+              <Typography variant="body2">{center.user.email}</Typography>
+            </Box>
+          )}
+        </CardContent>
+
+        <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>
+          <FormControlLabel
+            control={<Switch checked={center.status} onChange={() => handleToggleStatus(center)} size="small" color="success" />}
+            label={<Typography variant="body2">Active</Typography>}
+          />
+          <Box>
+            <Tooltip title="Edit">
+              <IconButton onClick={() => openEditModal(center)} size="small"><EditIcon fontSize="small" /></IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={() => confirmDelete(center)} color="error" size="small"><DeleteIcon fontSize="small" /></IconButton>
+            </Tooltip>
+          </Box>
+        </CardActions>
+      </Card>
+    ));
+
+  // DataGrid rows
+  const dgRows = useMemo(
+    () =>
+      filteredCenters.map((c) => ({
+        id: c.id,
+        centerName: c.center_name || "",
+        location: `${c.area || ""}, ${c.city || ""}, ${c.state || ""}`,
+        pincode: c.pincode || "",
+        manager: c.user ? `${c.user.Fname || ""} ${c.user.Lname || ""}`.trim() : "",
+        email: c.user?.email || "",
+        status: Boolean(c.status),
+        raw: c,
+      })),
+    [filteredCenters]
+  );
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
-        {/* Header section */}
+        {/* Header */}
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2, sm: 3 },
-            mb: 3,
-            borderRadius: 2,
-            backgroundImage: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.background.paper, 0.5)})`,
+            mb: 1,
           }}
         >
-          <Box
-            display="flex"
-            flexDirection={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ xs: 'flex-start', md: 'center' }}
-            gap={2}
-          >
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={2}>
             <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  color: 'primary.main',
-                  fontSize: { xs: '1.75rem', sm: '2.125rem' }
-                }}
-              >
+              <Typography variant="h4" sx={{ fontWeight: 700, color: "teal" }}>
                 Manage Exam Centers
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -547,40 +510,27 @@ const ManageCenter = () => {
               </Typography>
             </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={handleAddCenter}
-              sx={{
-                boxShadow: 2,
-                textTransform: 'none',
-                minWidth: { xs: '100%', sm: 'auto' }
-              }}
-            >
-              Add New Center
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, width: { xs: "100%", sm: "auto" } }}>
+              <Button startIcon={<AddIcon />} variant="contained" onClick={openAddModal} sx={{ textTransform: "none" }}>
+                Add New Center
+              </Button>
+              <Button variant="outlined" onClick={exportCsv} sx={{ textTransform: "none" }}>
+                Export CSV
+              </Button>
+            </Box>
           </Box>
         </Paper>
 
-        {/* Search and Filters */}
-        <Paper
-          elevation={2}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            mb: 3,
-            borderRadius: 2
-          }}
-        >
+        {/* Search & Filters */}
+        <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, borderRadius: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={8}>
               <TextField
                 fullWidth
-                variant="outlined"
-                placeholder="Search by name, city or state..."
                 size="small"
-                value={searchTerm}
-                onChange={handleSearch}
+                placeholder="Search by name, city, state or manager..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 InputProps={{
                   startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
                 }}
@@ -588,9 +538,9 @@ const ManageCenter = () => {
             </Grid>
 
             <Grid item xs={12} md={4}>
-              <FormControl variant="outlined" fullWidth size="small">
+              <FormControl fullWidth size="small">
                 <InputLabel>Status</InputLabel>
-                <Select value={filterStatus} onChange={handleFilterStatus} label="Status">
+                <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="Status">
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
@@ -602,497 +552,175 @@ const ManageCenter = () => {
           </Grid>
         </Paper>
 
-        {/* Content - Centers Data */}
-        <Paper
-          elevation={2}
-          sx={{
-            borderRadius: 2,
-            overflow: "hidden",
-          }}
-        >
+        {/* Content */}
+        <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden", mb: 3 }}>
           {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={6} flexDirection="column" gap={2}>
+            <Box p={6} textAlign="center">
               <CircularProgress />
-              <Typography variant="body2" color="text.secondary">Loading exam centers...</Typography>
+              <Typography mt={2} color="text.secondary">Loading exam centers...</Typography>
             </Box>
           ) : filteredCenters.length === 0 ? (
             <Box p={3} textAlign="center">
-              <Alert severity="info">No exam centers found matching your criteria</Alert>
+              <Alert severity="info">No exam centers found</Alert>
             </Box>
+          ) : isMobile ? (
+            <Box p={2}>{renderMobileCards()}</Box>
           ) : (
-            <>
-              {isMobile ? (
-                // Mobile view with cards - keep this unchanged
-                <Box p={2}>
-                  {renderMobileCards()}
-                </Box>
-              ) : (
-                // Desktop view with DataGrid instead of Table
-                <Box sx={{ height: 500, width: '100%' }}>
-                  <DataGrid
-                    rows={filteredCenters.map((center) => ({
-                      id: center.id,
-                      centerName: center.center_name || '',
-                      location: `${center.area || ''}, ${center.city || ''}, ${center.state || ''}`,
-                      pincode: center.pincode || '',
-                      manager: center.user ? `${center.user.Fname || ''} ${center.user.Lname || ''}` : '',
-                      email: center.user ? center.user.email : '',
-                      status: center.status || false,
-                      rawData: center // Store the full object for use in actions
-                    }))}
-                    columns={[
-                      {
-                        field: 'centerName',
-                        headerName: 'Center Name',
-                        flex: 1.5,
-                        minWidth: 180,
-                        sortable: true,
-                        filterable: true,
-                      },
-                      {
-                        field: 'location',
-                        headerName: 'Location',
-                        flex: 2,
-                        minWidth: 200,
-                        sortable: true,
-                        filterable: true,
-                      },
-                      {
-                        field: 'pincode',
-                        headerName: 'Pincode',
-                        flex: 0.8,
-                        minWidth: 100,
-                        sortable: true,
-                        filterable: true,
-                      },
-                      {
-                        field: 'manager',
-                        headerName: 'Manager',
-                        flex: 1.5,
-                        minWidth: 180,
-                        sortable: true,
-                        filterable: true,
-                        renderCell: (params) => (
-                          params.row.manager ? (
-                            <Box>
-                              <Typography variant="body2">{params.row.manager}</Typography>
-                              <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
-                            </Box>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">Not assigned</Typography>
-                          )
-                        ),
-                      },
-                      {
-                        field: 'status',
-                        headerName: 'Status',
-                        width: 120,
-                        sortable: true,
-                        filterable: true,
-                        type: 'boolean',
-                        renderCell: (params) => (
-                          <Box display="flex" alignItems="center" justifyContent="center">
-                            <Switch
-                              checked={params.value}
-                              onChange={() => handleToggleStatus(params.row.rawData)}
-                              color="success"
-                              size="small"
-                            />
-                          </Box>
-                        ),
-                      },
-                      {
-                        field: 'actions',
-                        headerName: 'Actions',
-                        width: 120,
-                        sortable: false,
-                        filterable: false,
-                        renderCell: (params) => (
-                          <Box display="flex" justifyContent="center" gap={1}>
-                            <Tooltip title="Edit Center">
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleEditCenter(params.row.rawData)}
-                                size="small"
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete Center">
-                              <IconButton
-                                color="error"
-                                onClick={() => handleDeleteConfirmation(params.row.rawData)}
-                                size="small"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        ),
-                      },
-                    ]}
-                    initialState={{
-                      pagination: {
-                        paginationModel: {
-                          page: page,
-                          pageSize: rowsPerPage
-                        },
-                      },
-                      sorting: {
-                        sortModel: [{ field: 'centerName', sort: 'asc' }],
-                      },
-                      filter: {
-                        filterModel: {
-                          items: [],
-                          quickFilterValues: searchTerm ? [searchTerm] : [],
-                        },
-                      },
-                    }}
-                    pageSizeOptions={[5, 10, 25, 50]}
-                    onPaginationModelChange={(model) => {
-                      setPage(model.page);
-                      setRowsPerPage(model.pageSize);
-                    }}
-                    filterMode="client"
-                    slots={{
-                      toolbar: CustomToolbar,
-                      noRowsOverlay: () => (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
-                          <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
-                            No exam centers found
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" align="center">
-                            Try adjusting your search or filters
-                          </Typography>
-                        </Box>
-                      ),
-                    }}
-                    sx={{
-                      border: 'none',
-                      '& .MuiDataGrid-cell:focus': {
-                        outline: 'none',
-                      },
-                      '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: theme.palette.background.default,
-                        fontWeight: 600,
-                      },
-                      '& .MuiDataGrid-row:nth-of-type(even)': {
-                        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : theme.palette.background.default,
-                      },
-                      '& .MuiDataGrid-toolbarContainer': {
-                        padding: 1,
-                      },
-                      '& .MuiButton-root': {
-                        textTransform: 'none',
-                      },
-                    }}
-                  />
-                </Box>
-              )}
-            </>
+            <Box sx={{ height: 560, width: "100%" }}>
+              <DataGrid
+                rows={dgRows}
+                columns={[
+                  { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
+                  { field: "location", headerName: "Location", flex: 1.8, minWidth: 250 },
+                  { field: "pincode", headerName: "Pincode", width: 110 },
+                  {
+                    field: "manager",
+                    headerName: "Manager",
+                    flex: 1,
+                    minWidth: 170,
+                    renderCell: (p) => <Box><Typography>{p.value || "Not assigned"}</Typography><Typography variant="caption" color="text.secondary">{p.row.email || ""}</Typography></Box>,
+                  },
+                  {
+                    field: "status",
+                    headerName: "Status",
+                    width: 120,
+                    renderCell: (p) => (
+                      <Box display="flex" justifyContent="center">
+                        <Switch checked={p.value} onChange={() => handleToggleStatus(p.row.raw)} size="small" color="success" />
+                      </Box>
+                    ),
+                  },
+                  {
+                    field: "actions",
+                    headerName: "Actions",
+                    width: 140,
+                    sortable: false,
+                    renderCell: (p) => (
+                      <Box display="flex" gap={1} justifyContent="center">
+                        <Tooltip title="Edit">
+                          <IconButton size="small" onClick={() => openEditModal(p.row.raw)}><EditIcon fontSize="small" /></IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton size="small" color="error" onClick={() => confirmDelete(p.row.raw)}><DeleteIcon fontSize="small" /></IconButton>
+                        </Tooltip>
+                      </Box>
+                    ),
+                  },
+                ]}
+                getRowId={(r) => r.id}
+                pageSizeOptions={[5, 10, 25, 50]}
+                initialState={{
+                  pagination: { paginationModel: { page: pageState.page, pageSize: pageState.pageSize } },
+                  sorting: { sortModel: [{ field: "centerName", sort: "asc" }] },
+                }}
+                paginationModel={pageState}
+                onPaginationModelChange={(model) => setPageState(model)}
+                slots={{ toolbar: CustomToolbar }}
+                sx={{
+                  border: "none",
+                  "& .MuiDataGrid-columnHeaders": { backgroundColor: theme.palette.background.default, fontWeight: 700 },
+                  "& .MuiDataGrid-row:nth-of-type(even)": { backgroundColor: theme.palette.mode === "light" ? "#fafafa" : theme.palette.background.default },
+                }}
+              />
+            </Box>
           )}
         </Paper>
 
-        {/* Add/Edit Center Modal */}
-        <Dialog
-          open={isModalOpen}
-          onClose={() => !isSubmitting && setIsModalOpen(false)}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            elevation: 3,
-            sx: { borderRadius: 2 }
-          }}
-        >
-          <DialogTitle>
-            <Typography variant="h6" fontWeight={600}>
-              {selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}
-            </Typography>
-          </DialogTitle>
-
+        {/* Add / Edit Modal */}
+        <Dialog open={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>{selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}</DialogTitle>
           <DialogContent dividers>
-            <form id="center-form" onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                {/* Show user information section only for new centers */}
+            <Box component="form" id="center-form" onSubmit={handleSubmit} noValidate>
+              <Grid container spacing={2}>
                 {!selectedCenter && (
                   <>
+                    <Grid item xs={12}><Typography variant="subtitle2" color="primary">User Information</Typography></Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField label="Username" name="username" value={form.username} onChange={handleInput} fullWidth required error={!!formErrors.username} helperText={formErrors.username} disabled={isSubmitting} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField label="Email" name="email" value={form.email} onChange={handleInput} fullWidth required error={!!formErrors.email} helperText={formErrors.email} disabled={isSubmitting} />
+                    </Grid>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
-                        User Information
-                      </Typography>
+                      <TextField label="Password" name="password" value={form.password} onChange={handleInput} fullWidth required type="password" error={!!formErrors.password} helperText={formErrors.password || "Required for new center"} disabled={isSubmitting} />
                     </Grid>
-
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Username"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        error={!!validationErrors.username}
-                        helperText={validationErrors.username}
-                        disabled={isSubmitting}
-                      />
+                      <TextField label="First Name" name="Fname" value={form.Fname} onChange={handleInput} fullWidth required error={!!formErrors.Fname} helperText={formErrors.Fname} disabled={isSubmitting} />
                     </Grid>
-
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Email"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        error={!!validationErrors.email}
-                        helperText={validationErrors.email}
-                        disabled={isSubmitting}
-                      />
+                      <TextField label="Last Name" name="Lname" value={form.Lname} onChange={handleInput} fullWidth required error={!!formErrors.Lname} helperText={formErrors.Lname} disabled={isSubmitting} />
                     </Grid>
-
-                    <Grid item xs={12}>
-                      <TextField
-                        label="Password"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        error={!!validationErrors.password}
-                        helperText={validationErrors.password || "Required for new centers"}
-                        disabled={isSubmitting}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="First Name"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="Fname"
-                        value={formData.Fname}
-                        onChange={handleInputChange}
-                        error={!!validationErrors.Fname}
-                        helperText={validationErrors.Fname}
-                        disabled={isSubmitting}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Last Name"
-                        variant="outlined"
-                        required
-                        fullWidth
-                        name="Lname"
-                        value={formData.Lname}
-                        onChange={handleInputChange}
-                        error={!!validationErrors.Lname}
-                        helperText={validationErrors.Lname}
-                        disabled={isSubmitting}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <Divider />
-                    </Grid>
+                    <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
                   </>
                 )}
 
+                <Grid item xs={12}><Typography variant="subtitle2" color="primary">Exam Center Information</Typography></Grid>
+
                 <Grid item xs={12}>
-                  <Typography variant="subtitle1" fontWeight={500} gutterBottom sx={{ color: 'primary.main' }}>
-                    Exam Center Information
-                  </Typography>
+                  <TextField label="Center Name" name="center_name" value={form.center_name} onChange={handleInput} fullWidth required error={!!formErrors.center_name} helperText={formErrors.center_name} disabled={isSubmitting} />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    label="Center Name"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="center_name"
-                    value={formData.center_name}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.center_name}
-                    helperText={validationErrors.center_name}
-                    disabled={isSubmitting}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Area"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="area"
-                    value={formData.area}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.area}
-                    helperText={validationErrors.area}
-                    disabled={isSubmitting}
-                  />
+                  <TextField label="Area" name="area" value={form.area} onChange={handleInput} fullWidth required error={!!formErrors.area} helperText={formErrors.area} disabled={isSubmitting} />
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
                   <TextField
                     label="Pincode"
-                    variant="outlined"
-                    required
-                    fullWidth
                     name="pincode"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.pincode || pincodeStatus === 'error'}
-                    helperText={
-                      validationErrors.pincode ||
-                      (loadingPincode ? "Loading location data..." :
-                        pincodeStatus === 'error' ? "Invalid Pincode" : "")
-                    }
-                    InputProps={{
-                      endAdornment: loadingPincode ? <CircularProgress size={20} /> : null,
-                    }}
+                    value={form.pincode}
+                    onChange={handleInput}
+                    fullWidth
+                    required
+                    error={!!formErrors.pincode || pincodeStatus === "error"}
+                    helperText={formErrors.pincode || (loadingPincode ? "Resolving pincode..." : pincodeStatus === "error" ? "Pincode not found" : "")}
+                    InputProps={{ endAdornment: loadingPincode ? <CircularProgress size={18} /> : null }}
                     inputProps={{ maxLength: 6 }}
                     disabled={isSubmitting || loadingPincode}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
-                  <TextField
-                    label="City"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    error={!!validationErrors.city}
-                    helperText={validationErrors.city}
-                    disabled={isSubmitting}
-                  />
+                  <TextField label="City" name="city" value={form.city} onChange={handleInput} fullWidth required error={!!formErrors.city} helperText={formErrors.city} disabled={isSubmitting} />
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
-                  <TextField
-                    label="State"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="state"
-                    value={formData.state}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    error={!!validationErrors.state}
-                    helperText={validationErrors.state}
-                    disabled={isSubmitting}
-                  />
+                  <TextField label="State" name="state" value={form.state} fullWidth required InputProps={{ readOnly: true }} error={!!formErrors.state} helperText={formErrors.state} disabled />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                        name="status"
-                        color="success"
-                        disabled={isSubmitting}
-                      />
-                    }
-                    label={
-                      <Typography variant="body2">
-                        {formData.status ? "Active" : "Inactive"}
-                      </Typography>
-                    }
-                  />
+                  <FormControlLabel control={<Switch checked={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.checked }))} />} label={form.status ? "Active" : "Inactive"} />
                 </Grid>
               </Grid>
-            </form>
+            </Box>
           </DialogContent>
 
-          <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-            <Button
-              onClick={() => setIsModalOpen(false)}
-              variant="outlined"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              form="center-form"
-              variant="contained"
-              color="primary"
-              disabled={isSubmitting}
-            >
-              {selectedCenter ? "Update" : "Save"}
+          <DialogActions>
+            <Button onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button form="center-form" type="submit" variant="contained" disabled={isSubmitting}>
+              {isSubmitting ? <CircularProgress size={18} color="inherit" /> : selectedCenter ? "Update" : "Save"}
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => !isSubmitting && setDeleteDialogOpen(false)}
-          PaperProps={{
-            elevation: 3,
-            sx: { borderRadius: 2 }
-          }}
-        >
-          <DialogTitle>
-            <Typography variant="h6" fontWeight={600}>
-              Confirm Delete
-            </Typography>
-          </DialogTitle>
-
+        {/* Delete confirm */}
+        <Dialog open={deleteConfirmOpen} onClose={() => !isSubmitting && setDeleteConfirmOpen(false)}>
+          <DialogTitle>Delete Exam Center</DialogTitle>
           <DialogContent>
-            <Typography variant="body1">
-              Are you sure you want to delete the exam center?
-            </Typography>
+            <Typography>Are you sure you want to delete this exam center? This action cannot be undone.</Typography>
           </DialogContent>
-
-          <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-            <Button
-              onClick={() => setDeleteDialogOpen(false)}
-              variant="outlined"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteCenter}
-              variant="contained"
-              color="error"
-              disabled={isSubmitting}
-            >
-              Delete
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button onClick={handleDeleteCenter} color="error" variant="contained" disabled={isSubmitting}>
+              {isSubmitting ? <CircularProgress size={18} color="inherit" /> : "Delete"}
             </Button>
           </DialogActions>
         </Dialog>
 
         {/* Snackbar */}
-
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
-            {snackbarMessage}
-          </Alert>
+        <Snackbar open={snack.open} autoHideDuration={6000} onClose={closeSnack} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+          <Alert onClose={closeSnack} severity={snack.severity} variant="filled">{snack.msg}</Alert>
         </Snackbar>
-      </Container>
     </Layout>
   );
-
 }
-
-export default ManageCenter;
