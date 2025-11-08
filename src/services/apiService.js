@@ -91,7 +91,7 @@ export const reorderQuestions = async (orderedIds) => {
 export const fetchSingleTeacherById = async (teacherId) => {
   try {
     const response = await axiosInstance.get(
-      `/api/admin/teacher/${teacherId}/`
+      `/api/teacher/${teacherId}/`
     );
     return response.data;
   } catch (error) {
@@ -181,7 +181,6 @@ const apiService = {
       const response = await axiosInstance.delete(endpoint);
       return response.data;
     } catch (error) {
-      
       throw error;
     }
   },

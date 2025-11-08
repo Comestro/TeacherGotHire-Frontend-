@@ -21,6 +21,7 @@ export default function TeacherViewPageFull() {
   const [openRequestModal, setOpenRequestModal] = useState(false);
   const [classCategories, setClassCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [attempts, setAttempts] = useState([]);
   const [selectedClassCategory, setSelectedClassCategory] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
@@ -45,6 +46,20 @@ export default function TeacherViewPageFull() {
     return local.slice(0, 2) + '***@' + domain;
   };
 
+  const formatDate = (value, { dateOnly } = { dateOnly: false }) => {
+    if (!value) return '';
+    try {
+      const d = new Date(value);
+      if (isNaN(d)) return String(value);
+      if (dateOnly) {
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      }
+      return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (e) {
+      return String(value);
+    }
+  };
+
   // ----------------- data load -----------------
   useEffect(() => {
     let mounted = true;
@@ -53,12 +68,26 @@ export default function TeacherViewPageFull() {
         setLoading(true);
         const data = await fetchSingleTeacherById(id);
         if (!mounted) return;
-        setTeacher(data);
+
+        // API may return { teacher: {...}, attempts: [...] } or just teacher object
+        const teacherData = data?.teacher ? data.teacher : data;
+        const attemptsData = data?.attempts ? data.attempts : [];
+
+        setTeacher(teacherData || {});
+        setAttempts(attemptsData || []);
+
         // preferences -> flatten categories/subjects for modal selects
-        if (data?.preferences?.length > 0) {
-          const pref = data.preferences[0];
+        if (teacherData?.preferences?.length > 0) {
+          const pref = teacherData.preferences[0];
+          // class categories are available as objects with subjects nested
           setClassCategories(pref.class_category || []);
-          setSubjects(pref.prefered_subject || []);
+
+          // collect all subject objects from class categories (subjects arrays)
+          const subjFromCategories = (pref.class_category || [])
+            .flatMap((c) => c.subjects || []);
+          // If API previously provided prefered_subject directly, fall back
+          const prefered = pref.prefered_subject || subjFromCategories;
+          setSubjects(prefered || []);
         }
       } catch (err) {
         setError(err?.message || 'Failed to load teacher');
@@ -124,6 +153,56 @@ export default function TeacherViewPageFull() {
       <div className="bg-red-50 text-red-700 p-6 rounded">Error: {error}</div>
     </div>
   );
+
+  // derive job locations from multiple possible shapes
+  const jobLocations = (() => {
+    if (!teacher) return [];
+
+    // support top-level job preference location field used by backend
+    if (teacher.jobpreferencelocation) {
+      if (Array.isArray(teacher.jobpreferencelocation) && teacher.jobpreferencelocation.length) {
+        return teacher.jobpreferencelocation.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+      }
+      // single object or string
+      return [teacher.jobpreferencelocation];
+    }
+
+    // First: collect explicit job-preference locations from preferences (preferred job locations)
+    const prefLocations = (teacher.preferences || [])
+      .flatMap(p => {
+        // look for a variety of possible keys that may hold preferred job locations
+        const candidates = [];
+        if (p.preferred_job_locations && Array.isArray(p.preferred_job_locations)) candidates.push(...p.preferred_job_locations);
+        if (p.job_pref_locations && Array.isArray(p.job_pref_locations)) candidates.push(...p.job_pref_locations);
+        if (p.job_pref_location) candidates.push(...(Array.isArray(p.job_pref_location) ? p.job_pref_location : [p.job_pref_location]));
+        if (p.job_locations && Array.isArray(p.job_locations)) candidates.push(...p.job_locations);
+        if (p.job_location) candidates.push(...(Array.isArray(p.job_location) ? p.job_location : [p.job_location]));
+        if (p.preferred_locations && Array.isArray(p.preferred_locations)) candidates.push(...p.preferred_locations);
+        if (p.job_preferences && Array.isArray(p.job_preferences)) candidates.push(...p.job_preferences);
+        return candidates;
+      })
+      .filter(Boolean)
+      // exclude addresses that are explicitly current/permanent (user requested not to show those)
+      .filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+
+    if (prefLocations.length) return prefLocations;
+
+    // Next fallback: top-level job_locations fields
+    if (Array.isArray(teacher.job_locations) && teacher.job_locations.length) {
+      return teacher.job_locations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+    }
+    if (Array.isArray(teacher.joblocations) && teacher.joblocations.length) {
+      return teacher.joblocations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+    }
+
+    // Final fallback: teachersaddress but exclude 'current' and 'permanent' address types per request
+    if (Array.isArray(teacher.teachersaddress) && teacher.teachersaddress.length) {
+      const others = teacher.teachersaddress.filter(addr => !(addr && addr.address_type && ['current', 'permanent'].includes(String(addr.address_type).toLowerCase())));
+      return others;
+    }
+
+    return [];
+  })();
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -203,6 +282,8 @@ export default function TeacherViewPageFull() {
                 {[
                   { key: 'qualifications', label: 'Qualifications', icon: <FaGraduationCap /> },
                   { key: 'experience', label: 'Experience', icon: <FaBriefcase /> },
+                  { key: 'attempts', label: 'Attempts', icon: <FaStar /> },
+                  { key: 'joblocations', label: 'Job Locations', icon: <FaMapMarkerAlt /> },
                   { key: 'skills', label: 'Skills', icon: <FaLightbulb /> },
                   { key: 'preferences', label: 'Preferences', icon: <FaChalkboardTeacher /> },
                   { key: 'addresses', label: 'Addresses', icon: <FaMapMarkerAlt /> },
@@ -260,13 +341,72 @@ export default function TeacherViewPageFull() {
                               <h4 className="font-semibold">{exp.institution}</h4>
                               <p className="text-sm text-secondary">Role: {exp.role?.jobrole_name}</p>
                             </div>
-                            <div className="text-sm text-secondary">{exp.start_date ? new Date(exp.start_date).toLocaleDateString() : ''} - {exp.end_date ? new Date(exp.end_date).toLocaleDateString() : 'Present'}</div>
+                            <div className="text-sm text-secondary">{exp.start_date ? formatDate(exp.start_date, { dateOnly: true }) : ''} - {exp.end_date ? formatDate(exp.end_date, { dateOnly: true }) : 'Present'}</div>
                           </div>
                           {exp.achievements && <p className="text-secondary mt-2">{exp.achievements}</p>}
                         </div>
                       ))}
                     </div>
                   ) : <p className="text-secondary italic">No experience available</p>}
+                </div>
+              )}
+
+              {activeTab === 'attempts' && (
+                <div>
+                  <h3 className="text-xl font-semibold flex items-center gap-2"><FaStar /> Exam Attempts</h3>
+                  {attempts?.length > 0 ? (
+                    <div className="mt-4 space-y-4">
+                      {attempts.map((a, idx) => (
+                        <div key={idx} className="p-4 bg-white rounded-lg border">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-semibold">{a.exam?.name || a.exam_name}</h4>
+                              <div className="text-sm text-secondary mt-1">Score: {a.correct_answer}/{a.total_question} • <span></span>%</div>
+                              <div className="text-sm text-secondary">Language: {a.language || '—'}</div>
+                            </div>
+                            <div className="text-sm text-secondary text-right">
+                              {a.created_at ? formatDate(a.created_at) : ''}
+                            </div>
+                          </div>
+
+                          {a.interviews && a.interviews.length > 0 && (
+                            <div className="mt-3">
+                              <h5 className="font-semibold text-sm">Interviews</h5>
+                              <div className="mt-2 space-y-2">
+                                {a.interviews
+                                  .filter(iv => String(iv.status || '').toLowerCase() === 'fulfilled')
+                                  .map((iv) => {
+                                    // determine score and percentage: prefer interview-level values, fallback to attempt-level
+                                    const score = iv.grade;
+                                    const total = 10
+                                    const percentage = (typeof score === 'number' && typeof total === 'number' && total > 0) ? Math.round((score / total) * 100) : null;
+                                    const passed = percentage !== null ? percentage >= 60 : null;
+
+                                    return (
+                                      <div key={iv.id} className="p-2 bg-gray-50 rounded flex items-center justify-between">
+                                        <div className="text-sm">
+                                          <div className="flex items-center gap-3">
+                                            <div>Status: <span className="font-medium">{iv.status}</span></div>
+                                            <div className="text-xs text-secondary">Attempt: {iv.attempt}</div>
+                                          </div>
+                                          {percentage !== null && (
+                                            <div className="mt-1 text-sm">
+                                              <span className="font-medium">Score:</span> {score}/{total} • <span className={`px-2 py-0.5 rounded text-xs ${passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{passed ? `Pass (${percentage}%)` : `Fail (${percentage}%)`}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-secondary italic mt-3">No exam attempts found</p>
+                  )}
                 </div>
               )}
 
@@ -319,6 +459,46 @@ export default function TeacherViewPageFull() {
                         <p className="text-sm text-secondary mt-2">{addr.area}, {addr.district}, {addr.state} - {addr.pincode}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'joblocations' && (
+                <div>
+                  <h3 className="text-xl font-semibold flex items-center gap-2"><FaMapMarkerAlt /> Job Locations</h3>
+                  <div className="mt-4 grid grid-cols-1 gap-4">
+                    {jobLocations && jobLocations.length > 0 ? (
+                      jobLocations.map((loc, i) => (
+                        <div key={i} className="p-4 bg-white rounded-lg border">
+                          {/* support both string and object shapes */}
+                          {typeof loc === 'string' ? (
+                            <p className="text-sm text-secondary">{loc}</p>
+                          ) : (
+                            <>
+                              {loc.address_type && <h4 className="font-semibold capitalize">{loc.address_type} location</h4>}
+                              {/* render known fields in a friendly order */}
+                              <div className="mt-2 text-sm text-secondary space-y-1">
+                                {loc.area && <div><span className="font-bold">Area:</span> {loc.area}</div>}
+                                {loc.city && <div><span className="font-medium">City:</span> {loc.city}</div>}
+                                {loc.sub_division && <div><span className="font-medium">Sub division:</span> {loc.sub_division}</div>}
+                                {loc.block && <div><span className="font-medium">Block:</span> {loc.block}</div>}
+                                {loc.post_office && <div><span className="font-medium">Post Office:</span> {loc.post_office}</div>}
+                                {loc.district && <div><span className="font-medium">District:</span> {loc.district}</div>}
+                                {loc.state && <div><span className="font-medium">State:</span> {loc.state}</div>}
+                                {loc.pincode && <div><span className="font-medium">Pincode:</span> {loc.pincode}</div>}
+                                {loc.note && <div><span className="font-medium">Note:</span> {loc.note}</div>}
+                                {/* render any additional keys not in the known list */}
+                                {Object.keys(loc).filter(k => !['area','city','sub_division','block','post_office','district','state','pincode','address_type','note'].includes(k)).map((k) => (
+                                  <div key={k}><span className="font-medium">{k.replace(/_/g, ' ')}:</span> {String(loc[k])}</div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-secondary italic mt-3">No preferred job locations found</p>
+                    )}
                   </div>
                 </div>
               )}

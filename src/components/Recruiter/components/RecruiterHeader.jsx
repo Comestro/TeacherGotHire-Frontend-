@@ -61,8 +61,9 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
             </button>
 
             {/* Logo - Visible on all screens */}
+
             <Link
-              to="/"
+              to="/recruiter"
               className="flex items-center gap-2 text-lg sm:text-xl font-bold text-primary hover:text-accent transition-colors"
             >
               <FaChalkboardTeacher className="w-6 h-6 sm:w-7 sm:h-7" />

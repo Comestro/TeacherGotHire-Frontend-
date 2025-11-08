@@ -1,25 +1,32 @@
 import { Link } from "react-router-dom";
 
 const Error404 = () => {
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="text-center p-6 max-w-lg mx-auto">
-        <h1 className="text-9xl font-extrabold text-indigo-600">404</h1>
-        <h2 className="text-3xl font-semibold mt-4 text-gray-800">
-          Page Not Found
-        </h2>
-        <p className="mt-2 text-gray-600">
-          Oops! The page you’re looking for doesn’t exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-lg transition-all duration-200"
-          >
-            Go Back Home
-          </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 px-4">
+      <div className="max-w-4xl w-full bg-white rounded-xl overflow-hidden flex flex-col md:flex-row items-stretch">
+        <div className="md:w-full p-8 flex flex-col justify-center">
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-teal-50 text-teal-600 w-14 h-14 flex items-center justify-center text-2xl font-bold">404</div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Page not found</h1>
+              <p className="text-sm text-gray-500 mt-1">We couldn't find the page you're looking for.</p>
+            </div>
+          </div>
+
+          <p className="mt-6 text-gray-600">It might have been removed, had its name changed, or is temporarily unavailable. Try one of the options below.</p>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link to="/" className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 transition">
+              Go back home
+            </Link>
+
+            <a href="mailto:support@example.com" className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
+              Contact support
+            </a>
+          </div>
         </div>
+
+        
       </div>
     </div>
   );

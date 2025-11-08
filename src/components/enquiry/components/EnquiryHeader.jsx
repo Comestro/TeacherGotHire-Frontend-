@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiUser, FiX, FiHome } from 'react-icons/fi';
-import SignupModal from './SignupModal';
 
 const EnquiryHeader = () => {
-  const [showSignupModal, setShowSignupModal] = useState(false);
 
   return (
     <header className="bg-white border-b sticky top-0 z-50">
@@ -19,21 +17,18 @@ const EnquiryHeader = () => {
 
           {/* Navigation Items */}
           <div className="flex items-center">
-            <button
-              onClick={() => setShowSignupModal(true)}
+            <Link
+              to={"/signup/teacher"}
               className="flex items-center gap-2 px-4 py-2 font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors"
             >
               <FiUser className="w-5 h-5" />
               Sign Up
-            </button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Signup Modal */}
-      {showSignupModal && (
-        <SignupModal onClose={() => setShowSignupModal(false)} />
-      )}
+      
     </header>
   );
 };

@@ -409,13 +409,7 @@ function SignUpPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <button
-            onClick={() => navigate("/signup/recruiter")}
-            className="w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
-          >
-            Sign up as Recruiter
-          </button>
-
+         
           <div className="relative mt-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -424,7 +418,13 @@ function SignUpPage() {
               <span className="px-2 bg-white text-gray-500">or</span>
             </div>
           </div>
-          
+           <button
+            onClick={() => navigate("/signup/recruiter")}
+            className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
+          >
+            Sign up as Recruiter
+          </button>
+
           <button
             onClick={() => navigate("/signin")}
             className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 border border-teal-600 text-sm font-medium rounded-xl text-teal-600 bg-white hover:bg-teal-50 transition duration-200"
