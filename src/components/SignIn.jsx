@@ -252,7 +252,14 @@ function Login() {
   };
 
   const isEmailValid = (email) => {
-    return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
+    // Visual feedback should be lenient during typing
+    if (!email || email.length < 3) return false;
+    if (!email.includes('@')) return false;
+    const parts = email.split('@');
+    if (parts.length !== 2) return false;
+    if (!parts[0] || !parts[1]) return false;
+    // Don't require dot for visual feedback - allow during typing
+    return true;
   };
 
   // Render the appropriate form based on state
@@ -405,10 +412,20 @@ function Login() {
                 }`}
                 {...register("email", {
                   required: "Email is required",
-                  pattern: {
-                    value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                    message: "Please enter a valid email address",
-                  },
+                  validate: (value) => {
+                    // More lenient validation that allows partial emails during typing
+                    if (!value) return "Email is required";
+                    if (value.length < 3) return true; // Allow short emails during typing
+                    if (!value.includes('@')) return "Email must contain @";
+                    const parts = value.split('@');
+                    if (parts.length !== 2) return "Invalid email format";
+                    if (!parts[0]) return "Email username is required";
+                    if (!parts[1]) return "Email domain is required";
+                    if (!parts[1].includes('.')) return "Email domain must contain a dot";
+                    // Only do strict validation if it looks like a complete email
+                    if (parts[1].split('.').length < 2) return true; // Allow during typing
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || "Please enter a valid email address";
+                  }
                 })}
               />
               {dirtyFields.email && (
