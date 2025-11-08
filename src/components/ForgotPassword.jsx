@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +23,9 @@ const ForgotPassword = () => {
         position: 'top-right',
         autoClose: 5000,
       });
+      setSentEmail(email);
       setEmail('');
+      setSent(true);
     } catch (error) {
       toast.error(error.message || 'Something went wrong. Please try again.', {
         position: 'top-right',
@@ -64,6 +68,32 @@ const ForgotPassword = () => {
                 No worries! Enter your email and we'll send you a reset link.
               </p>
             </div>
+
+            {sent ? (
+              <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md mb-4">
+                <div className="flex items-start gap-3">
+                  <FaCheckCircle className="text-green-600 mt-1" />
+                  <div>
+                    <p className="font-semibold">Check your email</p>
+                    <p className="text-sm">We sent a password reset link to <span className="font-medium">{sentEmail}</span>. Please check your inbox (and spam) and follow the instructions.</p>
+                    <div className="mt-3 flex items-center gap-4">
+                      <Link to="/signin" className="text-teal-600 hover:underline">Back to login</Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // allow user to send again: prefill email and show form
+                          setEmail(sentEmail);
+                          setSent(false);
+                        }}
+                        className="text-sm text-gray-600 hover:underline"
+                      >
+                        Send again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {/* Email */}

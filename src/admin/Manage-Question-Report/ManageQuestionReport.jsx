@@ -68,14 +68,15 @@ const issueTypeMapping = {
   other: "Other issue",
 };
 
+// New convention: false => Pending, true => Done
 const statusColors = {
-  true: "#f9a825", // pending
-  false: "#388e3c", // done
+  false: "#f9a825", // pending (yellow)
+  true: "#388e3c", // done (green)
 };
 
 const statusLabels = {
-  true: "Open",
-  false: "Done",
+  false: "Pending",
+  true: "Done",
 };
 
 // small debounce hook
@@ -178,8 +179,8 @@ export default function ManageQuestionReport() {
     let out = reports.filter(Boolean);
 
     if (statusFilter !== "all") {
-      if (statusFilter === "Pending") out = out.filter((r) => r.status === true);
-      else if (statusFilter === "Resolved") out = out.filter((r) => r.status === false);
+      if (statusFilter === "Pending") out = out.filter((r) => r.status === false);
+      else if (statusFilter === "Resolved") out = out.filter((r) => r.status === true);
     }
 
     if (issueFilter !== "all") {
@@ -204,13 +205,13 @@ export default function ManageQuestionReport() {
 
     // sort
     out.sort((a, b) => {
-      if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
-      if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
-      if (sortOrder === "status") {
-        // Open(true) first
-        const score = (r) => (r.status === true ? 1 : r.status === false ? 3 : 2);
-        return score(a) - score(b);
-      }
+        if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
+        if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
+        if (sortOrder === "status") {
+          // Pending (false) first, then unknown, then Done (true)
+          const score = (r) => (r.status === false ? 1 : r.status === true ? 3 : 2);
+          return score(a) - score(b);
+        }
       return 0;
     });
 
@@ -230,7 +231,7 @@ export default function ManageQuestionReport() {
         field: "id",
         headerName: "Report ID",
         width: 110,
-        renderCell: (params) => `REP01-00${params.value}`,
+        renderCell: (params) => params.value,
       },
       {
         field: "question",
@@ -241,11 +242,6 @@ export default function ManageQuestionReport() {
           <Box sx={{ pr: 1 }}>
             <Typography sx={{ fontWeight: 600 }}>
               {safeText(params.value?.text, "No question text")}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {params.row.question?.text?.length > 120
-                ? `${params.row.question.text.substring(0, 120)}…`
-                : params.row.question?.text || ""}
             </Typography>
           </Box>
         ),
@@ -306,7 +302,7 @@ export default function ManageQuestionReport() {
                 <VisibilityIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            {params.row.status === true && (
+            {params.row.status === false && (
               <Tooltip title="Mark Done">
                 <span>
                   <IconButton
@@ -353,17 +349,17 @@ export default function ManageQuestionReport() {
       // API expects boolean false to indicate resolved in your earlier code
       const reportToUpdate = reports.find((r) => r.id === id);
       if (!reportToUpdate) throw new Error("Report not found");
-
+      // Now API expects status=true for Done. Build payload accordingly.
       const payload = {
-        status: false,
+        status: true,
         question: reportToUpdate.question?.id,
         issue_type: (reportToUpdate.issue_type || []).map((i) => i.id),
       };
 
       await updateQuestionReport(id, payload);
 
-      // local update
-      setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: false } : r)));
+      // local update: mark as done (true)
+      setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: true } : r)));
       showSnack(`Report REP01-00${id} marked as Done`);
       // If detail panel open for this report, close it
       if (selectedReport?.id === id) closeReportDetails();
@@ -409,8 +405,8 @@ export default function ManageQuestionReport() {
   // UI pieces
   const statusCounts = useMemo(() => {
     const total = reports.length;
-    const pending = reports.filter((r) => r.status === true).length;
-    const resolved = reports.filter((r) => r.status === false).length;
+    const pending = reports.filter((r) => r.status === false).length; // false == pending
+    const resolved = reports.filter((r) => r.status === true).length; // true == done
     return { total, pending, resolved };
   }, [reports]);
 
@@ -647,7 +643,7 @@ export default function ManageQuestionReport() {
 
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
                   <Button onClick={() => { saveAdminNotes(); closeReportDetails(); }} variant="outlined">Save & Close</Button>
-                  {selectedReport.status === true && (
+                  {selectedReport.status === false && (
                     <Button onClick={() => confirmAndMarkDone(selectedReport)} variant="contained" color="success" disabled={processing}>
                       {processing ? <CircularProgress size={18} color="inherit" /> : "Mark Done"}
                     </Button>

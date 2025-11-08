@@ -20,8 +20,8 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
 
   // Group exams by class category and subject
   const groupedExams = examSets.reduce((acc, exam) => {
-    const className = exam.class_category?.name || 'Unknown Class';
-    const subjectName = exam.subject?.subject_name || 'Unknown Subject';
+    const className = typeof exam.class_category === 'string' ? exam.class_category : (exam.class_category?.name || 'Unknown Class');
+    const subjectName = typeof exam.subject === 'string' ? exam.subject : (exam.subject?.subject_name || 'Unknown Subject');
     const key = `${className}|${subjectName}`;
 
     if (!acc[key]) {
@@ -96,7 +96,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
                         <div className="text-sm text-gray-500">{exam.description}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-semibold text-gray-900">{exam.level?.name || 'N/A'}</div>
+                        <div className="text-sm font-semibold text-gray-900">{typeof exam.level === 'string' ? exam.level : (exam.level?.name || 'N/A')}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -133,7 +133,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {exam.questions.length} / {exam.total_questions} questions
+                        {Array.isArray(exam.questions) ? exam.questions.length : (exam.total_questions ?? 0)} / {exam.total_questions ?? 0} questions
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
@@ -197,7 +197,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
             {/* Mobile Cards */}
             {group.exams.map((exam) => (
               <div key={exam.id} className="p-4 hover:bg-gray-50 border-b border-gray-100">
-                <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="text-base font-medium text-gray-900">{exam.set_name}</h3>
                     <p className="text-xs text-gray-500 mt-1">{formatDate(exam.created_at)}</p>
@@ -211,10 +211,10 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
                   <div>
                     <span className="text-gray-500">Level:</span>
-                    <span className="ml-1 text-gray-900 font-medium">{exam.level?.name || 'N/A'}</span>
+                    <span className="ml-1 text-gray-900 font-medium">{typeof exam.level === 'string' ? exam.level : (exam.level?.name || 'N/A')}</span>
                   </div>
                   <div>
                     <span className="text-gray-500">Duration:</span>
@@ -226,7 +226,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
                   </div>
                   <div>
                     <span className="text-gray-500">Questions:</span>
-                    <span className="ml-1 text-gray-900 font-medium">{exam.questions.length}</span>
+                    <span className="ml-1 text-gray-900 font-medium">{Array.isArray(exam.questions) ? exam.questions.length : (exam.total_questions ?? 0)}</span>
                   </div>
                   <div className={exam.status ? 'text-green-600' : 'text-amber-600'}>
                     {exam.status ? (

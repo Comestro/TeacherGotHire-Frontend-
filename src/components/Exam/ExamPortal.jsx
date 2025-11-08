@@ -11,7 +11,7 @@ import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
-import { postReport } from "../../features/examQuesSlice";
+import { AddReport } from '../../services/examQuesServices';
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,18 +66,33 @@ const ExamPortal = () => {
   };
   
 
-  const handleSubmits = () => {
-    e?.preventDefault(); // Optional prevention for form submission
-    // Process the selected option
-    const question = currentQuestion.id;
-    const issue_type = selectedOption;
-    dispatch(
-      postReport({ question: String(question), issue_type: issue_type })
-    );
-    setConfirmationMessage("Your report has been submitted to Admin.");
-    setSelectedOption([]);
-    // Close the popup
-    setIsOpen(false);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  const handleSubmits = async () => {
+    // ensure we have a current question
+    if (!currentQuestion) return;
+    setIsSubmittingReport(true);
+    try {
+      const payload = {
+        question: currentQuestion.id,
+        issue_type: selectedOption,
+      };
+
+      // Call the service directly
+      await AddReport(payload);
+
+      // Keep local confirmation and clear selections
+      setConfirmationMessage('Your report has been submitted to Admin.');
+      setSelectedOption([]);
+      setIsOpen(false);
+      // Optionally refresh reasons or reports
+      dispatch(getReport());
+    } catch (err) {
+      console.error('Report submit failed', err);
+      setConfirmationMessage('Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmittingReport(false);
+    }
   };
 
   const handleAnswerSelect = (questionId, answer) => {
@@ -305,9 +320,9 @@ const ExamPortal = () => {
                       <button
                         className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={handleSubmits}
-                        disabled={selectedOption.length === 0}
+                        disabled={selectedOption.length === 0 || isSubmittingReport}
                       >
-                        Submit Report
+                        {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
                       </button>
                     </div>
                   </div>

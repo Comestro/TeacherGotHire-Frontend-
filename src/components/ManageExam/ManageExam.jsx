@@ -30,6 +30,10 @@ const ManageExam = () => {
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isCopying, setIsCopying] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [prevUrl, setPrevUrl] = useState(null);
 
   const setterUser = useSelector((state) => state.examQues.setterInfo);
 
@@ -64,19 +68,38 @@ const ManageExam = () => {
     const fetchExamSets = async () => {
       try {
         setLoading(true);
-        const response = await getExam();
-        setExamSets(response);
-        
+        // Try to fetch with pagination support; getExam may accept a page param
+        const response = await getExam(page);
+
+        // If API returns paginated shape {count, next, previous, results}
+        if (response && response.results && Array.isArray(response.results)) {
+          setExamSets(response.results || []);
+          setTotalCount(response.count || 0);
+          setNextUrl(response.next || null);
+          setPrevUrl(response.previous || null);
+        } else if (Array.isArray(response)) {
+          // Backwards compatibility: if API returns array
+          setExamSets(response);
+          setTotalCount(response.length);
+          setNextUrl(null);
+          setPrevUrl(null);
+        } else {
+          // Unexpected shape — try to be defensive
+          setExamSets(response || []);
+          setTotalCount((response && response.length) || 0);
+          setNextUrl(null);
+          setPrevUrl(null);
+        }
+
       } catch (error) {
         toast.error('Failed to fetch exam sets');
-        
       } finally {
         setLoading(false);
       }
     };
 
     fetchExamSets();
-  }, [refreshTrigger]); // This will re-run when refreshTrigger changes
+  }, [refreshTrigger, page]); // Re-run when refreshTrigger or page changes
 
   // Get class categories and subjects from setterUser - Fix the subject extraction
   const classCategories = setterUser?.[0]?.class_category || [];
@@ -116,12 +139,18 @@ const ManageExam = () => {
   const handleCopyExam = (exam) => {
     setIsCopying(true);
     // Clone the exam data but change the name to indicate it's a copy
+    const normalize = (v) => {
+      if (!v && v !== 0) return '';
+      if (typeof v === 'object') return v.id ? v.id.toString() : (v.name || v.label || '').toString();
+      return v.toString();
+    };
+
     setFormData({
       set_name: exam.set_name,
       description: exam.description,
-      subject: exam.subject.id.toString(),
-      level: exam.level.id.toString(),
-      class_category: exam.class_category.id.toString(),
+      subject: normalize(exam.subject),
+      level: normalize(exam.level),
+      class_category: normalize(exam.class_category),
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
@@ -149,12 +178,18 @@ const ManageExam = () => {
 
   const handleEdit = (exam) => {
     setEditingExam(exam);
+    const normalize = (v) => {
+      if (!v && v !== 0) return '';
+      if (typeof v === 'object') return v.id ? v.id.toString() : (v.name || v.label || '').toString();
+      return v.toString();
+    };
+
     setFormData({
       set_name: exam.set_name || '', // Add the set name from exam
       description: exam.description,
-      subject: exam.subject.id.toString(),
-      level: exam.level.id.toString(),
-      class_category: exam.class_category.id.toString(),
+      subject: normalize(exam.subject),
+      level: normalize(exam.level),
+      class_category: normalize(exam.class_category),
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
@@ -406,7 +441,7 @@ const ManageExam = () => {
             </div>
 
             <div className="text-gray-500 text-sm hidden sm:block truncate">
-              Showing {filteredExams.length} of {examSets.length} exam sets
+              Showing {filteredExams.length} of {totalCount} exam sets
             </div>
           </div>
 
@@ -599,7 +634,7 @@ const ManageExam = () => {
           
           {/* Mobile view count */}
           <div className="text-gray-500 text-sm block sm:hidden text-center mt-4">
-            Showing {filteredExams.length} of {examSets.length} exam sets
+            Showing {filteredExams.length} of {totalCount} exam sets
           </div>
         </div>
 
@@ -644,6 +679,34 @@ const ManageExam = () => {
             onDelete={handleDelete}
             refreshTrigger={refreshTrigger}
           />
+        )}
+
+        {/* Pagination controls for paginated API responses */}
+        {totalCount > 0 && (
+          <div className="mt-4 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+            <div className="text-sm text-gray-600">Total: {totalCount} exam sets</div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || !prevUrl}
+                className={`px-3 py-1 rounded-md border ${page <= 1 || !prevUrl ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+              >
+                Prev
+              </button>
+
+              <div className="text-sm text-gray-700">
+                Page {page} of {examSets.length ? Math.max(1, Math.ceil(totalCount / examSets.length)) : 1}
+              </div>
+
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!nextUrl}
+                className={`px-3 py-1 rounded-md border ${!nextUrl ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Modal remains unchanged */}
