@@ -363,10 +363,7 @@ const ManageHiringRequests = () => {
       minWidth: 200,
       valueGetter: (params) => {
         const row = params?.row;
-        const subjectsRaw = row?.subjects ?? params?.value;
-        const subjects = Array.isArray(subjectsRaw) ? subjectsRaw : undefined;
-        if (!Array.isArray(subjects) || subjects.length === 0) return 'N/A';
-        return subjects.map((subject) => subject?.subject_name ?? String(subject)).join(', ');
+        return row?.subjects?.[0]?.subject_name;
       },
       renderCell: (params) => (
         <Typography variant="body2" sx={{ color: '#64748B' }}>

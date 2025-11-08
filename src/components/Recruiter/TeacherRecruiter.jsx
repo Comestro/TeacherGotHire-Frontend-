@@ -243,15 +243,13 @@ const TeacherFilter = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mx-auto">
               {currentTeachers.map((teacher) => {
                 // Get current address if exists
-                const currentAddress =
-                  teacher.teachersaddress?.find((addr) => addr.address_type === "current") || 
-                  teacher.teachersaddress?.[0] || {};
+                const currentAddress = teacher.current_address || {};
 
                 // Get latest experience
-                const latestExperience = teacher.teacherexperiences?.[0];
+                const latestExperience = teacher.last_experience;
 
                 // Get highest qualification
-                const highestQualification = teacher.teacherqualifications?.[0];
+                const highestQualification = teacher.last_education;
 
                 return (
                   <div
@@ -262,7 +260,7 @@ const TeacherFilter = () => {
                     <div className="border-b pb-3 mb-4 flex items-center gap-4">
                       <img
                         className="h-16 w-16 rounded-full object-cover border-2 border-primary/20"
-                        src={teacher.profiles?.profile_picture || "/images/profile.jpg"}
+                        src={teacher.profile_picture || "/images/profile.jpg"}
                         alt={teacher.Fname}
                         loading="lazy"
                       />
@@ -291,12 +289,12 @@ const TeacherFilter = () => {
                       </div>
 
                       {/* Phone */}
-                      {teacher.profiles?.phone_number && (
+                      {teacher.phone_number && (
                         <div className="flex items-start gap-3">
                           <HiOutlinePhone className="text-accent mt-0.5 flex-shrink-0" size={18} />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-secondary font-medium uppercase">Phone</p>
-                            <p className="text-sm text-text">{maskPhoneNumber(teacher.profiles.phone_number)}</p>
+                            <p className="text-sm text-text">{maskPhoneNumber(teacher.phone_number)}</p>
                           </div>
                         </div>
                       )}
@@ -349,15 +347,13 @@ const TeacherFilter = () => {
             <div className="space-y-3 mx-auto">
               {currentTeachers.map((teacher) => {
                 // Get current address if exists
-                const currentAddress =
-                  teacher.teachersaddress?.find((addr) => addr.address_type === "current") || 
-                  teacher.teachersaddress?.[0] || {};
+                const currentAddress = teacher.current_address || {};
 
                 // Get latest experience
-                const latestExperience = teacher.teacherexperiences?.[0];
+                const latestExperience = teacher.last_experience;
 
                 // Get highest qualification
-                const highestQualification = teacher.teacherqualifications?.[0];
+                const highestQualification = teacher.last_education;
 
                 return (
                   <div
@@ -369,7 +365,7 @@ const TeacherFilter = () => {
                       <div className="flex-shrink-0">
                         <img
                           className="h-20 w-20 rounded-lg object-cover border-2 border-primary/20"
-                          src={teacher.profiles?.profile_picture || "/images/profile.jpg"}
+                          src={teacher.profile_picture || "/images/profile.jpg"}
                           alt={teacher.Fname}
                           loading="lazy"
                         />
@@ -402,12 +398,12 @@ const TeacherFilter = () => {
                           </div>
 
                           {/* Phone */}
-                          {teacher.profiles?.phone_number && (
+                          {teacher.phone_number && (
                             <div className="flex items-center gap-2 min-w-0">
                               <HiOutlinePhone className="text-accent flex-shrink-0" size={16} />
                               <div className="min-w-0">
                                 <p className="text-xs text-secondary font-medium">Phone</p>
-                                <p className="text-text">{maskPhoneNumber(teacher.profiles.phone_number)}</p>
+                                <p className="text-text">{maskPhoneNumber(teacher.phone_number)}</p>
                               </div>
                             </div>
                           )}

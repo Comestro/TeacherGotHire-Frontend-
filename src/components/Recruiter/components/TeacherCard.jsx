@@ -6,22 +6,21 @@ const TeacherCard = ({ teacher }) => {
     Fname,
     Lname,
     email,
-    phone,
-    teachersaddress,
-    teacherexperiences,
-    teacherqualifications,
+    phone_number,
+    current_address,
+    last_experience,
+    last_education,
+    profile_picture,
   } = teacher;
 
   // Get current address if exists
-  const currentAddress =
-    teachersaddress?.find((addr) => addr.address_type === "current") || 
-    teachersaddress?.[0] || {};
+  const currentAddress = current_address || {};
 
   // Get latest experience
-  const latestExperience = teacherexperiences?.[0];
+  const latestExperience = last_experience;
 
   // Get highest qualification
-  const highestQualification = teacherqualifications?.[0];
+  const highestQualification = last_education;
 
   return (
     <div className="bg-white p-5 rounded-lg hover:scale-[1.02] transition-transform duration-300">
@@ -44,12 +43,12 @@ const TeacherCard = ({ teacher }) => {
         </div>
 
         {/* Phone */}
-        {phone && (
+        {phone_number && (
           <div className="flex items-start gap-3">
             <HiOutlinePhone className="text-accent mt-0.5 flex-shrink-0" size={18} />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-secondary font-medium uppercase">Phone</p>
-              <p className="text-sm text-text">{phone}</p>
+              <p className="text-sm text-text">{phone_number}</p>
             </div>
           </div>
         )}
