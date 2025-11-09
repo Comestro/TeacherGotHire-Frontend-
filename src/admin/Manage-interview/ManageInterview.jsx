@@ -163,6 +163,7 @@ export default function InterviewManagementRedesign() {
           name: `${item.user?.Fname || ""} ${item.user?.Lname || ""}`.trim(),
           userId: item.user?.id,
           email: item.user?.email,
+          profilePicture: item.user?.profile_picture,
           classCategory: item.class_category?.name || "Unknown",
           subjectName: item.subject?.subject_name || "Unknown",
           level: item.level?.name || "Unknown",
@@ -349,7 +350,7 @@ export default function InterviewManagementRedesign() {
       <CardContent>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <Avatar sx={{ bgcolor: stringToColor(row.name) }}>{row.name?.charAt(0)}</Avatar>
+            <Avatar src={row.profilePicture} sx={{ bgcolor: stringToColor(row.name) }}>{row.name?.charAt(0)}</Avatar>
             <Box>
               <Typography fontWeight={700}>{row.name}</Typography>
               <Typography variant="caption" color="text.secondary">{row.email}</Typography>
@@ -396,7 +397,7 @@ export default function InterviewManagementRedesign() {
       minWidth: 200,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1, alignItems: "center", py: 1 }}>
-          <Avatar sx={{ bgcolor: stringToColor(params.row.name), width: 36, height: 36 }}>{params.row.name?.charAt(0)}</Avatar>
+          <Avatar src={params.row.profilePicture} sx={{ bgcolor: stringToColor(params.row.name), width: 36, height: 36 }}>{params.row.name?.charAt(0)}</Avatar>
           <Box>
             <Typography sx={{ fontWeight: 600 }}>{params.row.name}</Typography>
             <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
@@ -453,7 +454,7 @@ export default function InterviewManagementRedesign() {
         {/* Header */}
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2, flexWrap: "wrap" }}>
           <Box>
-            <Typography variant="h4" fontWeight={800} color="primary">Teacher Interview Management</Typography>
+            <Typography variant="h4" sx={{fontSize:{ xs: '1.5rem', md: '1.5rem' },color:"#008080"}} fontWeight={800} color="primary">Teacher Interview Management</Typography>
             <Typography variant="body2" color="text.secondary">Schedule, review and grade teacher interviews</Typography>
           </Box>
 

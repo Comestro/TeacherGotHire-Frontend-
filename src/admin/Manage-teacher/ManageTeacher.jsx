@@ -248,9 +248,8 @@ const ManageTeacher = () => {
 
   return (
     <Layout>
-      <div className="p-3 sm:p-4">
         {/* Header */}
-        <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm mb-4">
+        <div className="bg-white rounded-xl shadow-sm mb-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-text">Manage Teachers</h1>
@@ -276,7 +275,7 @@ const ManageTeacher = () => {
         </div>
 
         {/* Search and filters */}
-        <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+        <div className="bg-white rounded-xl shadow-sm mb-4">
           {/* Search */}
           <div className="relative mb-4">
             <input
@@ -625,7 +624,6 @@ const ManageTeacher = () => {
             </span>
           </div>
         )}
-      </div>
 
       {/* Filters Modal */}
       <FilterModal

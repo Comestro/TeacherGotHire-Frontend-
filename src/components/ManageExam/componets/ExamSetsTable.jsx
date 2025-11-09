@@ -133,7 +133,7 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {Array.isArray(exam.questions) ? exam.questions.length : (exam.total_questions ?? 0)} / {exam.total_questions ?? 0} questions
+                        {Array.isArray(exam.questions) ? exam.questions.length : 0} / {exam.total_questions ?? 0} questions
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
