@@ -402,7 +402,7 @@ function SignUpPage() {
                 ></path>
               </svg>
             ) : (
-              "Sign Up as Teacher"
+              "Become a Teacher"
             )}
           </Button>
         </form>
@@ -418,7 +418,7 @@ function SignUpPage() {
           </div>
            <button
             onClick={() => navigate("/signup/recruiter")}
-            className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
+            className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 border border-teal-600 text-sm font-medium rounded-xl text-teal-600 bg-white hover:bg-teal-50 transition duration-200"
           >
             Sign up as Recruiter
           </button>

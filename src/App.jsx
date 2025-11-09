@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import React, { useMemo } from "react";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import Home from "./components/Home/Home";
 import SignUpPage from "./components/Signup";
 import Login from "./components/SignIn";
@@ -42,7 +42,7 @@ import SettingsPage from "./components/Pages/SettingsPage";
 import ManageCenter from "./admin/Manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
-import { HelmetProvider } from "react-helmet-async";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
@@ -63,12 +63,27 @@ import ExamSetterProfile from "./components/ManageExam/ExamSetterProfile";
 import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+
+  const title = useMemo(() => {
+    if (location.pathname.startsWith('/admin')) return 'Admin Panel - TeacherGotHire';
+    if (location.pathname.startsWith('/teacher')) return 'Teacher Dashboard - TeacherGotHire';
+    if (location.pathname.startsWith('/recruiter')) return 'Recruiter Dashboard - TeacherGotHire';
+    if (location.pathname.startsWith('/exam')) return 'Exam Portal - TeacherGotHire';
+    if (location.pathname === '/signin') return 'Sign In - TeacherGotHire';
+    if (location.pathname === '/signup/teacher') return 'Teacher Sign Up - TeacherGotHire';
+    if (location.pathname === '/signup/recruiter') return 'Recruiter Sign Up - TeacherGotHire';
+    if (location.pathname === '/') return 'Home - TeacherGotHire';
+    return 'TeacherGotHire';
+  }, [location.pathname]);
+
   return (
-    <Provider store={store}>
-      <HelmetProvider>
-        <BrowserRouter>
-          <Routes>
+    <>
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
+      <Routes>
             {/* Public Routes */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
@@ -384,6 +399,16 @@ function App() {
             {/* 404 */}
             <Route path="*" element={<Error404 />} />
           </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <HelmetProvider>
+        <BrowserRouter>
+          <AppContent />
         </BrowserRouter>
       </HelmetProvider>
     </Provider>

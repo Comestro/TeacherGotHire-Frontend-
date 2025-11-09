@@ -180,8 +180,8 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
         </Box>
         <Divider />
         <List sx={{ py: 1, overflowX: "hidden !important" }}>
-          {menuItems.slice(0, 1).map((item) => (
-            <ListItem disablePadding sx={{ display: "block", py: 0.5 }}>
+          {menuItems.slice(0, 1).map((item, index) => (
+            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.5 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
@@ -227,8 +227,8 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           <ListSubheader sx={{ fontWeight: 'bold', position:"static", fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Data Management
           </ListSubheader>
-          {menuItems.slice(1, 8).map((item) => (
-            <ListItem disablePadding sx={{ display: "block", py: 0.25 }}>
+          {menuItems.slice(1, 8).map((item, index) => (
+            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
@@ -274,8 +274,8 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Manage Requests
           </ListSubheader>
-          {menuItems.slice(8, 14).map((item) => (
-            <ListItem disablePadding sx={{ display: "block", py: 0.25 }}>
+          {menuItems.slice(8, 14).map((item, index) => (
+            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
@@ -321,8 +321,8 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Manage Users
           </ListSubheader>
-          {menuItems.slice(14).map((item) => (
-            <ListItem disablePadding sx={{ display: "block", py: 0.25 }}>
+          {menuItems.slice(14).map((item, index) => (
+            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
               <ListItemButton
                 component={Link}
                 to={item.link}
@@ -385,8 +385,8 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   link: "/admin/change/password",
                 },
                ,
-              ].map((item) => (
-                <ListItem disablePadding sx={{ py: 0.25 }}>
+              ].map((item, index) => (
+                <ListItem key={index} disablePadding sx={{ py: 0.25 }}>
                   <ListItemButton
                     component={Link}
                     to={item.link}

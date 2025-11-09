@@ -253,7 +253,7 @@ const RecruiterSignUpPage = () => {
                       ></path>
                     </svg>
                   ) : (
-                    "Sign Up as Recruiter"
+                    "Become a Recruiter"
                   )}
                 </Button>
               </form>
@@ -271,7 +271,7 @@ const RecruiterSignUpPage = () => {
                 </div>
                  <button
                   onClick={() => navigate("/signup/teacher")}
-                  className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-sm font-medium rounded-xl text-white hover:bg-teal-700 transition duration-200"
+                  className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 border border-teal-600 text-sm font-medium rounded-xl text-teal-600 bg-white hover:bg-teal-50 transition duration-200"
                 >
                   Sign up as Teacher
                 </button>
