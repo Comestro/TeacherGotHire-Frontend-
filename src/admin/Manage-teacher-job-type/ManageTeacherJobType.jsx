@@ -328,43 +328,42 @@ const ManageTeacherJobType = () => {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
         <Card
-          elevation={2}
+          elevation={0}
           sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            mb: { xs: 2, sm: 3 },
             overflow: 'hidden'
           }}
         >
-          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+          <CardContent >
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={8}>
                 <Typography
                   variant={isMobile ? "h5" : "h4"}
                   sx={{
                     fontWeight: 700,
-                    color: 'primary.main',
+                    color: 'teal',
                     fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
                     display: 'flex',
                     alignItems: 'center'
                   }}
                 >
-                  <WorkIcon sx={{ mr: 1.5, fontSize: 'inherit' }} />
+                  <WorkIcon sx={{ mr: 1.5, fontSize: 'inherit',color:"teal" }} />
                   Manage Teacher Job Types
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
                 <Button
                   variant="contained"
-                  color="primary"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenEditDialog()}
                   fullWidth={isMobile}
                   sx={{
-                    py: { xs: 1, sm: 'auto' },
                     textTransform: 'none',
-                    boxShadow: 2
+                    boxShadow: 2,
+                    backgroundColor: 'teal',
+                    '&:hover': {
+                      backgroundColor: 'darken(teal, 0.1)',
+                    }
                   }}
                 >
                   Add New Job Type
@@ -377,12 +376,11 @@ const ManageTeacherJobType = () => {
         <Card
           elevation={2}
           sx={{
-            borderRadius: { xs: 1, sm: 2 },
             overflow: 'hidden',
             mb: 2
           }}
         >
-          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+          <CardContent>
             <Box
               display="flex"
               flexDirection={{ xs: 'column', sm: 'row' }}
@@ -525,13 +523,9 @@ const ManageTeacherJobType = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
                   overflow: 'hidden',
                   mb: 2,
                   width: '100%',
-                  height: 440
                 }}
               >
                 <DataGrid
@@ -772,7 +766,7 @@ const ManageTeacherJobType = () => {
             {snackbar.message}
           </Alert>
         </Snackbar>
-      </Container>
+      
     </Layout>
   );
 };

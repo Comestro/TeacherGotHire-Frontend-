@@ -27,9 +27,7 @@ import {
   Class as ClassIcon,
   Layers as LayersIcon,
   Settings as SettingsIcon,
-  Support as SupportIcon,
   Lock as LockIcon,
-  ContactMail as ContactMailIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
   Groups as GroupsIcon,
@@ -360,22 +358,13 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           </ListItem>
           <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding sx={{ py: 0, overflowX: "hidden !important" }}>
-              {[
-                {
-                  text: "Support",
-                  icon: <SupportIcon />,
-                  link: "/admin/support",
-                },
-                {
+              {
+                [{
                   text: "Change-Password",
                   icon: <LockIcon />,
                   link: "/admin/change/password",
                 },
-                {
-                  text: "Contact",
-                  icon: <ContactMailIcon />,
-                  link: "/admin/contact",
-                },
+               ,
               ].map((item) => (
                 <ListItem disablePadding sx={{ py: 0.25 }}>
                   <ListItemButton

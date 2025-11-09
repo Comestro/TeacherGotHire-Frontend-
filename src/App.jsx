@@ -14,9 +14,7 @@ import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
 import ManageRecruiter from "./admin/Manage-recruiter/ManageRecruiter";
 import ManageSkills from "./admin/Manage-skills/ManageSkills";
 import ManageQualification from "./admin/Manage-qualification/ManageQualification";
-import Support from "./admin/Support/Support";
 import ChangePassword from "./admin/Change-password/ChangePassword";
-import Contact from "./admin/Conatct/Contact";
 import ContactUs from "./components/ContactUs/ContactUs";
 import ExamPortal from "./components/Exam/ExamPortal";
 import ResultPage from "./components/Exam/Results";
@@ -177,15 +175,7 @@ function App() {
                 />
               }
             />
-            <Route
-              path="admin/support"
-              element={
-                <RoleBasedRoute
-                  element={<Support />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
+            
             <Route
               path="admin/change/password"
               element={
@@ -204,15 +194,7 @@ function App() {
                 />
               }
             />
-            <Route
-              path="admin/contact"
-              element={
-                <RoleBasedRoute
-                  element={<Contact />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
+           
             <Route
               path="admin/view/teacher/:id"
               element={

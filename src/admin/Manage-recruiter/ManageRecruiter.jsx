@@ -302,7 +302,7 @@ const ManageRecruiter = () => {
             <Grid container spacing={1}>
               <Grid item xs={12}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <MdEmail size={16} color="#6b7280" />
+                  <EmailIcon size={16} color="#6b7280" />
                   <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
                     {recruiter.email}
                   </Typography>
@@ -311,7 +311,7 @@ const ManageRecruiter = () => {
 
               <Grid item xs={6}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <MdPhone size={16} color="#6b7280" />
+                  <PhoneIcon size={16} color="#6b7280" />
                   <Typography variant="body2">{recruiter.phone}</Typography>
                 </Box>
               </Grid>
@@ -331,7 +331,7 @@ const ManageRecruiter = () => {
                   sx={{ color: '#0d9488' }}
                   onClick={() => handleViewRecruiter(recruiter)}
                 >
-                  <MdVisibility size={18} />
+                  <ViewIcon size={18} />
                 </IconButton>
               </Tooltip>
 
@@ -355,7 +355,7 @@ const ManageRecruiter = () => {
                   href={`mailto:${recruiter.email}`}
                   sx={{ color: '#f59e0b' }}
                 >
-                  <MdEmail size={18} />
+                  <EmailIcon size={18} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -553,9 +553,7 @@ const ManageRecruiter = () => {
                               <Typography variant="body2" fontWeight={500} align="center">
                                 {params.row.name}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary" align="center">
-                                {params.row.email}
-                              </Typography>
+                             
                             </Box>
                           </Box>
                         ),
@@ -601,7 +599,7 @@ const ManageRecruiter = () => {
                                 <WhatsAppIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Typography variant="body2" align="center">{params.row.phone}</Typography>
+                            <Typography variant="body2" align="center">{params.row.user_code}</Typography>
                           </Box>
                         ),
                         sortable: true,
@@ -998,21 +996,7 @@ const ManageRecruiter = () => {
                 >
                   WhatsApp
                 </Button>
-                <Button
-                  variant="contained"
-                  component="a"
-                  href={`mailto:${currentRecruiter.email}`}
-                  sx={{
-                    background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #0b7d6f 0%, #0891b2 100%)',
-                    },
-                    textTransform: 'none'
-                  }}
-                  startIcon={<MdEmail />}
-                >
-                  Email
-                </Button>
+               
               </>
             )}
           </DialogActions>
