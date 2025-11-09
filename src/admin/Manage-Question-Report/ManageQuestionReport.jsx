@@ -412,259 +412,257 @@ export default function ManageQuestionReport() {
 
   return (
     <Layout>
-        {/* Snackbar */}
-        <Snackbar
-          open={snack.open}
-          autoHideDuration={4500}
-          onClose={() => setSnack((s) => ({ ...s, open: false }))}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} variant="filled">
-            {snack.msg}
-          </Alert>
-        </Snackbar>
-
-        <Box sx={{ mb: 1,mt: { xs: 2, md: 0 } }}>
-          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} fontWeight={700} color="teal">
-            Manage Question Reports
-          </Typography>
-          <Typography color="text.secondary">Review reported questions and resolve issues.</Typography>
-        </Box>
-
-        {/* Controls */}
-        <Paper sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search question text, reporter, email or issue..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
+      {/* Snackbar */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4500}
+        onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} variant="filled">
+          {snack.msg}
+        </Alert>
+      </Snackbar>
+      <Box sx={{ mb: 1,mt: { xs: 2, md: 0 } }}>
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} fontWeight={700} color="teal">
+          Manage Question Reports
+        </Typography>
+        <Typography color="text.secondary">Review reported questions and resolve issues.</Typography>
+      </Box>
+      {/* Controls */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search question text, reporter, email or issue..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              slotProps={{
+                input: {
                   startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
-                }}
-              />
-            </Grid> 
+                }
+              }}
+            />
+          </Grid> 
 
-            <Grid item xs={12} md={6} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-              <Tooltip title="Refresh">
-                <IconButton onClick={fetchReports} disabled={loading}><RefreshIcon /></IconButton>
-              </Tooltip>
-              <Tooltip title="Export CSV">
-                <IconButton onClick={exportCsv}><GetAppIcon /></IconButton>
-              </Tooltip>
+          <Grid item xs={12} md={6} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+            <Tooltip title="Refresh">
+              <IconButton onClick={fetchReports} disabled={loading}><RefreshIcon /></IconButton>
+            </Tooltip>
+            <Tooltip title="Export CSV">
+              <IconButton onClick={exportCsv}><GetAppIcon /></IconButton>
+            </Tooltip>
 
-              <Button
-                startIcon={<FilterListIcon />}
-                variant={filtersOpen ? "contained" : "outlined"}
-                onClick={() => setFiltersOpen((s) => !s)}
-              >
-                {filtersOpen ? "Hide Filters" : "Show Filters"}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<FilterListIcon />}
+              variant={filtersOpen ? "contained" : "outlined"}
+              onClick={() => setFiltersOpen((s) => !s)}
+            >
+              {filtersOpen ? "Hide Filters" : "Show Filters"}
+            </Button>
+          </Grid>
 
-            {filtersOpen && (
-              <Grid item xs={12}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={4} md={3}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Status</InputLabel>
-                      <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
-                        <MenuItem value="all">All</MenuItem>
-                        <MenuItem value="Pending">Pending</MenuItem>
-                        <MenuItem value="Resolved">Resolved</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+          {filtersOpen && (
+            <Grid item xs={12}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={4} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Status</InputLabel>
+                    <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
+                      <MenuItem value="all">All</MenuItem>
+                      <MenuItem value="Pending">Pending</MenuItem>
+                      <MenuItem value="Resolved">Resolved</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-                  <Grid item xs={12} sm={4} md={3}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Issue</InputLabel>
-                      <Select value={issueFilter} label="Issue" onChange={(e) => setIssueFilter(e.target.value)}>
-                        <MenuItem value="all">All Issues</MenuItem>
-                        {uniqueIssueTypes.map((it) => (
-                          <MenuItem key={it} value={it}>
-                            {issueTypeMapping[it] || it}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                <Grid item xs={12} sm={4} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Issue</InputLabel>
+                    <Select value={issueFilter} label="Issue" onChange={(e) => setIssueFilter(e.target.value)}>
+                      <MenuItem value="all">All Issues</MenuItem>
+                      {uniqueIssueTypes.map((it) => (
+                        <MenuItem key={it} value={it}>
+                          {issueTypeMapping[it] || it}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-                  <Grid item xs={12} sm={4} md={3}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Sort</InputLabel>
-                      <Select value={sortOrder} label="Sort" onChange={(e) => setSortOrder(e.target.value)}>
-                        <MenuItem value="newest">Newest First</MenuItem>
-                        <MenuItem value="oldest">Oldest First</MenuItem>
-                        <MenuItem value="status">By Status</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                <Grid item xs={12} sm={4} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Sort</InputLabel>
+                    <Select value={sortOrder} label="Sort" onChange={(e) => setSortOrder(e.target.value)}>
+                      <MenuItem value="newest">Newest First</MenuItem>
+                      <MenuItem value="oldest">Oldest First</MenuItem>
+                      <MenuItem value="status">By Status</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-                  <Grid item xs={12} md={3} sx={{ display: "flex", gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      onClick={() => {
-                        setSearchTerm("");
-                        setStatusFilter("all");
-                        setIssueFilter("all");
-                        setSortOrder("newest");
-                      }}
-                      fullWidth
-                    >
-                      Reset
-                    </Button>
-                  </Grid>
+                <Grid item xs={12} md={3} sx={{ display: "flex", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setStatusFilter("all");
+                      setIssueFilter("all");
+                      setSortOrder("newest");
+                    }}
+                    fullWidth
+                  >
+                    Reset
+                  </Button>
                 </Grid>
               </Grid>
-            )}
-          </Grid>
-        </Paper>
-
-        {/* Stats */}
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={4}>
-            <Paper sx={{ p: 2, textAlign: "center" }}>
-              <Typography variant="h5" fontWeight={700}>{statusCounts.total}</Typography>
-              <Typography color="text.secondary">Total Reports</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={4}>
-            <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.true}` }}>
-              <Typography variant="h5" fontWeight={700}>{statusCounts.pending}</Typography>
-              <Typography color="text.secondary">Pending</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={4}>
-            <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.false}` }}>
-              <Typography variant="h5" fontWeight={700}>{statusCounts.resolved}</Typography>
-              <Typography color="text.secondary">Resolved</Typography>
-            </Paper>
-          </Grid>
+            </Grid>
+          )}
         </Grid>
+      </Paper>
+      {/* Stats */}
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid item xs={4}>
+          <Paper sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="h5" fontWeight={700}>{statusCounts.total}</Typography>
+            <Typography color="text.secondary">Total Reports</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={4}>
+          <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.true}` }}>
+            <Typography variant="h5" fontWeight={700}>{statusCounts.pending}</Typography>
+            <Typography color="text.secondary">Pending</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={4}>
+          <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.false}` }}>
+            <Typography variant="h5" fontWeight={700}>{statusCounts.resolved}</Typography>
+            <Typography color="text.secondary">Resolved</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+      {/* Content: DataGrid or skeleton / empty */}
+      <Paper sx={{ p: 0 }}>
+        {loading ? (
+          <Box sx={{ p: 6, textAlign: "center" }}>
+            <CircularProgress />
+          </Box>
+        ) : filtered.length === 0 ? (
+          <Box sx={{ p: 6, textAlign: "center" }}>
+            <Typography color="text.secondary">No reports found matching your criteria.</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ width: "100%" }}>
+            {/* DataGrid with autoHeight and auto row height so long texts are visible */}
+            <DataGrid
+              rows={filtered}
+              columns={columns}
+              autoHeight
+              getRowId={(r) => r.id}
+              pageSize={pageSize}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              pagination
+              paginationMode="client"
+              onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(0); }}
+              page={page}
+              onPageChange={(p) => setPage(p)}
+              density="standard"
+              disableSelectionOnClick
+              sx={{
+                border: "none",
+                "& .MuiDataGrid-columnHeaders": {
+                  background: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
+                  fontWeight: 700,
+                },
+                "& .MuiDataGrid-cell": {
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  alignItems: "flex-start",
+                  py: 1.5,
+                },
+              }}
+              getRowHeight={() => "auto"}
+            />
+          </Box>
+        )}
+      </Paper>
+      {/* Details Drawer */}
+      <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} slotProps={{
+        paper: { sx: { width: { xs: "100%", sm: 560 } } }
+      }}>
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+            <Typography variant="h6">Report Details</Typography>
+            <Chip label={selectedReport ? statusLabels[selectedReport.status] : "—"} sx={{ bgcolor: selectedReport ? statusColors[String(selectedReport.status)] : "#999", color: "#fff" }} />
+          </Box>
 
-        {/* Content: DataGrid or skeleton / empty */}
-        <Paper sx={{ p: 0 }}>
-          {loading ? (
-            <Box sx={{ p: 6, textAlign: "center" }}>
-              <CircularProgress />
-            </Box>
-          ) : filtered.length === 0 ? (
-            <Box sx={{ p: 6, textAlign: "center" }}>
-              <Typography color="text.secondary">No reports found matching your criteria.</Typography>
-            </Box>
-          ) : (
-            <Box sx={{ width: "100%" }}>
-              {/* DataGrid with autoHeight and auto row height so long texts are visible */}
-              <DataGrid
-                rows={filtered}
-                columns={columns}
-                autoHeight
-                getRowId={(r) => r.id}
-                pageSize={pageSize}
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                pagination
-                paginationMode="client"
-                onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(0); }}
-                page={page}
-                onPageChange={(p) => setPage(p)}
-                density="standard"
-                disableSelectionOnClick
-                sx={{
-                  border: "none",
-                  "& .MuiDataGrid-columnHeaders": {
-                    background: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
-                    fontWeight: 700,
-                  },
-                  "& .MuiDataGrid-cell": {
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    alignItems: "flex-start",
-                    py: 1.5,
-                  },
-                }}
-                getRowHeight={() => "auto"}
+          {selectedReport ? (
+            <>
+              <Divider sx={{ mb: 2 }} />
+
+              <Typography variant="subtitle2" color="text.secondary">Report ID</Typography>
+              <Typography sx={{ mb: 1 }}>REP01-00{selectedReport.id}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Reported Question</Typography>
+              <Typography sx={{ mb: 1 }}>{selectedReport.question?.text || "N/A"}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Options</Typography>
+              <Box sx={{ mb: 1 }}>
+                {(selectedReport.question?.options || []).map((opt, idx) => (
+                  <Typography key={idx} sx={{ fontWeight: selectedReport.question?.correct_option === idx ? 700 : 400 }}>
+                    {idx + 1}. {opt} {selectedReport.question?.correct_option === idx ? "(Correct)" : ""}
+                  </Typography>
+                ))}
+              </Box>
+
+              <Typography variant="subtitle2" color="text.secondary">Reported By</Typography>
+              <Typography sx={{ mb: 1 }}>{`${selectedReport.user?.Fname || ""} ${selectedReport.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Reported At</Typography>
+              <Typography sx={{ mb: 1 }}>{safeFormatDate(selectedReport.created_at, "MMM DD, YYYY HH:mm")}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Issue Type</Typography>
+              <Typography sx={{ mb: 1 }}>{formatIssueTypes(selectedReport.issue_type)}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Description</Typography>
+              <Typography sx={{ mb: 1 }}>{selectedReport.description || "No description provided"}</Typography>
+
+              <Typography variant="subtitle2" color="text.secondary">Admin Notes</Typography>
+              <TextField
+                multiline
+                rows={4}
+                fullWidth
+                sx={{ mb: 2 }}
+                placeholder="Add notes..."
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
               />
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                <Button onClick={() => { saveAdminNotes(); closeReportDetails(); }} variant="outlined">Save & Close</Button>
+                {selectedReport.status === false && (
+                  <Button onClick={() => confirmAndMarkDone(selectedReport)} variant="contained" color="success" disabled={processing}>
+                    {processing ? <CircularProgress size={18} color="inherit" /> : "Mark Done"}
+                  </Button>
+                )}
+              </Box>
+            </>
+          ) : (
+            <Box sx={{ p: 2 }}>
+              <Typography color="text.secondary">No report selected</Typography>
             </Box>
           )}
-        </Paper>
-
-        {/* Details Drawer */}
-        <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} PaperProps={{ sx: { width: { xs: "100%", sm: 560 } } }}>
-          <Box sx={{ p: 2 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-              <Typography variant="h6">Report Details</Typography>
-              <Chip label={selectedReport ? statusLabels[selectedReport.status] : "—"} sx={{ bgcolor: selectedReport ? statusColors[String(selectedReport.status)] : "#999", color: "#fff" }} />
-            </Box>
-
-            {selectedReport ? (
-              <>
-                <Divider sx={{ mb: 2 }} />
-
-                <Typography variant="subtitle2" color="text.secondary">Report ID</Typography>
-                <Typography sx={{ mb: 1 }}>REP01-00{selectedReport.id}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Reported Question</Typography>
-                <Typography sx={{ mb: 1 }}>{selectedReport.question?.text || "N/A"}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Options</Typography>
-                <Box sx={{ mb: 1 }}>
-                  {(selectedReport.question?.options || []).map((opt, idx) => (
-                    <Typography key={idx} sx={{ fontWeight: selectedReport.question?.correct_option === idx ? 700 : 400 }}>
-                      {idx + 1}. {opt} {selectedReport.question?.correct_option === idx ? "(Correct)" : ""}
-                    </Typography>
-                  ))}
-                </Box>
-
-                <Typography variant="subtitle2" color="text.secondary">Reported By</Typography>
-                <Typography sx={{ mb: 1 }}>{`${selectedReport.user?.Fname || ""} ${selectedReport.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Reported At</Typography>
-                <Typography sx={{ mb: 1 }}>{safeFormatDate(selectedReport.created_at, "MMM DD, YYYY HH:mm")}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Issue Type</Typography>
-                <Typography sx={{ mb: 1 }}>{formatIssueTypes(selectedReport.issue_type)}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                <Typography sx={{ mb: 1 }}>{selectedReport.description || "No description provided"}</Typography>
-
-                <Typography variant="subtitle2" color="text.secondary">Admin Notes</Typography>
-                <TextField
-                  multiline
-                  rows={4}
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  placeholder="Add notes..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                />
-
-                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                  <Button onClick={() => { saveAdminNotes(); closeReportDetails(); }} variant="outlined">Save & Close</Button>
-                  {selectedReport.status === false && (
-                    <Button onClick={() => confirmAndMarkDone(selectedReport)} variant="contained" color="success" disabled={processing}>
-                      {processing ? <CircularProgress size={18} color="inherit" /> : "Mark Done"}
-                    </Button>
-                  )}
-                </Box>
-              </>
-            ) : (
-              <Box sx={{ p: 2 }}>
-                <Typography color="text.secondary">No report selected</Typography>
-              </Box>
-            )}
-          </Box>
-        </Drawer>
-
-        {/* Confirm dialog example (optional) */}
-        <Dialog open={Boolean(processing && false)} /* hidden by default */ onClose={() => {}}>
-          <DialogTitle>Processing</DialogTitle>
-          <DialogContent>
-            <Typography>Working…</Typography>
-          </DialogContent>
-        </Dialog>
+        </Box>
+      </Drawer>
+      {/* Confirm dialog example (optional) */}
+      <Dialog open={Boolean(processing && false)} /* hidden by default */ onClose={() => {}}>
+        <DialogTitle>Processing</DialogTitle>
+        <DialogContent>
+          <Typography>Working…</Typography>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

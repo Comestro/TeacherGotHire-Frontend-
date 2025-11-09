@@ -651,13 +651,6 @@ const ManageQuestionManager = () => {
                   size="small"
                   value={searchTerm}
                   onChange={handleSearch}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#0d9488' }} />
-                      </InputAdornment>
-                    ),
-                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -668,6 +661,15 @@ const ManageQuestionManager = () => {
                         borderColor: '#0d9488',
                       },
                     },
+                  }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#0d9488' }} />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
               </Box>
@@ -1038,10 +1040,14 @@ const ManageQuestionManager = () => {
           open={openModal}
           onClose={loadingAction ? undefined : handleCloseModal}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box
@@ -1408,9 +1414,11 @@ const ManageQuestionManager = () => {
           onClose={handleCloseViewDialog}
           maxWidth="sm"
           fullWidth
-          PaperProps={{
-            elevation: 3,
-            sx: { borderRadius: 2 }
+          slotProps={{
+            paper: {
+              elevation: 3,
+              sx: { borderRadius: 2 }
+            }
           }}
         >
           <DialogTitle>
@@ -1553,10 +1561,14 @@ const ManageQuestionManager = () => {
           open={openDeleteModal}
           onClose={!loadingAction ? () => setOpenDeleteModal(false) : undefined}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box

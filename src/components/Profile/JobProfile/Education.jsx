@@ -437,19 +437,19 @@ const Education = () => {
 
   return (
     <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
-       <ToastContainer 
-        position="top-right" 
-        autoClose={1000} 
-        closeButton={true}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={true}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+      <ToastContainer 
+       position="top-right" 
+       autoClose={1000} 
+       closeButton={true}
+       hideProgressBar={false}
+       newestOnTop={false}
+       closeOnClick={true}
+       rtl={false}
+       pauseOnFocusLoss
+       draggable
+       pauseOnHover
+       theme="light"
+     />
       {/* Enhanced Header */}
       {loading && <Loader />}
       <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-secondary/20">
@@ -478,7 +478,6 @@ const Education = () => {
           </button>
         )}
       </div>
-
       {/* No Data State */}
       {educationData.length < 1 && !isEditing && (
         <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/10">
@@ -495,7 +494,6 @@ const Education = () => {
           </div>
         </div>
       )}
-
       {/* Education Table - Desktop */}
       {!isEditing && educationData.length > 0 && (
         <>
@@ -664,7 +662,6 @@ const Education = () => {
           </div>
         </>
       )}
-
       {/* Form */}
       {isEditing && (
         <form
@@ -1081,7 +1078,6 @@ const Education = () => {
           </div>
         </form>
       )}
-
       {/* View Details Modal */}
       {viewDetailsModal && selectedEducation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setViewDetailsModal(false)}>

@@ -414,8 +414,10 @@ export default function ExamManagement() {
                 placeholder="Search by exam name or id"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{ startAdornment: <FaSearch style={{ marginRight: 8 }} /> }}
                 size="small"
+                slotProps={{
+                  input: { startAdornment: <FaSearch style={{ marginRight: 8 }} /> }
+                }}
               />
             </Grid>
 

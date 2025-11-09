@@ -531,13 +531,6 @@ const ManageLevel = () => {
                   placeholder="Search levels..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#0d9488' }} />
-                      </InputAdornment>
-                    ),
-                  }}
                   sx={{
                     minWidth: { xs: '100%', sm: '280px' },
                     '& .MuiOutlinedInput-root': {
@@ -549,6 +542,15 @@ const ManageLevel = () => {
                         borderColor: '#0d9488',
                       },
                     },
+                  }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#0d9488' }} />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
               </Box>
@@ -723,10 +725,14 @@ const ManageLevel = () => {
           open={openAddEditModal}
           onClose={!submitting ? handleCloseAddEditModal : undefined}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box
@@ -812,12 +818,14 @@ const ManageLevel = () => {
                     color: '#0d9488',
                   },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BuildIcon sx={{ color: '#0d9488' }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <BuildIcon sx={{ color: '#0d9488' }} />
+                      </InputAdornment>
+                    ),
+                  }
                 }}
               />
 
@@ -826,9 +834,6 @@ const ManageLevel = () => {
                   fullWidth
                   label="Level Code"
                   value={editLevelData.level_code}
-                  InputProps={{
-                    readOnly: true,
-                  }}
                   sx={{
                     mb: 2.5,
                     "& .MuiInputBase-input.Mui-disabled": {
@@ -838,6 +843,11 @@ const ManageLevel = () => {
                     borderRadius: 2,
                   }}
                   helperText="Level code cannot be modified"
+                  slotProps={{
+                    input: {
+                      readOnly: true,
+                    }
+                  }}
                 />
               )}
 
@@ -928,10 +938,14 @@ const ManageLevel = () => {
           open={openDeleteModal}
           onClose={!submitting ? handleCloseDeleteModal : undefined}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box
@@ -1154,10 +1168,14 @@ const ManageLevel = () => {
           open={openViewDialog}
           onClose={handleCloseViewDialog}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box

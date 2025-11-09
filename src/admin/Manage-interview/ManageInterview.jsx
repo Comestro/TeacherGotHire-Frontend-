@@ -451,248 +451,244 @@ export default function InterviewManagementRedesign() {
 
   return (
     <Layout>
-        {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2, flexWrap: "wrap" }}>
-          <Box>
-            <Typography variant="h4" sx={{fontSize:{ xs: '1.5rem', md: '1.5rem' },color:"#008080"}} fontWeight={800} color="primary">Teacher Interview Management</Typography>
-            <Typography variant="body2" color="text.secondary">Schedule, review and grade teacher interviews</Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            
-
-            <Tooltip title="Refresh"><IconButton onClick={fetchInterviews}><FiRefreshCw /></IconButton></Tooltip>
-            <Tooltip title={viewMode === "table" ? "Card view" : "Table view"}>
-              <IconButton onClick={() => setViewMode((v) => (v === "table" ? "card" : "table"))}>
-                {viewMode === "table" ? <FiBarChart2 /> : <FiList />}
-              </IconButton>
-            </Tooltip>
-            <Button variant="outlined" startIcon={<FiFilter />} onClick={() => setFiltersOpen((s) => !s)}>Filters</Button>
-          </Box>
+      {/* Header */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2, flexWrap: "wrap" }}>
+        <Box>
+          <Typography variant="h4" sx={{fontSize:{ xs: '1.5rem', md: '1.5rem' },color:"#008080"}} fontWeight={800} color="primary">Teacher Interview Management</Typography>
+          <Typography variant="body2" color="text.secondary">Schedule, review and grade teacher interviews</Typography>
         </Box>
 
-        {/* Filter panel */}
-        <Collapse in={filtersOpen}>
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  placeholder="Search by name, email, subject..."
-                  onChange={(e) => debouncedSearch(e.target.value)}
-                  InputProps={{ startAdornment: <FiSearch style={{ marginRight: 8 }} /> }}
-                  size="small"
-                />
-              </Grid>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          
 
-              <Grid xs={12} md={6}>
-                <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                  <Button variant="outlined" startIcon={<FiDownload />} onClick={exportCsv}>Export</Button>
-                  <Button variant="outlined" onClick={resetFilters}>Reset</Button>
-                </Box>
-              </Grid>
-
-              <Grid xs={12} md={3}><TextField label="Teacher" size="small" value={filters.teacherName} onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })} fullWidth /></Grid>
-              <Grid xs={12} md={3}><TextField label="Class" size="small" value={filters.classCategory} onChange={(e) => setFilters({ ...filters, classCategory: e.target.value })} fullWidth /></Grid>
-              <Grid xs={12} md={3}><TextField label="Subject" size="small" value={filters.subject} onChange={(e) => setFilters({ ...filters, subject: e.target.value })} fullWidth /></Grid>
-              <Grid xs={12} md={3}><TextField label="Level" size="small" value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })} fullWidth /></Grid>
-
-              <Grid xs={12} md={3}><TextField label="Attempt" size="small" type="number" value={filters.attempt} onChange={(e) => setFilters({ ...filters, attempt: e.target.value })} fullWidth /></Grid>
-
-              <Grid xs={12} md={3}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker label="From (Desired)" value={filters.dateFrom} onChange={(v) => setFilters({ ...filters, dateFrom: v })} slotProps={{ textField: { size: 'small' } }} />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid xs={12} md={3}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker label="To (Desired)" value={filters.dateTo} onChange={(v) => setFilters({ ...filters, dateTo: v })} slotProps={{ textField: { size: 'small' } }} />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid xs={12} md={3}>
-                <TextField select label="Status" size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} fullWidth>
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Scheduled">Scheduled</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </TextField>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Collapse>
-
-        {/* Main list / table */}
-        <Paper sx={{ p: 0, borderRadius: 2 }}>
-          {loading ? (
-            <Box sx={{ p: 6, textAlign: "center" }}>
-              <CircularProgress />
-              <Typography sx={{ mt: 2 }} color="text.secondary">Loading interviews...</Typography>
-            </Box>
-          ) : filteredTeachers.length === 0 ? (
-            <Box sx={{ p: 6, textAlign: "center" }}>
-              <Typography variant="h6" color="text.secondary">No interviews found</Typography>
-            </Box>
-          ) : viewMode === "table" ? (
-            <Box sx={{ width: "100%" }}>
-              <DataGrid
-                rows={filteredTeachers}
-                columns={tableColumns}
-                pageSizeOptions={[5, 10, 25]}
-                disableRowSelectionOnClick
-                getRowId={(r) => r.id}
-                autoHeight
-                getRowHeight={() => 'auto'}
-                sx={{
-                  '& .MuiDataGrid-cell': {
-                    py: 1.5,
-                    px: 2,
-                    whiteSpace: 'normal',
-                    wordBreak: 'break-word',
-                    alignItems: 'flex-start',
-                  },
-                  '& .MuiDataGrid-columnHeaders': {
-                    backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
-                    fontWeight: 700,
-                    py: 1.5,
-                  },
-                  '& .MuiDataGrid-row:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                  },
-                  border: 'none',
+          <Tooltip title="Refresh"><IconButton onClick={fetchInterviews}><FiRefreshCw /></IconButton></Tooltip>
+          <Tooltip title={viewMode === "table" ? "Card view" : "Table view"}>
+            <IconButton onClick={() => setViewMode((v) => (v === "table" ? "card" : "table"))}>
+              {viewMode === "table" ? <FiBarChart2 /> : <FiList />}
+            </IconButton>
+          </Tooltip>
+          <Button variant="outlined" startIcon={<FiFilter />} onClick={() => setFiltersOpen((s) => !s)}>Filters</Button>
+        </Box>
+      </Box>
+      {/* Filter panel */}
+      <Collapse in={filtersOpen}>
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                placeholder="Search by name, email, subject..."
+                onChange={(e) => debouncedSearch(e.target.value)}
+                size="small"
+                slotProps={{
+                  input: { startAdornment: <FiSearch style={{ marginRight: 8 }} /> }
                 }}
               />
-            </Box>
-          ) : (
-            <Stack spacing={2} sx={{ p: 2 }}>{filteredTeachers.map(renderCard)}</Stack>
-          )}
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+                <Button variant="outlined" startIcon={<FiDownload />} onClick={exportCsv}>Export</Button>
+                <Button variant="outlined" onClick={resetFilters}>Reset</Button>
+              </Box>
+            </Grid>
+
+            <Grid xs={12} md={3}><TextField label="Teacher" size="small" value={filters.teacherName} onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })} fullWidth /></Grid>
+            <Grid xs={12} md={3}><TextField label="Class" size="small" value={filters.classCategory} onChange={(e) => setFilters({ ...filters, classCategory: e.target.value })} fullWidth /></Grid>
+            <Grid xs={12} md={3}><TextField label="Subject" size="small" value={filters.subject} onChange={(e) => setFilters({ ...filters, subject: e.target.value })} fullWidth /></Grid>
+            <Grid xs={12} md={3}><TextField label="Level" size="small" value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })} fullWidth /></Grid>
+
+            <Grid xs={12} md={3}><TextField label="Attempt" size="small" type="number" value={filters.attempt} onChange={(e) => setFilters({ ...filters, attempt: e.target.value })} fullWidth /></Grid>
+
+            <Grid xs={12} md={3}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker label="From (Desired)" value={filters.dateFrom} onChange={(v) => setFilters({ ...filters, dateFrom: v })} slotProps={{ textField: { size: 'small' } }} />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid xs={12} md={3}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker label="To (Desired)" value={filters.dateTo} onChange={(v) => setFilters({ ...filters, dateTo: v })} slotProps={{ textField: { size: 'small' } }} />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid xs={12} md={3}>
+              <TextField select label="Status" size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} fullWidth>
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Scheduled">Scheduled</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
         </Paper>
+      </Collapse>
+      {/* Main list / table */}
+      <Paper sx={{ p: 0, borderRadius: 2 }}>
+        {loading ? (
+          <Box sx={{ p: 6, textAlign: "center" }}>
+            <CircularProgress />
+            <Typography sx={{ mt: 2 }} color="text.secondary">Loading interviews...</Typography>
+          </Box>
+        ) : filteredTeachers.length === 0 ? (
+          <Box sx={{ p: 6, textAlign: "center" }}>
+            <Typography variant="h6" color="text.secondary">No interviews found</Typography>
+          </Box>
+        ) : viewMode === "table" ? (
+          <Box sx={{ width: "100%" }}>
+            <DataGrid
+              rows={filteredTeachers}
+              columns={tableColumns}
+              pageSizeOptions={[5, 10, 25]}
+              disableRowSelectionOnClick
+              getRowId={(r) => r.id}
+              autoHeight
+              getRowHeight={() => 'auto'}
+              sx={{
+                '& .MuiDataGrid-cell': {
+                  py: 1.5,
+                  px: 2,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  alignItems: 'flex-start',
+                },
+                '& .MuiDataGrid-columnHeaders': {
+                  backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
+                  fontWeight: 700,
+                  py: 1.5,
+                },
+                '& .MuiDataGrid-row:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                },
+                border: 'none',
+              }}
+            />
+          </Box>
+        ) : (
+          <Stack spacing={2} sx={{ p: 2 }}>{filteredTeachers.map(renderCard)}</Stack>
+        )}
+      </Paper>
+      {/* DETAILS MODAL */}
+      <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, data: null })}>
+        <CenteredPaper>
+          {detailsModal.data && (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">Interview Details</Typography>
+                <IconButton onClick={() => setDetailsModal({ open: false, data: null })}><FiX /></IconButton>
+              </Box>
 
-        {/* DETAILS MODAL */}
-        <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, data: null })}>
-          <CenteredPaper>
-            {detailsModal.data && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6">Interview Details</Typography>
-                  <IconButton onClick={() => setDetailsModal({ open: false, data: null })}><FiX /></IconButton>
-                </Box>
+              <Divider sx={{ my: 2 }} />
 
-                <Divider sx={{ my: 2 }} />
+              <Grid container spacing={2}>
+                <Grid xs={12} sm={6}><Typography variant="subtitle2">Name</Typography><Typography>{detailsModal.data.name}</Typography></Grid>
+                <Grid xs={12} sm={6}><Typography variant="subtitle2">Email</Typography><Typography>{detailsModal.data.email}</Typography></Grid>
+                <Grid xs={12}><Typography variant="subtitle2">Subject</Typography><Typography>{detailsModal.data.mergedSubject}</Typography></Grid>
+                <Grid xs={12}><Typography variant="subtitle2">Status</Typography><Chip label={`${detailsModal.data.status} (${detailsModal.data.mode})`} /></Grid>
 
-                <Grid container spacing={2}>
-                  <Grid xs={12} sm={6}><Typography variant="subtitle2">Name</Typography><Typography>{detailsModal.data.name}</Typography></Grid>
-                  <Grid xs={12} sm={6}><Typography variant="subtitle2">Email</Typography><Typography>{detailsModal.data.email}</Typography></Grid>
-                  <Grid xs={12}><Typography variant="subtitle2">Subject</Typography><Typography>{detailsModal.data.mergedSubject}</Typography></Grid>
-                  <Grid xs={12}><Typography variant="subtitle2">Status</Typography><Chip label={`${detailsModal.data.status} (${detailsModal.data.mode})`} /></Grid>
+                {detailsModal.data.scheduledDate && <Grid xs={12}><Typography variant="subtitle2">Scheduled</Typography><Typography>{detailsModal.data.scheduledDate}</Typography></Grid>}
 
-                  {detailsModal.data.scheduledDate && <Grid xs={12}><Typography variant="subtitle2">Scheduled</Typography><Typography>{detailsModal.data.scheduledDate}</Typography></Grid>}
+                {detailsModal.data.rejectionReason && <Grid xs={12}><Typography variant="subtitle2">Rejection Reason</Typography><Paper sx={{ p: 1 }}>{detailsModal.data.rejectionReason}</Paper></Grid>}
 
-                  {detailsModal.data.rejectionReason && <Grid xs={12}><Typography variant="subtitle2">Rejection Reason</Typography><Paper sx={{ p: 1 }}>{detailsModal.data.rejectionReason}</Paper></Grid>}
+                {detailsModal.data.link && <Grid xs={12}><Button onClick={() => window.open(detailsModal.data.link, '_blank')}>Open Meeting Link</Button></Grid>}
+              </Grid>
 
-                  {detailsModal.data.link && <Grid xs={12}><Button onClick={() => window.open(detailsModal.data.link, '_blank')}>Open Meeting Link</Button></Grid>}
-                </Grid>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Button onClick={() => setDetailsModal({ open: false, data: null })}>Close</Button>
+              </Box>
+            </>
+          )}
+        </CenteredPaper>
+      </Modal>
+      {/* SCHEDULE MODAL */}
+      <Modal open={scheduleModal.open} onClose={() => setScheduleModal({ open: false, data: null })}>
+        <CenteredPaper>
+          {scheduleModal.data && (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">Schedule Interview</Typography>
+                <IconButton onClick={() => setScheduleModal({ open: false, data: null })}><FiX /></IconButton>
+              </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button onClick={() => setDetailsModal({ open: false, data: null })}>Close</Button>
-                </Box>
-              </>
-            )}
-          </CenteredPaper>
-        </Modal>
+              <Divider sx={{ my: 2 }} />
 
-        {/* SCHEDULE MODAL */}
-        <Modal open={scheduleModal.open} onClose={() => setScheduleModal({ open: false, data: null })}>
-          <CenteredPaper>
-            {scheduleModal.data && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6">Schedule Interview</Typography>
-                  <IconButton onClick={() => setScheduleModal({ open: false, data: null })}><FiX /></IconButton>
-                </Box>
+              <Typography variant="subtitle2">Teacher</Typography>
+              <Typography sx={{ mb: 1 }}>{scheduleModal.data.name}</Typography>
 
-                <Divider sx={{ my: 2 }} />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker
+                  label="Schedule Date & Time"
+                  value={selectedDateTime}
+                  onChange={setSelectedDateTime}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </LocalizationProvider>
 
-                <Typography variant="subtitle2">Teacher</Typography>
-                <Typography sx={{ mb: 1 }}>{scheduleModal.data.name}</Typography>
+              <TextField fullWidth label="Meeting Link" value={meetingLink} onChange={(e) => { setMeetingLink(e.target.value); if (e.target.value.trim()) setMeetingLinkError(false); }} error={meetingLinkError} helperText={meetingLinkError ? "Meeting link is required" : ""} sx={{ mt: 2 }} />
 
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateTimePicker
-                    label="Schedule Date & Time"
-                    value={selectedDateTime}
-                    onChange={setSelectedDateTime}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                  />
-                </LocalizationProvider>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                <Button variant="outlined" onClick={() => setScheduleModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" onClick={scheduleInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Schedule'}</Button>
+              </Box>
+            </>
+          )}
+        </CenteredPaper>
+      </Modal>
+      {/* REJECT MODAL */}
+      <Modal open={rejectModal.open} onClose={() => setRejectModal({ open: false, data: null })}>
+        <CenteredPaper>
+          {rejectModal.data && (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">Reject Interview</Typography>
+                <IconButton onClick={() => setRejectModal({ open: false, data: null })}><FiX /></IconButton>
+              </Box>
 
-                <TextField fullWidth label="Meeting Link" value={meetingLink} onChange={(e) => { setMeetingLink(e.target.value); if (e.target.value.trim()) setMeetingLinkError(false); }} error={meetingLinkError} helperText={meetingLinkError ? "Meeting link is required" : ""} sx={{ mt: 2 }} />
+              <Divider sx={{ my: 2 }} />
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                  <Button variant="outlined" onClick={() => setScheduleModal({ open: false, data: null })}>Cancel</Button>
-                  <Button variant="contained" onClick={scheduleInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Schedule'}</Button>
-                </Box>
-              </>
-            )}
-          </CenteredPaper>
-        </Modal>
+              <Typography variant="subtitle2">Reason</Typography>
+              <TextField fullWidth multiline rows={4} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} sx={{ mt: 1 }} />
 
-        {/* REJECT MODAL */}
-        <Modal open={rejectModal.open} onClose={() => setRejectModal({ open: false, data: null })}>
-          <CenteredPaper>
-            {rejectModal.data && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6">Reject Interview</Typography>
-                  <IconButton onClick={() => setRejectModal({ open: false, data: null })}><FiX /></IconButton>
-                </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                <Button variant="outlined" onClick={() => setRejectModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" color="error" onClick={rejectInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Reject'}</Button>
+              </Box>
+            </>
+          )}
+        </CenteredPaper>
+      </Modal>
+      {/* COMPLETE MODAL */}
+      <Modal open={completeModal.open} onClose={() => setCompleteModal({ open: false, data: null })}>
+        <CenteredPaper>
+          {completeModal.data && (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">Complete Interview</Typography>
+                <IconButton onClick={() => setCompleteModal({ open: false, data: null })}><FiX /></IconButton>
+              </Box>
 
-                <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2 }} />
 
-                <Typography variant="subtitle2">Reason</Typography>
-                <TextField fullWidth multiline rows={4} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} sx={{ mt: 1 }} />
+              <Typography variant="subtitle2">Score (0-10)</Typography>
+              <TextField type="number" fullWidth value={interviewScore} onChange={(e) => setInterviewScore(e.target.value)} sx={{ mt: 1 }} slotProps={{
+                htmlInput: { min: 0, max: 10, step: 0.5 }
+              }} />
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                  <Button variant="outlined" onClick={() => setRejectModal({ open: false, data: null })}>Cancel</Button>
-                  <Button variant="contained" color="error" onClick={rejectInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Reject'}</Button>
-                </Box>
-              </>
-            )}
-          </CenteredPaper>
-        </Modal>
-
-        {/* COMPLETE MODAL */}
-        <Modal open={completeModal.open} onClose={() => setCompleteModal({ open: false, data: null })}>
-          <CenteredPaper>
-            {completeModal.data && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6">Complete Interview</Typography>
-                  <IconButton onClick={() => setCompleteModal({ open: false, data: null })}><FiX /></IconButton>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="subtitle2">Score (0-10)</Typography>
-                <TextField type="number" fullWidth value={interviewScore} onChange={(e) => setInterviewScore(e.target.value)} inputProps={{ min: 0, max: 10, step: 0.5 }} sx={{ mt: 1 }} />
-
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                  <Button variant="outlined" onClick={() => setCompleteModal({ open: false, data: null })}>Cancel</Button>
-                  <Button variant="contained" color="success" onClick={completeInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Complete'}</Button>
-                </Box>
-              </>
-            )}
-          </CenteredPaper>
-        </Modal>
-
-        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-          <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
-        </Snackbar>
-
-        <Backdrop open={actionLoading} sx={{ zIndex: (t) => t.zIndex.drawer + 2, color: '#fff' }}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                <Button variant="outlined" onClick={() => setCompleteModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" color="success" onClick={completeInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Complete'}</Button>
+              </Box>
+            </>
+          )}
+        </CenteredPaper>
+      </Modal>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
+      </Snackbar>
+      <Backdrop open={actionLoading} sx={{ zIndex: (t) => t.zIndex.drawer + 2, color: '#fff' }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Layout>
   );
 }

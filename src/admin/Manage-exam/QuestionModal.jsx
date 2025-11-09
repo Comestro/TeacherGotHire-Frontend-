@@ -367,7 +367,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           </Typography>
         </Box>
       </DialogTitle>
-
       <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
         <Grid container spacing={3}>
           {/* Basic Info Card */}
@@ -539,7 +538,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           </Grid>
         </Grid>
       </DialogContent>
-
       <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
         <Button
           onClick={onClose}
@@ -549,7 +547,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           Close
         </Button>
       </DialogActions>
-
       {/* Add/Edit Question Modal */}
       <Dialog
         open={openAddQuestionModal}
@@ -654,10 +651,12 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
                       correct_option: parseInt(e.target.value, 10),
                     })
                   }
-                  inputProps={{ min: 1, max: 4 }}
                   error={!!formErrors.correct_option}
                   helperText={formErrors.correct_option}
                   size={isMobile ? "small" : "medium"}
+                  slotProps={{
+                    htmlInput: { min: 1, max: 4 }
+                  }}
                 />
               </FormControl>
             </Box>
@@ -700,7 +699,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Snackbar for messages */}
       <Snackbar
         open={snackbarOpen}

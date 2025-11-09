@@ -203,7 +203,9 @@ export default function PasskeyManagement() {
                   size="small"
                   placeholder="Search by email, exam, center or passkey"
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
+                  slotProps={{
+                    input: { startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }
+                  }}
                 />
               </Grid>
               <Grid item xs={12} md={6} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
@@ -244,7 +246,11 @@ export default function PasskeyManagement() {
         ))}
 
         {/* Details modal */}
-        <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, row: null })} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{ timeout: 500 }}>
+        <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, row: null })} closeAfterTransition slots={{
+          backdrop: Backdrop
+        }} slotProps={{
+          backdrop: { timeout: 500 }
+        }}>
           <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '95%', sm: 700 }, bgcolor: 'background.paper', boxShadow: 24, p: 3, borderRadius: 2 }}>
             {detailsModal.row && (
               <>
@@ -313,7 +319,11 @@ export default function PasskeyManagement() {
         </Modal>
 
         {/* Confirm modal */}
-        <Modal open={confirm.open} onClose={() => setConfirm({ open: false, type: null, row: null })} closeAfterTransition BackdropComponent={Backdrop} BackdropProps={{ timeout: 500 }}>
+        <Modal open={confirm.open} onClose={() => setConfirm({ open: false, type: null, row: null })} closeAfterTransition slots={{
+          backdrop: Backdrop
+        }} slotProps={{
+          backdrop: { timeout: 500 }
+        }}>
           <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: { xs: '95%', sm: 480 }, bgcolor: 'background.paper', boxShadow: 24, p: 3, borderRadius: 2 }}>
             {confirm.row && (
               <>

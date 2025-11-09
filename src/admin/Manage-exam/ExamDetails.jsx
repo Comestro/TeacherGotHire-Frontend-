@@ -1011,8 +1011,10 @@ const ExamDetails = () => {
                                 size={isMobile ? "small" : "medium"}
                                 required
                                 disabled={formSubmitting}
-                                InputLabelProps={{
-                                    shrink: true,
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    }
                                 }}
                             />
 
@@ -1053,8 +1055,10 @@ const ExamDetails = () => {
                                                 size={isMobile ? "small" : "medium"}
                                                 required
                                                 disabled={formSubmitting}
-                                                InputLabelProps={{
-                                                    shrink: true,
+                                                slotProps={{
+                                                    inputLabel: {
+                                                        shrink: true,
+                                                    }
                                                 }}
                                             />
                                         </Grid>
@@ -1107,8 +1111,10 @@ const ExamDetails = () => {
                                 rows={3}
                                 size={isMobile ? "small" : "medium"}
                                 disabled={formSubmitting}
-                                InputLabelProps={{
-                                    shrink: true,
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    }
                                 }}
                             />
 

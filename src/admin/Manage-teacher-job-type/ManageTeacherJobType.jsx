@@ -328,445 +328,447 @@ const ManageTeacherJobType = () => {
 
   return (
     <Layout>
-        <Card
-          elevation={0}
-          sx={{
-            overflow: 'hidden'
-          }}
-        >
-          <CardContent >
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  variant={isMobile ? "h5" : "h4"}
-                  sx={{
-                    fontWeight: 700,
-                    color: 'teal',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <WorkIcon sx={{ mr: 1.5, fontSize: 'inherit',color:"teal" }} />
-                  Manage Teacher Job Types
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenEditDialog()}
-                  fullWidth={isMobile}
-                  sx={{
-                    textTransform: 'none',
-                    boxShadow: 2,
-                    backgroundColor: 'teal',
-                    '&:hover': {
-                      backgroundColor: 'darken(teal, 0.1)',
-                    }
-                  }}
-                >
-                  Add New Job Type
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          elevation={2}
-          sx={{
-            overflow: 'hidden',
-            mb: 2
-          }}
-        >
-          <CardContent>
-            <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              gap={2}
-              mb={2}
-            >
+      <Card
+        elevation={0}
+        sx={{
+          overflow: 'hidden'
+        }}
+      >
+        <CardContent >
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={8}>
               <Typography
-                variant="h6"
+                variant={isMobile ? "h5" : "h4"}
                 sx={{
-                  fontWeight: 600,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                  fontWeight: 700,
+                  color: 'teal',
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
               >
-                Job Types ({filteredJobTypes.length})
+                <WorkIcon sx={{ mr: 1.5, fontSize: 'inherit',color:"teal" }} />
+                Manage Teacher Job Types
               </Typography>
+            </Grid>
+            <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenEditDialog()}
+                fullWidth={isMobile}
+                sx={{
+                  textTransform: 'none',
+                  boxShadow: 2,
+                  backgroundColor: 'teal',
+                  '&:hover': {
+                    backgroundColor: 'darken(teal, 0.1)',
+                  }
+                }}
+              >
+                Add New Job Type
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+      <Card
+        elevation={2}
+        sx={{
+          overflow: 'hidden',
+          mb: 2
+        }}
+      >
+        <CardContent>
+          <Box
+            display="flex"
+            flexDirection={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            gap={2}
+            mb={2}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                fontSize: { xs: '1.1rem', sm: '1.25rem' }
+              }}
+            >
+              Job Types ({filteredJobTypes.length})
+            </Typography>
 
-              <TextField
-                placeholder="Search job types..."
-                variant="outlined"
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
+            <TextField
+              placeholder="Search job types..."
+              variant="outlined"
+              size="small"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ width: { xs: '100%', sm: '220px' } }}
+              slotProps={{
+                input: {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchIcon fontSize="small" />
                     </InputAdornment>
                   ),
-                }}
-                sx={{ width: { xs: '100%', sm: '220px' } }}
-              />
-            </Box>
-
-            {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress />
-              </Box>
-            ) : filteredJobTypes.length === 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {searchTerm
-                  ? "No job types match your search criteria."
-                  : "No job types available. Add a new job type to get started."
                 }
-              </Alert>
-            ) : isMobile || isTablet ? (
-              <>
-                <Grid container spacing={2}>
-                  {filteredJobTypes
-                    .slice(paginationModel.page * paginationModel.pageSize,
-                      (paginationModel.page + 1) * paginationModel.pageSize)
-                    .map((job, index) => (
-                      <Grid item xs={12} sm={6} key={job.id}>
-                        <Card
-                          elevation={1}
-                          sx={{
-                            height: '100%',
-                            borderRadius: 1,
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                              boxShadow: 3
-                            }
-                          }}
-                        >
-                          <CardContent>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                              }}
+              }}
+            />
+          </Box>
+
+          {loading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : filteredJobTypes.length === 0 ? (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {searchTerm
+                ? "No job types match your search criteria."
+                : "No job types available. Add a new job type to get started."
+              }
+            </Alert>
+          ) : isMobile || isTablet ? (
+            <>
+              <Grid container spacing={2}>
+                {filteredJobTypes
+                  .slice(paginationModel.page * paginationModel.pageSize,
+                    (paginationModel.page + 1) * paginationModel.pageSize)
+                  .map((job, index) => (
+                    <Grid item xs={12} sm={6} key={job.id}>
+                      <Card
+                        elevation={1}
+                        sx={{
+                          height: '100%',
+                          borderRadius: 1,
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            boxShadow: 3
+                          }
+                        }}
+                      >
+                        <CardContent>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight={500}
                             >
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight={500}
+                              {job.jobrole_name}
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleOpenEditDialog(job)}
+                                size="small"
                               >
-                                {job.jobrole_name}
-                              </Typography>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                <IconButton
-                                  color="primary"
-                                  onClick={() => handleOpenEditDialog(job)}
-                                  size="small"
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  color="error"
-                                  onClick={() => handleOpenDeleteDialog(job)}
-                                  size="small"
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                color="error"
+                                onClick={() => handleOpenDeleteDialog(job)}
+                                size="small"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
                             </Box>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                </Grid>
-
-                {filteredJobTypes.length > paginationModel.pageSize && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      mt: 3
-                    }}
-                  >
-                    <Grid container justifyContent="center">
-                      <Grid item>
-                        <DataGrid
-                          paginationModel={paginationModel}
-                          onPaginationModelChange={handlePaginationModelChange}
-                          pageSizeOptions={[5, 10, 25]}
-                          pagination
-                          paginationMode="client"
-                          hideFooter={false}
-                          autoHeight
-                          rows={[]}
-                          columns={[]}
-                          sx={{
-                            '& .MuiDataGrid-main, .MuiDataGrid-virtualScroller, .MuiDataGrid-columnsContainer, .MuiDataGrid-columnHeaders': {
-                              display: 'none'
-                            },
-                            '& .MuiDataGrid-footerContainer': {
-                              borderTop: 'none'
-                            },
-                            width: 'auto',
-                            border: 'none'
-                          }}
-                        />
-                      </Grid>
+                          </Box>
+                        </CardContent>
+                      </Card>
                     </Grid>
-                  </Box>
-                )}
-              </>
-            ) : (
-              <Paper
-                elevation={0}
-                sx={{
-                  overflow: 'hidden',
-                  mb: 2,
-                  width: '100%',
-                }}
-              >
-                <DataGrid
-                  rows={filteredJobTypes}
-                  columns={columns}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={handlePaginationModelChange}
-                  pageSizeOptions={[5, 10, 25]}
-                  loading={loading}
-                  density={isMobile ? "compact" : "standard"}
-                  getRowId={(row) => row.id}
-                  disableRowSelectionOnClick
-                  sx={{
-                    '& .MuiDataGrid-columnHeader': {
-                      backgroundColor: 'background.default',
-                      fontWeight: 600,
-                    },
-                    '& .MuiDataGrid-row:nth-of-type(even)': {
-                      backgroundColor: '#fafafa',
-                    },
-                    border: 'none'
-                  }}
-                />
-              </Paper>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+              </Grid>
 
-        <Dialog
-          open={openEditDialog}
-          onClose={!submitting ? handleCloseEditDialog : undefined}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
+              {filteredJobTypes.length > paginationModel.pageSize && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    mt: 3
+                  }}
+                >
+                  <Grid container justifyContent="center">
+                    <Grid item>
+                      <DataGrid
+                        paginationModel={paginationModel}
+                        onPaginationModelChange={handlePaginationModelChange}
+                        pageSizeOptions={[5, 10, 25]}
+                        pagination
+                        paginationMode="client"
+                        hideFooter={false}
+                        autoHeight
+                        rows={[]}
+                        columns={[]}
+                        sx={{
+                          '& .MuiDataGrid-main, .MuiDataGrid-virtualScroller, .MuiDataGrid-columnsContainer, .MuiDataGrid-columnHeaders': {
+                            display: 'none'
+                          },
+                          '& .MuiDataGrid-footerContainer': {
+                            borderTop: 'none'
+                          },
+                          width: 'auto',
+                          border: 'none'
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              )}
+            </>
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                overflow: 'hidden',
+                mb: 2,
+                width: '100%',
+              }}
+            >
+              <DataGrid
+                rows={filteredJobTypes}
+                columns={columns}
+                paginationModel={paginationModel}
+                onPaginationModelChange={handlePaginationModelChange}
+                pageSizeOptions={[5, 10, 25]}
+                loading={loading}
+                density={isMobile ? "compact" : "standard"}
+                getRowId={(row) => row.id}
+                disableRowSelectionOnClick
+                sx={{
+                  '& .MuiDataGrid-columnHeader': {
+                    backgroundColor: 'background.default',
+                    fontWeight: 600,
+                  },
+                  '& .MuiDataGrid-row:nth-of-type(even)': {
+                    backgroundColor: '#fafafa',
+                  },
+                  border: 'none'
+                }}
+              />
+            </Paper>
+          )}
+        </CardContent>
+      </Card>
+      <Dialog
+        open={openEditDialog}
+        onClose={!submitting ? handleCloseEditDialog : undefined}
+        fullWidth
+        maxWidth="sm"
+        slotProps={{
+          paper: {
             sx: {
               borderRadius: { xs: 1, sm: 2 },
               width: { xs: '95%', sm: 'auto' }
             }
-          }}
-        >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {selectedJob ? "Edit Job Type" : "Add New Job Type"}
-              </Typography>
-              {!submitting && (
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={handleCloseEditDialog}
-                  aria-label="close"
-                  size="small"
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </DialogTitle>
+          }
+        }}
+      >
+        <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {selectedJob ? "Edit Job Type" : "Add New Job Type"}
+            </Typography>
+            {!submitting && (
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={handleCloseEditDialog}
+                aria-label="close"
+                size="small"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
+        </DialogTitle>
 
-          <Divider />
+        <Divider />
 
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <TextField
-              label="Job Role Name"
+        <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
+          <TextField
+            label="Job Role Name"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            name="jobrole_name"
+            value={jobFormData.jobrole_name}
+            onChange={handleInputChange}
+            error={Boolean(formErrors.jobrole_name)}
+            helperText={formErrors.jobrole_name || ""}
+            disabled={submitting}
+            autoFocus
+            inputRef={inputRef}
+            slotProps={{
+              inputLabel: { shrink: true }
+            }}
+          />
+        </DialogContent>
+
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'flex-end',
+              gap: 1
+            }}
+          >
+            <Button
+              onClick={handleCloseEditDialog}
               variant="outlined"
-              fullWidth
-              margin="normal"
-              name="jobrole_name"
-              value={jobFormData.jobrole_name}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.jobrole_name)}
-              helperText={formErrors.jobrole_name || ""}
+              color="primary"
               disabled={submitting}
-              autoFocus
-              inputRef={inputRef}
-              InputLabelProps={{ shrink: true }}
-            />
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
+              fullWidth={isMobile}
               sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
+                order: { xs: 2, sm: 1 },
+                textTransform: 'none'
               }}
             >
-              <Button
-                onClick={handleCloseEditDialog}
-                variant="outlined"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
+              Cancel
+            </Button>
 
-              <Button
-                onClick={handleSaveJobType}
-                variant="contained"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
-                }}
-              >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : selectedJob ? (
-                  "Update"
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          open={openDeleteDialog}
-          onClose={!submitting ? handleCloseDeleteDialog : undefined}
-          PaperProps={{
+            <Button
+              onClick={handleSaveJobType}
+              variant="contained"
+              color="primary"
+              disabled={submitting}
+              fullWidth={isMobile}
+              sx={{
+                order: { xs: 1, sm: 2 },
+                textTransform: 'none'
+              }}
+            >
+              {submitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : selectedJob ? (
+                "Update"
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openDeleteDialog}
+        onClose={!submitting ? handleCloseDeleteDialog : undefined}
+        slotProps={{
+          paper: {
             sx: {
               borderRadius: { xs: 1, sm: 2 },
               width: { xs: '95%', sm: 'auto' },
               maxWidth: '450px'
             }
-          }}
-        >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
-                Delete Job Type
-              </Typography>
-              {!submitting && (
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={handleCloseDeleteDialog}
-                  aria-label="close"
-                  size="small"
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </DialogTitle>
-
-          <Divider />
-
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <Typography variant="body1" mb={1}>
-              Are you sure you want to delete this job type:
+          }
+        }}
+      >
+        <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
+              Delete Job Type
             </Typography>
-            <Typography variant="subtitle1" fontWeight={600} mb={2}>
-              "{selectedJob?.jobrole_name}"
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              This action cannot be undone.
-            </Typography>
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button
+            {!submitting && (
+              <IconButton
+                edge="end"
+                color="inherit"
                 onClick={handleCloseDeleteDialog}
-                variant="outlined"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
-                }}
+                aria-label="close"
+                size="small"
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDeleteJobType}
-                variant="contained"
-                color="error"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
-                }}
-              >
-                {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
+        </DialogTitle>
 
-        <Backdrop
-          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
-          open={submitting}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
+        <Divider />
 
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          sx={{ mt: { xs: 7, sm: 8 } }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            variant="filled"
-            elevation={6}
+        <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
+          <Typography variant="body1" mb={1}>
+            Are you sure you want to delete this job type:
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={600} mb={2}>
+            "{selectedJob?.jobrole_name}"
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+          <Box
             sx={{
-              width: "100%",
-              boxShadow: 3,
-              '& .MuiAlert-message': {
-                maxWidth: '100%',
-                wordBreak: 'break-word'
-              }
+              width: '100%',
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'flex-end',
+              gap: 1
             }}
           >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      
+            <Button
+              onClick={handleCloseDeleteDialog}
+              variant="outlined"
+              disabled={submitting}
+              fullWidth={isMobile}
+              sx={{
+                order: { xs: 2, sm: 1 },
+                textTransform: 'none'
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteJobType}
+              variant="contained"
+              color="error"
+              disabled={submitting}
+              fullWidth={isMobile}
+              sx={{
+                order: { xs: 1, sm: 2 },
+                textTransform: 'none'
+              }}
+            >
+              {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
+        open={submitting}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{ mt: { xs: 7, sm: 8 } }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          elevation={6}
+          sx={{
+            width: "100%",
+            boxShadow: 3,
+            '& .MuiAlert-message': {
+              maxWidth: '100%',
+              wordBreak: 'break-word'
+            }
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Layout>
   );
 };

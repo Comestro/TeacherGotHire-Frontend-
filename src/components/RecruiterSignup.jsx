@@ -82,7 +82,7 @@ const RecruiterSignUpPage = () => {
     };
 
     return (
-        <>
+      <>
         <CustomHeader />
         <ToastContainer />
         <div
@@ -359,7 +359,7 @@ const RecruiterSignUpPage = () => {
             </div>
           </div>
         </div>
-        </>
+      </>
     );
 }
 

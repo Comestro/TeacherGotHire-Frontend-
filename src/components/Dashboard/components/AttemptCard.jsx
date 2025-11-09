@@ -44,13 +44,11 @@ const AttemptCard = () => {
             ))
           ) : (
             // Message to display when no categories are available
-            <div className="text-gray-500 font-medium italic">
-              No categories available. Please select a category.
-            </div>
+            (<div className="text-gray-500 font-medium italic">No categories available. Please select a category.
+                          </div>)
           )}
         </div>
       </div>
-
       <div className="md:px-6 relative px-2 flex items-center md:gap-10 py-4 bg-white border border-[#5a94b3d4] rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
         <div className="">
           <div className="flex flex-col items-center justify-center">

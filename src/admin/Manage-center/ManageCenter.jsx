@@ -493,234 +493,234 @@ export default function ManageCenter() {
 
   return (
     <Layout>
-        {/* Header */}
-        <Paper
-          elevation={0}
-          sx={{
-            mb: 1,
-          }}
-        >
-          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={2}>
-            <Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: "teal" }}>
-                Manage Exam Centers
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {filteredCenters.length} centers found
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: "flex", gap: 1, width: { xs: "100%", sm: "auto" } }}>
-              <Button startIcon={<AddIcon />} variant="contained" onClick={openAddModal} sx={{ textTransform: "none" }}>
-                Add New Center
-              </Button>
-              <Button variant="outlined" onClick={exportCsv} sx={{ textTransform: "none" }}>
-                Export CSV
-              </Button>
-            </Box>
+      {/* Header */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 1,
+        }}
+      >
+        <Box display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={2}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "teal" }}>
+              Manage Exam Centers
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {filteredCenters.length} centers found
+            </Typography>
           </Box>
-        </Paper>
 
-        {/* Search & Filters */}
-        <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, borderRadius: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={8}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search by name, city, state or manager..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                InputProps={{
+          <Box sx={{ display: "flex", gap: 1, width: { xs: "100%", sm: "auto" } }}>
+            <Button startIcon={<AddIcon />} variant="contained" onClick={openAddModal} sx={{ textTransform: "none" }}>
+              Add New Center
+            </Button>
+            <Button variant="outlined" onClick={exportCsv} sx={{ textTransform: "none" }}>
+              Export CSV
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+      {/* Search & Filters */}
+      <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3, borderRadius: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={8}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by name, city, state or manager..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              slotProps={{
+                input: {
                   startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
-                <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="Status">
-                  <MenuItem value="">
-                    <em>All</em>
-                  </MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+                }
+              }}
+            />
           </Grid>
-        </Paper>
 
-        {/* Content */}
-        <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden", mb: 3 }}>
-          {isLoading ? (
-            <Box p={6} textAlign="center">
-              <CircularProgress />
-              <Typography mt={2} color="text.secondary">Loading exam centers...</Typography>
-            </Box>
-          ) : filteredCenters.length === 0 ? (
-            <Box p={3} textAlign="center">
-              <Alert severity="info">No exam centers found</Alert>
-            </Box>
-          ) : isMobile ? (
-            <Box p={2}>{renderMobileCards()}</Box>
-          ) : (
-            <Box sx={{width: "100%" }}>
-              <DataGrid
-                
-                rows={dgRows}
-                columns={[
-                  { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
-                  { field: "location", headerName: "Location", flex: 1.8, minWidth: 250 },
-                  { field: "pincode", headerName: "Pincode", width: 110 },
-                  {
-                    field: "manager",
-                    headerName: "Manager",
-                    flex: 1,
-                    minWidth: 170,
-                  },
-                  {
-                    field: "status",
-                    headerName: "Status",
-                    width: 120,
-                    renderCell: (p) => (
-                      <Box display="flex" justifyContent="center">
-                        <Switch checked={p.value} onChange={() => handleToggleStatus(p.row.raw)} size="small" color="success" />
-                      </Box>
-                    ),
-                  },
-                  {
-                    field: "actions",
-                    headerName: "Actions",
-                    width: 140,
-                    sortable: false,
-                    renderCell: (p) => (
-                      <Box display="flex" gap={1} justifyContent="center">
-                        <Tooltip title="Edit">
-                          <IconButton size="small" onClick={() => openEditModal(p.row.raw)}><EditIcon fontSize="small" /></IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <IconButton size="small" color="error" onClick={() => confirmDelete(p.row.raw)}><DeleteIcon fontSize="small" /></IconButton>
-                        </Tooltip>
-                      </Box>
-                    ),
-                  },
-                ]}
-                getRowId={(r) => r.id}
-                pageSizeOptions={[5, 10, 25, 50]}
-                initialState={{
-                  pagination: { paginationModel: { page: pageState.page, pageSize: pageState.pageSize } },
-                  sorting: { sortModel: [{ field: "centerName", sort: "asc" }] },
-                }}
-                paginationModel={pageState}
-                onPaginationModelChange={(model) => setPageState(model)}
-                slots={{ toolbar: CustomToolbar }}
-                sx={{
-                  border: "none",
-                  "& .MuiDataGrid-columnHeaders": { backgroundColor: theme.palette.background.default, fontWeight: 700 },
-                  "& .MuiDataGrid-row:nth-of-type(even)": { backgroundColor: theme.palette.mode === "light" ? "#fafafa" : theme.palette.background.default },
-                }}
-              />
-            </Box>
-          )}
-        </Paper>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Status</InputLabel>
+              <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="Status">
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Paper>
+      {/* Content */}
+      <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden", mb: 3 }}>
+        {isLoading ? (
+          <Box p={6} textAlign="center">
+            <CircularProgress />
+            <Typography mt={2} color="text.secondary">Loading exam centers...</Typography>
+          </Box>
+        ) : filteredCenters.length === 0 ? (
+          <Box p={3} textAlign="center">
+            <Alert severity="info">No exam centers found</Alert>
+          </Box>
+        ) : isMobile ? (
+          <Box p={2}>{renderMobileCards()}</Box>
+        ) : (
+          <Box sx={{width: "100%" }}>
+            <DataGrid
+              
+              rows={dgRows}
+              columns={[
+                { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
+                { field: "location", headerName: "Location", flex: 1.8, minWidth: 250 },
+                { field: "pincode", headerName: "Pincode", width: 110 },
+                {
+                  field: "manager",
+                  headerName: "Manager",
+                  flex: 1,
+                  minWidth: 170,
+                },
+                {
+                  field: "status",
+                  headerName: "Status",
+                  width: 120,
+                  renderCell: (p) => (
+                    <Box display="flex" justifyContent="center">
+                      <Switch checked={p.value} onChange={() => handleToggleStatus(p.row.raw)} size="small" color="success" />
+                    </Box>
+                  ),
+                },
+                {
+                  field: "actions",
+                  headerName: "Actions",
+                  width: 140,
+                  sortable: false,
+                  renderCell: (p) => (
+                    <Box display="flex" gap={1} justifyContent="center">
+                      <Tooltip title="Edit">
+                        <IconButton size="small" onClick={() => openEditModal(p.row.raw)}><EditIcon fontSize="small" /></IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton size="small" color="error" onClick={() => confirmDelete(p.row.raw)}><DeleteIcon fontSize="small" /></IconButton>
+                      </Tooltip>
+                    </Box>
+                  ),
+                },
+              ]}
+              getRowId={(r) => r.id}
+              pageSizeOptions={[5, 10, 25, 50]}
+              initialState={{
+                pagination: { paginationModel: { page: pageState.page, pageSize: pageState.pageSize } },
+                sorting: { sortModel: [{ field: "centerName", sort: "asc" }] },
+              }}
+              paginationModel={pageState}
+              onPaginationModelChange={(model) => setPageState(model)}
+              slots={{ toolbar: CustomToolbar }}
+              sx={{
+                border: "none",
+                "& .MuiDataGrid-columnHeaders": { backgroundColor: theme.palette.background.default, fontWeight: 700 },
+                "& .MuiDataGrid-row:nth-of-type(even)": { backgroundColor: theme.palette.mode === "light" ? "#fafafa" : theme.palette.background.default },
+              }}
+            />
+          </Box>
+        )}
+      </Paper>
+      {/* Add / Edit Modal */}
+      <Dialog open={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>{selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}</DialogTitle>
+        <DialogContent dividers>
+          <Box component="form" id="center-form" onSubmit={handleSubmit} noValidate>
+            <Grid container spacing={2}>
+              {!selectedCenter && (
+                <>
+                  <Grid item xs={12}><Typography variant="subtitle2" color="primary">User Information</Typography></Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="Username" name="username" value={form.username} onChange={handleInput} fullWidth required error={!!formErrors.username} helperText={formErrors.username} disabled={isSubmitting} />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="Email" name="email" value={form.email} onChange={handleInput} fullWidth required error={!!formErrors.email} helperText={formErrors.email} disabled={isSubmitting} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField label="Password" name="password" value={form.password} onChange={handleInput} fullWidth required type="password" error={!!formErrors.password} helperText={formErrors.password || "Required for new center"} disabled={isSubmitting} />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="First Name" name="Fname" value={form.Fname} onChange={handleInput} fullWidth required error={!!formErrors.Fname} helperText={formErrors.Fname} disabled={isSubmitting} />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="Last Name" name="Lname" value={form.Lname} onChange={handleInput} fullWidth required error={!!formErrors.Lname} helperText={formErrors.Lname} disabled={isSubmitting} />
+                  </Grid>
+                  <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+                </>
+              )}
 
-        {/* Add / Edit Modal */}
-        <Dialog open={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>{selectedCenter ? "Edit Exam Center" : "Add New Exam Center"}</DialogTitle>
-          <DialogContent dividers>
-            <Box component="form" id="center-form" onSubmit={handleSubmit} noValidate>
-              <Grid container spacing={2}>
-                {!selectedCenter && (
-                  <>
-                    <Grid item xs={12}><Typography variant="subtitle2" color="primary">User Information</Typography></Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField label="Username" name="username" value={form.username} onChange={handleInput} fullWidth required error={!!formErrors.username} helperText={formErrors.username} disabled={isSubmitting} />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField label="Email" name="email" value={form.email} onChange={handleInput} fullWidth required error={!!formErrors.email} helperText={formErrors.email} disabled={isSubmitting} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField label="Password" name="password" value={form.password} onChange={handleInput} fullWidth required type="password" error={!!formErrors.password} helperText={formErrors.password || "Required for new center"} disabled={isSubmitting} />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField label="First Name" name="Fname" value={form.Fname} onChange={handleInput} fullWidth required error={!!formErrors.Fname} helperText={formErrors.Fname} disabled={isSubmitting} />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField label="Last Name" name="Lname" value={form.Lname} onChange={handleInput} fullWidth required error={!!formErrors.Lname} helperText={formErrors.Lname} disabled={isSubmitting} />
-                    </Grid>
-                    <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
-                  </>
-                )}
+              <Grid item xs={12}><Typography variant="subtitle2" color="primary">Exam Center Information</Typography></Grid>
 
-                <Grid item xs={12}><Typography variant="subtitle2" color="primary">Exam Center Information</Typography></Grid>
-
-                <Grid item xs={12}>
-                  <TextField label="Center Name" name="center_name" value={form.center_name} onChange={handleInput} fullWidth required error={!!formErrors.center_name} helperText={formErrors.center_name} disabled={isSubmitting} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField label="Area" name="area" value={form.area} onChange={handleInput} fullWidth required error={!!formErrors.area} helperText={formErrors.area} disabled={isSubmitting} />
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    label="Pincode"
-                    name="pincode"
-                    value={form.pincode}
-                    onChange={handleInput}
-                    fullWidth
-                    required
-                    error={!!formErrors.pincode || pincodeStatus === "error"}
-                    helperText={formErrors.pincode || (loadingPincode ? "Resolving pincode..." : pincodeStatus === "error" ? "Pincode not found" : "")}
-                    InputProps={{ endAdornment: loadingPincode ? <CircularProgress size={18} /> : null }}
-                    inputProps={{ maxLength: 6 }}
-                    disabled={isSubmitting || loadingPincode}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <TextField label="City" name="city" value={form.city} onChange={handleInput} fullWidth required error={!!formErrors.city} helperText={formErrors.city} disabled={isSubmitting} />
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <TextField label="State" name="state" value={form.state} fullWidth required InputProps={{ readOnly: true }} error={!!formErrors.state} helperText={formErrors.state} disabled />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <FormControlLabel control={<Switch checked={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.checked }))} />} label={form.status ? "Active" : "Inactive"} />
-                </Grid>
+              <Grid item xs={12}>
+                <TextField label="Center Name" name="center_name" value={form.center_name} onChange={handleInput} fullWidth required error={!!formErrors.center_name} helperText={formErrors.center_name} disabled={isSubmitting} />
               </Grid>
-            </Box>
-          </DialogContent>
 
-          <DialogActions>
-            <Button onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>Cancel</Button>
-            <Button form="center-form" type="submit" variant="contained" disabled={isSubmitting}>
-              {isSubmitting ? <CircularProgress size={18} color="inherit" /> : selectedCenter ? "Update" : "Save"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <Grid item xs={12}>
+                <TextField label="Area" name="area" value={form.area} onChange={handleInput} fullWidth required error={!!formErrors.area} helperText={formErrors.area} disabled={isSubmitting} />
+              </Grid>
 
-        {/* Delete confirm */}
-        <Dialog open={deleteConfirmOpen} onClose={() => !isSubmitting && setDeleteConfirmOpen(false)}>
-          <DialogTitle>Delete Exam Center</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to delete this exam center? This action cannot be undone.</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteConfirmOpen(false)} disabled={isSubmitting}>Cancel</Button>
-            <Button onClick={handleDeleteCenter} color="error" variant="contained" disabled={isSubmitting}>
-              {isSubmitting ? <CircularProgress size={18} color="inherit" /> : "Delete"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Pincode"
+                  name="pincode"
+                  value={form.pincode}
+                  onChange={handleInput}
+                  fullWidth
+                  required
+                  error={!!formErrors.pincode || pincodeStatus === "error"}
+                  helperText={formErrors.pincode || (loadingPincode ? "Resolving pincode..." : pincodeStatus === "error" ? "Pincode not found" : "")}
+                  disabled={isSubmitting || loadingPincode}
+                  slotProps={{
+                    input: { endAdornment: loadingPincode ? <CircularProgress size={18} /> : null },
+                    htmlInput: { maxLength: 6 }
+                  }} />
+              </Grid>
 
-        {/* Snackbar */}
-        <Snackbar open={snack.open} autoHideDuration={6000} onClose={closeSnack} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
-          <Alert onClose={closeSnack} severity={snack.severity} variant="filled">{snack.msg}</Alert>
-        </Snackbar>
+              <Grid item xs={12} sm={4}>
+                <TextField label="City" name="city" value={form.city} onChange={handleInput} fullWidth required error={!!formErrors.city} helperText={formErrors.city} disabled={isSubmitting} />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField label="State" name="state" value={form.state} fullWidth required error={!!formErrors.state} helperText={formErrors.state} disabled slotProps={{
+                  input: { readOnly: true }
+                }} />
+              </Grid>
+
+              <Grid item xs={12}>
+                <FormControlLabel control={<Switch checked={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.checked }))} />} label={form.status ? "Active" : "Inactive"} />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setIsModalOpen(false)} disabled={isSubmitting}>Cancel</Button>
+          <Button form="center-form" type="submit" variant="contained" disabled={isSubmitting}>
+            {isSubmitting ? <CircularProgress size={18} color="inherit" /> : selectedCenter ? "Update" : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Delete confirm */}
+      <Dialog open={deleteConfirmOpen} onClose={() => !isSubmitting && setDeleteConfirmOpen(false)}>
+        <DialogTitle>Delete Exam Center</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this exam center? This action cannot be undone.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)} disabled={isSubmitting}>Cancel</Button>
+          <Button onClick={handleDeleteCenter} color="error" variant="contained" disabled={isSubmitting}>
+            {isSubmitting ? <CircularProgress size={18} color="inherit" /> : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Snackbar */}
+      <Snackbar open={snack.open} autoHideDuration={6000} onClose={closeSnack} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert onClose={closeSnack} severity={snack.severity} variant="filled">{snack.msg}</Alert>
+      </Snackbar>
     </Layout>
   );
 }

@@ -474,7 +474,6 @@ const ManageHiringRequests = () => {
           </Button>
         </Stack>
       </Box>
-
       <Card
         elevation={0}
         sx={{
@@ -527,19 +526,21 @@ const ManageHiringRequests = () => {
                   fullWidth
                   value={filters.recruiterName}
                   onChange={(e) => handleFilterChange("recruiterName", e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
-                      </InputAdornment>
-                    ),
-                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
                       '&:hover fieldset': { borderColor: '#0d9488' },
                       '&.Mui-focused fieldset': { borderColor: '#0d9488' },
                     },
+                  }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
               </Grid>
@@ -550,19 +551,21 @@ const ManageHiringRequests = () => {
                   fullWidth
                   value={filters.teacherName}
                   onChange={(e) => handleFilterChange("teacherName", e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
-                      </InputAdornment>
-                    ),
-                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
                       '&:hover fieldset': { borderColor: '#0d9488' },
                       '&.Mui-focused fieldset': { borderColor: '#0d9488' },
                     },
+                  }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
               </Grid>
@@ -658,14 +661,17 @@ const ManageHiringRequests = () => {
           )}
         </CardContent>
       </Card>
-
       {/* Details Modal */}
       <Modal
         open={modalOpen}
         onClose={() => !submitting && handleCloseModal()}
         closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{ timeout: 500, sx: { backdropFilter: 'blur(4px)' } }}
+        slots={{
+          backdrop: Backdrop
+        }}
+        slotProps={{
+          backdrop: { timeout: 500, sx: { backdropFilter: 'blur(4px)' } }
+        }}
       >
         <Box
           sx={{
@@ -851,7 +857,6 @@ const ManageHiringRequests = () => {
           )}
         </Box>
       </Modal>
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -877,7 +882,6 @@ const ManageHiringRequests = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
       <Backdrop
         sx={{
           color: '#F8FAFC',

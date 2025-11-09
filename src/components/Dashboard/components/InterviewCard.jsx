@@ -344,7 +344,7 @@ const InterviewCard = () => {
             <div className="flex">
               <div className="flex-shrink-0">
                 {notification.type === 'success' ? (
-                  <FaCheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" /> // Use CheckCircle
+                  (<FaCheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />) // Use CheckCircle
                 ) : (
                   <FaExclamationCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
                 )}
@@ -372,7 +372,6 @@ const InterviewCard = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
       {/* Header with bilingual title */}
       <div className="mb-6 p-4">
         <h1 className="text-xl font-bold text-gray-900 flex items-center">
@@ -384,43 +383,41 @@ const InterviewCard = () => {
           <br className="hidden sm:block" />
         </p>
       </div>
-      
       {/* Tab Navigation */}
-        <div className="flex space-x-2 sm:space-x-4 bg-gray-100 p-1 rounded-lg">
-          <button
-            onClick={() => setActiveTab("qualified")}
-            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
-              activeTab === "qualified"
-                ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
-                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
-            }`}
-            role="tab"
-            aria-selected={activeTab === "qualified"}
-          >
-            <FaGraduationCap className={`mr-2 ${activeTab === "qualified" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
-            Qualified for Interview
-          </button>
+      <div className="flex space-x-2 sm:space-x-4 bg-gray-100 p-1 rounded-lg">
+        <button
+          onClick={() => setActiveTab("qualified")}
+          className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+            activeTab === "qualified"
+              ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
+              : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
+          }`}
+          role="tab"
+          aria-selected={activeTab === "qualified"}
+        >
+          <FaGraduationCap className={`mr-2 ${activeTab === "qualified" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
+          Qualified for Interview
+        </button>
 
-          <button
-            onClick={() => setActiveTab("interviews")}
-            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap relative ${
-              activeTab === "interviews"
-                ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
-                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
-            }`}
-            role="tab"
-            aria-selected={activeTab === "interviews"}
-          >
-            <FaCalendarAlt className={`mr-2 ${activeTab === "interviews" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
-            My Interviews
-            {interview?.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500 text-white">
-                {interview.length}
-              </span>
-            )}
-          </button>
-        </div>
-      
+        <button
+          onClick={() => setActiveTab("interviews")}
+          className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-md font-medium text-sm transition-all duration-200 flex items-center justify-center whitespace-nowrap relative ${
+            activeTab === "interviews"
+              ? "bg-white text-cyan-600 shadow-sm border border-cyan-200"
+              : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
+          }`}
+          role="tab"
+          aria-selected={activeTab === "interviews"}
+        >
+          <FaCalendarAlt className={`mr-2 ${activeTab === "interviews" ? "text-cyan-500" : "text-gray-400"}`} aria-hidden="true" />
+          My Interviews
+          {interview?.length > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-500 text-white">
+              {interview.length}
+            </span>
+          )}
+        </button>
+      </div>
       {/* QUALIFIED EXAMS TAB */}
       {activeTab === "qualified" && (
         <div>
@@ -652,7 +649,6 @@ const InterviewCard = () => {
           )}
         </div>
       )}
-      
       {/* INTERVIEWS TAB */}
       {activeTab === "interviews" && (
         <div>

@@ -207,7 +207,6 @@ export default function TeacherViewPageFull() {
   return (
     <div className="min-h-screen bg-background text-text">
       <ToastContainer position="top-right" />
-
       {/* Top bar / Breadcrumb */}
       <header className="bg-white border-b shadow-sm">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -224,7 +223,6 @@ export default function TeacherViewPageFull() {
           </div>
         </div>
       </header>
-
       <main className=" mx-auto mt-5 gap-6">
         {/* Left: Profile card */}
         <section className="lg:col-span-8 space-y-6">
@@ -536,9 +534,6 @@ export default function TeacherViewPageFull() {
 
        
       </main>
-
-      
-
       {/* Request Modal */}
       {openRequestModal && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">

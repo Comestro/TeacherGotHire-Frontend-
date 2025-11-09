@@ -491,13 +491,6 @@ const ManageQualification = () => {
                   placeholder="Search qualifications..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#0d9488' }} />
-                      </InputAdornment>
-                    ),
-                  }}
                   sx={{
                     minWidth: { xs: '100%', sm: '280px' },
                     '& .MuiOutlinedInput-root': {
@@ -509,6 +502,15 @@ const ManageQualification = () => {
                         borderColor: '#0d9488',
                       },
                     },
+                  }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#0d9488' }} />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
               </Box>
@@ -749,10 +751,14 @@ const ManageQualification = () => {
           open={openAddEditModal}
           onClose={!submitting ? handleCloseAddEditModal : undefined}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box
@@ -838,12 +844,14 @@ const ManageQualification = () => {
                     color: '#0d9488',
                   },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SchoolIcon sx={{ color: '#0d9488' }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SchoolIcon sx={{ color: '#0d9488' }} />
+                      </InputAdornment>
+                    ),
+                  }
                 }}
               />
 
@@ -909,10 +917,14 @@ const ManageQualification = () => {
           open={openDeleteModal}
           onClose={!submitting ? handleCloseDeleteModal : undefined}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)' },
+          slots={{
+            backdrop: Backdrop
+          }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+              sx: { backdropFilter: 'blur(4px)' },
+            }
           }}
         >
           <Box

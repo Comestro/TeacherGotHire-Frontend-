@@ -275,7 +275,7 @@ const ExamCenterModal = ({
           </div>
         ) : showPasscodeStep || isverifyCard ? (
           /* Step 2: Passcode Verification */
-          <div className="p-8">
+          (<div className="p-8">
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,7 +289,6 @@ const ExamCenterModal = ({
                 Please enter the passkey provided by the exam center
               </p>
             </div>
-
             <form onSubmit={handleverifyPasskey} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -339,10 +338,10 @@ const ExamCenterModal = ({
                 )}
               </button>
             </form>
-          </div>
+          </div>)
         ) : (
           /* Step 1: Center Selection */
-          <div className="p-8">
+          (<div className="p-8">
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full mb-4">
                 <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -357,7 +356,6 @@ const ExamCenterModal = ({
                 Choose the exam center where you'll take your assessment
               </p>
             </div>
-            
             <form onSubmit={handleGeneratePasskey} className="space-y-5">
               {/* Pincode Filter Input */}
               <div>
@@ -549,7 +547,7 @@ const ExamCenterModal = ({
                 )}
               </button>
             </form>
-          </div>
+          </div>)
         )}
       </div>
     </div>

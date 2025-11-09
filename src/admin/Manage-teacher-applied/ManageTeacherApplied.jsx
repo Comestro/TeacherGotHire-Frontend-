@@ -377,12 +377,14 @@ const ManageTeacherApplied = () => {
                 size="small"
                 placeholder="Search by name, email, subject or job"
                 onChange={onSearchChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }
                 }}
               />
             </Grid>

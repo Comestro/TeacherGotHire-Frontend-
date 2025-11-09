@@ -385,7 +385,6 @@ function Login() {
             Sign in to <span className="text-teal-600">PTPI</span>
           </h2>
         </div>
-
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4 sm:space-y-5"
@@ -531,7 +530,6 @@ function Login() {
             )}
           </Button>
         </form>
-
         <div className="mt-6 space-y-4">
           <div className="flex items-center">
             <hr className="flex-grow border-gray-300" />

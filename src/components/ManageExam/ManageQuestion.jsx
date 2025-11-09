@@ -752,7 +752,7 @@ const ManageQuestion = () => {
         >
           {selectedLanguage === "all" && selectedClass === "all" && selectedSubject === "all" && !searchTerm ? (
             // Show organized by order with parallel Hindi/English
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            (<div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white">
                 <div className="flex items-center justify-between">
                   <h2 className="text-base sm:text-xl font-bold flex items-center">
@@ -764,7 +764,6 @@ const ManageQuestion = () => {
                   </span>
                 </div>
               </div>
-
               <div className="p-4 sm:p-6">
                 {maxOrder > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -896,7 +895,7 @@ const ManageQuestion = () => {
                   </div>
                 ) : (
                   // Empty state - Made responsive
-                  <div className="text-center py-8 sm:py-12">
+                  (<div className="text-center py-8 sm:py-12">
                     <FiFileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
                     <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-1 sm:mb-2">
                       No Questions Added Yet
@@ -911,13 +910,13 @@ const ManageQuestion = () => {
                       <FiPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                       Add First Question
                     </button>
-                  </div>
+                  </div>)
                 )}
               </div>
-            </div>
+            </div>)
           ) : (
             // Show filtered questions - Made responsive
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            (<div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="p-4 sm:p-6">
                 {filteredQuestions.length === 0 ? (
                   <div className="text-center py-8 sm:py-12">
@@ -938,7 +937,7 @@ const ManageQuestion = () => {
                   </div>
                 ) : (
                   // Split into language columns if in filtered view
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {/* Only show English column if there are English questions */}
                     {filteredByLanguage.English.length > 0 && (
                       <div>
@@ -972,7 +971,6 @@ const ManageQuestion = () => {
                         </SortableContext>
                       </div>
                     )}
-
                     {/* Only show Hindi column if there are Hindi questions */}
                     {filteredByLanguage.Hindi.length > 0 && (
                       <div>
@@ -1006,7 +1004,6 @@ const ManageQuestion = () => {
                         </SortableContext>
                       </div>
                     )}
-
                     {/* If only one language has questions, span the full width */}
                     {(filteredByLanguage.English.length === 0 ||
                       filteredByLanguage.Hindi.length === 0) &&
@@ -1019,10 +1016,10 @@ const ManageQuestion = () => {
                           </p>
                         </div>
                       )}
-                  </div>
+                  </div>)
                 )}
               </div>
-            </div>
+            </div>)
           )}
         </DndContext>
 

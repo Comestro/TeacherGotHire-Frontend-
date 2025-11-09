@@ -252,7 +252,6 @@ function SignUpPage() {
             Signup To <span className="text-teal-600">PTPI</span>
           </h2>
         </div>
-
         <form onSubmit={handleSubmit(signup)} className="space-y-4 sm:space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -407,7 +406,6 @@ function SignUpPage() {
             )}
           </Button>
         </form>
-
         <div className="mt-6 text-center">
          
           <div className="relative mt-6">

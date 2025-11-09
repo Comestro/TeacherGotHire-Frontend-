@@ -490,7 +490,9 @@ const ManageQuestion = () => {
                 onChange={(e) =>
                   setCurrentQuestion({ ...currentQuestion, correct_option: parseInt(e.target.value) })
                 }
-                inputProps={{ min: 1, max: 4 }}
+                slotProps={{
+                  htmlInput: { min: 1, max: 4 }
+                }}
               />
               <TextField
                 label="Time (minutes)"
@@ -500,7 +502,9 @@ const ManageQuestion = () => {
                 onChange={(e) =>
                   setCurrentQuestion({ ...currentQuestion, time: parseFloat(e.target.value) })
                 }
-                inputProps={{ step: 0.5 }}
+                slotProps={{
+                  htmlInput: { step: 0.5 }
+                }}
               />
             </Box>
           </DialogContent>
