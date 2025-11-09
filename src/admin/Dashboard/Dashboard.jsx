@@ -214,8 +214,6 @@ export default function AdminDashboard() {
     <Layout>
       <Box sx={{
         flexGrow: 1,
-        p: { xs: 1.5, sm: 2 },
-        backgroundColor: '#F8FAFC',
         minHeight: '100vh',
         color: '#1E293B',
         transition: 'all 0.3s ease',

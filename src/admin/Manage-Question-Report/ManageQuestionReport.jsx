@@ -118,7 +118,7 @@ export default function ManageQuestionReport() {
   const [issueFilter, setIssueFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest"); // newest / oldest / status
 
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // pagination + table controls
   const [page, setPage] = useState(0);
@@ -424,8 +424,8 @@ export default function ManageQuestionReport() {
           </Alert>
         </Snackbar>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" fontWeight={700} color="teal">
+        <Box sx={{ mb: 1,mt: { xs: 2, md: 0 } }}>
+          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} fontWeight={700} color="teal">
             Manage Question Reports
           </Typography>
           <Typography color="text.secondary">Review reported questions and resolve issues.</Typography>
@@ -445,7 +445,7 @@ export default function ManageQuestionReport() {
                   startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
                 }}
               />
-            </Grid>
+            </Grid> 
 
             <Grid item xs={12} md={6} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
               <Tooltip title="Refresh">
@@ -525,19 +525,19 @@ export default function ManageQuestionReport() {
 
         {/* Stats */}
         <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={4}>
             <Paper sx={{ p: 2, textAlign: "center" }}>
               <Typography variant="h5" fontWeight={700}>{statusCounts.total}</Typography>
               <Typography color="text.secondary">Total Reports</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={4}>
+          <Grid item xs={4}>
             <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.true}` }}>
               <Typography variant="h5" fontWeight={700}>{statusCounts.pending}</Typography>
               <Typography color="text.secondary">Pending</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={4}>
+          <Grid item xs={4}>
             <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.false}` }}>
               <Typography variant="h5" fontWeight={700}>{statusCounts.resolved}</Typography>
               <Typography color="text.secondary">Resolved</Typography>

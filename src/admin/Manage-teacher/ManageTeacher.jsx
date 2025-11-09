@@ -1,359 +1,183 @@
-import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Typography,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  Checkbox,
-  IconButton,
-  FormControl,
-  Box,
-  Snackbar,
-  Alert,
-  Switch,
-  Paper,
-  Grid,
-  CircularProgress,
-  Chip,
-  Tooltip,
-  Avatar,
-  InputAdornment,
-  useMediaQuery,
-  useTheme,
-  Card,
-  CardContent,
-  Divider,
-  Badge,
-  Skeleton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  alpha,
-} from "@mui/material";
-// Import DataGrid components
-import { 
-  DataGrid, 
-  GridToolbarContainer,
-  GridToolbarExport,
-  GridToolbarFilterButton,
-  GridToolbarColumnsButton,
-  GridToolbarDensitySelector
-} from "@mui/x-data-grid";
-import {
-  MdVisibility as ViewIcon,
-  MdGetApp as ExportIcon,
-  MdSearch as SearchIcon,
-  MdRefresh as RefreshIcon,
-  MdFilterList as FilterIcon,
-  MdCheck as CheckIcon,
-  MdClear as ClearIcon,
-  MdHelpOutline as HelpIcon,
-  MdPersonAdd as PersonAddIcon,
-  MdEdit as EditIcon,
-  MdDelete as DeleteIcon,
-  MdPerson as PersonIcon,
-  MdLocationOn as LocationIcon,
-  MdSchool as SchoolIcon,
-  MdEmail as EmailIcon,
-  MdGridView as GridViewIcon,
-  MdViewList as ListViewIcon,
-} from "react-icons/md";
-import { FaUserGraduate, FaMapMarkerAlt, FaEnvelope, FaFilter } from "react-icons/fa";
-import { styled } from "@mui/material/styles";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../Admin/Layout";
-import { getTeacher, updateTeacher } from "../../services/adminTeacherApi";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTeachers, searchTeachers } from "../../features/teacherFilterSlice";
 import { getQualification } from "../../services/adminManageQualificationApi";
 import { getSubjects } from "../../services/adminSubujectApi";
-
-// Styled components for enhanced UI
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    right: 3,
-    top: 3,
-    padding: '0 4px',
-  },
-}));
-
-const TeacherAvatar = styled(Avatar)(({ theme }) => ({
-  backgroundColor: '#0d9488',
-  width: 40,
-  height: 40,
-  fontWeight: 600,
-  boxShadow: `0 2px 8px ${alpha('#0d9488', 0.3)}`,
-}));
-
-const StatusChip = styled(Chip)(({ theme, active }) => ({
-  fontWeight: 500,
-  backgroundColor: active === "true" || active === true ? 
-    alpha('#10b981', 0.1) : alpha('#ef4444', 0.1),
-  color: active === "true" || active === true ? '#059669' : '#dc2626',
-  border: `1px solid ${active === "true" || active === true ? '#10b981' : '#ef4444'}`,
-  '&:hover': {
-    backgroundColor: active === "true" || active === true ? 
-      alpha('#10b981', 0.15) : alpha('#ef4444', 0.15),
-  }
-}));
-
-const FilterPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  background: `linear-gradient(135deg, ${alpha('#0d9488', 0.02)} 0%, ${alpha('#06b6d4', 0.02)} 100%)`,
-  border: `1px solid ${alpha('#0d9488', 0.1)}`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    boxShadow: `0 8px 32px ${alpha('#0d9488', 0.1)}`,
-    border: `1px solid ${alpha('#0d9488', 0.2)}`,
-  }
-}));
-
-const TeacherCard = styled(Card)(({ theme, active }) => ({
-  borderRadius: theme.spacing(2),
-  border: `1px solid ${alpha(active ? '#10b981' : '#ef4444', 0.2)}`,
-  background: `linear-gradient(135deg, ${alpha(active ? '#10b981' : '#ef4444', 0.02)} 0%, ${alpha('#ffffff', 0.8)} 100%)`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `0 12px 40px ${alpha(active ? '#10b981' : '#ef4444', 0.15)}`,
-  }
-}));
-
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialog-paper': {
-    borderRadius: theme.spacing(3),
-    background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06b6d4', 0.05)} 100%)`,
-    backdropFilter: 'blur(10px)',
-  }
-}));
-
-const GradientHeader = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
-  color: 'white',
-  padding: theme.spacing(2),
-  borderRadius: `${theme.spacing(2)} ${theme.spacing(2)} 0 0`,
-  margin: `-${theme.spacing(3)} -${theme.spacing(3)} ${theme.spacing(3)} -${theme.spacing(3)}`,
-}));
+import { updateTeacher } from "../../services/adminTeacherApi";
+import { getClassCategory } from "../../services/adminClassCategoryApi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
+import { HiOutlineAcademicCap, HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-icons/hi";
+import { IoReloadOutline, IoDownloadOutline } from "react-icons/io5";
+import FilterModal from "./FilterModal";
 
 const ManageTeacher = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const dispatch = useDispatch();
+  const { data: teacherData, status, error } = useSelector((s) => s.teachers);
 
   const [teachers, setTeachers] = useState([]);
-  const [selectedTeachers, setSelectedTeachers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedQualification, setSelectedQualification] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [notification, setNotification] = useState({
-    open: false,
-    message: "",
-    type: "",
-  });
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [confirmStatusChange, setConfirmStatusChange] = useState({
-    open: false,
-    id: null,
-    currentStatus: null,
-    bulk: false
-  });
-  const [expandedFilters, setExpandedFilters] = useState(!isMobile);
-  const [processingStatus, setProcessingStatus] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? "card" : "list");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Dynamic data state
+  // Filters
   const [qualifications, setQualifications] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [locations, setLocations] = useState([]);
+  const [classCategories, setClassCategories] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedQualifications, setSelectedQualifications] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
+  const [locationFilters, setLocationFilters] = useState({ state: [], district: [] });
+  const [locationInputs, setLocationInputs] = useState({ state: '', district: '' });
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedGenders, setSelectedGenders] = useState([]);
+  const [experienceRange, setExperienceRange] = useState({ min: '', max: '' });
+  const [expandedSections, setExpandedSections] = useState({
+    location: false,
+    qualification: false,
+    subject: false,
+    classCategory: true,
+    status: false,
+    gender: false,
+    experience: false,
+  });
 
-  // Fetch teacher data
-  const fetchTeacherData = async (showRefresh = false) => {
-    try {
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
+  // Notification and modals
+  const [toast, setToast] = useState({ open: false, type: "info", message: "" });
+  const [confirmModal, setConfirmModal] = useState({ open: false, id: null, status: null });
 
-      const response = await getTeacher();
-      if (Array.isArray(response)) {
-        // Ensure we have complete data and normalize it
-        const normalizedTeachers = response.map(teacher => ({
-          ...teacher,
-          teacherqualifications: teacher.teacherqualifications || [],
-          teachersubjects: teacher.teachersubjects || [],
-          teachersaddress: teacher.teachersaddress || [],
-        }));
-
-        setTeachers(normalizedTeachers);
-
-        // Extract unique locations from teacher data
-        const uniqueLocations = new Set();
-        normalizedTeachers.forEach(teacher => {
-          if (Array.isArray(teacher.teachersaddress)) {
-            teacher.teachersaddress.forEach(address => {
-              if (address && address.state) {
-                uniqueLocations.add(address.state);
-              }
-            });
-          }
-        });
-        setLocations(Array.from(uniqueLocations));
-
-        if (showRefresh) {
-          setNotification({
-            open: true,
-            message: "Teacher data refreshed successfully",
-            type: "success",
-          });
-        }
-      } else {
-        
-        setError("Failed to load teacher data. Please try again later.");
-      }
-    } catch (error) {
-      
-      setError("An error occurred while fetching data");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
+  // Effects: fetch initial teachers, qualifications, subjects
   useEffect(() => {
-    fetchTeacherData();
-
-    // Fetch qualifications and subjects
-    const fetchQualifications = async () => {
+    dispatch(fetchTeachers({}));
+    (async () => {
       try {
-        const response = await getQualification();
-        if (Array.isArray(response)) {
-          setQualifications(response);
-        }
-      } catch (error) {
-        
-      }
-    };
-
-    const fetchSubjects = async () => {
+        const q = await getQualification();
+        if (Array.isArray(q)) setQualifications(q);
+      } catch {}
       try {
-        const response = await getSubjects();
-        if (Array.isArray(response)) {
-          setSubjects(response);
-        }
-      } catch (error) {
-        
-      }
-    };
+        const s = await getSubjects();
+        if (Array.isArray(s)) setSubjects(s);
+      } catch {}
+      try {
+        const c = await getClassCategory();
+        if (Array.isArray(c)) setClassCategories(c);
+      } catch {}
+    })();
+  }, [dispatch]);
 
-    fetchQualifications();
-    fetchSubjects();
+  // Sync teachers to local
+  useEffect(() => {
+    if (Array.isArray(teacherData)) {
+      setTeachers(teacherData);
+    }
+  }, [teacherData]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchValue.trim()) dispatch(searchTeachers(searchValue));
+      else dispatch(fetchTeachers({}));
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchValue, dispatch]);
+
+  // Window resize: switch view mode
+  useEffect(() => {
+    const onResize = () => setViewMode(window.innerWidth < 768 ? "card" : "list");
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Reset page when filtering changes
-  useEffect(() => {
-    setPage(0);
-  }, [searchQuery, selectedQualification, selectedSubject, selectedLocation, selectedStatus]);
+  // Filtering logic supporting both data shapes
+  const filtered = useMemo(() => {
+    return teachers.filter((t) => {
+      const qNames = (t.teacherqualifications || [])
+        .map((q) => q?.qualification?.name?.toLowerCase())
+        .filter(Boolean);
+      const subjectNames = (t.teachersubjects || [])
+        .map((s) => (typeof s === "string" ? s.toLowerCase() : s?.subject_name?.toLowerCase?.()))
+        .filter(Boolean);
+      const addresses = (t.teachersaddress || []).map((a) => a?.state?.toLowerCase()).filter(Boolean);
+      const currentState = t.current_address?.state?.toLowerCase();
+      const currentDistrict = t.current_address?.district?.toLowerCase();
 
-  // Adjust rows per page based on screen size
-  useEffect(() => {
-    setRowsPerPage(isMobile ? 5 : 10);
+      const nameMatch = !searchValue ||
+        `${t.Fname || ""} ${t.Lname || ""}`.toLowerCase().includes(searchValue.toLowerCase()) ||
+        (t.email || "").toLowerCase().includes(searchValue.toLowerCase()) ||
+        String(t.id || "").includes(searchValue);
 
-    // If on mobile, collapse filters by default
-    if (isMobile) {
-      setExpandedFilters(false);
-    }
-  }, [isMobile]);
+      const qualMatch = selectedQualifications.length === 0 ||
+        selectedQualifications.some(q => qNames.includes(q) || (t.last_education?.qualification?.name || "").toLowerCase() === q);
 
-  const confirmToggleStatus = (teacherId, currentStatus) => {
-    setConfirmStatusChange({
-      open: true,
-      id: teacherId,
-      currentStatus: currentStatus,
-      bulk: false
+      const subjectMatch = selectedSubjects.length === 0 ||
+        selectedSubjects.some(s => subjectNames.includes(s));
+
+      const locationMatch = (locationFilters.state.length === 0 ||
+        locationFilters.state.some(s => addresses.includes(s.toLowerCase()) || currentState === s.toLowerCase())) &&
+        (locationFilters.district.length === 0 ||
+        locationFilters.district.some(d => currentDistrict === d.toLowerCase()));
+
+      const statusMatch = selectedStatuses.length === 0 ||
+        (selectedStatuses.includes('active') && t.is_active) ||
+        (selectedStatuses.includes('inactive') && !t.is_active);
+
+      const genderMatch = selectedGenders.length === 0 ||
+        (t.gender && selectedGenders.includes(t.gender.toLowerCase()));
+
+      const experienceMatch = (!experienceRange.min || (t.experience_years && t.experience_years >= parseInt(experienceRange.min))) &&
+        (!experienceRange.max || (t.experience_years && t.experience_years <= parseInt(experienceRange.max)));
+
+      const classMatch = selectedClassCategories.length === 0 ||
+        selectedClassCategories.some(c => t.class_categories?.some(cat => cat?.name?.toLowerCase() === c.toLowerCase()));
+
+      return nameMatch && qualMatch && subjectMatch && locationMatch && statusMatch && genderMatch && experienceMatch && classMatch;
     });
-  };
+  }, [teachers, searchValue, selectedQualifications, selectedSubjects, selectedClassCategories, locationFilters, selectedStatuses, selectedGenders, experienceRange]);
 
-  const handleToggleStatus = async (teacherId, currentStatus) => {
-    try {
-      setProcessingStatus(true);
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentTeachers = filtered.slice(indexOfFirst, indexOfLast);
 
-      // Find the teacher object to get their email
-      const teacher = teachers.find(t => t.id === teacherId);
-
-      if (!teacher) {
-        setNotification({
-          open: true,
-          message: "Teacher not found",
-          type: "error",
-        });
-        return;
-      }
-
-      // Prepare update data with required fields
-      const updateData = {
-        email: teacher.email,
-        is_active: !currentStatus // Toggle the active status
-      };
-
-      // Call API to update teacher status
-      const response = await updateTeacher(teacherId, updateData);
-
-      if (response) {
-        // Update the local state after successful API call
-        setTeachers(
-          teachers.map((t) =>
-            t.id === teacherId ? { ...t, is_active: !currentStatus } : t
-          )
-        );
-
-        setNotification({
-          open: true,
-          message: `Teacher ${!currentStatus ? "activated" : "deactivated"} successfully`,
-          type: "success",
-        });
-      }
-    } catch (error) {
-      
-      setNotification({
-        open: true,
-        message: `Failed to update status: ${error.message || "Unknown error"}`,
-        type: "error",
-      });
-    } finally {
-      setProcessingStatus(false);
-      setConfirmStatusChange({ open: false, id: null, currentStatus: null, bulk: false });
-    }
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const getVisiblePageNumbers = () => {
+    const nums = Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 7) return nums;
+    if (currentPage <= 3) return [...nums.slice(0, 5), "...", totalPages];
+    if (currentPage >= totalPages - 2) return [1, "...", ...nums.slice(totalPages - 5)];
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
   const handleRefresh = () => {
-    fetchTeacherData(true);
+    dispatch(fetchTeachers({}));
+    setToast({ open: true, type: "success", message: "Teacher data refreshed" });
   };
 
-  const handleExportData = () => {
-    if (filteredTeachers.length === 0) {
-      setNotification({
-        open: true,
-        message: "No data to export",
-        type: "warning",
-      });
+  const handleClearFilters = () => {
+    setSelectedQualifications([]);
+    setSelectedSubjects([]);
+    setSelectedClassCategories([]);
+    setLocationFilters({ state: [], district: [] });
+    setSelectedStatuses([]);
+    setSelectedGenders([]);
+    setExperienceRange({ min: '', max: '' });
+    setLocationInputs({ state: '', district: '' });
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      setToast({ open: true, type: "warning", message: "No data to export" });
       return;
     }
-
     const csvContent = [
       [
         "ID",
@@ -361,930 +185,477 @@ const ManageTeacher = () => {
         "Last Name",
         "Email",
         "Status",
-        "Verified",
-        "Subjects",
-        "Address",
         "Qualifications",
-        "Total Marks",
+        "Location",
       ],
-      ...filteredTeachers.map((teacher) => [
-        teacher.id || '',
-        teacher.Fname || '',
-        teacher.Lname || '',
-        teacher.email || '',
-        teacher.is_active ? 'Active' : 'Inactive',
-        teacher.is_verified ? 'Verified' : 'Not Verified',
-        (teacher.teachersubjects || []).join(", "),
-        (teacher.teachersaddress || [])
-          .map((address) => address?.state || '')
-          .filter(Boolean)
-          .join(", "),
-        (teacher.teacherqualifications || [])
-          .map((q) => q?.qualification?.name || '')
-          .filter(Boolean)
-          .join(", "),
-        teacher.total_marks || 0,
+      ...filtered.map((t) => [
+        t.id || "",
+        t.Fname || "",
+        t.Lname || "",
+        t.email || "",
+        t.is_active ? "Active" : "Inactive",
+        (
+          (t.teacherqualifications || []).map((q) => q?.qualification?.name).filter(Boolean).join("; ") ||
+          t.last_education?.qualification?.name || ""
+        ),
+        (
+          (t.teachersaddress || []).map((a) => a?.state).filter(Boolean).join("; ") ||
+          t.current_address?.state || ""
+        ),
       ]),
     ]
-      .map((e) => e.join(","))
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `teachers_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setNotification({
-      open: true,
-      message: `${filteredTeachers.length} teachers exported successfully`,
-      type: "success",
-    });
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `teachers_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setToast({ open: true, type: "success", message: `Exported ${filtered.length} teachers` });
   };
 
-  const filteredTeachers = teachers.filter((teacher) => {
-    // Basic data checks to prevent errors
-    const teacherQualifications = teacher.teacherqualifications || [];
-    const teacherSubjects = teacher.teachersubjects || [];
-    const teacherAddresses = teacher.teachersaddress || [];
+  const activeTeachers = teachers.filter((t) => t.is_active === true).length;
+  const inactiveTeachers = teachers.filter((t) => t.is_active === false).length;
 
-    // Map status to is_active
-    let activeStatusMatch = true;
-    if (selectedStatus) {
-      if (selectedStatus.toLowerCase() === "approved") {
-        activeStatusMatch = teacher.is_active === true;
-      } else if (selectedStatus.toLowerCase() === "rejected") {
-        activeStatusMatch = teacher.is_active === false;
-      }
+  const openConfirm = (id, current) => setConfirmModal({ open: true, id, status: current });
+  const closeConfirm = () => setConfirmModal({ open: false, id: null, status: null });
+  const confirmToggle = async () => {
+    const { id, status: cur } = confirmModal;
+    try {
+      const teacher = teachers.find((t) => t.id === id);
+      if (!teacher) throw new Error("Teacher not found");
+      await updateTeacher(id, { email: teacher.email, is_active: !cur });
+      setTeachers((prev) => prev.map((t) => (t.id === id ? { ...t, is_active: !cur } : t)));
+      setToast({ open: true, type: "success", message: `Teacher ${!cur ? "activated" : "deactivated"}` });
+    } catch (e) {
+      setToast({ open: true, type: "error", message: e?.message || "Failed to update status" });
+    } finally {
+      closeConfirm();
     }
+  };
 
-    return (
-      // Search query filtering
-      (!searchQuery ||
-        (teacher.Fname?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (teacher.Lname?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (teacher.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (teacher.id?.toString() || '').includes(searchQuery)) &&
-
-      // Qualification filtering
-      (!selectedQualification ||
-        teacherQualifications.some(q =>
-          (q?.qualification?.name?.toLowerCase() || '') === selectedQualification.toLowerCase()
-        )) &&
-
-      // Subject filtering - check if teacher has the selected subject
-      (!selectedSubject ||
-        teacherSubjects.some(subject =>
-          (subject?.toLowerCase() || '') === selectedSubject.toLowerCase()
-        )) &&
-
-      // Location filtering
-      (!selectedLocation ||
-        teacherAddresses.some(address =>
-          (address?.state?.toLowerCase() || '') === selectedLocation.toLowerCase()
-        )) &&
-
-      // Status filtering
-      activeStatusMatch
-    );
-  });
-
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelected = filteredTeachers.map((teacher) => teacher.id);
-      setSelectedTeachers(newSelected);
-      return;
+  useEffect(() => {
+    if (toast.open) {
+      const t = setTimeout(() => setToast((s) => ({ ...s, open: false })), 3000);
+      return () => clearTimeout(t);
     }
-    setSelectedTeachers([]);
-  };
-
-  // Function to render teacher cards for mobile view
-  const renderTeacherCard = (teacher) => {
-    const initials = `${teacher.Fname?.charAt(0) || ''}${teacher.Lname?.charAt(0) || ''}`;
-
-    return (
-      <TeacherCard
-        key={teacher.id}
-        active={teacher.is_active}
-        sx={{
-          mb: 2,
-          borderLeft: `5px solid ${teacher.is_active ? '#10b981' : '#ef4444'}`,
-        }}
-      >
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
-            <Box display="flex" alignItems="center">
-              <Checkbox
-                checked={selectedTeachers.includes(teacher.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedTeachers([...selectedTeachers, teacher.id]);
-                  } else {
-                    setSelectedTeachers(selectedTeachers.filter((id) => id !== teacher.id));
-                  }
-                }}
-                sx={{ p: 0, mr: 1, color: '#0d9488' }}
-              />
-              <TeacherAvatar>{initials}</TeacherAvatar>
-              <Box ml={1}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ lineHeight: 1.2 }}>
-                  {`${teacher.Fname || ''} ${teacher.Lname || ''}`}
-                </Typography>
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  <EmailIcon size={14} color="#6b7280" />
-                  <Typography variant="body2" color="textSecondary">
-                    {teacher.email || ''}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-            <StatusChip
-              label={teacher.is_active ? "Active" : "Inactive"}
-              active={teacher.is_active}
-              size="small"
-            />
-          </Box>
-
-          <Divider sx={{ my: 1.5, borderColor: alpha('#0d9488', 0.1) }} />
-
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <SchoolIcon color="#0d9488" size={16} />
-                <Typography variant="caption" color="textSecondary" display="block">
-                  Qualifications:
-                </Typography>
-              </Box>
-              <Typography variant="body2">
-                {(teacher.teacherqualifications || [])
-                  .map((q) => q?.qualification?.name || '')
-                  .filter(Boolean)
-                  .join(", ") || 'N/A'}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <LocationIcon color="#0d9488" size={16} />
-                <Typography variant="caption" color="textSecondary" display="block">
-                  Location:
-                </Typography>
-              </Box>
-              <Typography variant="body2">
-                {(teacher.teachersaddress || [])
-                  .map((address) => address?.state || '')
-                  .filter(Boolean)
-                  .join(", ") || 'N/A'}
-              </Typography>
-            </Grid>
-          </Grid>
-
-          <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
-            <Tooltip title={teacher.is_active ? "Deactivate" : "Activate"}>
-              <Box>
-                <Switch
-                  checked={teacher.is_active === true}
-                  onChange={() => confirmToggleStatus(teacher.id, teacher.is_active)}
-                  color={teacher.is_active ? "success" : "error"}
-                  size="small"
-                />
-              </Box>
-            </Tooltip>
-            <Box>
-              <IconButton
-                component={Link}
-                to={`/admin/view/teacher/${teacher.id}`}
-                size="small"
-                sx={{ color: '#0d9488' }}
-              >
-                <ViewIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          </Box>
-        </CardContent>
-      </TeacherCard>
-    );
-  };
-
-  // Calculate the number of active and inactive teachers
-  const activeTeachers = teachers.filter(teacher => teacher.is_active === true).length;
-  const inactiveTeachers = teachers.filter(teacher => teacher.is_active === false).length;
-
-  // Custom toolbar for the DataGrid
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer sx={{ p: 1 }}>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport 
-          csvOptions={{
-            fileName: `teachers_export_${new Date().toISOString().split('T')[0]}`,
-            delimiter: ',',
-            utf8WithBom: true,
-          }}
-        />
-      </GridToolbarContainer>
-    );
-  }
-  
-  // Prepare columns for the DataGrid
-  const columns = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      width: 70,
-      hide: isMobile,
-      headerAlign: 'center',
-      align: 'center',
-    },
-    {
-      field: 'name',
-      headerName: 'Name',
-      flex: 1,
-      minWidth: 180,
-      renderCell: (params) => {
-        const initials = `${params.row.Fname?.charAt(0) || ''}${params.row.Lname?.charAt(0) || ''}`;
-        return (
-          <Box display="flex" alignItems="center">
-            <TeacherAvatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>{initials}</TeacherAvatar>
-            <Box ml={1}>
-              <Typography variant="subtitle2" fontWeight={600}>
-                {`${params.row.Fname || ''} ${params.row.Lname || ''}`}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                ID: {params.row.id || ''}
-              </Typography>
-            </Box>
-          </Box>
-        );
-      },
-      sortable: true,
-    },
-    {
-      field: 'email',
-      headerName: 'Email',
-      flex: 1,
-      minWidth: 220,
-      renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <EmailIcon size={16} color="#6b7280" />
-          <Typography variant="body2">{params.row.email || ''}</Typography>
-        </Box>
-      ),
-      sortable: true,
-    },
-    {
-      field: 'qualifications',
-      headerName: 'Qualification',
-      flex: 1,
-      minWidth: 180,
-      hide: isMobile || isTablet,
-      renderCell: (params) => {
-        const qualifications = (params.row.teacherqualifications || [])
-          .map((q) => q?.qualification?.name || '')
-          .filter(Boolean)
-          .join(", ");
-        return (
-          <Box display="flex" alignItems="center" gap={1}>
-            <SchoolIcon size={16} color="#0d9488" />
-            <Typography variant="body2">{qualifications || 'N/A'}</Typography>
-          </Box>
-        );
-      },
-      sortable: false,
-    },
-    {
-      field: 'location',
-      headerName: 'Location',
-      flex: 1,
-      minWidth: 150,
-      hide: isMobile || isTablet,
-      renderCell: (params) => {
-        const locations = (params.row.teachersaddress || [])
-          .map((address) => address?.state || '')
-          .filter(Boolean)
-          .join(", ");
-        return (
-          <Box display="flex" alignItems="center" gap={1}>
-            <LocationIcon size={16} color="#0d9488" />
-            <Typography variant="body2">{locations || 'N/A'}</Typography>
-          </Box>
-        );
-      },
-      sortable: false,
-    },
-    {
-      field: 'is_active',
-      headerName: 'Status',
-      width: 120,
-      headerAlign: 'center',
-      align: 'center',
-      renderCell: (params) => (
-        <StatusChip
-          label={params.row.is_active ? "Active" : "Inactive"}
-          active={params.row.is_active ? "true" : "false"}
-          size="small"
-        />
-      ),
-      sortable: true,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 120,
-      headerAlign: 'center',
-      align: 'center',
-      sortable: false,
-      renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <Tooltip title="View Details">
-            <IconButton
-              component={Link}
-              to={`/admin/view/teacher/${params.row.id}`}
-              size="small"
-              sx={{ 
-                color: '#0d9488',
-                '&:hover': {
-                  backgroundColor: alpha('#0d9488', 0.1),
-                }
-              }}
-            >
-              <ViewIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={params.row.is_active ? "Deactivate" : "Activate"}>
-            <span>
-              <Switch
-                checked={params.row.is_active === true}
-                onChange={() => confirmToggleStatus(params.row.id, params.row.is_active)}
-                size="small"
-                color={params.row.is_active ? "success" : "error"}
-              />
-            </span>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ];
+  }, [toast.open]);
 
   return (
     <Layout>
-        {/* Header section with stats */}
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            mb: 3, 
-          }}
-        >
-          <Box
-            display="flex"
-            flexDirection={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ xs: 'flex-start', md: 'center' }}
-            gap={2}
-          >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Avatar sx={{ bgcolor: '#0d9488', width: 56, height: 56 }}>
-                <FaUserGraduate size={28} />
-              </Avatar>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    color: "#0d9488",
-                    fontWeight: 700,
-                    fontSize: { xs: "1.75rem", sm: "2.125rem" },
-                  }}
-                >
-                  Manage Teachers
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {teachers.length} teachers registered • {activeTeachers} active • {inactiveTeachers} inactive
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box display="flex" gap={2} width={{ xs: '100%', md: 'auto' }}>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
+      <div className="p-3 sm:p-4">
+        {/* Header */}
+        <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm mb-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-text">Manage Teachers</h1>
+              <p className="text-sm text-secondary mt-1">
+                {teachers.length} total • {activeTeachers} active • {inactiveTeachers} inactive
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
                 onClick={handleRefresh}
-                disabled={refreshing}
-                sx={{
-                  textTransform: 'none',
-                  borderColor: alpha('#0d9488', 0.3),
-                  color: '#0d9488',
-                  '&:hover': {
-                    borderColor: '#0d9488',
-                    backgroundColor: alpha('#0d9488', 0.05),
-                  },
-                  minWidth: { xs: '50%', md: 'auto' }
-                }}
+                className="px-3 py-2 bg-background hover:bg-gray-100 text-text rounded-lg border border-gray-200 flex items-center gap-2"
               >
-                {refreshing ? 'Refreshing...' : 'Refresh'}
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
-                  boxShadow: `0 4px 20px ${alpha('#0d9488', 0.3)}`,
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, #0a7c6a 0%, #0891b2 100%)`,
-                    boxShadow: `0 6px 25px ${alpha('#0d9488', 0.4)}`,
-                  },
-                  minWidth: { xs: '50%', md: 'auto' }
-                }}
-                startIcon={<ExportIcon />}
-                onClick={handleExportData}
+                <IoReloadOutline /> Refresh
+              </button>
+              <button
+                onClick={handleExport}
+                className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center gap-2"
               >
-                Export Data
-              </Button>
-            </Box>
-          </Box>
-        </Paper>
+                <IoDownloadOutline /> Export CSV
+              </button>
+            </div>
+          </div>
+        </div>
 
-        {/* Search bar */}
-        <FilterPaper elevation={0}>
-          <Box mb={2}>
-            <TextField
-              fullWidth
+        {/* Search and filters */}
+        <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+          {/* Search */}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search by name, email, or ID"
-              variant="outlined"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color="#0d9488" />
-                  </InputAdornment>
-                ),
-                endAdornment: searchQuery && (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => setSearchQuery("")}
-                      sx={{ color: '#0d9488' }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  '&:hover fieldset': {
-                    borderColor: alpha('#0d9488', 0.5),
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0d9488',
-                  },
-                }
-              }}
+              className="w-full bg-background border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg px-4 py-2.5 pl-10 text-sm text-text placeholder-secondary focus:outline-none transition-all"
             />
-          </Box>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+          </div>
 
-          {/* Filter section with toggle for mobile */}
-          <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-            <Box display="flex" alignItems="center" gap={1}>
-              <FaFilter color="#0d9488" />
-              <Typography variant="subtitle1" fontWeight={600} color="#0d9488">
-                Filters
-              </Typography>
-            </Box>
-            {isMobile && (
-              <Button
-                startIcon={<FilterIcon />}
-                onClick={() => setExpandedFilters(!expandedFilters)}
-                size="small"
-                sx={{ color: '#0d9488' }}
-              >
-                {expandedFilters ? 'Hide Filters' : 'Show Filters'}
-              </Button>
+          {/* Filters Button */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center gap-2"
+          >
+            <MdFilterAlt /> Filters
+          </button>
+
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-xs text-secondary">Showing {filtered.length} of {teachers.length} teachers</p>
+            {(selectedQualifications.length || selectedSubjects.length || selectedClassCategories.length || locationFilters.state.length || locationFilters.district.length || selectedStatuses.length || selectedGenders.length || experienceRange.min || experienceRange.max) ? (
+              <button onClick={handleClearFilters} className="text-primary text-sm inline-flex items-center gap-1">
+                <MdFilterAltOff /> Clear filters
+              </button>
+            ) : (
+              <div className="text-secondary text-sm inline-flex items-center gap-1">
+                <MdFilterAlt className="text-secondary" /> No filters applied
+              </div>
             )}
-          </Box>
+          </div>
+        </div>
 
-          {/* Collapsible filters */}
-          {(expandedFilters || !isMobile) && (
-            <Grid container spacing={2}>
-              {/* Qualification Filter */}
-              <Grid item xs={12} sm={6} md={3}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <SchoolIcon color="#0d9488" size={16} />
-                  <Typography variant="body2" fontWeight={500} color="#0d9488">Qualification</Typography>
-                </Box>
-                <FormControl variant="outlined" fullWidth size="small">
-                  <Select
-                    value={selectedQualification}
-                    onChange={(e) => setSelectedQualification(e.target.value)}
-                    displayEmpty
-                    renderValue={(selected) => {
-                      if (!selected) return "All Qualifications";
-                      return selected;
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.3),
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.5),
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#0d9488',
-                      },
-                    }}
-                  >
-                    <MenuItem value="">All Qualifications</MenuItem>
-                    {qualifications.map((qualification) => (
-                      <MenuItem key={qualification.id} value={qualification.name?.toLowerCase()}>
-                        {qualification.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+        {/* List/Card results */}
+        {status === "loading" ? (
+          <div className="w-full h-full flex justify-center items-center mt-16">
+            <div className="h-fit mt-20 animate-pulse text-secondary">Loading…</div>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 shadow-sm text-center">
+            <div className="text-6xl mb-2">🧑‍🏫</div>
+            <h3 className="text-lg font-semibold text-text mb-1">No teachers found</h3>
+            <p className="text-sm text-secondary">Try adjusting your search or filters and try again.</p>
+          </div>
+        ) : (
+          <>
+            {viewMode === "card" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {currentTeachers.map((t) => {
+                  const currentAddress = t.current_address || {};
+                  const latestEducation = t.last_education;
+                  const initials = `${t.Fname?.charAt(0) || ''}${t.Lname?.charAt(0) || ''}`.toUpperCase();
+                  const subjects = (t.teachersubjects || []).map(s => typeof s === 'string' ? s : s?.subject_name).filter(Boolean).join(', ') || 'N/A';
+                  const qualifications = (t.teacherqualifications || []).map(q => q?.qualification?.name).filter(Boolean).join(', ') || latestEducation?.qualification?.name || 'N/A';
+                  return (
+                    <div key={t.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                      {/* Header Section */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                          {t.profile_picture ? (
+                            <img src={t.profile_picture} alt={`${t.Fname} ${t.Lname}`} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-lg">
+                              {initials}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h2 className="text-lg font-bold text-text truncate">{t.Fname} {t.Lname}</h2>
+                          {(currentAddress.district || currentAddress.state) && (
+                            <p className="text-xs text-secondary flex items-center gap-1 mt-1">
+                              <HiOutlineLocationMarker className="text-accent" size={12} />
+                              {currentAddress.district ? `${currentAddress.district}, ` : ""}{currentAddress.state || ""}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                          {t.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
 
-              {/* Subject Filter */}
-              <Grid item xs={12} sm={6} md={3}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <FaUserGraduate color="#0d9488" size={14} />
-                  <Typography variant="body2" fontWeight={500} color="#0d9488">Subject</Typography>
-                </Box>
-                <FormControl variant="outlined" fullWidth size="small">
-                  <Select
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    displayEmpty
-                    renderValue={(selected) => {
-                      if (!selected) return "All Subjects";
-                      return selected;
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.3),
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.5),
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#0d9488',
-                      },
-                    }}
-                  >
-                    <MenuItem value="">All Subjects</MenuItem>
-                    {subjects.map((subject) => (
-                      <MenuItem key={subject.id} value={subject.subject_name?.toLowerCase()}>
-                        {subject.subject_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+                      {/* Details Grid */}
+                      <div className="space-y-3 mb-4">
+                        {/* Email */}
+                        <div className="flex items-center gap-3">
+                          <HiOutlineMail className="text-accent flex-shrink-0" size={16} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-secondary font-medium">Email</p>
+                            <p className="text-sm text-text truncate">{t.email}</p>
+                          </div>
+                        </div>
 
-              {/* Location Filter */}
-              <Grid item xs={12} sm={6} md={3}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <LocationIcon color="#0d9488" />
-                  <Typography variant="body2" fontWeight={500} color="#0d9488">Location</Typography>
-                </Box>
-                <FormControl variant="outlined" fullWidth size="small">
-                  <Select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    displayEmpty
-                    renderValue={(selected) => {
-                      if (!selected) return "All Locations";
-                      return selected;
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.3),
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.5),
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#0d9488',
-                      },
-                    }}
-                  >
-                    <MenuItem value="">All Locations</MenuItem>
-                    {locations.map((location, index) => (
-                      <MenuItem key={index} value={location?.toLowerCase()}>
-                        {location}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+                        {/* Phone */}
+                        {t.phone_number && (
+                          <div className="flex items-center gap-3">
+                            <HiOutlinePhone className="text-accent flex-shrink-0" size={16} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-secondary font-medium">Phone</p>
+                              <p className="text-sm text-text">{t.phone_number}</p>
+                            </div>
+                          </div>
+                        )}
 
-              {/* Status Filter */}
-              <Grid item xs={12} sm={6} md={3}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <CheckIcon color="#0d9488" />
-                  <Typography variant="body2" fontWeight={500} color="#0d9488">Status</Typography>
-                </Box>
-                <FormControl variant="outlined" fullWidth size="small">
-                  <Select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    displayEmpty
-                    renderValue={(selected) => {
-                      if (!selected) return "All Status";
-                      return selected === "approved" ? "Active" : selected === "rejected" ? "Inactive" : "All Statuses";
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.3),
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: alpha('#0d9488', 0.5),
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#0d9488',
-                      },
-                    }}
-                  >
-                    <MenuItem value="">All Status</MenuItem>
-                    <MenuItem value="approved">Active</MenuItem>
-                    <MenuItem value="rejected">Inactive</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          )}
+                        {/* Qualification */}
+                        <div className="flex items-center gap-3">
+                          <HiOutlineAcademicCap className="text-accent flex-shrink-0" size={16} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-secondary font-medium">Qualification</p>
+                            <p className="text-sm text-text truncate">{qualifications}</p>
+                          </div>
+                        </div>
 
-          {/* Filter results summary */}
-          {filteredTeachers.length > 0 && (
-            <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Showing {filteredTeachers.length} of {teachers.length} teachers
-              </Typography>
-              {(selectedQualification || selectedSubject || selectedLocation || selectedStatus) && (
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setSelectedQualification("");
-                    setSelectedSubject("");
-                    setSelectedLocation("");
-                    setSelectedStatus("");
-                  }}
-                  startIcon={<ClearIcon fontSize="small" />}
-                  sx={{
-                    color: '#0d9488',
-                    '&:hover': {
-                      backgroundColor: alpha('#0d9488', 0.1),
-                    }
-                  }}
+                        {/* Subjects */}
+                        <div className="flex items-start gap-3">
+                          <div className="text-accent flex-shrink-0 mt-0.5">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-secondary font-medium">Subjects</p>
+                            <p className="text-sm text-text break-words">{subjects}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/admin/view/teacher/${t.id}`}
+                          className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium text-center transition-colors"
+                        >
+                          View Profile
+                        </Link>
+                        <button
+                          onClick={() => openConfirm(t.id, t.is_active)}
+                          className={`px-3 py-2 rounded-lg text-sm border font-medium transition-colors ${
+                            t.is_active
+                              ? 'border-rose-200 text-rose-700 hover:bg-rose-50'
+                              : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                          }`}
+                        >
+                          {t.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {currentTeachers.map((t) => {
+                  console.log(t);
+                  const currentAddress = t.current_address || {};
+                  const latestEducation = t.last_education;
+                  const initials = `${t.Fname?.charAt(0) || ''}${t.Lname?.charAt(0) || ''}`.toUpperCase();
+                  const subjects = (t.teachersubjects || []).map(s => typeof s === 'string' ? s : s?.subject_name).filter(Boolean).join(', ') || 'N/A';
+                  const qualifications = (t.teacherqualifications || []).map(q => q?.qualification?.name).filter(Boolean).join(', ') || latestEducation?.qualification?.name || 'N/A';
+                  return (
+                    <div key={t.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        {/* Left Section: Avatar and Basic Info */}
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                            {t.profile_picture ? (
+                              <img src={t.profile_picture} alt={`${t.Fname} ${t.Lname}`} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-lg">
+                                {initials}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-lg font-bold text-text truncate">{t.Fname} {t.Lname}</h3>
+                            <div className="flex items-center gap-4 text-sm text-secondary mt-1">
+                              <div className="flex items-center gap-1">
+                                <HiOutlineMail className="text-accent flex-shrink-0" size={14} />
+                                <span className="truncate">{t.email}</span>
+                              </div>
+                              {t.phone_number && (
+                                <div className="flex items-center gap-1">
+                                  <HiOutlinePhone className="text-accent flex-shrink-0" size={14} />
+                                  <span>{t.phone_number}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Middle Section: Details */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1">
+                          {/* Qualification */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <HiOutlineAcademicCap className="text-accent flex-shrink-0" size={16} />
+                            <div className="min-w-0">
+                              <p className="text-xs text-secondary font-medium">Qualification</p>
+                              <p className="text-sm text-text truncate">{qualifications}</p>
+                            </div>
+                          </div>
+
+                          {/* Subjects */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="text-accent flex-shrink-0">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs text-secondary font-medium">Subjects</p>
+                              <p className="text-sm text-text truncate">{subjects}</p>
+                            </div>
+                          </div>
+
+                          {/* Location */}
+                          {(currentAddress.district || currentAddress.state) && (
+                            <div className="flex items-center gap-2 min-w-0">
+                              <HiOutlineLocationMarker className="text-accent flex-shrink-0" size={16} />
+                              <div className="min-w-0">
+                                <p className="text-xs text-secondary font-medium">Location</p>
+                                <p className="text-sm text-text truncate">{currentAddress.district ? `${currentAddress.district}, ` : ''}{currentAddress.state || ''}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Right Section: Status and Actions */}
+                        <div className="flex items-center gap-3 lg:justify-end">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${t.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                            {t.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              to={`/admin/view/teacher/${t.id}`}
+                              className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors"
+                            >
+                              View Profile
+                            </Link>
+                            <button
+                              onClick={() => openConfirm(t.id, t.is_active)}
+                              className={`px-3 py-2 rounded-lg text-sm border font-medium transition-colors whitespace-nowrap ${
+                                t.is_active
+                                  ? 'border-rose-200 text-rose-700 hover:bg-rose-50'
+                                  : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {t.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg mt-4">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${currentPage === 1 ? 'bg-background text-secondary/50 cursor-not-allowed' : 'bg-white text-text hover:bg-background'}`}
                 >
-                  Clear filters
-                </Button>
-              )}
-            </Box>
-          )}
-        </FilterPaper>
-
-        {/* Teachers List/Table */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 3,
-            overflow: "hidden",
-            background: `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8fafc', 0.9)} 100%)`,
-            border: `1px solid ${alpha('#0d9488', 0.1)}`,
-            transition: "all 0.3s ease"
-          }}
-        >
-          {loading ? (
-            <Box p={3}>
-              <Grid container spacing={2}>
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <Grid item xs={12} key={item}>
-                    <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 1 }} />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          ) : error ? (
-            <Box p={4} textAlign="center">
-              <Box mb={2}>
-                <HelpIcon fontSize="large" sx={{ fontSize: 60, opacity: 0.5, color: '#ef4444' }} />
-              </Box>
-              <Typography variant="h6" color="error" gutterBottom>
-                Failed to Load Teachers
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                {error}
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={handleRefresh}
-                sx={{
-                  borderColor: '#0d9488',
-                  color: '#0d9488',
-                  '&:hover': {
-                    borderColor: '#0d9488',
-                    backgroundColor: alpha('#0d9488', 0.1),
-                  }
-                }}
-              >
-                Try Again
-              </Button>
-            </Box>
-          ) : filteredTeachers.length === 0 ? (
-            <Box p={4} textAlign="center">
-              <Box mb={2}>
-                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus ? (
-                  <HelpIcon sx={{ fontSize: 60, opacity: 0.5, color: '#f59e0b' }} />
-                ) : (
-                  <PersonIcon sx={{ fontSize: 60, opacity: 0.7, color: '#0d9488' }} />
-                )}
-              </Box>
-              <Typography variant="h6" color="textSecondary" gutterBottom>
-                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus
-                  ? "No teachers match your search criteria"
-                  : "No teachers registered yet"}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                {searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus
-                  ? "Try adjusting your search filters to find what you're looking for."
-                  : "Teachers who register on the platform will appear here."}
-              </Typography>
-              {(searchQuery || selectedQualification || selectedSubject || selectedLocation || selectedStatus) && (
-                <Button
-                  variant="outlined"
-                  startIcon={<ClearIcon />}
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedQualification("");
-                    setSelectedSubject("");
-                    setSelectedLocation("");
-                    setSelectedStatus("");
-                  }}
-                  sx={{
-                    borderColor: '#0d9488',
-                    color: '#0d9488',
-                    '&:hover': {
-                      borderColor: '#0d9488',
-                      backgroundColor: alpha('#0d9488', 0.1),
-                    }
-                  }}
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${currentPage === totalPages ? 'bg-background text-secondary/50 cursor-not-allowed' : 'bg-white text-text hover:bg-background'}`}
                 >
-                  Clear all filters
-                </Button>
-              )}
-            </Box>
-          ) : isMobile ? (
-            // Mobile card view
-            <Box p={2}>
-              {filteredTeachers
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(renderTeacherCard)}
-              
-              {/* Add pagination control for mobile */}
-              <Box display="flex" justifyContent="center" mt={2}>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={filteredTeachers.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </Box>
-            </Box>
-          ) : (
-            // Replace table with DataGrid for desktop
-            <Box sx={{ height: 600, width: '100%' }}>
-              <DataGrid
-                rows={filteredTeachers}
-                getRowId={(row) => row.id} // Important: specify how to get row IDs
-                columns={columns}
-                initialState={{
-                  pagination: {
-                    paginationModel: { 
-                      page: page,
-                      pageSize: rowsPerPage 
-                    },
-                  },
-                }}
-                pageSizeOptions={[5, 10, 25]}
-                checkboxSelection
-                disableRowSelectionOnClick
-                onPaginationModelChange={(newModel) => {
-                  setPage(newModel.page);
-                  setRowsPerPage(newModel.pageSize);
-                }}
-                onRowSelectionModelChange={(newSelectionModel) => {
-                  setSelectedTeachers(newSelectionModel);
-                }}
-                rowSelectionModel={selectedTeachers}
-                loading={loading}
-                slots={{ toolbar: CustomToolbar }}
-                sx={{
-                  border: 'none',
-                  '& .MuiDataGrid-cell:focus': {
-                    outline: 'none',
-                  },
-                  '& .MuiDataGrid-columnHeaders': {
-                    background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06b6d4', 0.05)} 100%)`,
-                    borderBottom: `2px solid ${alpha('#0d9488', 0.2)}`,
-                    fontWeight: 600,
-                    color: '#0d9488',
-                  },
-                  '& .MuiDataGrid-row:nth-of-type(even)': {
-                    backgroundColor: alpha('#f8fafc', 0.5),
-                  },
-                  '& .MuiDataGrid-row:hover': {
-                    backgroundColor: alpha('#0d9488', 0.05),
-                  },
-                  '& .MuiDataGrid-row.Mui-selected': {
-                    backgroundColor: alpha('#0d9488', 0.1),
-                    '&:hover': {
-                      backgroundColor: alpha('#0d9488', 0.15),
-                    },
-                  },
-                  '& .MuiDataGrid-footerContainer': {
-                    borderTop: `1px solid ${alpha('#0d9488', 0.1)}`,
-                    backgroundColor: alpha('#f8fafc', 0.5),
-                  },
-                  '& .MuiTablePagination-root': {
-                    color: '#0d9488',
-                  },
-                  '& .MuiCheckbox-root': {
-                    color: alpha('#0d9488', 0.6),
-                    '&.Mui-checked': {
-                      color: '#0d9488',
-                    },
-                  },
-                }}
-              />
-            </Box>
-          )}
-        </Paper>
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-text">
+                    Showing <span className="font-semibold">{indexOfFirst + 1}</span> to{' '}
+                    <span className="font-semibold">{Math.min(indexOfLast, filtered.length)}</span> of{' '}
+                    <span className="font-semibold">{filtered.length}</span> results
+                  </p>
+                </div>
+                <div>
+                  <nav className="isolate inline-flex -space-x-px rounded-lg" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center rounded-l-lg px-2 py-2 text-secondary ${currentPage === 1 ? 'cursor-not-allowed bg-background' : 'hover:bg-background bg-white'}`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <FiChevronLeft className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    {getVisiblePageNumbers().map((n, idx) =>
+                      n === "..." ? (
+                        <span key={`e-${idx}`} className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-text bg-white">...</span>
+                      ) : (
+                        <button
+                          key={n}
+                          onClick={() => setCurrentPage(n)}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === n ? 'bg-primary text-white z-10' : 'bg-white text-secondary hover:bg-background'}`}
+                        >
+                          {n}
+                        </button>
+                      )
+                    )}
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center rounded-r-lg px-2 py-2 text-secondary ${currentPage === totalPages ? 'cursor-not-allowed bg-background' : 'hover:bg-background bg-white'}`}
+                    >
+                      <span className="sr-only">Next</span>
+                      <FiChevronRight className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
-      {/* Snackbar notification */}
+        {/* Confirm modal */}
+        {confirmModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/30" onClick={closeConfirm} />
+            <div className="relative bg-white rounded-xl shadow-xl p-5 w-[90%] max-w-md">
+              <h3 className="text-lg font-semibold text-text mb-2">Confirm Status Change</h3>
+              <p className="text-sm text-secondary mb-4">
+                Are you sure you want to {confirmModal.status ? 'deactivate' : 'activate'} this teacher?
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button onClick={closeConfirm} className="px-3 py-2 rounded-lg text-sm border border-gray-200 text-text">Cancel</button>
+                <button onClick={confirmToggle} className="px-3 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primary/90">Confirm</button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={() => setNotification({ ...notification, open: false })}
-      >
-        <Alert
-          severity={notification.type}
-          onClose={() => setNotification({ ...notification, open: false })}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
+        {/* Toast */}
+        {toast.open && (
+          <div className="fixed bottom-4 right-4 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-2 text-sm">
+            <span className={toast.type === 'error' ? 'text-rose-600' : toast.type === 'success' ? 'text-emerald-600' : 'text-text'}>
+              {toast.message}
+            </span>
+          </div>
+        )}
+      </div>
 
-      {/* Confirm status change dialog */}
-      <StyledDialog
-        open={confirmStatusChange.open}
-        onClose={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
-      >
-        <GradientHeader>
-          <Typography variant="h6" fontWeight={600}>
-            Confirm Status Change
-          </Typography>
-        </GradientHeader>
-        <DialogContent sx={{ mt: 2 }}>
-          <Typography>
-            Are you sure you want to {confirmStatusChange.currentStatus ? "deactivate" : "activate"} the selected teacher?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => setConfirmStatusChange({ ...confirmStatusChange, open: false })}
-            sx={{ color: '#0d9488' }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleToggleStatus(confirmStatusChange.id, confirmStatusChange.currentStatus)}
-            variant="contained"
-            sx={{
-              background: `linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)`,
-              '&:hover': {
-                background: `linear-gradient(135deg, #0a7c6a 0%, #0891b2 100%)`,
-              }
-            }}
-            disabled={processingStatus}
-          >
-            {processingStatus ? "Processing..." : "Confirm"}
-          </Button>
-        </DialogActions>
-      </StyledDialog>
+      {/* Filters Modal */}
+      <FilterModal
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        qualifications={qualifications}
+        subjects={subjects}
+        classCategories={classCategories}
+        selectedQualifications={selectedQualifications}
+        setSelectedQualifications={setSelectedQualifications}
+        selectedSubjects={selectedSubjects}
+        setSelectedSubjects={setSelectedSubjects}
+        selectedClassCategories={selectedClassCategories}
+        setSelectedClassCategories={setSelectedClassCategories}
+        locationFilters={locationFilters}
+        setLocationFilters={setLocationFilters}
+        locationInputs={locationInputs}
+        setLocationInputs={setLocationInputs}
+        selectedStatuses={selectedStatuses}
+        setSelectedStatuses={setSelectedStatuses}
+        selectedGenders={selectedGenders}
+        setSelectedGenders={setSelectedGenders}
+        experienceRange={experienceRange}
+        setExperienceRange={setExperienceRange}
+        expandedSections={expandedSections}
+        setExpandedSections={setExpandedSections}
+        handleClearFilters={handleClearFilters}
+      />
     </Layout>
   );
-}
+};
 
 export default ManageTeacher;

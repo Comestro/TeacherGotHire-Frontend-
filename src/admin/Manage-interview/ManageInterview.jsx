@@ -95,7 +95,7 @@ export default function InterviewManagementRedesign() {
   const [interviewData, setInterviewData] = useState([]);
   const [filteredTeachers, setFilteredTeachers] = useState([]);
 
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState("table");
 
   const [filters, setFilters] = useState({

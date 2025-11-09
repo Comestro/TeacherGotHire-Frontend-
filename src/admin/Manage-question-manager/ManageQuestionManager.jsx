@@ -536,6 +536,43 @@ const ManageQuestionManager = () => {
     return category ? `${subject.subject_name} (${category.name})` : subject.subject_name;
   };
 
+  // Mobile view renderer (was missing, caused ReferenceError)
+  const renderMobileView = () => {
+    return (
+      <Stack spacing={2}>
+        {filteredManagers.map((m) => (
+          <Paper key={m.id} sx={{ p: 2, borderRadius: 2 }} elevation={1}>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{m.user?.Fname} {m.user?.Lname}</Typography>
+                <Typography variant="caption" sx={{ color: '#64748B' }}>{m.user?.email}</Typography>
+              </Box>
+              <Box display="flex" flexDirection="column" alignItems="flex-end" gap={1}>
+                <Chip label={m.status ? 'Active' : 'Inactive'} size="small" sx={{ bgcolor: m.status ? alpha('#0d9488', 0.08) : alpha('#64748B', 0.08), color: m.status ? '#0d9488' : '#64748B', fontWeight: 600 }} />
+                <Switch checked={m.status} onChange={() => handleToggleStatus(m)} size="small" disabled={loadingAction} />
+              </Box>
+            </Box>
+
+            <Box mt={2} display="flex" flexWrap="wrap" gap={1}>
+              {(m.subject || []).slice(0,5).map(sub => {
+                const cat = m.class_category?.find(c => c.id === sub.class_category);
+                const label = cat ? `${sub.subject_name} (${cat.name})` : sub.subject_name;
+                return <Chip key={sub.id} label={label} size="small" sx={{ bgcolor: alpha('#0d9488', 0.06), color: '#0d9488' }} />;
+              })}
+              {(m.subject || []).length > 5 && <Chip label={`+${(m.subject || []).length - 5} more`} size="small" />}
+            </Box>
+
+            <Box mt={2} display="flex" gap={1}>
+              <Button size="small" variant="outlined" onClick={() => handleOpenViewDialog(m)} startIcon={<VisibilityIcon />}>View</Button>
+              <Button size="small" variant="contained" onClick={() => handleOpenModal(true, m)} sx={{ bgcolor: '#0d9488' }} startIcon={<EditIcon />}>Edit</Button>
+              <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteConfirmation(m)} startIcon={<DeleteIcon />}>Delete</Button>
+            </Box>
+          </Paper>
+        ))}
+      </Stack>
+    );
+  };
+
   return (
     <Layout>
       <Box sx={{ width: '100%' }}>
@@ -751,7 +788,6 @@ const ManageQuestionManager = () => {
               ) : (
                 <Box
                   sx={{
-                    height: 500,
                     width: '100%',
                     '& .MuiDataGrid-root': {
                       border: 'none',

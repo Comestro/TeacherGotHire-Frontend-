@@ -117,7 +117,7 @@ export default function ManageRecruiterEnquiry() {
         const transformed = Array.isArray(resp)
           ? resp.map((item) => ({
               id: item.id,
-              recruiterName: safe(item.name, 'Unknown'),
+              recruiterName: safe(item.user.Fname + " " + item.user.Lname, 'Unknown'),
               email: safe(item.email, ''),
               contactNumber: safe(item.contact, ''),
               subjects: Array.isArray(item.subject) ? item.subject.map((s) => s.subject_name) : [],
@@ -353,8 +353,8 @@ export default function ManageRecruiterEnquiry() {
 
   return (
     <Layout>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h4" fontWeight={700}>Manage Recruiter Inquiries</Typography>
+        <Box sx={{ mb: 2,mt: { xs: 2, md: 0 } }}>
+          <Typography variant="h4" sx={{fontSize: { xs: '1.5rem', md: '2rem' }}} fontWeight={700}>Manage Recruiter Inquiries</Typography>
           <Typography variant="body2" color="text.secondary">Review, filter and act on recruiter enquiries for teachers</Typography>
         </Box>
 
@@ -453,7 +453,7 @@ export default function ManageRecruiterEnquiry() {
         </Paper>
 
         {/* DataGrid */}
-        <Paper elevation={1} sx={{ borderRadius: 2, mb: 3 }}>
+        <Paper elevation={1} sx={{ borderRadius: 2, mb: 3,display: { xs: 'none', md: 'block' } }}>
           {loading ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <CircularLoaderFallback />
@@ -567,10 +567,10 @@ export default function ManageRecruiterEnquiry() {
                 </Grid>
               </Grid>
 
-              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: "column", gap: 1, mt: 2 }}>
                 {selectedInquiry.status === 'Pending' && (
                   <>
-                    <Button variant="contained" startIcon={<CheckIcon />} onClick={() => handleApprove(selectedInquiry.id)} fullWidth>Approve</Button>
+                    <Button variant="contained" sx={{backgroundColor:"teal"}} startIcon={<CheckIcon />} onClick={() => handleApprove(selectedInquiry.id)} fullWidth>Approve</Button>
                     <Button variant="outlined" color="error" startIcon={<CloseIcon />} onClick={() => handleOpenRejectModal(selectedInquiry)} fullWidth>Reject</Button>
                   </>
                 )}

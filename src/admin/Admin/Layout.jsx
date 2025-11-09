@@ -37,7 +37,7 @@ const AppBar = styled(MuiAppBar, {
 
 const Main = styled(Box)(({ theme }) => ({
   flexGrow: 1,
-  padding: theme.spacing(3),
+  padding: theme.spacing(0),
   marginTop: 64, // AppBar height
   width: '100%',
   overflowX: 'hidden', // Prevent horizontal overflow in main content
@@ -64,6 +64,8 @@ export default function Layout({ children }) {
     <Box sx={{
       display: "flex",
       width: "100%",
+      paddingRight:"10px",
+      paddingLeft:"10px",
       position: "relative",
       overflow: "hidden" // This prevents horizontal scrollbar on the whole layout
     }}>
@@ -122,6 +124,7 @@ export default function Layout({ children }) {
           overflowX: 'hidden !important',
           width: '100%',
           maxWidth: '100%',
+          p: { xs: 1, sm: 2 },
         }}>
           {children}
         </Box>

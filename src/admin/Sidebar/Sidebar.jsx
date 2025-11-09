@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -89,17 +89,19 @@ const Drawer = styled(MuiDrawer)(({ theme, open }) => ({
     "& .MuiDrawer-paper": {
       width: drawerWidth,
       overflowX: "hidden !important",
-      backgroundColor: '#F8FAFC',
-      boxShadow: '4px 0px 20px rgba(0,0,0,0.1)',
-      borderRight: `1px solid #64748B`,
+      background: 'linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)',
+      boxShadow: '8px 0px 32px rgba(0,0,0,0.12)',
+      borderRight: `2px solid #CBD5E1`,
+      borderRadius: '0 16px 16px 0',
     },
   }),
   ...(!open && {
     "& .MuiDrawer-paper": {
       overflowX: "hidden !important",
-      backgroundColor: '#F8FAFC',
-      boxShadow: '4px 0px 20px rgba(0,0,0,0.1)',
-      borderRight: `1px solid #64748B`,
+      background: 'linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)',
+      boxShadow: '8px 0px 32px rgba(0,0,0,0.12)',
+      borderRight: `2px solid #CBD5E1`,
+      borderRadius: '0 16px 16px 0',
     },
   }),
 }));
@@ -108,6 +110,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   const [collapseOpen, setCollapseOpen] = useState(false);
 
   const handleCollapseToggle = () => {
@@ -162,13 +165,14 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           }
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", padding: theme.spacing(2, 1), backgroundColor: '#0d9488', color: '#F8FAFC', ...theme.mixins.toolbar }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", padding: theme.spacing(2, 1), background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: '#F8FAFC', ...theme.mixins.toolbar, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
           <Box
             sx={{
               flexGrow: 1,
               textAlign: "center",
               fontWeight: "bold",
-              fontSize: 24,
+              fontSize: 28,
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
             }}
           >
             PTPI
@@ -185,10 +189,15 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   minHeight: 48,
                   justifyContent: "initial",
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
+                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
+                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: '#eee',
+                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
+                    transform: 'translateX(4px)',
+                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
                   },
                 }}
               >
@@ -196,7 +205,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   sx={{
                     minWidth: 0,
                     mr: 3,
-                    justifyContent: "center",
                     color: '#F8FAFC',
                     backgroundColor: '#0d9488',
                     borderRadius: '50%',
@@ -216,7 +224,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
               </ListItemButton>
             </ListItem>
           ))}
-          <ListSubheader sx={{ fontWeight: 'bold', position:"static", fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1 }}>
+          <ListSubheader sx={{ fontWeight: 'bold', position:"static", fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Data Management
           </ListSubheader>
           {menuItems.slice(1, 8).map((item) => (
@@ -228,10 +236,15 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   minHeight: 44,
                   justifyContent: "initial",
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
+                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
+                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: '#eee',
+                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
+                    transform: 'translateX(4px)',
+                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
                   },
                 }}
               >
@@ -239,7 +252,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   sx={{
                     minWidth: 0,
                     mr: 3,
-                    justifyContent: "center",
                     color: '#F8FAFC',
                     backgroundColor: '#0d9488',
                     borderRadius: '50%',
@@ -259,7 +271,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
               </ListItemButton>
             </ListItem>
           ))}
-          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1 }}>
+          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Manage Requests
           </ListSubheader>
           {menuItems.slice(8, 14).map((item) => (
@@ -271,10 +283,15 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   minHeight: 44,
                   justifyContent: "initial",
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
+                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
+                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: '#eee',
+                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
+                    transform: 'translateX(4px)',
+                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
                   },
                 }}
               >
@@ -290,7 +307,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                     height: 32,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
                   }}
                 >
                   {item.icon}
@@ -302,7 +318,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
               </ListItemButton>
             </ListItem>
           ))}
-          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1 }}>
+          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
             Manage Users
           </ListSubheader>
           {menuItems.slice(14).map((item) => (
@@ -314,10 +330,15 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                   minHeight: 44,
                   justifyContent: "initial",
                   px: 3,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   mx: 1,
+                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
+                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: '#eee',
+                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
+                    transform: 'translateX(4px)',
+                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
                   },
                 }}
               >
@@ -333,7 +354,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                     height: 32,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
                   }}
                 >
                   {item.icon}
@@ -348,7 +368,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
           <Divider sx={{ my: 1 }} />
           {/* Collapsible Settings Section */}
           <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0.5 }}>
-            <ListItemButton sx={{ minHeight: 48, px: 3, borderRadius: 1, mx: 1, '&:hover': { backgroundColor: '#06B6D4' } }}>
+            <ListItemButton sx={{ minHeight: 48, px: 3, borderRadius: 2, mx: 1, backgroundColor: collapseOpen ? '#06B6D4' : 'transparent', color: collapseOpen ? '#F8FAFC' : '#374151', transition: 'all 0.3s ease', '&:hover': { backgroundColor: '#0891B2', transform: 'translateX(4px)', boxShadow: '2px 2px 8px rgba(0,0,0,0.1)' } }}>
               <ListItemIcon sx={{ color: '#F8FAFC', backgroundColor: '#0d9488', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 3, minWidth: 0 }}>
                 <SettingsIcon />
               </ListItemIcon>
@@ -375,10 +395,15 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                       minHeight: 40,
                       justifyContent: "initial",
                       px: 3,
-                      borderRadius: 1,
+                      borderRadius: 2,
                       mx: 1,
+                      backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
+                      color: location.pathname === item.link ? '#F8FAFC' : '#374151',
+                      transition: 'all 0.3s ease',
                       '&:hover': {
-                        backgroundColor: '#06B6D4',
+                        backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
+                        transform: 'translateX(4px)',
+                        boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
                       },
                     }}
                   >
@@ -400,7 +425,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
                     </ListItemIcon>
                     <ListItemText
                       primary={item.text}
-                      sx={{ opacity: 1 }}
+                      sx={{ opacity: 1, color: "teal", "&:hover": { color: "white" } }}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -412,7 +437,7 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
         {/* Logout Button */}
         <List>
           <ListItem disablePadding sx={{ mt: 0.5 }}>
-            <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36 }}>
+            <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36, borderRadius: 2, mx: 1, transition: 'all 0.3s ease', '&:hover': { backgroundColor: '#FEE2E2', transform: 'translateX(4px)', boxShadow: '2px 2px 8px rgba(0,0,0,0.1)' } }}>
               <ListItemIcon>
                 <LogoutIcon color="error" />
               </ListItemIcon>

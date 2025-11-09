@@ -1,76 +1,23 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  Modal,
-  Snackbar,
-  Tabs,
-  Tab,
-  Paper,
-  CircularProgress,
-  Alert,
-  useMediaQuery,
-  useTheme,
-  Backdrop,
-  IconButton,
-  Breadcrumbs,
-  Divider,
-  Card,
-  Link as MuiLink,
-  Tooltip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  TextField,
-  Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Checkbox,
-  FormGroup,
-  FormControlLabel,
-  OutlinedInput,
-  ListItemText,
-  Slider,
-} from "@mui/material";
-import {
-  GetApp as ExportIcon,
-  Delete as DeleteIcon,
-  Close as CloseIcon,
-  ArrowBack as ArrowBackIcon,
-  Info as InfoIcon,
-  FilterList as FilterListIcon,
-  Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
-  Clear as ClearIcon,
-} from "@mui/icons-material";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../Admin/Layout";
-import TeacherCard from "./TeacherCard";
-import SkillsCard from "./SkillCard";
-import QualificationsCard from "./QualificationsCard";
-import ExperienceCard from "./ExperienceCard";
-import TeacherModal from "../TeacherInfoModal/TeacherModal";
-import TeacherTestScorePage from "./TeacherTestScore";
-import { getTeacherProfile } from "../../services/adminTeacherApi";
+import { fetchSingleTeacherById } from "../../services/apiService";
 
 const ViewTeacherAdmin = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const isMobile = windowWidth < 640;
 
   const { id } = useParams();
   const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [openDownloadModal, setOpenDownloadModal] = useState(false);
-  const [downloadLoading, setDownloadLoading] = useState(false);
   const [teacherData, setTeacherData] = useState(null);
+  const [attempts, setAttempts] = useState([]);
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -188,30 +135,21 @@ const ViewTeacherAdmin = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await getTeacherProfile(id);
-        
+        const response = await fetchSingleTeacherById(id);
+        // The API may return { teacher: { ... }, attempts: [...] } or a flat teacher object.
+        const raw = response || {};
+        const teacher = raw.teacher || raw;
+        setTeacherData(teacher || {});
 
-        // Map the API field names to the expected property names
-        const mappedData = {
-          ...response,
-          firstName: response.Fname, // Map Fname to firstName
-          lastName: response.Lname,  // Map Lname to lastName
-          id: response.id,
-          email: response.email,
-          isActive: response.is_verified, // Map is_verified to isActive
-          // Add default values for other fields that might be needed
-          phone: response.phone || "Not provided",
-          address: response.address || "Not provided",
-          currentPosition: response.position || "Not specified",
-          highestQualification: response.qualification || "Not specified",
-          bio: response.bio || "No bio information available."
-        };
-
-        setTeacherData(mappedData);
+        // capture attempts from multiple possible locations
+        const attemptsFromResp = raw.attempts || raw.attempt_history || raw.attempts_history || teacher.attempts || [];
+        setAttempts(Array.isArray(attemptsFromResp) ? attemptsFromResp : []);
 
         // Set page title with teacher name if available
-        if (response?.Fname && response?.Lname) {
-          document.title = `${response.Fname} ${response.Lname} | Profile`;
+        if (teacher?.Fname && teacher?.Lname) {
+          document.title = `${teacher.Fname} ${teacher.Lname} | Profile`;
+        } else if (teacher?.firstName || teacher?.lastName) {
+          document.title = `${teacher.firstName || ''} ${teacher.lastName || ''} | Profile`;
         } else {
           document.title = "Teacher Profile";
         }
@@ -233,116 +171,78 @@ const ViewTeacherAdmin = () => {
     };
   }, [id]);
 
-  const handleDownloadProfile = () => {
-    if (!teacherData) {
-      setNotificationMessage({
-        type: "error",
-        text: "No teacher data available to download"
-      });
-      setOpenSnackbar(true);
-      return;
+  const formatDate = (value, { dateOnly } = { dateOnly: false }) => {
+    if (!value) return '';
+    try {
+      const d = new Date(value);
+      if (isNaN(d)) return String(value);
+      if (dateOnly) return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (e) {
+      return String(value);
     }
-
-    
-
-    // Make sure we have name data - check both mapped and original fields
-    const firstName = teacherData.firstName || teacherData.Fname || "Teacher";
-    const lastName = teacherData.lastName || teacherData.Lname || "Profile";
-
-    setOpenDownloadModal(true);
-    setDownloadLoading(true);
-
-    // Longer delay to allow modal to fully render
-    setTimeout(() => {
-      const contentElement = document.getElementById("teacher-pdf-content");
-      if (!contentElement) {
-        
-        setDownloadLoading(false);
-        setOpenDownloadModal(false);
-
-        setNotificationMessage({
-          type: "error",
-          text: "Failed to generate PDF. Please try again."
-        });
-        setOpenSnackbar(true);
-        return;
-      }
-
-      // Use html2canvas with better settings for quality
-      html2canvas(contentElement, {
-        scale: 2,
-        useCORS: true,
-        logging: true, // Enable logging to debug issues
-        backgroundColor: "#ffffff",
-        allowTaint: true, // Allow cross-origin images
-        foreignObjectRendering: false, // Disable foreignObject rendering which can cause issues
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight
-      })
-        .then((canvas) => {
-          const imgData = canvas.toDataURL("image/png");
-          const pdf = new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4",
-          });
-
-          // Calculate dimensions
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = pdf.internal.pageSize.getHeight();
-          const imgWidth = canvas.width;
-          const imgHeight = canvas.height;
-          const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-          const imgX = (pdfWidth - imgWidth * ratio) / 2;
-          const imgY = 10; // Small margin at top
-
-          // Add image and metadata at the bottom
-          pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-
-          const currentDate = new Date().toLocaleDateString();
-          pdf.setFontSize(8);
-          pdf.setTextColor(100, 100, 100);
-          pdf.text(`Generated on ${currentDate}`, 10, pdfHeight - 10);
-
-          // Use our safely-extracted name variables
-          pdf.text(`Teacher Profile: ${firstName} ${lastName}`, pdfWidth - 10, pdfHeight - 10, {
-            align: "right"
-          });
-
-          // Generate safe filename
-          const safeFileName = `${firstName}_${lastName}_Profile.pdf`.replace(/\s+/g, '_');
-
-          // Save with a proper filename
-          pdf.save(safeFileName);
-
-          setNotificationMessage({
-            type: "success",
-            text: "Profile downloaded successfully!"
-          });
-          setOpenSnackbar(true);
-        })
-        .catch((error) => {
-          
-          setNotificationMessage({
-            type: "error",
-            text: "Failed to generate PDF. Please try again."
-          });
-          setOpenSnackbar(true);
-        })
-        .finally(() => {
-          setDownloadLoading(false);
-          setOpenDownloadModal(false);
-        });
-    }, 1000); // Increased delay to 1000ms (1 second)
   };
 
+  // derive job locations from multiple possible shapes (same logic as recruiter view)
+  const jobLocations = (() => {
+    const teacher = teacherData || {};
+    if (!teacher) return [];
+
+    if (teacher.jobpreferencelocation) {
+      if (Array.isArray(teacher.jobpreferencelocation) && teacher.jobpreferencelocation.length) {
+        return teacher.jobpreferencelocation.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+      }
+      return [teacher.jobpreferencelocation];
+    }
+
+    const prefLocations = (teacher.preferences || [])
+      .flatMap(p => {
+        const candidates = [];
+        if (p.preferred_job_locations && Array.isArray(p.preferred_job_locations)) candidates.push(...p.preferred_job_locations);
+        if (p.job_pref_locations && Array.isArray(p.job_pref_locations)) candidates.push(...p.job_pref_locations);
+        if (p.job_pref_location) candidates.push(...(Array.isArray(p.job_pref_location) ? p.job_pref_location : [p.job_pref_location]));
+        if (p.job_locations && Array.isArray(p.job_locations)) candidates.push(...p.job_locations);
+        if (p.job_location) candidates.push(...(Array.isArray(p.job_location) ? p.job_location : [p.job_location]));
+        if (p.preferred_locations && Array.isArray(p.preferred_locations)) candidates.push(...p.preferred_locations);
+        if (p.job_preferences && Array.isArray(p.job_preferences)) candidates.push(...p.job_preferences);
+        return candidates;
+      })
+      .filter(Boolean)
+      .filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+
+    if (prefLocations.length) return prefLocations;
+
+    if (Array.isArray(teacher.job_locations) && teacher.job_locations.length) {
+      return teacher.job_locations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+    }
+    if (Array.isArray(teacher.joblocations) && teacher.joblocations.length) {
+      return teacher.joblocations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
+    }
+
+    if (Array.isArray(teacher.teachersaddress) && teacher.teachersaddress.length) {
+      const others = teacher.teachersaddress.filter(addr => !(addr && addr.address_type && ['current', 'permanent'].includes(String(addr.address_type).toLowerCase())));
+      return others;
+    }
+
+    return [];
+  })();
 
   const [notificationMessage, setNotificationMessage] = useState({
     type: "success",
     text: "Account deactivated successfully"
   });
+
+  // JSON viewer modal for inspecting complex fields
+  const [openJsonDialog, setOpenJsonDialog] = useState(false);
+  const [jsonDialogTitle, setJsonDialogTitle] = useState('');
+  const [jsonDialogContent, setJsonDialogContent] = useState(null);
+
+  const handleOpenJsonDialog = (title, value) => {
+    setJsonDialogTitle(title);
+    setJsonDialogContent(value);
+    setOpenJsonDialog(true);
+  };
+
 
   const handleDeactivate = () => {
     // Here you would add the actual API call to deactivate the account
@@ -354,7 +254,7 @@ const ViewTeacherAdmin = () => {
     setOpenSnackbar(true);
   };
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (newValue) => {
     setTabValue(newValue);
   };
 
@@ -362,797 +262,313 @@ const ViewTeacherAdmin = () => {
     navigate("/admin/manage/teacher");
   };
 
-  // Create a FilterPanel component
-  const FilterPanel = () => (
-    <Card
-      elevation={2}
-      sx={{
-        borderRadius: 2,
-        overflow: 'hidden',
-        mb: 3,
-        backgroundColor: 'white',
-        transition: 'all 0.3s ease',
-      }}
-    >
-      <Accordion 
-        expanded={filtersExpanded} 
-        onChange={() => setFiltersExpanded(!filtersExpanded)}
-        disableGutters
-        elevation={0}
-        sx={{ 
-          '&:before': { display: 'none' },
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          sx={{
-            backgroundColor: '#f5f7fa',
-            borderBottom: filtersExpanded ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
-          }}
-        >
-          <Box display="flex" alignItems="center">
-            <FilterListIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Teacher Filters
-            </Typography>
-            {Object.values(filters).some(value => 
-              (Array.isArray(value) && value.length > 0) || 
-              (!Array.isArray(value) && value && value !== 'all' && value !== 0)
-            ) && (
-              <Chip 
-                label="Filters Active" 
-                size="small" 
-                color="primary" 
-                sx={{ ml: 2 }} 
-              />
-            )}
-          </Box>
-        </AccordionSummary>
-        
-        <AccordionDetails sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            {/* Search query */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                label="Search Teachers"
-                name="searchQuery"
-                value={filters.searchQuery}
-                onChange={handleFilterChange}
-                placeholder="Search by name, email, or ID"
-                InputProps={{
-                  startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
-                }}
-                size="small"
-              />
-            </Grid>
-            
-            {/* Class Category Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Class Category</InputLabel>
-                <Select
-                  name="classCategory"
-                  value={filters.classCategory}
-                  onChange={handleFilterChange}
-                  label="Class Category"
-                >
-                  <MenuItem value="">All Categories</MenuItem>
-                  {filterOptions.classCategories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Subject Filter - Shows subjects based on class category */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Subjects</InputLabel>
-                <Select
-                  multiple
-                  name="subjects"
-                  value={filters.subjects}
-                  onChange={(e) => handleMultiFilterChange(e, 'subjects')}
-                  input={<OutlinedInput label="Subjects" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" />
-                      ))}
-                    </Box>
-                  )}
-                >
-                  {(filterOptions.availableSubjects || filterOptions.subjects).map((subject) => (
-                    <MenuItem key={subject} value={subject}>
-                      <Checkbox checked={filters.subjects.indexOf(subject) > -1} />
-                      <ListItemText primary={subject} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Gender Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Gender</InputLabel>
-                <Select
-                  name="gender"
-                  value={filters.gender}
-                  onChange={handleFilterChange}
-                  label="Gender"
-                >
-                  <MenuItem value="">All Genders</MenuItem>
-                  {filterOptions.genders.map((gender) => (
-                    <MenuItem key={gender} value={gender}>
-                      {gender}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* State Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>State</InputLabel>
-                <Select
-                  name="state"
-                  value={filters.state}
-                  onChange={handleFilterChange}
-                  label="State"
-                >
-                  <MenuItem value="">All States</MenuItem>
-                  {filterOptions.states.map((state) => (
-                    <MenuItem key={state} value={state}>
-                      {state}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* District Filter - Shows districts based on selected state */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl 
-                fullWidth 
-                size="small"
-                disabled={!filters.state}
-              >
-                <InputLabel>District</InputLabel>
-                <Select
-                  name="district"
-                  value={filters.district}
-                  onChange={handleFilterChange}
-                  label="District"
-                >
-                  <MenuItem value="">All Districts</MenuItem>
-                  {filters.state && filterOptions.districts[filters.state]?.map((district) => (
-                    <MenuItem key={district} value={district}>
-                      {district}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Skills Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Skills</InputLabel>
-                <Select
-                  multiple
-                  name="skills"
-                  value={filters.skills}
-                  onChange={(e) => handleMultiFilterChange(e, 'skills')}
-                  input={<OutlinedInput label="Skills" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" />
-                      ))}
-                    </Box>
-                  )}
-                >
-                  {filterOptions.skills.map((skill) => (
-                    <MenuItem key={skill} value={skill}>
-                      <Checkbox checked={filters.skills.indexOf(skill) > -1} />
-                      <ListItemText primary={skill} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Qualifications Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Qualifications</InputLabel>
-                <Select
-                  multiple
-                  name="qualifications"
-                  value={filters.qualifications}
-                  onChange={(e) => handleMultiFilterChange(e, 'qualifications')}
-                  input={<OutlinedInput label="Qualifications" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" />
-                      ))}
-                    </Box>
-                  )}
-                >
-                  {filterOptions.qualifications.map((qualification) => (
-                    <MenuItem key={qualification} value={qualification}>
-                      <Checkbox checked={filters.qualifications.indexOf(qualification) > -1} />
-                      <ListItemText primary={qualification} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Status Filter */}
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Account Status</InputLabel>
-                <Select
-                  name="status"
-                  value={filters.status}
-                  onChange={handleFilterChange}
-                  label="Account Status"
-                >
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value="active">Active Only</MenuItem>
-                  <MenuItem value="inactive">Inactive Only</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Experience Range Slider */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography gutterBottom>
-                Experience (Years): {filters.experience[0]} - {filters.experience[1]}
-              </Typography>
-              <Slider
-                value={filters.experience}
-                onChange={handleSliderChange}
-                valueLabelDisplay="auto"
-                min={0}
-                max={20}
-                step={1}
-                marks={[
-                  { value: 0, label: '0' },
-                  { value: 5, label: '5' },
-                  { value: 10, label: '10' },
-                  { value: 15, label: '15' },
-                  { value: 20, label: '20+' },
-                ]}
-              />
-            </Grid>
-            
-            {/* Test Score Minimum */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography gutterBottom>
-                Minimum Test Score: {filters.minTestScore}
-              </Typography>
-              <Slider
-                value={filters.minTestScore}
-                onChange={(e, newValue) => setFilters({...filters, minTestScore: newValue})}
-                valueLabelDisplay="auto"
-                min={0}
-                max={100}
-                step={5}
-                marks={[
-                  { value: 0, label: '0' },
-                  { value: 50, label: '50' },
-                  { value: 100, label: '100' },
-                ]}
-              />
-            </Grid>
-          </Grid>
-          
-          {/* Filter Action Buttons */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end', 
-              mt: 3,
-              gap: 2 
-            }}
-          >
-            <Button
-              variant="outlined"
-              color="inherit"
-              startIcon={<ClearIcon />}
-              onClick={handleResetFilters}
-              size="medium"
-              sx={{ 
-                borderRadius: 1.5, 
-                textTransform: 'none',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}
-            >
-              Reset Filters
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<FilterListIcon />}
-              size="medium"
-              sx={{ 
-                borderRadius: 1.5, 
-                textTransform: 'none',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}
-            >
-              Apply Filters
-            </Button>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-    </Card>
-  );
 
   return (
     <Layout>
-      <Box
-        p={{ xs: 1.5, sm: 2, md: 3 }}
-        sx={{
-          backgroundColor: "#f9fafc",
-          minHeight: "calc(100vh - 64px)",
-        }}
-      >
-        {/* Breadcrumbs Navigation */}
-        <Box
-          mb={{ xs: 2, sm: 3 }}
-        >
-          <Button
-            onClick={handleBackClick}
-            startIcon={<ArrowBackIcon />}
-            variant="outlined"
-            size={isMobile ? "small" : "medium"}
-            sx={{
-              mb: 2,
-              textTransform: 'none',
-              borderRadius: 1.5,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              '&:hover': {
-                boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
-              }
-            }}
-          >
-            Back to Teacher List
-          </Button>
+      <div className="p-4 md:p-6 bg-gray-50 min-h-[calc(100vh-64px)]">
+        {/* Breadcrumbs / Header */}
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <button onClick={handleBackClick} className="px-3 py-2 rounded border bg-white text-sm">← Back to Teacher List</button>
+            <nav className="text-sm text-gray-600">
+              <Link to="/admin/dashboard" className="hover:underline">Dashboard</Link>
+              <span className="mx-2">›</span>
+              <Link to="/admin/manage/teacher" className="hover:underline">Manage Teachers</Link>
+              <span className="mx-2">›</span>
+              <span className="text-gray-900 font-medium">{loading ? 'Loading...' : (teacherData?.Fname || teacherData?.firstName) ? `${teacherData?.Fname || teacherData?.firstName} ${teacherData?.Lname || teacherData?.lastName}` : 'Teacher Profile'}</span>
+            </nav>
+          </div>
 
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            separator="›"
-            sx={{
-              mt: 1,
-              '& .MuiBreadcrumbs-separator': {
-                mx: 1,
-                color: 'text.secondary'
-              }
-            }}
-          >
-            <MuiLink
-              component={Link}
-              to="/admin/dashboard"
-              underline="hover"
-              color="text.secondary"
-              sx={{
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              Dashboard
-            </MuiLink>
-            <MuiLink
-              component={Link}
-              to="/admin/manage/teacher"
-              underline="hover"
-              color="text.secondary"
-              sx={{
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              Manage Teachers
-            </MuiLink>
-            <Typography
-              color="text.primary"
-              sx={{
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                fontWeight: 500
-              }}
-            >
-              {loading ? 'Loading...' :
-                (teacherData && (teacherData.firstName || teacherData.Fname)) ?
-                  `${teacherData.firstName || teacherData.Fname} ${teacherData.lastName || teacherData.Lname}` :
-                  'Teacher Profile'}
-            </Typography>
-          </Breadcrumbs>
-        </Box>
+          {/* Filters */}
+          {/* FilterPanel not included here - keep if available in project */}
+        </div>
 
-        {/* New Filter Panel */}
-        <FilterPanel />
+        {/* Main card */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-4 md:p-6 border-b bg-gradient-to-r from-gray-100 to-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">Teacher Information</h1>
+              {teacherData && (
+                <div className="mt-2 text-sm text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{teacherData?.Fname || teacherData?.firstName} {teacherData?.Lname || teacherData?.lastName}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${teacherData?.isActive || teacherData?.is_verified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{teacherData?.isActive || teacherData?.is_verified ? 'ACTIVE' : 'INACTIVE'}</span>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500">Email: {teacherData?.email || '-'} · Phone: {teacherData?.profiles?.phone_number || '-'}</div>
+                </div>
+              )}
+            </div>
 
-        {/* Main content card */}
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            mb: 3,
-            backgroundColor: 'white',
-            transition: 'all 0.3s ease',
-          }}
-        >
-          {/* Header section with title and action buttons */}
-          <Box
-            sx={{
-              p: { xs: 2, sm: 3 },
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              background: 'linear-gradient(to right, #f5f7fa, #ffffff)',
-            }}
-          >
-            <Box
-              display="flex"
-              flexDirection={{ xs: 'column', md: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', md: 'center' }}
-              gap={{ xs: 1.5, sm: 2 }}
-            >
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    color: "text.primary",
-                    fontWeight: 700,
-                    fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                    mb: 0.5,
-                    lineHeight: 1.2
-                  }}
-                >
-                  Teacher Information
-                </Typography>
-                {teacherData && (
-                  <Typography
-                    variant="subtitle1"
-                    color="text.secondary"
-                    sx={{ fontWeight: 500 }}
-                  >
-                    {teacherData.firstName || teacherData.Fname} {teacherData.lastName || teacherData.Lname} {(teacherData.isActive || teacherData.is_verified) ?
-                      <Typography component="span" sx={{ color: 'success.main', fontWeight: 600, fontSize: '0.8rem', ml: 1, border: '1px solid', borderColor: 'success.main', px: 1, py: 0.25, borderRadius: 10 }}>
-                        ACTIVE
-                      </Typography> :
-                      <Typography component="span" sx={{ color: 'error.main', fontWeight: 600, fontSize: '0.8rem', ml: 1, border: '1px solid', borderColor: 'error.main', px: 1, py: 0.25, borderRadius: 10 }}>
-                        INACTIVE
-                      </Typography>
-                    }
-                  </Typography>
-                )}
-              </Box>
+            <div className="flex gap-2">
+              <button onClick={() => setOpenDeactivateModal(true)} disabled={loading || !teacherData} className="px-3 py-2 rounded bg-red-600 text-white text-sm">Deactivate Account</button>
+            </div>
+          </div>
 
-              <Box
-                display="flex"
-                flexDirection={{ xs: 'column', sm: 'row' }}
-                gap={{ xs: 1.5, sm: 2 }}
-                width={{ xs: '100%', md: 'auto' }}
-                mt={{ xs: 2, md: 0 }}
-              >
-                <Tooltip title="Download teacher profile as PDF">
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<ExportIcon />}
-                    onClick={handleDownloadProfile}
-                    disabled={loading || !teacherData}
-                    fullWidth={isMobile}
-                    size={isMobile ? "medium" : "large"}
-                    sx={{
-                      borderRadius: 1.5,
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      textTransform: 'none',
-                      minWidth: { xs: '100%', sm: '160px' },
-                      py: { xs: 1, sm: 1 },
-                      '&:hover': {
-                        boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
-                      }
-                    }}
-                  >
-                    Download Profile
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Deactivate this teacher's account">
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={() => setOpenDeactivateModal(true)}
-                    disabled={loading || !teacherData}
-                    fullWidth={isMobile}
-                    size={isMobile ? "medium" : "large"}
-                    sx={{
-                      borderRadius: 1.5,
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      textTransform: 'none',
-                      minWidth: { xs: '100%', sm: '160px' },
-                      py: { xs: 1, sm: 1 },
-                      '&:hover': {
-                        boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
-                      }
-                    }}
-                  >
-                    Deactivate Account
-                  </Button>
-                </Tooltip>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Content area */}
-          <Box p={{ xs: 2, sm: 3 }}>
+          <div className="p-4 md:p-6">
             {loading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px" flexDirection="column">
-                <CircularProgress size={40} />
-                <Typography mt={2} color="text.secondary">Loading teacher information...</Typography>
-              </Box>
+              <div className="text-center py-12">Loading teacher information...</div>
             ) : error ? (
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 3,
-                  borderRadius: 1.5,
-                  '& .MuiAlert-icon': { alignItems: 'center' }
-                }}
-              >
-                {error}
-              </Alert>
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded">{error}</div>
             ) : !teacherData ? (
-              <Alert
-                severity="info"
-                sx={{
-                  mb: 3,
-                  borderRadius: 1.5,
-                  '& .MuiAlert-icon': { alignItems: 'center' }
-                }}
-              >
-                No teacher data available.
-              </Alert>
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded">No teacher data available.</div>
             ) : (
-              <>
-                <Box
-                  sx={{
-                    backgroundColor: "#f9fbfd",
-                    borderRadius: 2,
-                    p: { xs: 1.5, sm: 2 },
-                    mb: 3,
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  }}
-                >
-                  <TeacherCard teacherData={teacherData} />
-                </Box>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Left column */}
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <img src={teacherData?.profiles?.profile_picture} alt="avatar" className="w-20 h-20 rounded-full object-cover bg-gray-100" />
+                      <div>
+                        <div className="text-lg font-semibold">{teacherData?.Fname} {teacherData?.Lname}</div>
+                        <div className="text-sm text-gray-500">{teacherData?.profiles?.language || '-'}</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-sm text-gray-600">
+                      <div><strong>Contact</strong></div>
+                      <div>Email: {teacherData?.email || '-'}</div>
+                      <div>Phone: {teacherData?.profiles?.phone_number || '-'}</div>
+                    </div>
+                  </div>
 
-                <Paper
-                  elevation={1}
-                  sx={{
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    mt: { xs: 2, sm: 3 },
-                    mb: 2,
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  }}
-                >
-                  <Tabs
-                    value={tabValue}
-                    onChange={handleTabChange}
-                    variant="scrollable"
-                    scrollButtons={isMobile ? "auto" : true}
-                    allowScrollButtonsMobile={true}
-                    aria-label="teacher information tabs"
-                    sx={{
-                      backgroundColor: 'background.paper',
-                      minHeight: { xs: 48, sm: 'auto' },
-                      '& .MuiTabs-flexContainer': {
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)'
-                      },
-                      '& .MuiTab-root': {
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        minWidth: { xs: 'auto', sm: '160px' },
-                        fontSize: { xs: '0.875rem', sm: '0.9rem' },
-                        minHeight: { xs: 48, sm: 'auto' },
-                        py: { xs: 1, sm: 1.5 },
-                        px: { xs: 2, sm: 3 },
-                        color: 'text.secondary',
-                        '&.Mui-selected': {
-                          color: 'primary.main',
-                          fontWeight: 700,
-                        }
-                      },
-                      '& .MuiTabs-indicator': {
-                        height: 3,
-                        borderTopLeftRadius: 3,
-                        borderTopRightRadius: 3,
-                      }
-                    }}
-                  >
-                    <Tab label="Skills" />
-                    <Tab label="Qualifications" />
-                    <Tab label="Experience" />
-                    <Tab label="Test Scores" />
-                  </Tabs>
+                </div>
 
-                  <Box p={{ xs: 2, sm: 3 }}>
-                    {tabValue === 0 && <SkillsCard userId={teacherData.id} />}
-                    {tabValue === 1 && <QualificationsCard userId={teacherData.id} />}
-                    {tabValue === 2 && <ExperienceCard userId={teacherData.id} />}
-                    {tabValue === 3 && <TeacherTestScorePage userId={teacherData.id} />}
-                  </Box>
-                </Paper>
-              </>
+                {/* Right column - Tabs and content */}
+                <div className="md:col-span-2">
+                  <div className="bg-white p-4 rounded shadow-sm">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {['Overview','Qualifications','Experience','Attempts','Job Locations','Skills','Preferences','Addresses'].map((label, idx) => (
+                        <button key={label} onClick={() => handleTabChange(idx)} className={`px-3 py-1 rounded text-sm ${tabValue===idx? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>{label}</button>
+                      ))}
+                    </div>
+
+                    <div>
+                      {/* Overview */}
+                      {tabValue === 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-3 border rounded">
+                            <div className="text-sm text-gray-500">Basic</div>
+                            <div className="mt-2 text-sm">Name: {teacherData?.Fname} {teacherData?.Lname}</div>
+                            <div className="text-sm">Email: {teacherData?.email}</div>
+                            <div className="text-sm">Phone: {teacherData?.profiles?.phone_number ?? '—'}</div>
+                            <div className="text-sm">Gender: {teacherData?.profiles?.gender ?? '—'}</div>
+                          </div>
+                          <div className="p-3 border rounded">
+                            <div className="text-sm text-gray-500">Profile</div>
+                            <div className="mt-2 text-sm">Religion: {teacherData?.profiles?.religion ?? '—'}</div>
+                            <div className="text-sm">Language: {teacherData?.profiles?.language ?? '—'}</div>
+                            <div className="text-sm">Marital status: {teacherData?.profiles?.marital_status ?? '—'}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Qualifications */}
+                      {tabValue === 1 && (
+                        <div className="space-y-3">
+                          {teacherData?.teacherqualifications?.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {teacherData.teacherqualifications.map((q,i) => (
+                                <div key={i} className="p-3 border rounded">
+                                  <div className="font-semibold">{q.qualification?.name}</div>
+                                  <div className="text-sm text-gray-500">{q.institution}</div>
+                                  <div className="text-xs text-gray-400">{q.year_of_passing}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div className="text-sm text-gray-500">No qualification information available</div>}
+                        </div>
+                      )}
+
+                      {/* Experience */}
+                      {tabValue === 2 && (
+                        <div className="space-y-3">
+                          {teacherData?.teacherexperiences?.length > 0 ? (
+                            teacherData.teacherexperiences.map((exp, idx) => (
+                              <div key={idx} className="p-3 border rounded">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-semibold">{exp.institution}</div>
+                                    <div className="text-sm text-gray-500">Role: {exp.role?.jobrole_name}</div>
+                                  </div>
+                                  <div className="text-sm text-gray-500">{exp.start_date ? formatDate(exp.start_date, {dateOnly:true}) : ''} - {exp.end_date ? formatDate(exp.end_date, {dateOnly:true}) : 'Present'}</div>
+                                </div>
+                                {exp.achievements && <div className="mt-2 text-sm text-gray-600">{exp.achievements}</div>}
+                              </div>
+                            ))
+                          ) : <div className="text-sm text-gray-500">No experience available</div>}
+                        </div>
+                      )}
+
+                      {/* Attempts */}
+                      {tabValue === 3 && (
+                        <div className="space-y-3">
+                          {attempts?.length > 0 ? (
+                            attempts.map((a, idx) => {
+                              const correct = a.correct_answer ?? a.score ?? null;
+                              const total = a.total_question ?? a.total_questions ?? a.total ?? null;
+                              const pct = (typeof correct === 'number' && typeof total === 'number' && total > 0) ? Math.round((correct / total) * 100) : (a.calculate_percentage ?? a.percentage ?? null);
+                              const passed = pct !== null ? pct >= 60 : null;
+                              return (
+                                <div key={idx} className="p-3 border rounded">
+                                  <div className="flex justify-between">
+                                    <div>
+                                      <div className="font-semibold">{a.exam?.name || a.exam_name || 'Exam'}</div>
+                                      <div className="text-sm text-gray-500">Score: {correct ?? '—'}/{total ?? '—'}</div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-xs text-gray-500">{a.created_at ? formatDate(a.created_at) : ''}</div>
+                                      {pct !== null && <div className={`mt-1 inline-block px-2 py-0.5 text-xs rounded ${passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{passed ? `Pass (${pct}%)` : `Fail (${pct}%)`}</div>}
+                                    </div>
+                                  </div>
+
+                                  {a.interviews && a.interviews.length > 0 && (
+                                    <div className="mt-3">
+                                      <div className="font-medium">Interviews</div>
+                                      <div className="space-y-2 mt-2">
+                                        {a.interviews.filter(iv => String(iv.status || '').toLowerCase() === 'fulfilled').map(iv => {
+                                          const score = iv.grade ?? iv.score ?? null;
+                                          const tot = iv.total ?? 10;
+                                          const percentage = (typeof score === 'number' && typeof tot === 'number' && tot > 0) ? Math.round((score / tot) * 100) : null;
+                                          const passedIv = percentage !== null ? percentage >= 60 : null;
+                                          return (
+                                            <div key={iv.id} className="p-2 bg-gray-50 rounded">
+                                              <div className="flex justify-between">
+                                                <div>
+                                                  <div className="text-sm">Status: <strong>{iv.status}</strong></div>
+                                                  <div className="text-xs text-gray-500">Attempt: {iv.attempt}</div>
+                                                </div>
+                                                <div>
+                                                  {percentage !== null && <div className={`text-xs px-2 py-0.5 rounded ${passedIv ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{passedIv ? `Pass (${percentage}%)` : `Fail (${percentage}%)`}</div>}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })
+                          ) : <div className="text-sm text-gray-500">No exam attempts found</div>}
+                        </div>
+                      )}
+
+                      {/* Job Locations */}
+                      {tabValue === 4 && (
+                        <div>
+                          {jobLocations && jobLocations.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {jobLocations.map((loc, i) => (
+                                <div key={i} className="p-3 border rounded">
+                                  {typeof loc === 'string' ? <div>{loc}</div> : (
+                                    <div>
+                                      {loc.address_type && <div className="font-semibold capitalize">{loc.address_type} location</div>}
+                                      <div className="mt-1 text-sm text-gray-600">
+                                        {loc.area && <div><strong>Area:</strong> {loc.area}</div>}
+                                        {loc.city && <div><strong>City:</strong> {loc.city}</div>}
+                                        {loc.district && <div><strong>District:</strong> {loc.district}</div>}
+                                        {loc.state && <div><strong>State:</strong> {loc.state}</div>}
+                                        {loc.pincode && <div><strong>Pincode:</strong> {loc.pincode}</div>}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div className="text-sm text-gray-500">No preferred job locations found</div>}
+                        </div>
+                      )}
+
+                      {/* Skills */}
+                      {tabValue === 5 && (
+                        <div>
+                          {teacherData?.teacherskill?.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {teacherData.teacherskill.map(s => <div key={s.skill?.id || s.id} className="px-2 py-1 border rounded text-sm">{s.skill?.name || s.name}</div>)}
+                            </div>
+                          ) : <div className="text-sm text-gray-500">No skills listed</div>}
+                        </div>
+                      )}
+
+                      {/* Preferences */}
+                      {tabValue === 6 && (
+                        <div>
+                          {teacherData?.preferences?.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {teacherData.preferences.map((pref,pidx) => (
+                                <div key={pidx} className="p-3 border rounded">
+                                  <div className="font-semibold">Job Roles</div>
+                                  <div className="flex flex-wrap gap-2 mt-2">{(pref.job_role||[]).map(r => <div key={r.id} className="px-2 py-1 border rounded text-sm">{r.jobrole_name}</div>)}</div>
+                                  <div className="mt-3 font-semibold">Class Categories</div>
+                                  <div className="flex flex-wrap gap-2 mt-2">{(pref.class_category||[]).map(c => <div key={c.id} className="px-2 py-1 border rounded text-sm">{c.name}</div>)}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div className="text-sm text-gray-500">No preferences provided</div>}
+                        </div>
+                      )}
+
+                      {/* Addresses */}
+                      {tabValue === 7 && (
+                        <div>
+                          {teacherData?.teachersaddress?.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {teacherData.teachersaddress.map((addr,i) => (
+                                <div key={i} className="p-3 border rounded">
+                                  <div className="font-semibold capitalize">{addr.address_type} address</div>
+                                  <div className="text-sm text-gray-600">{addr.area}, {addr.district}, {addr.state} - {addr.pincode}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div className="text-sm text-gray-500">No addresses found</div>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
-          </Box>
-        </Card>
+          </div>
+        </div>
 
-        {/* Deactivation Modal */}
-        <Modal
-          open={openDeactivateModal}
-          onClose={() => setOpenDeactivateModal(false)}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '400px' },
-              maxWidth: '95%',
-              bgcolor: 'background.paper',
-              borderRadius: 2,
-              boxShadow: 24,
-              p: { xs: 2.5, sm: 3 },
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
-                Confirm Deactivation
-              </Typography>
-
-              <IconButton
-                size="small"
-                onClick={() => setOpenDeactivateModal(false)}
-                sx={{ ml: 1 }}
-                aria-label="close"
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Box>
-
-            <Divider sx={{ my: 1.5 }} />
-
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1.5, backgroundColor: 'error.lighter', borderRadius: 1.5 }}>
-              <InfoIcon color="error" sx={{ mr: 1.5, fontSize: '1.2rem' }} />
-              <Typography variant="body2" sx={{ color: 'error.dark', fontWeight: 500 }}>
-                This action permanently removes this teacher's access to the platform.
-              </Typography>
-            </Box>
-
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              Are you sure you want to deactivate <strong>{teacherData?.firstName} {teacherData?.lastName}'s</strong> account? This action cannot be undone.
-            </Typography>
-
-            <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              gap={{ xs: 1.5, sm: 2 }}
-              justifyContent="flex-end"
-            >
-              <Button
-                variant="outlined"
-                onClick={() => setOpenDeactivateModal(false)}
-                fullWidth={isMobile}
-                sx={{
-                  textTransform: 'none',
-                  order: { xs: 2, sm: 1 },
-                  minWidth: { xs: '100%', sm: 'auto' },
-                  borderRadius: 1.5,
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleDeactivate}
-                fullWidth={isMobile}
-                sx={{
-                  textTransform: 'none',
-                  order: { xs: 1, sm: 2 },
-                  minWidth: { xs: '100%', sm: 'auto' },
-                  borderRadius: 1.5,
-                }}
-              >
-                Deactivate
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
-
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={() => setOpenSnackbar(false)}
-          anchorOrigin={{
-            vertical: isMobile ? 'top' : 'bottom',
-            horizontal: 'center'
-          }}
-          sx={{ bottom: { xs: 70, sm: 24 }, zIndex: theme.zIndex.snackbar }}
-        >
-          <Alert
-            onClose={() => setOpenSnackbar(false)}
-            severity={notificationMessage.type}
-            variant="filled"
-            sx={{
-              width: '100%',
-              boxShadow: 3,
-              borderRadius: 1.5,
-            }}
-          >
-            {notificationMessage.text}
-          </Alert>
-        </Snackbar>
-
-        {/* Download Modal & Loading Backdrop */}
-        {teacherData && (
-          <TeacherModal
-            open={openDownloadModal}
-            onClose={() => {
-              if (!downloadLoading) setOpenDownloadModal(false);
-            }}
-            teacherData={teacherData}
-          />
+        {/* Deactivate Modal */}
+        {openDeactivateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-red-600">Confirm Deactivation</h3>
+                <button onClick={() => setOpenDeactivateModal(false)} className="text-gray-500">✕</button>
+              </div>
+              <div className="mt-4 text-sm text-gray-700">This action permanently removes this teacher's access to the platform.</div>
+              <div className="mt-4">Are you sure you want to deactivate <strong>{teacherData?.Fname} {teacherData?.Lname}</strong>'s account? This action cannot be undone.</div>
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={() => setOpenDeactivateModal(false)} className="px-3 py-2 border rounded">Cancel</button>
+                <button onClick={handleDeactivate} className="px-3 py-2 bg-red-600 text-white rounded">Deactivate</button>
+              </div>
+            </div>
+          </div>
         )}
 
-        <Backdrop
-          sx={{
-            color: '#fff',
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            backdropFilter: 'blur(4px)'
-          }}
-          open={downloadLoading}
-        >
-          <Box sx={{
-            textAlign: 'center',
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            p: 3,
-            borderRadius: 2,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-            maxWidth: '80%'
-          }}>
-            <CircularProgress color="inherit" size={36} thickness={4} />
-            <Typography sx={{ mt: 2, color: 'white', fontWeight: 500, letterSpacing: '0.5px' }}>
-              Generating professional PDF...
-            </Typography>
-          </Box>
-        </Backdrop>
-      </Box>
+        {/* Snackbar */}
+        {openSnackbar && (
+          <div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-50">
+            <div className={`px-4 py-2 rounded shadow ${notificationMessage.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>{notificationMessage.text}</div>
+          </div>
+        )}
+
+        {/* JSON viewer modal */}
+        {openJsonDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg p-4 max-w-3xl w-full max-h-[80vh] overflow-auto">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold">{jsonDialogTitle}</h3>
+                <button onClick={() => setOpenJsonDialog(false)} className="text-gray-500">✕</button>
+              </div>
+              <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(jsonDialogContent, null, 2)}</pre>
+            </div>
+          </div>
+        )}
+      </div>
     </Layout>
   );
 };

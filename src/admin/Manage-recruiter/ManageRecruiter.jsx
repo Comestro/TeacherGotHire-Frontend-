@@ -269,17 +269,6 @@ const ManageRecruiter = () => {
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Box display="flex" alignItems="center" gap={1}>
-                <Avatar
-                  src={recruiter.profilePic}
-                  alt={getInitials(recruiter.name)}
-                  sx={{
-                    bgcolor: '#0d9488',
-                    width: 40,
-                    height: 40
-                  }}
-                >
-                  {getInitials(recruiter.name)}
-                </Avatar>
                 <Box>
                   <Typography variant="subtitle1" fontWeight="bold">{recruiter.name}</Typography>
                   <Typography variant="caption" color="text.secondary">{recruiter.company}</Typography>
@@ -530,25 +519,12 @@ const ManageRecruiter = () => {
                         renderCell: (params) => (
                           <Box 
                             display="flex" 
-                            alignItems="center" 
                             gap={1.5} 
                             sx={{ 
                               py: 1.5, 
                               width: '100%',
-                              justifyContent: 'center'
                             }}
                           >
-                            <Avatar
-                              src={params.row.profilePic}
-                              alt={getInitials(params.row.name)}
-                              sx={{
-                                width: 36,
-                                height: 36,
-                                bgcolor: '#0d9488',
-                              }}
-                            >
-                              {getInitials(params.row.name)}
-                            </Avatar>
                             <Box>
                               <Typography variant="body2" fontWeight={500} align="center">
                                 {params.row.name}
@@ -570,42 +546,7 @@ const ManageRecruiter = () => {
                         headerAlign: 'center',
                         align: 'center',
                       },
-                      {
-                        field: 'phone',
-                        headerName: 'Contact',
-                        flex: 1.5,
-                        minWidth: 180,
-                        headerAlign: 'center',
-                        renderCell: (params) => (
-                          <Box 
-                            display="flex" 
-                            alignItems="center" 
-                            gap={1} 
-                            sx={{ 
-                              py: 1, 
-                              width: '100%',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <Tooltip title="Contact on WhatsApp">
-                              <IconButton
-                                size="small"
-                                component="a"
-                                href={`https://api.whatsapp.com/send/?phone=${params.row.phone}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{ color: '#25D366' }}
-                              >
-                                <WhatsAppIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Typography variant="body2" align="center">{params.row.user_code}</Typography>
-                          </Box>
-                        ),
-                        sortable: true,
-                        filterable: true,
-                        align: 'center',
-                      },
+                      
                       {
                         field: 'company',
                         headerName: 'Company',
@@ -696,19 +637,10 @@ const ManageRecruiter = () => {
                                 color="primary"
                                 onClick={() => handleViewRecruiter(params.row)}
                               >
-                                <ViewIcon fontSize="small" />
+                                <ViewIcon fontSize="large" />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Send Email">
-                              <IconButton
-                                size="small"
-                                color="warning"
-                                component="a"
-                                href={`mailto:${params.row.email}`}
-                              >
-                                <EmailIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
+                            
                           </Box>
                         ),
                         align: 'center',
@@ -736,7 +668,6 @@ const ManageRecruiter = () => {
                       setPage(model.page);
                       setRowsPerPage(model.pageSize);
                     }}
-                    checkboxSelection
                     disableRowSelectionOnClick
                     onRowSelectionModelChange={(newSelectionModel) => {
                       setSelectedRecruiters(newSelectionModel);

@@ -141,7 +141,7 @@ export default function ExamManagement() {
   // UI state
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -385,8 +385,8 @@ export default function ExamManagement() {
     <Layout>
       <Box>
         {/* header */}
-        <Paper sx={{ p: 2, mb: 3,  display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Paper sx={{ p: 2, mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%', justifyContent: { xs: 'flex-start', sm: 'flex-start' } }}>
             <Avatar sx={{ bgcolor: "teal"}}>
               <FaFileAlt />
             </Avatar>
@@ -395,15 +395,13 @@ export default function ExamManagement() {
               <Typography variant="body2" color="text.secondary">Create, edit and manage your exam sets</Typography>
             </Box>
           </Box>
-
-          <Stack direction="row" spacing={1}>
+          <Stack direction={"row"} spacing={1} sx={{ mt: { xs: 2, sm: 0 }, alignItems: 'center' , justifyContent:"space-between",width:"100%"}}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 0.5, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-              <Tooltip title="Card view"><IconButton onClick={() => setViewMode('card')} color={viewMode === 'card' ? 'teal' : 'default'}><MdGridView /></IconButton></Tooltip>
-              <Tooltip title="Table view"><IconButton onClick={() => setViewMode('table')} color={viewMode === 'table' ? 'teal' : 'default'}><MdViewList /></IconButton></Tooltip>
+              <Tooltip title="Card view"><IconButton onClick={() => setViewMode('card')} color={viewMode === 'card' ? 'primary' : 'default'}><MdGridView /></IconButton></Tooltip>
+              <Tooltip title="Table view"><IconButton onClick={() => setViewMode('table')} color={viewMode === 'table' ? 'primary' : 'default'}><MdViewList /></IconButton></Tooltip>
             </Box>
 
-            <Button  color='teal' startIcon={<MdRefresh />} onClick={loadAll}>Refresh</Button>
-            <Button variant="contained" color='teal' startIcon={<MdAdd />} onClick={handleOpenAdd}>Add New</Button>
+              <Button variant="contained" color='primary' startIcon={<MdAdd />} onClick={handleOpenAdd} fullWidth={isMobile}>Add New</Button>
           </Stack>
         </Paper>
 
