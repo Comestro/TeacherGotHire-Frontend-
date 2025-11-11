@@ -27,6 +27,7 @@ const JobApply = () => {
     classCategoryId: null,
     subjectName: '',
     applicationId: null,
+    applicationData: null,
     isEdit: false, // New field to track if editing existing application
   });
   
@@ -324,9 +325,12 @@ const JobApply = () => {
   const handleApply = async (subjectId, classCategoryId, subjectName, currentStatus = false, salaryData = null, applicationId = null, action = 'apply') => {
     try {
       let response;
-      
-      if (applicationId && (currentStatus || action === 'update')) {
+      console.log("currentStatus:", currentStatus);
+      console.log("action:", action);
+      console.log("applicationId:", applicationId);
+      if (applicationId && (currentStatus === false || action === 'update' ) || action === 'revoke' ) {
         console.log("salaryData for update/revoke:", salaryData);
+
         
         // Find the current application data to preserve existing values for revoke
         const currentApplication = jobApply?.find(item => item.id === applicationId);
@@ -550,24 +554,71 @@ const JobApply = () => {
 
           <div className="grid grid-cols-1 flex-1 gap-4">
             {eligibleExams.map((exam, index) => {
+              console.log('exam', exam);
+              
               const subjectId = exam.subject_id;
               const classCategoryId = exam.class_category_id;
               const subjectName = exam.subject_name;
               const className = exam.class_category_name;
-
-              // Updated logic to match the new API response structure
+              
+              console.log('Processing exam:', { subjectId, classCategoryId, subjectName, className });
+              console.log("jobApply data:", jobApply);
+              
+              // Fixed matching logic based on your actual API structure
               const applicationData = jobApply?.find(item => {
-                // Check if this application matches the subject from eligible exams
-                const matchesSubject = item.class_category?.subjects?.some?.(
-                  sub => sub.id === subjectId
-                );
-                const matchesClassCategory = item.class_category?.id === classCategoryId;
+                console.log('Checking application item:', item);
                 
-                return matchesSubject && matchesClassCategory;
+                // Try different possible structures for matching
+                let subjectMatch = false;
+                let categoryMatch = false;
+                
+                // Method 1: Direct ID comparison (if API returns direct IDs)
+                if (item.subject === subjectId || item.subject_id === subjectId) {
+                  subjectMatch = true;
+                }
+                
+                if (item.class_category === classCategoryId || item.class_category_id === classCategoryId) {
+                  categoryMatch = true;
+                }
+                
+                // Method 2: If subject/class_category are objects with id property
+                if (item.subject?.id === subjectId) {
+                  subjectMatch = true;
+                }
+                
+                if (item.class_category?.id === classCategoryId) {
+                  categoryMatch = true;
+                }
+                
+                // Method 3: If class_category has nested subjects array
+                if (item.class_category?.subjects) {
+                  const hasSubject = item.class_category.subjects.some(sub => 
+                    (typeof sub === 'object' ? sub.id === subjectId : sub === subjectId)
+                  );
+                  if (hasSubject && item.class_category.id === classCategoryId) {
+                    subjectMatch = true;
+                    categoryMatch = true;
+                  }
+                }
+                
+                console.log('Match results:', {
+                  item,
+                  subjectId,
+                  classCategoryId,
+                  subjectMatch,
+                  categoryMatch,
+                  finalMatch: subjectMatch && categoryMatch
+                });
+                
+                return subjectMatch && categoryMatch;
               });
-
+              
+              console.log('Final applicationData for', subjectName, ':', applicationData);
+              
               const applicationStatus = applicationData?.status || false;
               const applicationId = applicationData?.id;
+              
+              console.log('Application status:', { applicationStatus, applicationId });
 
               return (
                 <div
