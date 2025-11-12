@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { postJobApply } from "../../../features/examQuesSlice";
+import { updateJobApply } from "../../../services/examQuesServices";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import JobPrefrenceLocation from "../../Profile/JobProfile/JobPrefrenceLocation";
@@ -11,44 +12,196 @@ import {
   HiOutlineXCircle,
   HiOutlineCheckCircle,
   HiOutlineMapPin,
+  HiOutlineCurrencyDollar,
+  HiOutlinePencilSquare,
 } from "react-icons/hi2";
 
 const JobApply = () => {
   const dispatch = useDispatch();
   const [showLocationFirst, setShowLocationFirst] = useState(false);
+  
+  // Salary Dialog State
+  const [salaryDialog, setSalaryDialog] = useState({
+    isOpen: false,
+    subjectId: null,
+    classCategoryId: null,
+    subjectName: '',
+    applicationId: null,
+    applicationData: null,
+    isEdit: false, // New field to track if editing existing application
+  });
+  
+  // Salary Form State
+  const [salaryForm, setSalaryForm] = useState({
+    salary_expectation: '',
+    salary_type: 'monthly',
+    teacher_job_type: [1],
+  });
+  
   const [confirmationDialog, setConfirmationDialog] = useState({
     isOpen: false,
     subjectId: null,
     classCategoryId: null,
     subjectName: '',
     currentStatus: false,
-    action: '' // 'apply' or 'revoke'
+    action: '',
+    salaryData: null,
+    applicationId: null,
   });
 
-  // Confirmation Dialog Component
-  const ConfirmationDialog = ({ isOpen, onClose, onConfirm, subjectName, action, currentStatus }) => {
+  // Updated Salary Dialog Component to handle editing
+  const SalaryDialog = ({ isOpen, onClose, onConfirm, subjectName, applicationData, isEdit }) => {
     if (!isOpen) return null;
 
-    const isApplying = action === 'apply';
-    const title = isApplying ? 'Confirm Application' : 'Confirm Cancellation';
-    const message = isApplying 
-      ? `Are you sure you want to apply for ${subjectName}?`
-      : `Are you sure you want to cancel your application for ${subjectName}?`;
-    const confirmText = isApplying ? 'Apply' : 'Cancel Application';
-    const icon = isApplying ? HiOutlineCheckCircle : HiOutlineXCircle;
-    const iconColor = isApplying ? 'text-primary' : 'text-error';
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const salary = formData.get('salary');
+      const salaryType = formData.get('salaryType');
+      const jobType = formData.get('jobType');
+      
+      if (!salary || parseFloat(salary) <= 0) {
+        toast.error("Please enter a valid salary expectation");
+        return;
+      }
+      
+      const salaryData = {
+        salary_expectation: salary,
+        salary_type: salaryType,
+        teacher_job_type: [parseInt(jobType)]
+      };
+      
+      setSalaryForm(salaryData);
+      onConfirm(salaryData);
+    };
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
           <div className="flex items-center mb-4">
-            <div className={`p-2 rounded-full ${isApplying ? 'bg-primary/10' : 'bg-error/10'}`}>
-              <icon className={`h-6 w-6 ${iconColor}`} />
+            <div className="p-2 rounded-full bg-primary/10">
+              <HiOutlineCurrencyDollar className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="ml-3 text-lg font-semibold text-text">
+              {isEdit ? 'Update Salary Details' : 'Salary Details'}
+            </h3>
+          </div>
+          
+          <p className="text-sm text-secondary mb-4">
+            {isEdit ? 'Update your salary expectation for' : 'Set your salary expectation for'} <strong>{subjectName}</strong>
+          </p>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text mb-2">
+                Expected Salary <span className="text-error">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">₹</span>
+                <input
+                  name="salary"
+                  type="number"
+                  placeholder="25000"
+                  defaultValue={isEdit ? applicationData?.salary_expectation : ''}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  min="1"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Enter your expected salary amount</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text mb-2">
+                Salary Type <span className="text-error">*</span>
+              </label>
+              <select
+                name="salaryType"
+                defaultValue={isEdit ? applicationData?.salary_type || 'monthly' : 'monthly'}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+                <option value="daily">Daily</option>
+                <option value="hourly">Hourly</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text mb-2">
+                Job Type <span className="text-error">*</span>
+              </label>
+              <select
+                name="jobType"
+                defaultValue={isEdit ? (applicationData?.teacher_job_type?.[0] || 1) : 1}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="1">Full Time</option>
+                <option value="2">Part Time</option>
+                <option value="3">Contract</option>
+              </select>
+            </div>
+            
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                {isEdit ? 'Update Salary' : 'Continue to Apply'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  // Updated Confirmation Dialog Component
+  const ConfirmationDialog = ({ isOpen, onClose, onConfirm, subjectName, action, currentStatus, salaryData }) => {
+    if (!isOpen) return null;
+
+    const isApplying = action === 'apply';
+    const isUpdating = action === 'update';
+    const title = isApplying ? 'Confirm Application' : isUpdating ? 'Confirm Salary Update' : 'Confirm Cancellation';
+    const message = isApplying 
+      ? `Are you sure you want to apply for ${subjectName}?`
+      : isUpdating 
+      ? `Are you sure you want to update salary details for ${subjectName}?`
+      : `Are you sure you want to cancel your application for ${subjectName}?`;
+    const confirmText = isApplying ? 'Apply' : isUpdating ? 'Update Salary' : 'Cancel Application';
+    const IconComponent = (isApplying || isUpdating) ? HiOutlineCheckCircle : HiOutlineXCircle;
+    const iconColor = (isApplying || isUpdating) ? 'text-primary' : 'text-error';
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="flex items-center mb-4">
+            <div className={`p-2 rounded-full ${(isApplying || isUpdating) ? 'bg-primary/10' : 'bg-error/10'}`}>
+              <IconComponent className={`h-6 w-6 ${iconColor}`} />
             </div>
             <h3 className="ml-3 text-lg font-semibold text-text">{title}</h3>
           </div>
           
-          <p className="text-sm text-secondary mb-6">{message}</p>
+          <p className="text-sm text-secondary mb-4">{message}</p>
+          
+          {(isApplying || isUpdating) && salaryData && (
+            <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="text-xs text-secondary mb-1">Salary Details:</div>
+              <div className="text-sm font-medium">
+                ₹{salaryData.salary_expectation} ({salaryData.salary_type})
+              </div>
+              <div className="text-xs text-secondary">
+                Job Type: {salaryData.teacher_job_type[0] === 1 ? 'Full Time' : salaryData.teacher_job_type[0] === 2 ? 'Part Time' : 'Contract'}
+              </div>
+            </div>
+          )}
           
           <div className="flex gap-3">
             <button
@@ -60,7 +213,7 @@ const JobApply = () => {
             <button
               onClick={onConfirm}
               className={`flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
-                isApplying 
+                (isApplying || isUpdating)
                   ? 'bg-primary hover:bg-primary/90' 
                   : 'bg-error hover:bg-error/90'
               }`}
@@ -77,47 +230,169 @@ const JobApply = () => {
   const { data: eligibilityData, isLoading: isEligibilityLoading, error: eligibilityError } = useGetApplyEligibilityQuery();
   const { data: jobApply, isLoading: isJobApplyLoading, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
 
-  // 
-  // 
-
   // Extract eligible exams from the new response structure
   const eligibleExams = eligibilityData?.qualified_list ? 
     eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
 
-  // 
+  // Function to show salary dialog
+  const showSalaryDialog = (subjectId, classCategoryId, subjectName, applicationId = null, isEdit = false, applicationData = null) => {
+    setSalaryDialog({
+      isOpen: true,
+      subjectId,
+      classCategoryId,
+      subjectName,
+      applicationId,
+      isEdit,
+      applicationData,
+    });
+  };
 
-  // Function to show confirmation dialog
-  const showConfirmation = (subjectId, classCategoryId, subjectName, currentStatus) => {
+  // Function to handle salary confirmation
+  const handleSalaryConfirmation = (salaryData) => {
+    setSalaryDialog(prev => ({ ...prev, isOpen: false }));
+    
+    // Show final confirmation with salary details
+    setConfirmationDialog({
+      isOpen: true,
+      subjectId: salaryDialog.subjectId,
+      classCategoryId: salaryDialog.classCategoryId,
+      subjectName: salaryDialog.subjectName,
+      currentStatus: false,
+      action: salaryDialog.isEdit ? 'update' : 'apply',
+      salaryData: salaryData,
+      applicationId: salaryDialog.applicationId,
+    });
+  };
+
+  // Function to show confirmation dialog for revoke
+  const showRevokeConfirmation = (subjectId, classCategoryId, subjectName, applicationId) => {
     setConfirmationDialog({
       isOpen: true,
       subjectId,
       classCategoryId,
       subjectName,
-      currentStatus,
-      action: currentStatus ? 'revoke' : 'apply'
+      currentStatus: true,
+      action: 'revoke',
+      salaryData: null,
+      applicationId,
     });
   };
 
   // Function to handle confirmation
   const handleConfirmation = async () => {
-    const { subjectId, classCategoryId, subjectName, currentStatus } = confirmationDialog;
-    await handleApply(subjectId, classCategoryId, subjectName, currentStatus);
-    setConfirmationDialog({ isOpen: false, subjectId: null, classCategoryId: null, subjectName: '', currentStatus: false, action: '' });
+    const { subjectId, classCategoryId, subjectName, currentStatus, salaryData, applicationId, action } = confirmationDialog;
+    await handleApply(subjectId, classCategoryId, subjectName, currentStatus, salaryData, applicationId, action);
+    setConfirmationDialog({ 
+      isOpen: false, 
+      subjectId: null, 
+      classCategoryId: null, 
+      subjectName: '', 
+      currentStatus: false, 
+      action: '',
+      salaryData: null,
+      applicationId: null,
+    });
   };
 
   // Function to close confirmation dialog
   const closeConfirmation = () => {
-    setConfirmationDialog({ isOpen: false, subjectId: null, classCategoryId: null, subjectName: '', currentStatus: false, action: '' });
+    setConfirmationDialog({ 
+      isOpen: false, 
+      subjectId: null, 
+      classCategoryId: null, 
+      subjectName: '', 
+      currentStatus: false, 
+      action: '',
+      salaryData: null,
+      applicationId: null,
+    });
   };
 
-  const handleApply = async (subjectId, classCategoryId, subjectName, currentStatus = false) => {
+  // Function to close salary dialog
+  const closeSalaryDialog = () => {
+    setSalaryDialog({
+      isOpen: false,
+      subjectId: null,
+      classCategoryId: null,
+      subjectName: '',
+      applicationId: null,
+      isEdit: false,
+      applicationData: null,
+    });
+  };
+
+  // Updated handleApply function with correct teacher_job_type format
+  const handleApply = async (subjectId, classCategoryId, subjectName, currentStatus = false, salaryData = null, applicationId = null, action = 'apply') => {
     try {
-      const response = await dispatch(
-        postJobApply({
-          subject: [subjectId],
-          class_category: [classCategoryId],
-        })
-      ).unwrap();
+      let response;
+      console.log("currentStatus:", currentStatus);
+      console.log("action:", action);
+      console.log("applicationId:", applicationId);
+      if (applicationId && (currentStatus === false || action === 'update' ) || action === 'revoke' ) {
+        console.log("salaryData for update/revoke:", salaryData);
+
+        
+        // Find the current application data to preserve existing values for revoke
+        const currentApplication = jobApply?.find(item => item.id === applicationId);
+        
+        // Extract teacher_job_type IDs properly
+        const getTeacherJobTypeIds = (teacherJobType) => {
+          if (!teacherJobType) return [2]; // Default fallback
+          
+          // If it's already an array of numbers, return it
+          if (Array.isArray(teacherJobType) && typeof teacherJobType[0] === 'number') {
+            return teacherJobType;
+          }
+          
+          // If it's an array of objects, extract IDs
+          if (Array.isArray(teacherJobType) && typeof teacherJobType[0] === 'object') {
+            return teacherJobType.map(item => item.id);
+          }
+          
+          // If it's a single number, wrap in array
+          if (typeof teacherJobType === 'number') {
+            return [teacherJobType];
+          }
+          
+          return [2]; // Default fallback
+        };
+        
+        // Use PUT for updating existing applications (revoke or update salary)
+        const updatePayload = {
+          class_category: classCategoryId, // Single ID
+          subject: subjectId, // Single ID
+          // For update: use new salary data, For revoke: preserve existing values
+          teacher_job_type: action === 'revoke' 
+            ? getTeacherJobTypeIds(currentApplication?.teacher_job_type) // Preserve existing, extract IDs if needed
+            : getTeacherJobTypeIds(salaryData?.teacher_job_type), // Use new, extract IDs if needed
+          salary_expectation: action === 'revoke'
+            ? (currentApplication?.salary_expectation || "10000") // Preserve existing salary for revoke
+            : (salaryData?.salary_expectation || "10000"), // Use new salary for update
+          salary_type: action === 'revoke'
+            ? (currentApplication?.salary_type || "monthly") // Preserve existing salary type for revoke
+            : (salaryData?.salary_type || "monthly"), // Use new salary type for update
+          status: action === 'revoke' ? false : true, // false for revoke, true for update
+        };
+        
+        console.log("PUT payload:", updatePayload);
+        console.log("Action:", action);
+        console.log("Current application data:", currentApplication);
+        
+        response = await updateJobApply(applicationId, updatePayload);
+      } else {
+        // Use POST for new applications
+        const payload = {
+          subject: subjectId, // Single ID
+          class_category: classCategoryId, // Single ID
+          teacher_job_type: salaryData?.teacher_job_type || [2], // Should already be array of IDs from form
+          salary_expectation: salaryData?.salary_expectation || "10000",
+          salary_type: salaryData?.salary_type || "monthly",
+          status: true,
+        };
+
+        console.log("POST payload:", payload);
+        response = await dispatch(postJobApply(payload)).unwrap();
+      }
 
       // Refetch the job apply data to get updated status
       refetchJobApply();
@@ -125,10 +400,18 @@ const JobApply = () => {
       // Remove location warning if application is successful
       setShowLocationFirst(false);
 
-      // Show appropriate success message based on current status
-      const action = currentStatus ? "cancelled" : "applied";
-      const actionText = currentStatus ? "Application Cancelled" : "Application Successful";
-      const messageText = currentStatus ? `You've cancelled your application for ${subjectName}` : `You've applied for ${subjectName}`;
+      // Show appropriate success message based on action
+      let actionText, messageText;
+      if (action === 'revoke') {
+        actionText = "Application Cancelled";
+        messageText = `You've cancelled your application for ${subjectName}`;
+      } else if (action === 'update') {
+        actionText = "Salary Updated";
+        messageText = `You've updated salary details for ${subjectName}`;
+      } else {
+        actionText = "Application Successful";
+        messageText = `You've applied for ${subjectName}`;
+      }
 
       toast.success(
         <div>
@@ -141,7 +424,7 @@ const JobApply = () => {
         }
       );
     } catch (error) {
-      
+      console.error("Application error:", error);
       
       // Extract error message from different possible error structures
       let errorMessage = "Please try again";
@@ -233,7 +516,7 @@ const JobApply = () => {
           Job Applications
           <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी आवेदन</span>
         </h1>
-        <p className="mt-2 text-sm text-secondary">Apply to eligible subjects after setting your job preference location.</p>
+        <p className="mt-2 text-sm text-secondary">Apply to eligible subjects after setting your job preference location and salary expectations.</p>
       </header>
        {/* Job Preference Location Warning */}
       {showLocationFirst && (
@@ -248,8 +531,6 @@ const JobApply = () => {
         </div>
       )}
       <div className="flex xl:flex-row flex-col gap-6">
-       
-
       {/* Job Preference Location Component - Move to top */}
       <div id="job-preference-location" className={`mb-8 border py-5  flex-1 rounded-lg p-4`}>
         <JobPrefrenceLocation />
@@ -273,25 +554,71 @@ const JobApply = () => {
 
           <div className="grid grid-cols-1 flex-1 gap-4">
             {eligibleExams.map((exam, index) => {
+              console.log('exam', exam);
+              
               const subjectId = exam.subject_id;
               const classCategoryId = exam.class_category_id;
               const subjectName = exam.subject_name;
               const className = exam.class_category_name;
-
-              // Find the application status for this subject and class category
+              
+              console.log('Processing exam:', { subjectId, classCategoryId, subjectName, className });
+              console.log("jobApply data:", jobApply);
+              
+              // Fixed matching logic based on your actual API structure
               const applicationData = jobApply?.find(item => {
-                const hasSubject = item.subject?.some?.(
-                  sub => sub.id === subjectId
-                );
-
-                const hasClassCategory = item.class_category?.some?.(
-                  cat => cat.id === classCategoryId
-                );
-
-                return hasSubject && hasClassCategory;
+                console.log('Checking application item:', item);
+                
+                // Try different possible structures for matching
+                let subjectMatch = false;
+                let categoryMatch = false;
+                
+                // Method 1: Direct ID comparison (if API returns direct IDs)
+                if (item.subject === subjectId || item.subject_id === subjectId) {
+                  subjectMatch = true;
+                }
+                
+                if (item.class_category === classCategoryId || item.class_category_id === classCategoryId) {
+                  categoryMatch = true;
+                }
+                
+                // Method 2: If subject/class_category are objects with id property
+                if (item.subject?.id === subjectId) {
+                  subjectMatch = true;
+                }
+                
+                if (item.class_category?.id === classCategoryId) {
+                  categoryMatch = true;
+                }
+                
+                // Method 3: If class_category has nested subjects array
+                if (item.class_category?.subjects) {
+                  const hasSubject = item.class_category.subjects.some(sub => 
+                    (typeof sub === 'object' ? sub.id === subjectId : sub === subjectId)
+                  );
+                  if (hasSubject && item.class_category.id === classCategoryId) {
+                    subjectMatch = true;
+                    categoryMatch = true;
+                  }
+                }
+                
+                console.log('Match results:', {
+                  item,
+                  subjectId,
+                  classCategoryId,
+                  subjectMatch,
+                  categoryMatch,
+                  finalMatch: subjectMatch && categoryMatch
+                });
+                
+                return subjectMatch && categoryMatch;
               });
-
+              
+              console.log('Final applicationData for', subjectName, ':', applicationData);
+              
               const applicationStatus = applicationData?.status || false;
+              const applicationId = applicationData?.id;
+              
+              console.log('Application status:', { applicationStatus, applicationId });
 
               return (
                 <div
@@ -342,35 +669,56 @@ const JobApply = () => {
                     </div>
                   </div>
 
-                  {/* Action button */}
-                  <button
-                    onClick={() =>
-                      showConfirmation(
-                        subjectId,
-                        classCategoryId,
-                        subjectName,
-                        applicationStatus
-                      )
-                    }
-                    aria-label={`${applicationStatus ? 'Cancel application' : 'Apply to'} ${subjectName}`}
-                    className={`w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold rounded-lg text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md ${
-                      applicationStatus
-                        ? 'bg-error hover:bg-error/90 focus:ring-error'
-                        : 'bg-primary hover:bg-primary/90 focus:ring-primary'
-                    }`}
-                  >
+                  {/* Show salary details if applied */}
+                  {applicationStatus && applicationData && (
+                    <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <HiOutlineCurrencyDollar className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-medium text-primary">Salary Details</span>
+                      </div>
+                      <div className="text-sm">
+                        {applicationData.salary_expectation ? (
+                          <>₹{applicationData.salary_expectation} ({applicationData.salary_type})</>
+                        ) : (
+                          <span className="text-error">Salary not set</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action buttons - Updated for toggle functionality */}
+                  <div className={`flex gap-2 ${applicationStatus ? 'flex-col sm:flex-row' : ''}`}>
                     {applicationStatus ? (
                       <>
-                        <HiOutlineXCircle className="h-4 w-4 mr-2" />
-                        Cancel Application
+                        {/* Update Salary Button */}
+                        <button
+                          onClick={() => showSalaryDialog(subjectId, classCategoryId, subjectName, applicationId, true, applicationData)}
+                          className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors"
+                        >
+                          <HiOutlinePencilSquare className="h-4 w-4 mr-2" />
+                          Update Salary
+                        </button>
+                        
+                        {/* Revoke Application Button */}
+                        <button
+                          onClick={() => showRevokeConfirmation(subjectId, classCategoryId, subjectName, applicationId)}
+                          className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-error hover:bg-error/90 rounded-lg transition-colors"
+                        >
+                          <HiOutlineXCircle className="h-4 w-4 mr-2" />
+                          Revoke
+                        </button>
                       </>
                     ) : (
-                      <>
-                        <HiOutlineCheckCircle className="h-4 w-4 mr-2" />
-                        Apply Now
-                      </>
+                      /* Apply Button */
+                      <button
+                        onClick={() => showSalaryDialog(subjectId, classCategoryId, subjectName, applicationId)}
+                        className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 transition-colors"
+                      >
+                        <HiOutlineCurrencyDollar className="h-4 w-4 mr-2" />
+                        Set Salary & Apply
+                      </button>
                     )}
-                  </button>
+                  </div>
                 </div>
               );
             })}
@@ -391,6 +739,16 @@ const JobApply = () => {
       )}
       </div>
 
+      {/* Salary Dialog */}
+      <SalaryDialog
+        isOpen={salaryDialog.isOpen}
+        onClose={closeSalaryDialog}
+        onConfirm={handleSalaryConfirmation}
+        subjectName={salaryDialog.subjectName}
+        applicationData={salaryDialog.applicationData}
+        isEdit={salaryDialog.isEdit}
+      />
+
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmationDialog.isOpen}
@@ -399,6 +757,7 @@ const JobApply = () => {
         subjectName={confirmationDialog.subjectName}
         action={confirmationDialog.action}
         currentStatus={confirmationDialog.currentStatus}
+        salaryData={confirmationDialog.salaryData}
       />
     </div>
   );

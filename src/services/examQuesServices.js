@@ -313,11 +313,21 @@ export const getAssignUserSubject= async () => {
 
 export const jobApply= async ({subject, class_category}) => {
   try {
-    const response = await apiClient.post(`/api/self/apply/
-      `,{subject, class_category});
+    const response = await apiClient.post(`/api/self/apply/`, {subject, class_category});
     return response.data;
   } catch (err) {
-    
+    console.error("Error in jobApply:", err);
+    throw err;
+  }
+};
+
+// Add PUT method for updating job applications
+export const updateJobApply = async (id, payload) => {
+  try {
+    const response = await apiClient.put(`/api/self/apply/${id}/`, payload);
+    return response.data;
+  } catch (err) {
+    console.error("Error in updateJobApply:", err);
     throw err;
   }
 };
