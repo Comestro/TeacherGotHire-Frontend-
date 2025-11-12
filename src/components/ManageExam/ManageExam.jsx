@@ -34,6 +34,7 @@ const ManageExam = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [nextUrl, setNextUrl] = useState(null);
   const [prevUrl, setPrevUrl] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
 
   const setterUser = useSelector((state) => state.examQues.setterInfo);
 
@@ -77,16 +78,19 @@ const ManageExam = () => {
           setTotalCount(response.count || 0);
           setNextUrl(response.next || null);
           setPrevUrl(response.previous || null);
+          setPageSize(response.results.length || pageSize);
         } else if (Array.isArray(response)) {
           // Backwards compatibility: if API returns array
           setExamSets(response);
           setTotalCount(response.length);
+          setPageSize(response.length || pageSize);
           setNextUrl(null);
           setPrevUrl(null);
         } else {
           // Unexpected shape — try to be defensive
           setExamSets(response || []);
           setTotalCount((response && response.length) || 0);
+          setPageSize((response && response.length) || pageSize);
           setNextUrl(null);
           setPrevUrl(null);
         }
@@ -127,6 +131,34 @@ const ManageExam = () => {
 
   // Get all subjects
   const subjects = getSubjects();
+
+  // Helpers to normalize exam item fields (API may return strings or nested objects)
+  const getExamClassName = (exam) => {
+    if (!exam) return '';
+    if (exam.class_category) {
+      if (typeof exam.class_category === 'object') return exam.class_category.name || '';
+      return String(exam.class_category);
+    }
+    return '';
+  };
+
+  const getExamSubjectName = (exam) => {
+    if (!exam) return '';
+    if (exam.subject) {
+      if (typeof exam.subject === 'object') return exam.subject.subject_name || exam.subject.name || '';
+      return String(exam.subject);
+    }
+    return '';
+  };
+
+  const getExamLevelName = (exam) => {
+    if (!exam) return '';
+    if (exam.level) {
+      if (typeof exam.level === 'object') return exam.level.name || '';
+      return String(exam.level);
+    }
+    return '';
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -310,20 +342,47 @@ const ManageExam = () => {
         (exam.description && exam.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       // Class category filter
-      const matchesClassCategory = selectedClassCategory === 'all' || 
-        (exam.class_category && exam.class_category.id.toString() === selectedClassCategory);
+      // selectedClassCategory stores an id string (from classCategories). API may return class_category as name string.
+      const matchesClassCategory = (() => {
+        if (selectedClassCategory === 'all') return true;
+        // try by id if exam.class_category is object
+        if (exam.class_category && typeof exam.class_category === 'object' && exam.class_category.id) {
+          return exam.class_category.id.toString() === selectedClassCategory;
+        }
+        // otherwise compare by name
+        const selectedClassName = classCategories.find(c => c.id.toString() === selectedClassCategory)?.name;
+        if (selectedClassName) return getExamClassName(exam) === selectedClassName;
+        return false;
+      })();
       
       // Subject filter - now depends on class category
-      const matchesSubject = selectedSubject === 'all' || 
-        (exam.subject && exam.subject.id.toString() === selectedSubject);
+      const matchesSubject = (() => {
+        if (selectedSubject === 'all') return true;
+        // if exam.subject is object with id
+        if (exam.subject && typeof exam.subject === 'object' && exam.subject.id) {
+          return exam.subject.id.toString() === selectedSubject;
+        }
+        // otherwise compare by subject name
+        const selectedSubjectName = subjects.find(s => s.id && s.id.toString() === selectedSubject)?.subject_name;
+        if (selectedSubjectName) return getExamSubjectName(exam) === selectedSubjectName;
+        return false;
+      })();
       
       // Level filter
-      const matchesLevel = selectedLevel === 'all' ||
-        (exam.level && exam.level.id.toString() === selectedLevel);
+      const matchesLevel = (() => {
+        if (selectedLevel === 'all') return true;
+        // if exam.level is object with id
+        if (exam.level && typeof exam.level === 'object' && exam.level.id) {
+          return exam.level.id.toString() === selectedLevel;
+        }
+        const selectedLevelName = level.find(l => l.id.toString() === selectedLevel)?.name;
+        if (selectedLevelName) return getExamLevelName(exam) === selectedLevelName;
+        return false;
+      })();
       
       // Exam type filter
       const matchesType = selectedType === 'all' || 
-        (exam.type && exam.type === selectedType);
+        (exam.type && String(exam.type) === selectedType);
       
       // Status filter
       const matchesStatus = selectedStatus === 'all' ||
@@ -695,7 +754,7 @@ const ManageExam = () => {
               </button>
 
               <div className="text-sm text-gray-700">
-                Page {page} of {examSets.length ? Math.max(1, Math.ceil(totalCount / examSets.length)) : 1}
+                Page {page} of {Math.max(1, Math.ceil(totalCount / (pageSize || 1)))}
               </div>
 
               <button

@@ -314,6 +314,11 @@ const BasicInformation = () => {
       options: [
         { value: "English", label: "English" },
         { value: "Hindi", label: "Hindi" },
+        { value: "Bengali", label: "Bengali" },
+        { value: "Telugu", label: "Telugu" },
+        { value: "Tamil", label: "Tamil" },
+        { value: "Urdu", label: "Urdu" },
+        { value: "Other", label: "Other" },
       ],
     },
     {
@@ -337,7 +342,8 @@ const BasicInformation = () => {
         { label: "Select Category", value: "" },
         { label: "Single", value: "single" },
         { label: "Married", value: "married" },
-        { label: "Unmarried", value: "unmarried" },
+        { label: "Divorced", value: "divorced" },
+        { label: "Widowed", value: "widowed" },
       ],
     },
     {
@@ -349,8 +355,9 @@ const BasicInformation = () => {
         { label: "Select Category", value: "" },
         { label: "Hindu", value: "Hindu" },
         { label: "Muslim", value: "Muslim" },
-        { label: "Sikh", value: "Sikh" },
         { label: "Christian", value: "Christian" },
+        { label: "Sikh", value: "Sikh" },
+        { label: "Buddhist", value: "Buddhist" },
         { label: "Other", value: "Other" },
       ],
     },
