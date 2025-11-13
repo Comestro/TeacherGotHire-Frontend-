@@ -55,29 +55,26 @@ apiClient.interceptors.request.use(
 const handleApiError = async (err) => {
   if (err.response) {
     const { status, data } = err.response;
-    // Only perform logout actions for 401s that aren't from the login or logout endpoints
     if (status === 401 && !err.config.url.includes('/api/login/') && !err.config.url.includes('/api/logout/')) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("role");
       await persistor.purge();
       await persistor.flush();
     }
-    throw {
-      status,
-      message: data.message || (typeof data === 'string' ? data : `An error occurred. Status code: ${status}`),
-      data,
-    };
+    let message;
+    if (typeof data === 'string') {
+      message = data;
+    } else if (data && typeof data === 'object') {
+      message = data.message || data.detail || (Array.isArray(data.errors) && data.errors[0]?.detail) || (Array.isArray(data.non_field_errors) && data.non_field_errors[0]) || (data.error?.email && Array.isArray(data.error.email) && data.error.email[0]) || (data.error?.non_field_errors && Array.isArray(data.error.non_field_errors) && data.error.non_field_errors[0]);
+    }
+    if (!message) {
+      message = `An error occurred. Status code: ${status}`;
+    }
+    throw new Error(message);
   } else if (err.request) {
-    throw {
-      status: null,
-      message:
-        "No response from the server. Please check your network connection.",
-    };
+    throw new Error("No response from the server. Please check your network connection.");
   } else {
-    throw {
-      status: null,
-      message: err.message || "An unexpected error occurred.",
-    };
+    throw new Error(err.message || "An unexpected error occurred.");
   }
 };
 
@@ -85,14 +82,9 @@ const handleApiError = async (err) => {
 const postRequest = async (url, payload) => {
   try {
     const response = await apiClient.post(url, payload);
-    
     return response.data;
   } catch (err) {
-    handleApiError(err);
-    
-    // Extract meaningful error message from the API response
-    const errorMessage = err.response?.data?.error?.email?.[0] || err.response?.data?.message || "Something went wrong";
-    throw new Error(errorMessage);
+    await handleApiError(err);
   }
 };
 

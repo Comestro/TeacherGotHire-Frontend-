@@ -186,18 +186,26 @@ const FilterdExamCard = () => {
   };
 
   const handleExam = async () => {
-    // For Level 2.5 (offline exams), check passkey first
-    if (selectedLevel?.level_code === 2.5 && examCards?.type === "offline") {
+    // Center exam flow solely by level_code
+    if (selectedLevel?.level_code === 2.5) {
       try {
-        const examid = examCards?.id;
+        let examid = examCards?.id;
+        if (!examid) {
+          const payload = {
+            subject_id: selectedSubject?.id,
+            class_category_id: selectedCategory?.id,
+            level_id: selectedLevel?.id,
+          };
+          const data = await dispatch(examCard(payload)).unwrap();
+          examid = data?.id;
+        }
+        if (!examid) throw new Error("Exam is not ready yet");
+
         const response = await checkPasskey({ exam: examid });
-        
         if (response?.passkey === true) {
-          // If passkey exists, show verification with center info
           setExamCenterData(response.center);
           setShowVerificationCard(true);
         } else {
-          // If no passkey, show center selection
           setShowVerificationCard(false);
         }
         setIsExamCenterModalOpen(true);
@@ -205,7 +213,7 @@ const FilterdExamCard = () => {
         setErrors("Failed to check exam status. Please try again.");
       }
     } else {
-      // For online exams (Level 1, 2.0), go directly to exam guidelines
+      // Online exam flow
       navigate("/exam");
     }
   };

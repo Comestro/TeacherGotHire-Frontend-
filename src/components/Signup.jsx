@@ -110,9 +110,11 @@ function SignUpPage() {
         otp: otp
       });
 
-      if (response.access_token) {
-        toast.success('Account verified successfully!');
-        navigate('/teacher');
+      if (response.data.access_token) {
+        toast.success('Account verified successfully! Please log in.');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('role');
+        setTimeout(() => navigate('/signin'), 1200);
       }
     } catch (error) {
       toast.error(error.message || 'OTP verification failed');

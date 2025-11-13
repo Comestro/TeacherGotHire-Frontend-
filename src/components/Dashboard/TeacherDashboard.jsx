@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getSubjects } from "../../features/dashboardSlice";
-import { getProfilCompletion } from "../../features/personalProfileSlice";
+import { getProfilCompletion, getBasic } from "../../features/personalProfileSlice";
 import {
   getInterview,
 } from "../../features/examQuesSlice";
@@ -32,7 +32,7 @@ function TeacherDashboard() {
   const [passkeyStatus, setPasskeyStatus] = useState(null);
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
 
-  const { basicData } = useSelector((state) => state.personalProfile);
+  const { basicData, status: profileStatus } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const { examCards } = useSelector((state) => state?.exam);
@@ -62,7 +62,14 @@ function TeacherDashboard() {
     dispatch(getPrefrence());
     dispatch(getInterview());
     dispatch(getSubjects());
+    dispatch(getBasic());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (profileStatus === "succeeded") {
+      setShowPhoneModal(!basicData?.phone_number);
+    }
+  }, [profileStatus, basicData?.phone_number]);
 
   // Check for pending passkey requests
   useEffect(() => {
@@ -111,6 +118,7 @@ function TeacherDashboard() {
       toast.success("Phone number updated successfully!");
       setShowPhoneModal(false);
       dispatch(getProfilCompletion());
+      dispatch(getBasic());
     } catch (err) {
       const errorMessage = err.response?.data?.phone_number
         ? Array.isArray(err.response.data.phone_number)
@@ -198,7 +206,7 @@ function TeacherDashboard() {
         pauseOnHover
         theme="light"
       />
-      {showPhoneModal && !basicData?.phone_number && (
+      {profileStatus === "succeeded" && showPhoneModal && !basicData?.phone_number && (
         <PhoneNumberModal
           isOpen={showPhoneModal && !basicData?.phone_number}
           onClose={() => setShowPhoneModal(false)}
