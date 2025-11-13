@@ -19,7 +19,7 @@ const ExamPortal = () => {
 
   const toggleModal = () => {
     setIsOpen(true);
-  };
+  }; 
 
   const dispatch = useDispatch();
   const navigate = useNavigate();

@@ -257,7 +257,7 @@ export default function TeacherViewPageFull() {
 
                   {/* Desktop CTA */}
                   <div className="hidden md:flex flex-col items-end gap-3">
-                    <div className="bg-primary/5 text-primary px-4 py-2 rounded-lg font-semibold">Hire: ₹1,200/hr</div>
+                    <div className="bg-primary/5 text-primary px-4 py-2 rounded-lg font-semibold">Hire: {teacher.apply ? teacher.apply[0]?.salary_expectation : "N/A"}/{(teacher.apply) ? teacher.apply[0]?.salary_type : "N/A"}</div>
                     <button onClick={handleRequestTeacher} disabled={isSubmitting || success} className="px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/95 disabled:opacity-50">
                       {isSubmitting ? 'Submitting...' : success ? 'Requested' : 'Request Teacher'}
                     </button>
