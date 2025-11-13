@@ -48,33 +48,22 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   } = useForm({
     defaultValues: {
       class_category: [],
-      job_role: ["4"], // Teacher ID as string
+      job_role: [],
       prefered_subject: [],
     },
     mode: "onChange",
   });
 
-  // Ensure Teacher is always included when form values change
   const jobRoles = watch("job_role");
-  useEffect(() => {
-    const teacherId = "4";
-    if (!jobRoles.includes(teacherId)) {
-      setValue("job_role", [...jobRoles, teacherId]);
-    }
-  }, [jobRoles, setValue]);
 
   // Update form with fetched preferences
   useEffect(() => {
     if (teacherprefrence) {
       const previousJobRoles = (teacherprefrence.job_role || []).map(item => String(item.id));
-      // Ensure Teacher (ID: 4) is always included
-      const updatedJobRoles = previousJobRoles.includes("4") 
-        ? previousJobRoles 
-        : [...previousJobRoles, "4"];
 
       reset({
         class_category: (teacherprefrence.class_category || []).map(item => String(item.id)),
-        job_role: updatedJobRoles,
+        job_role: previousJobRoles,
         prefered_subject: (teacherprefrence.prefered_subject || []).map(item => String(item.id)),
       });
     }
@@ -163,13 +152,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
     setIsLoading(true);
     try {
-      const submitData = {
-        ...data,
-        job_role: data.job_role.includes("4") 
-          ? data.job_role 
-          : [...data.job_role, "4"], // Ensure Teacher is always included
-      };
-      dispatch(postPrefrence(submitData));
+      dispatch(postPrefrence(data));
       fetchPreferences();
       setIsEditingPrefrence(false);
       setCurrentStep(1); // Reset to first step
