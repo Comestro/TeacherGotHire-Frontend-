@@ -31,6 +31,7 @@ function TeacherDashboard() {
   const inputRef = useRef(null);
   const [passkeyStatus, setPasskeyStatus] = useState(null);
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
+  const [isVerifyCard, setIsVerifyCard] = useState(false);
 
   const { basicData, status: profileStatus } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
@@ -66,6 +67,14 @@ function TeacherDashboard() {
   }, [dispatch]);
 
   useEffect(() => {
+    if (teacherprefrence) {
+      dispatch(getSubjects());
+      dispatch(attemptsExam());
+      dispatch(getInterview());
+    }
+  }, [dispatch, teacherprefrence]);
+
+  useEffect(() => {
     if (profileStatus === "succeeded") {
       setShowPhoneModal(!basicData?.phone_number);
     }
@@ -76,13 +85,21 @@ function TeacherDashboard() {
     const checkForPendingPasskey = async () => {
         try {
           const response = await checkPasskey({ exam: examCards?.id });
-          if (response?.passkey === true && response?.center) {
+          console.log(examCards)
+          if (response?.passkey == true) {
             setPasskeyStatus(response);
+            setIsVerifyCard(true);
+            setIsExamCenterModalOpen(true);
           } else {
             setPasskeyStatus(null);
+            setIsVerifyCard(false);
+            if (examCards?.id) {
+              setIsExamCenterModalOpen(true);
+            }
           }
         } catch (error) {
           setPasskeyStatus(null);
+          setIsVerifyCard(false);
         }
     };
     checkForPendingPasskey();
@@ -252,7 +269,10 @@ function TeacherDashboard() {
                           <div className="mt-3">
                             <button
                               type="button"
-                              onClick={() => setIsExamCenterModalOpen(true)}
+                              onClick={() => {
+                                setIsVerifyCard(true);
+                                setIsExamCenterModalOpen(true);
+                              }}
                               className="inline-flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
                             >
                               Enter Verification Code & Start Exam
@@ -517,7 +537,7 @@ function TeacherDashboard() {
           isOpen={isExamCenterModalOpen}
           onClose={() => setIsExamCenterModalOpen(false)}
           examCards={examCards}
-          isverifyCard={true}
+          isverifyCard={isVerifyCard}
           examCenterData={passkeyStatus?.center}
         />
       )}
