@@ -391,7 +391,7 @@ const JobApply = () => {
       console.log("salaryData:", salaryData);
       
       // Fixed condition logic
-      if (applicationId && (action === 'update' || action === 'revoke')) {
+      if (applicationId && (currentStatus=== false || action === 'update' || action ==='revoke')) {
         console.log("🔄 Using PATCH/PUT for update/revoke");
         console.log("salaryData for update/revoke:", salaryData);
 
