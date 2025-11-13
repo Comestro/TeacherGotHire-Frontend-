@@ -493,15 +493,16 @@ export const postReport = createAsyncThunk(
 
 export const postJobApply = createAsyncThunk(
   "postJobApply",
-
-  async ({ subject, class_category }, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      const data = await jobApply({ subject, class_category });
+      console.log("🔄 postJobApply Redux action received payload:", payload);
+      const data = await jobApply(payload);
+      console.log("✅ postJobApply Redux action success response:", data);
       return data;
     } catch (error) {
-      
+      console.error("❌ postJobApply Redux action error:", error);
       let errorMessage = "An error occurred";
-      if (error.response.data.error) {
+      if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;

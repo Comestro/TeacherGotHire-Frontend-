@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { postJobApply } from "../../../features/examQuesSlice";
+import { getTeacherjobType } from "../../../features/jobProfileSlice";
 import { updateJobApply } from "../../../services/examQuesServices";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,6 +21,16 @@ const JobApply = () => {
   const dispatch = useDispatch();
   const [showLocationFirst, setShowLocationFirst] = useState(false);
   
+  // Get job types from Redux store
+  const { teacherjobRole: jobTypes, status: jobTypesStatus } = useSelector((state) => state.jobProfile);
+  
+  // Load job types on component mount
+  useEffect(() => {
+    if (!jobTypes || jobTypes.length === 0) {
+      dispatch(getTeacherjobType());
+    }
+  }, [dispatch, jobTypes]);
+  
   // Salary Dialog State
   const [salaryDialog, setSalaryDialog] = useState({
     isOpen: false,
@@ -28,7 +39,7 @@ const JobApply = () => {
     subjectName: '',
     applicationId: null,
     applicationData: null,
-    isEdit: false, // New field to track if editing existing application
+    isEdit: false,
   });
   
   // Salary Form State
@@ -49,7 +60,38 @@ const JobApply = () => {
     applicationId: null,
   });
 
-  // Updated Salary Dialog Component to handle editing
+  // Helper function to get job type name by ID - Updated to handle both objects and IDs
+  const getJobTypeName = (jobTypeId) => {
+    if (!jobTypes || jobTypes.length === 0) return 'Loading...';
+    
+    // Handle if jobTypeId is an object
+    let actualId = jobTypeId;
+    if (typeof jobTypeId === 'object' && jobTypeId !== null) {
+      actualId = jobTypeId.id || jobTypeId;
+    }
+    
+    const jobType = jobTypes.find(type => type.id === actualId);
+    return jobType ? jobType.teacher_job_name : `Job Type ${actualId}`;
+  };
+
+  // Helper function to get job type ID from teacher_job_type array
+  const getJobTypeId = (teacherJobType) => {
+    if (!teacherJobType || !Array.isArray(teacherJobType) || teacherJobType.length === 0) {
+      return null;
+    }
+    
+    const firstItem = teacherJobType[0];
+    
+    // If it's an object, extract the ID
+    if (typeof firstItem === 'object' && firstItem !== null) {
+      return firstItem.id || firstItem;
+    }
+    
+    // If it's already a number, return it
+    return firstItem;
+  };
+
+  // Updated Salary Dialog Component with dynamic job types
   const SalaryDialog = ({ isOpen, onClose, onConfirm, subjectName, applicationData, isEdit }) => {
     if (!isOpen) return null;
 
@@ -133,13 +175,29 @@ const JobApply = () => {
               </label>
               <select
                 name="jobType"
-                defaultValue={isEdit ? (applicationData?.teacher_job_type?.[0] || 1) : 1}
+                defaultValue={isEdit ? (applicationData?.teacher_job_type?.[0] || (jobTypes?.[0]?.id || 1)) : (jobTypes?.[0]?.id || 1)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={jobTypesStatus === 'loading'}
               >
-                <option value="1">Full Time</option>
-                <option value="2">Part Time</option>
-                <option value="3">Contract</option>
+                {jobTypesStatus === 'loading' ? (
+                  <option value="">Loading job types...</option>
+                ) : jobTypes && jobTypes.length > 0 ? (
+                  jobTypes.map((jobType) => (
+                    <option key={jobType.id} value={jobType.id}>
+                      {jobType.teacher_job_name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="1">Full Time</option>
+                    <option value="2">Part Time</option>
+                    <option value="3">Contract</option>
+                  </>
+                )}
               </select>
+              {jobTypesStatus === 'loading' && (
+                <p className="text-xs text-gray-500 mt-1">Loading available job types...</p>
+              )}
             </div>
             
             <div className="flex gap-3 pt-4">
@@ -152,7 +210,8 @@ const JobApply = () => {
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                disabled={jobTypesStatus === 'loading'}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isEdit ? 'Update Salary' : 'Continue to Apply'}
               </button>
@@ -163,7 +222,7 @@ const JobApply = () => {
     );
   };
 
-  // Updated Confirmation Dialog Component
+  // Updated Confirmation Dialog Component with dynamic job type names
   const ConfirmationDialog = ({ isOpen, onClose, onConfirm, subjectName, action, currentStatus, salaryData }) => {
     if (!isOpen) return null;
 
@@ -198,7 +257,7 @@ const JobApply = () => {
                 ₹{salaryData.salary_expectation} ({salaryData.salary_type})
               </div>
               <div className="text-xs text-secondary">
-                Job Type: {salaryData.teacher_job_type[0] === 1 ? 'Full Time' : salaryData.teacher_job_type[0] === 2 ? 'Part Time' : 'Contract'}
+                Job Type: {getJobTypeName(salaryData.teacher_job_type[0])}
               </div>
             </div>
           )}
@@ -321,23 +380,27 @@ const JobApply = () => {
     });
   };
 
-  // Updated handleApply function with correct teacher_job_type format
+  // Updated handleApply function with better debugging
   const handleApply = async (subjectId, classCategoryId, subjectName, currentStatus = false, salaryData = null, applicationId = null, action = 'apply') => {
     try {
       let response;
+      console.log("=== handleApply Debug ===");
       console.log("currentStatus:", currentStatus);
       console.log("action:", action);
       console.log("applicationId:", applicationId);
-      if (applicationId && (currentStatus === false || action === 'update' ) || action === 'revoke' ) {
+      console.log("salaryData:", salaryData);
+      
+      // Fixed condition logic
+      if (applicationId && (action === 'update' || action === 'revoke')) {
+        console.log("🔄 Using PATCH/PUT for update/revoke");
         console.log("salaryData for update/revoke:", salaryData);
 
-        
         // Find the current application data to preserve existing values for revoke
         const currentApplication = jobApply?.find(item => item.id === applicationId);
         
         // Extract teacher_job_type IDs properly
         const getTeacherJobTypeIds = (teacherJobType) => {
-          if (!teacherJobType) return [2]; // Default fallback
+          if (!teacherJobType) return [jobTypes?.[0]?.id || 1]; // Use first available job type or fallback
           
           // If it's already an array of numbers, return it
           if (Array.isArray(teacherJobType) && typeof teacherJobType[0] === 'number') {
@@ -354,48 +417,70 @@ const JobApply = () => {
             return [teacherJobType];
           }
           
-          return [2]; // Default fallback
+          return [jobTypes?.[0]?.id || 1]; // Default fallback
         };
         
-        // Use PUT for updating existing applications (revoke or update salary)
+        // Use PATCH/PUT for updating existing applications (revoke or update salary)
         const updatePayload = {
-          class_category: classCategoryId, // Single ID
-          subject: subjectId, // Single ID
-          // For update: use new salary data, For revoke: preserve existing values
+          class_category: classCategoryId,
+          subject: subjectId,
           teacher_job_type: action === 'revoke' 
-            ? getTeacherJobTypeIds(currentApplication?.teacher_job_type) // Preserve existing, extract IDs if needed
-            : getTeacherJobTypeIds(salaryData?.teacher_job_type), // Use new, extract IDs if needed
+            ? getTeacherJobTypeIds(currentApplication?.teacher_job_type)
+            : getTeacherJobTypeIds(salaryData?.teacher_job_type),
           salary_expectation: action === 'revoke'
-            ? (currentApplication?.salary_expectation || "10000") // Preserve existing salary for revoke
-            : (salaryData?.salary_expectation || "10000"), // Use new salary for update
+            ? (currentApplication?.salary_expectation || "10000")
+            : (salaryData?.salary_expectation || "10000"),
           salary_type: action === 'revoke'
-            ? (currentApplication?.salary_type || "monthly") // Preserve existing salary type for revoke
-            : (salaryData?.salary_type || "monthly"), // Use new salary type for update
-          status: action === 'revoke' ? false : true, // false for revoke, true for update
+            ? (currentApplication?.salary_type || "monthly")
+            : (salaryData?.salary_type || "monthly"),
+          status: action === 'revoke' ? false : true,
         };
         
-        console.log("PUT payload:", updatePayload);
+        console.log("PATCH/PUT payload:", updatePayload);
         console.log("Action:", action);
         console.log("Current application data:", currentApplication);
         
         response = await updateJobApply(applicationId, updatePayload);
+        console.log("PATCH/PUT response:", response);
       } else {
         // Use POST for new applications
+        console.log("📝 Using POST for new application");
+        console.log("salaryData for POST:", salaryData);
+        
+        if (!salaryData) {
+          console.error("❌ No salary data provided for new application");
+          toast.error("Salary data is required for new applications");
+          return;
+        }
+        
         const payload = {
-          subject: subjectId, // Single ID
-          class_category: classCategoryId, // Single ID
-          teacher_job_type: salaryData?.teacher_job_type || [2], // Should already be array of IDs from form
+          subject: subjectId,
+          class_category: classCategoryId,
+          teacher_job_type: salaryData?.teacher_job_type || [jobTypes?.[0]?.id || 1],
           salary_expectation: salaryData?.salary_expectation || "10000",
           salary_type: salaryData?.salary_type || "monthly",
           status: true,
         };
 
-        console.log("POST payload:", payload);
+        console.log("POST payload:", JSON.stringify(payload, null, 2));
         response = await dispatch(postJobApply(payload)).unwrap();
+        console.log("✅ POST response:", JSON.stringify(response, null, 2));
       }
 
+      // Check if we got a valid response
+      if (!response) {
+        console.error("❌ No response from API");
+        toast.error("No response from server. Please try again.");
+        return;
+      }
+
+      console.log("🔄 About to refetch job apply data...");
+      console.log("Current jobApply before refetch:", jobApply);
+      
       // Refetch the job apply data to get updated status
-      refetchJobApply();
+      const refetchResult = await refetchJobApply();
+      console.log("✅ Refetch completed with result:", refetchResult);
+      console.log("Updated jobApply after refetch:", refetchResult.data);
 
       // Remove location warning if application is successful
       setShowLocationFirst(false);
@@ -423,8 +508,14 @@ const JobApply = () => {
           className: "bg-green-50 text-green-800",
         }
       );
+
+      // Add a delay and check the data again
+      setTimeout(() => {
+        console.log("🕐 Data after 2 second delay:", jobApply);
+      }, 2000);
+
     } catch (error) {
-      console.error("Application error:", error);
+      console.error("❌ Application error:", error);
       
       // Extract error message from different possible error structures
       let errorMessage = "Please try again";
@@ -682,6 +773,11 @@ const JobApply = () => {
                         ) : (
                           <span className="text-error">Salary not set</span>
                         )}
+                      </div>
+                      <div className="text-xs text-secondary mt-1">
+                        Job Type: {applicationData.teacher_job_type && Array.isArray(applicationData.teacher_job_type) && applicationData.teacher_job_type.length > 0 
+                          ? getJobTypeName(getJobTypeId(applicationData.teacher_job_type))
+                          : 'Not specified'}
                       </div>
                     </div>
                   )}
