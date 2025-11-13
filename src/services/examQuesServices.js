@@ -311,12 +311,14 @@ export const getAssignUserSubject= async () => {
   }
 };
 
-export const jobApply= async ({subject, class_category}) => {
+export const jobApply = async (payload) => {
   try {
-    const response = await apiClient.post(`/api/self/apply/`, {subject, class_category});
+    console.log("🔄 jobApply service sending payload:", payload);
+    const response = await apiClient.post(`/api/self/apply/`, payload);
+    console.log("✅ jobApply service response:", response.data);
     return response.data;
   } catch (err) {
-    console.error("Error in jobApply:", err);
+    console.error("❌ Error in jobApply:", err);
     throw err;
   }
 };
