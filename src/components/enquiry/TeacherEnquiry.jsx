@@ -9,7 +9,6 @@ import {
   FiArrowLeft,
   FiMail,
   FiPhone,
-  FiCheckCircle,
   FiSmile,
   FiMessageSquare,
   FiBriefcase,
@@ -18,7 +17,7 @@ import {
   FiUser,
   FiEye,
 } from "react-icons/fi";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { showNotification } from "../../features/notificationSlice";
@@ -597,8 +596,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         teachers.length === 0 && (
                           <div className="text-center py-10">
                             <p className="text-gray-600 mb-4">
-                              No teachers found for the selected criteria.
+                              आपके चुने हुए विकल्पों के अनुसार यहां पर कोई शिक्षक उपलब्ध नहीं है कृपया दूसरी विकल्पों का चयन करें.
+                              / According to the options you have selected, no teacher is available here. Please choose other options.
                             </p>
+                            
                             <button
                               onClick={() => setCurrentStep(2)}
                               className="text-teal-500 hover:text-teal-700 flex items-center mx-auto"

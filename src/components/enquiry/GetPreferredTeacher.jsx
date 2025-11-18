@@ -641,10 +641,12 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                       {!teachersLoading &&
                         !teachersError &&
                         teachers.length === 0 && (
-                          <div className="text-center py-10">
+                          <div className="text-center py-10 max-w-md mx-auto">
                             <p className="text-gray-600 mb-4">
-                              No teachers found for the selected criteria.
+                                आपके चुने हुए विकल्पों के अनुसार यहां पर कोई शिक्षक उपलब्ध नहीं है कृपया दूसरी विकल्पों का चयन करें.
+                              / According to the options you have selected, no teacher is available here. Please choose other options.
                             </p>
+                        
                             <button
                               onClick={() => setCurrentStep(2)}
                               className="text-teal-500 hover:text-teal-700 flex items-center mx-auto"
@@ -658,118 +660,78 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {filteredTeachers.map((teacher) => {
                                 const fullName = `${teacher.Fname} ${teacher.Lname}`;
-                                const address =
-                                  teacher.teachersaddress.find(
-                                    (addr) => addr.address_type === "current"
-                                  ) ||
-                                  teacher.teachersaddress.find(
-                                    (addr) => addr.address_type === "permanent"
-                                  );
+                                const address = Array.isArray(teacher.teachersaddress)
+                                  ? teacher.teachersaddress.find((addr) => addr.address_type === "current") ||
+                                    teacher.teachersaddress.find((addr) => addr.address_type === "permanent")
+                                  : undefined;
                                 const location = address
-                                  ? `${address.area ? address.area + ", " : ""}${
-                                      address.postoffice
-                                    }, ${address.district}, ${address.state}`
+                                  ? `${address.area ? address.area + ", " : ""}${address.postoffice}, ${address.district}, ${address.state}`
                                   : "N/A";
                                 const subjects =
-                                  teacher.preferences[0]?.prefered_subject
+                                  teacher.preferences?.[0]?.prefered_subject
                                     ?.map((subj) => subj.subject_name)
                                     .join(", ") || "N/A";
                                 const roles =
-                                  teacher.preferences[0]?.job_role
+                                  teacher.preferences?.[0]?.job_role
                                     ?.map((role) => role.jobrole_name)
                                     .join(", ") || "N/A";
-                  
+                                const rating = teacher.total_marks > 0 ? teacher.total_marks : null;
+                                const profilePic = teacher.profile_picture || null;
                                 return (
                                   <div
                                     key={teacher.id}
-                                    className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 border border-gray-100 w-full"
+                                    className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 w-full flex flex-col"
                                   >
                                     {/* Header Section */}
-                                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                                      {/* Profile Icon */}
-                                      <div className="flex items-center sm:items-start gap-4">
-                                        <div className="bg-teal-100 p-3 rounded-lg shrink-0">
-                                          <FiUser className="text-2xl text-teal-600" />
-                                        </div>
-                  
-                                        {/* Name and Rating */}
-                                        <div className="flex-1">
-                                          <h3 className="text-lg font-semibold mb-1">
-                                            {fullName}
-                                          </h3>
-                                          {teacher.total_marks > 0 && (
-                                            <div className="flex items-center text-amber-600">
-                                              <FiStar className="mr-1" />
-                                              <span className="text-sm font-medium">
-                                                Rating: {teacher.total_marks}/5
-                                              </span>
-                                            </div>
+                                    <div className="flex items-center gap-4 p-4 border-b">
+                                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                                        {profilePic ? (
+                                          <img src={profilePic} alt={fullName} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <FiUser className="text-3xl text-teal-600" />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg font-bold text-gray-900 truncate">{fullName}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          {rating && (
+                                            <span className="flex items-center text-amber-600 text-sm font-medium">
+                                              <FiStar className="mr-1" /> {rating}/5
+                                            </span>
                                           )}
                                         </div>
-                  
-                                        {/* Bookmark Icon */}
-                                        <button className="text-gray-400 hover:text-teal-600 transition-colors">
-                                          <FiBookmark className="text-xl" />
-                                        </button>
+                                        <p className="text-xs text-gray-500 mt-1 truncate">{location}</p>
+                                      </div>
+                                      <button className="text-gray-400 hover:text-teal-600 transition-colors">
+                                        <FiBookmark className="text-xl" />
+                                      </button>
+                                    </div>
+                                    {/* Details Section */}
+                                    <div className="flex-1 p-4 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <FiBook className="text-teal-600" />
+                                        <span className="text-sm text-gray-500">Subjects:</span>
+                                        <span className="font-medium text-gray-900 break-words">{subjects}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <FiBriefcase className="text-teal-600" />
+                                        <span className="text-sm text-gray-500">Roles:</span>
+                                        <span className="font-medium text-gray-900 break-words">{roles}</span>
                                       </div>
                                     </div>
-                  
-                                    {/* Details Grid */}
-                                    <div className="space-y-3 mb-4">
-                                      {/* Subjects */}
-                                      <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                                        <FiBook className="text-teal-600 text-lg mt-0.5" />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm text-gray-500">
-                                            Subjects
-                                          </p>
-                                          <p className="font-medium text-gray-900 break-words">
-                                            {subjects}
-                                          </p>
-                                        </div>
-                                      </div>
-                  
-                                      {/* Roles */}
-                                      <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                                        <FiBriefcase className="text-teal-600 text-lg mt-0.5" />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm text-gray-500">
-                                            Roles
-                                          </p>
-                                          <p className="font-medium text-gray-900 break-words">
-                                            {roles}
-                                          </p>
-                                        </div>
-                                      </div>
-                  
-                                      {/* Location */}
-                                      <div className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                                        <FiMapPin className="text-teal-600 text-lg mt-0.5" />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm text-gray-500">
-                                            Location
-                                          </p>
-                                          <p className="font-medium text-gray-900 break-words">
-                                            {location}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                  
-                                    {/* Action Buttons */}
-                                    <div className="border-t pt-4 mt-4">
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <button className="flex items-center justify-center gap-2 bg-teal-50 text-teal-700 px-4 py-2.5 rounded-lg hover:bg-teal-100 transition-colors w-full">
+                                    {/* Actions Section */}
+                                    <div className="border-t p-4 flex flex-col gap-2">
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                                        <button className="flex items-center justify-center gap-2 bg-teal-50 text-teal-700 px-4 py-2 rounded-lg hover:bg-teal-100 transition-colors w-full">
                                           <FiMessageSquare className="text-lg" />
                                           <span>Message</span>
                                         </button>
-                                        <button className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-lg hover:bg-teal-700 transition-colors w-full">
+                                        <button className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors w-full">
                                           <FiPhone className="text-lg" />
                                           <span>Contact Now</span>
                                         </button>
                                       </div>
-                  
-                                      <button className="flex items-center justify-center gap-2 text-teal-600 hover:text-teal-700 font-medium mt-3 w-full">
+                                      <button className="flex items-center justify-center gap-2 text-teal-600 hover:text-teal-700 font-medium w-full">
                                         <FiEye className="text-lg" />
                                         <span>View Full Profile</span>
                                       </button>

@@ -150,15 +150,7 @@ function TeacherDashboard() {
     }
   };
 
-  const teacherData = {
-    profilePicture: "https://via.placeholder.com/150",
-    completionPercentage: 75,
-    missingDetails: [
-      "Add address info",
-      "Add mobile number",
-      "Add education details",
-    ],
-  };
+  
 
   // Derive interview state for summary banner (placed here, not inside handlers)
   const interviews = useMemo(() => Array.isArray(interviewData) ? interviewData : [], [interviewData]);

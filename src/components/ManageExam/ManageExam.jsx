@@ -706,7 +706,7 @@ const ManageExam = () => {
                 {examSets.length === 0 ? 'No Exam Sets Found' : 'No Matching Exam Sets'}
               </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
-                {examSets.length === 0 
+                {examSets.length === 0
                   ? 'Get started by creating your first exam set. You can add questions after creating an exam set.' 
                   : 'Try adjusting your search or filter settings to find what you\'re looking for.'}
               </p>
