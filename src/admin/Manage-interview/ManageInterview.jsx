@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Box,
-  Container,
   Typography,
   Paper,
   TextField,
@@ -10,7 +9,6 @@ import {
   Modal,
   Snackbar,
   Alert,
-  Switch,
   CircularProgress,
   Backdrop,
   Card,
@@ -20,12 +18,12 @@ import {
   Stack,
   Tooltip,
   Divider,
-  useMediaQuery,
   useTheme,
   MenuItem,
   Collapse,
+  InputAdornment
 } from "@mui/material";
-import Grid from "@mui/material/Grid2"; // Grid2 import
+import Grid from "@mui/material/Grid2";
 import { alpha } from "@mui/material/styles";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { DateTimePicker, DatePicker } from "@mui/x-date-pickers";
@@ -39,14 +37,13 @@ import {
   FiClock,
   FiX,
   FiCheck,
-  FiThumbsDown,
-  FiLink,
   FiDownload,
   FiList,
   FiBarChart2,
   FiFilter,
   FiSearch,
   FiCalendar,
+  FiExternalLink
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import { getInterview, updateInterview } from "../../services/adminInterviewApi";
@@ -69,16 +66,20 @@ const stringToColor = (string = "") => {
 
 const CenteredPaper = ({ children, sx = {} }) => (
   <Paper
+    elevation={0}
     sx={{
       position: "absolute",
       top: "50%",
       left: "50%",
       transform: "translate(-50%,-50%)",
-      width: { xs: "94%", sm: 560 },
+      width: { xs: "94%", sm: 500 },
       maxHeight: "90vh",
       overflow: "auto",
-      p: 3,
-      borderRadius: 2,
+      p: 0,
+      borderRadius: 3,
+      border: '1px solid',
+      borderColor: 'divider',
+      outline: 'none',
       ...sx,
     }}
   >
@@ -88,8 +89,6 @@ const CenteredPaper = ({ children, sx = {} }) => (
 
 export default function InterviewManagementRedesign() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   const [loading, setLoading] = useState(true);
   const [interviewData, setInterviewData] = useState([]);
@@ -174,7 +173,7 @@ export default function InterviewManagementRedesign() {
           desiredDateTime: item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : "—",
           scheduledDate:
             (item.status === "scheduled" || item.status === "fulfilled") &&
-            item.time
+              item.time
               ? dayjs(item.time).format("YYYY-MM-DD HH:mm")
               : null,
           rejectionReason: item.rejectionReason || null,
@@ -346,43 +345,54 @@ export default function InterviewManagementRedesign() {
 
   // ---------- render helpers ----------
   const renderCard = (row) => (
-    <Card key={row.id} sx={{ borderRadius: 2 }}>
+    <Card key={row.id} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', transition: 'all 0.2s', '&:hover': { borderColor: 'primary.main', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
       <CardContent>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <Avatar src={row.profilePicture} sx={{ bgcolor: stringToColor(row.name) }}>{row.name?.charAt(0)}</Avatar>
+            <Avatar src={row.profilePicture} sx={{ bgcolor: stringToColor(row.name), width: 48, height: 48 }}>{row.name?.charAt(0)}</Avatar>
             <Box>
-              <Typography fontWeight={700}>{row.name}</Typography>
+              <Typography fontWeight={700} variant="subtitle1">{row.name}</Typography>
               <Typography variant="caption" color="text.secondary">{row.email}</Typography>
             </Box>
           </Box>
-
-          <Chip label={`${row.status} (${row.mode})`} size="small" color={row.status === "Completed" ? "success" : row.status === "Scheduled" ? "info" : row.status === "Pending" ? "warning" : "error"} />
+          <Chip
+            label={row.status}
+            size="small"
+            sx={{ fontWeight: 600, borderRadius: 1.5 }}
+            color={row.status === "Completed" ? "success" : row.status === "Scheduled" ? "info" : row.status === "Pending" ? "warning" : "error"}
+            variant="soft"
+          />
         </Box>
 
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="text.secondary">{row.mergedSubject}</Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.desiredDateTime}</Typography>
-        </Box>
+        <Divider sx={{ mb: 2 }} />
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid xs={6}>
+            <Typography variant="caption" color="text.secondary" display="block">Subject</Typography>
+            <Typography variant="body2" fontWeight={500}>{row.mergedSubject}</Typography>
+          </Grid>
+          <Grid xs={6}>
+            <Typography variant="caption" color="text.secondary" display="block">Desired Time</Typography>
+            <Typography variant="body2" fontWeight={500}>{row.desiredDateTime}</Typography>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button size="small" variant="outlined" startIcon={<FiEye />} onClick={() => setDetailsModal({ open: true, data: row })}>View</Button>
 
-          <Stack direction="row" spacing={1}>
-            {row.status === "Pending" && (
-              <>
-                <Tooltip title="Schedule"><IconButton onClick={() => openSchedule(row)}><FiClock /></IconButton></Tooltip>
-                <Tooltip title="Reject"><IconButton onClick={() => openReject(row)} color="error"><FiX /></IconButton></Tooltip>
-              </>
-            )}
+          {row.status === "Pending" && (
+            <>
+              <Button size="small" variant="contained" startIcon={<FiClock />} onClick={() => openSchedule(row)}>Schedule</Button>
+              <IconButton size="small" color="error" onClick={() => openReject(row)}><FiX /></IconButton>
+            </>
+          )}
 
-            {row.status === "Scheduled" && (
-              <>
-                <Button variant="contained" size="small" startIcon={<FiCheck />} onClick={() => openComplete(row)}>Complete</Button>
-                {row.link && <Button variant="outlined" size="small" onClick={() => window.open(row.link, "_blank")}>Join</Button>}
-              </>
-            )}
-          </Stack>
+          {row.status === "Scheduled" && (
+            <>
+              <Button variant="contained" color="success" size="small" startIcon={<FiCheck />} onClick={() => openComplete(row)}>Complete</Button>
+              {row.link && <IconButton size="small" color="primary" onClick={() => window.open(row.link, "_blank")}><FiExternalLink /></IconButton>}
+            </>
+          )}
         </Box>
       </CardContent>
     </Card>
@@ -394,54 +404,94 @@ export default function InterviewManagementRedesign() {
       field: "name",
       headerName: "Teacher",
       flex: 1.5,
-      minWidth: 200,
+      minWidth: 220,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center", py: 1 }}>
-          <Avatar src={params.row.profilePicture} sx={{ bgcolor: stringToColor(params.row.name), width: 36, height: 36 }}>{params.row.name?.charAt(0)}</Avatar>
+        <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", py: 1 }}>
+          <Avatar src={params.row.profilePicture} sx={{ bgcolor: stringToColor(params.row.name), width: 32, height: 32, fontSize: '0.875rem' }}>{params.row.name?.charAt(0)}</Avatar>
           <Box>
-            <Typography sx={{ fontWeight: 600 }}>{params.row.name}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>{params.row.name}</Typography>
             <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
           </Box>
         </Box>
       ),
     },
-    { field: "mergedSubject", headerName: "Subject (Class)", flex: 1, minWidth: 180, renderCell: (p) => <Typography sx={{ py: 1 }}>{p.value}</Typography> },
-    { field: "desiredDateTime", headerName: "Desired Date/Time", flex: 1, minWidth: 160, renderCell: (p) => <Typography sx={{ py: 1 }}>{p.value}</Typography> },
+    { field: "mergedSubject", headerName: "Subject (Class)", flex: 1, minWidth: 180, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value}</Typography> },
+    { field: "desiredDateTime", headerName: "Desired Date/Time", flex: 1, minWidth: 160, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value}</Typography> },
     {
       field: "score",
       headerName: "Grade",
-      width: 120,
-      renderCell: (params) => params.value !== "Not graded" ? `${params.value}/10` : "—",
+      width: 100,
+      renderCell: (params) => (
+        <Box sx={{ py: 1.5 }}>
+          {params.value !== "Not graded" ? (
+            <Chip label={`${params.value}/10`} size="small" variant="outlined" sx={{ borderRadius: 1, fontWeight: 600 }} />
+          ) : (
+            <Typography variant="caption" color="text.secondary">—</Typography>
+          )}
+        </Box>
+      ),
     },
     {
       field: "status",
       headerName: "Status",
       flex: 1,
-      minWidth: 160,
+      minWidth: 140,
       renderCell: (params) => (
-        <Chip label={`${params.value}`} size="small" color={params.value === "Completed" ? "success" : params.value === "Scheduled" ? "info" : params.value === "Pending" ? "warning" : "error"} />
+        <Box sx={{ py: 1.5 }}>
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{ fontWeight: 600, borderRadius: 1 }}
+            color={params.value === "Completed" ? "success" : params.value === "Scheduled" ? "info" : params.value === "Pending" ? "warning" : "error"}
+            variant={params.value === "Pending" ? "outlined" : "filled"}
+          />
+        </Box>
       ),
     },
-    { field: "scheduledDate", headerName: "Scheduled", flex: 1, minWidth: 160, renderCell: (p) => <Typography sx={{ py: 1 }}>{p.value || "—"}</Typography> },
+    { field: "scheduledDate", headerName: "Scheduled", flex: 1, minWidth: 160, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value || "—"}</Typography> },
     {
       field: "actions",
       headerName: "Actions",
-      width: 220,
+      width: 180,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <GridActionsCellItem icon={<FiEye size={24} color="green" />} label="View" onClick={() => setDetailsModal({ open: true, data: params.row })} />
+        <Box sx={{ display: "flex", gap: 0.5, py: 0.5 }}>
+          <Tooltip title="View Details">
+            <IconButton size="small" onClick={() => setDetailsModal({ open: true, data: params.row })}>
+              <FiEye size={18} />
+            </IconButton>
+          </Tooltip>
+
           {params.row.apiStatus === "requested" && (
             <>
-              <GridActionsCellItem icon={<FiClock size={24} color="blue" />} label="Schedule" onClick={() => openSchedule(params.row)} />
-              <GridActionsCellItem icon={<FiX size={24} color="red" />} label="Reject" onClick={() => openReject(params.row)} />
+              <Tooltip title="Schedule">
+                <IconButton size="small" color="primary" onClick={() => openSchedule(params.row)}>
+                  <FiClock size={18} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Reject">
+                <IconButton size="small" color="error" onClick={() => openReject(params.row)}>
+                  <FiX size={18} />
+                </IconButton>
+              </Tooltip>
             </>
           )}
+
           {params.row.apiStatus === "scheduled" && (
             <>
-              <GridActionsCellItem icon={<FiCheck size={24} color="green" />} label="Complete" onClick={() => openComplete(params.row)} />
-              {params.row.link && <Button sx={{backgroundColor:"green",color:"white"}} size="small" onClick={() => window.open(params.row.link, "_blank")}>Join</Button>}
+              <Tooltip title="Complete">
+                <IconButton size="small" color="success" onClick={() => openComplete(params.row)}>
+                  <FiCheck size={18} />
+                </IconButton>
+              </Tooltip>
+              {params.row.link && (
+                <Tooltip title="Join Meeting">
+                  <IconButton size="small" color="info" onClick={() => window.open(params.row.link, "_blank")}>
+                    <FiExternalLink size={18} />
+                  </IconButton>
+                </Tooltip>
+              )}
             </>
           )}
         </Box>
@@ -451,241 +501,409 @@ export default function InterviewManagementRedesign() {
 
   return (
     <Layout>
-      {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2, flexWrap: "wrap" }}>
-        <Box>
-          <Typography variant="h4" sx={{fontSize:{ xs: '1.5rem', md: '1.5rem' },color:"#008080"}} fontWeight={800} color="primary">Teacher Interview Management</Typography>
-          <Typography variant="body2" color="text.secondary">Schedule, review and grade teacher interviews</Typography>
+      <Box sx={{ maxWidth: 1400, mx: 'auto', p: { xs: 2, md: 3 } }}>
+        {/* Header */}
+        <Box sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+          gap: 2,
+          flexWrap: "wrap",
+          pb: 2,
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Box>
+            <Typography variant="h4" sx={{
+              fontSize: { xs: '1.5rem', md: '1.75rem' },
+              fontWeight: 800,
+              background: 'linear-gradient(45deg, #2563eb, #3b82f6)',
+              backgroundClip: 'text',
+              textFillColor: 'transparent',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 0.5
+            }}>
+              Interview Management
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Streamline your teacher assessment process
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Refresh Data">
+              <IconButton onClick={fetchInterviews} size="small" sx={{ border: '1px solid', borderColor: 'divider' }}>
+                <FiRefreshCw />
+              </IconButton>
+            </Tooltip>
+
+            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', p: 0.5 }}>
+              <Tooltip title="Table View">
+                <IconButton
+                  size="small"
+                  onClick={() => setViewMode("table")}
+                  color={viewMode === "table" ? "primary" : "default"}
+                  sx={{ borderRadius: 0.5 }}
+                >
+                  <FiList />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Card View">
+                <IconButton
+                  size="small"
+                  onClick={() => setViewMode("card")}
+                  color={viewMode === "card" ? "primary" : "default"}
+                  sx={{ borderRadius: 0.5 }}
+                >
+                  <FiBarChart2 />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            <Button
+              variant={filtersOpen ? "contained" : "outlined"}
+              startIcon={<FiFilter />}
+              onClick={() => setFiltersOpen((s) => !s)}
+              size="medium"
+              sx={{ borderRadius: 2, textTransform: 'none' }}
+            >
+              Filters
+            </Button>
+          </Stack>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          
+        {/* Filter panel */}
+        <Collapse in={filtersOpen}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              mb: 4,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: alpha(theme.palette.primary.main, 0.02)
+            }}
+          >
+            <Grid container spacing={2} alignItems="center">
+              <Grid xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  placeholder="Search by name, email, subject..."
+                  onChange={(e) => debouncedSearch(e.target.value)}
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FiSearch color="gray" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ bgcolor: 'background.paper' }}
+                />
+              </Grid>
 
-          <Tooltip title="Refresh"><IconButton onClick={fetchInterviews}><FiRefreshCw /></IconButton></Tooltip>
-          <Tooltip title={viewMode === "table" ? "Card view" : "Table view"}>
-            <IconButton onClick={() => setViewMode((v) => (v === "table" ? "card" : "table"))}>
-              {viewMode === "table" ? <FiBarChart2 /> : <FiList />}
-            </IconButton>
-          </Tooltip>
-          <Button variant="outlined" startIcon={<FiFilter />} onClick={() => setFiltersOpen((s) => !s)}>Filters</Button>
-        </Box>
-      </Box>
-      {/* Filter panel */}
-      <Collapse in={filtersOpen}>
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="Search by name, email, subject..."
-                onChange={(e) => debouncedSearch(e.target.value)}
-                size="small"
-                slotProps={{
-                  input: { startAdornment: <FiSearch style={{ marginRight: 8 }} /> }
+              <Grid xs={12} md={6}>
+                <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+                  <Button variant="outlined" startIcon={<FiDownload />} onClick={exportCsv} size="small">Export CSV</Button>
+                  <Button variant="text" onClick={resetFilters} size="small" color="error">Reset Filters</Button>
+                </Box>
+              </Grid>
+
+              <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
+
+              <Grid xs={12} md={3}><TextField label="Teacher Name" size="small" value={filters.teacherName} onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
+              <Grid xs={12} md={3}><TextField label="Class Category" size="small" value={filters.classCategory} onChange={(e) => setFilters({ ...filters, classCategory: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
+              <Grid xs={12} md={3}><TextField label="Subject" size="small" value={filters.subject} onChange={(e) => setFilters({ ...filters, subject: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
+              <Grid xs={12} md={3}><TextField label="Level" size="small" value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
+
+              <Grid xs={12} md={3}><TextField label="Attempt" size="small" type="number" value={filters.attempt} onChange={(e) => setFilters({ ...filters, attempt: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
+
+              <Grid xs={12} md={3}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker label="From (Desired)" value={filters.dateFrom} onChange={(v) => setFilters({ ...filters, dateFrom: v })} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { bgcolor: 'background.paper' } } }} />
+                </LocalizationProvider>
+              </Grid>
+
+              <Grid xs={12} md={3}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker label="To (Desired)" value={filters.dateTo} onChange={(v) => setFilters({ ...filters, dateTo: v })} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { bgcolor: 'background.paper' } } }} />
+                </LocalizationProvider>
+              </Grid>
+
+              <Grid xs={12} md={3}>
+                <TextField select label="Status" size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }}>
+                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Scheduled">Scheduled</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </TextField>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Collapse>
+
+        {/* Main list / table */}
+        <Paper elevation={0} sx={{ p: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          {loading ? (
+            <Box sx={{ p: 8, textAlign: "center" }}>
+              <CircularProgress size={40} thickness={4} />
+              <Typography sx={{ mt: 2, fontWeight: 500 }} color="text.secondary">Loading interviews...</Typography>
+            </Box>
+          ) : filteredTeachers.length === 0 ? (
+            <Box sx={{ p: 8, textAlign: "center" }}>
+              <Box sx={{ mb: 2, bgcolor: 'action.hover', width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto' }}>
+                <FiSearch size={24} color="gray" />
+              </Box>
+              <Typography variant="h6" fontWeight={600} gutterBottom>No interviews found</Typography>
+              <Typography color="text.secondary">Try adjusting your filters or search terms</Typography>
+            </Box>
+          ) : viewMode === "table" ? (
+            <Box sx={{ width: "100%" }}>
+              <DataGrid
+                rows={filteredTeachers}
+                columns={tableColumns}
+                pageSizeOptions={[10, 25, 50]}
+                disableRowSelectionOnClick
+                getRowId={(r) => r.id}
+                autoHeight
+                getRowHeight={() => 'auto'}
+                sx={{
+                  '& .MuiDataGrid-cell': {
+                    py: 1,
+                    px: 2,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  },
+                  '& .MuiDataGrid-columnHeaders': {
+                    bgcolor: 'action.hover',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.05em',
+                    color: 'text.secondary',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  },
+                  '& .MuiDataGrid-row:hover': {
+                    bgcolor: alpha(theme.palette.primary.main, 0.02)
+                  },
+                  border: 'none',
                 }}
               />
-            </Grid>
-
-            <Grid xs={12} md={6}>
-              <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                <Button variant="outlined" startIcon={<FiDownload />} onClick={exportCsv}>Export</Button>
-                <Button variant="outlined" onClick={resetFilters}>Reset</Button>
-              </Box>
-            </Grid>
-
-            <Grid xs={12} md={3}><TextField label="Teacher" size="small" value={filters.teacherName} onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })} fullWidth /></Grid>
-            <Grid xs={12} md={3}><TextField label="Class" size="small" value={filters.classCategory} onChange={(e) => setFilters({ ...filters, classCategory: e.target.value })} fullWidth /></Grid>
-            <Grid xs={12} md={3}><TextField label="Subject" size="small" value={filters.subject} onChange={(e) => setFilters({ ...filters, subject: e.target.value })} fullWidth /></Grid>
-            <Grid xs={12} md={3}><TextField label="Level" size="small" value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })} fullWidth /></Grid>
-
-            <Grid xs={12} md={3}><TextField label="Attempt" size="small" type="number" value={filters.attempt} onChange={(e) => setFilters({ ...filters, attempt: e.target.value })} fullWidth /></Grid>
-
-            <Grid xs={12} md={3}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker label="From (Desired)" value={filters.dateFrom} onChange={(v) => setFilters({ ...filters, dateFrom: v })} slotProps={{ textField: { size: 'small' } }} />
-              </LocalizationProvider>
-            </Grid>
-
-            <Grid xs={12} md={3}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker label="To (Desired)" value={filters.dateTo} onChange={(v) => setFilters({ ...filters, dateTo: v })} slotProps={{ textField: { size: 'small' } }} />
-              </LocalizationProvider>
-            </Grid>
-
-            <Grid xs={12} md={3}>
-              <TextField select label="Status" size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} fullWidth>
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Scheduled">Scheduled</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-              </TextField>
-            </Grid>
-          </Grid>
+            </Box>
+          ) : (
+            <Stack spacing={2} sx={{ p: 3, bgcolor: 'background.default' }}>{filteredTeachers.map(renderCard)}</Stack>
+          )}
         </Paper>
-      </Collapse>
-      {/* Main list / table */}
-      <Paper sx={{ p: 0, borderRadius: 2 }}>
-        {loading ? (
-          <Box sx={{ p: 6, textAlign: "center" }}>
-            <CircularProgress />
-            <Typography sx={{ mt: 2 }} color="text.secondary">Loading interviews...</Typography>
-          </Box>
-        ) : filteredTeachers.length === 0 ? (
-          <Box sx={{ p: 6, textAlign: "center" }}>
-            <Typography variant="h6" color="text.secondary">No interviews found</Typography>
-          </Box>
-        ) : viewMode === "table" ? (
-          <Box sx={{ width: "100%" }}>
-            <DataGrid
-              rows={filteredTeachers}
-              columns={tableColumns}
-              pageSizeOptions={[5, 10, 25]}
-              disableRowSelectionOnClick
-              getRowId={(r) => r.id}
-              autoHeight
-              getRowHeight={() => 'auto'}
-              sx={{
-                '& .MuiDataGrid-cell': {
-                  py: 1.5,
-                  px: 2,
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  alignItems: 'flex-start',
-                },
-                '& .MuiDataGrid-columnHeaders': {
-                  backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5',
-                  fontWeight: 700,
-                  py: 1.5,
-                },
-                '& .MuiDataGrid-row:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                },
-                border: 'none',
-              }}
-            />
-          </Box>
-        ) : (
-          <Stack spacing={2} sx={{ p: 2 }}>{filteredTeachers.map(renderCard)}</Stack>
-        )}
-      </Paper>
+      </Box>
+
       {/* DETAILS MODAL */}
       <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, data: null })}>
         <CenteredPaper>
           {detailsModal.data && (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Interview Details</Typography>
-                <IconButton onClick={() => setDetailsModal({ open: false, data: null })}><FiX /></IconButton>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={700}>Interview Details</Typography>
+                <IconButton size="small" onClick={() => setDetailsModal({ open: false, data: null })}><FiX /></IconButton>
               </Box>
 
-              <Divider sx={{ my: 2 }} />
+              <Box sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <Avatar src={detailsModal.data.profilePicture} sx={{ width: 64, height: 64, bgcolor: stringToColor(detailsModal.data.name), fontSize: '1.5rem' }}>
+                    {detailsModal.data.name?.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" fontWeight={700}>{detailsModal.data.name}</Typography>
+                    <Typography color="text.secondary">{detailsModal.data.email}</Typography>
+                  </Box>
+                </Box>
 
-              <Grid container spacing={2}>
-                <Grid xs={12} sm={6}><Typography variant="subtitle2">Name</Typography><Typography>{detailsModal.data.name}</Typography></Grid>
-                <Grid xs={12} sm={6}><Typography variant="subtitle2">Email</Typography><Typography>{detailsModal.data.email}</Typography></Grid>
-                <Grid xs={12}><Typography variant="subtitle2">Subject</Typography><Typography>{detailsModal.data.mergedSubject}</Typography></Grid>
-                <Grid xs={12}><Typography variant="subtitle2">Status</Typography><Chip label={`${detailsModal.data.status} (${detailsModal.data.mode})`} /></Grid>
+                <Grid container spacing={3}>
+                  <Grid xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Subject</Typography>
+                    <Typography variant="body1" fontWeight={500}>{detailsModal.data.mergedSubject}</Typography>
+                  </Grid>
+                  <Grid xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Status</Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <Chip label={detailsModal.data.status} size="small" color={detailsModal.data.status === "Completed" ? "success" : detailsModal.data.status === "Scheduled" ? "info" : "warning"} />
+                    </Box>
+                  </Grid>
 
-                {detailsModal.data.scheduledDate && <Grid xs={12}><Typography variant="subtitle2">Scheduled</Typography><Typography>{detailsModal.data.scheduledDate}</Typography></Grid>}
+                  <Grid xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Desired Time</Typography>
+                    <Typography variant="body1">{detailsModal.data.desiredDateTime}</Typography>
+                  </Grid>
 
-                {detailsModal.data.rejectionReason && <Grid xs={12}><Typography variant="subtitle2">Rejection Reason</Typography><Paper sx={{ p: 1 }}>{detailsModal.data.rejectionReason}</Paper></Grid>}
+                  {detailsModal.data.scheduledDate && (
+                    <Grid xs={12} sm={6}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Scheduled Time</Typography>
+                      <Typography variant="body1" color="primary.main" fontWeight={500}>{detailsModal.data.scheduledDate}</Typography>
+                    </Grid>
+                  )}
 
-                {detailsModal.data.link && <Grid xs={12}><Button onClick={() => window.open(detailsModal.data.link, '_blank')}>Open Meeting Link</Button></Grid>}
-              </Grid>
+                  {detailsModal.data.rejectionReason && (
+                    <Grid xs={12}>
+                      <Typography variant="caption" color="error" fontWeight={600} textTransform="uppercase">Rejection Reason</Typography>
+                      <Paper variant="outlined" sx={{ p: 2, mt: 1, bgcolor: '#fff5f5', borderColor: '#feb2b2' }}>
+                        <Typography variant="body2" color="error.dark">{detailsModal.data.rejectionReason}</Typography>
+                      </Paper>
+                    </Grid>
+                  )}
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                  {detailsModal.data.link && (
+                    <Grid xs={12}>
+                      <Button variant="outlined" startIcon={<FiExternalLink />} onClick={() => window.open(detailsModal.data.link, '_blank')} fullWidth>
+                        Open Meeting Link
+                      </Button>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
                 <Button onClick={() => setDetailsModal({ open: false, data: null })}>Close</Button>
               </Box>
             </>
           )}
         </CenteredPaper>
       </Modal>
+
       {/* SCHEDULE MODAL */}
       <Modal open={scheduleModal.open} onClose={() => setScheduleModal({ open: false, data: null })}>
         <CenteredPaper>
           {scheduleModal.data && (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Schedule Interview</Typography>
-                <IconButton onClick={() => setScheduleModal({ open: false, data: null })}><FiX /></IconButton>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={700}>Schedule Interview</Typography>
+                <IconButton size="small" onClick={() => setScheduleModal({ open: false, data: null })}><FiX /></IconButton>
               </Box>
 
-              <Divider sx={{ my: 2 }} />
+              <Box sx={{ p: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>Teacher</Typography>
+                <Typography variant="h6" gutterBottom>{scheduleModal.data.name}</Typography>
 
-              <Typography variant="subtitle2">Teacher</Typography>
-              <Typography sx={{ mb: 1 }}>{scheduleModal.data.name}</Typography>
+                <Box sx={{ mt: 3 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateTimePicker
+                      label="Select Date & Time"
+                      value={selectedDateTime}
+                      onChange={setSelectedDateTime}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                  </LocalizationProvider>
+                </Box>
 
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker
-                  label="Schedule Date & Time"
-                  value={selectedDateTime}
-                  onChange={setSelectedDateTime}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                <TextField
+                  fullWidth
+                  label="Meeting Link"
+                  placeholder="https://meet.google.com/..."
+                  value={meetingLink}
+                  onChange={(e) => { setMeetingLink(e.target.value); if (e.target.value.trim()) setMeetingLinkError(false); }}
+                  error={meetingLinkError}
+                  helperText={meetingLinkError ? "Meeting link is required" : ""}
+                  sx={{ mt: 3 }}
                 />
-              </LocalizationProvider>
+              </Box>
 
-              <TextField fullWidth label="Meeting Link" value={meetingLink} onChange={(e) => { setMeetingLink(e.target.value); if (e.target.value.trim()) setMeetingLinkError(false); }} error={meetingLinkError} helperText={meetingLinkError ? "Meeting link is required" : ""} sx={{ mt: 2 }} />
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                <Button variant="outlined" onClick={() => setScheduleModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" onClick={scheduleInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Schedule'}</Button>
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={() => setScheduleModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" onClick={scheduleInterview} disabled={actionLoading} startIcon={actionLoading ? <CircularProgress size={18} color="inherit" /> : <FiClock />}>
+                  Schedule
+                </Button>
               </Box>
             </>
           )}
         </CenteredPaper>
       </Modal>
+
       {/* REJECT MODAL */}
       <Modal open={rejectModal.open} onClose={() => setRejectModal({ open: false, data: null })}>
         <CenteredPaper>
           {rejectModal.data && (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Reject Interview</Typography>
-                <IconButton onClick={() => setRejectModal({ open: false, data: null })}><FiX /></IconButton>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#fff5f5' }}>
+                <Typography variant="h6" fontWeight={700} color="error">Reject Interview</Typography>
+                <IconButton size="small" onClick={() => setRejectModal({ open: false, data: null })}><FiX /></IconButton>
               </Box>
 
-              <Divider sx={{ my: 2 }} />
+              <Box sx={{ p: 3 }}>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Please provide a reason for rejecting the interview request from <strong>{rejectModal.data.name}</strong>.
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Rejection Reason"
+                  placeholder="e.g., Not qualified for this level..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  autoFocus
+                />
+              </Box>
 
-              <Typography variant="subtitle2">Reason</Typography>
-              <TextField fullWidth multiline rows={4} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} sx={{ mt: 1 }} />
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                <Button variant="outlined" onClick={() => setRejectModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" color="error" onClick={rejectInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Reject'}</Button>
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={() => setRejectModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" color="error" onClick={rejectInterview} disabled={actionLoading}>
+                  {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Confirm Rejection'}
+                </Button>
               </Box>
             </>
           )}
         </CenteredPaper>
       </Modal>
+
       {/* COMPLETE MODAL */}
       <Modal open={completeModal.open} onClose={() => setCompleteModal({ open: false, data: null })}>
         <CenteredPaper>
           {completeModal.data && (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Complete Interview</Typography>
-                <IconButton onClick={() => setCompleteModal({ open: false, data: null })}><FiX /></IconButton>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#f0fdf4' }}>
+                <Typography variant="h6" fontWeight={700} color="success.main">Complete Interview</Typography>
+                <IconButton size="small" onClick={() => setCompleteModal({ open: false, data: null })}><FiX /></IconButton>
               </Box>
 
-              <Divider sx={{ my: 2 }} />
+              <Box sx={{ p: 3 }}>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Rate the interview performance for <strong>{completeModal.data.name}</strong>.
+                </Typography>
 
-              <Typography variant="subtitle2">Score (0-10)</Typography>
-              <TextField type="number" fullWidth value={interviewScore} onChange={(e) => setInterviewScore(e.target.value)} sx={{ mt: 1 }} slotProps={{
-                htmlInput: { min: 0, max: 10, step: 0.5 }
-              }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+                  <TextField
+                    type="number"
+                    label="Score (0-10)"
+                    value={interviewScore}
+                    onChange={(e) => setInterviewScore(e.target.value)}
+                    slotProps={{ htmlInput: { min: 0, max: 10, step: 0.5 } }}
+                    sx={{ width: 150 }}
+                    autoFocus
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    / 10 Points
+                  </Typography>
+                </Box>
+              </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                <Button variant="outlined" onClick={() => setCompleteModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" color="success" onClick={completeInterview} disabled={actionLoading}>{actionLoading ? <CircularProgress size={18} /> : 'Complete'}</Button>
+              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={() => setCompleteModal({ open: false, data: null })}>Cancel</Button>
+                <Button variant="contained" color="success" onClick={completeInterview} disabled={actionLoading}>
+                  {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Mark as Complete'}
+                </Button>
               </Box>
             </>
           )}
         </CenteredPaper>
       </Modal>
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-        <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>{snackbar.message}</Alert>
       </Snackbar>
+
       <Backdrop open={actionLoading} sx={{ zIndex: (t) => t.zIndex.drawer + 2, color: '#fff' }}>
         <CircularProgress color="inherit" />
       </Backdrop>
