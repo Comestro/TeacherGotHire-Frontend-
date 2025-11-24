@@ -481,35 +481,6 @@ function TeacherDashboard() {
               </div>
             ) : (
               <>
-                {/* Interview management placed prominently at the top when eligible or existing interviews */}
-                {shouldShowInterviewSection && (
-                    <InterviewCard />
-                )}
-
-                {/* Show less prominent interview history for completed interviews */}
-                {hasPassedInterview && interviews.length > 0 && !shouldShowInterviewSection && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700 flex items-center">
-                            <FaCalendarAlt className="mr-2 text-gray-500" />
-                            Interview History
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">View your completed interviews</p>
-                        </div>
-                        <button
-                          onClick={scrollToInterview}
-                          className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-                        >
-                          View History
-                        </button>
-                      </div>
-                    <div ref={interviewSectionRef} className="hidden">
-                      <InterviewCard />
-                    </div>
-                  </div>
-                )}
-
                 {/* Other dashboard content */}
                   <FilterdExamCard />
               </>

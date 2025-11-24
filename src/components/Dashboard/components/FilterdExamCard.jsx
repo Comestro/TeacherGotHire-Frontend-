@@ -12,8 +12,7 @@ import {
   FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock,
   FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp
 } from "react-icons/fa";
-import ExamCenterModal from "./passkeyCard";
-import { checkPasskey } from "../../../services/examServices";
+import InterviewCard from "./InterviewCard";
 
 const FilterdExamCard = () => {
   const dispatch = useDispatch();
@@ -35,6 +34,7 @@ const FilterdExamCard = () => {
   const [showCategoryPanel, setShowCategoryPanel] = useState(true);
   const [showSubjectPanel, setShowSubjectPanel] = useState(false);
   const [showLevelPanel, setShowLevelPanel] = useState(false);
+  const [showInterviewPanel, setShowInterviewPanel] = useState(false);
   const examReadyRef = useRef(null); // Create a ref for the target section
   const [showErrorDetails, setShowErrorDetails] = useState(false);
 
@@ -174,6 +174,11 @@ const FilterdExamCard = () => {
     }
   };
 
+  const handleInterviewSelect = () => {
+    setShowLevelPanel(false);
+    setShowInterviewPanel(true);
+  };
+
   const resetSelection = () => {
     setSelectedCategory(null);
     setSelectedSubject(null);
@@ -183,6 +188,7 @@ const FilterdExamCard = () => {
     setShowCategoryPanel(true);
     setShowSubjectPanel(false);
     setShowLevelPanel(false);
+    setShowInterviewPanel(false);
   };
 
   const handleExam = async () => {
@@ -208,7 +214,7 @@ const FilterdExamCard = () => {
         } else {
           setShowVerificationCard(false);
         }
-        // setIsExamCenterModalOpen(true);
+        setIsExamCenterModalOpen(true);
       } catch (err) {
         setErrors("Failed to check exam status. Please try again.");
       }
@@ -263,6 +269,11 @@ const FilterdExamCard = () => {
   const handleBackToSubjects = () => {
     setShowSubjectPanel(true);
     setShowLevelPanel(false);
+  };
+
+  const handleBackToLevels = () => {
+    setShowLevelPanel(true);
+    setShowInterviewPanel(false);
   };
 
   const pageTransition = {
@@ -529,7 +540,7 @@ const FilterdExamCard = () => {
                       </div>
                       <div className="ml-3 flex-1 text-success">
                         <h3 className="text-sm sm:text-base font-semibold">
-                          Congratulations! You're now eligible for Level 2.5 (from Exam Center) and Interview Scheduling.
+                          Congratulations! You're now eligible for Level 2 (from Exam Center) and Interview Scheduling.
                         </h3>
                         <p className="mt-1 text-xs sm:text-sm text-text">
                           You've passed Level 2. You can now take at an exam center for in-person verification, and you're also eligible to schedule your interview!
@@ -590,15 +601,7 @@ const FilterdExamCard = () => {
                             <div className="flex-1">
                               <div className="flex flex-col sm:flex-row justify-between items-start gap-1 mb-1.5 sm:mb-2"> {/* Adjust layout/gap */}
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">{level?.name}</h3> {/* Adjust text size */}
-                                {/* {level?.level_code && (
-                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full order-none sm:order-1 ${ // Adjust padding
-                                    level?.level_code === 1.0 ? 'bg-sky-100 text-sky-700' // Changed from blue
-                                    : level?.level_code === 2.0 ? 'bg-cyan-100 text-cyan-700' // Changed from purple
-                                    : 'bg-amber-100 text-amber-700' // Kept amber
-                                  }`}>
-                                    Level {level?.level_code}
-                                  </span>
-                                )} */}
+
                               </div>
                               <p className="text-sm text-gray-600 mb-2 sm:mb-3">
                                 {level?.level_code === 1.0 && "Basic concepts assessment for beginners"}
@@ -637,7 +640,83 @@ const FilterdExamCard = () => {
                       </motion.button>
                     );
                   })}
+
+                  {/* Interview Assessment Card - Integrated into the grid */}
+                  {checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0) && (
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleInterviewSelect}
+                      className="rounded-lg border-2 border-cyan-200 bg-cyan-50/50 hover:border-cyan-400 hover:bg-cyan-50 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+                    >
+                      <div className="p-4 sm:p-5">
+                        <div className="flex items-start">
+                          <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-1 mb-1.5 sm:mb-2">
+                              <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">Interview Assessment</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2 sm:mb-3">
+                              Schedule and manage your interview for final verification.
+                            </p>
+
+                            <div className="flex flex-wrap gap-2">
+                              {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) ? (
+                                <div className={`flex items-center py-1 px-2.5 rounded-md border text-xs ${getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'fulfilled' ? 'text-green-700 bg-green-100 border-green-200'
+                                  : getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'scheduled' ? 'text-primary bg-primary/10 border-primary/30'
+                                    : 'text-amber-700 bg-amber-100 border-amber-200'
+                                  }`}>
+                                  <span className="font-medium">
+                                    Status: {getInterviewStatus(selectedCategory?.id, selectedSubject?.id).charAt(0).toUpperCase() + getInterviewStatus(selectedCategory?.id, selectedSubject?.id).slice(1)}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center text-cyan-700 bg-cyan-100 py-1 px-2.5 rounded-md border border-cyan-200 text-xs">
+                                  <FaCalendarAlt className="mr-1.5" aria-hidden="true" />
+                                  <span className="font-medium">Schedule Now</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.button>
+                  )}
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Interview Panel */}
+          {showInterviewPanel && (
+            <motion.div
+              key="interview"
+              {...pageTransition}
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8"
+            >
+              <div className="bg-background p-4 sm:p-6 text-text border-b border-gray-100">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg sm:text-xl font-bold flex items-center">
+                    <FaCalendarAlt className="mr-2 sm:mr-3" aria-hidden="true" />
+                    Interview Assessment
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleBackToLevels}
+                    className="bg-primary text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                    aria-label="Back to levels"
+                  >
+                    <FaChevronLeft className="mr-1" aria-hidden="true" />
+                    Back
+                  </button>
+                </div>
+                <p className="text-text mt-1 text-sm sm:text-base">
+                  Manage your interview for <span className="font-medium">{selectedSubject?.subject_name}</span>
+                </p>
+              </div>
+
+              <div className="p-0">
+                <InterviewCard />
               </div>
             </motion.div>
           )}
@@ -735,7 +814,7 @@ const FilterdExamCard = () => {
         )}
 
         {/* Exam Ready Section */}
-        {examReady && !error && (
+        {examReady && !error && !showInterviewPanel && (
           <motion.div
             id="exam-ready-section"
             ref={examReadyRef}
