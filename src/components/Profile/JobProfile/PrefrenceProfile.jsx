@@ -5,17 +5,23 @@ import {
   getClassCategory,
   getJob,
   getPrefrence,
-  getSubject,
   postPrefrence,
-  getTeacherjobType,
 } from "../../../features/jobProfileSlice";
-import { updateTeacherPrefrence } from "../../../services/jobProfileService";
-import { HiOutlineExclamationCircle, HiOutlinePencil, HiOutlineArrowRight, HiOutlineArrowLeft, HiOutlineCheck, HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineUserGroup } from "react-icons/hi";
-import { HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineExclamationCircle,
+  HiOutlinePencil,
+  HiOutlineArrowRight,
+  HiOutlineArrowLeft,
+  HiOutlineCheck,
+  HiOutlineAcademicCap,
+  HiOutlineBookOpen,
+  HiOutlineUserGroup,
+  HiOutlineXMark
+} from "react-icons/hi2";
 import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getLevels } from "../../../features/examQuesSlice";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PrefrenceProfile = ({ forceEdit = false }) => {
   const dispatch = useDispatch();
@@ -53,8 +59,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     },
     mode: "onChange",
   });
-
-  const jobRoles = watch("job_role");
 
   // Update form with fetched preferences
   useEffect(() => {
@@ -107,20 +111,20 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
   const validateStep = async () => {
     let isValid = false;
-    
+
     switch (currentStep) {
       case 1:
         isValid = await trigger("class_category");
-        if (!isValid) toast.error("Please select at least one class category / कम से कम एक कक्षा श्रेणी चुनें");
+        if (!isValid) toast.error("Please select at least one class category");
         break;
       case 2:
         isValid = await trigger("prefered_subject");
-        if (!isValid) toast.error("Please select at least one subject / कम से कम एक विषय चुनें");
+        if (!isValid) toast.error("Please select at least one subject");
         break;
       case 3:
         const jobRoleValues = getValues("job_role");
         if (!jobRoleValues || jobRoleValues.length === 0) {
-          toast.error("Please select at least one job role / कम से कम एक नौकरी की भूमिका चुनें");
+          toast.error("Please select at least one job role");
           isValid = false;
         } else {
           isValid = true;
@@ -129,7 +133,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       default:
         isValid = true;
     }
-    
+
     return isValid;
   };
 
@@ -152,31 +156,42 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
     setIsLoading(true);
     try {
-      dispatch(postPrefrence(data));
+      await dispatch(postPrefrence(data)).unwrap();
       fetchPreferences();
       setIsEditingPrefrence(false);
-      setCurrentStep(1); // Reset to first step
-      toast.success("Job preferences updated successfully! / नौकरी की प्राथमिकताएं सफलतापूर्वक अपडेट की गईं!");
+      setCurrentStep(1);
+      toast.success("Job preferences updated successfully!");
+
+      // Reload the page to update dashboard state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
-        "Failed to update preferences / प्राथमिकताओं को अपडेट करने में विफल";
+        "Failed to update preferences";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const steps = [
+    { id: 1, title: "Class Category", icon: HiOutlineAcademicCap, desc: "Select levels" },
+    { id: 2, title: "Subjects", icon: HiOutlineBookOpen, desc: "Choose subjects" },
+    { id: 3, title: "Job Role", icon: HiOutlineUserGroup, desc: "Define role" },
+  ];
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
-      <ToastContainer 
-        position="top-right" 
-        autoClose={1000} 
-        closeButton={true}
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
-        closeOnClick={true}
+        closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
@@ -184,24 +199,26 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         theme="light"
       />
       {isLoading && <Loader />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-200 px-4 pt-4">
-        <div className="sm:mb-0">
-          <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
-            <HiOutlineAcademicCap className="w-7 h-7 text-text" />
-            Teaching Preferences / शिक्षण प्राथमिकताएं
+
+      {/* Header */}
+      <div className="bg-white p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <HiOutlineAcademicCap className="w-6 h-6 text-primary" />
+            Teaching Preferences
           </h2>
-          <p className="text-xs sm:text-sm text-secondary ml-9">
-            Manage your teaching preferences / अपनी शिक्षण प्राथमिकताओं को प्रबंधित करें
+          <p className="text-sm text-gray-500 mt-1">
+            Manage your teaching profile and preferences
           </p>
         </div>
         {!forceEdit && (
           !isEditingPrefrence ? (
             <button
-              className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-all"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors"
               onClick={() => setIsEditingPrefrence(true)}
             >
               <HiOutlinePencil className="w-4 h-4" />
-              <span>Edit / संपादित करें</span>
+              <span>Edit Preferences</span>
             </button>
           ) : (
             <button
@@ -209,399 +226,279 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                 setIsEditingPrefrence(false);
                 setCurrentStep(1);
               }}
-              className="flex items-center justify-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-text bg-white border-2 border-gray-300 hover:border-gray-400 rounded-lg transition-all"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors"
             >
               <HiOutlineXMark className="w-4 h-4" />
-              <span>Close / बंद करें</span>
+              <span>Cancel</span>
             </button>
           )
         )}
       </div>
 
-      <div className="px-4 pb-4">
-        <div className="mb-3">
+      <div className="p-5">
         {!isEditingPrefrence && !forceEdit ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              {[
-                {
-                  title: "कक्षा श्रेणी / Class Category",
-                  type: "category",
-                  icon: HiOutlineAcademicCap,
-                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
-                  borderColor: "border-[#3E98C7]/30",
-                  value:
-                    teacherprefrence?.class_category?.length > 0
-                      ? teacherprefrence.class_category.map(
-                          (class_category) => class_category.name + " class"
-                        )
-                      : ["Not Provided"],
-                },
-               
-                {
-                  title: "विषय / Subject",
-                  type: "subject",
-                  icon: HiOutlineBookOpen,
-                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
-                  borderColor: "border-[#3E98C7]/30",
-                  value:
-                    teacherprefrence?.prefered_subject?.length > 0
-                      ? (teacherprefrence.class_category || []).map(
-                          (category) => ({
-                            categoryName: category.name,
-                            subjects: teacherprefrence.prefered_subject
-                              .filter((subject) =>
-                                category.subjects?.some(
-                                  (catSubject) => catSubject.id === subject.id
-                                )
-                              )
-                              .map((subject) => subject.subject_name),
-                          })
-                        )
-                      : [
-                          {
-                            categoryName: "No Category",
-                            subjects: ["Not Provided"],
-                          },
-                        ],
-                },
-                 {
-                  title: "नौकरी की भूमिका / Job Role",
-                  type: "role",
-                  icon: HiOutlineUserGroup,
-                  color: "from-[#3E98C7]/10 to-[#67B3DA]/10",
-                  borderColor: "border-[#3E98C7]/30",
-                  value:
-                    teacherprefrence?.job_role?.length > 0
-                      ? teacherprefrence.job_role.map(
-                          (jobrole) => jobrole.jobrole_name
-                        )
-                      : ["Teacher"],
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-background p-3 sm:p-4 rounded-lg border border-gray-200 hover:border-accent/50 transition-all"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <item.icon className="w-6 h-6 text-accent" />
-                    <h3 className="text-sm sm:text-base font-bold text-text">
-                      {item.title}
-                    </h3>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {item.type === "subject" ? (
-                      item.value.map((category, categoryIndex) => (
-                        <div key={categoryIndex} className="mb-2">
-                          <h4 className="text-xs font-semibold text-secondary mb-1.5 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-accent rounded-full"></span>
-                            {category.categoryName}
-                          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                title: "Class Categories",
+                icon: HiOutlineAcademicCap,
+                value: teacherprefrence?.class_category?.length > 0
+                  ? teacherprefrence.class_category.map(c => c.name)
+                  : ["Not Provided"],
+                type: "tags"
+              },
+              {
+                title: "Preferred Subjects",
+                icon: HiOutlineBookOpen,
+                value: teacherprefrence?.prefered_subject?.length > 0
+                  ? (teacherprefrence.class_category || []).map(cat => ({
+                    category: cat.name,
+                    subjects: teacherprefrence.prefered_subject
+                      .filter(sub => cat.subjects?.some(s => s.id === sub.id))
+                      .map(s => s.subject_name)
+                  }))
+                  : [],
+                type: "grouped"
+              },
+              {
+                title: "Job Roles",
+                icon: HiOutlineUserGroup,
+                value: teacherprefrence?.job_role?.length > 0
+                  ? teacherprefrence.job_role.map(r => r.jobrole_name)
+                  : ["Teacher"],
+                type: "tags"
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-lg border border-gray-200 p-4"
+              >
+                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                  <item.icon className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold text-gray-800 text-sm">{item.title}</h3>
+                </div>
+
+                <div className="space-y-2">
+                  {item.type === "grouped" ? (
+                    item.value.length > 0 ? (
+                      item.value.map((group, i) => (
+                        <div key={i} className="mb-2 last:mb-0">
+                          <div className="text-xs font-semibold text-gray-500 mb-1.5">
+                            {group.category}
+                          </div>
                           <div className="flex flex-wrap gap-1.5">
-                            {category.subjects.map(
-                              (subjectName, subjectIndex) => (
-                                <span
-                                  key={subjectIndex}
-                                  className="px-2 py-1 bg-white text-primary border border-gray-200 rounded-md text-xs font-medium hover:border-accent transition-colors"
-                                >
-                                  {subjectName}
-                                </span>
-                              )
-                            )}
+                            {group.subjects.map((sub, j) => (
+                              <span key={j} className="px-2 py-0.5 bg-gray-50 border border-gray-200 rounded text-xs font-medium text-gray-700">
+                                {sub}
+                              </span>
+                            ))}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.value.map((val, i) => (
-                          <span
-                            key={i}
-                            className="px-2 py-1 bg-white text-primary border border-gray-200 rounded-md text-xs font-medium hover:border-accent transition-colors"
-                          >
-                            {val}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white">
-            <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-              }
-            }} className="space-y-4">
-              {/* Stepper Header */}
-              <div className="bg-background p-3 sm:p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-                    <React.Fragment key={step}>
-                      <div className="flex flex-col items-center">
-                        <div
-                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-base font-bold transition-all ${
-                            currentStep > step
-                              ? "bg-success text-white"
-                              : currentStep === step
-                              ? "bg-primary text-white ring-4 ring-primary/20"
-                              : "bg-gray-200 text-secondary"
-                          }`}
-                        >
-                          {currentStep > step ? <HiOutlineCheck className="w-6 h-6" /> : step}
-                        </div>
-                        <span className={`text-xs mt-1.5 font-medium hidden sm:block transition-colors ${
-                          currentStep === step ? "text-primary font-bold" : currentStep > step ? "text-success" : "text-secondary"
-                        }`}>
-                          {step === 1 && "Class"}
-                          {step === 2 && "Subject"}
-                          {step === 3 && "Role"}
+                      <p className="text-sm text-gray-400 italic">No preferences set</p>
+                    )
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.value.map((val, i) => (
+                        <span key={i} className="px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-medium text-gray-700">
+                          {val}
                         </span>
-                      </div>
-                      {step < totalSteps && (
-                        <div className={`flex-1 h-1.5 mx-2 sm:mx-3 rounded-full transition-all duration-500 ${
-                          currentStep > step ? "bg-success" : "bg-gray-300"
-                        }`} />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
-                  <div 
-                    className="bg-primary h-1.5 rounded-full transition-all duration-500"
-                    style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                  />
-                </div>
-                
-                {/* Mobile Step Labels */}
-                <div className="block sm:hidden text-center">
-                  <p className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg inline-block">
-                    Step {currentStep} of {totalSteps}:{" "}
-                    {currentStep === 1 && "Class / कक्षा"}
-                    {currentStep === 2 && "Subject / विषय"}
-                    {currentStep === 3 && "Role / भूमिका"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Step Content */}
-              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 min-h-[280px]">
-                {currentStep === 1 && (
-                  <div className="space-y-2 animate-fadeIn">
-                    <div className="mb-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <HiOutlineAcademicCap className="w-7 h-7 text-primary" />
-                        <h3 className="text-lg sm:text-xl font-bold text-text">
-                          Select Class Category / कक्षा श्रेणी चुनें
-                        </h3>
-                      </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-9">
-                        Choose the educational levels / शिक्षा के स्तर का चयन करें
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
-                      {category?.map((cat) => (
-                        <label
-                          key={cat.id}
-                          className="flex items-center space-x-2 p-2.5 sm:p-3 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            {...register("class_category", {
-                              required: "Please select at least one class category / कम से कम एक कक्षा श्रेणी चुनें",
-                            })}
-                            value={cat.id}
-                            className="h-4 w-4 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary transition-all"
-                          />
-                          <span className="text-xs sm:text-sm text-text font-semibold">
-                            {cat.name}
-                          </span>
-                        </label>
                       ))}
                     </div>
-                    {errors.class_category && (
-                      <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
-                        {errors.class_category.message}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}>
+              {/* Stepper */}
+              <div className="mb-6 border-b border-gray-200 pb-6">
+                <div className="flex items-center justify-between max-w-2xl mx-auto relative">
+                  <div className="absolute left-0 top-4 w-full h-0.5 bg-gray-200 -z-10" />
 
-                {/* Step 2: Preferred Subjects */}
-                {currentStep === 2 && (
-                  <div className="space-y-2 animate-fadeIn">
-                    <div className="mb-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <HiOutlineBookOpen className="w-7 h-7 text-primary" />
-                        <h3 className="text-lg sm:text-xl font-bold text-text">
-                          Select Preferred Subjects / पसंदीदा विषय चुनें
-                        </h3>
+                  {steps.map((step) => (
+                    <div key={step.id} className="flex flex-col items-center bg-white px-2">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors duration-200 ${currentStep >= step.id
+                            ? "bg-primary border-primary text-white"
+                            : "bg-white border-gray-300 text-gray-400"
+                          }`}
+                      >
+                        {currentStep > step.id ? (
+                          <HiOutlineCheck className="w-5 h-5" />
+                        ) : (
+                          <span className="text-sm font-bold">{step.id}</span>
+                        )}
                       </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-9">
-                        Choose subjects you can teach / जो विषय आप पढ़ा सकते हैं उन्हें चुनें
-                      </p>
-                    </div>
-                    <div className="space-y-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
-                      {selectedClassCategories.length === 0 ? (
-                        <div className="text-center py-8">
-                          <HiOutlineAcademicCap className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-                          <p className="text-xs sm:text-sm text-secondary font-medium">
-                            Please select class categories first / पहले कक्षा श्रेणी का चयन करें
-                          </p>
-                        </div>
-                      ) : (
-                        selectedClassCategories.map((catId) => {
-                          const categoryObj = category?.find(
-                            (c) => c.id === Number(catId)
-                          );
-                          if (!categoryObj) return null;
-
-                          return (
-                            <div key={categoryObj.id} className="space-y-2 bg-background p-2.5 rounded-lg border border-gray-200">
-                              <h4 className="text-xs sm:text-sm font-bold text-primary mb-2 pb-1.5 border-b border-gray-200 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-accent rounded-full"></span>
-                                {categoryObj.name}
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {categoryObj.subjects?.map((sub) => (
-                                  <label
-                                    key={sub.id}
-                                    className="flex items-center space-x-2 p-2 sm:p-2.5 bg-white rounded-lg hover:bg-primary/5 border border-gray-200 hover:border-primary transition-all cursor-pointer"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      {...register("prefered_subject", {
-                                        required: "Please select at least one subject / कम से कम एक विषय चुनें",
-                                      })}
-                                      value={sub.id}
-                                      className="h-4 w-4 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary transition-all"
-                                    />
-                                    <span className="text-xs sm:text-sm text-text font-medium">
-                                      {sub.subject_name}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                    {errors.prefered_subject && (
-                      <div className="text-red-500 text-sm flex items-center mt-2">
-                        <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
-                        {errors.prefered_subject.message}
+                      <div className="mt-2 text-center">
+                        <p className={`text-xs font-semibold ${currentStep >= step.id ? "text-primary" : "text-gray-500"
+                          }`}>
+                          {step.title}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Step 3: Job Role */}
-                {currentStep === 3 && (
-                  <div className="space-y-2 animate-fadeIn">
-                    <div className="mb-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <HiOutlineUserGroup className="w-7 h-7 text-primary" />
-                        <h3 className="text-lg sm:text-xl font-bold text-text">
-                          Select Job Role / नौकरी की भूमिका चुनें
-                        </h3>
-                      </div>
-                      <p className="text-xs sm:text-sm text-secondary ml-9">
-                        Teacher is required, can add additional roles / शिक्षक आवश्यक है, अतिरिक्त भूमिकाएं जोड़ सकते हैं
-                      </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[240px] overflow-y-auto p-1.5 pr-2 custom-scrollbar">
-                      {jobRole
-                        ?.slice()
-                        .sort((a, b) =>
-                          a.jobrole_name.localeCompare(b.jobrole_name)
-                        )
-                        ?.map((role) => (
-                          <label
-                            key={role.id}
-                            className={`flex items-center space-x-2 p-2.5 sm:p-3 rounded-lg border transition-all "bg-white hover:bg-primary/5 border-gray-200 hover:border-primary cursor-pointer"
-                            `}
-                          >
-                            <input
-                              type="checkbox"
-                              {...register("job_role")}
-                              value={role.id}
-                              className="h-4 w-4 text-primary border-2 border-gray-300 rounded focus:ring-2 focus:ring-primary transition-all"
-                            />
-                            <span className="text-xs sm:text-sm text-text font-semibold">
-                              {role.jobrole_name}
-                              
-                            </span>
-                          </label>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                {currentStep === 3 && errors.job_role && (
-                  <div className="text-red-500 text-sm flex items-center mt-2">
-                    <HiOutlineExclamationCircle className="mr-1.5 h-4 w-4" />
-                    {errors.job_role.message}
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 p-2 sm:p-3 bg-background rounded-lg border border-gray-200">
-                {!forceEdit && (
+              {/* Form Content */}
+              <div className="min-h-[350px] flex flex-col">
+                <div className="flex-1 mb-6">
+                  <AnimatePresence mode="wait">
+                    {currentStep === 1 && (
+                      <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Select Class Categories</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
+                          {category?.map((cat) => (
+                            <label
+                              key={cat.id}
+                              className={`flex items-center p-3 rounded-md border cursor-pointer transition-colors ${watch("class_category")?.includes(String(cat.id))
+                                  ? "border-primary bg-primary/5"
+                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                }`}
+                            >
+                              <input
+                                type="checkbox"
+                                {...register("class_category", { required: "Select at least one category" })}
+                                value={cat.id}
+                                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                              />
+                              <span className="ml-3 text-sm font-medium text-gray-700">{cat.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Select Subjects</h3>
+                        <div className="space-y-4 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
+                          {selectedClassCategories.map((catId) => {
+                            const categoryObj = category?.find(c => c.id === Number(catId));
+                            if (!categoryObj) return null;
+                            return (
+                              <div key={categoryObj.id} className="border border-gray-200 rounded-md p-3">
+                                <h4 className="font-semibold text-gray-800 mb-2 text-sm bg-gray-50 p-2 rounded">
+                                  {categoryObj.name}
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {categoryObj.subjects?.map((sub) => (
+                                    <label
+                                      key={sub.id}
+                                      className={`flex items-center p-2 rounded border cursor-pointer transition-colors ${watch("prefered_subject")?.includes(String(sub.id))
+                                          ? "border-primary bg-primary/5"
+                                          : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        {...register("prefered_subject", { required: "Select at least one subject" })}
+                                        value={sub.id}
+                                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                      />
+                                      <span className="ml-2 text-sm text-gray-700">{sub.subject_name}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <motion.div
+                        key="step3"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Select Job Roles</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
+                          {jobRole?.slice().sort((a, b) => a.jobrole_name.localeCompare(b.jobrole_name))?.map((role) => (
+                            <label
+                              key={role.id}
+                              className={`flex items-center p-3 rounded-md border cursor-pointer transition-colors ${watch("job_role")?.includes(String(role.id))
+                                  ? "border-primary bg-primary/5"
+                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                }`}
+                            >
+                              <input
+                                type="checkbox"
+                                {...register("job_role", { required: "Select at least one role" })}
+                                value={role.id}
+                                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                              />
+                              <span className="ml-3 text-sm font-medium text-gray-700">{role.jobrole_name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Footer / Navigation */}
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsEditingPrefrence(false);
-                      setCurrentStep(1);
-                      fetchPreferences();
-                    }}
-                    className="order-3 sm:order-1 w-full sm:w-auto px-4 py-2 text-xs sm:text-sm font-semibold text-text bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all"
+                    onClick={currentStep === 1 ? () => setIsEditingPrefrence(false) : handleBack}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-2"
                   >
-                    Cancel / रद्द करें
+                    <HiOutlineArrowLeft className="w-4 h-4" />
+                    {currentStep === 1 ? "Cancel" : "Back"}
                   </button>
-                )}
 
-                <div className="order-1 sm:order-2 flex gap-2 w-full sm:w-auto">
-                  {currentStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={handleBack}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-primary bg-white border-2 border-primary rounded-lg hover:bg-primary/5 transition-all"
-                    >
-                      <HiOutlineArrowLeft className="w-4 h-4" />
-                      <span>Back / पीछे</span>
-                    </button>
-                  )}
-
-                  {currentStep < totalSteps ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition-all"
-                    >
-                      <span>Next / आगे</span>
-                      <HiOutlineArrowRight className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-success hover:bg-success/90 rounded-lg transition-all"
-                    >
-                      <HiOutlineCheck className="w-4 h-4" />
-                      <span>Save / सहेजें</span>
-                    </button>
-                  )}
+                  <div className="flex gap-3">
+                    {currentStep < totalSteps ? (
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors flex items-center gap-2"
+                      >
+                        Next
+                        <HiOutlineArrowRight className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md shadow-sm transition-colors flex items-center gap-2"
+                      >
+                        {isLoading ? (
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <HiOutlineCheck className="w-4 h-4" />
+                            Save
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </form>
           </div>
         )}
-        </div>
       </div>
     </div>
   );

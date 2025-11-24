@@ -865,7 +865,7 @@ const FilterdExamCard = () => {
 
               {/* Helpful note */}
               <div className="mb-4 sm:mb-6 text-xs sm:text-sm text-gray-600">
-                {selectedLevel?.level_code === 2 ? (
+                {selectedLevel?.level_code == 2.5 ? (
                   <>
                     • You've selected a Center Exam. You'll need to select a center and verify your passcode.
                     <br className="hidden sm:block" />
@@ -900,7 +900,7 @@ const FilterdExamCard = () => {
                   onClick={handleExam}
                   className="w-full sm:w-auto px-6 sm:px-7 py-2.5 bg-primary hover:opacity-90 text-white rounded-md border border-transparent transition-all font-semibold flex items-center justify-center text-sm"
                 >
-                  {selectedLevel?.level_code === 2 ? 'Proceed to Center Selection / केंद्र चयन के लिए आगे बढ़ें' : 'Start Exam / परीक्षा शुरू करें'}
+                  {selectedLevel?.level_code === 2.5 ? 'Proceed to Center Selection / केंद्र चयन के लिए आगे बढ़ें' : 'Start Exam / परीक्षा शुरू करें'}
                   <FaArrowRight className="ml-2" aria-hidden="true" />
                 </motion.button>
               </div>
