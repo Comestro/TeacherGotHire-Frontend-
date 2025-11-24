@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { forgetPassword } from '../services/authServices';
 import Button from './Button';
-import { FaCheckCircle, FaTimesCircle, FaArrowLeft } from 'react-icons/fa';
+import Input from './Input';
+import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaEnvelope } from 'react-icons/fa';
 import { Helmet } from 'react-helmet-async';
 import CustomHeader from './commons/CustomHeader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
+import Loader from './Loader';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -45,212 +47,205 @@ const ForgotPassword = () => {
         <title>PTPI | Forgot Password</title>
       </Helmet>
       <CustomHeader />
+      {loading && <Loader />}
       <ToastContainer />
-      <div
-        className="flex min-h-screen bg-cover bg-no-repeat bg-center"
-        style={{ backgroundImage: 'url("/bg.png")' }}
-      >
-        {/* Form Container */}
-        <div className="w-full md:w-1/2 flex justify-center md:pl-16 lg:pl-24 xl:pl-32 mt-16 md:mt-0">
-          <div className="w-full max-w-md bg-white rounded-xl p-6 sm:p-8">
-            <div className="space-y-2 mb-6">
-              <Link
-                to="/signin"
-                className="inline-flex items-center text-teal-600 hover:text-teal-700 transition-colors mb-4"
-              >
-                <FaArrowLeft className="mr-2" />
-                Back to Login
-              </Link>
-              <h2 className="font-bold text-gray-500 text-2xl sm:text-3xl leading-tight">
-                Forgot Your <span className="text-teal-600">Password?</span>
-              </h2>
-              <p className="text-gray-600">
-                No worries! Enter your email and we'll send you a reset link.
-              </p>
-            </div>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/30 to-cyan-200/30 blur-3xl animate-float" />
+          <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-l from-purple-200/30 to-indigo-200/30 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-t from-emerald-200/30 to-lime-200/30 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+        </div>
 
-            {sent ? (
-              <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md mb-4">
-                <div className="flex items-start gap-3">
-                  <FaCheckCircle className="text-green-600 mt-1" />
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
+
+            {/* Left Side: Hero Content (Hidden on mobile) */}
+            <div className="hidden md:block w-1/2 space-y-8 animate-slide-up">
+              <div className="space-y-4">
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+                  Recover Your <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">
+                    Account Access
+                  </span>
+                </h1>
+                <p className="text-lg text-gray-600 max-w-md">
+                  Don't worry, it happens to the best of us. We'll help you get back to your teaching journey in no time.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                    <span className="font-bold text-xl">1</span>
+                  </div>
                   <div>
-                    <p className="font-semibold">Check your email</p>
-                    <p className="text-sm">We sent a password reset link to <span className="font-medium">{sentEmail}</span>. Please check your inbox (and spam) and follow the instructions.</p>
-                    <div className="mt-3 flex items-center gap-4">
-                      <Link to="/signin" className="text-teal-600 hover:underline">Back to login</Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // allow user to send again: prefill email and show form
-                          setEmail(sentEmail);
-                          setSent(false);
-                        }}
-                        className="text-sm text-gray-600 hover:underline"
-                      >
-                        Send again
-                      </button>
-                    </div>
+                    <h3 className="font-bold text-gray-800">Enter Email</h3>
+                    <p className="text-sm text-gray-500">Provide your registered email address</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <span className="font-bold text-xl">2</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">Check Inbox</h3>
+                    <p className="text-sm text-gray-500">Receive a secure password reset link</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                    <span className="font-bold text-xl">3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">Reset Password</h3>
+                    <p className="text-sm text-gray-500">Create a new password and log in</p>
                   </div>
                 </div>
               </div>
-            ) : null}
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-              {/* Email */}
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-700 mb-1.5"
-                  htmlFor="email"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className={`w-full border-2 text-sm rounded-xl p-3 pr-10 transition-colors ${
-                      email
-                        ? isEmailValid(email)
-                          ? "border-teal-600 focus:border-teal-600"
-                          : "border-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:border-teal-600"
-                    }`}
-                    required
-                  />
-                  {email && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {isEmailValid(email) ? (
-                        <FaCheckCircle className="text-teal-600" />
-                      ) : (
-                        <FaTimesCircle className="text-red-500" />
+            {/* Right Side: Form */}
+            <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
+              <div className="glass rounded-2xl p-8 sm:p-10 relative overflow-hidden">
+                {/* Decorative top gradient */}
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-cyan-500" />
+
+                <div className="space-y-2 mb-8">
+                  <Link
+                    to="/signin"
+                    className="inline-flex items-center text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors mb-4 group"
+                  >
+                    <FaArrowLeft className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
+                    Back to Login
+                  </Link>
+                  <h2 className="text-3xl font-bold text-gray-800">
+                    Forgot Password?
+                  </h2>
+                  <p className="text-gray-500">
+                    Enter your email to receive a reset link
+                  </p>
+                </div>
+
+                {sent ? (
+                  <div className="bg-teal-50/50 border border-teal-100 rounded-xl p-6 text-center animate-fadeIn">
+                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FaEnvelope className="text-teal-600 text-2xl" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">Check your email</h3>
+                    <p className="text-gray-600 text-sm mb-6">
+                      We sent a password reset link to <br />
+                      <span className="font-medium text-teal-700">{sentEmail}</span>
+                    </p>
+
+                    <div className="space-y-3">
+                      <Button
+                        onClick={() => window.open('https://gmail.com', '_blank')}
+                        className="w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition-colors font-medium"
+                      >
+                        Open Email App
+                      </Button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail(sentEmail);
+                          setSent(false);
+                        }}
+                        className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
+                      >
+                        Click to send again
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-700 ml-1">Email Address</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <FaEnvelope className="text-gray-400" />
+                        </div>
+                        <Input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className={`w-full pl-11 pr-10 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${email
+                              ? isEmailValid(email)
+                                ? "border-teal-500 bg-teal-50/30"
+                                : "border-red-300 bg-red-50/30"
+                              : "border-gray-200"
+                            }`}
+                          required
+                        />
+                        {email && (
+                          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            {isEmailValid(email) ? (
+                              <FaCheckCircle className="text-teal-500" />
+                            ) : (
+                              <FaTimesCircle className="text-red-500" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {email && !isEmailValid(email) && (
+                        <p className="text-red-500 text-xs mt-1 ml-1">Please enter a valid email address</p>
                       )}
                     </div>
-                  )}
-                </div>
-                {email && !isEmailValid(email) && (
-                  <p className="mt-1 text-sm text-red-600">
-                    Please enter a valid email address
-                  </p>
+
+                    <Button
+                      type="submit"
+                      className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!email || !isEmailValid(email) || loading
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                        }`}
+                      disabled={!email || !isEmailValid(email) || loading}
+                    >
+                      {loading ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending Link...
+                        </span>
+                      ) : "Send Reset Link"}
+                    </Button>
+                  </form>
                 )}
+
+                <div className="mt-8">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-4 bg-white text-gray-500 font-medium">Or register as</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <Link
+                      to="/signup/teacher"
+                      className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-teal-300 transition-all"
+                    >
+                      Teacher
+                    </Link>
+                    <Link
+                      to="/signup/recruiter"
+                      className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-teal-300 transition-all"
+                    >
+                      Recruiter
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 flex items-center justify-center ${
-                  !email || !isEmailValid(email) || loading
-                    ? "opacity-60 cursor-not-allowed"
-                    : "hover:bg-teal-700"
-                }`}
-                disabled={!email || !isEmailValid(email) || loading}
-              >
-                {loading ? (
-                  <svg
-                    className="animate-spin h-5 w-5 text-white mr-2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    ></path>
-                  </svg>
-                ) : null}
-                {loading ? "Sending..." : "Send Reset Link"}
-              </Button>
-            </form>
-
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center">
-                <hr className="flex-grow border-gray-300" />
-                <span className="px-4 text-sm text-gray-500">Or</span>
-                <hr className="flex-grow border-gray-300" />
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  onClick={() => window.location.href = '/signup/teacher'}
-                  textColor="text-teal-600"
-                  className="w-full bg-white border-2 border-teal-600 py-3 rounded-xl hover:bg-teal-50 transition duration-200"
-                >
-                  Register as Teacher
-                </Button>
-                <Button
-                  onClick={() => window.location.href = '/signup/recruiter'}
-                  textColor="text-teal-600"
-                  className="w-full bg-white border-2 border-teal-600 py-3 rounded-xl hover:bg-teal-50 transition duration-200"
-                >
-                  Register as Recruiter
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Timeline - Hidden on mobile, shown on md screens and up */}
-        <div className="hidden md:flex w-1/2 flex-col justify-center pl-16 lg:pl-24">
-          {/* Step 1 */}
-          <div className="flex items-start space-x-4 mb-8">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">
-                1
-              </div>
-              <div className="h-16 w-1 bg-teal-600"></div>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Enter Email
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Provide your registered email address
-              </p>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex items-start space-x-4 mb-8">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
-                2
-              </div>
-              <div className="h-16 w-1 bg-gray-300"></div>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Check Email
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Click the reset link sent to your email
-              </p>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex items-start space-x-4">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
-                3
-              </div>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Reset Password
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Create a new secure password
+              <p className="text-center text-gray-500 text-sm mt-8">
+                &copy; {new Date().getFullYear()} PTPI. All rights reserved.
               </p>
             </div>
           </div>

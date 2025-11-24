@@ -526,7 +526,7 @@ function Login() {
 
             {/* Right Side: Login Form */}
             <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="glass rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+              <div className="glass rounded-2xl p-8 sm:p-10 relative overflow-hidden">
                 {/* Decorative top gradient */}
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-cyan-500" />
 

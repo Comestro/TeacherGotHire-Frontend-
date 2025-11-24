@@ -1,127 +1,253 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../services/authServices';
 import Button from './Button';
-import { FaCheckCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import Input from './Input';
+import { FaCheckCircle, FaEye, FaEyeSlash, FaLock, FaTimesCircle } from 'react-icons/fa';
+import { Helmet } from 'react-helmet-async';
+import CustomHeader from './commons/CustomHeader';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Loader from './Loader';
 
 const ResetPassword = () => {
   const { uid, token } = useParams();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    let timer;
+    if (success && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (success && countdown === 0) {
+      navigate('/signin');
+    }
+    return () => clearInterval(timer);
+  }, [success, countdown, navigate]);
 
   const passwordStrength = (pwd) => {
-    if (!pwd) return { label: '', color: '' };
-    if (pwd.length >= 12 && /[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) return { label: 'Strong', color: 'bg-green-500' };
-    if (pwd.length >= 8) return { label: 'Medium', color: 'bg-yellow-400' };
-    return { label: 'Weak', color: 'bg-red-400' };
+    if (!pwd) return { label: '', color: '', score: 0 };
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    if (score >= 4) return { label: 'Strong', color: 'bg-green-500', score: 3 };
+    if (score >= 2) return { label: 'Medium', color: 'bg-yellow-400', score: 2 };
+    return { label: 'Weak', color: 'bg-red-400', score: 1 };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
+
     if (password !== confirmPassword) {
-      setMessage('Passwords do not match.');
+      toast.error('Passwords do not match.');
       return;
     }
 
     setLoading(true);
     try {
       await resetPassword(uid, token, password);
-      setMessage('Password reset successfully! Redirecting to sign in...');
-      setTimeout(() => navigate('/signin'), 1800);
+      setSuccess(true);
+      toast.success('Password reset successfully!');
     } catch (error) {
-      setMessage(error?.message || 'Something went wrong, please try again.');
+      toast.error(error?.message || 'Something went wrong, please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const strength = passwordStrength(password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white shadow-md rounded-xl overflow-hidden">
-        <div className="p-6">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-extrabold text-gray-800">Reset your password</h2>
-            <p className="text-sm text-gray-500 mt-2">Enter a new secure password for your account.</p>
-          </div>
+    <>
+      <Helmet>
+        <title>PTPI | Reset Password</title>
+      </Helmet>
+      <CustomHeader />
+      {loading && <Loader />}
+      <ToastContainer />
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/30 to-cyan-200/30 blur-3xl animate-float" />
+          <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-l from-purple-200/30 to-indigo-200/30 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-t from-emerald-200/30 to-lime-200/30 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+        </div>
 
-          {message && (
-            <div className={`mb-4 p-3 rounded-md ${message.toLowerCase().includes('success') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`} role="alert">
-              <div className="flex items-center gap-2">
-                {message.toLowerCase().includes('success') && <FaCheckCircle className="text-green-600" />}
-                <span className="text-sm">{message}</span>
-              </div>
-            </div>
-          )}
+        <div className="w-full max-w-md px-4 relative z-10">
+          <div className="glass rounded-2xl p-8 sm:p-10 relative overflow-hidden animate-slide-up">
+            {/* Decorative top gradient */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-cyan-500" />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">New password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full p-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-200"
-                  placeholder="Choose a strong password"
-                />
-                <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {strength.label && (
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="w-2/3 bg-gray-100 h-2 rounded-full overflow-hidden">
-                    <div className={`${strength.color} h-2`} style={{ width: strength.label === 'Strong' ? '100%' : strength.label === 'Medium' ? '66%' : '33%' }} />
-                  </div>
-                  <div className="text-xs text-gray-500 font-medium">{strength.label}</div>
+            {success ? (
+              <div className="text-center py-8 animate-fadeIn">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FaCheckCircle className="text-green-500 text-4xl" />
                 </div>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirm password</label>
-              <div className="relative">
-                <input
-                  type={showConfirm ? 'text' : 'password'}
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="w-full p-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-200"
-                  placeholder="Repeat your password"
-                />
-                <button type="button" onClick={() => setShowConfirm((s) => !s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
-                </button>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Password Reset!</h2>
+                <p className="text-gray-600 mb-6">
+                  Your password has been successfully updated. You can now log in with your new password.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Redirecting to login in <span className="font-bold text-teal-600">{countdown}s</span>...
+                </p>
+                <Button
+                  onClick={() => navigate('/signin')}
+                  className="mt-6 w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition-colors"
+                >
+                  Login Now
+                </Button>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-2 mb-8 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 mb-4">
+                    <FaLock className="text-teal-600 text-2xl" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-800">
+                    Reset Password
+                  </h2>
+                  <p className="text-gray-500">
+                    Create a new secure password for your account
+                  </p>
+                </div>
 
-            <div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2 rounded-xl transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
-              >
-                {loading ? 'Resetting...' : 'Reset password'}
-              </Button>
-            </div>
-          </form>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700 ml-1">New Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <FaLock className="text-gray-400" />
+                      </div>
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Choose a strong password"
+                        className={`w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${password ? "border-gray-300" : "border-gray-200"
+                          }`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
 
-          <div className="mt-4 text-center text-sm text-gray-500">
-            <Link to="/signin" className="text-teal-600 hover:underline">Back to sign in</Link>
+                    {/* Password Strength Indicator */}
+                    {password && (
+                      <div className="mt-2 px-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-500">Strength</span>
+                          <span className={`text-xs font-medium ${strength.color.replace('bg-', 'text-')}`}>
+                            {strength.label}
+                          </span>
+                        </div>
+                        <div className="flex h-1.5 w-full bg-gray-100 rounded-full overflow-hidden gap-1">
+                          <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 1 ? strength.color : 'bg-transparent'}`} style={{ width: '33%' }} />
+                          <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 2 ? strength.color : 'bg-transparent'}`} style={{ width: '33%' }} />
+                          <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 3 ? strength.color : 'bg-transparent'}`} style={{ width: '33%' }} />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Use 8+ chars with mix of letters, numbers & symbols
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700 ml-1">Confirm Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <FaLock className="text-gray-400" />
+                      </div>
+                      <Input
+                        type={showConfirm ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Repeat your password"
+                        className={`w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${confirmPassword && password === confirmPassword
+                            ? "border-teal-500 bg-teal-50/30"
+                            : confirmPassword
+                              ? "border-red-300 bg-red-50/30"
+                              : "border-gray-200"
+                          }`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+
+                      {confirmPassword && (
+                        <div className="absolute inset-y-0 right-12 pr-2 flex items-center pointer-events-none">
+                          {password === confirmPassword ? (
+                            <FaCheckCircle className="text-teal-500" />
+                          ) : (
+                            <FaTimesCircle className="text-red-500" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">Passwords do not match</p>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!password || !confirmPassword || password !== confirmPassword || loading
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                      }`}
+                    disabled={!password || !confirmPassword || password !== confirmPassword || loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Resetting Password...
+                      </span>
+                    ) : "Reset Password"}
+                  </Button>
+                </form>
+
+                <div className="mt-8 text-center">
+                  <Link
+                    to="/signin"
+                    className="text-sm font-medium text-gray-500 hover:text-teal-600 transition-colors"
+                  >
+                    Back to Sign In
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
+
+          <p className="text-center text-gray-500 text-sm mt-8">
+            &copy; {new Date().getFullYear()} PTPI. All rights reserved.
+          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
