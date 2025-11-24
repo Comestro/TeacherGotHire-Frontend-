@@ -251,6 +251,19 @@ const ExamPortal = () => {
         toast.warning("Developer tools are disabled.");
       }
 
+      // Disable F5 and Ctrl+R (Refresh)
+      if (e.keyCode === 116 || (e.ctrlKey && e.keyCode === 82)) {
+        e.preventDefault();
+        toast.warning("Page refresh is disabled.");
+      }
+
+      // Disable Esc (Attempt to prevent, though browser may override for fullscreen)
+      if (e.keyCode === 27) {
+        e.preventDefault();
+        // If Esc is pressed, we might lose fullscreen, so we warn
+        toast.warning("Exiting fullscreen is not allowed.");
+      }
+
       // Disable Copy/Paste shortcuts
       if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
         e.preventDefault();
@@ -305,8 +318,11 @@ const ExamPortal = () => {
 
     const handlePopState = (e) => {
       window.history.pushState(null, null, window.location.href);
+      // Try to re-enter fullscreen if we were in it (might be blocked by browser without user gesture)
+      enterFullscreen();
+
       setWarningCount(prev => prev + 1);
-      setSecurityViolation("Navigation is disabled. Use the 'Submit Exam' button to finish.");
+      setSecurityViolation("Navigation is disabled. You cannot go back during the exam.");
     };
 
     const handleBeforeUnload = (e) => {

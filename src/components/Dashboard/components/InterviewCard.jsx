@@ -379,7 +379,7 @@ const InterviewCard = () => {
           <span>इंटरव्यू प्रबंधन | Interview Management</span>
         </h1>
         <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
-          <span className="font-medium text-gray-700">अपना शिक्षण योग्यता इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।</span>
+          <span className="font-medium text-gray-700">इंटरव्यू शेड्यूल करें|</span>
           <br className="hidden sm:block" />
         </p>
       </div>

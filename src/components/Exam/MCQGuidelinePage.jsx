@@ -126,7 +126,7 @@ const MCQGuidelinePage = () => {
             <ul className="space-y-1 text-sm sm:text-base text-secondary">
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
-                <span>Ensure stable internet connection and use latest Chrome/Firefox browser</span>
+                <span>Ensure stable internet connection and use latest browser</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
@@ -135,10 +135,6 @@ const MCQGuidelinePage = () => {
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
                 <span>Read each question carefully before answering</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">•</span>
-                <span><strong>Cannot go back</strong> to previous questions once you proceed</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
@@ -177,10 +173,6 @@ const MCQGuidelinePage = () => {
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
                 <span>उत्तर देने से पहले प्रत्येक प्रश्न को ध्यानपूर्वक पढ़ें</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">•</span>
-                <span><strong>वापस नहीं जा सकते</strong> - एक बार आगे बढ़ने के बाद पिछले प्रश्न पर</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent mt-0.5">•</span>
