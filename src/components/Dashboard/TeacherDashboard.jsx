@@ -80,7 +80,6 @@ function TeacherDashboard() {
     }
   }, [profileStatus, basicData?.phone_number]);
 
-  // Check for pending passkey requests
   useEffect(() => {
     const checkForPendingPasskey = async () => {
         try {
@@ -244,7 +243,7 @@ function TeacherDashboard() {
                     <div className="w-full">
                       {passkeyStatus?.status === "fulfilled" ? (
                         <>
-                          <div className="text-xl font-semibold text-green-700">✅ पासकी स्वीकृत | Passkey Approved</div>
+                          <div className="text-xl font-semibold text-green-700">Level 2 (Exam from Center) Approved</div>
                           <div className="mt-2 text-gray-700">
                             <p className="mb-1">
                               <span className="font-medium">Exam Center: </span>
@@ -256,7 +255,7 @@ function TeacherDashboard() {
                               {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
                             </p>
                             <p className="text-sm text-gray-600 mt-2">
-                              आपका पासकी अनुरोध स्वीकृत हो गया है। अब आप परीक्षा केंद्र से सत्यापन कोड प्राप्त करके परीक्षा शुरू कर सकते हैं।
+                              आपका अनुरोध स्वीकृत हो गया है। अब आप परीक्षा केंद्र से परीक्षा शुरू कर सकते हैं।
                             </p>
                           </div>
                           <div className="mt-3">
@@ -274,7 +273,7 @@ function TeacherDashboard() {
                         </>
                       ) : (
                         <>
-                          <div className="text-xl font-semibold text-yellow-700">⏳ पासकी अनुरोध लंबित | Passkey Request Pending</div>
+                          <div className="text-xl font-semibold text-yellow-700">Level 2 (Exam from Center) Pending</div>
                           <div className="mt-2 text-gray-700">
                             <p className="mb-1">
                               <span className="font-medium">Exam Center: </span>
@@ -286,7 +285,7 @@ function TeacherDashboard() {
                               {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
                             </p>
                             <p className="text-sm text-gray-600 mt-2">
-                              आपका पासकी अनुरोध सबमिट हो चुका है और एडमिन की स्वीकृति की प्रतीक्षा में है। स्वीकृति मिलते ही आपको सूचित किया जाएगा।
+                              आपका अनुरोध सबमिट हो चुका है और एडमिन की स्वीकृति की प्रतीक्षा में है। स्वीकृति मिलते ही आपको सूचित किया जाएगा।
                             </p>
                           </div>
                           <div className="mt-3">
@@ -452,11 +451,10 @@ function TeacherDashboard() {
                         </div>
                       ) : isEligibleForInterview ? (
                         <div>
-                          <div className="text-xl font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
+                          <div className="md:text-xl text-sm font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
                           <p className="mt-1 text-gray-700">
-                            <span className="font-sm">Level 2 (Exam from Home) passed. </span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
+                            <span className="font-sm">Level 2 (Exam from Home) has been passed. </span> अब इंटरव्यू निर्धारित करें  <br/>
                             <br className="hidden sm:block" />
-                            <span className="text-gray-600">Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
                           </p>
                           <div className="mt-3">
                             <button
