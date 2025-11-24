@@ -190,6 +190,14 @@ export const login = async (credentials) => {
     }
 
     const response = await apiClient.post("/api/login/", credentials);
+
+    // Handle case where API returns 200 OK but user is not verified
+    if (response.data && response.data.is_verified === false) {
+      const error = new Error(response.data.message || "Please verify your account.");
+      error.is_verified = false;
+      throw error;
+    }
+
     const { access_token, role, is_active } = response.data.data;
     if (!is_active) {
 
@@ -221,6 +229,13 @@ export const login = async (credentials) => {
           });
           throw new Error('Session expired. Please refresh the page and try again.');
         }
+      }
+
+      // Handle is_verified flag
+      if (err.response.data.is_verified === false) {
+        const error = new Error(err.response.data.message || "Please verify your account.");
+        error.is_verified = false;
+        throw error;
       }
 
       // Handle string response
