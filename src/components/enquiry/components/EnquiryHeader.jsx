@@ -24,7 +24,7 @@ const EnquiryHeader = () => {
               <FiUser className="w-5 h-5" />
               Sign Up
             </Link>
-          </div>
+          </div>  
         </div>
       </div>
 
