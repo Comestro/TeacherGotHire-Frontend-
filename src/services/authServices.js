@@ -38,7 +38,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
-    
+
     // Add CSRF token for state-changing methods
     if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
       const csrfToken = getCsrfToken();
@@ -46,7 +46,7 @@ apiClient.interceptors.request.use(
         config.headers['X-CSRFToken'] = csrfToken;
       }
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -101,10 +101,10 @@ const getRequest = async (url) => {
 export const createaccount = async (userDetails) => {
   try {
     const response = await postRequest("/api/register/teacher/", userDetails);
-    
+
     return response;
   } catch (error) {
-    
+
 
     // Rethrow error so it can be caught in `signup`
     throw error;
@@ -141,11 +141,35 @@ export const resendTeacherOtp = async (email) => {
 
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);
-  if (response && response.access_token) {
-    localStorage.setItem("access_token", response.access_token);
-    localStorage.setItem("role", response.role);
-  }
+  // Removed auto-login to force OTP verification
   return response;
+};
+
+export const verifyRecruiterOtp = async ({ email, otp }) => {
+  try {
+    const response = await apiClient.post('https://api.ptpinstitute.com/api/verify_otp/', {
+      email,
+      otp
+    });
+
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+    }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'OTP verification failed';
+  }
+};
+
+export const resendRecruiterOtp = async (email) => {
+  try {
+    const response = await apiClient.post('https://api.ptpinstitute.com/api/resend_otp/', {
+      email: email
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Failed to resend OTP';
+  }
 };
 
 export const fetchUserData = async () => getRequest("/api/self/customuser/");
@@ -164,11 +188,11 @@ export const login = async (credentials) => {
         console.warn('CSRF token fetch failed, continuing with login');
       }
     }
-    
+
     const response = await apiClient.post("/api/login/", credentials);
     const { access_token, role, is_active } = response.data.data;
     if (!is_active) {
-      
+
       toast.error("Your account is deactivated. Please contact the admin.", {
         position: "top-center",
         autoClose: 5000, // Close after 5 seconds
@@ -177,9 +201,9 @@ export const login = async (credentials) => {
         pauseOnHover: true,
         draggable: true,
       });
-      
+
       alert("Your account is deactivated. Please contact the admin.");
-      return; 
+      return;
     }
 
     localStorage.setItem("access_token", access_token);
@@ -198,7 +222,7 @@ export const login = async (credentials) => {
           throw new Error('Session expired. Please refresh the page and try again.');
         }
       }
-      
+
       // Handle string response
       if (typeof err.response.data === 'string') {
         throw new Error(err.response.data);
@@ -225,31 +249,31 @@ export const resetPassword = async (uidb64, token, newPassword) =>
     confirm_password: newPassword,
   });
 
-  export const logout = async () => {
-    try {
-      // Step 1: Call the logout API first
-      await apiClient.post("/api/logout/").catch((err) => {
-        
-        // Even if the API fails, proceed with local logout
-      });
-  
-      // Step 2: Clear local storage after the API call
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("role");
-      
-      // Step 3: Clear all cookies including CSRF token
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-  
-      // Step 4: Clear redux persist state
-      await persistor.purge();
-      await persistor.flush();
-  
-      return { success: true };
-    } catch (err) {
-      
-      // Still return success since we've cleared local state
-      return { success: true };
-    }
-  };
+export const logout = async () => {
+  try {
+    // Step 1: Call the logout API first
+    await apiClient.post("/api/logout/").catch((err) => {
+
+      // Even if the API fails, proceed with local logout
+    });
+
+    // Step 2: Clear local storage after the API call
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("role");
+
+    // Step 3: Clear all cookies including CSRF token
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // Step 4: Clear redux persist state
+    await persistor.purge();
+    await persistor.flush();
+
+    return { success: true };
+  } catch (err) {
+
+    // Still return success since we've cleared local state
+    return { success: true };
+  }
+};

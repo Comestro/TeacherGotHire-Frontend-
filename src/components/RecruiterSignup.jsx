@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import { createRecruiteraccount } from '../services/authServices'
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from 'react'
+import { createRecruiteraccount, verifyRecruiterOtp, resendRecruiterOtp } from '../services/authServices'
+import { } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { recruiterPostData } from "../features/authSlice";
 import CustomHeader from './commons/CustomHeader';
+import Loader from './Loader';
+import { Helmet } from 'react-helmet-async';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 
 const RecruiterSignUpPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -24,7 +24,6 @@ const RecruiterSignUpPage = () => {
     criteriaMode: "all"
   });
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCriteria, setPasswordCriteria] = useState({
@@ -32,6 +31,68 @@ const RecruiterSignUpPage = () => {
     number: false,
     special: false
   });
+
+  const [timer, setTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [otp, setOtp] = useState('');
+
+  useEffect(() => {
+    let interval;
+    if (showOTPForm && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer, showOTPForm]);
+
+  const handleResendOTP = async () => {
+    setLoading(true);
+    try {
+      await resendRecruiterOtp(userEmail);
+      setTimer(30);
+      setCanResend(false);
+      toast.success('OTP resent successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await verifyRecruiterOtp({
+        email: userEmail,
+        otp: otp
+      });
+
+      if (response.data.access_token) {
+        toast.success('Account verified successfully! Please log in.');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('role');
+        setTimeout(() => navigate('/signin'), 1200);
+      }
+    } catch (error) {
+      toast.error(error.message || 'OTP verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 6) {
+      setOtp(value);
+    }
+  };
 
   const watchedFields = watch();
   const password = watchedFields.password;
@@ -52,28 +113,27 @@ const RecruiterSignUpPage = () => {
 
   const getInputClassName = (fieldName) => {
     return `w-full border-2 text-sm rounded-xl p-3 transition-colors ${dirtyFields[fieldName]
-        ? errors[fieldName]
-          ? "border-red-500 focus:border-red-500"
-          : "border-teal-600 focus:border-teal-600"
-        : "border-gray-300 focus:border-teal-600"
+      ? errors[fieldName]
+        ? "border-red-500 focus:border-red-500"
+        : "border-teal-600 focus:border-teal-600"
+      : "border-gray-300 focus:border-teal-600"
       }`;
   };
 
   const recruitersign = async ({ Fname, Lname, email, password }) => {
-    setError("");
     setLoading(true);
 
     try {
       const response = await createRecruiteraccount({ Fname, Lname, email, password });
-      if (response && response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
-        dispatch(recruiterPostData(response));
-        toast.success('Account created successfully!');
-        navigate("/signin");
+      if (response) {
+        toast.success("Account created! Please verify your email.");
+        setUserEmail(email);
+        setShowOTPForm(true);
+        setTimer(30);
+        setCanResend(false);
       }
     } catch (error) {
       const errorMessage = error.message || "Failed to create account. Please try again.";
-      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -82,7 +142,11 @@ const RecruiterSignUpPage = () => {
 
   return (
     <>
+      <Helmet>
+        <title>PTPI | Recruiter Signup</title>
+      </Helmet>
       <CustomHeader />
+      {loading && <Loader />}
       <ToastContainer />
       <div
         className="flex min-h-screen bg-cover bg-no-repeat bg-center bg-opacity-10"
@@ -234,8 +298,8 @@ const RecruiterSignUpPage = () => {
               <Button
                 type="submit"
                 className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 flex items-center justify-center ${!isValid || loading
-                    ? "opacity-60 cursor-not-allowed"
-                    : "hover:bg-teal-700"
+                  ? "opacity-60 cursor-not-allowed"
+                  : "hover:bg-teal-700"
                   }`}
                 disabled={!isValid || loading}
               >
@@ -257,7 +321,7 @@ const RecruiterSignUpPage = () => {
                     <path
                       className="opacity-75"
                       fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
+                      d="M4 12a 8 8 0 018-8v8H4z"
                     ></path>
                   </svg>
                 ) : (
@@ -265,6 +329,90 @@ const RecruiterSignUpPage = () => {
                 )}
               </Button>
             </form>
+
+            {showOTPForm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="w-full max-w-md bg-white rounded-xl p-6 sm:p-8 shadow-2xl relative">
+                  <button
+                    onClick={() => setShowOTPForm(false)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+
+                  <div className="space-y-2 mb-6">
+                    <h2 className="font-bold text-gray-800 text-2xl sm:text-3xl leading-tight">
+                      Verify Your Email
+                    </h2>
+                    <p className="text-gray-600">
+                      Please enter the OTP sent to <span className="font-medium text-teal-600">{userEmail}</span>
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleOTPSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Enter OTP
+                      </label>
+                      <Input
+                        type="text"
+                        value={otp}
+                        onChange={handleOTPChange}
+                        className="w-full border-2 text-sm rounded-xl p-3 transition-colors border-gray-300 focus:border-teal-600 text-center tracking-widest text-lg"
+                        placeholder="000000"
+                        pattern="\d{6}"
+                        maxLength={6}
+                        inputMode="numeric"
+                        required
+                        autoFocus
+                      />
+                      {otp && otp.length < 6 && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a 6-digit OTP
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Timer Display */}
+                    <div className="text-center">
+                      {timer > 0 ? (
+                        <p className="text-gray-600 text-sm">
+                          Resend OTP in <span className="text-teal-600 font-medium">{timer}s</span>
+                        </p>
+                      ) : (
+                        <p className="text-gray-600 text-sm">
+                          Didn't receive code?
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <Button
+                        type="submit"
+                        className={`w-full bg-teal-600 text-white py-3 rounded-xl transition duration-200 ${loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : "hover:bg-teal-700"
+                          }`}
+                        disabled={loading || otp.length !== 6}
+                      >
+                        {loading ? "Verifying..." : "Verify OTP"}
+                      </Button>
+
+                      {canResend && (
+                        <button
+                          type="button"
+                          onClick={handleResendOTP}
+                          className="w-full py-3 rounded-xl border-2 border-teal-500 text-teal-600 font-medium hover:bg-teal-50 transition-colors"
+                          disabled={loading}
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 text-center">
 
@@ -293,76 +441,36 @@ const RecruiterSignUpPage = () => {
           </div>
         </div>
 
-        {/* Timeline - Hidden on mobile, shown on md screens and up */}
         <div className="hidden md:flex w-1/2 flex-col justify-center pl-16 lg:pl-24">
-          {/* Step 1 */}
           <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">
-                1
-              </div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white font-bold text-lg">1</div>
               <div className="h-16 w-1 bg-teal-600"></div>
             </div>
             <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Get Signup Completed
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Create your recruiter account
-              </p>
+              <h3 className="text-gray-700 font-bold text-xl">Create Account</h3>
+              <p className="text-gray-500 mt-1">Fill in your details to create your account</p>
             </div>
           </div>
 
-          {/* Step 2 */}
           <div className="flex items-start space-x-4 mb-8">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
-                2
-              </div>
+              <div className={`w-10 h-10 flex items-center justify-center rounded-full ${showOTPForm ? 'bg-teal-600 text-white' : 'bg-gray-300 text-gray-600'} font-bold text-lg`}>2</div>
               <div className="h-16 w-1 bg-gray-300"></div>
             </div>
             <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Select Teacher in Progress
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Browse and select potential candidates
-              </p>
+              <h3 className="text-gray-700 font-bold text-xl">Verify Email</h3>
+              <p className="text-gray-500 mt-1">Confirm your email address</p>
             </div>
           </div>
 
-          {/* Step 3 */}
-          <div className="flex items-start space-x-4 mb-8">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
-                3
-              </div>
-              <div className="h-16 w-1 bg-gray-300"></div>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Take Interview
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Schedule and conduct interviews
-              </p>
-            </div>
-          </div>
-
-          {/* Step 4 */}
           <div className="flex items-start space-x-4">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">
-                4
-              </div>
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-600 font-bold text-lg">3</div>
             </div>
             <div className="pt-2">
-              <h3 className="text-gray-700 font-bold text-xl">
-                Hire Teacher
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Complete the hiring process
-              </p>
+              <h3 className="text-gray-700 font-bold text-xl">Complete Profile</h3>
+              <p className="text-gray-500 mt-1">Set up your recruiter profile</p>
             </div>
           </div>
         </div>
