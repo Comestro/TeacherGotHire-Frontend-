@@ -88,7 +88,7 @@ function TeacherDashboard() {
             setPasskeyStatus(response);
             setIsVerifyCard(true);
             if(examCards?.id){
-              setIsExamCenterModalOpen(true);
+              // setIsExamCenterModalOpen(true);
             }
           } else {
             setPasskeyStatus(null);
