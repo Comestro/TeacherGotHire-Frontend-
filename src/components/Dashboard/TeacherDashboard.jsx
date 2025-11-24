@@ -454,9 +454,9 @@ function TeacherDashboard() {
                         <div>
                           <div className="text-xl font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
                           <p className="mt-1 text-gray-700">
-                            <span className="font-sm">Level 2 (Exam from Home) पास कर लिया है।</span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
+                            <span className="font-sm">Level 2 (Exam from Home) passed. </span> अब इंटरव्यू शेड्यूल करें और स्कूल/संस्थान में नौकरी के लिए आवेदन करें।
                             <br className="hidden sm:block" />
-                            <span className="text-gray-600">Level 2 passed. Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
+                            <span className="text-gray-600">Schedule your interview now and apply for teaching jobs in schools/institutes.</span>
                           </p>
                           <div className="mt-3">
                             <button

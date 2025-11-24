@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllQues,
@@ -12,20 +12,24 @@ import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
 import { AddReport } from '../../services/examQuesServices';
+import { toast } from 'react-toastify';
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [securityViolation, setSecurityViolation] = useState(null);
 
   const toggleModal = () => {
     setIsOpen(true);
-  }; 
+  };
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  
+
   const { allQuestion, language: reduxLanguage, loading } = useSelector((state) => state.examQues);
   // Get language from navigation state or Redux (Redux language is set by getAllQues action)
   const language = location.state?.language || reduxLanguage;
@@ -38,10 +42,6 @@ const ExamPortal = () => {
   });
   const exam = allQuestion.id;
 
-  
-  
-  
-
   const [results, setResults] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -49,7 +49,7 @@ const ExamPortal = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
   const [isNavigating, setIsNavigating] = useState(false);
-    useEffect(() => {
+  useEffect(() => {
     dispatch(getReport());
   }, [currentQuestion]);
   const reportOptions = useSelector((state) => state.examQues?.reportReason);
@@ -64,7 +64,7 @@ const ExamPortal = () => {
           : [...prevSelected, optionId] // Add if not selected
     );
   };
-  
+
 
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
@@ -114,37 +114,7 @@ const ExamPortal = () => {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Prevent default behavior that causes auto-selection
-      if (["Enter", "ArrowRight", "ArrowLeft"].includes(e.key)) {
-        e.preventDefault();
-      }
-  
-      if (e.key === "Enter" || e.key === "ArrowRight") {
-        handleNext();
-        
-        // Remove focus from the radio button after moving to the next question
-        setTimeout(() => {
-          document.activeElement?.blur();
-        }, 0);
-      }
-      
-      if (e.key === "ArrowLeft") {
-        handlePrevious();
-        
-        // Also remove focus when navigating backward
-        setTimeout(() => {
-          document.activeElement?.blur();
-        }, 0);
-      }
-    };
-  
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleNext, handlePrevious]);
-  
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     let correct_answer = 0;
     let incorrect_answer = 0;
     let is_unanswered = 0;
@@ -169,9 +139,18 @@ const ExamPortal = () => {
       incorrect_answer,
       is_unanswered,
     });
-    
-    
-    
+
+
+
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch((err) => console.error("Error exiting fullscreen:", err));
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+
     dispatch(
       postResult({
         exam,
@@ -183,21 +162,210 @@ const ExamPortal = () => {
     );
     dispatch(attemptsExam());
     navigate("/exam/result", {
-      state: { exam, correct_answer, incorrect_answer, is_unanswered,language },
-       replace: true
+      state: { exam, correct_answer, incorrect_answer, is_unanswered, language },
+      replace: true
     });
+  }, [questions, selectedAnswers, dispatch, exam, language, navigate]);
+
+  // --- Security Restrictions ---
+
+  // 1. Enforce Fullscreen
+  const enterFullscreen = async () => {
+    try {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        await elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        await elem.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } catch (err) {
+      console.error("Error attempting to enable fullscreen:", err);
+    }
   };
+
+  useEffect(() => {
+    enterFullscreen();
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+        setIsFullscreen(false);
+        setWarningCount(prev => prev + 1);
+        setSecurityViolation("You must stay in fullscreen mode during the exam.");
+      } else {
+        setIsFullscreen(true);
+        setSecurityViolation(null);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  // 2. Disable Right-click, Copy/Paste, and Keyboard Shortcuts
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      toast.warning("Right-click is disabled during the exam.");
+    };
+
+    const handleCopyPaste = (e) => {
+      e.preventDefault();
+      toast.warning("Copy/Paste is disabled during the exam.");
+    };
+
+    const handleKeyDown = (e) => {
+      // Prevent default behavior that causes auto-selection
+      if (["Enter", "ArrowRight", "ArrowLeft"].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      if (e.key === "Enter" || e.key === "ArrowRight") {
+        handleNext();
+        setTimeout(() => document.activeElement?.blur(), 0);
+      }
+
+      if (e.key === "ArrowLeft") {
+        handlePrevious();
+        setTimeout(() => document.activeElement?.blur(), 0);
+      }
+
+      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (
+        e.keyCode === 123 ||
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+        (e.ctrlKey && e.keyCode === 85)
+      ) {
+        e.preventDefault();
+        toast.warning("Developer tools are disabled.");
+      }
+
+      // Disable Copy/Paste shortcuts
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+        e.preventDefault();
+        toast.warning("Copy/Paste shortcuts are disabled.");
+      }
+
+      // Disable Alt+Tab (cannot be fully prevented, but we can warn on blur)
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("copy", handleCopyPaste);
+    document.addEventListener("cut", handleCopyPaste);
+    document.addEventListener("paste", handleCopyPaste);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("copy", handleCopyPaste);
+      document.removeEventListener("cut", handleCopyPaste);
+      document.removeEventListener("paste", handleCopyPaste);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleNext, handlePrevious]);
+
+  // 3. Prevent Tab Switching (Visibility Change & Blur)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setWarningCount(prev => prev + 1);
+        setSecurityViolation("Tab switching is not allowed. Your exam will be auto-submitted on repeated violations.");
+      }
+    };
+
+    const handleWindowBlur = () => {
+      setWarningCount(prev => prev + 1);
+      setSecurityViolation("Please keep the exam window focused.");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, []);
+
+  // 4. Prevent Navigation (Back Button & Reload)
+  useEffect(() => {
+    // Push current state to history to trap back button
+    window.history.pushState(null, null, window.location.href);
+
+    const handlePopState = (e) => {
+      window.history.pushState(null, null, window.location.href);
+      setWarningCount(prev => prev + 1);
+      setSecurityViolation("Navigation is disabled. Use the 'Submit Exam' button to finish.");
+    };
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Chrome requires returnValue to be set
+      return '';
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  // Auto-submit on excessive warnings
+  useEffect(() => {
+    if (warningCount > 3) {
+      toast.error("Maximum security violations exceeded. Auto-submitting exam.");
+      handleSubmit();
+    }
+  }, [warningCount, handleSubmit]);
+
 
   const handleExitExam = () => {
     setShowExitConfirm(true);
     navigate("/dashboard");
   };
 
-
-  
-
   return (
-    <div className="flex h-screen bg-gray-50 w-full">
+    <div className="flex h-screen bg-gray-50 w-full select-none">
+      {/* Security Violation Modal */}
+      {securityViolation && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl animate-shake">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <IoWarningOutline className="text-5xl text-red-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Security Warning</h2>
+            <p className="text-gray-600 mb-6 text-lg">{securityViolation}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="font-bold text-red-800">Warning {warningCount}/3</p>
+              <p className="text-sm text-red-600">Exceeding the limit will auto-submit your exam.</p>
+            </div>
+            <button
+              onClick={() => {
+                setSecurityViolation(null);
+                enterFullscreen();
+              }}
+              className="w-full bg-red-600 text-white py-3.5 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30"
+            >
+              I Understand & Return to Exam
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-lg border-r border-primary/20 p-4">
         <div className="bg-primary text-white py-4 px-4 rounded-xl mb-4">
@@ -215,13 +383,12 @@ const ExamPortal = () => {
             <li key={q.id} className="flex">
               <button
                 onClick={() => setCurrentQuestionIndex(index)}
-                className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold transition-all shadow-sm hover:shadow-md ${
-                  currentQuestionIndex === index
-                    ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
-                    : selectedAnswers[q.id]
+                className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold transition-all shadow-sm hover:shadow-md ${currentQuestionIndex === index
+                  ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
+                  : selectedAnswers[q.id]
                     ? "bg-green-600 text-white"
                     : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                }`}
+                  }`}
               >
                 {index + 1}
               </button>
@@ -240,13 +407,12 @@ const ExamPortal = () => {
               <li key={q.id} className="flex">
                 <button
                   onClick={() => setCurrentQuestionIndex(index)}
-                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm ${
-                    currentQuestionIndex === index
-                      ? "bg-primary text-white ring-2 ring-primary"
-                      : selectedAnswers[q.id]
+                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm ${currentQuestionIndex === index
+                    ? "bg-primary text-white ring-2 ring-primary"
+                    : selectedAnswers[q.id]
                       ? "bg-green-600 text-white"
                       : "bg-gray-200 text-gray-600"
-                  }`}
+                    }`}
                 >
                   {index + 1}
                 </button>
@@ -277,66 +443,63 @@ const ExamPortal = () => {
                 </button>
               </div>
             </div>
-                {/* Modal */}
-                {isOpen && (
-                  <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
-                      <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <IoWarningOutline className="text-2xl text-orange-600" />
-                          </div>
-                          <h2 className="text-xl font-bold text-text">
-                            Report Question
-                          </h2>
-                        </div>
-                        <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          <RxCross2 className="text-xl text-gray-600" />
-                        </button>
+            {/* Modal */}
+            {isOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <IoWarningOutline className="text-2xl text-orange-600" />
                       </div>
-                      <ul className="space-y-2 mb-6">
-                        {reportOptions &&
-                          reportOptions.map((option, index) => (
-                            <li
-                              key={index}
-                              className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${
-                                selectedOption.includes(option.id)
-                                  ? "bg-primary/10 border-primary text-primary font-semibold"
-                                  : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
-                              }`}
-                              onClick={() => handleOptionSelect(option.id)}
-                            >
-                              <span>{option.issue_type}</span>
-                              <IoWarningOutline
-                                className={`text-lg ${
-                                  selectedOption.includes(option.id)
-                                    ? "text-primary"
-                                    : "text-gray-400"
-                                }`}
-                              />
-                            </li>
-                          ))}
-                      </ul>
-                      <button
-                        className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={handleSubmits}
-                        disabled={selectedOption.length === 0 || isSubmittingReport}
-                      >
-                        {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
-                      </button>
+                      <h2 className="text-xl font-bold text-text">
+                        Report Question
+                      </h2>
                     </div>
+                    <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <RxCross2 className="text-xl text-gray-600" />
+                    </button>
                   </div>
-                )}
+                  <ul className="space-y-2 mb-6">
+                    {reportOptions &&
+                      reportOptions.map((option, index) => (
+                        <li
+                          key={index}
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${selectedOption.includes(option.id)
+                            ? "bg-primary/10 border-primary text-primary font-semibold"
+                            : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
+                            }`}
+                          onClick={() => handleOptionSelect(option.id)}
+                        >
+                          <span>{option.issue_type}</span>
+                          <IoWarningOutline
+                            className={`text-lg ${selectedOption.includes(option.id)
+                              ? "text-primary"
+                              : "text-gray-400"
+                              }`}
+                          />
+                        </li>
+                      ))}
+                  </ul>
+                  <button
+                    className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSubmits}
+                    disabled={selectedOption.length === 0 || isSubmittingReport}
+                  >
+                    {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <p className="text-text text-lg mb-8 leading-relaxed">{currentQuestion.text}</p>
             <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => (
-                <div key={idx} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  selectedAnswers[currentQuestion.id] === idx + 1
-                    ? "bg-primary/10 border-primary shadow-sm"
-                    : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
-                }`}
-                onClick={() => handleAnswerSelect(currentQuestion.id, idx + 1)}
+                <div key={idx} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedAnswers[currentQuestion.id] === idx + 1
+                  ? "bg-primary/10 border-primary shadow-sm"
+                  : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+                  }`}
+                  onClick={() => handleAnswerSelect(currentQuestion.id, idx + 1)}
                 >
                   <input
                     type="radio"
@@ -364,11 +527,10 @@ const ExamPortal = () => {
               <button
                 onClick={handlePrevious}
                 disabled={currentQuestionIndex === 0}
-                className={`flex items-center gap-1 px-4 py-2.5 rounded-xl font-semibold transition-all shadow-md ${
-                  currentQuestionIndex === 0
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
-                }`}
+                className={`flex items-center gap-1 px-4 py-2.5 rounded-xl font-semibold transition-all shadow-md ${currentQuestionIndex === 0
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
+                  }`}
               >
                 <BsArrowLeftShort className="size-5" />
                 Previous
@@ -376,9 +538,8 @@ const ExamPortal = () => {
               {currentQuestionIndex < questions.length - 1 ? (
                 <button
                   onClick={handleNext}
-                  className={`flex items-center gap-1 px-4 py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${
-                    isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
-                  }`}
+                  className={`flex items-center gap-1 px-4 py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
+                    }`}
                 >
                   Next
                   <BsArrowRightShort className="size-5" />
