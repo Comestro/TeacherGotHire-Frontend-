@@ -37,7 +37,7 @@ const FilterdExamCard = () => {
   const [showLevelPanel, setShowLevelPanel] = useState(false);
   const examReadyRef = useRef(null); // Create a ref for the target section
   const [showErrorDetails, setShowErrorDetails] = useState(false);
-  
+
   // Exam center modal states
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
   const [showVerificationCard, setShowVerificationCard] = useState(false);
@@ -61,7 +61,7 @@ const FilterdExamCard = () => {
         const levels = await fetchLevel();
         setLevels(levels);
       } catch (error) {
-        
+
       }
     };
 
@@ -167,7 +167,7 @@ const FilterdExamCard = () => {
       await dispatch(examCard(payload)).unwrap();
       setExamReady(true);
     } catch (err) {
-      
+
       setErrors("Failed to load exam data. Please try again.");
     } finally {
       setIsLoading(false);
@@ -208,7 +208,7 @@ const FilterdExamCard = () => {
         } else {
           setShowVerificationCard(false);
         }
-        setIsExamCenterModalOpen(true);
+        // setIsExamCenterModalOpen(true);
       } catch (err) {
         setErrors("Failed to check exam status. Please try again.");
       }
@@ -307,7 +307,7 @@ const FilterdExamCard = () => {
     <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
       {/* Main selection column */}
       <div className="w-full ">
-      
+
         <AnimatePresence mode="wait">
           {/* Category Panel */}
           {showCategoryPanel && (
@@ -560,10 +560,9 @@ const FilterdExamCard = () => {
                         whileTap={!isLocked ? { scale: 0.98 } : {}}
                         onClick={() => !isLocked && handleLevelSelect(level)}
                         disabled={isLocked} // Add disabled attribute
-                        className={`rounded-lg border-2 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                          isLocked
-                            ? 'opacity-60 cursor-not-allowed'
-                            : 'cursor-pointer hover:border-primary/60 focus:ring-primary'
+                        className={`rounded-lg border-2 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${isLocked
+                          ? 'opacity-60 cursor-not-allowed'
+                          : 'cursor-pointer hover:border-primary/60 focus:ring-primary'
                           } ${selectedLevel?.id === level?.id
                             ? 'border-primary ring-primary/30 focus:ring-primary'
                             : isQualified
@@ -584,8 +583,7 @@ const FilterdExamCard = () => {
                           </div>
                         )}
 
-                        <div className={`p-4 sm:p-5 transition-colors duration-200 ${
-                          selectedLevel?.id === level?.id ? 'bg-primary/5' : ''
+                        <div className={`p-4 sm:p-5 transition-colors duration-200 ${selectedLevel?.id === level?.id ? 'bg-primary/5' : ''
                           }`}>
                           <div className="flex items-start">
 
@@ -604,8 +602,8 @@ const FilterdExamCard = () => {
                               </div>
                               <p className="text-sm text-gray-600 mb-2 sm:mb-3">
                                 {level?.level_code === 1.0 && "Basic concepts assessment for beginners"}
-                                {level?.level_code === 2.0 && "Advanced problem solving - Online assessment"}
-                                {level?.level_code === 2.5 && "Exam center assessment - In-person verification"}
+                                {level?.level_code === 2.0 && "Exam center assessment - In-person verification"}
+                                {level?.level_code === 2.5 && "Advanced problem solving - Online assessment"}
                                 {!level?.level_code && "Standard assessment level"}
                               </p>
 
@@ -725,7 +723,7 @@ const FilterdExamCard = () => {
                   <button
                     type="button"
                     onClick={resetSelection}
-                    className="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-800 rounded-md hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm font-medium" 
+                    className="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-800 rounded-md hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 text-sm font-medium"
                   >
                     <FaChevronLeft className="mr-2" aria-hidden="true" /> Change Selection
                   </button>
@@ -782,13 +780,13 @@ const FilterdExamCard = () => {
                 {/* Mode chip derived from selected level */}
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-text border border-secondary/30 text-xs sm:text-sm">
                   <span className="inline-block w-2 h-2 rounded-full bg-secondary" aria-hidden="true"></span>
-                  {selectedLevel?.level_code === 2.5 ? 'Center Exam' : 'Online Exam'}
+                  {selectedLevel?.level_code === 2 ? 'Center Exam' : 'Online Exam'}
                 </span>
               </div>
 
               {/* Helpful note */}
               <div className="mb-4 sm:mb-6 text-xs sm:text-sm text-gray-600">
-                {selectedLevel?.level_code === 2.5 ? (
+                {selectedLevel?.level_code === 2 ? (
                   <>
                     • You've selected a Center Exam. You'll need to select a center and verify your passcode.
                     <br className="hidden sm:block" />
@@ -823,7 +821,7 @@ const FilterdExamCard = () => {
                   onClick={handleExam}
                   className="w-full sm:w-auto px-6 sm:px-7 py-2.5 bg-primary hover:opacity-90 text-white rounded-md border border-transparent transition-all font-semibold flex items-center justify-center text-sm"
                 >
-                  {selectedLevel?.level_code === 2.5 ? 'Proceed to Center Selection / केंद्र चयन के लिए आगे बढ़ें' : 'Start Exam / परीक्षा शुरू करें'}
+                  {selectedLevel?.level_code === 2 ? 'Proceed to Center Selection / केंद्र चयन के लिए आगे बढ़ें' : 'Start Exam / परीक्षा शुरू करें'}
                   <FaArrowRight className="ml-2" aria-hidden="true" />
                 </motion.button>
               </div>
@@ -854,7 +852,7 @@ const FilterdExamCard = () => {
           </motion.div>
         )}
       </div>
-      
+
       {/* Exam Center Modal */}
       {isExamCenterModalOpen && (
         <ExamCenterModal

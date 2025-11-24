@@ -18,7 +18,7 @@ const EnquiryHeader = () => {
           {/* Navigation Items */}
           <div className="flex items-center">
             <Link
-              to={"/signup/teacher"}
+              to={"/signup/recruiter"}
               className="flex items-center gap-2 px-4 py-2 font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors"
             >
               <FiUser className="w-5 h-5" />
