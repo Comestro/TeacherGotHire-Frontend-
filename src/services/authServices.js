@@ -180,6 +180,9 @@ export const verifyOtp = async (payload) =>
 export const login = async (credentials) => {
   try {
     // First, make a GET request to get CSRF token if needed
+    // First, make a GET request to get CSRF token if needed
+    // Removed explicit CSRF fetch as it was returning 404 and is handled by interceptors/cookies if present
+    /*
     if (!getCsrfToken()) {
       try {
         await apiClient.get('/api/csrf/');
@@ -188,6 +191,7 @@ export const login = async (credentials) => {
         console.warn('CSRF token fetch failed, continuing with login');
       }
     }
+    */
 
     const response = await apiClient.post("/api/login/", credentials);
 

@@ -197,8 +197,9 @@ function Login() {
         email: userEmail,
         otp: otp,
       });
+      console.log(response);
 
-      if (response.access_token) {
+      if (response.data.access_token) {
         toast.success("Account verified successfully! Please log in.");
 
         // Set showOTPForm to false to return to login form
