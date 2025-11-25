@@ -32,6 +32,7 @@ const ExamCenterModal = ({
   const [examLanguage, setExamLanguage] = useState("");
   const [showLanguageStep, setShowLanguageStep] = useState(false);
   const [pincodeFilter, setPincodeFilter] = useState("");
+  const [verifiedExamId, setVerifiedExamId] = useState(null);
 
   // Use RTK Query hook to fetch centers
   const {
@@ -93,6 +94,11 @@ const ExamCenterModal = ({
           entered_passcode,
         })
       ).unwrap();
+
+      if (verificationResult?.offline_exam?.id) {
+        setVerifiedExamId(verificationResult.offline_exam.id);
+      }
+
       if (verificationResult.error) {
         throw new Error(verificationResult.error);
       }
@@ -162,9 +168,11 @@ const ExamCenterModal = ({
     try {
       setIsVerifying(true);
 
+      const examIdToUse = examCards?.id || verifiedExamId;
+
       await dispatch(
         getAllQues({
-          exam_id: examCards?.id,
+          exam_id: examIdToUse,
           language: examLanguage,
         })
       ).unwrap();
