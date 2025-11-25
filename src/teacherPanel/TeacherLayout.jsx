@@ -1,153 +1,182 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import MailIcon from '@mui/icons-material/Mail';
-import MenuIcon from '@mui/icons-material/Menu';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import PanelHeader from './PanelHeader';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  HiViewGrid,
+  HiUser,
+  HiBriefcase,
+  HiOutlineLogin,
+  HiMenuAlt2,
+  HiX
+} from 'react-icons/hi';
+import { HiMiniEye } from "react-icons/hi2";
+import { IoMdSettings } from "react-icons/io";
+import { BsPerson } from "react-icons/bs";
+import { getUserData } from '../features/authSlice';
+import { handleLogout } from '../services/authUtils';
 
-const drawerWidth = 240;
-
-function TeacherLayout(props) {
-  const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
-
-  const handleDrawerClose = () => {
-    setIsClosing(true);
-    setMobileOpen(false);
-  };
-
-  const handleDrawerTransitionEnd = () => {
-    setIsClosing(false);
-  };
-
-  const handleDrawerToggle = () => {
-    if (!isClosing) {
-      setMobileOpen(!mobileOpen);
+const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
+  <NavLink
+    to={to}
+    onClick={onClick}
+    end={to === '/teacher' || to === '/teacher/'}
+    className={({ isActive }) =>
+      `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+        ? 'bg-teal-600 text-white'
+        : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'
+      }`
     }
-  };
+  >
+    <Icon className="text-xl" />
+    <span className="font-medium">{label}</span>
+  </NavLink>
+);
 
-  const drawer = (
-    <div>
-      <Toolbar />
-      <Divider />
-      <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+const TeacherLayout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { userData } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(getUserData());
+  }, [dispatch]);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo Area */}
+      <div className="p-6 pb-2">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-xl">
+            P
+          </div>
+          <div>
+            <h1 className="font-bold text-xl text-slate-800 tracking-tight">PTPI</h1>
+            <p className="text-xs text-slate-500 font-medium">Teacher Panel</p>
+          </div>
+        </div>
+      </div>
+
+      {/* User Profile Card */}
+      <div className="px-4 py-4">
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+            <BsPerson size={20} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-sm text-slate-800 truncate">
+              {userData?.Fname || 'Teacher'}
+            </h3>
+            <p className="text-xs text-slate-500 truncate">
+              {userData?.email || 'Loading...'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto py-2 custom-scrollbar">
+        <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Main Menu
+        </div>
+        <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
+        <SidebarItem to="/teacher/personal-profile" icon={HiUser} label="Personal Details" />
+        <SidebarItem to="/teacher/job-profile" icon={HiBriefcase} label="Job Details" />
+        <SidebarItem to="view-attempts" icon={HiMiniEye} label="View Attempts" />
+        <SidebarItem to="job-apply" icon={HiBriefcase} label="Job Applications" />
+
+        <div className="px-4 py-2 mt-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          System
+        </div>
+        <SidebarItem to="/teacher/setting" icon={IoMdSettings} label="Settings" />
+      </nav>
+
+      {/* Logout */}
+      <div className="p-4 border-t border-slate-100">
+        <button
+          onClick={() => handleLogout(dispatch, navigate)}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group"
+        >
+          <HiOutlineLogin className="text-xl group-hover:scale-110 transition-transform" />
+          <span className="font-medium">Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 
-  // Remove this const when copying and pasting into your project.
-  const container = window !== undefined ? () => window().document.body : undefined;
-
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <PanelHeader handleDrawerToggle={handleDrawerToggle}/>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        <Drawer
-          container={container}
-          variant="temporary"
-          open={mobileOpen}
-          onTransitionEnd={handleDrawerTransitionEnd}
-          onClose={handleDrawerClose}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
-      >
-        <Toolbar />
-        <Typography sx={{ marginBottom: 2 }}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non
-          enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
-          imperdiet. Semper risus in hendrerit gravida rutrum quisque non tellus.
-          Convallis convallis tellus id interdum velit laoreet id donec ultrices.
-          Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-          adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra
-          nibh cras. Metus vulputate eu scelerisque felis imperdiet proin fermentum
-          leo. Mauris commodo quis imperdiet massa tincidunt. Cras tincidunt lobortis
-          feugiat vivamus at augue. At augue eget arcu dictum varius duis at
-          consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa
-          sapien faucibus et molestie ac.
-        </Typography>
-        <Typography sx={{ marginBottom: 2 }}>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est ullamcorper
-          eget nulla facilisi etiam dignissim diam. Pulvinar elementum integer enim
-          neque volutpat ac tincidunt. Ornare suspendisse sed nisi lacus sed viverra
-          tellus. Purus sit amet volutpat consequat mauris. Elementum eu facilisis
-          sed odio morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
-          tincidunt ornare massa eget egestas purus viverra accumsan in. In hendrerit
-          gravida rutrum quisque non tellus orci ac. Pellentesque nec nam aliquam sem
-          et tortor. Habitant morbi tristique senectus et. Adipiscing elit duis
-          tristique sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-teal-100 selection:text-teal-700">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
 
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-slate-200 lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Main Content */}
+      <main className={`transition-all duration-300 lg:pl-72 min-h-screen flex flex-col`}>
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleSidebar}
+                className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                {isSidebarOpen ? <HiX size={24} /> : <HiMenuAlt2 size={24} />}
+              </button>
+
+              {/* Breadcrumb / Page Title Placeholder */}
+              {/* You can add dynamic breadcrumbs here if needed */}
+              <h2 className="font-semibold text-slate-800 hidden sm:block">
+                Welcome back, {userData?.Fname?.split(' ')[0] || 'Teacher'}!
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {userData?.user_code && (
+                <span className="hidden md:inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full border border-slate-200">
+                  ID: {userData.user_code}
+                </span>
+              )}
+              {/* Add notifications or other header items here if needed */}
+              <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-200">
+                {userData?.Fname?.[0] || 'T'}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="flex-1 max-w-8xl mx-auto w-full px-4 sm:px-6 pt-4 py-6">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+};
 
 export default TeacherLayout;

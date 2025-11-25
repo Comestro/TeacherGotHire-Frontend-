@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateBasicProfile } from "../../../services/profileServices";
-import { getBasic, postBasic } from "../../../features/personalProfileSlice";
+import { getBasic } from "../../../features/personalProfileSlice";
 import { getUserData } from "../../../features/authSlice";
 import Loader from "../../Loader";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX } from "react-icons/hi";
+import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown } from "react-icons/hi";
 
 // English -> Hindi label map
 const hiLabels = {
@@ -15,7 +15,7 @@ const hiLabels = {
   Name: "नाम",
   "Email Address": "ईमेल पता",
   "Contact No": "संपर्क नंबर",
-  Language: "भाषा",
+  "Languages you speak/understand": "भाषाएँ जो आप बोल/समझ सकते हैं",
   Gender: "लिंग",
   "Marital Status": "वैवाहिक स्थिति",
   Religion: "धर्म",
@@ -34,6 +34,87 @@ const hiLabels = {
 };
 
 const bi = (en) => (hiLabels[en] ? `${en} / ${hiLabels[en]}` : en);
+
+const MultiSelect = ({ options, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedValues = Array.isArray(value) ? value : (value ? String(value).split(',').map(v => v.trim()) : []);
+
+  const handleSelect = (optionValue) => {
+    if (!selectedValues.includes(optionValue)) {
+      onChange([...selectedValues, optionValue]);
+    }
+    setIsOpen(false);
+  };
+
+  const handleRemove = (optionValue, e) => {
+    e.stopPropagation();
+    onChange(selectedValues.filter((v) => v !== optionValue));
+  };
+
+  return (
+    <div className="relative w-full sm:w-64" ref={containerRef}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="min-h-[38px] border border-slate-300 bg-white rounded-lg px-2 py-1.5 cursor-pointer flex flex-wrap gap-2 items-center hover:border-teal-500 transition-colors"
+      >
+        {selectedValues.length > 0 ? (
+          selectedValues.map((val) => (
+            <span
+              key={val}
+              className="bg-teal-50 text-teal-700 text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border border-teal-100"
+            >
+              {val}
+              <button
+                onClick={(e) => handleRemove(val, e)}
+                className="hover:text-teal-900 focus:outline-none"
+              >
+                <HiOutlineX className="w-3 h-3" />
+              </button>
+            </span>
+          ))
+        ) : (
+          <span className="text-slate-400 text-sm px-1">Select languages...</span>
+        )}
+        <div className="ml-auto text-slate-400">
+          <HiChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {options
+            .filter((opt) => !selectedValues.includes(opt.value))
+            .map((option) => (
+              <div
+                key={option.value}
+                onClick={() => handleSelect(option.value)}
+                className="px-3 py-2 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 cursor-pointer transition-colors"
+              >
+                {bi(option.label)}
+              </div>
+            ))}
+          {options.filter((opt) => !selectedValues.includes(opt.value)).length === 0 && (
+            <div className="px-3 py-2 text-sm text-slate-400 italic">
+              No more options
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const EditableField = ({
   label,
@@ -70,33 +151,52 @@ const EditableField = ({
   const renderValue = () => {
     if (inputType === "file") {
       return (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <div className="flex flex-col items-center sm:flex-row sm:items-center">
-            <img
-              src={value || "/images/profile.jpg"}
-              alt="Profile"
-              className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border border-[#3E98C7]/30 shadow-sm"
-            />
-            <button
-              onClick={() => onToggleEdit(true)}
-              className="mt-2 sm:mt-0 sm:ml-3 text-sm text-[#3E98C7] bg-transparent hover:underline sm:hidden font-medium"
-            >
-              {bi("Edit Profile")}
-            </button>
-          </div>
+        <div className="flex items-center gap-4">
+          <img
+            src={value || "/images/profile.jpg"}
+            alt="Profile"
+            className="w-16 h-16 rounded-full object-cover border border-slate-200"
+          />
+          <button
+            onClick={() => onToggleEdit(true)}
+            className="text-sm text-teal-600 hover:text-teal-700 font-medium sm:hidden"
+          >
+            {bi("Edit Profile")}
+          </button>
         </div>
       );
     }
-    return <p className={`text-gray-700 text-sm sm:text-base break-word ${label !== "Email Address" ? "capitalize" : ""}`}>{value || "N/A"}</p>;
+    if (inputType === "multi-select") {
+      const vals = Array.isArray(value) ? value : (value ? String(value).split(',') : []);
+      return (
+        <div className="flex flex-wrap gap-2">
+          {vals.length > 0 ? vals.map((v, i) => (
+            <span key={i} className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md border border-slate-200">
+              {v.trim()}
+            </span>
+          )) : <span className="text-slate-400 text-sm">N/A</span>}
+        </div>
+      );
+    }
+    return <p className={`text-slate-700 text-sm sm:text-base ${label !== "Email Address" ? "capitalize" : ""}`}>{value || "N/A"}</p>;
   };
 
   const renderEditor = () => {
+    if (inputType === "multi-select") {
+      return (
+        <MultiSelect
+          options={options}
+          value={tempValue}
+          onChange={setTempValue}
+        />
+      );
+    }
     if (inputType === "select") {
       return (
         <select
           value={tempValue || ""}
           onChange={(e) => setTempValue(e.target.value)}
-          className="border border-[#3E98C7]/30 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base"
+          className="border border-slate-300 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full sm:w-64 text-sm"
         >
           <option value="">{`Select ${bi(label)}`}</option>
           {(options || []).map((option) => (
@@ -114,16 +214,16 @@ const EditableField = ({
             type="file"
             accept="image/*"
             onChange={(e) => setTempValue(e.target.files && e.target.files[0])}
-            className="border border-[#3E98C7]/30 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#3E98C7]/10 file:text-[#2E87A7] hover:file:bg-[#3E98C7]/20"
+            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
           />
           {tempValue && tempValue instanceof File && (
             <div className="flex items-center gap-2">
               <img
                 src={URL.createObjectURL(tempValue)}
                 alt="Preview"
-                className="w-12 h-12 rounded-full object-cover border border-[#3E98C7]/30 shadow-sm"
+                className="w-10 h-10 rounded-full object-cover border border-slate-200"
               />
-              <span className="text-xs text-gray-500">{tempValue.name}</span>
+              <span className="text-xs text-slate-500 truncate max-w-[150px]">{tempValue.name}</span>
             </div>
           )}
         </div>
@@ -142,51 +242,53 @@ const EditableField = ({
               setTempValue(e.target.value);
             }
           }}
-          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] w-full sm:w-64 lg:w-80 text-sm sm:text-base ${
-            error ? "border-red-500" : "border-[#3E98C7]/30"
-          }`}
+          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full sm:w-64 text-sm ${error ? "border-red-500" : "border-slate-300"
+            }`}
         />
-        {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
+        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
       </div>
     );
   };
 
   return (
-    <div className="group bg-white/70 backdrop-blur-[1px] border border-[#3E98C7]/15 rounded-xl px-4 py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:border-[#3E98C7]/40 hover:shadow-sm transition-all">
-      <div className="flex flex-col sm:flex-row sm:items-center flex-1 min-w-0">
-        <div className="flex items-center mb-2 sm:mb-0">
-          <p className="text-gray-700 font-semibold w-full sm:w-48 lg:w-64 text-sm sm:text-base truncate">
-            {bi(label)}:
+    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-colors hover:bg-slate-50">
+      <div className="flex flex-col sm:flex-row sm:items-center flex-1 min-w-0 gap-2 sm:gap-4">
+        <div className="w-full sm:w-48 lg:w-64 shrink-0">
+          <p className="text-slate-500 font-medium text-sm uppercase tracking-wide">
+            {bi(label)}
           </p>
         </div>
-        {!isEditing ? renderValue() : renderEditor()}
+        <div className="flex-1">
+          {!isEditing ? renderValue() : renderEditor()}
+        </div>
       </div>
+
       {field !== "email" && (
-        <div className="flex justify-end sm:justify-start space-x-2 mt-2 sm:mt-0">
+        <div className="flex justify-end sm:justify-start shrink-0">
           {isEditing ? (
-            <>
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleCancel}
-                className="px-3 py-2 text-xs sm:text-sm text-gray-700 font-semibold bg-white border border-gray-300 hover:border-gray-400 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                title={bi("Cancel")}
               >
-                <HiOutlineX className="w-4 h-4" />
-                {bi("Cancel")}
+                <HiOutlineX className="w-5 h-5" />
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="p-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
+                title={bi("Save")}
               >
-                <HiOutlineCheck className="w-4 h-4" />
-                {bi("Save")}
+                <HiOutlineCheck className="w-5 h-5" />
               </button>
-            </>
+            </div>
           ) : (
             <button
               onClick={() => onToggleEdit(true)}
-              className="text-gray-700 font-medium text-xs sm:text-sm px-3 sm:px-4 border border-gray-200 bg-white py-1.5 sm:py-1 rounded-lg hover:border-[#3E98C7]/40 hover:bg-[#3E98C7]/5 transition-colors flex items-center gap-2"
+              className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+              title={label === "Profile" ? bi("Edit Profile") : bi("Edit")}
             >
-              <HiOutlinePencilAlt className="w-4 h-4" />
-              {label === "Profile" ? bi("Edit Profile") : bi("Edit")}
+              <HiOutlinePencilAlt className="w-5 h-5" />
             </button>
           )}
         </div>
@@ -213,20 +315,18 @@ const BasicInformation = () => {
         setDataLoaded(true);
       } catch (error) {
         console.error("Error:", error);
-        setDataLoaded(true); // Still set to true to prevent infinite loading
+        setDataLoaded(true);
       }
     };
     fetchData();
   }, [dispatch]);
 
-  // Reset editing fields when data changes or component unmounts
   useEffect(() => {
     return () => {
       setEditingFields({});
     };
   }, []);
 
-  // Clear editing state when basicData changes
   useEffect(() => {
     if (dataLoaded) {
       setEditingFields({});
@@ -249,22 +349,21 @@ const BasicInformation = () => {
       if (field === "profile_picture" && value instanceof File) {
         data.append(field, value);
       } else if (field === "Fname") {
-        // Split full name into first and last name
         const nameParts = value.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ") || "";
         data.append("Fname", firstName);
         data.append("Lname", lastName);
+      } else if (field === "language" && Array.isArray(value)) {
+        // Store as JSON string
+        data.append(field, JSON.stringify(value));
       } else {
         data.append(field, value);
       }
 
       await updateBasicProfile(data);
-
-      // Refetch data to ensure consistency
       await dispatch(getBasic());
-      
-      // If name was updated, refresh user data from auth
+
       if (field === "Fname") {
         await dispatch(getUserData());
       }
@@ -288,6 +387,20 @@ const BasicInformation = () => {
     }
   };
 
+  const parseLanguage = (val) => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    try {
+      // Try parsing as JSON first
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed;
+      return [String(parsed)];
+    } catch (e) {
+      // Fallback to comma-separated
+      return String(val).split(',').map(v => v.trim());
+    }
+  };
+
   const fields = [
     {
       label: "Profile Picture",
@@ -307,10 +420,10 @@ const BasicInformation = () => {
       inputType: "tel",
     },
     {
-      label: "Language",
+      label: "Languages you speak/understand",
       field: "language",
-      value: basicData.language,
-      inputType: "select",
+      value: parseLanguage(basicData.language),
+      inputType: "multi-select",
       options: [
         { value: "English", label: "English" },
         { value: "Hindi", label: "Hindi" },
@@ -363,13 +476,12 @@ const BasicInformation = () => {
     },
   ];
 
-  // Don't render until data is loaded
   if (!dataLoaded) {
     return <Loader />;
   }
 
   return (
-    <div className="bg-gradient-to-br from-white to-[#F7FBFE]">
+    <div className="w-full mx-auto">
       <ToastContainer
         position="top-right"
         autoClose={1000}
@@ -386,37 +498,33 @@ const BasicInformation = () => {
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 px-6 pt-6 pb-4 border-b border-[#3E98C7]/20 bg-[#3E98C7]/5 rounded-t-2xl">
-        <div className="mb-2 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#2A6476] flex items-center gap-3">
-            <span className="p-2 bg-white/70 rounded-xl border border-[#3E98C7]/30">
-              <HiOutlineUser className="w-6 h-6 text-[#3E98C7]" />
-            </span>
-            {bi("Basic Information")}
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            Manage your basic profile details / अपनी बुनियादी प्रोफ़ाइल जानकारी प्रबंधित करें
-          </p>
-        </div>
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+          <span className="p-2 bg-teal-50 rounded-lg text-teal-600">
+            <HiOutlineUser className="w-6 h-6" />
+          </span>
+          {bi("Basic Information")}
+        </h2>
+        <p className="text-slate-500 ml-12 text-sm">
+          Manage your basic profile details / अपनी बुनियादी प्रोफ़ाइल जानकारी प्रबंधित करें
+        </p>
       </div>
 
-      <div className="px-6 pb-6">
-        <div className="grid grid-cols-1 gap-4">
-          {fields.map((f) => (
-            <EditableField
-              key={f.field}
-              label={f.label}
-              field={f.field}
-              value={f.value}
-              isEditing={!!editingFields[f.field]}
-              onToggleEdit={(state) => toggleEditingField(f.field, state)}
-              onSave={(v) => handleSave(f.field, v)}
-              inputType={f.inputType}
-              options={f.options}
-              error={errors[f.field]}
-            />
-          ))}
-        </div>
+      <div className="space-y-4">
+        {fields.map((f) => (
+          <EditableField
+            key={f.field}
+            label={f.label}
+            field={f.field}
+            value={f.value}
+            isEditing={!!editingFields[f.field]}
+            onToggleEdit={(state) => toggleEditingField(f.field, state)}
+            onSave={(v) => handleSave(f.field, v)}
+            inputType={f.inputType}
+            options={f.options}
+            error={errors[f.field]}
+          />
+        ))}
       </div>
     </div>
   );

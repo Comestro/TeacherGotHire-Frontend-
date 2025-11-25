@@ -992,13 +992,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
               className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8"
             >
               <div className="bg-background p-6 sm:p-8 text-center">
-                <div className="max-w-lg mx-auto">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-text rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                    <FaGraduationCap className="text-white text-2xl sm:text-3xl" aria-hidden="true" />
+                <div className="w-full mx-auto">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <FaGraduationCap className="text-slate-500 text-2xl sm:text-3xl" aria-hidden="true" />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">Start Your Assessment / परीक्षा शुरू करें</h3> {/* Adjust text size/margin */}
-                  <p className="text-sm sm:text-base text-gray-600"> {/* Adjust text size */}
-                    Follow the steps above: select category, subject, and level to begin.  ऊपर दिए गए चरणों का पालन करें: शुरू करने के लिए श्रेणी, विषय और स्तर चुनें।
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-400 mb-2 sm:mb-3">Start Your Assessment / परीक्षा शुरू करें</h3> {/* Adjust text size/margin */}
+                  <p className="text-sm sm:text-base text-gray-400"> {/* Adjust text size */}
+                    Follow the steps above: select category, subject, and level to begin. <br/> ऊपर दिए गए चरणों का पालन करें: शुरू करने के लिए श्रेणी, विषय और स्तर चुनें।
                   </p>
                 </div>
               </div>

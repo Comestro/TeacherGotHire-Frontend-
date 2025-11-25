@@ -254,12 +254,12 @@ function TeacherDashboard() {
         />
       )}
 
-      <div className="min-h-screen px-4 sm:px-6">
+      <div className="min-h-screen">
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
             {/* Passkey Request Status Banner - Compact Version */}
-            <div className="pt-6 space-y-4 mb-3">
+            <div className="space-y-4 mb-3">
               {passkeyStatus?.passkey && passkeyStatus?.center && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}

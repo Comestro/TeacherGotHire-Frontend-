@@ -8,7 +8,7 @@ const EditPersonalProfile = () => {
 
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex">
       <div className="flex flex-col w-full">
         <BasicInformation />
         <AddressProfileCard />
