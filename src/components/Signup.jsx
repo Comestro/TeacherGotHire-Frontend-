@@ -119,6 +119,7 @@ function SignUpPage() {
   };
 
   const signup = async ({ Fname, Lname, email, password }) => {
+    email = email.toLowerCase();
     setError("");
     setLoading(true);
 

@@ -17,7 +17,9 @@ import InterviewCard from "./InterviewCard";
 import ExamCenterModal from "./passkeyCard";
 import { checkPasskey } from "../../../services/examServices";
 
-const FilterdExamCard = () => {
+import { forwardRef, useImperativeHandle } from "react";
+
+const FilterdExamCard = forwardRef((props, ref) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -102,6 +104,28 @@ const FilterdExamCard = () => {
 
     return sortedInterviews[0]?.status;
   };
+
+  useImperativeHandle(ref, () => ({
+    openInterview: (categoryId, subjectId) => {
+      // Find category and subject objects
+      const category = classCategories?.find(c => c.id === categoryId);
+      const subject = category?.subjects?.find(s => s.id === subjectId);
+
+      if (category && subject) {
+        setSelectedCategory(category);
+        setSelectedSubject(subject);
+        setSelectedLevel(null);
+        setExamReady(false);
+        setShowCategoryPanel(false);
+        setShowSubjectPanel(false);
+        setShowLevelPanel(false);
+        setShowInterviewPanel(true);
+      }
+    },
+    resetView: () => {
+      resetSelection();
+    }
+  }));
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -395,43 +419,53 @@ const FilterdExamCard = () => {
               <div className="p-4 sm:p-6"> {/* Adjust padding */}
                 {classCategories?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"> {/* Adjust gap */}
-                    {classCategories?.map((category) => (
-                      <motion.button // Change to button
-                        key={category.id}
-                        type="button" // Add type
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleCategorySelect(category)}
-                        className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
-                          selectedCategory?.id === category.id
-                            ? 'border-sky-500 ring-sky-300 focus:ring-sky-500' // Changed from blue
-                            : 'border-gray-200 hover:border-sky-300 focus:ring-sky-500' // Changed from blue
-                          }`}
-                        aria-pressed={selectedCategory?.id === category.id} // Add aria-pressed
-                      >
-                        <div className={`p-3 sm:p-4 transition-colors duration-200 ${ // Adjust padding
-                          selectedCategory?.id === category.id ? 'bg-sky-50' : 'bg-white' // Changed from blue
-                          }`}>
-                          <div className="flex items-start">
-                            <div className={`p-2 sm:p-3 rounded-md mr-3 flex-shrink-0 transition-colors duration-200 ${ // Adjust padding/radius
-                              selectedCategory?.id === category.id
-                                ? 'bg-sky-500 text-white' // Changed from blue
-                                : 'bg-sky-100 text-sky-600' // Changed from blue
-                              }`}>
-                              <FaGraduationCap size={20} sm:size={24} aria-hidden="true" /> {/* Adjust size */}
+                    {classCategories?.map((category) => {
+                      const isCategoryQualified = qualifiedSubjects.some(q => q.categoryId === category.id);
+                      return (
+                        <motion.button // Change to button
+                          key={category.id}
+                          type="button" // Add type
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleCategorySelect(category)}
+                          className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${ // Use button styles, focus ring
+                            selectedCategory?.id === category.id
+                              ? 'border-sky-500 ring-sky-300 focus:ring-sky-500' // Changed from blue
+                              : 'border-gray-200 hover:border-sky-300 focus:ring-sky-500' // Changed from blue
+                            }`}
+                          aria-pressed={selectedCategory?.id === category.id} // Add aria-pressed
+                        >
+                          {isCategoryQualified && (
+                            <div className="absolute top-0 right-0 z-10">
+                              <div className="bg-green-500 text-white text-[10px] font-bold py-0.5 px-2 rounded-bl-lg uppercase tracking-wider">
+                                Qualified
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="text-base sm:text-lg font-semibold text-gray-800"> {/* Adjust text size */}
-                                {category.name}
-                              </h3>
-                              <p className="text-xs sm:text-sm text-gray-500 mt-1"> {/* Adjust text size */}
-                                {category.subjects?.length || 0} subjects
-                              </p>
+                          )}
+                          <div className={`p-3 sm:p-4 transition-colors duration-200 ${ // Adjust padding
+                            selectedCategory?.id === category.id ? 'bg-sky-50' : 'bg-white' // Changed from blue
+                            }`}>
+                            <div className="flex items-start">
+                              <div className={`p-2 sm:p-3 rounded-md mr-3 flex-shrink-0 transition-colors duration-200 ${ // Adjust padding/radius
+                                selectedCategory?.id === category.id
+                                  ? 'bg-sky-500 text-white' // Changed from blue
+                                  : isCategoryQualified ? 'bg-green-100 text-green-600' : 'bg-sky-100 text-sky-600' // Changed from blue
+                                }`}>
+                                {isCategoryQualified ? <FaCheckCircle size={20} /> : <FaGraduationCap size={20} sm:size={24} aria-hidden="true" />}
+                              </div>
+                              <div>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-800"> {/* Adjust text size */}
+                                  {category.name}
+                                </h3>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1"> {/* Adjust text size */}
+                                  {category.subjects?.length || 0} subjects
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </motion.button>
-                    ))}
+                        </motion.button>
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8 sm:py-12"> {/* Adjust padding */}
@@ -982,6 +1016,6 @@ const FilterdExamCard = () => {
       )}
     </div>
   );
-};
+});
 
 export default FilterdExamCard;

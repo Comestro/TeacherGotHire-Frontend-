@@ -121,6 +121,7 @@ const RecruiterSignUpPage = () => {
   };
 
   const recruitersign = async ({ Fname, Lname, email, password }) => {
+    email = email.toLowerCase();
     setLoading(true);
 
     try {
@@ -271,10 +272,10 @@ const RecruiterSignUpPage = () => {
                 placeholder="name@example.com"
                 type="email"
                 className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
-                    ? !errors.email
-                      ? "border-teal-500 bg-teal-50/30"
-                      : "border-red-300 bg-red-50/30"
-                    : "border-gray-200"
+                  ? !errors.email
+                    ? "border-teal-500 bg-teal-50/30"
+                    : "border-red-300 bg-red-50/30"
+                  : "border-gray-200"
                   }`}
                 {...register("email", {
                   required: "Email is required",
@@ -298,10 +299,10 @@ const RecruiterSignUpPage = () => {
                 placeholder="Create a password"
                 type={showPassword ? "text" : "password"}
                 className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
-                    ? !errors.password
-                      ? "border-teal-500 bg-teal-50/30"
-                      : "border-red-300 bg-red-50/30"
-                    : "border-gray-200"
+                  ? !errors.password
+                    ? "border-teal-500 bg-teal-50/30"
+                    : "border-red-300 bg-red-50/30"
+                  : "border-gray-200"
                   }`}
                 {...register("password", {
                   required: "Password is required",
