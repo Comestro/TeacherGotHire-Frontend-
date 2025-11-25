@@ -355,7 +355,7 @@ const ExamPortal = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 w-full select-none">
+    <div className="flex bg-gray-50 w-full select-none">
       {/* Security Violation Modal */}
       {securityViolation && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">

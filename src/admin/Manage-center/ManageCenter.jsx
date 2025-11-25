@@ -120,6 +120,8 @@ export default function ManageCenter() {
     state: "",
     city: "",
     area: "",
+    phone: "",
+    alt_phone: "",
     status: false,
   });
   const [formErrors, setFormErrors] = useState({});
@@ -191,6 +193,8 @@ export default function ManageCenter() {
       state: "",
       city: "",
       area: "",
+      phone: "",
+      alt_phone: "",
       status: false,
     });
     setFormErrors({});
@@ -211,6 +215,8 @@ export default function ManageCenter() {
       state: center.state || "",
       city: center.city || "",
       area: center.area || "",
+      phone: center.phone || "",
+      alt_phone: center.alt_phone || "",
       status: Boolean(center.status),
     });
     setFormErrors({});
@@ -277,6 +283,8 @@ export default function ManageCenter() {
     else if (!/^\d{6}$/.test(form.pincode)) errors.pincode = "Pincode must be 6 digits";
     if (!form.city) errors.city = "City required";
     if (!form.state) errors.state = "State required";
+    if (!form.phone) errors.phone = "Phone number required";
+    else if (!/^\d{10}$/.test(form.phone)) errors.phone = "Phone must be 10 digits";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -301,6 +309,8 @@ export default function ManageCenter() {
           state: form.state,
           city: form.city,
           area: form.area,
+          phone: form.phone,
+          alt_phone: form.alt_phone || null,
           status: form.status,
         };
         await updateCenterManager(selectedCenter.id, payload);
@@ -323,6 +333,8 @@ export default function ManageCenter() {
             state: form.state,
             city: form.city,
             area: form.area,
+            phone: form.phone,
+            alt_phone: form.alt_phone || null,
             status: form.status,
           },
         };
@@ -338,7 +350,25 @@ export default function ManageCenter() {
       setIsModalOpen(false);
     } catch (err) {
       console.error("submit error:", err);
-      showSnack("Failed to save exam center", "error");
+      let errorMsg = "Failed to save exam center";
+
+      // Handle specific API error format
+      const apiError = err?.response?.data;
+      if (apiError?.status === "error" && Array.isArray(apiError?.errors) && apiError.errors.length > 0) {
+        const detail = apiError.errors[0]?.detail;
+        if (detail) {
+          errorMsg = detail;
+          // Make unique constraint errors more user-friendly
+          if (detail.includes("UNIQUE constraint failed")) {
+            if (detail.includes("email")) errorMsg = "This email address is already in use.";
+            else if (detail.includes("username")) errorMsg = "This username is already taken.";
+          }
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+
+      showSnack(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -387,6 +417,10 @@ export default function ManageCenter() {
     if (name === "pincode") {
       if (!/^\d*$/.test(val) || val.length > 6) return;
     }
+    // restrict phone numeric length
+    if (name === "phone" || name === "alt_phone") {
+      if (!/^\d*$/.test(val) || val.length > 10) return;
+    }
     setForm((f) => ({ ...f, [name]: val }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
 
@@ -404,10 +438,12 @@ export default function ManageCenter() {
       c.city,
       c.state,
       c.pincode,
+      c.phone || "",
+      c.alt_phone || "",
       c.user?.email || "",
       c.status ? "Active" : "Inactive",
     ]);
-    const header = ["ID", "Center", "Area", "City", "State", "Pincode", "Manager Email", "Status"];
+    const header = ["ID", "Center", "Area", "City", "State", "Pincode", "Phone", "Alt Phone", "Manager Email", "Status"];
     const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
     const a = document.createElement("a");
@@ -447,6 +483,11 @@ export default function ManageCenter() {
 
           <Box display="flex" alignItems="center" mb={1}>
             <PhoneIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+            <Typography variant="body2">{center.phone} {center.alt_phone ? `/ ${center.alt_phone}` : ""}</Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" mb={1}>
+            <LocationIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
             <Typography variant="body2">{center.pincode}</Typography>
           </Box>
 
@@ -483,6 +524,8 @@ export default function ManageCenter() {
         centerName: c.center_name || "",
         location: `${c.area || ""}, ${c.city || ""}, ${c.state || ""}`,
         pincode: c.pincode || "",
+        phone: c.phone || "",
+        alt_phone: c.alt_phone || "",
         manager: c.user ? `${c.user.Fname || ""} ${c.user.Lname || ""}`.trim() : "",
         email: c.user?.email || "",
         status: Boolean(c.status),
@@ -566,14 +609,16 @@ export default function ManageCenter() {
         ) : isMobile ? (
           <Box p={2}>{renderMobileCards()}</Box>
         ) : (
-          <Box sx={{width: "100%" }}>
+          <Box sx={{ width: "100%" }}>
             <DataGrid
-              
+
               rows={dgRows}
               columns={[
                 { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
                 { field: "location", headerName: "Location", flex: 1.8, minWidth: 250 },
                 { field: "pincode", headerName: "Pincode", width: 110 },
+                { field: "phone", headerName: "Phone", width: 120 },
+                { field: "alt_phone", headerName: "Alt Phone", width: 120 },
                 {
                   field: "manager",
                   headerName: "Manager",
@@ -661,6 +706,13 @@ export default function ManageCenter() {
 
               <Grid item xs={12}>
                 <TextField label="Area" name="area" value={form.area} onChange={handleInput} fullWidth required error={!!formErrors.area} helperText={formErrors.area} disabled={isSubmitting} />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField label="Phone" name="phone" value={form.phone} onChange={handleInput} fullWidth required error={!!formErrors.phone} helperText={formErrors.phone} disabled={isSubmitting} slotProps={{ htmlInput: { maxLength: 10 } }} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField label="Alt Phone" name="alt_phone" value={form.alt_phone} onChange={handleInput} fullWidth disabled={isSubmitting} slotProps={{ htmlInput: { maxLength: 10 } }} />
               </Grid>
 
               <Grid item xs={12} sm={4}>

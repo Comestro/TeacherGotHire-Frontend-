@@ -46,7 +46,7 @@ import {
   FiExternalLink
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
-import { getInterview, updateInterview } from "../../services/adminInterviewApi";
+import { getInterview, updateInterview, createInterview } from "../../services/adminInterviewApi";
 import debounce from "lodash/debounce";
 
 dayjs.extend(isBetween);
@@ -113,7 +113,23 @@ export default function InterviewManagementRedesign() {
   const [detailsModal, setDetailsModal] = useState({ open: false, data: null });
   const [scheduleModal, setScheduleModal] = useState({ open: false, data: null });
   const [rejectModal, setRejectModal] = useState({ open: false, data: null });
+
   const [completeModal, setCompleteModal] = useState({ open: false, data: null });
+  const [createModal, setCreateModal] = useState(false);
+
+  // create form state
+  const [createForm, setCreateForm] = useState({
+    user: "",
+    subject: "",
+    level: "",
+    class_category: "",
+    time: dayjs(),
+    link: "",
+    status: "requested",
+    reject_reason: "",
+    grade: "",
+    attempt: 1
+  });
 
   // form / action state
   const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
@@ -343,6 +359,42 @@ export default function InterviewManagementRedesign() {
     }
   };
 
+  const handleCreateInterview = async () => {
+    setActionLoading(true);
+    try {
+      const payload = {
+        ...createForm,
+        time: createForm.time ? createForm.time.format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
+        grade: createForm.grade ? Number(createForm.grade) : null,
+        user: Number(createForm.user),
+        subject: Number(createForm.subject),
+        level: Number(createForm.level),
+        class_category: Number(createForm.class_category),
+        attempt: Number(createForm.attempt)
+      };
+      await createInterview(payload);
+      setSnackbar({ open: true, message: "Interview created successfully", severity: "success" });
+      setCreateModal(false);
+      setCreateForm({
+        user: "",
+        subject: "",
+        level: "",
+        class_category: "",
+        time: dayjs(),
+        link: "",
+        status: "requested",
+        reject_reason: "",
+        grade: "",
+        attempt: 1
+      });
+      fetchInterviews();
+    } catch (err) {
+      setSnackbar({ open: true, message: err?.response?.data?.message || err?.message || "Failed to create interview", severity: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // ---------- render helpers ----------
   const renderCard = (row) => (
     <Card key={row.id} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', transition: 'all 0.2s', '&:hover': { borderColor: 'primary.main', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
@@ -538,6 +590,16 @@ export default function InterviewManagementRedesign() {
                 <FiRefreshCw />
               </IconButton>
             </Tooltip>
+
+            <Button
+              variant="contained"
+              startIcon={<FiCalendar />}
+              onClick={() => setCreateModal(true)}
+              size="medium"
+              sx={{ borderRadius: 2, textTransform: 'none' }}
+            >
+              Add Interview
+            </Button>
 
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', p: 0.5 }}>
               <Tooltip title="Table View">
@@ -897,6 +959,79 @@ export default function InterviewManagementRedesign() {
               </Box>
             </>
           )}
+        </CenteredPaper>
+      </Modal>
+
+      {/* CREATE MODAL */}
+      <Modal open={createModal} onClose={() => setCreateModal(false)}>
+        <CenteredPaper>
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={700}>Create Interview Record</Typography>
+            <IconButton size="small" onClick={() => setCreateModal(false)}><FiX /></IconButton>
+          </Box>
+
+          <Box sx={{ p: 3 }}>
+            <Grid container spacing={2}>
+              <Grid xs={12} sm={6}>
+                <TextField label="User ID" type="number" fullWidth size="small" value={createForm.user} onChange={(e) => setCreateForm({ ...createForm, user: e.target.value })} />
+              </Grid>
+              <Grid xs={12} sm={6}>
+                <TextField label="Subject ID" type="number" fullWidth size="small" value={createForm.subject} onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })} />
+              </Grid>
+              <Grid xs={12} sm={6}>
+                <TextField label="Level ID" type="number" fullWidth size="small" value={createForm.level} onChange={(e) => setCreateForm({ ...createForm, level: e.target.value })} />
+              </Grid>
+              <Grid xs={12} sm={6}>
+                <TextField label="Class Category ID" type="number" fullWidth size="small" value={createForm.class_category} onChange={(e) => setCreateForm({ ...createForm, class_category: e.target.value })} />
+              </Grid>
+
+              <Grid xs={12} sm={6}>
+                <TextField select label="Status" fullWidth size="small" value={createForm.status} onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}>
+                  <MenuItem value="requested">Requested</MenuItem>
+                  <MenuItem value="scheduled">Scheduled</MenuItem>
+                  <MenuItem value="fulfilled">Fulfilled</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid xs={12} sm={6}>
+                <TextField label="Attempt" type="number" fullWidth size="small" value={createForm.attempt} onChange={(e) => setCreateForm({ ...createForm, attempt: e.target.value })} />
+              </Grid>
+
+              <Grid xs={12}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Interview Time"
+                    value={createForm.time}
+                    onChange={(v) => setCreateForm({ ...createForm, time: v })}
+                    slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+
+              <Grid xs={12}>
+                <TextField label="Meeting Link" fullWidth size="small" value={createForm.link} onChange={(e) => setCreateForm({ ...createForm, link: e.target.value })} />
+              </Grid>
+
+              {createForm.status === 'rejected' && (
+                <Grid xs={12}>
+                  <TextField label="Rejection Reason" fullWidth multiline rows={2} size="small" value={createForm.reject_reason} onChange={(e) => setCreateForm({ ...createForm, reject_reason: e.target.value })} />
+                </Grid>
+              )}
+
+              {createForm.status === 'fulfilled' && (
+                <Grid xs={12}>
+                  <TextField label="Grade (0-10)" type="number" fullWidth size="small" value={createForm.grade} onChange={(e) => setCreateForm({ ...createForm, grade: e.target.value })} slotProps={{ htmlInput: { step: 0.1, min: 0, max: 10 } }} />
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+
+          <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <Button onClick={() => setCreateModal(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleCreateInterview} disabled={actionLoading}>
+              {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Create Record'}
+            </Button>
+          </Box>
         </CenteredPaper>
       </Modal>
 
