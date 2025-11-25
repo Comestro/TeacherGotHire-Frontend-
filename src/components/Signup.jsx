@@ -228,7 +228,7 @@ function SignUpPage() {
       <div className="w-full animate-fadeIn">
         <div className="space-y-2 mb-8">
           <h2 className="text-3xl font-bold text-gray-800">
-            Join as Teacher
+            Join as a Teacher
           </h2>
           <p className="text-gray-500">
             Create your account to start teaching

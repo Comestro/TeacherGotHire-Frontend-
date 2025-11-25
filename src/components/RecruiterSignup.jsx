@@ -223,7 +223,7 @@ const RecruiterSignUpPage = () => {
       <div className="w-full animate-fadeIn">
         <div className="space-y-2 mb-8">
           <h2 className="text-3xl font-bold text-gray-800">
-            Join as Recruiter
+            Join as a Recruiter
           </h2>
           <p className="text-gray-500">
             Find the perfect candidates for your institution
