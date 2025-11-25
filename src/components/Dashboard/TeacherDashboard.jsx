@@ -359,7 +359,7 @@ function TeacherDashboard() {
                           {hasAppliedJobs ? (
                             <>Applied for <span className="font-bold text-blue-600">{appliedJobsCount}</span> positions. Under review.</>
                           ) : (
-                            <>Eligible for <span className="font-bold text-primary">{eligibleExams.length}</span> subjects. Connect with schools today.</>
+                            <>Eligible for <span className="font-bold text-primary">{eligibleExams.length}</span> subjects. Post your profile with institutes.</>
                           )}
                         </p>
                       </div>

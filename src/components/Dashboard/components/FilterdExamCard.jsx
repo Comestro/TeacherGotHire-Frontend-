@@ -711,27 +711,55 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                     {/* Center Exam Card */}
                     {levels.filter(l => l.level_code === 2.5).map(level => {
                       const isLocked = !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0);
+                      const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
+
+                      // Find the attempt for this level to get the score
+                      const attempt = attempts?.find(a =>
+                        a?.exam?.class_category_id === selectedCategory?.id &&
+                        a?.exam?.subject_id === selectedSubject?.id &&
+                        a?.exam?.level_code === 2.5
+                      );
 
                       return (
-                        <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : 'border-purple-200 shadow-sm'
+                        <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : isQualified ? 'border-green-200' : 'border-purple-200 shadow-sm'
                           }`}>
                           {isLocked && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
                           <div className="p-4 flex flex-col gap-3 h-full">
                             <div className="flex items-center gap-3">
-                              <div className={`w-8 md:w-10 h-8 md:h-10 rounded-full flex items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-600'
+                              <div className={`w-8 md:w-10 h-8 md:h-10 rounded-full flex items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : isQualified ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'
                                 }`}>
-                                <FaMapMarkerAlt />
+                                {isQualified ? <FaCheckCircle /> : <FaMapMarkerAlt />}
                               </div>
-                              <h3 className="font-bold text-sm md:text-base text-gray-800">Center Exam</h3>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-sm md:text-base text-gray-800 truncate">Center Exam</h3>
+                                {isQualified && attempt?.calculate_percentage !== undefined && (
+                                  <span className="text-xs font-semibold text-green-600">
+                                    Score: {attempt.calculate_percentage}%
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-sm text-gray-600 flex-1">Visit an exam center for verification.</p>
+                            <p className="text-sm text-gray-600 flex-1">
+                              {isQualified
+                                ? "You have successfully completed the center exam."
+                                : "Visit an exam center for verification."}
+                            </p>
                             {!isLocked && (
-                              <button
-                                onClick={() => handleLevelSelect(level)}
-                                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm"
-                              >
-                                Select Center
-                              </button>
+                              <div className="mt-auto">
+                                {isQualified ? (
+                                  <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                    <FaCheckCircle className="mr-1.5" size={12} />
+                                    Qualified
+                                  </span>5734
+                                ) : (
+                                  <button
+                                    onClick={() => handleLevelSelect(level)}
+                                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm"
+                                  >
+                                    Select Center
+                                  </button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -748,16 +776,60 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                             }`}>
                             <FaUserTie />
                           </div>
-                          <h3 className="font-bold text-sm md:text-base text-gray-800">Interview</h3>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-sm md:text-base text-gray-800">Interview</h3>
+                            {(() => {
+                              const relevantAttempt = attempts?.find(attempt =>
+                                attempt?.exam?.class_category_id === selectedCategory?.id &&
+                                attempt?.exam?.subject_id === selectedSubject?.id &&
+                                (attempt?.exam?.level_code === 2.0 || attempt?.exam?.level_code === 2)
+                              );
+                              const latestInterview = relevantAttempt?.interviews?.sort((a, b) =>
+                                new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+                              )[0];
+
+                              if (latestInterview?.grade !== undefined && latestInterview?.grade !== null) {
+                                return (
+                                  <span className={`text-xs font-semibold ${latestInterview.grade >= 6 ? 'text-green-600' : 'text-amber-600'}`}>
+                                    Grade: {latestInterview.grade}/10
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
                         </div>
                         <p className="text-sm text-gray-600 flex-1">Final interview assessment.</p>
                         {hasLevel2Qualified && (
-                          <button
-                            onClick={handleInterviewSelect}
-                            className="w-full px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium text-sm"
-                          >
-                            {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) ? 'View Status' : 'Schedule'}
-                          </button>
+                          <div className="mt-auto">
+                            {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) ? (
+                              <div className="flex flex-col gap-2">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium w-fit ${getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'fulfilled'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-amber-100 text-amber-700'
+                                  }`}>
+                                  {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'fulfilled' ? (
+                                    <><FaCheckCircle className="mr-1.5" size={12} /> Qualified</>
+                                  ) : (
+                                    <><FaClock className="mr-1.5" size={12} /> {getInterviewStatus(selectedCategory?.id, selectedSubject?.id)}</>
+                                  )}
+                                </span>
+                                <button
+                                  onClick={handleInterviewSelect}
+                                  className="text-sm text-cyan-600 hover:text-cyan-700 font-semibold text-left"
+                                >
+                                  View Details →
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={handleInterviewSelect}
+                                className="w-full px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium text-sm"
+                              >
+                                Schedule
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
