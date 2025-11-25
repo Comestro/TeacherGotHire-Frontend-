@@ -806,7 +806,6 @@ const FilterdExamCard = () => {
                   >
                     <FaChevronLeft className="mr-2" aria-hidden="true" /> Change Selection
                   </button>
-
                 </div>
               </div>
             </div>
@@ -814,7 +813,7 @@ const FilterdExamCard = () => {
         )}
 
         {/* Exam Ready Section */}
-        {examReady && !error && !showInterviewPanel && (
+        {examReady && selectedLevel && !error && !showInterviewPanel && (
           <motion.div
             id="exam-ready-section"
             ref={examReadyRef}
