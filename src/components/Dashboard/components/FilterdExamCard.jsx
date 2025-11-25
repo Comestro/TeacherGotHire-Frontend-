@@ -10,9 +10,12 @@ import {
   FaArrowRight, FaSpinner, FaExclamationCircle,
   FaCheckCircle, FaAngleRight, FaChevronLeft,
   FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock,
-  FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp
+  FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp,
+  FaLock, FaMapMarkerAlt, FaUserTie
 } from "react-icons/fa";
 import InterviewCard from "./InterviewCard";
+import ExamCenterModal from "./passkeyCard";
+import { checkPasskey } from "../../../services/examServices";
 
 const FilterdExamCard = () => {
   const dispatch = useDispatch();
@@ -314,6 +317,58 @@ const FilterdExamCard = () => {
     return 0;
   }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
 
+  // Render Journey Map
+  const renderJourneyMap = () => {
+    return (
+      <div className="mb-8 px-4">
+        <div className="flex items-center justify-between relative">
+          <div className="absolute left-0 top-1/2 w-full h-1 bg-gray-100 -z-10 rounded-full" />
+
+          {/* Step 1: Level 1 */}
+          <div className="flex flex-col items-center bg-white px-2 z-10">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel1Qualified
+              ? 'bg-green-500 border-green-500 text-white'
+              : 'bg-white border-blue-500 text-blue-500'
+              }`}>
+              {hasLevel1Qualified ? <FaCheckCircle /> : <span className="font-bold">1</span>}
+            </div>
+            <span className="text-xs font-semibold mt-2 text-gray-600">Level 1</span>
+          </div>
+
+          {/* Connector 1-2 */}
+          <div className={`flex-1 h-1 transition-all ${hasLevel1Qualified ? 'bg-green-500' : 'bg-gray-200'}`} />
+
+          {/* Step 2: Level 2 */}
+          <div className="flex flex-col items-center bg-white px-2 z-10">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel2Qualified
+              ? 'bg-green-500 border-green-500 text-white'
+              : hasLevel1Qualified
+                ? 'bg-white border-blue-500 text-blue-500'
+                : 'bg-gray-100 border-gray-300 text-gray-400'
+              }`}>
+              {hasLevel2Qualified ? <FaCheckCircle /> : <span className="font-bold">2</span>}
+            </div>
+            <span className="text-xs font-semibold mt-2 text-gray-600">Level 2</span>
+          </div>
+
+          {/* Connector 2-3 */}
+          <div className={`flex-1 h-1 transition-all ${hasLevel2Qualified ? 'bg-green-500' : 'bg-gray-200'}`} />
+
+          {/* Step 3: Final Verification */}
+          <div className="flex flex-col items-center bg-white px-2 z-10">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel2Qualified
+              ? 'bg-white border-blue-500 text-blue-500'
+              : 'bg-gray-100 border-gray-300 text-gray-400'
+              }`}>
+              <FaUserTie />
+            </div>
+            <span className="text-xs font-semibold mt-2 text-gray-600">Verification</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
       {/* Main selection column */}
@@ -502,186 +557,167 @@ const FilterdExamCard = () => {
             </motion.div>
           )}
 
-          {/* Level Panel */}
+          {/* Level Panel - Redesigned Flow */}
           {showLevelPanel && (
             <motion.div
               key="levels"
               {...pageTransition}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8"
             >
               <div className="bg-background p-4 sm:p-6 text-text">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg sm:text-xl font-bold flex items-center">
                     <FaLayerGroup className="mr-2 sm:mr-3" aria-hidden="true" />
-                    Select Level
+                    Assessment Journey
                   </h2>
                   <button
-                    type="button" // Add type
+                    type="button"
                     onClick={handleBackToSubjects}
                     className="bg-primary text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                    aria-label="Back to subjects" // Add aria-label
                   >
                     <FaChevronLeft className="mr-1" aria-hidden="true" />
                     Back
                   </button>
                 </div>
-                <p className="text-text mt-1 text-sm sm:text-base">
-                  Choose the assessment level for <span className="font-medium">{selectedSubject?.subject_name}</span>
+
+                {/* Visual Journey Map */}
+                {renderJourneyMap()}
+
+                <p className="text-text mt-1 text-sm sm:text-base text-center">
+                  Current Subject: <span className="font-medium">{selectedSubject?.subject_name}</span>
                 </p>
               </div>
 
-              <div className="p-4 sm:p-3">
-                {/* Info banner for Level 2.5 eligibility */}
-                {checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0) && (
-                  <div className="mb-4 sm:mb-2 p-2 sm:px-4">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0">
-                        <FaCheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-success mt-0.5" aria-hidden="true" />
-                      </div>
-                      <div className="ml-3 flex-1 text-success">
-                        <h3 className="text-sm sm:text-base font-semibold">
-                          Congratulations! You're now eligible for Level 2 (from Exam Center) and Interview Scheduling.
-                        </h3>
-                        <p className="mt-1 text-xs sm:text-sm text-text">
-                          You've passed Level 2. You can now take at an exam center for in-person verification, and you're also eligible to schedule your interview!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 p-3">
-                  {levels.map((level) => {
-                    const isQualified = checkLevelQualification(
-                      selectedCategory?.id,
-                      selectedSubject?.id,
-                      level?.level_code
-                    );
-
-                    const interviewStatus = getInterviewStatus(selectedCategory?.id, selectedSubject?.id);
-                    const isLocked =
-                      (level?.level_code === 2.0 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0)) ||
-                      (level?.level_code === 2.5 && !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0));
-
+              <div className="p-4 sm:p-6 bg-gray-50/50">
+                <div className="space-y-4 max-w-3xl mx-auto">
+                  {/* Level 1 Card */}
+                  {levels.filter(l => l.level_code === 1.0).map(level => {
+                    const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0);
                     return (
-                      <motion.button // Change to button
-                        key={level?.id}
-                        type="button" // Add type
-                        whileHover={!isLocked ? { scale: 1.02 } : {}}
-                        whileTap={!isLocked ? { scale: 0.98 } : {}}
-                        onClick={() => !isLocked && handleLevelSelect(level)}
-                        disabled={isLocked} // Add disabled attribute
-                        className={`rounded-lg border-2 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${isLocked
-                          ? 'opacity-60 cursor-not-allowed'
-                          : 'cursor-pointer hover:border-primary/60 focus:ring-primary'
-                          } ${selectedLevel?.id === level?.id
-                            ? 'border-primary ring-primary/30 focus:ring-primary'
-                            : isQualified
-                              ? 'border-success-light bg-success-light/50 hover:border-success focus:ring-success'
-                              : 'border-gray-200 hover:border-gray-300 focus:ring-primary'
-                          }`}
-                        aria-pressed={selectedLevel?.id === level?.id} // Add aria-pressed
-                      >
-                        {isLocked && (
-                          <div className="absolute inset-0 bg-gray-500/30 backdrop-blur-[1px] z-10 flex items-center justify-center p-2">
-                            <div className="bg-gray-800/90 text-white text-xs sm:text-sm font-medium py-1 px-2 sm:py-1.5 sm:px-3 rounded-md text-center">
-                              {level?.level_code === 2.0
-                                ? "Complete Level 1 First"
-                                : level?.level_code === 2.5
-                                  ? "Complete Level 2 (Online) First"
-                                  : "Complete Previous Level First"}
-                            </div>
+                      <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isQualified ? 'border-green-200' : 'border-blue-200 shadow-sm'
+                        }`}>
+                        <div className="p-4 flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isQualified ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                            }`}>
+                            {isQualified ? <FaCheckCircle size={24} /> : <span className="text-xl font-bold">1</span>}
                           </div>
-                        )}
-
-                        <div className={`p-4 sm:p-5 transition-colors duration-200 ${selectedLevel?.id === level?.id ? 'bg-primary/5' : ''
-                          }`}>
-                          <div className="flex items-start">
-
-                            <div className="flex-1">
-                              <div className="flex flex-col sm:flex-row justify-between items-start gap-1 mb-1.5 sm:mb-2"> {/* Adjust layout/gap */}
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">{level?.name}</h3> {/* Adjust text size */}
-
-                              </div>
-                              <p className="text-sm text-gray-600 mb-2 sm:mb-3">
-                                {level?.level_code === 1.0 && "Basic concepts assessment for beginners"}
-                                {level?.level_code === 2.0 && "Exam center assessment - In-person verification"}
-                                {level?.level_code === 2.5 && "Advanced problem solving - Online assessment"}
-                                {!level?.level_code && "Standard assessment level"}
-                              </p>
-
-                              {/* Status Badges */}
-                              <div className="flex flex-wrap gap-2">
-                                {isQualified && (
-                                  <div className="flex items-center text-green-700 bg-green-100 py-1 px-2.5 rounded-md border border-green-200 text-xs"> {/* Adjust padding/size */}
-                                    <FaCheckCircle className="mr-1.5" aria-hidden="true" />
-                                    <span className="font-medium">Qualified</span>
-                                  </div>
-                                )}
-
-                                {level?.level_code === 2.0 && interviewStatus && (
-                                  <div className={`flex items-center py-1 px-2.5 rounded-md border text-xs ${ // Adjust padding/size
-                                    interviewStatus === 'fulfilled' ? 'text-green-700 bg-green-100 border-green-200'
-                                      : interviewStatus === 'scheduled' ? 'text-primary bg-primary/10 border-primary/30'
-                                        : 'text-amber-700 bg-amber-100 border-amber-200' // Kept amber
-                                    }`}>
-                                    {interviewStatus === 'fulfilled' && <FaCheckCircle className="mr-1.5" aria-hidden="true" />}
-                                    {interviewStatus === 'scheduled' && <FaCalendarAlt className="mr-1.5" aria-hidden="true" />}
-                                    {interviewStatus === 'pending' && <FaClock className="mr-1.5" aria-hidden="true" />}
-                                    <span className="font-medium">
-                                      Interview: {interviewStatus.charAt(0).toUpperCase() + interviewStatus.slice(1)}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">Level 1: Basic Assessment</h3>
+                            <p className="text-sm text-gray-600">Fundamental concepts check. Mandatory to proceed.</p>
                           </div>
+                          {isQualified ? (
+                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                          ) : (
+                            <button
+                              onClick={() => handleLevelSelect(level)}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+                            >
+                              Start Exam
+                            </button>
+                          )}
                         </div>
-                      </motion.button>
+                      </div>
                     );
                   })}
 
-                  {/* Interview Assessment Card - Integrated into the grid */}
-                  {checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0) && (
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleInterviewSelect}
-                      className="rounded-lg border-2 border-cyan-200 bg-cyan-50/50 hover:border-cyan-400 hover:bg-cyan-50 overflow-hidden relative text-left w-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                    >
-                      <div className="p-4 sm:p-5">
-                        <div className="flex items-start">
-                          <div className="flex-1">
-                            <div className="flex flex-col sm:flex-row justify-between items-start gap-1 mb-1.5 sm:mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-gray-800 order-1 sm:order-none">Interview Assessment</h3>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-2 sm:mb-3">
-                              Schedule and manage your interview for final verification.
-                            </p>
+                  {/* Connector */}
+                  <div className="h-6 w-0.5 bg-gray-300 mx-auto" />
 
-                            <div className="flex flex-wrap gap-2">
-                              {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) ? (
-                                <div className={`flex items-center py-1 px-2.5 rounded-md border text-xs ${getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'fulfilled' ? 'text-green-700 bg-green-100 border-green-200'
-                                  : getInterviewStatus(selectedCategory?.id, selectedSubject?.id) === 'scheduled' ? 'text-primary bg-primary/10 border-primary/30'
-                                    : 'text-amber-700 bg-amber-100 border-amber-200'
-                                  }`}>
-                                  <span className="font-medium">
-                                    Status: {getInterviewStatus(selectedCategory?.id, selectedSubject?.id).charAt(0).toUpperCase() + getInterviewStatus(selectedCategory?.id, selectedSubject?.id).slice(1)}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center text-cyan-700 bg-cyan-100 py-1 px-2.5 rounded-md border border-cyan-200 text-xs">
-                                  <FaCalendarAlt className="mr-1.5" aria-hidden="true" />
-                                  <span className="font-medium">Schedule Now</span>
-                                </div>
-                              )}
-                            </div>
+                  {/* Level 2 Card */}
+                  {levels.filter(l => l.level_code === 2.0).map(level => {
+                    const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0);
+                    const isLocked = !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0);
+
+                    return (
+                      <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : isQualified ? 'border-green-200' : 'border-blue-200 shadow-sm'
+                        }`}>
+                        {isLocked && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
+                        <div className="p-4 flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : isQualified ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                            }`}>
+                            {isLocked ? <FaLock size={20} /> : isQualified ? <FaCheckCircle size={24} /> : <span className="text-xl font-bold">2</span>}
                           </div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">Level 2: Advanced Assessment (Online)</h3>
+                            <p className="text-sm text-gray-600">In-depth subject knowledge test.</p>
+                          </div>
+                          {!isLocked && (
+                            isQualified ? (
+                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                            ) : (
+                              <button
+                                onClick={() => handleLevelSelect(level)}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+                              >
+                                Start Exam
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
-                    </motion.button>
-                  )}
+                    );
+                  })}
+
+                  {/* Connector */}
+                  <div className="h-6 w-0.5 bg-gray-300 mx-auto" />
+
+                  {/* Final Stage: Split into Center Exam & Interview */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Center Exam Card */}
+                    {levels.filter(l => l.level_code === 2.5).map(level => {
+                      const isLocked = !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0);
+
+                      return (
+                        <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : 'border-purple-200 shadow-sm'
+                          }`}>
+                          {isLocked && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
+                          <div className="p-4 flex flex-col gap-3 h-full">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-600'
+                                }`}>
+                                <FaMapMarkerAlt />
+                              </div>
+                              <h3 className="font-bold text-base text-gray-800">Center Exam</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 flex-1">Visit an exam center for verification.</p>
+                            {!isLocked && (
+                              <button
+                                onClick={() => handleLevelSelect(level)}
+                                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm"
+                              >
+                                Select Center
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Interview Card */}
+                    <div className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${!hasLevel2Qualified ? 'border-gray-200 opacity-75' : 'border-cyan-200 shadow-sm'
+                      }`}>
+                      {!hasLevel2Qualified && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
+                      <div className="p-4 flex flex-col gap-3 h-full">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${!hasLevel2Qualified ? 'bg-gray-100 text-gray-400' : 'bg-cyan-100 text-cyan-600'
+                            }`}>
+                            <FaUserTie />
+                          </div>
+                          <h3 className="font-bold text-base text-gray-800">Interview</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 flex-1">Final interview assessment.</p>
+                        {hasLevel2Qualified && (
+                          <button
+                            onClick={handleInterviewSelect}
+                            className="w-full px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium text-sm"
+                          >
+                            {getInterviewStatus(selectedCategory?.id, selectedSubject?.id) ? 'View Status' : 'Schedule'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </motion.div>
