@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getSubjects } from "../../features/dashboardSlice";
@@ -15,7 +16,18 @@ import InterviewCard from "./components/InterviewCard";
 import { attemptsExam } from "../../features/examQuesSlice";
 import PrefrenceProfile from "../Profile/JobProfile/PrefrenceProfile";
 import { getPrefrence } from "../../features/jobProfileSlice";
-import { FaCalendarAlt } from "react-icons/fa";
+import {
+  FaCalendarAlt, FaClock, FaVideo,
+  FaCheckCircle,
+  FaHourglassHalf,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaBuilding,
+  FaRocket,
+  FaBriefcase,
+  FaArrowRight,
+  FaExclamationTriangle
+} from "react-icons/fa";
 import { checkPasskey } from "../../services/examServices";
 import ExamCenterModal from "./components/passkeyCard";
 import PhoneNumberModal from "./components/PhoneNumberModal";
@@ -242,244 +254,245 @@ function TeacherDashboard() {
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
-            {/* Passkey Request Status Banner */}
-            <div className=" pt-8">
+            {/* Passkey Request Status Banner - Compact Version */}
+            <div className="pt-6 space-y-4 mb-3">
               {passkeyStatus?.passkey && passkeyStatus?.center && (
-                <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${passkeyStatus?.status === "fulfilled"
-                  ? "border-green-400 bg-green-50"
-                  : "border-yellow-400 bg-yellow-50"
-                  }`}>
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div className="w-full">
-                      {passkeyStatus?.status === "fulfilled" ? (
-                        <>
-                          <div className="text-xl font-semibold text-green-700">Level 2 (Exam from Center) Approved</div>
-                          <div className="mt-2 text-gray-700">
-                            <p className="mb-1">
-                              <span className="font-medium">Exam Center: </span>
-                              {passkeyStatus?.center?.name || passkeyStatus?.center?.center_name}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-1">
-                              <span className="font-medium">Location: </span>
-                              {passkeyStatus?.center?.area && `${passkeyStatus.center.area}, `}
-                              {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
-                            </p>
-                            <p className="text-sm text-gray-600 mt-2">
-                              आपका अनुरोध स्वीकृत हो गया है। अब आप परीक्षा केंद्र से परीक्षा शुरू कर सकते हैं।
-                            </p>
-                          </div>
-                          <div className="mt-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsVerifyCard(true);
-                                setIsExamCenterModalOpen(true);
-                              }}
-                              className="inline-flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
-                            >
-                              Enter Verification Code & Start Exam
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-xl font-semibold text-yellow-700">Level 2 (Exam from Center) Pending</div>
-                          <div className="mt-2 text-gray-700">
-                            <p className="mb-1">
-                              <span className="font-medium">Exam Center: </span>
-                              {passkeyStatus?.center?.name || passkeyStatus?.center?.center_name}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-1">
-                              <span className="font-medium">Location: </span>
-                              {passkeyStatus?.center?.area && `${passkeyStatus.center.area}, `}
-                              {passkeyStatus?.center?.city}, {passkeyStatus?.center?.state} - {passkeyStatus?.center?.pincode}
-                            </p>
-                            <p className="text-sm text-gray-600 mt-2">
-                              आपका अनुरोध सबमिट हो चुका है और एडमिन की स्वीकृति की प्रतीक्षा में है। स्वीकृति मिलते ही आपको सूचित किया जाएगा।
-                            </p>
-                          </div>
-                          <div className="mt-3">
-                            <button
-                              type="button"
-                              disabled
-                              className="inline-flex items-center px-4 py-2 rounded-md bg-gray-400 text-white cursor-not-allowed"
-                            >
-                              Waiting for Admin Approval
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {(eligibilityLoading || jobApplyLoading) ? (
-                <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 mb-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div className="w-full">
-                      {/* Skeleton for title */}
-                      <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3 animate-pulse"></div>
-
-                      {/* Skeleton for content */}
-                      <div className="space-y-2 mb-4">
-                        <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-                        <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`rounded-xl border shadow-sm overflow-hidden ${passkeyStatus?.status === "fulfilled"
+                    ? "bg-green-50/30 border-green-200"
+                    : "bg-amber-50/30 border-amber-200"
+                    }`}
+                >
+                  <div className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className={`p-2 rounded-lg shrink-0 ${passkeyStatus?.status === "fulfilled" ? "bg-green-100 text-green-600" : "bg-amber-100 text-amber-600"
+                        }`}>
+                        {passkeyStatus?.status === "fulfilled" ? <FaCheckCircle size={18} /> : <FaHourglassHalf size={18} />}
                       </div>
 
-                      {/* Skeleton for button */}
-                      <div className="h-10 bg-gray-200 rounded-md w-48 animate-pulse"></div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className={`font-bold text-base ${passkeyStatus?.status === "fulfilled" ? "text-green-800" : "text-amber-800"
+                            }`}>
+                            {passkeyStatus?.status === "fulfilled" ? "Exam Center Approved" : "Approval Pending"}
+                          </h3>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide border ${passkeyStatus?.status === "fulfilled"
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-amber-100 text-amber-700 border-amber-200"
+                            }`}>
+                            Level 2
+                          </span>
+                        </div>
+
+                        <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1 items-center">
+                          <span className="flex items-center gap-1.5">
+                            <FaBuilding className="text-gray-400 text-xs" />
+                            <span className="font-medium">{passkeyStatus?.center?.name || passkeyStatus?.center?.center_name}</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <FaMapMarkerAlt className="text-gray-400 text-xs" />
+                            <span>{passkeyStatus?.center?.city}, {passkeyStatus?.center?.state}</span>
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ) : hasEligibleJobs ? (
-                <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${hasAppliedJobs
-                  ? "border-blue-400 bg-blue-50"
-                  : "border-primary bg-primary/5"
-                  }`}>
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div className="w-full">
-                      {hasAppliedJobs ? (
-                        <>
-                          <div className="text-xl font-semibold text-blue-700">💼 नौकरी आवेदन सक्रिय | Job Applications Active</div>
-                          <div className="mt-2 text-gray-700">
-                            <p className="mb-1">
-                              आपने <span className="font-semibold">{appliedJobsCount}</span> पदों के लिए आवेदन किया है।
-                            </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              You have applied for <span className="font-semibold">{appliedJobsCount}</span> job position(s). Your applications are being reviewed by recruiters.
-                              <br />
-                              आपके आवेदन की समीक्षा भर्तीकर्ताओं द्वारा की जा रही है।
-                            </p>
-                          </div>
-                          <div className="mt-3">
-                            <button
-                              type="button"
-                              onClick={() => navigate("/teacher/job-apply")}
-                              className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            >
-                              Manage Applications
-                            </button>
-                          </div>
-                        </>
+
+                    <div className="w-full sm:w-auto flex flex-col gap-2 shrink-0">
+                      {passkeyStatus?.status === "fulfilled" ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsVerifyCard(true);
+                            setIsExamCenterModalOpen(true);
+                          }}
+                          className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold shadow-sm hover:bg-green-700 transition-colors"
+                        >
+                          Start Exam
+                          <FaArrowRight className="ml-2 text-xs" />
+                        </button>
                       ) : (
-                        <>
-                          <div className="text-xl font-semibold text-primary">🎉 आप नौकरी के लिए आवेदन कर सकते हैं | You Can Apply for Jobs</div>
-                          <div className="mt-2 text-gray-700">
-                            <p className="mb-1">
-                              बधाई हो! आप <span className="font-semibold">{eligibleExams.length}</span> विषयों में नौकरी के लिए पात्र हैं।
-                            </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Congratulations! You are eligible to apply for jobs in <span className="font-semibold">{eligibleExams.length}</span> subject(s).
-                              <br />
-                              अभी आवेदन करें और स्कूल/संस्थानों से जुड़ें।
-                            </p>
-                          </div>
-                          <div className="mt-3">
-                            <button
-                              type="button"
-                              onClick={() => navigate("/teacher/job-apply")}
-                              className="inline-flex items-center px-5 py-2.5 rounded-md bg-gradient-to-r from-primary to-blue-600 text-white hover:from-primary/90 hover:to-blue-500 shadow-md hover:shadow-lg transition-all"
-                            >
-                              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              Apply for Jobs Now
-                            </button>
-                          </div>
-                        </>
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-medium border border-amber-200">
+                          <FaClock className="mr-1.5" />
+                          Waiting for Approval
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
+              )}
+
+              {(eligibilityLoading || jobApplyLoading) ? (
+                <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm animate-pulse h-24"></div>
+              ) : hasEligibleJobs ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={`relative overflow-hidden rounded-xl border shadow-sm ${hasAppliedJobs
+                    ? "bg-white border-blue-100"
+                    : "bg-gradient-to-r from-white to-primary/5 border-primary/20"
+                    }`}
+                >
+                  <div className="p-4 flex flex-col sm:flex-row gap-4 items-center justify-between relative z-10">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`p-2 rounded-lg shrink-0 ${hasAppliedJobs ? "bg-blue-50 text-blue-600" : "bg-primary/10 text-primary"
+                        }`}>
+                        {hasAppliedJobs ? <FaBriefcase size={20} /> : <FaRocket size={20} />}
+                      </div>
+
+                      <div>
+                        <h2 className={`font-bold text-base ${hasAppliedJobs ? "text-gray-900" : "text-gray-900"
+                          }`}>
+                          {hasAppliedJobs ? "Job Applications Active" : "You Can Apply for Jobs!"}
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {hasAppliedJobs ? (
+                            <>Applied for <span className="font-bold text-blue-600">{appliedJobsCount}</span> positions. Under review.</>
+                          ) : (
+                            <>Eligible for <span className="font-bold text-primary">{eligibleExams.length}</span> subjects. Connect with schools today.</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate("/teacher/job-apply")}
+                      className={`w-full sm:w-auto shrink-0 inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-bold transition-all ${hasAppliedJobs
+                        ? "bg-white border border-blue-200 text-blue-600 hover:bg-blue-50"
+                        : "bg-primary text-white shadow-sm hover:bg-primary/90"
+                        }`}
+                    >
+                      {hasAppliedJobs ? "Manage Applications" : "Apply Now"}
+                      <FaArrowRight className="ml-2 text-xs" />
+                    </button>
+                  </div>
+                </motion.div>
               ) : null}
             </div>
 
             {/* Interview eligibility and status banner */}
+            {/* Interview eligibility and status banner - Compact Version */}
             {shouldShowInterviewSection && (
-              <div className="rounded-xl border border-success bg-green-100 p-4 sm:p-6 mb-4">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <div>
-                    {hasScheduledInterview ? (
-                      <div>
-                        <div className="text-xl font-semibold text-success">आपका आगामी इंटरव्यू | You have an upcoming interview</div>
-                        {nextInterview && (
-                          <div className="mt-1 text-gray-700">
-                            <span className="font-medium">Class Category: {nextInterview?.class_category?.name}</span>
-                            {" "}·{" "}
-                            <span>{nextInterview?.subject?.subject_name}</span>
-                            {nextInterview?.time && (
-                              <>
-                                {" "}·{" "}
-                                <span>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-gray-200 bg-white shadow-sm mb-6 overflow-hidden"
+              >
+                <div className="p-4">
+                  {hasScheduledInterview ? (
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="shrink-0 w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                          <FaCalendarAlt size={18} />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h3 className="text-base font-bold text-gray-800 truncate">
+                              Interview Scheduled
+                            </h3>
+                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide shrink-0">
+                              Upcoming
+                            </span>
+                          </div>
+
+                          {nextInterview && (
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                              <span className="font-medium text-gray-900">
+                                {nextInterview?.subject?.subject_name}
+                              </span>
+                              {nextInterview?.time && (
+                                <span className="flex items-center gap-1.5 text-xs">
+                                  <FaClock className="text-gray-400" />
                                   {new Date(nextInterview.time).toLocaleString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
                                     hour: 'numeric',
                                     minute: 'numeric',
-                                    hour12: true,
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric'
+                                    hour12: true
                                   })}
-                                </span>                            </>
-                            )}
-                          </div>
-                        )}
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {nextInterview?.link && (
-                            <a
-                              href={nextInterview.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center px-4 py-2 rounded-md bg-success text-white hover:opacity-90"
-                            >
-                              Join Interview
-                            </a>
+                                </span>
+                              )}
+                            </div>
                           )}
-                          <button
-                            type="button"
-                            onClick={scrollToInterview}
-                            className="inline-flex items-center px-4 py-2 rounded-md border border-success text-success hover:bg-success/10"
-                          >
-                            Manage Interviews
-                          </button>
                         </div>
                       </div>
-                    ) : hasRequestedInterview ? (
-                      <div>
-                        <div className="text-xl font-semibold text-success">इंटरव्यू अनुरोध स्वीकृति लंबित | Interview request pending approval</div>
-                        <p className="mt-1 text-gray-700">आपके इंटरव्यू की तारीख तय होने पर हम आपको सूचित करेंगे। | We will notify you once your interview is scheduled.</p>
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={scrollToInterview}
-                            className="inline-flex items-center px-4 py-2 rounded-md bg-success/90 hover:bg-success text-white"
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                        {nextInterview?.link && (
+                          <a
+                            href={nextInterview.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-sm font-bold shadow-sm"
                           >
-                            View Request
-                          </button>
+                            <FaVideo className="mr-1.5" />
+                            Join
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={scrollToInterview}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm font-bold"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  ) : hasRequestedInterview ? (
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="shrink-0 w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+                          <FaHourglassHalf size={18} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-gray-800 mb-0.5">
+                            Interview Request Pending
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            We will notify you once an interviewer is assigned.
+                          </p>
                         </div>
                       </div>
-                    ) : isEligibleForInterview ? (
-                      <div>
-                        <div className="md:text-xl text-sm font-semibold text-success">🎉 बधाई हो! आप इंटरव्यू के लिए योग्य हैं | Congratulations! You're eligible for Interview</div>
-                        <p className="mt-1 text-gray-700">
-                          <span className="font-sm">Level 2 (Exam from Home) has been passed. </span> अब इंटरव्यू निर्धारित करें  <br />
-                          <br className="hidden sm:block" />
-                        </p>
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={scrollToInterview}
-                            className="inline-flex items-center px-5 py-2.5 rounded-md bg-green-700 text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
-                          >
-                            <FaCalendarAlt className="mr-2" />
-                            इंटरव्यू शेड्यूल करें | Schedule Interview
-                          </button>
+                      <button
+                        type="button"
+                        onClick={scrollToInterview}
+                        className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm font-bold shadow-sm"
+                      >
+                        View Status
+                      </button>
+                    </div>
+                  ) : isEligibleForInterview ? (
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                          <FaCheckCircle size={18} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-gray-800 mb-0.5">
+                            You're Eligible for an Interview!
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            Schedule an interview with our expert now.
+                          </p>
                         </div>
                       </div>
-                    ) : null}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={scrollToInterview}
+                        className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md transition-all text-sm font-bold"
+                      >
+                        <FaCalendarAlt className="mr-2" />
+                        Schedule Now
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
+              </motion.div>
             )}
 
 
