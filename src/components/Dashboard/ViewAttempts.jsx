@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { attemptsExam } from "../../features/examQuesSlice";
-import { 
-  HiOutlineDocumentText, 
-  HiOutlineCheckCircle, 
+import {
+  HiOutlineDocumentText,
+  HiOutlineCheckCircle,
   HiOutlineXCircle,
   HiOutlineClock,
   HiOutlineExclamationTriangle,
@@ -26,9 +26,9 @@ function ViewAttempts() {
   const attemptedCategories = [
     ...new Set(
       apiOutput2
-        ?.filter((result) => 
-          result?.exam && 
-          result.exam.class_category_name && 
+        ?.filter((result) =>
+          result?.exam &&
+          result.exam.class_category_name &&
           result.isqualified !== undefined
         )
         ?.map((result) => result.exam.class_category_name)
@@ -40,29 +40,21 @@ function ViewAttempts() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Add debug logs
-    
-
     // Filter results based on selected category with more lenient filtering
     const validResults = apiOutput2?.filter(result => {
-      // Log invalid results to help debugging
       if (!result?.exam) {
-        
         return false;
       }
       return true;
     }) || [];
-
-    
 
     const results = validResults.filter((result) => {
       if (selectedCategory === "All") return true;
       return result.exam?.class_category_name === selectedCategory;
     });
 
-    
     setFilteredExamResults(results);
-    
+
     // More lenient subject extraction
     const subjectNames = [...new Set(
       results
@@ -70,33 +62,32 @@ function ViewAttempts() {
         .map(result => result.exam?.subjet_name || result.exam?.subject_name)
     )];
 
-    
     setSubjects(subjectNames);
   }, [selectedCategory, apiOutput2]);
 
   return (
-    <div className="md:max-w-8xl mx-auto">
-      <div className="p-3 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+    <div className="w-full mx-auto">
+      <div className="space-y-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <h1 className="text-xl font-bold text-text flex items-center gap-3 mb-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <HiOutlineDocumentText className="h-7 w-7 text-primary" aria-hidden="true" />
-              </div>
+            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3 mb-2">
+              <span className="p-2 bg-teal-50 rounded-lg text-teal-600">
+                <HiOutlineDocumentText className="h-6 w-6" aria-hidden="true" />
+              </span>
               Exam Attempts
-              <span className="ml-2 text-secondary text-base font-normal">/ परीक्षा प्रयास</span>
+              <span className="text-slate-400 text-lg font-normal">/ परीक्षा प्रयास</span>
             </h1>
-            <p className="text-sm text-secondary ml-14">View all your exam attempts and interview records</p>
+            <p className="text-sm text-slate-500 ml-14">View all your exam attempts and interview records</p>
           </div>
-          
-          <div className="w-full lg:w-80">
-            <label className="block text-text font-semibold mb-2 text-sm">
+
+          <div className="w-full lg:w-72">
+            <label className="block text-slate-700 font-semibold mb-2 text-sm">
               Filter by Category
-              <span className="ml-2 text-secondary text-xs font-normal">/ श्रेणी द्वारा फ़िल्टर करें</span>
+              <span className="ml-2 text-slate-400 text-xs font-normal">/ श्रेणी द्वारा फ़िल्टर करें</span>
             </label>
             <div className="relative">
               <select
-                className="w-full appearance-none bg-white border-2 border-secondary/30 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium text-text"
+                className="w-full appearance-none bg-white border border-slate-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 font-medium text-slate-700 text-sm"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -108,25 +99,23 @@ function ViewAttempts() {
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                <HiOutlineChevronDown className="h-5 w-5 text-secondary" aria-hidden="true" />
+                <HiOutlineChevronDown className="h-4 w-4 text-slate-500" aria-hidden="true" />
               </div>
             </div>
           </div>
         </div>
 
         {apiOutput2?.some(result => result.exam === null) && (
-          <div className="mb-6">
-            <div className="bg-warning/5 border-2 border-warning/30 p-5 rounded-xl">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-warning/10 rounded-lg flex-shrink-0">
-                  <HiOutlineExclamationTriangle className="h-5 w-5 text-warning" aria-hidden="true" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-warning mb-1">Data Notice</h3>
-                  <p className="text-sm text-warning/80">
-                    Some exam results are invalid or incomplete and have been filtered out from the display.
-                  </p>
-                </div>
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="p-1.5 bg-amber-100 rounded-lg flex-shrink-0 text-amber-600">
+                <HiOutlineExclamationTriangle className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-amber-800 text-sm mb-0.5">Data Notice</h3>
+                <p className="text-xs text-amber-700">
+                  Some exam results are invalid or incomplete and have been filtered out from the display.
+                </p>
               </div>
             </div>
           </div>
@@ -134,25 +123,25 @@ function ViewAttempts() {
 
         {selectedCategory && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 px-5 py-3 bg-primary/5 rounded-lg border border-primary/20">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <HiOutlineFolderOpen className="h-5 w-5 text-primary" aria-hidden="true" />
+            <div className="flex items-center gap-3 px-4 py-3 bg-teal-50/50 rounded-lg border border-teal-100">
+              <div className="p-1.5 bg-teal-100 rounded-lg text-teal-600">
+                <HiOutlineFolderOpen className="h-4 w-4" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-xs text-secondary font-medium uppercase tracking-wider">Showing Results For</p>
-                <h2 className="text-text font-bold">
+                <p className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Showing Results For</p>
+                <h2 className="text-slate-800 font-bold text-sm">
                   {selectedCategory === "All" ? "All Categories" : selectedCategory + " class"}
                 </h2>
               </div>
             </div>
 
             {subjects.length === 0 ? (
-              <div className="text-center py-16 bg-background/50 rounded-xl border-2 border-dashed border-secondary/30">
-                <div className="p-4 bg-secondary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                  <HiOutlineDocumentText className="h-10 w-10 text-secondary" aria-hidden="true" />
+              <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-sm border border-slate-100">
+                  <HiOutlineDocumentText className="h-8 w-8 text-slate-400" aria-hidden="true" />
                 </div>
-                <h3 className="text-text text-xl font-bold mb-2">No exam results found</h3>
-                <p className="text-secondary">Try selecting a different category or take an exam to see your results here.</p>
+                <h3 className="text-slate-800 text-lg font-bold mb-1">No exam results found</h3>
+                <p className="text-slate-500 text-sm">Try selecting a different category or take an exam to see your results here.</p>
               </div>
             ) : (
               subjects.map((subject) => (
@@ -194,7 +183,7 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
   subjectResults.forEach(result => {
     const level_id = result?.exam?.level_id;
     const levelKey = `level${level_id}`;
-    
+
 
     // Add exam result
     examRows.push({
@@ -220,7 +209,7 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
           if (interview?.subject === subject) { // Show all non-pending interviews for matching subject
             // Determine interview level based on the parent exam
             const interviewLevel = `Interview - ${result?.exam?.level_name}`;
-            
+
             interviewRows.push({
               levelOrder: 5, // Interview is always last
               levelName: "Interview",
@@ -229,9 +218,9 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
               subject: interview?.subject,
               level: interviewLevel, // Set the level based on parent exam level
               language: '-',
-              status: interview?.status === "fulfilled" ? "Completed" : 
-                     interview?.status === "scheduled" ? "Scheduled" : 
-                     interview?.status === "requested" ? "Requested" : interview?.status,
+              status: interview?.status === "fulfilled" ? "Completed" :
+                interview?.status === "scheduled" ? "Scheduled" :
+                  interview?.status === "requested" ? "Requested" : interview?.status,
               score: interview?.grade ? `${interview.grade}/10` : 'N/A',
               attemptCount: interview?.attempt || '-',
               date: interview?.time ? new Date(interview.time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(interview.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
@@ -247,12 +236,12 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
     // Interviews always last
     if (a.type === "Interview" && b.type !== "Interview") return 1;
     if (a.type !== "Interview" && b.type === "Interview") return -1;
-    
+
     // For same type, sort by level order
     if (a.levelOrder !== b.levelOrder) {
       return a.levelOrder - b.levelOrder;
     }
-    
+
     // For same level, sort by date descending
     return new Date(b.date) - new Date(a.date);
   });
@@ -261,113 +250,111 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
   if (!allRows.length) return null;
 
   return (
-    <div className="mb-6">
-      <div className="bg-white rounded-xl border border-secondary/30 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-        <div className="p-5 border-b border-secondary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <h3 className="text-xl font-bold text-text flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <HiOutlineBookOpen className="h-6 w-6 text-primary" aria-hidden="true" />
-            </div>
-            {subject}
-          </h3>
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden transition-all hover:border-teal-200">
+      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+        <div className="p-1.5 bg-white border border-slate-200 rounded-lg text-teal-600 shadow-sm">
+          <HiOutlineBookOpen className="h-5 w-5" aria-hidden="true" />
         </div>
+        <h3 className="text-lg font-bold text-slate-800">
+          {subject}
+        </h3>
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-br from-background to-background/50">
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Record Type</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Class Category</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Subject</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Level</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Language</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Result/Status</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Score</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Attempt</th>
-                <th className="py-3 px-2 border-b border-secondary/10 text-left text-xs font-bold text-text/70 uppercase tracking-wider">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allRows.map((row, index) => {
-                // Determine status styling
-                let statusBadge;
-                if (row.type === "Interview") {
-                  if (row.status === "Completed") {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
-                        <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Completed
-                      </span>
-                    );
-                  } else if (row.status === "Scheduled") {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20">
-                        <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-                        Scheduled
-                      </span>
-                    );
-                  } else if (row.status === "Requested") {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning rounded-full text-xs font-semibold border border-warning/20">
-                        <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-                        Requested
-                      </span>
-                    );
-                  } else {
-                    statusBadge = (
-                      <span className="inline-flex items-center px-3 py-1.5 bg-background text-secondary rounded-full text-xs font-semibold border border-secondary/30">
-                        {row.status}
-                      </span>
-                    );
-                  }
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-100">
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Record Type</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Class Category</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Subject</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Level</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Language</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Result/Status</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Score</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Attempt</th>
+              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {allRows.map((row, index) => {
+              // Determine status styling
+              let statusBadge;
+              if (row.type === "Interview") {
+                if (row.status === "Completed") {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
+                      <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                      Completed
+                    </span>
+                  );
+                } else if (row.status === "Scheduled") {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100">
+                      <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+                      Scheduled
+                    </span>
+                  );
+                } else if (row.status === "Requested") {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-100">
+                      <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+                      Requested
+                    </span>
+                  );
                 } else {
-                  if (row.status === "Passed") {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-full text-xs font-semibold border border-success/20">
-                        <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Passed
-                      </span>
-                    );
-                  } else {
-                    statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-error/10 text-error rounded-full text-xs font-semibold border border-error/20">
-                        <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Failed
-                      </span>
-                    );
-                  }
+                  statusBadge = (
+                    <span className="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-medium border border-slate-200">
+                      {row.status}
+                    </span>
+                  );
                 }
-                
-                return (
-                <tr 
-                  key={index} 
-                  className={`text-sm hover:bg-primary/5 transition-all duration-200 ${
-                    row.type === "Interview" ? "bg-background/30" : ""
-                  }`}
+              } else {
+                if (row.status === "Passed") {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
+                      <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                      Passed
+                    </span>
+                  );
+                } else {
+                  statusBadge = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-md text-xs font-medium border border-red-100">
+                      <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                      Failed
+                    </span>
+                  );
+                }
+              }
+
+              return (
+                <tr
+                  key={index}
+                  className={`text-sm hover:bg-slate-50 transition-colors ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"
+                    }`}
                 >
-                  <td className="py-3 px-2 border-b border-secondary/10">
-                    <span className="font-semibold text-text">
+                  <td className="py-3 px-4">
+                    <span className={`font-semibold ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
                       {row.type}
                     </span>
                   </td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.classCategory}</td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70 font-medium">{row.subject}</td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.level}</td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.language}</td>
-                  <td className="py-3 px-2 border-b border-secondary/10">
+                  <td className="py-3 px-4 text-slate-600">{row.classCategory}</td>
+                  <td className="py-3 px-4 text-slate-600 font-medium">{row.subject}</td>
+                  <td className="py-3 px-4 text-slate-600">{row.level}</td>
+                  <td className="py-3 px-4 text-slate-600">{row.language}</td>
+                  <td className="py-3 px-4">
                     {statusBadge}
                   </td>
-                  <td className="py-3 px-2 border-b border-secondary/10">
-                    <span className="font-semibold text-text">{row.score}</span>
+                  <td className="py-3 px-4">
+                    <span className="font-semibold text-slate-700">{row.score}</span>
                   </td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.attemptCount}</td>
-                  <td className="py-3 px-2 border-b border-secondary/10 text-text/70">{row.date}</td>
+                  <td className="py-3 px-4 text-slate-600">{row.attemptCount}</td>
+                  <td className="py-3 px-4 text-slate-500 text-xs">{row.date}</td>
                 </tr>
-              )})}
+              )
+            })}
 
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
