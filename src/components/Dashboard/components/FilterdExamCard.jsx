@@ -750,7 +750,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                   <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                                     <FaCheckCircle className="mr-1.5" size={12} />
                                     Qualified
-                                  </span>5734
+                                  </span>
                                 ) : (
                                   <button
                                     onClick={() => handleLevelSelect(level)}
