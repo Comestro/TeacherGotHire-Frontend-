@@ -19,7 +19,7 @@ import { checkPasskey } from "../../../services/examServices";
 
 import { forwardRef, useImperativeHandle } from "react";
 
-const FilterdExamCard = forwardRef((props, ref) => {
+const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -175,7 +175,7 @@ const FilterdExamCard = forwardRef((props, ref) => {
       );
 
       if (!isOnlineLevel2Qualified) {
-        setErrors("You must complete Level 2 (Online) first");
+        setErrors("You must complete Level 2 (from home) first");
         return;
       }
     }
@@ -349,10 +349,10 @@ const FilterdExamCard = forwardRef((props, ref) => {
           <div className="absolute left-0 top-1/2 w-full h-1 bg-gray-100 -z-10 rounded-full" />
 
           {/* Step 1: Level 1 */}
-          <div className="flex flex-col items-center bg-white px-2 z-10">
+          <div className="flex flex-col items-center bg-whit px-2 z-10">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel1Qualified
               ? 'bg-green-500 border-green-500 text-white'
-              : 'bg-white border-blue-500 text-blue-500'
+              : ' border-blue-500 text-blue-500'
               }`}>
               {hasLevel1Qualified ? <FaCheckCircle /> : <span className="font-bold">1</span>}
             </div>
@@ -639,16 +639,18 @@ const FilterdExamCard = forwardRef((props, ref) => {
                             <h3 className="font-bold text-lg text-gray-800">Level 1: Basic Assessment</h3>
                             <p className="text-sm text-gray-600">Fundamental concepts check. Mandatory to proceed.</p>
                           </div>
-                          {isQualified ? (
-                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
-                          ) : (
+                          <div className="flex items-center gap-2">
+                            {isQualified && (
+                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                            )}
+                            
                             <button
                               onClick={() => handleLevelSelect(level)}
                               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
                             >
-                              Start Exam
+                              {isQualified ? "Retake Exam" : "Start Exam"}
                             </button>
-                          )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -676,16 +678,17 @@ const FilterdExamCard = forwardRef((props, ref) => {
                             <p className="text-sm text-gray-600">In-depth subject knowledge test.</p>
                           </div>
                           {!isLocked && (
-                            isQualified ? (
-                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
-                            ) : (
+                            <div className="flex items-center gap-2">
+                              {isQualified && (
+                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                              )}
                               <button
                                 onClick={() => handleLevelSelect(level)}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
                               >
-                                Start Exam
+                                {isQualified ? "Retake Exam" : "Start Exam"}
                               </button>
-                            )
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1012,6 +1015,7 @@ const FilterdExamCard = forwardRef((props, ref) => {
           isverifyCard={showVerificationCard}
           examCenterData={examCenterData}
           examCards={examCards}
+          onPasskeyGenerated={onExamDataChange}
         />
       )}
     </div>

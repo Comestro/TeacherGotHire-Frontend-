@@ -451,11 +451,12 @@ const ExamPortal = () => {
               <div className="flex items-center gap-3">
                 {language && (
                   <span className="px-4 py-1.5 border border-blue-200 text-blue-800 rounded-full text-sm font-semibold">
-                    {language}
+                    Medium: {language}
                   </span>
                 )}
-                <button onClick={toggleModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <IoWarningOutline className="text-2xl text-orange-500" />
+                <button onClick={toggleModal} className="p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <IoWarningOutline className="text-2xl text-orange-500" /> 
+                  <span className="hidden sm:inline">Report This Question</span>
                 </button>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiX } from "react-icons/fi";
 
 export default function Subheader({ handleSubmit }) {
   const { allQuestion } = useSelector((state) => state.examQues);
@@ -108,7 +108,7 @@ export default function Subheader({ handleSubmit }) {
             onClick={handleExitExam}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl border border-red-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 font-semibold"
           >
-            <FiLogOut className="size-4" />
+            <FiX className="size-4" />
             <span className="hidden sm:inline">Exit Exam</span>
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function Subheader({ handleSubmit }) {
           <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl border border-gray-200 animate-fadeIn">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-red-100 rounded-full">
-                <FiLogOut className="w-8 h-8 text-red-600" />
+                <FiX className="w-8 h-8 text-red-600" />
               </div>
             </div>
             <h3 className="text-2xl font-bold text-text text-center mb-3">Exit Exam?</h3>

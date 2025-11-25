@@ -80,29 +80,27 @@ function TeacherDashboard() {
     }
   }, [profileStatus, basicData?.phone_number]);
 
-  useEffect(() => {
-    const checkForPendingPasskey = async () => {
-      try {
-        const response = await checkPasskey({ exam: examCards?.id });
-        if (response?.passkey == true) {
-          setPasskeyStatus(response);
-          setIsVerifyCard(true);
-          if (examCards?.id) {
-            // setIsExamCenterModalOpen(true);
-          }
-        } else {
-          setPasskeyStatus(null);
-          setIsVerifyCard(false);
-          if (examCards.level.level_code === 2.5) {
-            setIsExamCenterModalOpen(true);
-          }
-        }
-      } catch (error) {
+  const refreshPasskeyStatus = async () => {
+    try {
+      const response = await checkPasskey({ exam: examCards?.id });
+      if (response?.passkey == true) {
+        setPasskeyStatus(response);
+        setIsVerifyCard(true);
+      } else {
         setPasskeyStatus(null);
         setIsVerifyCard(false);
+        if (examCards?.level?.level_code === 2.5) {
+          setIsExamCenterModalOpen(true);
+        }
       }
-    };
-    checkForPendingPasskey();
+    } catch (error) {
+      setPasskeyStatus(null);
+      setIsVerifyCard(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshPasskeyStatus();
   }, [examCards]);
 
   // Memoize qualified exam names computation
@@ -149,9 +147,6 @@ function TeacherDashboard() {
       setLoading(false);
     }
   };
-
-
-
   // Derive interview state for summary banner (placed here, not inside handlers)
   const interviews = useMemo(() => Array.isArray(interviewData) ? interviewData : [], [interviewData]);
   const hasScheduledInterview = useMemo(() => interviews.some(i => i?.status === "scheduled"), [interviews]);
@@ -246,13 +241,13 @@ function TeacherDashboard() {
       <div className="min-h-screen px-4 sm:px-6">
         <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content Column (9/12) */}
-          <div className="w-full md:w-9/12 lg:w-9/12 space-y-4">
+          <div className="w-full md:w-9/12 lg:w-9/12">
             {/* Passkey Request Status Banner */}
             <div className=" pt-8">
               {passkeyStatus?.passkey && passkeyStatus?.center && (
                 <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${passkeyStatus?.status === "fulfilled"
-                    ? "border-green-400 bg-green-50"
-                    : "border-yellow-400 bg-yellow-50"
+                  ? "border-green-400 bg-green-50"
+                  : "border-yellow-400 bg-yellow-50"
                   }`}>
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="w-full">
@@ -339,8 +334,8 @@ function TeacherDashboard() {
                 </div>
               ) : hasEligibleJobs ? (
                 <div className={`rounded-xl border p-4 sm:p-6 mb-4 ${hasAppliedJobs
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-primary bg-primary/5"
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-primary bg-primary/5"
                   }`}>
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="w-full">
@@ -497,7 +492,7 @@ function TeacherDashboard() {
               <>
                 {/* Other dashboard content */}
                 <div ref={interviewSectionRef}>
-                  <FilterdExamCard ref={filterdExamCardRef} />
+                  <FilterdExamCard ref={filterdExamCardRef} onExamDataChange={refreshPasskeyStatus} />
                 </div>
               </>
             )}

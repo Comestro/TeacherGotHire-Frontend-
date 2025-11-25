@@ -17,6 +17,7 @@ const ExamCenterModal = ({
   isverifyCard,
   examCenterData,
   selectedLanguage,
+  onPasskeyGenerated,
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -43,16 +44,16 @@ const ExamCenterModal = ({
     skip: !isOpen || isverifyCard,
   });
 
-  
+
 
   // Redux state for other data
   const { passkeyresponse, error } = useSelector((state) => state.examQues);
   const { examCards } = useSelector((state) => state.exam);
-  
+
   // Filter centers by pincode
   const filteredCenters = React.useMemo(() => {
     if (!pincodeFilter || !Array.isArray(centers)) return centers;
-    return centers.filter((center) => 
+    return centers.filter((center) =>
       center?.pincode?.includes(pincodeFilter)
     );
   }, [centers, pincodeFilter]);
@@ -60,10 +61,10 @@ const ExamCenterModal = ({
   // Debug log for centers data
   useEffect(() => {
     if (centers) {
-      
+
     }
     if (centersError) {
-      
+
       toast.error("Failed to load exam centers. Please try again.");
     }
   }, [centers, centersError]);
@@ -97,10 +98,10 @@ const ExamCenterModal = ({
       }
 
       toast.success("Verification successful!");
-      
+
       // Show language selection step
       setShowLanguageStep(true);
-      
+
     } catch (error) {
       toast.error(error.message || "Verification failed");
     } finally {
@@ -127,10 +128,15 @@ const ExamCenterModal = ({
       ).unwrap();
 
       toast.success("Passkey generated successfully! Please enter the verification code.");
-      
+
       // Move to passcode verification step
       setShowPasscodeStep(true);
-      
+
+      // Trigger data refresh in parent
+      if (onPasskeyGenerated) {
+        onPasskeyGenerated();
+      }
+
     } catch (error) {
       if (error?.message?.includes("already exists")) {
         toast.info(
@@ -155,7 +161,7 @@ const ExamCenterModal = ({
 
     try {
       setIsVerifying(true);
-      
+
       await dispatch(
         getAllQues({
           exam_id: examCards?.id,
@@ -179,7 +185,7 @@ const ExamCenterModal = ({
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
       <div className="bg-white rounded-2xl relative shadow-2xl overflow-hidden w-full max-w-xl transform transition-all animate-scaleIn">
-        
+
         {/* Close button - improved positioning and styling */}
         <button
           onClick={onClose}
@@ -210,7 +216,7 @@ const ExamCenterModal = ({
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
-        
+
         {/* Step 3: Language Selection */}
         {showLanguageStep ? (
           <div className="p-8">
@@ -244,15 +250,14 @@ const ExamCenterModal = ({
                   <option value="English">🇬🇧 English</option>
                 </select>
               </div>
-              
+
               <button
                 type="submit"
                 disabled={isVerifying || !examLanguage}
-                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${
-                  isVerifying || !examLanguage
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 hover:shadow-xl transform hover:-translate-y-0.5"
-                }`}
+                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${isVerifying || !examLanguage
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 hover:shadow-xl transform hover:-translate-y-0.5"
+                  }`}
               >
                 {isVerifying ? (
                   <>
@@ -310,15 +315,14 @@ const ExamCenterModal = ({
                   Contact the exam center if you haven't received your code
                 </p>
               </div>
-              
+
               <button
                 type="submit"
                 disabled={isVerifying || !entered_passcode}
-                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${
-                  isVerifying || !entered_passcode
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 hover:shadow-xl transform hover:-translate-y-0.5"
-                }`}
+                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${isVerifying || !entered_passcode
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 hover:shadow-xl transform hover:-translate-y-0.5"
+                  }`}
               >
                 {isVerifying ? (
                   <>
@@ -452,8 +456,8 @@ const ExamCenterModal = ({
                       }}
                     >
                       <option value="">
-                        {pincodeFilter 
-                          ? `📍 ${filteredCenters?.length || 0} centers found in ${pincodeFilter}` 
+                        {pincodeFilter
+                          ? `📍 ${filteredCenters?.length || 0} centers found in ${pincodeFilter}`
                           : "Select an exam center"}
                       </option>
                       {Array.isArray(filteredCenters) && filteredCenters?.length > 0 ? (
@@ -464,13 +468,13 @@ const ExamCenterModal = ({
                         ))
                       ) : (
                         <option value="" disabled>
-                          {pincodeFilter 
-                            ? `No centers found for pincode ${pincodeFilter}` 
+                          {pincodeFilter
+                            ? `No centers found for pincode ${pincodeFilter}`
                             : "No centers available"}
                         </option>
                       )}
                     </select>
-                    
+
                     {pincodeFilter && filteredCenters?.length === 0 && !isLoadingCenters && (
                       <div className="mt-3 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
                         <div className="flex items-start">
@@ -523,11 +527,10 @@ const ExamCenterModal = ({
               <button
                 type="submit"
                 disabled={isGenerating || !selectedCenterId || isLoadingCenters}
-                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${
-                  isGenerating || !selectedCenterId || isLoadingCenters
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 hover:shadow-xl transform hover:-translate-y-0.5"
-                }`}
+                className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg ${isGenerating || !selectedCenterId || isLoadingCenters
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 hover:shadow-xl transform hover:-translate-y-0.5"
+                  }`}
               >
                 {isGenerating ? (
                   <>
