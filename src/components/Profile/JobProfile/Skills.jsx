@@ -13,6 +13,7 @@ import {
   HiOutlineXMark,
   HiOutlineCheckBadge,
   HiOutlineClipboardDocumentList,
+  HiMagnifyingGlass
 } from "react-icons/hi2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,14 +27,11 @@ const Skills = () => {
     (state) => state.jobProfile.teacherSkill || []
   );
 
-  
-
   const { handleSubmit, register, watch, setValue } = useForm();
   const inputValue = watch("skillInput", "");
 
   // Fetch skills on component mount
   useEffect(() => {
-    
     dispatch(getAllSkills());
     dispatch(getSkillsProfile());
   }, [dispatch]);
@@ -64,7 +62,6 @@ const Skills = () => {
       setSuggestions([]);
       toast.success("Skill added successfully!");
     } catch (error) {
-      
       toast.error(error.response?.data?.message || "Failed to add skill");
     }
   };
@@ -75,7 +72,6 @@ const Skills = () => {
       dispatch(getSkillsProfile());
       toast.success("Skill removed successfully!");
     } catch (error) {
-      
       toast.error(error.response?.data?.message || "Failed to remove skill");
     }
   };
@@ -96,10 +92,10 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-100 p-4 md:p-6 shadow-sm">
-       <ToastContainer 
-        position="top-right" 
-        autoClose={1000} 
+    <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
         closeButton={true}
         hideProgressBar={false}
         newestOnTop={false}
@@ -111,31 +107,34 @@ const Skills = () => {
         theme="light"
       />
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-6 border-b border-secondary/20">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-6 border-b border-slate-100">
         <div className="mb-4 sm:mb-0">
-          <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <HiOutlineClipboardDocumentList className="text-2xl text-primary" aria-hidden="true" />
-            </div>
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <span className="p-1.5 bg-teal-50 rounded-md text-teal-600">
+              <HiOutlineClipboardDocumentList className="w-5 h-5" />
+            </span>
             Skills & Expertise
-            <span className="ml-2 text-secondary text-sm font-normal">/ कौशल और विशेषज्ञता</span>
+            <span className="ml-2 text-slate-400 text-sm font-normal">/ कौशल और विशेषज्ञता</span>
           </h2>
-          <p className="text-sm text-secondary ml-14">
+          <p className="text-sm text-slate-500 mt-1 ml-9">
             Showcase your core competencies and technical abilities
           </p>
         </div>
         <button
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${showForm
+              ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-teal-600 text-white hover:bg-teal-700 shadow-sm shadow-teal-200"
+            }`}
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? (
             <>
-              <HiOutlineXMark className="h-5 w-5" aria-hidden="true" />
+              <HiOutlineXMark className="h-4 w-4" />
               Cancel
             </>
           ) : (
             <>
-              <HiOutlinePlus className="h-5 w-5" aria-hidden="true" />
+              <HiOutlinePlus className="h-4 w-4" />
               Add Skill
             </>
           )}
@@ -144,33 +143,39 @@ const Skills = () => {
 
       {/* Skill Input Form */}
       {showForm && (
-        <div className="mb-4 px-2">
+        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
           <form onSubmit={handleSubmit(onSubmit)} className="relative">
             <div className="flex gap-2">
-              <input
-                type="text"
-                {...register("skillInput")}
-                placeholder="Search skills..."
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
-                onFocus={handleInputFocus}
-              />
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <HiMagnifyingGlass className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  {...register("skillInput")}
+                  placeholder="Search skills..."
+                  className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all bg-white"
+                  onFocus={handleInputFocus}
+                  autoComplete="off"
+                />
+              </div>
               <button
                 type="submit"
-                className="px-6 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] hover:from-[#2A6476] hover:to-[#3E98C7] text-white font-medium rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105"
+                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-teal-200 transition-all"
               >
                 Add
               </button>
             </div>
 
             {suggestions.length > 0 && (
-              <ul className="absolute left-0 right-0 mt-2 bg-white border-2 border-[#3E98C7]/30 rounded-lg shadow-xl overflow-hidden z-10">
+              <ul className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
                 {suggestions.map((skill, index) => (
                   <li
                     key={index}
                     onClick={() => handleSuggestionClick(skill)}
-                    className="px-4 py-3 hover:bg-[#3E98C7]/10 cursor-pointer transition-colors text-sm text-gray-700 flex items-center gap-2"
+                    className="px-4 py-2.5 hover:bg-teal-50 cursor-pointer transition-colors text-sm text-slate-700 flex items-center gap-2 border-b border-slate-50 last:border-0"
                   >
-                    <HiOutlineTag className="text-[#3E98C7] size-4" />
+                    <HiOutlineTag className="text-teal-500 w-4 h-4" />
                     {skill.name}
                   </li>
                 ))}
@@ -182,32 +187,32 @@ const Skills = () => {
 
       {/* Skills List */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-text/70 uppercase tracking-wide">
+        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
           Current Skills
         </h3>
         {teacherSkill.length === 0 ? (
-          <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/10">
-            <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <HiOutlineClipboardDocumentList className="h-10 w-10 text-primary" aria-hidden="true" />
+          <div className="py-12 text-center rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
+              <HiOutlineClipboardDocumentList className="h-6 w-6 text-slate-400" />
             </div>
-            <h3 className="text-text font-bold text-lg mb-1">No skills added yet</h3>
-            <p className="text-sm text-secondary">Add skills to showcase your expertise</p>
+            <h3 className="text-slate-700 font-medium text-sm mb-1">No skills added yet</h3>
+            <p className="text-xs text-slate-500">Add skills to showcase your expertise</p>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {teacherSkill.map((skill, index) => (
               <div
                 key={index}
-                className="flex items-center bg-primary/10 text-primary px-4 py-2.5 rounded-full border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all duration-200 shadow-sm hover:shadow-md"
+                className="flex items-center bg-white text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 hover:border-teal-300 hover:shadow-sm transition-all group"
               >
-                <HiOutlineCheckBadge className="h-5 w-5 mr-2 text-primary" aria-hidden="true" />
-                <span className="text-sm font-semibold">{skill.skill.name}</span>
+                <HiOutlineCheckBadge className="h-4 w-4 mr-1.5 text-teal-500" />
+                <span className="text-sm font-medium">{skill.skill.name}</span>
                 <button
                   onClick={() => handleRemoveSelectedSkill(skill)}
-                  className="ml-3 text-error hover:text-error/80 rounded-full p-1 transition-all hover:bg-error/10 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-error"
+                  className="ml-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-all opacity-0 group-hover:opacity-100"
                   aria-label={`Remove ${skill.skill.name}`}
                 >
-                  <HiOutlineXMark className="h-5 w-5" aria-hidden="true" />
+                  <HiOutlineXMark className="h-4 w-4" />
                 </button>
               </div>
             ))}
