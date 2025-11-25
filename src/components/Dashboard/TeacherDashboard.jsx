@@ -26,7 +26,8 @@ import {
   FaRocket,
   FaBriefcase,
   FaArrowRight,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaPhoneAlt
 } from "react-icons/fa";
 import { checkPasskey } from "../../services/examServices";
 import ExamCenterModal from "./components/passkeyCard";
@@ -102,7 +103,7 @@ function TeacherDashboard() {
         setPasskeyStatus(null);
         setIsVerifyCard(false);
         if (examCards?.level?.level_code === 2.5) {
-          setIsExamCenterModalOpen(true);
+          // setIsExamCenterModalOpen(true); // Removed to prevent double modal
         }
       }
     } catch (error) {
@@ -216,7 +217,10 @@ function TeacherDashboard() {
 
     // Scroll to the section
     if (interviewSectionRef.current) {
-      interviewSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const element = interviewSectionRef.current;
+      const y = element.getBoundingClientRect().top + window.pageYOffset - 100; // 100px offset
+
+      window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
 
@@ -295,6 +299,10 @@ function TeacherDashboard() {
                             <FaMapMarkerAlt className="text-gray-400 text-xs" />
                             <span>{passkeyStatus?.center?.city}, {passkeyStatus?.center?.state}</span>
                           </span>
+                          <span className="flex items-center gap-1.5">  
+                            <FaPhoneAlt className="text-gray-400 text-xs" />
+                            <span>{passkeyStatus?.center?.phone}</span>
+                          </span> 
                         </div>
                       </div>
                     </div>

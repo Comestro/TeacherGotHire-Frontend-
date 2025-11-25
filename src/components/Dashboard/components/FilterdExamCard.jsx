@@ -11,7 +11,7 @@ import {
   FaCheckCircle, FaAngleRight, FaChevronLeft,
   FaBars, FaFilter, FaHome, FaCalendarAlt, FaClock,
   FaRedo, FaLifeRing, FaCopy, FaChevronDown, FaChevronUp,
-  FaLock, FaMapMarkerAlt, FaUserTie
+  FaLock, FaMapMarkerAlt, FaUserTie, FaInfoCircle
 } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 import InterviewCard from "./InterviewCard";
@@ -826,61 +826,90 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
 
 
-        {/* Exam Ready Section */}
-        {/* Exam Ready Section */}
-        {examReady && selectedLevel && !error && !showInterviewPanel && (
-          <motion.div
-            id="exam-ready-section"
-            ref={examReadyRef}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border-2 border-primary/30 overflow-hidden shadow-lg"
-          >
-            <div className="p-6 text-center">
-
-              {/* Primary Action Button - On Top */}
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleExam}
-                className="w-full sm:w-auto px-8 py-3 bg-primary hover:opacity-90 text-white rounded-xl shadow-md hover:shadow-lg transition-all font-bold text-lg flex items-center justify-center mx-auto mb-6"
+        {/* Exam Ready Modal */}
+        <AnimatePresence>
+          {examReady && selectedLevel && !error && !showInterviewPanel && !isExamCenterModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0 } }}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
               >
-                {selectedLevel?.level_code === 2.5 ? 'Proceed to Center Selection' : 'Start Exam Now'}
-                <FaArrowRight className="ml-2" aria-hidden="true" />
-              </motion.button>
-
-              {/* Minimal Info */}
-              <div className="bg-gray-50 rounded-lg p-4 max-w-2xl mx-auto border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Ready for {selectedLevel?.name}
-                </h3>
-                <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-600">
-                  <span className="px-2 py-1 bg-white rounded border border-gray-200">
-                    {selectedSubject?.subject_name}
-                  </span>
-                  <span className="px-2 py-1 bg-white rounded border border-gray-200">
-                    {selectedLevel?.level_code === 2 ? 'Center Exam' : 'Online Exam'}
-                  </span>
+                {/* Modal Header */}
+                <div className="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                      <FaCheckCircle className="text-indigo-600" size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900">Ready to Begin</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Your exam is configured and ready</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-3 text-xs text-gray-500">
-                  {selectedLevel?.level_code == 2.5 ?
-                    "You'll need to select a center and verify your passcode." :
-                    "Ensure stable internet before starting."}
-                </div>
-              </div>
 
-              {/* Secondary Action */}
-              <button
-                type="button"
-                onClick={resetSelection}
-                className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline decoration-dotted underline-offset-4"
-              >
-                Change Selection
-              </button>
-            </div>
-          </motion.div>
-        )}
+                {/* Modal Body */}
+                <div className="p-6">
+                  {/* Exam Details */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-600">Subject</span>
+                      <span className="text-sm font-semibold text-slate-900">{selectedSubject?.subject_name}</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-600">Level</span>
+                      <span className="text-sm font-semibold text-slate-900">{selectedLevel?.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm text-slate-600">Type</span>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {selectedLevel?.level_code === 2.5 ? 'Center Exam' : 'Exam From Home'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Important Note */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-start gap-2">
+                      <FaInfoCircle className="text-amber-600 mt-0.5" size={14} />
+                      <p className="text-xs text-amber-900">
+                        {selectedLevel?.level_code === 2.5
+                          ? "You'll need to select a center. and walk to the center to take the exam."
+                          : "stable internet connection before starting the exam."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={resetSelection}
+                      className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExam}
+                      className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                    >
+                      {selectedLevel?.level_code === 2.5 ? 'Select Center' : 'Start Exam'}
+                      <FaArrowRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
 
         {/* Initial State / Welcome Message */}
         {
