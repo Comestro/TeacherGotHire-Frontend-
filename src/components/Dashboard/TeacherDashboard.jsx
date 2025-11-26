@@ -299,10 +299,12 @@ function TeacherDashboard() {
                             <FaMapMarkerAlt className="text-gray-400 text-xs" />
                             <span>{passkeyStatus?.center?.city}, {passkeyStatus?.center?.state}</span>
                           </span>
-                          <span className="flex items-center gap-1.5">  
-                            <FaPhoneAlt className="text-gray-400 text-xs" />
-                            <span>{passkeyStatus?.center?.phone}</span>
-                          </span> 
+                          {passkeyStatus?.status === "fulfilled" && (
+                            <span className="flex items-center gap-1.5">  
+                              <FaPhoneAlt className="text-gray-400 text-xs" />
+                              <span>{passkeyStatus?.center?.phone}</span>
+                            </span> 
+                          )}
                         </div>
                       </div>
                     </div>

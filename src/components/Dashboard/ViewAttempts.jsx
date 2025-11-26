@@ -260,7 +260,8 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
         </h3>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-100">
@@ -276,85 +277,130 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {allRows.map((row, index) => {
-              // Determine status styling
-              let statusBadge;
-              if (row.type === "Interview") {
-                if (row.status === "Completed") {
-                  statusBadge = (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
-                      <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                      Completed
-                    </span>
-                  );
-                } else if (row.status === "Scheduled") {
-                  statusBadge = (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100">
-                      <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-                      Scheduled
-                    </span>
-                  );
-                } else if (row.status === "Requested") {
-                  statusBadge = (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-100">
-                      <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-                      Requested
-                    </span>
-                  );
-                } else {
-                  statusBadge = (
-                    <span className="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-medium border border-slate-200">
-                      {row.status}
-                    </span>
-                  );
-                }
-              } else {
-                if (row.status === "Passed") {
-                  statusBadge = (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
-                      <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                      Passed
-                    </span>
-                  );
-                } else {
-                  statusBadge = (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-md text-xs font-medium border border-red-100">
-                      <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                      Failed
-                    </span>
-                  );
-                }
-              }
-
-              return (
-                <tr
-                  key={index}
-                  className={`text-sm hover:bg-slate-50 transition-colors ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"
-                    }`}
-                >
-                  <td className="py-3 px-4">
-                    <span className={`font-semibold ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
-                      {row.type}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-600">{row.classCategory}</td>
-                  <td className="py-3 px-4 text-slate-600 font-medium">{row.subject}</td>
-                  <td className="py-3 px-4 text-slate-600">{row.level}</td>
-                  <td className="py-3 px-4 text-slate-600">{row.language}</td>
-                  <td className="py-3 px-4">
-                    {statusBadge}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-slate-700">{row.score}</span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-600">{row.attemptCount}</td>
-                  <td className="py-3 px-4 text-slate-500 text-xs">{row.date}</td>
-                </tr>
-              )
-            })}
-
+            {allRows.map((row, index) => (
+              <DesktopRow key={index} row={row} />
+            ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-slate-100">
+        {allRows.map((row, index) => (
+          <MobileCard key={index} row={row} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getStatusBadge(row) {
+  if (row.type === "Interview") {
+    if (row.status === "Completed") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
+          <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          Completed
+        </span>
+      );
+    } else if (row.status === "Scheduled") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100">
+          <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+          Scheduled
+        </span>
+      );
+    } else if (row.status === "Requested") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-100">
+          <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
+          Requested
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-medium border border-slate-200">
+          {row.status}
+        </span>
+      );
+    }
+  } else {
+    if (row.status === "Passed") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
+          <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          Passed
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-md text-xs font-medium border border-red-100">
+          <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          Failed
+        </span>
+      );
+    }
+  }
+}
+
+function DesktopRow({ row }) {
+  return (
+    <tr className={`text-sm hover:bg-slate-50 transition-colors ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"}`}>
+      <td className="py-3 px-4">
+        <span className={`font-semibold ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
+          {row.type}
+        </span>
+      </td>
+      <td className="py-3 px-4 text-slate-600">{row.classCategory}</td>
+      <td className="py-3 px-4 text-slate-600 font-medium">{row.subject}</td>
+      <td className="py-3 px-4 text-slate-600">{row.level}</td>
+      <td className="py-3 px-4 text-slate-600">{row.language}</td>
+      <td className="py-3 px-4">{getStatusBadge(row)}</td>
+      <td className="py-3 px-4">
+        <span className="font-semibold text-slate-700">{row.score}</span>
+      </td>
+      <td className="py-3 px-4 text-slate-600">{row.attemptCount}</td>
+      <td className="py-3 px-4 text-slate-500 text-xs">{row.date}</td>
+    </tr>
+  );
+}
+
+function MobileCard({ row }) {
+  return (
+    <div className={`p-4 ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"}`}>
+      <div className="flex justify-between items-start mb-3">
+        <div>
+          <span className={`text-xs font-bold uppercase tracking-wider ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
+            {row.type}
+          </span>
+          <h4 className="font-bold text-slate-800 text-sm mt-0.5">{row.subject}</h4>
+          <p className="text-xs text-slate-500">{row.classCategory}</p>
+        </div>
+        {getStatusBadge(row)}
+      </div>
+
+      <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm mb-3">
+        <div>
+          <p className="text-xs text-slate-400">Level</p>
+          <p className="text-slate-700 font-medium">{row.level}</p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-400">Score</p>
+          <p className="text-slate-700 font-bold">{row.score}</p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-400">Language</p>
+          <p className="text-slate-700">{row.language}</p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-400">Attempt</p>
+          <p className="text-slate-700">{row.attemptCount}</p>
+        </div>
+      </div>
+
+      <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+        <HiOutlineClock className="h-3.5 w-3.5" />
+        {row.date}
       </div>
     </div>
   );

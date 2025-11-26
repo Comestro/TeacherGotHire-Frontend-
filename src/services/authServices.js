@@ -268,6 +268,12 @@ export const resetPassword = async (uidb64, token, newPassword) =>
     confirm_password: newPassword,
   });
 
+export const changePassword = async ({ oldPassword, newPassword }) =>
+  postRequest("/api/change_password/", {
+    old_password: oldPassword,
+    new_password: newPassword,
+  });
+
 export const logout = async () => {
   try {
     // Step 1: Call the logout API first
