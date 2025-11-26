@@ -598,9 +598,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
                             <button
                               onClick={() => handleLevelSelect(level)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+                              className={`px-4 py-2 rounded-lg font-medium text-sm ${isQualified ? 'hidden' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                             >
-                              {isQualified ? "Retake Exam" : "Start Exam"}
+                              Start Exam
                             </button>
                           </div>
                         </div>
@@ -631,14 +631,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                           </div>
                           {!isLocked && (
                             <div className="flex items-center gap-2">
-                              {isQualified && (
-                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
-                              )}
+                                {isQualified && (
+                                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                                )}
                               <button
                                 onClick={() => handleLevelSelect(level)}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
                               >
-                                {isQualified ? "Retake Exam" : "Start Exam"}
+                                {isQualified ? "Reattempt Exam" : "Start Exam"}
                               </button>
                             </div>
                           )}
@@ -909,7 +909,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       onClick={resetSelection}
                       className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
                     >
-                      Change
+                      Go Back
                     </button>
                     <button
                       type="button"
@@ -942,7 +942,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-400 mb-2 sm:mb-3">Start Your Assessment / परीक्षा शुरू करें</h3> {/* Adjust text size/margin */}
                   <p className="text-sm sm:text-base text-gray-400"> {/* Adjust text size */}
-                    Follow the steps above: select category, subject, and level to begin. <br/> ऊपर दिए गए चरणों का पालन करें: शुरू करने के लिए श्रेणी, विषय और स्तर चुनें।
+                    Follow the steps above: select category, subject, and level to begin. <br /> ऊपर दिए गए चरणों का पालन करें: शुरू करने के लिए श्रेणी, विषय और स्तर चुनें।
                   </p>
                 </div>
               </div>
