@@ -255,7 +255,7 @@ function TeacherDashboard() {
       )}
 
       <div className="min-h-screen">
-        <div className="flex flex-col md:flex-row md:gap-6 lg:gap-8">
+        <div className="flex flex-col md:flex-row">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
             {/* Show preference form if user doesn't have class categories */}

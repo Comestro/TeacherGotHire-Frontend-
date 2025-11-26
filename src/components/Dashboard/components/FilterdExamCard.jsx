@@ -359,9 +359,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="categories"
               {...pageTransition}
-              className="rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="rounded-lg overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
-              <div className="bg-background p-3 text-text">
+              <div className="bg-background text-text">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                   <FaGraduationCap className="mr-2 sm:mr-3" aria-hidden="true" />
                   Select Class Category / वर्ग चुनें
@@ -449,9 +449,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="subjects"
               {...pageTransition}
-              className="bg-white rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
-              <div className="bg-background p-4 sm:p-6 text-text">
+              <div className="bg-background text-text">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                     <FaBookOpen className="mr-2 sm:mr-3" aria-hidden="true" />
@@ -551,9 +551,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="levels"
               {...pageTransition}
-              className="bg-white md:rounded-lg md:border md:border-gray-200 overflow-hidden mb-6 sm:mb-8"
+              className="md:rounded-lg overflow-hidden mb-6 sm:mb-8"
             >
-              <div className=" p-4 sm:p-6 text-text">
+              <div className="text-text">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center">
                     <FaLayerGroup className="mr-2 sm:mr-3" aria-hidden="true" />
