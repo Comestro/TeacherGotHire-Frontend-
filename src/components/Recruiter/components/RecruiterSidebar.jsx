@@ -8,6 +8,7 @@ import {
   getAllSkills,
   getQualification,
   getClassCategory,
+  getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,7 +31,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     experience_years: { min: "", max: "" },
     gender: [],
     exam_status: [],
-    job_role: [],
+    job_type: [],
     religion: [],
     marital_status: [],
     language: [],
@@ -41,7 +42,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   // Get data from redux store
-  const { qualification, allSkill, classCategories } = useSelector(
+  const { qualification, allSkill, classCategories, teacherjobRole } = useSelector(
     (state) => state.jobProfile
   );
 
@@ -49,6 +50,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [qualificationData, setQualificationData] = useState([]);
   const [skillData, setSkillData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
+  const [jobTypeData, setJobTypeData] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
@@ -73,7 +75,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     skills: false,
     gender: false,
     examStatus: false,
-    jobRole: false,
+    jobType: false,
     religion: false,
     maritalStatus: false,
     language: false,
@@ -85,6 +87,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     dispatch(getAllSkills());
     dispatch(getQualification());
     dispatch(getClassCategory());
+    dispatch(getTeacherjobType());
   }, [dispatch]);
 
   // Update local data when redux data changes
@@ -92,7 +95,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setQualificationData(qualification);
     setSkillData(allSkill);
     setCategoryData(classCategories);
-  }, [qualification, allSkill, classCategories]);
+    setJobTypeData(teacherjobRole);
+  }, [qualification, allSkill, classCategories, teacherjobRole]);
 
   // Handle clicks outside sidebar to close on mobile
   useEffect(() => {
@@ -240,7 +244,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       experience_years: { min: "", max: "" },
       gender: [],
       exam_status: [],
-      job_role: [],
+      job_type: [],
       religion: [],
       marital_status: [],
       language: [],
@@ -262,7 +266,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       skills: false,
       gender: false,
       examStatus: false,
-      jobRole: false,
+      jobType: false,
       religion: false,
       maritalStatus: false,
       language: false,
@@ -479,14 +483,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   </span>
                 ))}
 
-                {/* Job Role filters */}
-                {filters.job_role.map((item, index) => (
-                  <span key={`job_role-${index}`} className="inline-flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs">
-                    Job Role: {item}
+                {/* Job Type filters */}
+                {filters.job_type.map((item, index) => (
+                  <span key={`job_type-${index}`} className="inline-flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs">
+                    Job Type: {item}
                     <button onClick={() => {
                       setFilters(prev => ({
                         ...prev,
-                        job_role: prev.job_role.filter(j => j !== item)
+                        job_type: prev.job_type.filter(j => j !== item)
                       }));
                     }} className="ml-1 text-teal-600 hover:text-teal-800">
                       <IoMdClose size={12} />
@@ -798,7 +802,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               </AnimatePresence>
             </div>
 
-           
+
 
             {/* Gender Filter */}
             <div className="border-b">
@@ -861,21 +865,21 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               </AnimatePresence>
             </div>
 
-            {/* Job Role Filter */}
+            {/* Job Type Filter */}
             <div className="border-b">
               <button
-                onClick={() => toggleSection("jobRole")}
+                onClick={() => toggleSection("jobType")}
                 className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <BsBriefcase className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Job Role</span>
+                  <span className="font-semibold text-text uppercase text-sm">Job Type</span>
                 </div>
-                {expandedSections.jobRole ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                {expandedSections.jobType ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
               </button>
 
               <AnimatePresence>
-                {expandedSections.jobRole && (
+                {expandedSections.jobType && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -884,32 +888,33 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-2 max-h-60 overflow-y-auto">
-                      {["Principal", "Teacher", "Warden( Hostel )", "Assistant Teacher"].map((role) => (
+                      {jobTypeData.map((role) => (
                         <label
-                          key={role}
+                          key={role.id || role.teacher_job_name || role.job_type || index}
                           className="flex items-center py-1 cursor-pointer group"
                         >
                           <div className="relative flex items-center">
                             <input
                               type="checkbox"
                               className="sr-only"
-                              checked={filters.job_role.includes(role)}
+                              checked={filters.job_type.includes(role.teacher_job_name || role.job_type || role.name || role)}
                               onChange={() => {
+                                const roleName = role.teacher_job_name || role.job_type || role.name || role;
                                 setFilters(prev => ({
                                   ...prev,
-                                  job_role: prev.job_role.includes(role)
-                                    ? prev.job_role.filter(r => r !== role)
-                                    : [...prev.job_role, role]
+                                  job_type: prev.job_type.includes(roleName)
+                                    ? prev.job_type.filter(r => r !== roleName)
+                                    : [...prev.job_type, roleName]
                                 }));
                               }}
                             />
-                            {filters.job_role.includes(role) ? (
+                            {filters.job_type.includes(role.teacher_job_name || role.job_type || role.name || role) ? (
                               <MdCheckBox className="text-primary w-5 h-5" />
                             ) : (
                               <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
                             )}
                           </div>
-                          <span className="ml-2 text-sm text-text">{role}</span>
+                          <span className="ml-2 text-sm text-text">{role.teacher_job_name || role.job_type || role.name || role}</span>
                         </label>
                       ))}
                     </div>

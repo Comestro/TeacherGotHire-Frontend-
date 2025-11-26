@@ -167,7 +167,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
       }
     }
 
-    // Check Level 2.0 (online) requirement for Level 2.5 (center exam)
     if (level?.level_code === 2.5) {
       const isOnlineLevel2Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -311,58 +310,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     if (selectedLevel?.level_code === 1.0 || hasLevel1Qualified) return 1;
     return 0;
   }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
-
-  // Render Journey Map
-  const renderJourneyMap = () => {
-    return (
-      <div className="mb-8 px-4">
-        <div className="flex items-center justify-between relative">
-          <div className="absolute left-0 top-1/2 w-full h-1 -z-10 rounded-full" />
-
-          {/* Step 1: Level 1 */}
-          <div className="flex flex-col items-center px-2 z-10">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel1Qualified
-              ? 'bg-green-500 border-green-500 text-white'
-              : ' border-blue-500 text-blue-500'
-              }`}>
-              {hasLevel1Qualified ? <FaCheckCircle /> : <span className="font-bold">1</span>}
-            </div>
-            <span className="text-xs font-semibold mt-2 text-gray-600">Level 1</span>
-          </div>
-
-          {/* Connector 1-2 */}
-          <div className={`flex-1 h-1 transition-all ${hasLevel1Qualified ? 'bg-green-500' : 'bg-gray-200'}`} />
-
-          {/* Step 2: Level 2 */}
-          <div className="flex flex-col items-center px-2 z-10">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel2Qualified
-              ? 'bg-green-500 border-green-500 text-white'
-              : hasLevel1Qualified
-                ? 'bg-white border-blue-500 text-blue-500'
-                : 'bg-gray-100 border-gray-300 text-gray-400'
-              }`}>
-              {hasLevel2Qualified ? <FaCheckCircle /> : <span className="font-bold">2</span>}
-            </div>
-            <span className="text-xs font-semibold mt-2 text-gray-600">Level 2</span>
-          </div>
-
-          {/* Connector 2-3 */}
-          <div className={`flex-1 h-1 transition-all ${hasLevel2Qualified ? 'bg-green-500' : 'bg-gray-200'}`} />
-
-          {/* Step 3: Final Verification */}
-          <div className="flex flex-col items-center px-2 z-10">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${hasLevel2Qualified
-              ? 'bg-white border-blue-500 text-blue-500'
-              : 'bg-gray-100 border-gray-300 text-gray-400'
-              }`}>
-              <FaUserTie />
-            </div>
-            <span className="text-xs font-semibold mt-2 text-gray-600">Verification</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
@@ -622,9 +569,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   </button>
                 </div>
 
-                {/* Visual Journey Map */}
-                {renderJourneyMap()}
-
                 <p className="text-text mt-1 text-sm sm:text-base text-center">
                   Current Subject: <span className="font-medium">{selectedSubject?.subject_name}</span>
                 </p>
@@ -665,7 +609,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   })}
 
                   {/* Connector */}
-                  <div className="h-6 w-0.5 bg-gray-300 mx-auto" />
+                  <div className="hidden lg:block h-6 w-0.5 bg-gray-300 mx-auto" />
 
                   {/* Level 2 Card */}
                   {levels.filter(l => l.level_code === 2.0).map(level => {
@@ -704,7 +648,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   })}
 
                   {/* Connector */}
-                  <div className="h-6 w-0.5 bg-gray-300 mx-auto" />
+                  <div className="hidden lg:block h-6 w-0.5 bg-gray-300 mx-auto" />
 
                   {/* Final Stage: Split into Center Exam & Interview */}
                   <div className="grid grid-cols-2 gap-4">
@@ -724,14 +668,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : isQualified ? 'border-green-200' : 'border-purple-200 shadow-sm'
                           }`}>
                           {isLocked && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
-                          <div className="p-4 flex flex-col gap-3 h-full">
+                          <div className="p-2 lg:p-4 flex flex-col gap-3 h-full">
                             <div className="flex items-center gap-3">
-                              <div className={`w-8 md:w-10 h-8 md:h-10 rounded-full flex items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : isQualified ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'
+                              <div className={`hidden lg:flex w-8 md:w-10 h-8 md:h-10 rounded-full items-center justify-center shrink-0 ${isLocked ? 'bg-gray-100 text-gray-400' : isQualified ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600'
                                 }`}>
                                 {isQualified ? <FaCheckCircle /> : <FaMapMarkerAlt />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-sm md:text-base text-gray-800 truncate">Center Exam</h3>
+                                <h3 className="font-semibold text-xs lg:text-base text-gray-800 truncate">Level 2 (Exam Center)</h3>
                                 {isQualified && attempt?.calculate_percentage !== undefined && (
                                   <span className="text-xs font-semibold text-green-600">
                                     Score: {attempt.calculate_percentage}%
@@ -739,7 +683,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 )}
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 flex-1">
+                            <p className="text-xs lg:text-sm text-gray-600 flex-1">
                               {isQualified
                                 ? "You have successfully completed the center exam."
                                 : "Visit an exam center for verification."}
@@ -770,14 +714,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                     <div className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${!hasLevel2Qualified ? 'border-gray-200 opacity-75' : 'border-cyan-200 shadow-sm'
                       }`}>
                       {!hasLevel2Qualified && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
-                      <div className="p-4 flex flex-col gap-3 h-full">
+                      <div className="p-2 lg:p-4 flex flex-col gap-3 h-full">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0 ${!hasLevel2Qualified ? 'bg-gray-100 text-gray-400' : 'bg-cyan-100 text-cyan-600'
+                          <div className={`hidden lg:flex w-8 h-8 md:w-12 md:h-12 rounded-full items-center justify-center shrink-0 ${!hasLevel2Qualified ? 'bg-gray-100 text-gray-400' : 'bg-cyan-100 text-cyan-600'
                             }`}>
                             <FaUserTie />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-sm md:text-base text-gray-800">Interview</h3>
+                            <h3 className="font-semibold text-xs lg:text-base text-gray-800">Interview</h3>
                             {(() => {
                               const relevantAttempt = attempts?.find(attempt =>
                                 attempt?.exam?.class_category_id === selectedCategory?.id &&
@@ -941,7 +885,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                     <div className="flex items-center justify-between py-2">
                       <span className="text-sm text-slate-600">Type</span>
                       <span className="text-sm font-semibold text-slate-900">
-                        {selectedLevel?.level_code === 2.5 ? 'Center Exam' : 'Exam From Home'}
+                        {selectedLevel?.level_code === 2.5 ? 'Level 2 (Exam Center)' : 'Level 2 (From Home)'}
                       </span>
                     </div>
                   </div>
