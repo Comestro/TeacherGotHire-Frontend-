@@ -19,7 +19,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
   // State for filters
   const [filters, setFilters] = useState({
-    district: [],
+    city: [],
     pincode: [],
     block: [],
     village: [],
@@ -60,7 +60,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   // Location input state
   const [inputValues, setInputValues] = useState({
     pincode: "",
-    district: "",
+    city: "",
     block: "",
     village: "",
   });
@@ -232,7 +232,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   // Clear all filters
   const handleClear = () => {
     setFilters({
-      district: [],
+      city: [],
       pincode: [],
       block: [],
       village: [],
@@ -365,10 +365,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     </button>
                   </span>
                 ))}
-                {filters.district.map((item, index) => (
-                  <span key={`district-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    District: {item}
-                    <button onClick={() => handleRemoveValue('district', index)} className="ml-1 text-blue-600 hover:text-blue-800">
+                {filters.city.map((item, index) => (
+                  <span key={`city-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                    city: {item}
+                    <button onClick={() => handleRemoveValue('city', index)} className="ml-1 text-blue-600 hover:text-blue-800">
                       <IoMdClose size={12} />
                     </button>
                   </span>
@@ -641,28 +641,28 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                         )}
                       </div>
 
-                      {/* District Filter - Bihar Districts Dropdown */}
+                      {/* city Filter - Bihar citys Dropdown */}
                       <div className="space-y-2">
                         <label className="text-xs font-medium text-secondary uppercase">
-                          District
+                          city
                         </label>
                         <div className="flex space-x-2">
                           <select
-                            name="district"
-                            value={inputValues.district || ""}
+                            name="city"
+                            value={inputValues.city || ""}
                             disabled={!filters.state.includes("Bihar")}
                             onChange={(e) => {
                               if (e.target.value) {
                                 setFilters(prev => ({
                                   ...prev,
-                                  district: [...prev.district, e.target.value]
+                                  city: [...prev.city, e.target.value]
                                 }));
-                                setInputValues(prev => ({ ...prev, district: "" }));
+                                setInputValues(prev => ({ ...prev, city: "" }));
                               }
                             }}
                             className={`border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary bg-white ${!filters.state.includes("Bihar") ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
-                            <option value="">{!filters.state.includes("Bihar") ? "Select State First" : "Select District"}</option>
+                            <option value="">{!filters.state.includes("Bihar") ? "Select State First" : "Select city"}</option>
                             {[
                               "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
                               "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui",
@@ -670,21 +670,21 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                               "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada",
                               "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura",
                               "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
-                            ].map((district) => (
-                              <option key={district} value={district}>{district}</option>
+                            ].map((city) => (
+                              <option key={city} value={city}>{city}</option>
                             ))}
                           </select>
                         </div>
-                        {filters.district && filters.district.length > 0 && (
+                        {filters.city && filters.city.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
-                            {filters.district.map((value, index) => (
+                            {filters.city.map((value, index) => (
                               <div
                                 key={index}
                                 className="flex items-center bg-background text-text px-2 py-1 rounded text-xs"
                               >
                                 <span>{value}</span>
                                 <button
-                                  onClick={() => handleRemoveValue('district', index)}
+                                  onClick={() => handleRemoveValue('city', index)}
                                   className="ml-1 hover:text-primary"
                                   aria-label={`Remove ${value}`}
                                 >

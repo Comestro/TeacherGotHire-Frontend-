@@ -359,7 +359,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="categories"
               {...pageTransition}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
               <div className="bg-background p-3 text-text">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
@@ -371,7 +371,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                 </p>
               </div>
 
-              <div className="p-4 sm:p-6"> {/* Adjust padding */}
+              <div className="p-0 sm:p-6"> {/* Adjust padding */}
                 {classCategories?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"> {/* Adjust gap */}
                     {classCategories?.map((category) => {
@@ -449,7 +449,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="subjects"
               {...pageTransition}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="bg-white rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
               <div className="bg-background p-4 sm:p-6 text-text">
                 <div className="flex justify-between items-center">
@@ -631,9 +631,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                           </div>
                           {!isLocked && (
                             <div className="flex items-center gap-2">
-                                {isQualified && (
-                                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
-                                )}
+                              {isQualified && (
+                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Completed</span>
+                              )}
                               <button
                                 onClick={() => handleLevelSelect(level)}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
@@ -789,7 +789,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="interview"
               {...pageTransition}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 sm:mb-8"
+              className="bg-white rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8"
             >
               <div className="bg-background p-4 sm:p-6 text-text border-b border-gray-100">
                 <div className="flex justify-between items-center">

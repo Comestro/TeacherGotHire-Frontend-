@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllQues} from "../../features/examQuesSlice";
+import { getAllQues } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
 import { HiOutlineArrowLeft, HiOutlineClipboardDocumentList, HiOutlineExclamationTriangle, HiOutlineGlobeAlt, HiOutlineLanguage } from "react-icons/hi2";
@@ -12,13 +12,13 @@ const MCQGuidelinePage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const { examCards } = useSelector((state) => state.exam);
-  const {loading}= useSelector((state)=>state.examQues);
+  const { loading } = useSelector((state) => state.examQues);
   const subjectName = examCards?.subject?.name;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState();
   const [showVerificationCard, setShowVerificationCard] = useState(false);
-  const [card,setCard]=useState(false);
+  const [card, setCard] = useState(false);
   const [examCenterData, setExamCenterData] = useState(null);
 
   const handleCheckboxChange = () => {
@@ -37,7 +37,7 @@ const MCQGuidelinePage = () => {
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
-    
+
   };
 
   const handleProceedClick = async (e) => {
@@ -52,7 +52,7 @@ const MCQGuidelinePage = () => {
         const examid = examCards?.id;
         // Check passkey status
         const response = await checkPasskey({ exam: examid });
-        
+
 
         if (response?.passkey === true) {
           // If passkey exists, show verification with center info
@@ -86,9 +86,9 @@ const MCQGuidelinePage = () => {
 
   // Modified ExamCente
   return (
-    <div className="min-h-screen bg-background text-text">
+    <div className="h-screen flex flex-col bg-background text-text overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-gray-200 shrink-0 z-10">
         <div className="= mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Link
@@ -98,7 +98,7 @@ const MCQGuidelinePage = () => {
               <HiOutlineArrowLeft className="h-5 w-5" />
               <span className="font-semibold text-sm sm:text-base">Back</span>
             </Link>
-            
+
             <div className="flex items-center gap-2">
               <HiOutlineClipboardDocumentList className="h-6 w-6 text-primary" />
               <h1 className="text-lg sm:text-xl font-bold text-text">
@@ -109,89 +109,89 @@ const MCQGuidelinePage = () => {
         </div>
       </header>
 
-    
+
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-8xl">
+      <main className="flex-1 overflow-y-auto container mx-auto px-4 py-6 max-w-8xl">
         <div className="flex flex-col md:flex-row items-start gap-6">
           {/* Guidelines Card - English */}
           <div className="flex flex-1 flex-col gap-4 w-full md:w-3/4">
             <div className="bg-white flex-1 rounded-lg p-5  sm:p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-4 ">
-              <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
-              <h2 className="text-lg sm:text-xl font-bold text-text">
-                Important Instructions
-              </h2>
+              <div className="flex items-center gap-2 mb-4 ">
+                <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
+                <h2 className="text-lg sm:text-xl font-bold text-text">
+                  Important Instructions
+                </h2>
+              </div>
+
+              <ul className="space-y-1 text-sm sm:text-base text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Ensure stable internet connection and use latest browser</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Keep your device fully charged or plugged in</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Read each question carefully before answering</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Manage your time - each question has a time limit</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-error mt-0.5">•</span>
+                  <span><strong>Do not refresh</strong> the page or use browser back button</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Review answers before submitting (if allowed)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>Contact support immediately if you encounter technical issues</span>
+                </li>
+              </ul>
+              <br />
+              <div className="flex items-center gap-2 mb-4">
+                <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
+                <h2 className="text-lg sm:text-xl font-bold text-text">
+                  महत्वपूर्ण निर्देश
+                </h2>
+              </div>
+
+              <ul className="space-y-1 text-sm sm:text-base text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>सुनिश्चित करें कि आपका इंटरनेट कनेक्शन स्थिर है और नवीनतम Chrome/Firefox ब्राउज़र का उपयोग करें</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>अपने डिवाइस को पूरी तरह चार्ज रखें या प्लग इन करें</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>उत्तर देने से पहले प्रत्येक प्रश्न को ध्यानपूर्वक पढ़ें</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>अपने समय का प्रबंधन करें - प्रत्येक प्रश्न की समय सीमा है</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-error mt-0.5">•</span>
+                  <span><strong>रीफ्रेश न करें</strong> पेज को और न ही ब्राउज़र बैक बटन का उपयोग करें</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>सबमिट करने से पहले उत्तरों की समीक्षा करें (यदि अनुमति हो)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent mt-0.5">•</span>
+                  <span>तकनीकी समस्या आने पर तुरंत सहायता से संपर्क करें</span>
+                </li>
+              </ul>
             </div>
-            
-            <ul className="space-y-1 text-sm sm:text-base text-secondary">
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Ensure stable internet connection and use latest browser</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Keep your device fully charged or plugged in</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Read each question carefully before answering</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Manage your time - each question has a time limit</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-error mt-0.5">•</span>
-                <span><strong>Do not refresh</strong> the page or use browser back button</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Review answers before submitting (if allowed)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>Contact support immediately if you encounter technical issues</span>
-              </li>
-            </ul>
-            <br />
-            <div className="flex items-center gap-2 mb-4">
-              <HiOutlineClipboardDocumentList className="h-6 w-6 text-accent" />
-              <h2 className="text-lg sm:text-xl font-bold text-text">
-                महत्वपूर्ण निर्देश
-              </h2>
-            </div>
-            
-            <ul className="space-y-1 text-sm sm:text-base text-secondary">
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>सुनिश्चित करें कि आपका इंटरनेट कनेक्शन स्थिर है और नवीनतम Chrome/Firefox ब्राउज़र का उपयोग करें</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>अपने डिवाइस को पूरी तरह चार्ज रखें या प्लग इन करें</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>उत्तर देने से पहले प्रत्येक प्रश्न को ध्यानपूर्वक पढ़ें</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>अपने समय का प्रबंधन करें - प्रत्येक प्रश्न की समय सीमा है</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-error mt-0.5">•</span>
-                <span><strong>रीफ्रेश न करें</strong> पेज को और न ही ब्राउज़र बैक बटन का उपयोग करें</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>सबमिट करने से पहले उत्तरों की समीक्षा करें (यदि अनुमति हो)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent mt-0.5">•</span>
-                <span>तकनीकी समस्या आने पर तुरंत सहायता से संपर्क करें</span>
-              </li>
-            </ul>
-          </div>
           </div>
 
           {/* Configuration Card */}
@@ -232,11 +232,10 @@ const MCQGuidelinePage = () => {
               <button
                 onClick={handleProceedClick}
                 disabled={loading || !selectedLanguage || !isChecked}
-                className={`w-full ${
-                  selectedLanguage && isChecked
+                className={`w-full ${selectedLanguage && isChecked
                     ? "bg-primary hover:bg-primary/90"
                     : "bg-gray-300 cursor-not-allowed"
-                } text-white px-6 py-3 rounded-lg font-semibold text-base transition-all flex items-center justify-center gap-2`}
+                  } text-white px-6 py-3 rounded-lg font-semibold text-base transition-all flex items-center justify-center gap-2`}
               >
                 {loading ? (
                   <>
@@ -258,22 +257,22 @@ const MCQGuidelinePage = () => {
 
           {
             card && <ExamCenterModal
-            selectedLanguage = {selectedLanguage}
-            isOpen={isExamCenterModalOpen}
-            onClose={() => {
-              setIsExamCenterModalOpen(false);
-              setShowVerificationCard(false);
-              setCard(false);
-            }}
-            isverifyCard={showVerificationCard}
-            examCenterData={examCenterData}
-          />
+              selectedLanguage={selectedLanguage}
+              isOpen={isExamCenterModalOpen}
+              onClose={() => {
+                setIsExamCenterModalOpen(false);
+                setShowVerificationCard(false);
+                setCard(false);
+              }}
+              isverifyCard={showVerificationCard}
+              examCenterData={examCenterData}
+            />
           }
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-4 mt-10">
+      <footer className="bg-white border-t border-gray-200 py-4 mt-auto shrink-0">
         <div className="container mx-auto text-center px-4">
           <p className="text-xs text-secondary">
             &copy; 2024 PTP Institute. Need help? Contact support

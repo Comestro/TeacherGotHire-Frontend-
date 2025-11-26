@@ -355,7 +355,7 @@ const ExamPortal = () => {
   };
 
   return (
-    <div className="flex bg-gray-50 w-full select-none">
+    <div className="flex bg-gray-50 w-full h-full select-none overflow-hidden">
       {/* Security Violation Modal */}
       {securityViolation && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
@@ -415,10 +415,13 @@ const ExamPortal = () => {
 
       {/* Main Content */}
 
-      <div className="w-full md:min-w-[80%] md:px-4 max-h-[calc(100vh-150px)]">
-        <Subheader handleSubmit={handleSubmit} />
-        <div className="bg-white md:hidden border-b border-primary/20">
-          <ul className="p-3 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto">
+      {/* Main Content */}
+      <div className="w-full md:min-w-[80%] md:px-4 flex flex-col h-full overflow-hidden relative">
+        <div className="shrink-0 z-10">
+          <Subheader handleSubmit={handleSubmit} />
+        </div>
+        <div className="bg-white md:hidden border-b border-primary/20 shrink-0">
+          <ul className="p-3 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto max-h-[15vh]">
             {questions.map((q, index) => (
               <li key={q.id} className="flex">
                 <button
@@ -436,142 +439,145 @@ const ExamPortal = () => {
             ))}
           </ul>
         </div>
-        {errorMessage && (
-          <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
-        )}
-        {currentQuestion ? (
-          <div className="relative bg-white rounded-xl border border-gray-200 p-6 w-full mt-4 h-full">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-text flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-lg font-bold text-sm">
-                  {currentQuestionIndex + 1}
-                </span>
-                Question {currentQuestionIndex + 1}
-              </h2>
-              <div className="flex items-center gap-3">
-                {language && (
-                  <span className="px-4 py-1.5 border border-blue-200 text-blue-800 rounded-full text-sm font-semibold">
-                    Medium: {language}
+
+        <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4">
+          {errorMessage && (
+            <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
+          )}
+          {currentQuestion ? (
+            <div className="relative bg-white rounded-xl border border-gray-200 p-6 w-full h-fit min-h-0">
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-text flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-lg font-bold text-sm">
+                    {currentQuestionIndex + 1}
                   </span>
-                )}
-                <button onClick={toggleModal} className="p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <IoWarningOutline className="text-2xl text-orange-500" /> 
-                  <span className="hidden sm:inline">Report This Question</span>
-                </button>
-              </div>
-            </div>
-            {/* Modal */}
-            {isOpen && (
-              <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <IoWarningOutline className="text-2xl text-orange-600" />
-                      </div>
-                      <h2 className="text-xl font-bold text-text">
-                        Report Question
-                      </h2>
-                    </div>
-                    <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <RxCross2 className="text-xl text-gray-600" />
-                    </button>
-                  </div>
-                  <ul className="space-y-2 mb-6">
-                    {reportOptions &&
-                      reportOptions.map((option, index) => (
-                        <li
-                          key={index}
-                          className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${selectedOption.includes(option.id)
-                            ? "bg-primary/10 border-primary text-primary font-semibold"
-                            : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
-                            }`}
-                          onClick={() => handleOptionSelect(option.id)}
-                        >
-                          <span>{option.issue_type}</span>
-                          <IoWarningOutline
-                            className={`text-lg ${selectedOption.includes(option.id)
-                              ? "text-primary"
-                              : "text-gray-400"
-                              }`}
-                          />
-                        </li>
-                      ))}
-                  </ul>
-                  <button
-                    className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSubmits}
-                    disabled={selectedOption.length === 0 || isSubmittingReport}
-                  >
-                    {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
+                  Question {currentQuestionIndex + 1}
+                </h2>
+                <div className="flex items-center gap-3">
+                  {language && (
+                    <span className="px-4 py-1.5 border border-blue-200 text-blue-800 rounded-full text-sm font-semibold">
+                      Medium: {language}
+                    </span>
+                  )}
+                  <button onClick={toggleModal} className="p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <IoWarningOutline className="text-2xl text-orange-500" />
+                    <span className="hidden sm:inline">Report This Question</span>
                   </button>
                 </div>
               </div>
-            )}
-
-            <p className="text-text text-lg mb-8 leading-relaxed">{currentQuestion.text}</p>
-            <div className="space-y-3">
-              {currentQuestion.options.map((option, idx) => (
-                <div key={idx} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedAnswers[currentQuestion.id] === idx + 1
-                  ? "bg-primary/10 border-primary shadow-sm"
-                  : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
-                  }`}
-                  onClick={() => handleAnswerSelect(currentQuestion.id, idx + 1)}
-                >
-                  <input
-                    type="radio"
-                    id={`${currentQuestion.id}-option${idx}`}
-                    name={`question-${currentQuestion.id}`}
-                    value={idx + 1}
-                    checked={selectedAnswers[currentQuestion.id] === idx + 1}
-                    onChange={() =>
-                      handleAnswerSelect(currentQuestion.id, idx + 1)
-                    }
-                    className="h-5 w-5 text-primary border-gray-300 focus:ring-primary"
-                  />
-                  <label
-                    htmlFor={`${currentQuestion.id}-option${idx}`}
-                    className="text-text flex-1 cursor-pointer font-medium"
-                  >
-                    {option}
-                  </label>
+              {/* Modal */}
+              {isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <IoWarningOutline className="text-2xl text-orange-600" />
+                        </div>
+                        <h2 className="text-xl font-bold text-text">
+                          Report Question
+                        </h2>
+                      </div>
+                      <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <RxCross2 className="text-xl text-gray-600" />
+                      </button>
+                    </div>
+                    <ul className="space-y-2 mb-6">
+                      {reportOptions &&
+                        reportOptions.map((option, index) => (
+                          <li
+                            key={index}
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${selectedOption.includes(option.id)
+                              ? "bg-primary/10 border-primary text-primary font-semibold"
+                              : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
+                              }`}
+                            onClick={() => handleOptionSelect(option.id)}
+                          >
+                            <span>{option.issue_type}</span>
+                            <IoWarningOutline
+                              className={`text-lg ${selectedOption.includes(option.id)
+                                ? "text-primary"
+                                : "text-gray-400"
+                                }`}
+                            />
+                          </li>
+                        ))}
+                    </ul>
+                    <button
+                      className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={handleSubmits}
+                      disabled={selectedOption.length === 0 || isSubmittingReport}
+                    >
+                      {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* Navigation Buttons */}
-            <div className="absolute bottom-5 right-4 flex justify-self-end gap-3">
-              <button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-                className={`flex items-center gap-1 px-4 py-2.5 rounded-xl font-semibold transition-all shadow-md ${currentQuestionIndex === 0
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
-                  }`}
-              >
-                <BsArrowLeftShort className="size-5" />
-                Previous
-              </button>
-              {currentQuestionIndex < questions.length - 1 ? (
+              <p className="text-text text-lg mb-8 leading-relaxed">{currentQuestion.text}</p>
+              <div className="space-y-3">
+                {currentQuestion.options.map((option, idx) => (
+                  <div key={idx} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedAnswers[currentQuestion.id] === idx + 1
+                    ? "bg-primary/10 border-primary shadow-sm"
+                    : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+                    }`}
+                    onClick={() => handleAnswerSelect(currentQuestion.id, idx + 1)}
+                  >
+                    <input
+                      type="radio"
+                      id={`${currentQuestion.id}-option${idx}`}
+                      name={`question-${currentQuestion.id}`}
+                      value={idx + 1}
+                      checked={selectedAnswers[currentQuestion.id] === idx + 1}
+                      onChange={() =>
+                        handleAnswerSelect(currentQuestion.id, idx + 1)
+                      }
+                      className="h-5 w-5 text-primary border-gray-300 focus:ring-primary"
+                    />
+                    <label
+                      htmlFor={`${currentQuestion.id}-option${idx}`}
+                      className="text-text flex-1 cursor-pointer font-medium"
+                    >
+                      {option}
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation Buttons - Fixed at bottom for mobile */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 md:absolute md:bottom-5 md:right-4 md:left-auto md:bg-transparent md:border-0 md:p-0 flex justify-between md:justify-end gap-3 z-20">
                 <button
-                  onClick={handleNext}
-                  className={`flex items-center gap-1 px-4 py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
+                  onClick={handlePrevious}
+                  disabled={currentQuestionIndex === 0}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl font-semibold transition-all shadow-md ${currentQuestionIndex === 0
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
                     }`}
                 >
-                  Next
-                  <BsArrowRightShort className="size-5" />
+                  <BsArrowLeftShort className="size-5" />
+                  Previous
                 </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  className="px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold shadow-md hover:shadow-lg transition-all"
-                >
-                  Submit Exam
-                </button>
-              )}
+                {currentQuestionIndex < questions.length - 1 ? (
+                  <button
+                    onClick={handleNext}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
+                      }`}
+                  >
+                    Next
+                    <BsArrowRightShort className="size-5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    className="flex-1 md:flex-none px-6 py-3 md:py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold shadow-md hover:shadow-lg transition-all"
+                  >
+                    Submit Exam
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   );
