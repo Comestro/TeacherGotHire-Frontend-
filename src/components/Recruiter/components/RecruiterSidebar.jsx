@@ -646,6 +646,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                           <select
                             name="district"
                             value={inputValues.district || ""}
+                            disabled={!filters.state.includes("Bihar")}
                             onChange={(e) => {
                               if (e.target.value) {
                                 setFilters(prev => ({
@@ -655,9 +656,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                                 setInputValues(prev => ({ ...prev, district: "" }));
                               }
                             }}
-                            className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary bg-white"
+                            className={`border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary bg-white ${!filters.state.includes("Bihar") ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
-                            <option value="">Select District</option>
+                            <option value="">{!filters.state.includes("Bihar") ? "Select State First" : "Select District"}</option>
                             {[
                               "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
                               "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui",
@@ -797,58 +798,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               </AnimatePresence>
             </div>
 
-            {/* Experience Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("experience")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsBriefcase className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Experience</span>
-                </div>
-                {expandedSections.experience ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.experience && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          placeholder="Min"
-                          value={filters.experience_years.min}
-                          onChange={(e) => setFilters(prev => ({
-                            ...prev,
-                            experience_years: { ...prev.experience_years, min: e.target.value }
-                          }))}
-                          className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary"
-                        />
-                        <span className="text-secondary">to</span>
-                        <input
-                          type="number"
-                          placeholder="Max"
-                          value={filters.experience_years.max}
-                          onChange={(e) => setFilters(prev => ({
-                            ...prev,
-                            experience_years: { ...prev.experience_years, max: e.target.value }
-                          }))}
-                          className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary"
-                        />
-                      </div>
-                      <p className="text-xs text-secondary mt-2">Years of experience</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+           
 
             {/* Gender Filter */}
             <div className="border-b">
