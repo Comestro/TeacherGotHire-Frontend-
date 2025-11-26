@@ -41,7 +41,7 @@ const MultiSelect = ({ options, value, onChange, className }) => {
     <div className={`relative w-full ${className || ''}`} ref={containerRef}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="min-h-[42px] border border-slate-300 bg-white rounded-lg px-3 py-2 cursor-pointer flex flex-wrap gap-2 items-center hover:border-teal-500 transition-colors focus-within:ring-2 focus-within:ring-teal-500/20"
+        className="min-h-[42pxnpm] border border-slate-300 bg-white rounded-lg px-3 py-2 cursor-pointer flex flex-wrap gap-2 items-center hover:border-teal-500 transition-colors focus-within:ring-2 focus-within:ring-teal-500/20"
       >
         {selectedValues.length > 0 ? (
           selectedValues.map((val) => (

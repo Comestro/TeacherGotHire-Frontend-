@@ -631,7 +631,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
               </div>
 
               <div className="">
-                <div className="space-y-4 max-w-3xl mx-auto">
+                <div className="space-y-4 max-w-3xl mx-auto pb-5">
                   {/* Level 1 Card */}
                   {levels.filter(l => l.level_code === 1.0).map(level => {
                     const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0);

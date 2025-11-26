@@ -25,7 +25,7 @@ class EqErrorBoundary extends React.Component {
     return { hasError: true };
   }
   componentDidCatch(err, info) {
-    
+
   }
   render() {
     // When no error, render children (the real editor)
@@ -37,9 +37,9 @@ class EqErrorBoundary extends React.Component {
     // Props expected: fallbackValue, onChange (setter), onSave, onCancel
     const {
       fallbackValue = "",
-      onChange = () => {},
-      onSave = () => {},
-      onCancel = () => {},
+      onChange = () => { },
+      onSave = () => { },
+      onCancel = () => { },
     } = this.props;
 
     return (
@@ -317,7 +317,7 @@ const QuestionForm = () => {
     s = s.replace(/±/g, ' \\pm ');
 
     // Replace unicode superscripts like b² -> b^{2}
-    const supMap = { '²':'2','³':'3','¹':'1','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁰':'0' };
+    const supMap = { '²': '2', '³': '3', '¹': '1', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁰': '0' };
     s = s.replace(/([A-Za-z0-9])([²³¹⁴⁵⁶⁷⁸⁹⁰]+)/g, (m, p1, p2) => {
       const nums = p2.split('').map(ch => supMap[ch] || ch).join('');
       return `${p1}^{${nums}}`;
@@ -349,7 +349,7 @@ const QuestionForm = () => {
       setIsFromEquationEditor(false);
       return;
     }
-    
+
     const converted = convertPlainMathToLatex(value);
     if (converted !== value) {
       updateEnglishQuestion(field, converted, optionIndex);
@@ -365,8 +365,8 @@ const QuestionForm = () => {
         return;
       }
 
-      
-      
+
+
 
       // Prepare translation requests for all fields while preserving LaTeX
       const translationPromises = [
@@ -393,9 +393,9 @@ const QuestionForm = () => {
       }));
 
       toast.success("Successfully translated to Hindi (LaTeX preserved)");
-      
+
     } catch (error) {
-      
+
       toast.error("Failed to translate content. Please try again.");
     } finally {
       setIsTranslating(false);
@@ -464,7 +464,7 @@ const QuestionForm = () => {
         questions: questionsToSubmit,
       };
 
-      
+
 
       const response = await createNewQuestion(payload);
 
@@ -475,7 +475,7 @@ const QuestionForm = () => {
         throw new Error("Failed to create questions");
       }
     } catch (error) {
-      
+
       toast.error(error.response?.data?.message || "Failed to add questions");
     } finally {
       setIsSubmitting(false);
@@ -496,19 +496,25 @@ const QuestionForm = () => {
       return true;
     }
 
-    // // Check for duplicate options
-    // const duplicateOptions = englishQuestion.options.some((option, index) => {
-    //   return option.trim().toLowerCase() === hindiQuestion.options[index].trim().toLowerCase() && option.trim() !== "";
-    // });
+    // Check for duplicate options within English
+    const englishOptions = englishQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
+    const uniqueEnglishOptions = new Set(englishOptions);
+    if (uniqueEnglishOptions.size !== englishOptions.length) {
+      setDuplicateError("English options must be unique.");
+      return true;
+    }
 
-    // if (duplicateOptions) {
-    //   setDuplicateError("Some options are identical in both languages. Please make all options unique.");
-    //   return true;
-    // }
+    // Check for duplicate options within Hindi
+    const hindiOptions = hindiQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
+    const uniqueHindiOptions = new Set(hindiOptions);
+    if (uniqueHindiOptions.size !== hindiOptions.length) {
+      setDuplicateError("Hindi options must be unique.");
+      return true;
+    }
 
     // Check for duplicate solution if both have content
-    if (englishQuestion.solution.trim() && hindiQuestion.solution.trim() && 
-        englishQuestion.solution.trim().toLowerCase() === hindiQuestion.solution.trim().toLowerCase()) {
+    if (englishQuestion.solution.trim() && hindiQuestion.solution.trim() &&
+      englishQuestion.solution.trim().toLowerCase() === hindiQuestion.solution.trim().toLowerCase()) {
       setDuplicateError("The solutions are identical in both languages. Please make them unique.");
       return true;
     }
@@ -526,9 +532,9 @@ const QuestionForm = () => {
     }, 500);
 
     return () => clearTimeout(duplicateCheckTimer);
-  }, [englishQuestion.text, hindiQuestion.text, 
-     englishQuestion.options.join(), hindiQuestion.options.join(),
-     englishQuestion.solution, hindiQuestion.solution]);
+  }, [englishQuestion.text, hindiQuestion.text,
+  englishQuestion.options.join(), hindiQuestion.options.join(),
+  englishQuestion.solution, hindiQuestion.solution]);
 
   // Add state for field-level validation errors
   const [fieldErrors, setFieldErrors] = useState({
@@ -550,7 +556,7 @@ const QuestionForm = () => {
     if (checkDuplicateContent()) {
       return false;
     }
-    
+
     // Create a copy of field errors to update
     const newFieldErrors = {
       english: {
@@ -564,7 +570,7 @@ const QuestionForm = () => {
         solution: false
       }
     };
-    
+
     let hasError = false;
 
     // English validation - required regardless of emptiness
@@ -582,11 +588,13 @@ const QuestionForm = () => {
       }
     });
 
-    // Solution is NOT required - remove this check
-    // if (!englishQuestion.solution.trim()) {
-    //   newFieldErrors.english.solution = true;
-    //   hasError = true;
-    // }
+    // Check for duplicate options in English
+    const englishOptions = englishQuestion.options.map(o => o.trim().toLowerCase());
+    const uniqueEnglishOptions = new Set(englishOptions);
+    if (uniqueEnglishOptions.size !== englishOptions.length) {
+      toast.error("English options must be unique.");
+      return false;
+    }
 
     // Hindi validation - required regardless of emptiness
     // Question text is required
@@ -603,11 +611,13 @@ const QuestionForm = () => {
       }
     });
 
-    // Solution is NOT required - remove this check
-    // if (!hindiQuestion.solution.trim()) {
-    //   newFieldErrors.hindi.solution = true;
-    //   hasError = true;
-    // }
+    // Check for duplicate options in Hindi
+    const hindiOptions = hindiQuestion.options.map(o => o.trim().toLowerCase());
+    const uniqueHindiOptions = new Set(hindiOptions);
+    if (uniqueHindiOptions.size !== hindiOptions.length) {
+      toast.error("Hindi options must be unique.");
+      return false;
+    }
 
     // Update error state
     setFieldErrors(newFieldErrors);
@@ -619,13 +629,11 @@ const QuestionForm = () => {
     }
 
     // Ensure that both languages have complete information
-    const isEnglishComplete = englishQuestion.text.trim() && 
-                             englishQuestion.options.every(opt => opt.trim());
-                             // Solution is optional now
+    const isEnglishComplete = englishQuestion.text.trim() &&
+      englishQuestion.options.every(opt => opt.trim());
 
-    const isHindiComplete = hindiQuestion.text.trim() && 
-                           hindiQuestion.options.every(opt => opt.trim());
-                           // Solution is optional now
+    const isHindiComplete = hindiQuestion.text.trim() &&
+      hindiQuestion.options.every(opt => opt.trim());
 
     if (!isEnglishComplete || !isHindiComplete) {
       toast.error("Both English and Hindi questions must have text and all options filled");
@@ -659,7 +667,7 @@ const QuestionForm = () => {
         }
         toast.success("Translation completed (LaTeX preserved)");
       } catch (error) {
-        
+
         toast.error("Failed to translate text");
       } finally {
         setIsTranslating(false);
@@ -690,7 +698,7 @@ const QuestionForm = () => {
               updatedWords[i] = translated;
               hasTranslation = true;
             } catch (error) {
-              
+
             }
           }
         }
@@ -712,7 +720,7 @@ const QuestionForm = () => {
           }
         }
       } catch (error) {
-        
+
       } finally {
         setIsTranslating(false);
       }
@@ -813,16 +821,16 @@ const QuestionForm = () => {
 
   // Check if English section is actually empty (completely)
   const isEnglishSectionTrulyEmpty = () => {
-    return !englishQuestion.text.trim() && 
-           !englishQuestion.options.some(opt => opt.trim()) &&
-           !englishQuestion.solution.trim(); // Fixed: added missing solution check
+    return !englishQuestion.text.trim() &&
+      !englishQuestion.options.some(opt => opt.trim()) &&
+      !englishQuestion.solution.trim(); // Fixed: added missing solution check
   };
 
   // Check if Hindi section is actually empty (completely)
   const isHindiSectionTrulyEmpty = () => {
-    return !hindiQuestion.text.trim() && 
-           !hindiQuestion.options.some(opt => opt.trim()) &&
-           !hindiQuestion.solution.trim(); // Fixed: added missing solution check
+    return !hindiQuestion.text.trim() &&
+      !hindiQuestion.options.some(opt => opt.trim()) &&
+      !hindiQuestion.solution.trim(); // Fixed: added missing solution check
   };
 
   // Add effect to check English section emptiness
@@ -895,7 +903,7 @@ const QuestionForm = () => {
           {/* Submission Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 text-sm">
-              <strong>Important:</strong> Both English and Hindi versions are required. 
+              <strong>Important:</strong> Both English and Hindi versions are required.
               Type English words in Hindi fields and press Space/Enter after each word for instant
               translation. All fields marked with <span className="text-red-500">*</span> must be filled.
             </p>
@@ -928,7 +936,7 @@ const QuestionForm = () => {
             <div className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                 <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  🇺🇸 English Question <span className="text-red-500 ml-1">*</span>
+                  🇺🇸 English Question<span className="text-red-500 ml-1">*</span>
                 </h2>
 
                 {/* English Question Text */}
@@ -1150,9 +1158,8 @@ const QuestionForm = () => {
                               index
                             )
                           }
-                          placeholder={`विकल्प ${
-                            index + 1
-                          } (English word + Space for translation)`}
+                          placeholder={`विकल्प ${index + 1
+                            } (English word + Space for translation)`}
                           className={`w-full p-2 border ${fieldErrors.hindi.options[index] ? 'border-red-500 bg-red-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all pr-10`}
                           required={!hindiSectionEmpty}
                         />

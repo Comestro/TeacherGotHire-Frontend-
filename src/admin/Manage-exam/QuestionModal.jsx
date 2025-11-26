@@ -181,6 +181,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [duplicateError, setDuplicateError] = useState(null);
 
   // Form validation error state
   const [formErrors, setFormErrors] = useState({});
@@ -206,6 +207,17 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
     }
   }, [selectedExam]);
 
+  // Check for duplicate options in real-time
+  useEffect(() => {
+    const options = newQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
+    const uniqueOptions = new Set(options);
+    if (uniqueOptions.size !== options.length) {
+      setDuplicateError("Options must be unique.");
+    } else {
+      setDuplicateError(null);
+    }
+  }, [newQuestion.options]);
+
   const validateForm = () => {
     let errors = {};
     if (!newQuestion.text.trim()) {
@@ -216,6 +228,23 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         errors[`option_${index}`] = `Option ${index + 1} is required.`;
       }
     });
+
+    // Check for duplicate options
+    const options = newQuestion.options.map(o => o.trim().toLowerCase());
+    const uniqueOptions = new Set(options);
+    if (uniqueOptions.size !== options.length) {
+      // Find which options are duplicates to show specific errors if needed, 
+      // or just a general error. For now, let's add a general error to the first duplicate found.
+      const seen = new Set();
+      newQuestion.options.forEach((opt, index) => {
+        const normalized = opt.trim().toLowerCase();
+        if (seen.has(normalized)) {
+          errors[`option_${index}`] = "Options must be unique.";
+        }
+        seen.add(normalized);
+      });
+    }
+
     // Check if correct_option is provided and is between 1 and 4.
     if (newQuestion.correct_option === "" || isNaN(newQuestion.correct_option)) {
       errors.correct_option = "Correct Option is required.";
@@ -582,6 +611,11 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         </DialogTitle>
 
         <DialogContent sx={{ p: { xs: 2, sm: 3 }, mt: 1 }}>
+          {duplicateError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {duplicateError}
+            </Alert>
+          )}
           <Stack spacing={3}>
             <FormControl fullWidth size={isMobile ? "small" : "medium"}>
               <InputLabel>Language</InputLabel>
@@ -693,6 +727,7 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
             variant="contained"
             onClick={handleSaveQuestion}
             fullWidth={isMobile}
+            disabled={!!duplicateError}
             sx={{ borderRadius: 2 }}
           >
             {editQuestion ? "Update Question" : "Save Question"}
