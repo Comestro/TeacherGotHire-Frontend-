@@ -70,7 +70,12 @@ function TeacherDashboard() {
     [jobApplyData]
   );
 
+  const dataFetchedRef = useRef(false);
+
   useEffect(() => {
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
+
     // Initial data loading
     dispatch(attemptsExam());
     dispatch(getPrefrence());
@@ -79,13 +84,7 @@ function TeacherDashboard() {
     dispatch(getBasic());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (teacherprefrence) {
-      dispatch(getSubjects());
-      dispatch(attemptsExam());
-      dispatch(getInterview());
-    }
-  }, [dispatch, teacherprefrence]);
+
 
   useEffect(() => {
     if (profileStatus === "succeeded") {
