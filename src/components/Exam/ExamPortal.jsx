@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllQues,
@@ -55,6 +55,30 @@ const ExamPortal = () => {
   const reportOptions = useSelector((state) => state.examQues?.reportReason);
   const [selectedOption, setSelectedOption] = useState([]);
   const [confirmationMessage, setConfirmationMessage] = useState("");
+
+  // Refs for auto-scrolling
+  const scrollContainerRef = useRef(null);
+  const questionRefs = useRef({});
+
+  // Auto-scroll to active question
+  useEffect(() => {
+    if (scrollContainerRef.current && questionRefs.current[currentQuestionIndex]) {
+      const container = scrollContainerRef.current;
+      const activeElement = questionRefs.current[currentQuestionIndex];
+
+      const containerWidth = container.offsetWidth;
+      const elementLeft = activeElement.offsetLeft;
+      const elementWidth = activeElement.offsetWidth;
+
+      // Calculate scroll position to center the element
+      const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentQuestionIndex]);
 
   const handleOptionSelect = (optionId) => {
     setSelectedOption(
@@ -421,12 +445,20 @@ const ExamPortal = () => {
           <Subheader handleSubmit={handleSubmit} />
         </div>
         <div className="bg-white md:hidden border-b border-primary/20 shrink-0">
-          <ul className="p-3 flex flex-wrap gap-2 mt-1 justify-center sm:justify-start overflow-y-auto max-h-[15vh]">
+          <ul
+            ref={scrollContainerRef}
+            className="p-3 flex flex-nowrap gap-2 mt-1 overflow-x-auto no-scrollbar scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {questions.map((q, index) => (
-              <li key={q.id} className="flex">
+              <li
+                key={q.id}
+                className="flex shrink-0"
+                ref={el => questionRefs.current[index] = el}
+              >
                 <button
                   onClick={() => setCurrentQuestionIndex(index)}
-                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm ${currentQuestionIndex === index
+                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm whitespace-nowrap ${currentQuestionIndex === index
                     ? "bg-primary text-white ring-2 ring-primary"
                     : selectedAnswers[q.id]
                       ? "bg-green-600 text-white"

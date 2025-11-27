@@ -40,10 +40,10 @@ export default function Subheader({ handleSubmit }) {
   // Format time with min/sec labels
   const formatTime = (seconds) => {
     if (seconds === null) return "Loading...";
-    
+
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    
+
     return (
       <span className="flex items-center gap-1">
         <span className="flex items-center">
@@ -59,7 +59,7 @@ export default function Subheader({ handleSubmit }) {
     );
   };
 
-  
+
   const handleExitExam = () => {
     setShowExitConfirm(true);
   };
@@ -74,13 +74,13 @@ export default function Subheader({ handleSubmit }) {
 
   return (
     <>
-      <div className="w-full bg-white py-4 px-4 sm:px-6 flex flex-wrap md:flex-nowrap justify-between items-center border-b border-primary/20 shadow-md">
+      <div className="w-full bg-white py-2 px-3 sm:px-6 flex flex-wrap md:flex-nowrap justify-between items-center border-b border-primary/20 shadow-md">
         {/* Exam Details */}
-        <div className="flex flex-col w-full md:w-auto mb-4 md:mb-0">
-          <h1 className="text-lg md:text-xl font-bold text-primary mb-2">
+        <div className="flex flex-col w-full md:w-auto mb-2 md:mb-0">
+          <h1 className="text-base md:text-xl font-bold text-primary mb-1">
             {allQuestion?.subject?.subject_name || "Exam"}
           </h1>
-          <div className="flex flex-wrap gap-2 text-sm space-x-5">
+          <div className="flex flex-wrap gap-2 text-xs md:text-sm space-x-3 md:space-x-5">
             <span className="text-primary font-semibold">
               Class: {allQuestion?.class_category?.name || "N/A"}
             </span>
@@ -94,22 +94,22 @@ export default function Subheader({ handleSubmit }) {
         </div>
 
         {/* Timer and Exit Button */}
-        <div className="flex items-center justify-end w-full md:w-auto gap-4">
-          <div className="flex items-center">
-            <span className="text-sm md:text-md font-semibold text-text mr-2">
+        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-3">
+          <div className="flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+            <span className="text-xs md:text-md font-semibold text-text mr-2">
               Time Left:
             </span>
-            <span className="text-base md:text-lg font-bold text-text">
+            <span className="text-sm md:text-lg font-bold text-primary">
               {formatTime(timeLeft)}
             </span>
           </div>
-          
-          <button 
+
+          <button
             onClick={handleExitExam}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl border border-red-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 font-semibold"
+            className="px-3 py-1.5 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg border border-red-700 transition-all shadow-sm hover:shadow-md flex items-center gap-1.5 font-semibold text-xs md:text-sm"
           >
-            <FiX className="size-4" />
-            <span className="hidden sm:inline">Exit Exam</span>
+            <FiX className="size-3 md:size-4" />
+            <span>Exit</span>
           </button>
         </div>
       </div>
