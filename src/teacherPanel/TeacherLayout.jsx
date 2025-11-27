@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,9 @@ import {
   HiBriefcase,
   HiOutlineLogin,
   HiMenuAlt2,
-  HiX
+  HiX,
+  HiChevronDown,
+  HiOutlineClipboard
 } from 'react-icons/hi';
 import { HiMiniEye } from "react-icons/hi2";
 import { IoMdSettings } from "react-icons/io";
@@ -39,6 +41,25 @@ const TeacherLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userData } = useSelector((state) => state.auth);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    // You could add a toast here
+  };
 
   useEffect(() => {
     dispatch(getUserData());
@@ -151,20 +172,98 @@ const TeacherLayout = () => {
 
               {/* Breadcrumb / Page Title Placeholder */}
               {/* You can add dynamic breadcrumbs here if needed */}
-              <h2 className="font-semibold text-slate-800 hidden sm:block">
-                Welcome back, {userData?.Fname?.split(' ')[0] || 'Teacher'}!
+              <h2 className="font-semibold text-slate-800 flex">
+                <span className='hidden sm:block'>Welcome back, </span> <span className='block sm:hidden'>Hi, </span>{" "}{userData?.Fname?.split(' ')[0] || 'Teacher'}!
               </h2>
             </div>
 
-            <div className="flex items-center gap-4">
-              {userData?.user_code && (
-                <span className="hidden md:inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full border border-slate-200">
-                  ID: {userData.user_code}
-                </span>
-              )}
-              {/* Add notifications or other header items here if needed */}
-              <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-200">
-                {userData?.Fname?.[0] || 'T'}
+            <div className="flex items-center gap-4" ref={profileRef}>
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-3 p-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
+                >
+                  <div className="h-9 w-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-200 shadow-sm">
+                    {userData?.Fname?.[0] || 'T'}
+                  </div>
+                  <HiChevronDown className={`text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50"
+                    >
+                      {/* Dropdown Header */}
+                      <div className="p-4 bg-slate-50 border-b border-slate-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-12 w-12 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                            {userData?.Fname?.[0] || 'T'}
+                          </div>
+                          <div className="overflow-hidden">
+                            <h3 className="font-bold text-slate-800 truncate">
+                              {userData?.Fname || 'Teacher'}
+                            </h3>
+                            <p className="text-xs text-slate-500 truncate">
+                              {userData?.email || 'Loading...'}
+                            </p>
+                          </div>
+                        </div>
+                        {userData?.user_code && (
+                          <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
+                            <div className="text-xs">
+                              <span className="text-slate-400 font-medium mr-2">ID:</span>
+                              <span className="font-mono font-semibold text-slate-700">{userData.user_code}</span>
+                            </div>
+                            <button
+                              onClick={() => copyToClipboard(userData.user_code)}
+                              className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-md transition-colors"
+                              title="Copy ID"
+                            >
+                              <HiOutlineClipboard size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Dropdown Actions */}
+                      <div className="p-2">
+                        <button
+                          onClick={() => {
+                            navigate('/teacher/personal-profile');
+                            setIsProfileOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                        >
+                          <HiUser className="text-lg" />
+                          My Profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/teacher/setting');
+                            setIsProfileOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                        >
+                          <IoMdSettings className="text-lg" />
+                          Settings
+                        </button>
+                        <div className="my-1 border-t border-slate-100" />
+                        <button
+                          onClick={() => handleLogout(dispatch, navigate)}
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                        >
+                          <HiOutlineLogin className="text-lg" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
