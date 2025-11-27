@@ -131,11 +131,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
   const handleNext = async () => {
     const isValid = await validateStep();
-    if (isValid && currentStep < totalSteps) {
+    if (isValid && currentStep <= totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
-
+  
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
