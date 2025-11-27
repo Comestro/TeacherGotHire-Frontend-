@@ -27,7 +27,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 2;
 
   useEffect(() => {
     dispatch(getClassCategory());
@@ -121,15 +121,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         isValid = await trigger("prefered_subject");
         if (!isValid) toast.error("Please select at least one subject");
         break;
-      case 3:
-        const jobRoleValues = getValues("job_role");
-        if (!jobRoleValues || jobRoleValues.length === 0) {
-          toast.error("Please select at least one job role");
-          isValid = false;
-        } else {
-          isValid = true;
-        }
-        break;
+
       default:
         isValid = true;
     }
@@ -181,7 +173,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   const steps = [
     { id: 1, title: "Class Category", icon: HiOutlineAcademicCap, desc: "Select levels" },
     { id: 2, title: "Subjects", icon: HiOutlineBookOpen, desc: "Choose subjects" },
-    { id: 3, title: "Job Role", icon: HiOutlineUserGroup, desc: "Define role" },
   ];
 
   return (
@@ -237,7 +228,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
       <div className="p-5">
         {!isEditingPrefrence && !forceEdit ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
               {
                 title: "Class Categories",
@@ -259,14 +250,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                   }))
                   : [],
                 type: "grouped"
-              },
-              {
-                title: "Job Roles",
-                icon: HiOutlineUserGroup,
-                value: teacherprefrence?.job_role?.length > 0
-                  ? teacherprefrence.job_role.map(r => r.jobrole_name)
-                  : ["Teacher"],
-                type: "tags"
               },
             ].map((item, idx) => (
               <div
@@ -323,8 +306,8 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                     <div key={step.id} className="flex flex-col items-center bg-white px-2">
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors duration-200 ${currentStep >= step.id
-                            ? "bg-primary border-primary text-white"
-                            : "bg-white border-gray-300 text-gray-400"
+                          ? "bg-primary border-primary text-white"
+                          : "bg-white border-gray-300 text-gray-400"
                           }`}
                       >
                         {currentStep > step.id ? (
@@ -362,8 +345,8 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                             <label
                               key={cat.id}
                               className={`flex items-center p-3 rounded-md border cursor-pointer transition-colors ${watch("class_category")?.includes(String(cat.id))
-                                  ? "border-primary bg-primary/5"
-                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                ? "border-primary bg-primary/5"
+                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                 }`}
                             >
                               <input
@@ -402,8 +385,8 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                                     <label
                                       key={sub.id}
                                       className={`flex items-center p-2 rounded border cursor-pointer transition-colors ${watch("prefered_subject")?.includes(String(sub.id))
-                                          ? "border-primary bg-primary/5"
-                                          : "border-gray-200 hover:border-gray-300"
+                                        ? "border-primary bg-primary/5"
+                                        : "border-gray-200 hover:border-gray-300"
                                         }`}
                                     >
                                       <input
@@ -423,36 +406,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       </motion.div>
                     )}
 
-                    {currentStep === 3 && (
-                      <motion.div
-                        key="step3"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Select Job Roles</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
-                          {jobRole?.slice().sort((a, b) => a.jobrole_name.localeCompare(b.jobrole_name))?.map((role) => (
-                            <label
-                              key={role.id}
-                              className={`flex items-center p-3 rounded-md border cursor-pointer transition-colors ${watch("job_role")?.includes(String(role.id))
-                                  ? "border-primary bg-primary/5"
-                                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                            >
-                              <input
-                                type="checkbox"
-                                {...register("job_role", { required: "Select at least one role" })}
-                                value={role.id}
-                                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                              />
-                              <span className="ml-3 text-sm font-medium text-gray-700">{role.jobrole_name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
+
                   </AnimatePresence>
                 </div>
 

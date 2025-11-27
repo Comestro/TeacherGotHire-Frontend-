@@ -371,7 +371,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                 </p>
               </div>
 
-              <div className="p-0 sm:p-6"> {/* Adjust padding */}
+              <div className="p-0 mt-4 sm:p-6"> {/* Adjust padding */}
                 {classCategories?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"> {/* Adjust gap */}
                     {classCategories?.map((category) => {
@@ -882,31 +882,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       <span className="text-sm text-slate-600">Level</span>
                       <span className="text-sm font-semibold text-slate-900">{selectedLevel?.name}</span>
                     </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-sm text-slate-600">Type</span>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {selectedLevel?.level_code === 2.5 ? 'Level 2 (Exam Center)' : 'Level 2 (From Home)'}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Important Note */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
-                    <div className="flex items-start gap-2">
-                      <FaInfoCircle className="text-amber-600 mt-0.5" size={14} />
-                      <p className="text-xs text-amber-900">
-                        {selectedLevel?.level_code === 2.5
-                          ? "You'll need to select a center. and walk to the center to take the exam."
-                          : "stable internet connection before starting the exam."}
-                      </p>
-                    </div>
-                  </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     <button
                       type="button"
-                      onClick={resetSelection}
+                      onClick={() => setExamReady(false)}
                       className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
                     >
                       Go Back

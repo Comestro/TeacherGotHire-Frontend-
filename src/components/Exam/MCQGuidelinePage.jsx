@@ -150,7 +150,7 @@ const MCQGuidelinePage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-accent mt-0.5">•</span>
-                  <span>Contact support immediately if you encounter technical issues</span>
+                  <span>Contact the assistant immediately for any technical issues.</span>
                 </li>
               </ul>
               <br />
@@ -188,7 +188,7 @@ const MCQGuidelinePage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-accent mt-0.5">•</span>
-                  <span>तकनीकी समस्या आने पर तुरंत सहायता से संपर्क करें</span>
+                  <span>किसी भी तकनीकी समस्या पर तुरंत सहायक से संपर्क करें।</span>
                 </li>
               </ul>
             </div>
