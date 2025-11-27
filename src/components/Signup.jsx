@@ -12,6 +12,7 @@ import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "./ErrorMessage";
 
 function SignUpPage() {
   const navigate = useNavigate();
@@ -88,16 +89,17 @@ function SignUpPage() {
 
   const getInputClassName = (fieldName) => {
     return `w-full border-2 text-sm rounded-xl p-3 transition-colors ${dirtyFields[fieldName]
-        ? errors[fieldName]
-          ? "border-red-500 focus:border-red-500"
-          : "border-teal-600 focus:border-teal-600"
-        : "border-gray-300 focus:border-teal-600"
+      ? errors[fieldName]
+        ? "border-red-500 focus:border-red-500"
+        : "border-teal-600 focus:border-teal-600"
+      : "border-gray-300 focus:border-teal-600"
       }`;
   };
 
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const response = await verifyTeacherOtp({
@@ -112,7 +114,7 @@ function SignUpPage() {
         setTimeout(() => navigate('/signin'), 1200);
       }
     } catch (error) {
-      toast.error(error.message || 'OTP verification failed');
+      setError(error.message || 'OTP verification failed');
     } finally {
       setLoading(false);
     }
@@ -134,7 +136,7 @@ function SignUpPage() {
       }
     } catch (error) {
       const errorMessage = error.message || "Failed to create account";
-      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -162,6 +164,10 @@ function SignUpPage() {
           </div>
 
           <form onSubmit={handleOTPSubmit} className="space-y-6">
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError("")}
+            />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Enter Verification Code
@@ -236,6 +242,10 @@ function SignUpPage() {
         </div>
 
         <form onSubmit={handleSubmit(signup)} className="space-y-5">
+          <ErrorMessage
+            message={error}
+            onDismiss={() => setError("")}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
@@ -277,10 +287,10 @@ function SignUpPage() {
                 placeholder="name@example.com"
                 type="email"
                 className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
-                    ? !errors.email
-                      ? "border-teal-500 bg-teal-50/30"
-                      : "border-red-300 bg-red-50/30"
-                    : "border-gray-200"
+                  ? !errors.email
+                    ? "border-teal-500 bg-teal-50/30"
+                    : "border-red-300 bg-red-50/30"
+                  : "border-gray-200"
                   }`}
                 {...register("email", {
                   required: "Email is required",
@@ -304,10 +314,10 @@ function SignUpPage() {
                 placeholder="Create a password"
                 type={showPassword ? "text" : "password"}
                 className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
-                    ? !errors.password
-                      ? "border-teal-500 bg-teal-50/30"
-                      : "border-red-300 bg-red-50/30"
-                    : "border-gray-200"
+                  ? !errors.password
+                    ? "border-teal-500 bg-teal-50/30"
+                    : "border-red-300 bg-red-50/30"
+                  : "border-gray-200"
                   }`}
                 {...register("password", {
                   required: "Password is required",

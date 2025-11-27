@@ -21,6 +21,7 @@ import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "./ErrorMessage";
 
 function Login() {
   const dispatch = useDispatch();
@@ -36,8 +37,10 @@ function Login() {
     criteriaMode: "all",
   });
 
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState(null);
 
   // States for OTP verification
   const [showOTPForm, setShowOTPForm] = useState(false);
@@ -86,6 +89,7 @@ function Login() {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setLoginError(null);
 
     try {
       await login(data);
@@ -139,10 +143,7 @@ function Login() {
         // Trigger sending OTP automatically
         handleResendOTP(email);
       } else {
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        });
+        setLoginError(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -191,6 +192,7 @@ function Login() {
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setLoginError(null);
 
     try {
       const response = await verifyTeacherOtp({
@@ -209,7 +211,7 @@ function Login() {
         // Do not auto-login. User must log in manually.
       }
     } catch (error) {
-      toast.error(error.message || "OTP verification failed");
+      setLoginError(error.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -246,6 +248,10 @@ function Login() {
           </div>
 
           <form onSubmit={handleOTPSubmit} className="space-y-6">
+            <ErrorMessage
+              message={loginError}
+              onDismiss={() => setLoginError(null)}
+            />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Enter Verification Code
@@ -331,6 +337,10 @@ function Login() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <ErrorMessage
+            message={loginError}
+            onDismiss={() => setLoginError(null)}
+          />
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700 ml-1">Email Address</label>
             <div className="relative">

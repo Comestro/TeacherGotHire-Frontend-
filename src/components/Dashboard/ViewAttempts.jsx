@@ -11,11 +11,13 @@ import {
   HiOutlineFolderOpen,
   HiOutlineBookOpen
 } from "react-icons/hi2";
+import ErrorMessage from "../ErrorMessage";
 
 function ViewAttempts() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [filteredExamResults, setFilteredExamResults] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
 
   const apiOutput1 = useSelector((state) => state.examQues?.attemptCount);
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
@@ -36,7 +38,14 @@ function ViewAttempts() {
   ] || [];
 
   useEffect(() => {
-    dispatch(attemptsExam());
+    const fetchData = async () => {
+      try {
+        await dispatch(attemptsExam()).unwrap();
+      } catch (err) {
+        setFetchError("Failed to load exam attempts. Please try again later.");
+      }
+    };
+    fetchData();
   }, [dispatch]);
 
   useEffect(() => {
@@ -68,6 +77,10 @@ function ViewAttempts() {
   return (
     <div className="w-full mx-auto">
       <div className="space-y-6">
+        <ErrorMessage
+          message={fetchError}
+          onDismiss={() => setFetchError(null)}
+        />
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3 mb-2">

@@ -34,6 +34,7 @@ import ExamCenterModal from "./components/passkeyCard";
 import PhoneNumberModal from "./components/PhoneNumberModal";
 import { useGetApplyEligibilityQuery, useGetJobsApplyDetailsQuery } from "../../features/api/apiSlice";
 import Loader from "../Loader";
+import ErrorMessage from "../ErrorMessage";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
@@ -42,6 +43,7 @@ function TeacherDashboard() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [dashboardError, setDashboardError] = useState(null);
   const inputRef = useRef(null);
   const [passkeyStatus, setPasskeyStatus] = useState(null);
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
@@ -86,11 +88,22 @@ function TeacherDashboard() {
     dataFetchedRef.current = true;
 
     // Initial data loading
-    dispatch(attemptsExam());
-    dispatch(getPrefrence());
-    dispatch(getInterview());
-    dispatch(getSubjects());
-    dispatch(getBasic());
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          dispatch(attemptsExam()).unwrap(),
+          dispatch(getPrefrence()).unwrap(),
+          dispatch(getInterview()).unwrap(),
+          dispatch(getSubjects()).unwrap(),
+          dispatch(getBasic()).unwrap()
+        ]);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setDashboardError("Failed to load some dashboard data. Please check your connection and try again.");
+      }
+    };
+
+    loadData();
   }, [dispatch]);
 
 
@@ -266,6 +279,10 @@ function TeacherDashboard() {
         <div className="flex flex-col md:flex-row">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
+            <ErrorMessage
+              message={dashboardError}
+              onDismiss={() => setDashboardError(null)}
+            />
             {/* Show preference form if user doesn't have class categories */}
 
             {/* Show preference form if user doesn't have class categories */}

@@ -17,6 +17,7 @@ import { FiX } from "react-icons/fi";
 import InterviewCard from "./InterviewCard";
 import ExamCenterModal from "./passkeyCard";
 import { checkPasskey } from "../../../services/examServices";
+import ErrorMessage from "../../ErrorMessage";
 
 import { forwardRef, useImperativeHandle } from "react";
 
@@ -319,37 +320,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
         {/* Top Error Alert */}
         <AnimatePresence>
           {(error || errors) && (
-            <motion.div
-              initial={{ opacity: 0, y: -20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -20, height: 0 }}
+            <ErrorMessage
+              message={error || errors}
+              onDismiss={() => {
+                dispatch(setError(null));
+                setErrors(null);
+              }}
               className="mb-6"
-            >
-              <div className="rounded-xl border-l-4 border-red-500 bg-red-50 p-4 shadow-sm relative pr-10">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <FaExclamationCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Attention Needed</h3>
-                    <div className="mt-1 text-sm text-red-700">
-                      {error || errors}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="absolute top-4 right-4 text-red-400 hover:text-red-500 transition-colors"
-                  onClick={() => {
-                    dispatch(setError(null));
-                    setErrors(null);
-                  }}
-                >
-                  <span className="sr-only">Dismiss</span>
-                  <FiX className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </div>
-            </motion.div>
+            />
           )}
         </AnimatePresence>
 

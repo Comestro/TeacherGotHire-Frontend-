@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import CustomHeader from './commons/CustomHeader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ErrorMessage from './ErrorMessage';
 import { Link } from 'react-router-dom';
 import Loader from './Loader';
 
@@ -14,11 +15,14 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
   const [sentEmail, setSentEmail] = useState('');
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       await forgetPassword(email);
       toast.success('Password reset link has been sent to your email.', {
@@ -29,10 +33,7 @@ const ForgotPassword = () => {
       setEmail('');
       setSent(true);
     } catch (error) {
-      toast.error(error.message || 'Something went wrong. Please try again.', {
-        position: 'top-right',
-        autoClose: 5000,
-      });
+      setError(error.message || 'Something went wrong. Please try again.');
     }
     setLoading(false);
   };
@@ -162,6 +163,10 @@ const ForgotPassword = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    <ErrorMessage
+                      message={error}
+                      onDismiss={() => setError(null)}
+                    />
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 ml-1">Email Address</label>
                       <div className="relative">
@@ -174,10 +179,10 @@ const ForgotPassword = () => {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
                           className={`w-full pl-11 pr-10 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${email
-                              ? isEmailValid(email)
-                                ? "border-teal-500 bg-teal-50/30"
-                                : "border-red-300 bg-red-50/30"
-                              : "border-gray-200"
+                            ? isEmailValid(email)
+                              ? "border-teal-500 bg-teal-50/30"
+                              : "border-red-300 bg-red-50/30"
+                            : "border-gray-200"
                             }`}
                           required
                         />
@@ -199,8 +204,8 @@ const ForgotPassword = () => {
                     <Button
                       type="submit"
                       className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!email || !isEmailValid(email) || loading
-                          ? "opacity-60 cursor-not-allowed"
-                          : ""
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
                         }`}
                       disabled={!email || !isEmailValid(email) || loading}
                     >

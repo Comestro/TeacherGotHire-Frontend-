@@ -7,6 +7,7 @@ import Loader from "../../Loader";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown } from "react-icons/hi";
+import ErrorMessage from "../../ErrorMessage";
 
 // English -> Hindi label map
 const hiLabels = {
@@ -307,6 +308,7 @@ const BasicInformation = () => {
   const [editingFields, setEditingFields] = useState({});
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [generalError, setGeneralError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -343,6 +345,7 @@ const BasicInformation = () => {
   const handleSave = async (field, value) => {
     setLoading(true);
     setErrors((prev) => ({ ...prev, [field]: "" }));
+    setGeneralError(null);
 
     try {
       const data = new FormData();
@@ -378,9 +381,9 @@ const BasicInformation = () => {
         setErrors((prev) => ({ ...prev, [field]: fieldError }));
         toast.error(fieldError);
       } else {
-        toast.error(
-          "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।"
-        );
+        const msg = "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।";
+        setGeneralError(msg);
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
@@ -509,6 +512,12 @@ const BasicInformation = () => {
           Manage your basic profile details / अपनी बुनियादी प्रोफ़ाइल जानकारी प्रबंधित करें
         </p>
       </div>
+
+      <ErrorMessage
+        message={generalError}
+        onDismiss={() => setGeneralError(null)}
+        className="mb-6"
+      />
 
       <div className="space-y-4">
         {fields.map((f) => (

@@ -8,6 +8,8 @@ import { Helmet } from 'react-helmet-async';
 import CustomHeader from './commons/CustomHeader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ErrorMessage from './ErrorMessage';
 import Loader from './Loader';
 
 const ResetPassword = () => {
@@ -19,7 +21,9 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [success, setSuccess] = useState(false);
+
   const [countdown, setCountdown] = useState(3);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let timer;
@@ -54,13 +58,16 @@ const ResetPassword = () => {
       return;
     }
 
+
+
+    setError(null);
     setLoading(true);
     try {
       await resetPassword(uid, token, password);
       setSuccess(true);
       toast.success('Password reset successfully!');
     } catch (error) {
-      toast.error(error?.message || 'Something went wrong, please try again.');
+      setError(error?.message || 'Something went wrong, please try again.');
     } finally {
       setLoading(false);
     }
@@ -123,6 +130,10 @@ const ResetPassword = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  <ErrorMessage
+                    message={error}
+                    onDismiss={() => setError(null)}
+                  />
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-gray-700 ml-1">New Password</label>
                     <div className="relative">
@@ -180,10 +191,10 @@ const ResetPassword = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Repeat your password"
                         className={`w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${confirmPassword && password === confirmPassword
-                            ? "border-teal-500 bg-teal-50/30"
-                            : confirmPassword
-                              ? "border-red-300 bg-red-50/30"
-                              : "border-gray-200"
+                          ? "border-teal-500 bg-teal-50/30"
+                          : confirmPassword
+                            ? "border-red-300 bg-red-50/30"
+                            : "border-gray-200"
                           }`}
                         required
                       />
@@ -213,8 +224,8 @@ const ResetPassword = () => {
                   <Button
                     type="submit"
                     className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!password || !confirmPassword || password !== confirmPassword || loading
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
+                      ? "opacity-60 cursor-not-allowed"
+                      : ""
                       }`}
                     disabled={!password || !confirmPassword || password !== confirmPassword || loading}
                   >

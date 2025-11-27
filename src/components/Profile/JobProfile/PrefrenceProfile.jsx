@@ -22,11 +22,13 @@ import Loader from "../../Loader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
+import ErrorMessage from "../../ErrorMessage";
 
 const PrefrenceProfile = ({ forceEdit = false }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [formError, setFormError] = useState(null);
   const totalSteps = 2;
 
   useEffect(() => {
@@ -121,12 +123,13 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
     switch (currentStep) {
       case 1:
+      case 1:
         isValid = await trigger("class_category");
-        if (!isValid) toast.error("Please select at least one class category");
+        if (!isValid) setFormError("Please select at least one class category");
         break;
       case 2:
         isValid = await trigger("prefered_subject");
-        if (!isValid) toast.error("Please select at least one subject");
+        if (!isValid) setFormError("Please select at least one subject");
         break;
 
       default:
@@ -192,7 +195,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         err.response?.data?.message ||
         err.message ||
         "Failed to update preferences";
-      toast.error(errorMessage);
+      setFormError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -325,6 +328,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         ) : (
           <div className="max-w-4xl mx-auto">
             <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}>
+              <ErrorMessage
+                message={formError}
+                onDismiss={() => setFormError(null)}
+                className="mb-6"
+              />
               {/* Stepper */}
               <div className="mb-6 border-b border-gray-200 pb-6">
                 <div className="flex items-center justify-between max-w-2xl mx-auto relative">

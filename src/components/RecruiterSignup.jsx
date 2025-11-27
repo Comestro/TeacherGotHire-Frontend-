@@ -9,6 +9,7 @@ import Loader from './Loader';
 import { Helmet } from 'react-helmet-async';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ErrorMessage from './ErrorMessage';
 import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import { HiOutlineBriefcase, HiOutlineUserGroup, HiOutlineShieldCheck } from "react-icons/hi2";
 
@@ -37,6 +38,7 @@ const RecruiterSignUpPage = () => {
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let interval;
@@ -67,6 +69,7 @@ const RecruiterSignUpPage = () => {
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const response = await verifyRecruiterOtp({
@@ -81,7 +84,7 @@ const RecruiterSignUpPage = () => {
         setTimeout(() => navigate('/signin'), 1200);
       }
     } catch (error) {
-      toast.error(error.message || 'OTP verification failed');
+      setError(error.message || 'OTP verification failed');
     } finally {
       setLoading(false);
     }
@@ -114,6 +117,7 @@ const RecruiterSignUpPage = () => {
   const recruitersign = async ({ Fname, Lname, email, password }) => {
     email = email.toLowerCase();
     setLoading(true);
+    setError(null);
 
     try {
       const response = await createRecruiteraccount({ Fname, Lname, email, password });
@@ -126,7 +130,7 @@ const RecruiterSignUpPage = () => {
       }
     } catch (error) {
       const errorMessage = error.message || "Failed to create account. Please try again.";
-      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -147,6 +151,10 @@ const RecruiterSignUpPage = () => {
           </div>
 
           <form onSubmit={handleOTPSubmit} className="space-y-6">
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+            />
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Enter Verification Code
@@ -220,6 +228,10 @@ const RecruiterSignUpPage = () => {
         </div>
 
         <form onSubmit={handleSubmit(recruitersign)} className="space-y-5">
+          <ErrorMessage
+            message={error}
+            onDismiss={() => setError(null)}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
