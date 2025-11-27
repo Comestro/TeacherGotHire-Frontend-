@@ -7,8 +7,6 @@ import { useNavigate } from "react-router-dom";
 import CustomHeader from './commons/CustomHeader';
 import Loader from './Loader';
 import { Helmet } from 'react-helmet-async';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import ErrorMessage from './ErrorMessage';
 import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import { HiOutlineBriefcase, HiOutlineUserGroup, HiOutlineShieldCheck } from "react-icons/hi2";
@@ -39,6 +37,7 @@ const RecruiterSignUpPage = () => {
   const [userEmail, setUserEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     let interval;
@@ -58,9 +57,9 @@ const RecruiterSignUpPage = () => {
       await resendRecruiterOtp(userEmail);
       setTimer(30);
       setCanResend(false);
-      toast.success('OTP resent successfully!');
+      setSuccessMessage('OTP resent successfully!');
     } catch (error) {
-      toast.error(error.message || 'Failed to resend OTP');
+      setError(error.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }
@@ -70,6 +69,7 @@ const RecruiterSignUpPage = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const response = await verifyRecruiterOtp({
@@ -78,7 +78,7 @@ const RecruiterSignUpPage = () => {
       });
 
       if (response.data.access_token) {
-        toast.success('Account verified successfully! Please log in.');
+        setSuccessMessage('Account verified successfully! Please log in.');
         localStorage.removeItem('access_token');
         localStorage.removeItem('role');
         setTimeout(() => navigate('/signin'), 1200);
@@ -118,11 +118,12 @@ const RecruiterSignUpPage = () => {
     email = email.toLowerCase();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const response = await createRecruiteraccount({ Fname, Lname, email, password });
       if (response) {
-        toast.success("Account created! Please verify your email.");
+        setSuccessMessage("Account created! Please verify your email.");
         setUserEmail(email);
         setShowOTPForm(true);
         setTimer(30);
@@ -154,6 +155,11 @@ const RecruiterSignUpPage = () => {
             <ErrorMessage
               message={error}
               onDismiss={() => setError(null)}
+            />
+            <ErrorMessage
+              message={successMessage}
+              type="success"
+              onDismiss={() => setSuccessMessage(null)}
             />
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -231,6 +237,11 @@ const RecruiterSignUpPage = () => {
           <ErrorMessage
             message={error}
             onDismiss={() => setError(null)}
+          />
+          <ErrorMessage
+            message={successMessage}
+            type="success"
+            onDismiss={() => setSuccessMessage(null)}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -387,7 +398,6 @@ const RecruiterSignUpPage = () => {
       </Helmet>
       <CustomHeader />
       {loading && <Loader />}
-      <ToastContainer />
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 pt-20 pb-10">
 
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

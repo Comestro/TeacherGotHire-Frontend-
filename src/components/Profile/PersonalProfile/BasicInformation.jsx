@@ -4,39 +4,37 @@ import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic } from "../../../features/personalProfileSlice";
 import { getUserData } from "../../../features/authSlice";
 import Loader from "../../Loader";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown } from "react-icons/hi";
+import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown, HiCamera } from "react-icons/hi";
 import ErrorMessage from "../../ErrorMessage";
 
 // English -> Hindi label map
 const hiLabels = {
   "Profile Picture": "प्रोफ़ाइल चित्र",
   "Basic Information": "मूलभूत जानकारी",
-  Name: "नाम",
+  "Full Name": "पूरा नाम",
   "Email Address": "ईमेल पता",
   "Contact No": "संपर्क नंबर",
-  "Languages you speak/understand": "भाषाएँ जो आप बोल/समझ सकते हैं",
-  Gender: "लिंग",
+  "Languages": "भाषाएँ",
+  "Gender": "लिंग",
   "Marital Status": "वैवाहिक स्थिति",
-  Religion: "धर्म",
-  Edit: "संपादित करें",
-  Cancel: "रद्द करें",
-  Save: "सहेजें",
+  "Religion": "धर्म",
   "Edit Profile": "प्रोफ़ाइल संपादित करें",
-  Male: "पुरुष",
-  Female: "महिला",
-  Other: "अन्य",
-  Single: "अविवाहित",
-  Married: "विवाहित",
-  Unmarried: "अनविवाहित",
-  English: "अंग्रेज़ी",
-  Hindi: "हिंदी",
+  "Save Changes": "परिवर्तन सहेजें",
+  "Cancel": "रद्द करें",
+  "Male": "पुरुष",
+  "Female": "महिला",
+  "Other": "अन्य",
+  "Single": "अविवाहित",
+  "Married": "विवाहित",
+  "Divorced": "तलाकशुदा",
+  "Widowed": "विधवा/विधुर",
+  "English": "अंग्रेज़ी",
+  "Hindi": "हिंदी",
 };
 
 const bi = (en) => (hiLabels[en] ? `${en} / ${hiLabels[en]}` : en);
 
-const MultiSelect = ({ options, value, onChange }) => {
+const MultiSelect = ({ options, value, onChange, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -61,40 +59,52 @@ const MultiSelect = ({ options, value, onChange }) => {
 
   const handleRemove = (optionValue, e) => {
     e.stopPropagation();
-    onChange(selectedValues.filter((v) => v !== optionValue));
+    if (!disabled) {
+      onChange(selectedValues.filter((v) => v !== optionValue));
+    }
   };
 
   return (
-    <div className="relative w-full sm:w-64" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef}>
       <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="min-h-[38px] border border-slate-300 bg-white rounded-lg px-2 py-1.5 cursor-pointer flex flex-wrap gap-2 items-center hover:border-teal-500 transition-colors"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`min-h-[42px] border rounded-lg px-3 py-2 flex flex-wrap gap-2 items-center transition-all ${disabled
+            ? "bg-slate-50 border-slate-200 cursor-default"
+            : "bg-white border-slate-300 cursor-pointer hover:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20"
+          }`}
       >
         {selectedValues.length > 0 ? (
           selectedValues.map((val) => (
             <span
               key={val}
-              className="bg-teal-50 text-teal-700 text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border border-teal-100"
+              className={`text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border ${disabled
+                  ? "bg-slate-200 text-slate-600 border-slate-300"
+                  : "bg-teal-50 text-teal-700 border-teal-100"
+                }`}
             >
               {val}
-              <button
-                onClick={(e) => handleRemove(val, e)}
-                className="hover:text-teal-900 focus:outline-none"
-              >
-                <HiOutlineX className="w-3 h-3" />
-              </button>
+              {!disabled && (
+                <button
+                  onClick={(e) => handleRemove(val, e)}
+                  className="hover:text-teal-900 focus:outline-none"
+                >
+                  <HiOutlineX className="w-3 h-3" />
+                </button>
+              )}
             </span>
           ))
         ) : (
-          <span className="text-slate-400 text-sm px-1">Select languages...</span>
+          <span className="text-slate-400 text-sm">Select languages...</span>
         )}
-        <div className="ml-auto text-slate-400">
-          <HiChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </div>
+        {!disabled && (
+          <div className="ml-auto text-slate-400">
+            <HiChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </div>
+        )}
       </div>
 
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+      {isOpen && !disabled && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto animate-fadeIn">
           {options
             .filter((opt) => !selectedValues.includes(opt.value))
             .map((option) => (
@@ -117,198 +127,29 @@ const MultiSelect = ({ options, value, onChange }) => {
   );
 };
 
-const EditableField = ({
-  label,
-  value,
-  isEditing,
-  onToggleEdit,
-  onSave,
-  field,
-  inputType = "text",
-  options = [],
-  error,
-}) => {
-  const [tempValue, setTempValue] = useState(value || "");
-
-  useEffect(() => {
-    setTempValue(value || "");
-  }, [value]);
-
-  const handleCancel = () => {
-    setTempValue(value || "");
-    onToggleEdit(false);
-  };
-
-  const handleSave = () => {
-    if (field === "phone_number" && tempValue && String(tempValue).length !== 10) {
-      toast.error(
-        "Please enter a valid 10-digit phone number / कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें"
-      );
-      return;
-    }
-    onSave(tempValue);
-  };
-
-  const renderValue = () => {
-    if (inputType === "file") {
-      return (
-        <div className="flex items-center gap-4">
-          <img
-            src={value || "/images/profile.jpg"}
-            alt="Profile"
-            className="w-16 h-16 rounded-full object-cover border border-slate-200"
-          />
-          <button
-            onClick={() => onToggleEdit(true)}
-            className="text-sm text-teal-600 hover:text-teal-700 font-medium sm:hidden"
-          >
-            {bi("Edit Profile")}
-          </button>
-        </div>
-      );
-    }
-    if (inputType === "multi-select") {
-      const vals = Array.isArray(value) ? value : (value ? String(value).split(',') : []);
-      return (
-        <div className="flex flex-wrap gap-2">
-          {vals.length > 0 ? vals.map((v, i) => (
-            <span key={i} className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md border border-slate-200">
-              {v.trim()}
-            </span>
-          )) : <span className="text-slate-400 text-sm">N/A</span>}
-        </div>
-      );
-    }
-    return <p className={`text-slate-700 text-sm sm:text-base ${label !== "Email Address" ? "capitalize" : ""}`}>{value || "N/A"}</p>;
-  };
-
-  const renderEditor = () => {
-    if (inputType === "multi-select") {
-      return (
-        <MultiSelect
-          options={options}
-          value={tempValue}
-          onChange={setTempValue}
-        />
-      );
-    }
-    if (inputType === "select") {
-      return (
-        <select
-          value={tempValue || ""}
-          onChange={(e) => setTempValue(e.target.value)}
-          className="border border-slate-300 bg-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full sm:w-64 text-sm"
-        >
-          <option value="">{`Select ${bi(label)}`}</option>
-          {(options || []).map((option) => (
-            <option key={option.value} value={option.value}>
-              {bi(option.label)}
-            </option>
-          ))}
-        </select>
-      );
-    }
-    if (inputType === "file") {
-      return (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setTempValue(e.target.files && e.target.files[0])}
-            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
-          />
-          {tempValue && tempValue instanceof File && (
-            <div className="flex items-center gap-2">
-              <img
-                src={URL.createObjectURL(tempValue)}
-                alt="Preview"
-                className="w-10 h-10 rounded-full object-cover border border-slate-200"
-              />
-              <span className="text-xs text-slate-500 truncate max-w-[150px]">{tempValue.name}</span>
-            </div>
-          )}
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-col w-full sm:w-auto">
-        <input
-          type={inputType}
-          value={tempValue || ""}
-          placeholder={`Enter ${label} / ${hiLabels[label] || ""}`}
-          onChange={(e) => {
-            if (field === "phone_number") {
-              setTempValue(e.target.value.replace(/\D/g, "").slice(0, 10));
-            } else {
-              setTempValue(e.target.value);
-            }
-          }}
-          className={`border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-full sm:w-64 text-sm ${error ? "border-red-500" : "border-slate-300"
-            }`}
-        />
-        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-      </div>
-    );
-  };
-
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-colors hover:bg-slate-50">
-      <div className="flex flex-col sm:flex-row sm:items-center flex-1 min-w-0 gap-2 sm:gap-4">
-        <div className="w-full sm:w-48 lg:w-64 shrink-0">
-          <p className="text-slate-500 font-medium text-sm uppercase tracking-wide">
-            {bi(label)}
-          </p>
-        </div>
-        <div className="flex-1">
-          {!isEditing ? renderValue() : renderEditor()}
-        </div>
-      </div>
-
-      {field !== "email" && (
-        <div className="flex justify-end sm:justify-start shrink-0">
-          {isEditing ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCancel}
-                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                title={bi("Cancel")}
-              >
-                <HiOutlineX className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleSave}
-                className="p-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-                title={bi("Save")}
-              >
-                <HiOutlineCheck className="w-5 h-5" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => onToggleEdit(true)}
-              className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-              title={label === "Profile" ? bi("Edit Profile") : bi("Edit")}
-            >
-              <HiOutlinePencilAlt className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const BasicInformation = () => {
   const dispatch = useDispatch();
   const profile = useSelector((state) => state?.auth?.userData || {});
   const personalProfile = useSelector((state) => state?.personalProfile);
   const basicData = personalProfile?.basicData || {};
 
-  const [errors, setErrors] = useState({});
-  const [editingFields, setEditingFields] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [generalError, setGeneralError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  const [formData, setFormData] = useState({
+    profile_picture: null,
+    Fname: "",
+    phone_number: "",
+    language: [],
+    gender: "",
+    marital_status: "",
+    religion: "",
+  });
+
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -324,216 +165,335 @@ const BasicInformation = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    return () => {
-      setEditingFields({});
-    };
-  }, []);
-
-  useEffect(() => {
     if (dataLoaded) {
-      setEditingFields({});
+      setFormData({
+        profile_picture: basicData.profile_picture,
+        Fname: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
+        phone_number: basicData.phone_number || "",
+        language: parseLanguage(basicData.language),
+        gender: basicData.gender || "",
+        marital_status: basicData.marital_status || "",
+        religion: basicData.religion || "",
+      });
+      setPreviewImage(basicData.profile_picture);
     }
-  }, [basicData, dataLoaded]);
-
-  const toggleEditingField = (field, state) => {
-    setEditingFields((prev) => ({ ...prev, [field]: state }));
-    if (!state) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const handleSave = async (field, value) => {
-    setLoading(true);
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-    setGeneralError(null);
-
-    try {
-      const data = new FormData();
-      if (field === "profile_picture" && value instanceof File) {
-        data.append(field, value);
-      } else if (field === "Fname") {
-        const nameParts = value.trim().split(/\s+/);
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.slice(1).join(" ") || "";
-        data.append("Fname", firstName);
-        data.append("Lname", lastName);
-      } else if (field === "language" && Array.isArray(value)) {
-        // Store as JSON string
-        data.append(field, JSON.stringify(value));
-      } else {
-        data.append(field, value);
-      }
-
-      await updateBasicProfile(data);
-      await dispatch(getBasic());
-
-      if (field === "Fname") {
-        await dispatch(getUserData());
-      }
-
-      toast.success("Updated successfully! / सफलतापूर्वक अपडेट किया गया!");
-      toggleEditingField(field, false);
-    } catch (error) {
-      if (error.response?.data?.[field]) {
-        const fieldError = Array.isArray(error.response.data[field])
-          ? error.response.data[field][0]
-          : error.response.data[field];
-        setErrors((prev) => ({ ...prev, [field]: fieldError }));
-        toast.error(fieldError);
-      } else {
-        const msg = "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।";
-        setGeneralError(msg);
-        toast.error(msg);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [basicData, profile, dataLoaded]);
 
   const parseLanguage = (val) => {
     if (Array.isArray(val)) return val;
     if (!val) return [];
     try {
-      // Try parsing as JSON first
       const parsed = JSON.parse(val);
       if (Array.isArray(parsed)) return parsed;
       return [String(parsed)];
     } catch (e) {
-      // Fallback to comma-separated
       return String(val).split(',').map(v => v.trim());
     }
   };
 
-  const fields = [
-    {
-      label: "Profile Picture",
-      field: "profile_picture",
-      inputType: "file",
-      value: basicData.profile_picture,
-    },
-    {
-      label: "Name",
-      field: "Fname",
-      value: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
-    },
-    {
-      label: "Contact No",
-      field: "phone_number",
-      value: basicData.phone_number,
-      inputType: "tel",
-    },
-    {
-      label: "Languages you speak/understand",
-      field: "language",
-      value: parseLanguage(basicData.language),
-      inputType: "multi-select",
-      options: [
-        { value: "English", label: "English" },
-        { value: "Hindi", label: "Hindi" },
-        { value: "Bengali", label: "Bengali" },
-        { value: "Telugu", label: "Telugu" },
-        { value: "Tamil", label: "Tamil" },
-        { value: "Urdu", label: "Urdu" },
-        { value: "Other", label: "Other" },
-      ],
-    },
-    {
-      label: "Gender",
-      field: "gender",
-      value: basicData.gender,
-      inputType: "select",
-      options: [
-        { label: "Select Gender", value: "" },
-        { label: "Male", value: "male" },
-        { label: "Female", value: "female" },
-        { label: "Other", value: "other" },
-      ],
-    },
-    {
-      label: "Marital Status",
-      field: "marital_status",
-      value: basicData.marital_status,
-      inputType: "select",
-      options: [
-        { label: "Select Category", value: "" },
-        { label: "Single", value: "single" },
-        { label: "Married", value: "married" },
-        { label: "Divorced", value: "divorced" },
-        { label: "Widowed", value: "widowed" },
-      ],
-    },
-    {
-      label: "Religion",
-      field: "religion",
-      inputType: "select",
-      value: basicData.religion,
-      options: [
-        { label: "Select Category", value: "" },
-        { label: "Hindu", value: "Hindu" },
-        { label: "Muslim", value: "Muslim" },
-        { label: "Christian", value: "Christian" },
-        { label: "Sikh", value: "Sikh" },
-        { label: "Buddhist", value: "Buddhist" },
-        { label: "Other", value: "Other" },
-      ],
-    },
-  ];
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  if (!dataLoaded) {
-    return <Loader />;
-  }
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, profile_picture: file }));
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    setGeneralError(null);
+    setSuccessMessage(null);
+
+    // Validation
+    if (formData.phone_number && String(formData.phone_number).length !== 10) {
+      setGeneralError("Please enter a valid 10-digit phone number / कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = new FormData();
+
+      // Only append profile picture if it's a File object (newly uploaded)
+      if (formData.profile_picture instanceof File) {
+        data.append("profile_picture", formData.profile_picture);
+      }
+
+      const nameParts = formData.Fname.trim().split(/\s+/);
+      data.append("Fname", nameParts[0] || "");
+      data.append("Lname", nameParts.slice(1).join(" ") || "");
+
+      data.append("phone_number", formData.phone_number);
+      data.append("language", JSON.stringify(formData.language));
+      data.append("gender", formData.gender);
+      data.append("marital_status", formData.marital_status);
+      data.append("religion", formData.religion);
+
+      await updateBasicProfile(data);
+      await dispatch(getBasic());
+      await dispatch(getUserData());
+
+      setSuccessMessage("Profile updated successfully! / प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!");
+      setIsEditing(false);
+    } catch (error) {
+      const msg = error.response?.data?.message || "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।";
+      setGeneralError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setGeneralError(null);
+    // Reset form data
+    setFormData({
+      profile_picture: basicData.profile_picture,
+      Fname: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
+      phone_number: basicData.phone_number || "",
+      language: parseLanguage(basicData.language),
+      gender: basicData.gender || "",
+      marital_status: basicData.marital_status || "",
+      religion: basicData.religion || "",
+    });
+    setPreviewImage(basicData.profile_picture);
+  };
+
+  if (!dataLoaded) return <Loader />;
 
   return (
-    <div className="w-full mx-auto">
-      <ToastContainer
-        position="top-right"
-        autoClose={1000}
-        closeButton={true}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={true}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+    <div className="w-full mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
-          <span className="p-2 bg-teal-50 rounded-lg text-teal-600">
+      <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
             <HiOutlineUser className="w-6 h-6" />
-          </span>
-          {bi("Basic Information")}
-        </h2>
-        <p className="text-slate-500 ml-12 text-sm">
-          Manage your basic profile details / अपनी बुनियादी प्रोफ़ाइल जानकारी प्रबंधित करें
-        </p>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">{bi("Basic Information")}</h2>
+            <p className="text-slate-500 text-xs">Manage your personal details</p>
+          </div>
+        </div>
+
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 transition-all text-sm font-medium shadow-sm"
+          >
+            <HiOutlinePencilAlt className="w-4 h-4" />
+            {bi("Edit Profile")}
+          </button>
+        )}
       </div>
 
-      <ErrorMessage
-        message={generalError}
-        onDismiss={() => setGeneralError(null)}
-        className="mb-6"
-      />
+      <div className="p-6 sm:p-8">
+        <ErrorMessage
+          message={generalError}
+          onDismiss={() => setGeneralError(null)}
+          className="mb-6"
+        />
 
-      <div className="space-y-4">
-        {fields.map((f) => (
-          <EditableField
-            key={f.field}
-            label={f.label}
-            field={f.field}
-            value={f.value}
-            isEditing={!!editingFields[f.field]}
-            onToggleEdit={(state) => toggleEditingField(f.field, state)}
-            onSave={(v) => handleSave(f.field, v)}
-            inputType={f.inputType}
-            options={f.options}
-            error={errors[f.field]}
-          />
-        ))}
+        <ErrorMessage
+          message={successMessage}
+          type="success"
+          onDismiss={() => setSuccessMessage(null)}
+          className="mb-6"
+        />
+
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+          {/* Profile Picture Section */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg ring-1 ring-slate-100">
+                <img
+                  src={previewImage || "/images/profile.jpg"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {isEditing && (
+                <label className="absolute bottom-0 right-0 p-2 bg-teal-600 text-white rounded-full cursor-pointer hover:bg-teal-700 shadow-md transition-transform hover:scale-105">
+                  <HiCamera className="w-5 h-5" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                </label>
+              )}
+            </div>
+            {isEditing && (
+              <p className="text-xs text-slate-400 text-center max-w-[150px]">
+                Click the camera icon to update your photo
+              </p>
+            )}
+          </div>
+
+          {/* Form Fields */}
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Full Name */}
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Full Name")}
+              </label>
+              <input
+                type="text"
+                value={formData.Fname}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("Fname", e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  }`}
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            {/* Contact Number */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Contact No")}
+              </label>
+              <input
+                type="tel"
+                value={formData.phone_number}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("phone_number", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  }`}
+                placeholder="10-digit mobile number"
+              />
+            </div>
+
+            {/* Email (Read Only) */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Email Address")}
+              </label>
+              <input
+                type="email"
+                value={profile.email || ""}
+                disabled={true}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm"
+              />
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Gender")}
+              </label>
+              <select
+                value={formData.gender}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("gender", e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  }`}
+              >
+                <option value="">Select Gender</option>
+                <option value="male">{bi("Male")}</option>
+                <option value="female">{bi("Female")}</option>
+                <option value="other">{bi("Other")}</option>
+              </select>
+            </div>
+
+            {/* Marital Status */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Marital Status")}
+              </label>
+              <select
+                value={formData.marital_status}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("marital_status", e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  }`}
+              >
+                <option value="">Select Status</option>
+                <option value="single">{bi("Single")}</option>
+                <option value="married">{bi("Married")}</option>
+                <option value="divorced">{bi("Divorced")}</option>
+                <option value="widowed">{bi("Widowed")}</option>
+              </select>
+            </div>
+
+            {/* Religion */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Religion")}
+              </label>
+              <select
+                value={formData.religion}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("religion", e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  }`}
+              >
+                <option value="">Select Religion</option>
+                <option value="Hindu">Hindu</option>
+                <option value="Muslim">Muslim</option>
+                <option value="Christian">Christian</option>
+                <option value="Sikh">Sikh</option>
+                <option value="Buddhist">Buddhist</option>
+                <option value="Other">{bi("Other")}</option>
+              </select>
+            </div>
+
+            {/* Languages */}
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Languages")}
+              </label>
+              <MultiSelect
+                value={formData.language}
+                onChange={(val) => handleInputChange("language", val)}
+                disabled={!isEditing}
+                options={[
+                  { value: "English", label: "English" },
+                  { value: "Hindi", label: "Hindi" },
+                  { value: "Bengali", label: "Bengali" },
+                  { value: "Telugu", label: "Telugu" },
+                  { value: "Tamil", label: "Tamil" },
+                  { value: "Urdu", label: "Urdu" },
+                  { value: "Other", label: "Other" },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        {isEditing && (
+          <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-3 animate-fadeIn">
+            <button
+              onClick={handleCancel}
+              className="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            >
+              {bi("Cancel")}
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 shadow-lg shadow-teal-200 transition-all hover:-translate-y-0.5"
+            >
+              {bi("Save Changes")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

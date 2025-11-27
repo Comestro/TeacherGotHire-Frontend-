@@ -5,7 +5,7 @@ import Input from './Input';
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaEnvelope } from 'react-icons/fa';
 import { Helmet } from 'react-helmet-async';
 import CustomHeader from './commons/CustomHeader';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorMessage from './ErrorMessage';
 import { Link } from 'react-router-dom';
@@ -18,6 +18,7 @@ const ForgotPassword = () => {
 
   const [sentEmail, setSentEmail] = useState('');
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +26,7 @@ const ForgotPassword = () => {
     setError(null);
     try {
       await forgetPassword(email);
-      toast.success('Password reset link has been sent to your email.', {
-        position: 'top-right',
-        autoClose: 5000,
-      });
+      setSuccessMessage('Password reset link has been sent to your email.');
       setSentEmail(email);
       setEmail('');
       setSent(true);
@@ -166,6 +164,11 @@ const ForgotPassword = () => {
                     <ErrorMessage
                       message={error}
                       onDismiss={() => setError(null)}
+                    />
+                    <ErrorMessage
+                      message={successMessage}
+                      type="success"
+                      onDismiss={() => setSuccessMessage(null)}
                     />
                     <div className="space-y-1">
                       <label className="block text-sm font-medium text-gray-700 ml-1">Email Address</label>

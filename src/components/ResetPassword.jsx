@@ -54,7 +54,7 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      setError('Passwords do not match.');
       return;
     }
 
