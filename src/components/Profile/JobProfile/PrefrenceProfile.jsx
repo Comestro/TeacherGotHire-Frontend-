@@ -123,7 +123,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
     switch (currentStep) {
       case 1:
-      case 1:
         isValid = await trigger("class_category");
         if (!isValid) setFormError("Please select at least one class category");
         break;
