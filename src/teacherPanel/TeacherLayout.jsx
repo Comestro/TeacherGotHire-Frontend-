@@ -82,7 +82,7 @@ const TeacherLayout = () => {
           </div>
           <div>
             <h1 className="font-bold text-xl text-slate-800 tracking-tight">PTPI</h1>
-            <p className="text-xs text-slate-500 font-medium">Teacher Panel</p>
+            <p className="text-lg text-slate-500 font-medium">Teacher Profile</p>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -86,17 +86,24 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
   // Handle subjects based on selected categories
   const selectedClassCategories = watch("class_category") || [];
-  const filteredSubjects = selectedClassCategories.flatMap((catId) => {
-    const categoryObj = category?.find((cat) => cat?.id === Number(catId));
-    return categoryObj ? categoryObj.subjects : [];
-  });
+
+  const filteredSubjects = useMemo(() => {
+    return selectedClassCategories.flatMap((catId) => {
+      const categoryObj = category?.find((cat) => cat?.id === Number(catId));
+      return categoryObj ? categoryObj.subjects : [];
+    });
+  }, [selectedClassCategories, category]);
 
   useEffect(() => {
     const currentSubjects = getValues("prefered_subject");
     const validSubjects = currentSubjects.filter((subId) =>
       filteredSubjects.some((sub) => sub?.id === Number(subId))
     );
-    setValue("prefered_subject", validSubjects);
+
+    // Only update if the length differs to avoid infinite loop
+    if (validSubjects.length !== currentSubjects.length) {
+      setValue("prefered_subject", validSubjects);
+    }
   }, [filteredSubjects, getValues, setValue]);
 
   useEffect(() => {
@@ -129,15 +136,22 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     return isValid;
   };
 
-  const handleNext = async () => {
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleNext = async (e) => {
+    e?.preventDefault();
+    if (isNavigating) return;
+
+    setIsNavigating(true);
     const isValid = await validateStep();
-    if (isValid && currentStep <= totalSteps) {
+    if (isValid && currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
+    setIsNavigating(false);
   };
-  
+
   const handleBack = () => {
-    if (currentStep > 1) {
+    if (currentStep > 1 && currentStep <= totalSteps) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -146,18 +160,32 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     const isValid = await validateStep();
     if (!isValid) return;
 
+    // Filter out class categories that don't have any selected subjects
+    const filteredClassCategories = data.class_category.filter(catId => {
+      const categoryObj = category?.find(c => c.id === Number(catId));
+      if (!categoryObj) return false;
+
+      // Check if any subject from this category is selected
+      const hasSelectedSubject = categoryObj.subjects?.some(sub =>
+        data.prefered_subject.includes(String(sub.id))
+      );
+
+      return hasSelectedSubject;
+    });
+
+    // Update data with filtered categories
+    const finalData = {
+      ...data,
+      class_category: filteredClassCategories
+    };
+
     setIsLoading(true);
     try {
-      await dispatch(postPrefrence(data)).unwrap();
+      await dispatch(postPrefrence(finalData)).unwrap();
       fetchPreferences();
       setIsEditingPrefrence(false);
       setCurrentStep(1);
       toast.success("Job preferences updated successfully!");
-
-      // Reload the page to update dashboard state
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
 
     } catch (err) {
       const errorMessage =
@@ -426,10 +454,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
                       <button
                         type="button"
                         onClick={handleNext}
-                        className="px-6 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors flex items-center gap-2"
+                        disabled={isNavigating}
+                        className={`px-6 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors flex items-center gap-2 ${isNavigating ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        Next
-                        <HiOutlineArrowRight className="w-4 h-4" />
+                        {isNavigating ? '...' : 'Next'}
+                        {!isNavigating && <HiOutlineArrowRight className="w-4 h-4" />}
                       </button>
                     ) : (
                       <button
