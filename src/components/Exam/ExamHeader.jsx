@@ -65,7 +65,7 @@ export default function Subheader({ handleSubmit }) {
   };
 
   const confirmExit = () => {
-    navigate("/teacher");
+    handleSubmit();
   };
 
   const cancelExit = () => {
