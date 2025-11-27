@@ -179,19 +179,7 @@ export const verifyOtp = async (payload) =>
 
 export const login = async (credentials) => {
   try {
-    // First, make a GET request to get CSRF token if needed
-    // First, make a GET request to get CSRF token if needed
-    // Removed explicit CSRF fetch as it was returning 404 and is handled by interceptors/cookies if present
-    /*
-    if (!getCsrfToken()) {
-      try {
-        await apiClient.get('/api/csrf/');
-      } catch (csrfErr) {
-        // If CSRF endpoint doesn't exist, continue anyway
-        console.warn('CSRF token fetch failed, continuing with login');
-      }
-    }
-    */
+   
 
     const response = await apiClient.post("/api/login/", credentials);
 
@@ -286,9 +274,16 @@ export const logout = async () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
 
-    // Step 3: Clear all cookies including CSRF token
+    // Step 3: Clear all cookies EXCEPT csrftoken
     document.cookie.split(";").forEach((c) => {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      const cookie = c.trim();
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+
+      // Preserve the CSRF token so subsequent login requests don't fail
+      if (name !== 'csrftoken') {
+        document.cookie = name + "=;expires=" + new Date().toUTCString() + ";path=/";
+      }
     });
 
     // Step 4: Clear redux persist state
