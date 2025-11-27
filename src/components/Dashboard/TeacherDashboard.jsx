@@ -33,6 +33,7 @@ import { checkPasskey } from "../../services/examServices";
 import ExamCenterModal from "./components/passkeyCard";
 import PhoneNumberModal from "./components/PhoneNumberModal";
 import { useGetApplyEligibilityQuery, useGetJobsApplyDetailsQuery } from "../../features/api/apiSlice";
+import Loader from "../Loader";
 
 function TeacherDashboard() {
   const dispatch = useDispatch();
@@ -49,7 +50,15 @@ function TeacherDashboard() {
   const { basicData, status: profileStatus } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
+  const jobProfileStatus = useSelector((state) => state.jobProfile?.status);
   const { examCards } = useSelector((state) => state?.exam);
+
+
+
+
+
+
+
 
   // Get job eligibility and application status
   const { data: eligibilityData, isLoading: eligibilityLoading } = useGetApplyEligibilityQuery();
@@ -257,6 +266,8 @@ function TeacherDashboard() {
         <div className="flex flex-col md:flex-row">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
+            {/* Show preference form if user doesn't have class categories */}
+
             {/* Show preference form if user doesn't have class categories */}
             {!hasClassCategories ? (
               <div className="">
