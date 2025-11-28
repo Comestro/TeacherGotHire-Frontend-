@@ -495,13 +495,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-800"> {/* Adjust text size */}
                                   {subject?.subject_name}
                                 </h3>
-
-                                {isQualified && (
-                                  <div className="flex items-center text-success text-xs sm:text-sm mt-1.5 sm:mt-2"> {/* Adjust size/margin */}
-                                    <FaCheckCircle className="mr-1" aria-hidden="true" />
-                                    <span>Interview eligible</span>
-                                  </div>
-                                )}
                               </div>
                             </div>
                           </div>
