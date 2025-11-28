@@ -337,14 +337,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="categories"
               {...pageTransition}
-              className="rounded-lg overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
+              className="rounded-lg overflow-hidden mb-6 sm:mb-8 px-3" // Use rounded-lg, remove shadow
             >
               <div className="bg-background text-text">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center"> {/* Adjust text size */}
                   <FaGraduationCap className="mr-2 sm:mr-3" aria-hidden="true" />
                   Select Class Category / वर्ग चुनें
                 </h2>
-                <p className="text-text mt-1 text-sm sm:text-base"> {/* Adjust text size, Changed from blue */}
+                <p className="text-text mt-1 text-xs sm:text-base"> {/* Adjust text size, Changed from blue */}
                   Choose from your profile preferences / अपनी प्रोफ़ाइल प्राथमिकताओं में से चुनें
                 </p>
               </div>

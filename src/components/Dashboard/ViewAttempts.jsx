@@ -83,7 +83,7 @@ function ViewAttempts() {
         />
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
               <span className="p-2 bg-teal-50 rounded-lg text-teal-600">
                 <HiOutlineDocumentText className="h-6 w-6" aria-hidden="true" />
               </span>

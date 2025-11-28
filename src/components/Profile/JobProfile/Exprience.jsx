@@ -198,10 +198,9 @@ const Experience = () => {
               <HiOutlineBriefcase className="text-2xl text-primary" aria-hidden="true" />
             </div>
             Professional Experience
-            <span className="ml-2 text-secondary text-sm font-normal">/ पेशेवर अनुभव</span>
           </h2>
           <p className="text-sm text-secondary ml-9">
-            Manage your teaching positions and institutional experience
+            Manage your experiences
           </p>
         </div>
         {!isEditing && (

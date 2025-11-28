@@ -118,10 +118,9 @@ const Skills = () => {
               <HiOutlineClipboardDocumentList className="w-5 h-5" />
             </span>
             Skills & Expertise
-            <span className="ml-2 text-slate-400 text-sm font-normal">/ कौशल और विशेषज्ञता</span>
           </h2>
           <p className="text-sm text-slate-500 mt-1 ml-9">
-            Showcase your core competencies and technical abilities
+            Showcase your core skills
           </p>
         </div>
         <button

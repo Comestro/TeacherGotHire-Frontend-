@@ -457,11 +457,10 @@ const Education = () => {
             <div className="bg-primary/10 rounded-lg">
               <HiOutlineAcademicCap className="text-2xl text-primary" aria-hidden="true" />
             </div>
-            Education Background
-            <span className="ml-2 text-secondary text-sm font-normal">/ शैक्षिक पृष्ठभूमि</span>
+            Education Qualification
           </h2>
           <p className="text-sm text-secondary ml-9">
-            Manage your academic qualifications and educational history
+            Manage your academic details
           </p>
         </div>
         {!isEditing && (

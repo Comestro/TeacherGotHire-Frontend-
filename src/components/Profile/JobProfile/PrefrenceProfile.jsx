@@ -19,16 +19,15 @@ import {
   HiOutlineXMark
 } from "react-icons/hi2";
 import Loader from "../../Loader";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { motion, AnimatePresence } from "framer-motion";
 import ErrorMessage from "../../ErrorMessage";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PrefrenceProfile = ({ forceEdit = false }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formError, setFormError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const totalSteps = 2;
 
   useEffect(() => {
@@ -78,11 +77,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   // Show validation errors
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      Object.values(errors).forEach((error) => {
-        if (error.message) {
-          toast.error(error.message);
-        }
-      });
+      const firstError = Object.values(errors)[0];
+      if (firstError && firstError.message) {
+        setFormError(firstError.message);
+      }
     }
   }, [errors]);
 
@@ -110,7 +108,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
   useEffect(() => {
     if (error) {
-      toast.error(error);
+      setFormError(error);
     }
   }, [error]);
 
@@ -187,7 +185,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       fetchPreferences();
       setIsEditingPrefrence(false);
       setCurrentStep(1);
-      toast.success("Job preferences updated successfully!");
+      setSuccessMessage("Job preferences updated successfully!");
 
     } catch (err) {
       const errorMessage =
@@ -207,17 +205,11 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
+      <ErrorMessage
+        message={successMessage}
+        type="success"
+        onDismiss={() => setSuccessMessage(null)}
+        className="m-4 mb-0"
       />
       {isLoading && <Loader />}
 
@@ -226,10 +218,10 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
         <div>
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <HiOutlineAcademicCap className="w-6 h-6 text-primary" />
-            Teaching Preferences
+            Subject Preferences
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Manage your teaching profile and preferences
+            Manage your subject & class
           </p>
         </div>
         {!forceEdit && (

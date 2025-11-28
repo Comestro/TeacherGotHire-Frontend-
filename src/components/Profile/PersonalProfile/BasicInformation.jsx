@@ -69,8 +69,8 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`min-h-[42px] border rounded-lg px-3 py-2 flex flex-wrap gap-2 items-center transition-all ${disabled
-            ? "bg-slate-50 border-slate-200 cursor-default"
-            : "bg-white border-slate-300 cursor-pointer hover:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20"
+          ? "bg-slate-50 border-slate-200 cursor-default"
+          : "bg-white border-slate-300 cursor-pointer hover:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20"
           }`}
       >
         {selectedValues.length > 0 ? (
@@ -78,8 +78,8 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
             <span
               key={val}
               className={`text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border ${disabled
-                  ? "bg-slate-200 text-slate-600 border-slate-300"
-                  : "bg-teal-50 text-teal-700 border-teal-100"
+                ? "bg-slate-200 text-slate-600 border-slate-300"
+                : "bg-teal-50 text-teal-700 border-teal-100"
                 }`}
             >
               {val}
@@ -270,7 +270,7 @@ const BasicInformation = () => {
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+      <div className="px-4 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
             <HiOutlineUser className="w-6 h-6" />
@@ -284,7 +284,7 @@ const BasicInformation = () => {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 transition-all text-sm font-medium shadow-sm"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 transition-all text-sm font-medium shadow-sm"
           >
             <HiOutlinePencilAlt className="w-4 h-4" />
             {bi("Edit Profile")}
@@ -349,8 +349,8 @@ const BasicInformation = () => {
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("Fname", e.target.value)}
                 className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
-                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                   }`}
                 placeholder="Enter your full name"
               />
@@ -367,8 +367,8 @@ const BasicInformation = () => {
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("phone_number", e.target.value.replace(/\D/g, "").slice(0, 10))}
                 className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
-                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                   }`}
                 placeholder="10-digit mobile number"
               />
@@ -397,8 +397,8 @@ const BasicInformation = () => {
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("gender", e.target.value)}
                 className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                   }`}
               >
                 <option value="">Select Gender</option>
@@ -418,8 +418,8 @@ const BasicInformation = () => {
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("marital_status", e.target.value)}
                 className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                   }`}
               >
                 <option value="">Select Status</option>
@@ -440,8 +440,8 @@ const BasicInformation = () => {
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("religion", e.target.value)}
                 className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                   }`}
               >
                 <option value="">Select Religion</option>
