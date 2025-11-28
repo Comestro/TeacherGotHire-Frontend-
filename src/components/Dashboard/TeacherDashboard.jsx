@@ -300,7 +300,7 @@ function TeacherDashboard() {
             )}
           </div>
           {/* Assessment Process column (3/12) */}
-          <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0">
+          <div className="w-[300px] md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6">
             <img src="/help.png" alt="Assessment Process" className="w-full h-auto" />
           </div>
         </div>
