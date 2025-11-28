@@ -13,7 +13,7 @@ import { getPincodeUrl } from "../../../store/configue";
 import { IoLocationSharp } from "react-icons/io5";
 import { HiOutlineTrash, HiPencil } from "react-icons/hi";
 import { HiOutlineExclamationTriangle, HiOutlineMapPin } from "react-icons/hi2";
-import { toast } from "react-toastify";
+import ErrorMessage from "../../ErrorMessage";
 
 const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const dispatch = useDispatch();
@@ -41,6 +41,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const [postOffices, setPostOffices] = useState([]);
 
   const [apiError, setApiError] = useState(""); // API error messages
+  const [successMessage, setSuccessMessage] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({}); // Field-specific errors
 
   const {
@@ -142,6 +143,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
     try {
       // Clear previous errors
       setApiError("");
+      setSuccessMessage(null);
       setFieldErrors({});
 
       // Add preference_id to the data
@@ -169,6 +171,11 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
         if (onLocationSuccess) {
           onLocationSuccess();
         }
+        setSuccessMessage("Location added successfully!");
+      }
+
+      if (isEditing) {
+        setSuccessMessage("Location updated successfully!");
       }
 
       // Reset form and close
@@ -214,11 +221,8 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
             setFieldErrors({ area: areaError });
             errorFound = true;
 
-            // Also show toast
-            toast.error(`Area Error: ${areaError}`, {
-              position: "top-right",
-              autoClose: 3000,
-            });
+            setFieldErrors({ area: areaError });
+            errorFound = true;
             break;
           }
         }
@@ -243,10 +247,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
             setFieldErrors({ area: message });
 
-            toast.error(`Area Error: ${message}`, {
-              position: "top-right",
-              autoClose: 3000,
-            });
+            setFieldErrors({ area: message });
             errorFound = true;
             break;
           }
@@ -259,20 +260,10 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
         if (errorStr.includes("area") && errorStr.includes("exist")) {
           setFieldErrors({ area: "This area name already exists." });
-          toast.error("Area Error: This area name already exists.", {
-            position: "top-right",
-            autoClose: 3000,
-          });
         } else if (errorStr.includes("preference") || errorStr.includes("location")) {
           setApiError("You can add only 5 preference locations");
         } else {
           setApiError("An error occurred. Please try again.");
-
-          // Show detailed error in toast for debugging
-          toast.error(`Debug: ${JSON.stringify(err)}`, {
-            position: "top-right",
-            autoClose: 10000,
-          });
         }
       }
     }
@@ -324,6 +315,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       ).unwrap();
 
       fetchjobrefrence();
+      setSuccessMessage("Location deleted successfully!");
     } catch (err) {
 
       setApiError("Failed to delete location. Please try again.");
@@ -343,6 +335,18 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
     <>
       {bothConditonCheck ? (
         <div className="space-y-4 flex-1">
+          <ErrorMessage
+            message={apiError}
+            onDismiss={() => setApiError(null)}
+            className="mb-4"
+          />
+
+          <ErrorMessage
+            message={successMessage}
+            type="success"
+            onDismiss={() => setSuccessMessage(null)}
+            className="mb-4"
+          />
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
@@ -530,13 +534,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
             </div>
           )}
 
-          {/* Error Display */}
-          {apiError && (
-            <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2">
-              <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-600 text-sm">{apiError}</p>
-            </div>
-          )}
+          {/* Error Display - Removed as ErrorMessage is used at top */}
         </div>
       ) : null}
     </>

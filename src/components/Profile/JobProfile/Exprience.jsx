@@ -13,11 +13,10 @@ import { HiOutlinePlusCircle } from "react-icons/hi2";
 import { HiOutlineBriefcase, HiOutlineTrash, HiOutlinePencil } from "react-icons/hi";
 import moment from "moment";
 import Loader from "../../Loader";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "../../ErrorMessage";
 
 const formatDate = (date) => {
-  if (!date) return "N/A";
+  if (!date) return;
   return moment(date).format("MMMM D, YYYY"); // Example: January 19, 2025
 };
 
@@ -31,13 +30,14 @@ const Experience = () => {
   );
 
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-  
+
 
   // State Variables
   const [isEndDateDisabled, setIsEndDateDisabled] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null); // Tracks the index being edited
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
+  const [generalError, setGeneralError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +65,8 @@ const Experience = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true); // Optionally add a loading state while submitting
+      setGeneralError(null);
+      setSuccessMessage(null);
       const payload = {
         institution: data.institution,
         // achievements: data.achievements,
@@ -81,11 +83,11 @@ const Experience = () => {
 
         await dispatch(putExprienceProfile({ payload, id })).unwrap();
         fetchProfile();
-        toast.success("Experience updated successfully!");
+        setSuccessMessage("Experience updated successfully!");
       } else {
         await dispatch(postExprienceProfile(payload)).unwrap(); // Dispatch with new data
         fetchProfile();
-        toast.success("Experience added successfully!");
+        setSuccessMessage("Experience added successfully!");
       }
 
       // Reset form and editing state
@@ -95,9 +97,30 @@ const Experience = () => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      
-      setErrors(err);
-      toast.error(err.response?.data?.message || "Failed to save experience");
+
+      let apiErrors = {};
+      let errorMessage = "Failed to save experience";
+
+      // Determine the error object (unwrapped payload or axios response)
+      const responseData = err.response?.data || err;
+
+      // Handle specific validation error format
+      if (responseData?.errors && Array.isArray(responseData.errors)) {
+        responseData.errors.forEach(error => {
+          if (error.attr) {
+            apiErrors[error.attr] = error.detail;
+          }
+        });
+
+        if (responseData.errors.length > 0) {
+          errorMessage = responseData.errors[0].detail || errorMessage;
+        }
+      } else if (responseData?.message) {
+        errorMessage = responseData.message;
+      }
+
+      setErrors(apiErrors);
+      setGeneralError(errorMessage);
     }
   };
 
@@ -106,7 +129,8 @@ const Experience = () => {
     setEditingIndex(index);
     setIsEditing(true);
     setErrors({});
-    setError("");
+    setGeneralError(null);
+    setSuccessMessage(null);
     const experience = experienceData[index];
     // Populate form fields with existing data
     Object.keys(experience).forEach((key) => {
@@ -125,10 +149,20 @@ const Experience = () => {
       const id = experienceData[index].id;
       await dispatch(delExprienceProfile({ id: id })).unwrap();
       fetchProfile();
-      toast.success("Experience deleted successfully!");
+      setSuccessMessage("Experience deleted successfully!");
     } catch (err) {
-      setError(err.message);
-      toast.error(err.response?.data?.message || "Failed to delete experience");
+      let errorMessage = "Failed to delete experience";
+      const responseData = err.response?.data || err;
+
+      if (responseData?.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+        errorMessage = responseData.errors[0].detail || errorMessage;
+      } else if (responseData?.message) {
+        errorMessage = responseData.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setGeneralError(errorMessage);
     }
   };
 
@@ -137,26 +171,26 @@ const Experience = () => {
     setEditingIndex(null);
     setIsEditing(false);
     reset();
-    setError("");
+    setGeneralError(null);
+    setSuccessMessage(null);
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
-       <ToastContainer 
-        position="top-right" 
-        autoClose={1000} 
-        closeButton={true}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={true}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
+    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6">
+      <ErrorMessage
+        message={generalError}
+        onDismiss={() => setGeneralError(null)}
+        className="mb-6"
+      />
+
+      <ErrorMessage
+        message={successMessage}
+        type="success"
+        onDismiss={() => setSuccessMessage(null)}
+        className="mb-6"
       />
       {/* Enhanced Header */}
-      {loading && (<Loader/>)}
+      {loading && (<Loader />)}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-secondary/20">
         <div className="mb-4 sm:mb-0">
           <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
@@ -204,7 +238,7 @@ const Experience = () => {
           {experienceData.map((experience, index) => (
             <div
               key={index}
-              className="group relative p-6 rounded-xl border border-secondary/30 hover:border-primary/40 transition-all duration-200 bg-gradient-to-br from-white to-background/30 hover:shadow-md"
+              className="group relative p-6 rounded-xl hover:border-primary/40 transition-all duration-200 bg-gradient-to-br from-white to-background/30"
             >
               {/* Action Buttons */}
               <div className="absolute top-4 right-4 flex gap-2">
@@ -239,7 +273,7 @@ const Experience = () => {
                     {experience.role?.jobrole_name || "N/A"}
                   </p>
                   <p className="text-sm text-secondary mb-3">
-                    {formatDate(experience.start_date)} – {formatDate(experience.end_date)}
+                    {formatDate(experience.start_date)} – {(!experience.end_date) ? "Present" : formatDate(experience.end_date)}
                   </p>
 
                   {experience.description && (
@@ -255,7 +289,7 @@ const Experience = () => {
       ) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-4 rounded-xl space-y-4 border-2 border-[#3E98C7]/20 mb-4 mx-4 shadow-lg"
+          className="rounded-xl space-y-4 mb-4 mx-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Institution Field */}
@@ -323,7 +357,7 @@ const Experience = () => {
               </label>
               <input
                 type="date"
-                className="w-full border-b border-gray-300 p-2 focus:outline-none focus:ring-blue-400"
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 {...register("start_date", {
                   required: "Start Date is required",
                 })}
@@ -355,7 +389,10 @@ const Experience = () => {
                   <input
                     type="checkbox"
                     className="h-4 w-4 text-[#3E98C7] border-gray-300 rounded focus:ring-[#3E98C7] mr-2"
-                    onChange={(e) => setIsEndDateDisabled(e.target.checked)}
+                    onChange={(e) => {
+                      setIsEndDateDisabled(e.target.checked);
+                      setValue("end_date", "");
+                    }}
                   />
                   <span className="whitespace-nowrap">
                     Currently Working Here
@@ -368,11 +405,10 @@ const Experience = () => {
                   type="date"
                   id="end_date"
                   name="end_date"
-                  className={`w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 ${
-                    isEndDateDisabled
-                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                      : "bg-white text-gray-700 focus:ring-[#3E98C7] focus:border-[#3E98C7]"
-                  } transition-colors`}
+                  className={`w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 ${isEndDateDisabled
+                    ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                    : "bg-white text-gray-700 focus:ring-[#3E98C7] focus:border-[#3E98C7]"
+                    } transition-colors`}
                   {...register("end_date")}
                   disabled={isEndDateDisabled}
                 />
@@ -400,7 +436,7 @@ const Experience = () => {
               <textarea
                 rows="3"
                 placeholder="Enter Achievements"
-                className="w-full border-b border-gray-300 p-2 focus:outline-none focus:ring-blue-400"
+                className="w-full border-2 rounded-lg border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 {...register("achievements")}
               ></textarea>
               {/* Display form validation errors */}
@@ -425,7 +461,7 @@ const Experience = () => {
               <textarea
                 rows="3"
                 placeholder="Enter Description"
-                className="w-full border-b border-gray-300 p-2 focus:outline-none focus:ring-blue-400"
+                className="w-full border-2 rounded-lg border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-[#3E98C7] focus:border-[#3E98C7] transition-all"
                 {...register("description", {
                   required: "Description is required",
                 })}
@@ -462,15 +498,7 @@ const Experience = () => {
             </button>
           </div>
 
-          {/* Display Error Message if Any */}
-          {error && (
-            <div className="text-red-500 text-center mt-2">{error}</div>
-          )}
-          {errors.non_field_errors && (
-            <div className="text-red-500 text-center mt-2">
-              {errors.non_field_errors}
-            </div>
-          )}
+         
         </form>
       )}
     </div>

@@ -15,8 +15,7 @@ import {
   HiOutlineClipboardDocumentList,
   HiMagnifyingGlass
 } from "react-icons/hi2";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "../../ErrorMessage";
 
 const Skills = () => {
   const [suggestions, setSuggestions] = useState([]);
@@ -26,6 +25,8 @@ const Skills = () => {
   const teacherSkill = useSelector(
     (state) => state.jobProfile.teacherSkill || []
   );
+  const [generalError, setGeneralError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const { handleSubmit, register, watch, setValue } = useForm();
   const inputValue = watch("skillInput", "");
@@ -52,27 +53,31 @@ const Skills = () => {
 
   const handleSuggestionClick = async (skill) => {
     try {
+      setGeneralError(null);
+      setSuccessMessage(null);
       if (teacherSkill.find((item) => item.skill.id === skill.id)) {
-        toast.warning("This skill is already added");
+        setGeneralError("This skill is already added");
         return;
       }
       await dispatch(postSkillsProfile({ skill: skill.id })).unwrap();
       dispatch(getSkillsProfile());
       setValue("skillInput", "");
       setSuggestions([]);
-      toast.success("Skill added successfully!");
+      setSuccessMessage("Skill added successfully!");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add skill");
+      setGeneralError(error.response?.data?.message || "Failed to add skill");
     }
   };
 
   const handleRemoveSelectedSkill = async (skillToRemove) => {
     try {
+      setGeneralError(null);
+      setSuccessMessage(null);
       await dispatch(delSkillProfile(skillToRemove)).unwrap();
       dispatch(getSkillsProfile());
-      toast.success("Skill removed successfully!");
+      setSuccessMessage("Skill removed successfully!");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to remove skill");
+      setGeneralError(error.response?.data?.message || "Failed to remove skill");
     }
   };
 
@@ -93,18 +98,17 @@ const Skills = () => {
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={1000}
-        closeButton={true}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={true}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
+      <ErrorMessage
+        message={generalError}
+        onDismiss={() => setGeneralError(null)}
+        className="mb-6"
+      />
+
+      <ErrorMessage
+        message={successMessage}
+        type="success"
+        onDismiss={() => setSuccessMessage(null)}
+        className="mb-6"
       />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-6 border-b border-slate-100">
@@ -122,8 +126,8 @@ const Skills = () => {
         </div>
         <button
           className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${showForm
-              ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              : "bg-teal-600 text-white hover:bg-teal-700 shadow-sm shadow-teal-200"
+            ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            : "bg-teal-600 text-white hover:bg-teal-700 shadow-sm shadow-teal-200"
             }`}
           onClick={() => setShowForm(!showForm)}
         >

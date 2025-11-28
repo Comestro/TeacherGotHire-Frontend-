@@ -13,8 +13,7 @@ import { HiOutlineAcademicCap, HiOutlineTrash, HiOutlinePencil, HiOutlineBookOpe
 import { HiOutlinePlusCircle, HiOutlineXMark, HiOutlineXCircle } from "react-icons/hi2";
 import { HiOutlineCheck, HiOutlineEye } from "react-icons/hi";
 import Loader from "../../Loader";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "../../ErrorMessage";
 
 const Education = () => {
   const dispatch = useDispatch();
@@ -26,8 +25,8 @@ const Education = () => {
   const { error, educationData } = useSelector(
     (state) => state.jobProfile || []
   );
-  
-  
+
+
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
@@ -50,6 +49,8 @@ const Education = () => {
   const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
   const [viewDetailsModal, setViewDetailsModal] = useState(false);
   const [selectedEducation, setSelectedEducation] = useState(null);
+  const [generalError, setGeneralError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Define streams for Intermediate
   const intermediateStreams = [
@@ -133,7 +134,7 @@ const Education = () => {
         setSelectedSubjects(prev => [...prev, { ...subjectInput }]);
         setSubjectInput({ name: '', marks: '' }); // Reset input
       } else {
-        toast.error("Percentage must be between 0 and 100 / प्रतिशत 0 से 100 के बीच होना चाहिए");
+        setGeneralError("Percentage must be between 0 and 100 / प्रतिशत 0 से 100 के बीच होना चाहिए");
       }
     }
   };
@@ -147,7 +148,7 @@ const Education = () => {
     const value = e.target.value;
     setSelectedQualification(value);
     setValue("qualification", value);
-    
+
     // Reset dependent selections
     setSelectedStream("");
     setSelectedDegreeType("");
@@ -170,14 +171,14 @@ const Education = () => {
     if (!existingEducations || existingEducations.length === 0) {
       return [1]; // Only allow Matriculation to start
     }
-    
+
     // Track which levels already exist in the user's education
     const existingLevels = new Set();
-    
+
     // Get all qualification levels that the user already has
     existingEducations.forEach(education => {
       let qualName = "";
-      
+
       // Extract qualification name
       if (education.qualification?.name) {
         qualName = education.qualification.name;
@@ -186,36 +187,36 @@ const Education = () => {
       } else {
         qualName = education.qualification_name || "";
       }
-      
+
       // Get the level for this qualification
       const level = qualificationOrder[qualName] || 0;
-      
+
       // Add to existing levels
       if (level > 0) {
         existingLevels.add(level);
       }
     });
-    
+
     // Get the maximum level the user has
     const maxLevel = existingLevels.size > 0 ? Math.max(...Array.from(existingLevels)) : 0;
-    
+
     // For adding new education:
     // 1. Can add the next level only (maxLevel + 1)
     // 2. Can also add any missing levels before maxLevel
     const allowedLevels = [];
-    
+
     // Add all missing levels from 1 to maxLevel
     for (let i = 1; i <= maxLevel; i++) {
       if (!existingLevels.has(i)) {
         allowedLevels.push(i);
       }
     }
-    
+
     // Add the next level if it's within our defined range (1-6)
     if (maxLevel < 6 && !allowedLevels.includes(maxLevel + 1)) {
       allowedLevels.push(maxLevel + 1);
     }
-    
+
     return allowedLevels;
   };
 
@@ -224,10 +225,10 @@ const Education = () => {
     if (!qualifications || qualifications.length === 0) {
       return [];
     }
-    
+
     // Get the allowed qualification levels for new entries
     const allowedLevels = getNextAllowedQualificationLevels(educationData);
-    
+
     // Filter and sort qualifications
     return [...qualifications]
       .filter(qual => {
@@ -246,66 +247,68 @@ const Education = () => {
     if (!data || data.length === 0) {
       return [];
     }
-    
+
     // Create a copy of the data to avoid mutating the original
     const sorted = [...data].sort((a, b) => {
       // First try to get the qualification name from the object structure
       let qualA = a.qualification?.name;
       let qualB = b.qualification?.name;
-      
+
       // If qualification is just a string (not an object)
       if (typeof a.qualification === 'string') {
         qualA = a.qualification;
       }
-      
+
       if (typeof b.qualification === 'string') {
         qualB = b.qualification;
       }
-      
+
       // If we still don't have qualification names, try backup properties
       qualA = qualA || a.qualification_name || "";
       qualB = qualB || b.qualification_name || "";
-      
+
       // Get the order values, default to a high number if not found
       const orderA = qualificationOrder[qualA] || 100;
       const orderB = qualificationOrder[qualB] || 100;
-      
+
       // If order is the same, sort by year of passing (newest first)
       if (orderA === orderB) {
         const yearA = parseInt(a.year_of_passing) || 0;
         const yearB = parseInt(b.year_of_passing) || 0;
         return yearB - yearA; // Newest first
       }
-      
+
       return orderA - orderB;
     });
-    
+
     return sorted;
   };
 
   // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
-      
+
       setLoading(true);
-      
+      setGeneralError(null);
+      setSuccessMessage(null);
+
       // Send only base qualification to API
       // Store stream/degree info separately for display purposes
       let qualificationName = selectedQualification;
       let streamOrDegree = "";
-      
+
       if (selectedQualification === "Intermediate" && selectedStream) {
         streamOrDegree = selectedStream;
       } else if (selectedQualification === "Bachelor" && selectedDegreeType) {
-        streamOrDegree = selectedDegreeType === "Other" 
-          ? data.customDegree || "" 
+        streamOrDegree = selectedDegreeType === "Other"
+          ? data.customDegree || ""
           : selectedDegreeType;
       } else if (selectedQualification === "Master" && selectedDegreeType) {
-        streamOrDegree = selectedDegreeType === "Other" 
-          ? data.customDegree || "" 
+        streamOrDegree = selectedDegreeType === "Other"
+          ? data.customDegree || ""
           : selectedDegreeType;
       }
-      
+
       const payload = {
         institution: data.institution,
         qualification: qualificationName, // Send only base qualification
@@ -324,11 +327,13 @@ const Education = () => {
         const id = educationData[editingIndex].id;
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
-        toast.success("Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!");
+        await dispatch(putEducationProfile({ payload, id })).unwrap();
+        fetchProfile();
+        setSuccessMessage("Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!");
       } else {
         await dispatch(postEducationProfile(payload)).unwrap();
         fetchProfile();
-        toast.success("Education details added successfully! / शिक्षा विवरण सफलतापूर्वक जोड़ा गया!");
+        setSuccessMessage("Education details added successfully! / शिक्षा विवरण सफलतापूर्वक जोड़ा गया!");
       }
 
       setIsEditing(false);
@@ -338,10 +343,10 @@ const Education = () => {
       setSelectedDegreeType("");
       reset();
     } catch (err) {
-      
+
       // Handle different error formats
       let errorMessage = "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
-      
+
       if (err?.error) {
         errorMessage = err.error;
       } else if (err?.response?.data?.error) {
@@ -351,11 +356,8 @@ const Education = () => {
       } else if (err?.message) {
         errorMessage = err.message;
       }
-      
-      toast.error(errorMessage, {
-        autoClose: 3000,
-        position: "top-center"
-      });
+
+      setGeneralError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -365,17 +367,17 @@ const Education = () => {
     setEditingIndex(index);
     setIsEditing(true);
     const education = educationData[index];
-  
+
     // Set form values
     Object.keys(education).forEach((key) => {
       setValue(key, education[key]);
     });
-    
+
     // Set selected qualification for the dropdown
     if (education.qualification && education.qualification.name) {
       setSelectedQualification(education.qualification.name);
     }
-  
+
     // Populate selectedSubjects with existing subjects
     setSelectedSubjects(education.subjects || []);
   };
@@ -385,7 +387,7 @@ const Education = () => {
       // Get the qualification level of the education being deleted
       const educationToDelete = educationData[index];
       let qualName = "";
-      
+
       if (educationToDelete.qualification?.name) {
         qualName = educationToDelete.qualification.name;
       } else if (typeof educationToDelete.qualification === 'string') {
@@ -393,13 +395,13 @@ const Education = () => {
       } else {
         qualName = educationToDelete.qualification_name || "";
       }
-      
+
       const levelToDelete = qualificationOrder[qualName] || 0;
-      
+
       // Check if there are any higher level qualifications
       const hasHigherLevels = educationData.some((edu, idx) => {
         if (idx === index) return false; // Skip the one being deleted
-        
+
         let eduQualName = "";
         if (edu.qualification?.name) {
           eduQualName = edu.qualification.name;
@@ -408,48 +410,45 @@ const Education = () => {
         } else {
           eduQualName = edu.qualification_name || "";
         }
-        
+
         const eduLevel = qualificationOrder[eduQualName] || 0;
         return eduLevel > levelToDelete;
       });
-      
+
       // If there are higher levels, prevent deletion
       if (hasHigherLevels) {
-        toast.error(
-          "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।",
-          {
-            autoClose: 4000,
-            position: "top-center"
-          }
+        setGeneralError(
+          "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।"
         );
         return;
       }
-      
+
       const id = educationData[index].id;
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
-      toast.success("Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!");
+      await dispatch(delEducationProfile({ id: id })).unwrap();
+      fetchProfile();
+      setSuccessMessage("Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!");
     } catch (err) {
-      
-      toast.error(err.response?.data?.message || "Failed to delete education details / शिक्षा विवरण हटाने में विफल");
+
+      setGeneralError(err.response?.data?.message || "Failed to delete education details / शिक्षा विवरण हटाने में विफल");
     }
   };
 
   return (
     <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
-      <ToastContainer 
-       position="top-right" 
-       autoClose={1000} 
-       closeButton={true}
-       hideProgressBar={false}
-       newestOnTop={false}
-       closeOnClick={true}
-       rtl={false}
-       pauseOnFocusLoss
-       draggable
-       pauseOnHover
-       theme="light"
-     />
+      <ErrorMessage
+        message={generalError}
+        onDismiss={() => setGeneralError(null)}
+        className="mb-6"
+      />
+
+      <ErrorMessage
+        message={successMessage}
+        type="success"
+        onDismiss={() => setSuccessMessage(null)}
+        className="mb-6"
+      />
       {/* Enhanced Header */}
       {loading && <Loader />}
       <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-secondary/20">
@@ -531,7 +530,7 @@ const Education = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 text-xs">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -543,22 +542,22 @@ const Education = () => {
                       <p className="font-medium text-gray-700">{education.year_of_passing || "N/A"}</p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <span className="text-gray-500">Institution:</span>
                     <p className="font-medium text-gray-700 break-words">{education.institution || "N/A"}</p>
                   </div>
-                  
+
                   <div>
                     <span className="text-gray-500">Board/University:</span>
                     <p className="font-medium text-gray-700 break-words">{education.board_or_university || "N/A"}</p>
                   </div>
-                  
+
                   <div>
                     <span className="text-gray-500">Grade/Marks:</span>
                     <p className="font-medium text-gray-700">{education.grade_or_percentage || "N/A"}</p>
                   </div>
-                  
+
                   <div className="pt-2 mt-2 border-t border-gray-200">
                     <button
                       onClick={() => {
@@ -678,7 +677,7 @@ const Education = () => {
                 <h3 className="text-sm font-bold text-text">Step 1: Qualification Level <span className="text-secondary font-normal">/ योग्यता स्तर</span></h3>
               </div>
             </div>
-            
+
             <select
               value={selectedQualification}
               onChange={handleQualificationChange}
@@ -690,16 +689,16 @@ const Education = () => {
               {qualification.map((role) => {
                 const qualLevel = qualificationOrder[role.name] || 100;
                 const allowedLevels = getNextAllowedQualificationLevels(educationData);
-                const alreadyAdded = educationData.some(edu => 
-                  (edu.qualification?.name === role.name) || 
+                const alreadyAdded = educationData.some(edu =>
+                  (edu.qualification?.name === role.name) ||
                   (typeof edu.qualification === 'string' && edu.qualification === role.name)
                 );
-                const isDisabled = alreadyAdded && 
+                const isDisabled = alreadyAdded &&
                   (editingIndex === null || educationData[editingIndex]?.qualification?.name !== role.name);
-                const isCurrentlyEditing = editingIndex !== null && 
+                const isCurrentlyEditing = editingIndex !== null &&
                   educationData[editingIndex]?.qualification?.name === role.name;
                 const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
-                
+
                 // Helper to get disabled reason
                 const getDisabledReason = () => {
                   if (alreadyAdded) return " (Already added / पहले से जोड़ा गया)";
@@ -713,10 +712,10 @@ const Education = () => {
                   }
                   return "";
                 };
-                
+
                 return (
-                  <option 
-                    key={role.id} 
+                  <option
+                    key={role.id}
                     value={role.name}
                     disabled={!isEnabled}
                     className={!isEnabled ? "text-gray-400" : ""}
@@ -739,7 +738,7 @@ const Education = () => {
                     </div>
                     <h3 className="text-sm font-bold text-text">Step 2: Select Stream <span className="text-secondary font-normal">/ स्ट्रीम चुनें</span></h3>
                   </div>
-                  
+
                   <select
                     value={selectedStream}
                     onChange={(e) => setSelectedStream(e.target.value)}
@@ -764,7 +763,7 @@ const Education = () => {
                     </div>
                     <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
                   </div>
-                  
+
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
@@ -778,14 +777,14 @@ const Education = () => {
                       </option>
                     ))}
                   </select>
-                  
+
                   {selectedDegreeType === "Other" && (
                     <input
                       type="text"
                       placeholder="Enter degree name / डिग्री का नाम"
                       className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
-                      {...register("customDegree", { 
-                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
+                      {...register("customDegree", {
+                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false
                       })}
                     />
                   )}
@@ -800,7 +799,7 @@ const Education = () => {
                     </div>
                     <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
                   </div>
-                  
+
                   <select
                     value={selectedDegreeType}
                     onChange={(e) => setSelectedDegreeType(e.target.value)}
@@ -814,14 +813,14 @@ const Education = () => {
                       </option>
                     ))}
                   </select>
-                  
+
                   {selectedDegreeType === "Other" && (
                     <input
                       type="text"
                       placeholder="Enter degree name / डिग्री का नाम"
                       className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
-                      {...register("customDegree", { 
-                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false 
+                      {...register("customDegree", {
+                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false
                       })}
                     />
                   )}
@@ -840,212 +839,212 @@ const Education = () => {
                   </h3>
                 </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-text mb-1">
-                  Institution <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Institution Name"
-                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
-                  {...register("institution", {
-                    required: "Institution is required",
-                  })}
-                />
-                {errors.institution && (
-                  <span className="text-error text-xs mt-0.5 block">
-                    {errors.institution.message}
-                  </span>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-text mb-1">
-                  Board/University
-                </label>
-                <input
-                  type="text"
-                  placeholder="Board/University Name"
-                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
-                  {...register("board_or_university")}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-text mb-1">
-                  Session
-                </label>
-                <input
-                  type="text"
-                  placeholder="2020-22"
-                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
-                  {...register("session")}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-text mb-1">
-                  Year <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="YYYY"
-                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
-                  maxLength={4}
-                  {...register("year_of_passing", {
-                    required: "Year is required",
-                    pattern: {
-                      value: /^\d{4}$/,
-                      message: "Valid 4-digit year",
-                    },
-                    validate: (value) => {
-                      const currentYear = new Date().getFullYear();
-                      if (value < 1900 || value > currentYear) {
-                        return `Year: 1900-${currentYear}`;
-                      }
-                      return true;
-                    },
-                  })}
-                />
-                {errors.year_of_passing && (
-                  <p className="text-error text-xs mt-0.5">
-                    {errors.year_of_passing.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-text mb-1">
-                  Grade/% <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Grade or %"
-                  className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
-                  {...register("grade_or_percentage", {
-                    required: "Required",
-                    validate: (value) => {
-                      const isGrade = /^[A-Da-d]$/.test(value);
-                      const isPercentage = /^\d{1,3}%?$/.test(value);
-
-                      if (isGrade) {
-                        return true;
-                      } else if (isPercentage) {
-                        const numericValue = parseFloat(value.replace("%", ""));
-                        if (numericValue >= 0 && numericValue <= 100) {
-                          return true;
-                        }
-                        return "0-100%";
-                      }
-                      return "Grade (A-D) or %";
-                    },
-                  })}
-                />
-                {errors.grade_or_percentage && (
-                  <p className="text-error text-xs mt-0.5">
-                    {errors.grade_or_percentage.message}
-                  </p>
-                )}
-              </div>
-            </div>
-            </div>
-          </div>
-
-          {/* Step 4: Add Subjects with Percentage */}
-          <div className="mb-4 p-4 bg-success/5 rounded-lg border border-success/20 animate-fadeIn">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 bg-success/10 rounded-lg">
-                <HiOutlinePresentationChartBar className="w-5 h-5 text-success" />
-              </div>
-              <h3 className="text-sm font-bold text-text">
-                Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Subjects
-                <span className="text-secondary font-normal ml-1">/ विषय (Optional)</span>
-              </h3>
-            </div>
-            
-            {/* Quick Add for Matric Subjects */}
-            {selectedQualification === "Matriculation" && (
-              <div className="mb-3 p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-                <p className="text-xs font-medium text-text mb-2">Quick Select:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {matricSubjects.map((subject) => (
-                    <button
-                      key={subject}
-                      type="button"
-                      onClick={() => {
-                        if (!selectedSubjects.find(s => s.name === subject)) {
-                          setSubjectInput({ name: subject, marks: '' });
-                        }
-                      }}
-                      className="px-2 py-1 text-xs bg-white border border-primary/30 text-primary rounded hover:bg-primary/10 transition-all"
-                    >
-                      {subject}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Subject Name"
-                  value={subjectInput.name}
-                  onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
-                />
-                <input
-                  type="number"
-                  placeholder="%"
-                  value={subjectInput.marks}
-                  onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
-                  min="0"
-                  max="100"
-                  className="w-20 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddSubject}
-                  disabled={!subjectInput.name || !subjectInput.marks}
-                  className="px-4 py-2 bg-success hover:bg-success/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
-                >
-                  Add
-                </button>
-              </div>
-              
-              {/* Selected Subjects List */}
-              {selectedSubjects.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-text mb-2">Added ({selectedSubjects.length}):</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSubjects.map((subject, index) => (
-                      <div 
-                        key={index}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-success/30 rounded-lg shadow-sm hover:shadow transition-all"
-                      >
-                        <span className="text-xs font-semibold text-text">
-                          {subject.name}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-text mb-1">
+                        Institution <span className="text-error">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Institution Name"
+                        className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
+                        {...register("institution", {
+                          required: "Institution is required",
+                        })}
+                      />
+                      {errors.institution && (
+                        <span className="text-error text-xs mt-0.5 block">
+                          {errors.institution.message}
                         </span>
-                        <span className="text-xs bg-success text-white px-2 py-0.5 rounded-full font-bold">
-                          {subject.marks}%
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubject(index)}
-                          className="text-error hover:text-error/80 rounded-full p-0.5 transition-all"
-                        >
-                          <HiOutlineXMark className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text mb-1">
+                        Board/University
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Board/University Name"
+                        className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all"
+                        {...register("board_or_university")}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-text mb-1">
+                        Session
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="2020-22"
+                        className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
+                        {...register("session")}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text mb-1">
+                        Year <span className="text-error">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="YYYY"
+                        className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
+                        maxLength={4}
+                        {...register("year_of_passing", {
+                          required: "Year is required",
+                          pattern: {
+                            value: /^\d{4}$/,
+                            message: "Valid 4-digit year",
+                          },
+                          validate: (value) => {
+                            const currentYear = new Date().getFullYear();
+                            if (value < 1900 || value > currentYear) {
+                              return `Year: 1900-${currentYear}`;
+                            }
+                            return true;
+                          },
+                        })}
+                      />
+                      {errors.year_of_passing && (
+                        <p className="text-error text-xs mt-0.5">
+                          {errors.year_of_passing.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text mb-1">
+                        Grade/% <span className="text-error">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Grade or %"
+                        className="w-full px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all"
+                        {...register("grade_or_percentage", {
+                          required: "Required",
+                          validate: (value) => {
+                            const isGrade = /^[A-Da-d]$/.test(value);
+                            const isPercentage = /^\d{1,3}%?$/.test(value);
+
+                            if (isGrade) {
+                              return true;
+                            } else if (isPercentage) {
+                              const numericValue = parseFloat(value.replace("%", ""));
+                              if (numericValue >= 0 && numericValue <= 100) {
+                                return true;
+                              }
+                              return "0-100%";
+                            }
+                            return "Grade (A-D) or %";
+                          },
+                        })}
+                      />
+                      {errors.grade_or_percentage && (
+                        <p className="text-error text-xs mt-0.5">
+                          {errors.grade_or_percentage.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-          </>
+              </div>
+
+              {/* Step 4: Add Subjects with Percentage */}
+              <div className="mb-4 p-4 bg-success/5 rounded-lg border border-success/20 animate-fadeIn">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-success/10 rounded-lg">
+                    <HiOutlinePresentationChartBar className="w-5 h-5 text-success" />
+                  </div>
+                  <h3 className="text-sm font-bold text-text">
+                    Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Subjects
+                    <span className="text-secondary font-normal ml-1">/ विषय (Optional)</span>
+                  </h3>
+                </div>
+
+                {/* Quick Add for Matric Subjects */}
+                {selectedQualification === "Matriculation" && (
+                  <div className="mb-3 p-2.5 bg-primary/5 rounded-lg border border-primary/20">
+                    <p className="text-xs font-medium text-text mb-2">Quick Select:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {matricSubjects.map((subject) => (
+                        <button
+                          key={subject}
+                          type="button"
+                          onClick={() => {
+                            if (!selectedSubjects.find(s => s.name === subject)) {
+                              setSubjectInput({ name: subject, marks: '' });
+                            }
+                          }}
+                          className="px-2 py-1 text-xs bg-white border border-primary/30 text-primary rounded hover:bg-primary/10 transition-all"
+                        >
+                          {subject}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Subject Name"
+                      value={subjectInput.name}
+                      onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
+                    />
+                    <input
+                      type="number"
+                      placeholder="%"
+                      value={subjectInput.marks}
+                      onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
+                      min="0"
+                      max="100"
+                      className="w-20 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddSubject}
+                      disabled={!subjectInput.name || !subjectInput.marks}
+                      className="px-4 py-2 bg-success hover:bg-success/90 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {/* Selected Subjects List */}
+                  {selectedSubjects.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-text mb-2">Added ({selectedSubjects.length}):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSubjects.map((subject, index) => (
+                          <div
+                            key={index}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-success/30 rounded-lg shadow-sm hover:shadow transition-all"
+                          >
+                            <span className="text-xs font-semibold text-text">
+                              {subject.name}
+                            </span>
+                            <span className="text-xs bg-success text-white px-2 py-0.5 rounded-full font-bold">
+                              {subject.marks}%
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSubject(index)}
+                              className="text-error hover:text-error/80 rounded-full p-0.5 transition-all"
+                            >
+                              <HiOutlineXMark className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           {/* Form Actions */}
@@ -1169,8 +1168,8 @@ const Education = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {selectedEducation.subjects.map((subject, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="flex items-center justify-between px-4 py-3 bg-white border border-[#3E98C7]/30 rounded-lg shadow-sm hover:shadow-md transition-all"
                       >
                         <span className="text-sm font-semibold text-gray-700">
