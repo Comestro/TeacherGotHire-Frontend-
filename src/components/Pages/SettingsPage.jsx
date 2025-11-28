@@ -6,8 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getBasic, postBasic } from "../../features/personalProfileSlice";
 import { changePassword } from "../../services/authServices";
 import { motion } from "framer-motion";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "../ErrorMessage";
 
 const MultiSelect = ({ options, value, onChange, className }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,6 +113,8 @@ export default function SettingsPage() {
     confirmPassword: "",
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [generalError, setGeneralError] = useState(null);
 
   const parseLanguage = (val) => {
     if (Array.isArray(val)) return val;
@@ -184,12 +185,15 @@ export default function SettingsPage() {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    setGeneralError(null);
+    setSuccessMessage(null);
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords do not match");
+      setGeneralError("New passwords do not match");
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters long");
+      setGeneralError("Password must be at least 8 characters long");
       return;
     }
 
@@ -199,14 +203,14 @@ export default function SettingsPage() {
         oldPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      toast.success("Password changed successfully");
+      setSuccessMessage("Password changed successfully");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (err) {
-      toast.error(err.message || "Failed to change password");
+      setGeneralError(err.message || "Failed to change password");
     } finally {
       setPasswordLoading(false);
     }
@@ -214,11 +218,15 @@ export default function SettingsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setGeneralError(null);
+    setSuccessMessage(null);
 
     const formData = new FormData();
     Object.entries(userData).forEach(([key, value]) => {
-      if (key === "profile_picture" && value instanceof File) {
-        formData.append(key, value);
+      if (key === "profile_picture") {
+        if (value instanceof File) {
+          formData.append(key, value);
+        }
       } else if (key === "language") {
         formData.append(key, JSON.stringify(value));
       } else if (value !== null && value !== undefined) {
@@ -229,10 +237,10 @@ export default function SettingsPage() {
     try {
       await dispatch(postBasic(formData)).unwrap();
       dispatch(getBasic());
-      toast.success("Profile updated successfully");
+      setSuccessMessage("Profile updated successfully");
     } catch (err) {
       console.log("error", err);
-      toast.error("Failed to update profile");
+      setGeneralError("Failed to update profile");
     }
   };
 
@@ -247,9 +255,8 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="max-w-4xl mx-auto z-[999]">
+    <div className="min-h-screen bg-slate-50 font-sans">
+      <div className="max-w-6xl mx-auto z-[999]">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
@@ -261,15 +268,17 @@ export default function SettingsPage() {
           <p className="mt-2 text-slate-500 ml-14">Manage your personal information and profile details.</p>
         </div>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-medium"
-          >
-            {typeof error === "string" ? error : error?.message || "An error occurred"}
-          </motion.div>
-        )}
+        <div className="space-y-4 mb-6">
+          <ErrorMessage
+            message={generalError || (typeof error === "string" ? error : error?.message)}
+            onDismiss={() => setGeneralError(null)}
+          />
+          <ErrorMessage
+            message={successMessage}
+            type="success"
+            onDismiss={() => setSuccessMessage(null)}
+          />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Profile Header Card */}

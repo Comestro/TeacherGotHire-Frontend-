@@ -674,7 +674,7 @@ const JobApply = () => {
           Job Applications
           <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी आवेदन</span>
         </h1>
-        <p className="mt-2 text-sm text-secondary">Apply to eligible subjects after setting your job preference location and salary expectations.</p>
+        <p className="mt-0 text-sm text-slate-500">Apply to eligible subjects after setting your job preference location and salary expectations.</p>
       </header>
       {/* Job Preference Location Warning */}
       {showLocationFirst && (
@@ -688,10 +688,12 @@ const JobApply = () => {
           </div>
         </div>
       )}
-      <div className="flex xl:flex-row flex-col gap-6">
-        {/* Job Preference Location Component - Move to top */}
-        <div id="job-preference-location" className={`mb-8 border py-5  flex-1 rounded-lg p-4`}>
-          <JobPrefrenceLocation />
+      <div className="flex xl:flex-row flex-col gap-3">
+        {/* Job Preference Location Section */}
+        <div id="job-preference-location" className="flex-1 xl:max-w-lg">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sticky top-6">
+            <JobPrefrenceLocation />
+          </div>
         </div>
 
         {eligibleExams && eligibleExams.length > 0 ? (
@@ -858,7 +860,7 @@ const JobApply = () => {
             </div>
           </div>
         ) : (
-          <div className="p-8 bg-gradient-to-br from-background to-background/50 rounded-xl border border-secondary/30 text-center">
+          <div className="p-8 bg-gradient-to-br flex-1 from-background to-background/50 rounded-xl border border-secondary/30 text-center">
             <div className="flex flex-col items-center max-w-md mx-auto">
               <div className="p-4 bg-warning/10 rounded-full mb-4">
                 <HiOutlineInformationCircle className="h-12 w-12 text-warning" aria-hidden="true" />
