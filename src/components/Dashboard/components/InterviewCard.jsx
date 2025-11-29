@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { getInterview, postInterview } from "../../../features/examQuesSlice";
@@ -7,10 +7,10 @@ import {
   FaCheck, FaClock, FaTimes,
   FaVideo, FaInfoCircle, FaCheckCircle,
   FaExclamationCircle, FaCalendarCheck,
-  FaLayerGroup, FaBriefcase
+  FaLayerGroup, FaBriefcase, FaArrowRight, FaSpinner
 } from "react-icons/fa";
 
-const InterviewCard = () => {
+const InterviewCard = ({ selectedSubject, selectedCategory }) => {
   const dispatch = useDispatch();
   const interviewData = useSelector((state) => state.examQues.interview);
   const interview = Array.isArray(interviewData) ? interviewData : [];
@@ -27,51 +27,28 @@ const InterviewCard = () => {
   const [notification, setNotification] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  const [subjectFilter, setSubjectFilter] = useState("all");
-  const [classCategoryFilter, setClassCategoryFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const applyExamFilters = (exams) => {
-    return exams.filter(item => {
-      const subjectMatch = subjectFilter === "all" || item?.exam?.subject_name === subjectFilter;
-      const classCategoryMatch = classCategoryFilter === "all" || item?.exam?.class_category_name === classCategoryFilter;
-      return subjectMatch && classCategoryMatch;
-    });
-  };
-
-  const filteredAndGroupedExams = applyExamFilters(filteredExams);
-  const subjectGroups = filteredAndGroupedExams.reduce((groups, item) => {
-    const subject = item?.exam?.subject_name;
-    if (subject && !groups[subject]) {
-      groups[subject] = [];
-    }
-    if (subject) {
-      groups[subject].push(item);
-    }
-    return groups;
-  }, {});
-
-  const interviewSubjectGroups = interview.reduce((groups, item) => {
-    const subject = item?.subject?.subject_name || "Unknown Subject";
-    if (!groups[subject]) {
-      groups[subject] = [];
-    }
-    groups[subject].push(item);
-    return groups;
-  }, {});
-
-  const qualifiedSubjects = Object.keys(subjectGroups);
-  const interviewSubjects = Object.keys(interviewSubjectGroups);
 
   useEffect(() => {
     dispatch(getInterview());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (selectedExam && !filteredAndGroupedExams.some(item => item?.exam?.name === selectedExam)) {
-      setSelectedExam(null);
-    }
-  }, [subjectFilter, classCategoryFilter, selectedExam, filteredAndGroupedExams]);
+  // Identify the specific interview and qualified exam based on props
+  const currentInterview = useMemo(() => {
+    if (!selectedSubject || !selectedCategory) return null;
+    return interview.find(i =>
+      (i?.subject?.id === selectedSubject.id || i?.subject?.subject_name === selectedSubject.subject_name) &&
+      (i?.class_category?.id === selectedCategory.id || i?.class_category?.name === selectedCategory.name)
+    );
+  }, [interview, selectedSubject, selectedCategory]);
+
+  const currentQualifiedExam = useMemo(() => {
+    if (!selectedSubject || !selectedCategory) return null;
+    return filteredExams.find(item =>
+      item?.exam?.subject_id === selectedSubject.id &&
+      item?.exam?.class_category_id === selectedCategory.id
+    );
+  }, [filteredExams, selectedSubject, selectedCategory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,21 +56,22 @@ const InterviewCard = () => {
     setNotification(null);
 
     try {
-      const selectedExamData = filteredExams.find(item =>
+      // Use currentQualifiedExam if available, otherwise fallback to finding by name
+      const examData = currentQualifiedExam || filteredExams.find(item =>
         item?.exam?.name === selectedExam &&
         item?.isqualified
       );
 
-      if (!selectedExamData) {
+      if (!examData) {
         throw new Error("Selected exam data not found");
       }
 
       const payload = {
-        subject: selectedExamData?.exam?.subject_id,
-        class_category: selectedExamData?.exam?.class_category_id,
-        level: selectedExamData?.exam?.level_code,
+        subject: examData?.exam?.subject_id,
+        class_category: examData?.exam?.class_category_id,
+        level: examData?.exam?.level_code,
         time: selectedDateTime,
-        exam_id: selectedExamData?.exam?.id
+        exam_id: examData?.exam?.id
       };
 
       await dispatch(postInterview(payload)).unwrap();
@@ -133,9 +111,15 @@ const InterviewCard = () => {
     }
   };
 
+  const handleCancelInterview = () => {
+    // Placeholder for cancel action
+    alert("Cancel functionality is not yet implemented.");
+  };
+
   const formatDate = (dateString) => {
     try {
       const options = {
+        weekday: 'short',
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -149,48 +133,29 @@ const InterviewCard = () => {
     }
   };
 
-  const handleExamSelect = (examName) => {
-    setSelectedExam(examName);
-    setIsModalOpen(true);
+  const handleScheduleClick = () => {
+    if (currentQualifiedExam) {
+      setSelectedExam(currentQualifiedExam.exam.name);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleReschedule = () => {
+    if (currentQualifiedExam) {
+      setSelectedExam(currentQualifiedExam.exam.name);
+      setIsModalOpen(true);
+    }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'scheduled':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'fulfilled':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'scheduled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'fulfilled': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'requested':
-      case 'pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'cancelled':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'scheduled':
-        return <FaCalendarCheck className="mr-1.5" size={14} />;
-      case 'fulfilled':
-        return <FaCheckCircle className="mr-1.5" size={14} />;
-      case 'requested':
-      case 'pending':
-        return <FaClock className="mr-1.5" size={14} />;
-      case 'cancelled':
-        return <FaTimes className="mr-1.5" size={14} />;
-      default:
-        return <FaInfoCircle className="mr-1.5" size={14} />;
-    }
-  };
-
-  const formatLevel = (level) => {
-    if (level === null || level === undefined) return "Not specified";
-    if (typeof level === 'number' || typeof level === 'string') return level;
-    if (level?.name) return level.name;
-    return `${level?.level_code || ""}`;
   };
 
   const formatLocalDateTime = (dateObj, timeStr) => {
@@ -263,6 +228,11 @@ const InterviewCard = () => {
   const days = generateNextDays(14);
   const timeSlots = generateTimeSlots(selectedDay);
 
+  // If no subject selected, return null or empty (as per request "i already select subject")
+  if (!selectedSubject || !selectedCategory) {
+    return <div className="p-4 text-center text-slate-500">Please select a subject to view interview details.</div>;
+  }
+
   return (
     <div className="w-full font-['Inter',sans-serif]">
       <AnimatePresence>
@@ -299,180 +269,121 @@ const InterviewCard = () => {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="px-3 space-y-3">
-
-        {/* My Interviews Section */}
-        { interview?.length > 0 && (
-        <div className=" rounded-lg shadow-sm">
-          <div className="px-5 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center">
-                <FaBriefcase className="text-indigo-600" size={14} />
+      <div className="p-4">
+        {currentInterview ? (
+          // Scheduled View
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 mb-1">Interview Scheduled</h2>
+                  <p className="text-sm text-slate-500">Your interview is confirmed.</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(currentInterview.status)}`}>
+                  {currentInterview.status}
+                </span>
               </div>
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900">My Interviews</h2>
-                <p className="text-xs text-slate-500 mt-0.5">View and manage scheduled interviews</p>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-slate-700">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                      <FaCalendarAlt size={18} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Date & Time</p>
+                      <p className="font-semibold">{currentInterview.time ? formatDate(currentInterview.time) : "Time not set"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-slate-700">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                      <FaVideo size={18} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Meeting Link</p>
+                      {currentInterview.link ? (
+                        <a href={currentInterview.link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
+                          Join Meeting
+                        </a>
+                      ) : (
+                        <p className="text-sm text-slate-400 italic">Link will be available soon</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-end gap-3">
+                  {/* Reschedule Button - Only for requested/pending */}
+                  {(currentInterview.status === 'requested' || currentInterview.status === 'pending') && (
+                    <button
+                      onClick={handleReschedule}
+                      className="w-full py-2.5 px-4 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                    >
+                      <FaClock /> Reschedule
+                    </button>
+                  )}
+
+                  {(currentInterview.status === 'requested' || currentInterview.status === 'pending') && (
+                    <button
+                      onClick={handleCancelInterview}
+                      className="w-full py-2.5 px-4 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                    >
+                      <FaTimes /> Cancel Interview
+                    </button>
+                  )}
+                  {currentInterview.link && (
+                    <a
+                      href={currentInterview.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <FaVideo /> Join Now
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-            {interview?.length > 0 && (
-              <span className="px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
-                {interview.length}
-              </span>
-            )}
           </div>
-
-          <div className="p-2">
-            {interviewSubjects.length > 0 ? (
-              <div className="space-y-2.5">
-                {interviewSubjects.map((subject, index) => (
-                  <div key={index} className="space-y-2">
-                    {interviewSubjectGroups[subject].map((item, interviewIndex) => (
-                      <div
-                        key={interviewIndex}
-                        className={`border rounded-lg p-4 bg-white hover:shadow-sm transition-all ${item.status === "scheduled"
-                          ? "border-emerald-200 bg-emerald-50/30"
-                          : "border-slate-200"
-                          }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${item.status === "scheduled" ? "bg-emerald-100 text-emerald-700" :
-                            item.status === "fulfilled" ? "bg-indigo-100 text-indigo-700" :
-                              item.status === "cancelled" ? "bg-rose-100 text-rose-700" :
-                                "bg-amber-100 text-amber-700"
-                            }`}>
-                            {getStatusIcon(item.status)}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <h4 className="font-semibold text-slate-900 text-sm truncate">
-                                {item?.subject?.subject_name}
-                              </h4>
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider border ${getStatusColor(item.status)}`}>
-                                {item.status === "requested" ? "Pending" : item.status}
-                              </span>
-                            </div>
-
-                            <p className="text-xs text-slate-600 mb-2">
-                              {item?.class_category?.name} • Level {formatLevel(item?.level)}
-                            </p>
-
-                            {item.time && (
-                              <div className="flex items-center gap-1.5 text-xs text-slate-700 font-medium bg-slate-50 px-2 rounded-md inline-flex">
-                                <FaCalendarAlt className="text-slate-400" size={12} />
-                                {formatDate(item.time)}
-                              </div>
-                            )}
-
-                            <div className="flex flex-wrap gap-2">
-                              {item?.status === "scheduled" && item?.link && (
-                                <a
-                                  href={item.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-md transition-colors"
-                                >
-                                  <FaVideo className="mr-1.5" size={12} />
-                                  Join Interview
-                                </a>
-                              )}
-                             
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+        ) : currentQualifiedExam ? (
+          // Not Scheduled but Qualified View
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                <FaCheckCircle size={24} />
               </div>
-            ) : (
-              <div className="text-center py-12 px-4">
-                <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <FaCalendarAlt size={20} className="text-slate-400" />
-                </div>
-                <p className="text-sm text-slate-600 font-medium mb-1">No Scheduled Interviews</p>
-                <p className="text-xs text-slate-500">Schedule an interview from your qualified exams</p>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">You are Qualified!</h3>
+                <p className="text-slate-600 text-sm mt-1">
+                  Congratulations on passing Level 2. You can now schedule your interview.
+                </p>
               </div>
-            )}
+            </div>
+            <button
+              onClick={handleScheduleClick}
+              className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+            >
+              <FaCalendarAlt /> Schedule Interview
+            </button>
           </div>
-        </div>
+        ) : (
+          // Not Qualified View
+          <div className="text-center py-12 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <FaInfoCircle size={24} />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-700">Not Eligible Yet</h3>
+            <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
+              You need to complete and qualify Level 2 exam for this subject to schedule an interview.
+            </p>
+          </div>
         )}
-
-        {/* Qualified Exams Section */}
-        <div className="rounded-lg shadow-sm">
-          <div className="px-5 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center">
-                <FaCheckCircle className="text-emerald-600" size={14} />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900">Qualified for Interview</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Level 2 (Exam from Center) qualified subjects</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-5">
-            {qualifiedSubjects.length > 0 ? (
-              <div className="space-y-2.5">
-                {qualifiedSubjects.map((subject, index) => (
-                  <div key={index} className="space-y-2">
-                    {subjectGroups[subject].map((item, examIndex) => (
-                      <div
-                        key={examIndex}
-                        className={`border bg-green-300/10 rounded-lg p-4 hover:shadow-sm transition-all ${selectedExam === item.exam.name
-                          ? 'bg-green-50/30'
-                          : 'hover:border-slate-300'
-                          }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${selectedExam === item.exam.name ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                            <FaCheckCircle size={16} />
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-slate-900 text-sm mb-1">
-                              {item.exam.subject_name}
-                            </h4>
-                            <p className="text-xs text-slate-600 mb-3">
-                              {item.exam.class_category_name} • Level 2 (from Exam Center)
-                            </p>
-
-                            <button
-                              onClick={() => handleExamSelect(item.exam.name)}
-                              className={`w-full sm:w-auto inline-flex items-center justify-center px-3.5 py-2 rounded-md text-xs font-semibold transition-all border ${selectedExam === item.exam.name
-                                ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
-                                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
-                                }`}
-                            >
-                             
-                                  <FaCalendarAlt className="mr-1.5" size={12} /> Schedule Interview
-                              
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 px-4">
-                <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <FaChalkboardTeacher size={20} className="text-slate-400" />
-                </div>
-                <p className="text-sm text-slate-600 font-medium mb-1">No Qualified Exams</p>
-                <p className="text-xs text-slate-500">Complete Level 2 exams to unlock interview scheduling</p>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Modal for Schedule Interview */}
       <AnimatePresence>
-        {isModalOpen && selectedExam && (
+        {isModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -514,8 +425,8 @@ const InterviewCard = () => {
                         <FaChalkboardTeacher size={18} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-0.5">Selected Exam</h4>
-                        <p className="text-sm font-semibold text-slate-900">{selectedExam}</p>
+                        <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-0.5">Selected Subject</h4>
+                        <p className="text-sm font-semibold text-slate-900">{selectedSubject?.subject_name}</p>
                       </div>
                     </div>
                   </div>
@@ -605,10 +516,7 @@ const InterviewCard = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
+                          <FaSpinner className="animate-spin mr-2" />
                           Scheduling...
                         </>
                       ) : (

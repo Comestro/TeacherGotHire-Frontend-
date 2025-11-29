@@ -872,7 +872,10 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
               </div>
 
               <div className="p-0">
-                <InterviewCard />
+                <InterviewCard
+                  selectedSubject={selectedSubject}
+                  selectedCategory={selectedCategory}
+                />
               </div>
             </motion.div>
           )}
