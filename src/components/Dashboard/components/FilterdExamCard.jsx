@@ -819,7 +819,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 </span>
                                 <button
                                   onClick={handleInterviewSelect}
-                                  className="text-sm text-cyan-600 hover:text-cyan-700 font-semibold text-left"
+                      className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
                                 >
                                   View Details →
                                 </button>

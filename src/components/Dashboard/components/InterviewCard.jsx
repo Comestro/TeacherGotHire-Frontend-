@@ -230,8 +230,33 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
   // If no subject selected, return null or empty (as per request "i already select subject")
   if (!selectedSubject || !selectedCategory) {
-    return <div className="p-4 text-center text-slate-500">Please select a subject to view interview details.</div>;
+    return <div className="p-4 text-center text-slate-500">Please select a subject to view interview details. / साक्षात्कार विवरण देखने के लिए कृपया एक विषय चुनें।</div>;
   }
+
+  // Check if passed interview exists in attempts
+  const passedInterviewFromAttempts = useMemo(() => {
+    if (!attempts || !selectedSubject || !selectedCategory) return null;
+
+    // Find relevant attempt
+    const attempt = attempts.find(att =>
+      att?.exam?.subject_id === selectedSubject.id &&
+      att?.exam?.class_category_id === selectedCategory.id &&
+      (att?.exam?.level_code === 2 || att?.exam?.level_name?.includes("Level - 2"))
+    );
+
+    if (!attempt?.interviews) return null;
+
+    // Find fulfilled interview with passing grade
+    return attempt.interviews.find(iv =>
+      iv?.status === "fulfilled" &&
+      iv?.grade != null &&
+      parseInt(iv.grade) >= 6
+    );
+  }, [attempts, selectedSubject, selectedCategory]);
+
+  const passedInterview = (currentInterview?.status === 'fulfilled' && currentInterview?.grade >= 6)
+    ? currentInterview
+    : passedInterviewFromAttempts;
 
   return (
     <div className="w-full font-['Inter',sans-serif]">
@@ -270,14 +295,30 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
       </AnimatePresence>
 
       <div className="p-4">
-        {currentInterview ? (
+        {passedInterview ? (
+          // Passed/Qualified View
+          <div className="bg-white rounded-xl border border-emerald-200 shadow-sm p-6 flex flex-col items-center text-center gap-4 bg-emerald-50/30">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mb-2">
+              <FaCheckCircle size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Interview Passed! / साक्षात्कार उत्तीर्ण!</h3>
+              <p className="text-slate-600 text-sm mt-2 max-w-md mx-auto">
+                Congratulations! You have successfully passed the interview with a grade of <span className="font-bold text-emerald-700">{passedInterview.grade}/10</span>. / बधाई हो! आपने साक्षात्कार सफलतापूर्वक उत्तीर्ण कर लिया है, ग्रेड: <span className="font-bold text-emerald-700">{passedInterview.grade}/10</span>.
+              </p>
+            </div>
+            <div className="mt-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg text-sm font-semibold">
+              Status: Qualified / स्थिति: उत्तीर्ण
+            </div>
+          </div>
+        ) : currentInterview ? (
           // Scheduled View
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 mb-1">Interview Scheduled</h2>
-                  <p className="text-sm text-slate-500">Your interview is confirmed.</p>
+                  <h2 className="text-lg font-bold text-slate-900 mb-1">Interview Scheduled / साक्षात्कार निर्धारित</h2>
+                  <p className="text-sm text-slate-500">Your interview is confirmed. / आपका साक्षात्कार पुष्टि हो गया है।</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(currentInterview.status)}`}>
                   {currentInterview.status}
@@ -291,8 +332,8 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       <FaCalendarAlt size={18} />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Date & Time</p>
-                      <p className="font-semibold">{currentInterview.time ? formatDate(currentInterview.time) : "Time not set"}</p>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Date & Time / तिथि और समय</p>
+                      <p className="font-semibold">{currentInterview.time ? formatDate(currentInterview.time) : "Time not set / समय निर्धारित नहीं"}</p>
                     </div>
                   </div>
 
@@ -301,13 +342,13 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       <FaVideo size={18} />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Meeting Link</p>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Meeting Link / मीटिंग लिंक</p>
                       {currentInterview.link ? (
                         <a href={currentInterview.link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
-                          Join Meeting
+                          Join Meeting / मीटिंग में शामिल हों
                         </a>
                       ) : (
-                        <p className="text-sm text-slate-400 italic">Link will be available soon</p>
+                        <p className="text-sm text-slate-400 italic">Link will be available soon / लिंक जल्द ही उपलब्ध होगा</p>
                       )}
                     </div>
                   </div>
@@ -320,7 +361,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       onClick={handleReschedule}
                       className="w-full py-2.5 px-4 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      <FaClock /> Reschedule
+                      <FaClock /> Reschedule / पुनर्निर्धारित करें
                     </button>
                   )}
 
@@ -329,7 +370,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       onClick={handleCancelInterview}
                       className="w-full py-2.5 px-4 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      <FaTimes /> Cancel Interview
+                      <FaTimes /> Cancel Interview / साक्षात्कार रद्द करें
                     </button>
                   )}
                   {currentInterview.link && (
@@ -339,7 +380,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       rel="noopener noreferrer"
                       className="w-full py-2.5 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
-                      <FaVideo /> Join Now
+                      <FaVideo /> Join Now / अभी शामिल हों
                     </a>
                   )}
                 </div>
@@ -354,9 +395,9 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                 <FaCheckCircle size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">You are Qualified!</h3>
+                <h3 className="text-lg font-bold text-slate-900">You are Qualified! / आप उत्तीर्ण हैं!</h3>
                 <p className="text-slate-600 text-sm mt-1">
-                  Congratulations on passing Level 2. You can now schedule your interview.
+                  Congratulations on passing Level 2 (from home) exam. You can now schedule your interview. / बधाई हो! आपने लेवल 2 (घर से) परीक्षा पास कर ली है। अब आप अपना साक्षात्कार निर्धारित कर सकते हैं।
                 </p>
               </div>
             </div>
@@ -364,7 +405,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
               onClick={handleScheduleClick}
               className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
             >
-              <FaCalendarAlt /> Schedule Interview
+              <FaCalendarAlt /> Schedule Interview / साक्षात्कार निर्धारित करें
             </button>
           </div>
         ) : (
@@ -373,9 +414,9 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
               <FaInfoCircle size={24} />
             </div>
-            <h3 className="text-lg font-semibold text-slate-700">Not Eligible Yet</h3>
+            <h3 className="text-lg font-semibold text-slate-700">Not Eligible Yet / अभी पात्र नहीं हैं</h3>
             <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
-              You need to complete and qualify Level 2 exam for this subject to schedule an interview.
+              You need to complete and qualify Level 2 exam for this subject to schedule an interview. / साक्षात्कार निर्धारित करने के लिए आपको इस विषय के लिए लेवल 2 परीक्षा पूरी करनी होगी और उत्तीर्ण होना होगा।
             </p>
           </div>
         )}
@@ -401,9 +442,9 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">Schedule Interview</h2>
+                  <h2 className="text-base font-semibold text-slate-900">Schedule Interview / साक्षात्कार निर्धारित करें</h2>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Select a suitable date and time slot
+                    Select a suitable date and time slot / एक उपयुक्त तिथि और समय स्लॉट चुनें
                   </p>
                 </div>
                 <button
@@ -425,7 +466,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                         <FaChalkboardTeacher size={18} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-0.5">Selected Subject</h4>
+                        <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-0.5">Selected Subject / चयनित विषय</h4>
                         <p className="text-sm font-semibold text-slate-900">{selectedSubject?.subject_name}</p>
                       </div>
                     </div>
@@ -433,7 +474,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
                   {/* Date Selection */}
                   <div className="mb-6">
-                    <label className="block text-xs font-semibold text-slate-700 mb-2.5 uppercase tracking-wider">Select Date</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-2.5 uppercase tracking-wider">Select Date / तिथि चुनें</label>
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {days.map(({ date, label, isToday }, idx) => {
                         const isSelected = selectedDay && isSameDay(selectedDay, date);
@@ -461,7 +502,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
                   {/* Time Selection */}
                   <div className="mb-6">
-                    <label className="block text-xs font-semibold text-slate-700 mb-2.5 uppercase tracking-wider">Select Time</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-2.5 uppercase tracking-wider">Select Time / समय चुनें</label>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                       {timeSlots.map(({ time, disabled }, i) => {
                         const isSelected = selectedTime === time;
@@ -492,7 +533,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                     {selectedDay && timeSlots.every(s => s.disabled) && (
                       <p className="text-xs text-amber-700 mt-3 flex items-center bg-amber-50 p-2.5 rounded-lg border border-amber-200">
                         <FaExclamationCircle className="mr-1.5" size={12} />
-                        No available time slots for this date
+                        No available time slots for this date / इस तिथि के लिए कोई समय स्लॉट उपलब्ध नहीं है
                       </p>
                     )}
                   </div>
@@ -504,7 +545,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       onClick={() => setIsModalOpen(false)}
                       className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
                     >
-                      Cancel
+                      Cancel / रद्द करें
                     </button>
                     <button
                       type="submit"
@@ -517,12 +558,12 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                       {isSubmitting ? (
                         <>
                           <FaSpinner className="animate-spin mr-2" />
-                          Scheduling...
+                          Scheduling... / निर्धारण हो रहा है...
                         </>
                       ) : (
                         <>
                           <FaCalendarCheck className="mr-2" size={14} />
-                          Confirm Schedule
+                          Confirm Schedule / कार्यक्रम की पुष्टि करें
                         </>
                       )}
                     </button>
