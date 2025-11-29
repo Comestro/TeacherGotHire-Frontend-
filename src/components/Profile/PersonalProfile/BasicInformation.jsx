@@ -14,7 +14,7 @@ const hiLabels = {
   "Full Name": "पूरा नाम",
   "Email Address": "ईमेल पता",
   "Contact No": "संपर्क नंबर",
-  "Languages": "भाषाएँ",
+  "Languages you can speek": "भाषाएँ जो आप बोल सकते हैं",
   "Gender": "लिंग",
   "Marital Status": "वैवाहिक स्थिति",
   "Religion": "धर्म",
@@ -457,7 +457,7 @@ const BasicInformation = () => {
             {/* Languages */}
             <div className="col-span-1 md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                {bi("Languages")}
+                {bi("Languages you can speek")} 
               </label>
               <MultiSelect
                 value={formData.language}
