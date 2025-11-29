@@ -160,7 +160,16 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
   const formatLocalDateTime = (dateObj, timeStr) => {
     if (!dateObj || !timeStr) return "";
-    const [hh, mm] = timeStr.split(":").map((s) => parseInt(s, 10));
+    const [time, modifier] = timeStr.split(' ');
+    let [hh, mm] = time.split(":").map((s) => parseInt(s, 10));
+
+    if (modifier === 'PM' && hh < 12) {
+      hh += 12;
+    }
+    if (modifier === 'AM' && hh === 12) {
+      hh = 0;
+    }
+
     const d = new Date(dateObj);
     d.setHours(hh, mm, 0, 0);
     const pad = (n) => String(n).padStart(2, "0");
@@ -199,7 +208,10 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
     const now = new Date();
     for (let h = 9; h <= 18; h++) {
       for (let m of [0, 30]) {
-        const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour12 = h % 12 || 12;
+        const timeStr = `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+
         let disabled = true;
         if (day) {
           const slotDate = new Date(day);
@@ -395,7 +407,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
                 <FaCheckCircle size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">You are Qualified! / आप उत्तीर्ण हैं!</h3>
+                <h3 className="text-lg font-bold text-slate-900">You are Qualified!</h3>
                 <p className="text-slate-600 text-sm mt-1">
                   Congratulations on passing Level 2 (from home) exam. You can now schedule your interview. / बधाई हो! आपने लेवल 2 (घर से) परीक्षा पास कर ली है। अब आप अपना साक्षात्कार निर्धारित कर सकते हैं।
                 </p>
@@ -405,7 +417,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
               onClick={handleScheduleClick}
               className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
             >
-              <FaCalendarAlt /> Schedule Interview / साक्षात्कार निर्धारित करें
+              <FaCalendarAlt /> Schedule Interview
             </button>
           </div>
         ) : (

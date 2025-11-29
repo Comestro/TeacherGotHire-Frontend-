@@ -205,6 +205,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
   const handleInterviewSelect = () => {
     setShowLevelPanel(false);
     setShowInterviewPanel(true);
+    window.scrollTo(0, 0);
   };
 
   const resetSelection = () => {
@@ -680,7 +681,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                   <div className="flex gap-2 w-full md:w-auto">
                                     <button
                                       onClick={() => handleLevelSelect(level)}
-                                      className="flex-1 md:flex-none px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium text-sm transition-colors"
+                                      className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl hover:bg-teal-700 font-medium text-sm transition-colors"
                                     >
                                       Reattempt
                                     </button>
@@ -780,7 +781,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                             <FaUserTie />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-xs lg:text-base text-gray-800">Interview</h3>
+                            <h3 className="font-semibold text-xs lg:text-base text-gray-800">Interview (Level 2)</h3>
                             {(() => {
                               const relevantAttempt = attempts?.find(attempt =>
                                 attempt?.exam?.class_category_id === selectedCategory?.id &&
@@ -819,7 +820,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 </span>
                                 <button
                                   onClick={handleInterviewSelect}
-                      className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                                  className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
                                 >
                                   View Details →
                                 </button>
