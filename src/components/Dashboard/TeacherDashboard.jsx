@@ -276,7 +276,7 @@ function TeacherDashboard() {
       )}
 
       <div className="min-h-screen">
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row gap-2">
           {/* Main Content Column (9/12) */}
           <div className="w-full md:w-9/12 lg:w-9/12">
             <ErrorMessage

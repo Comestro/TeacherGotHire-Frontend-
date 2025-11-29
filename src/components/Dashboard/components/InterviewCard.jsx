@@ -306,7 +306,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
         )}
       </AnimatePresence>
 
-      <div className="p-4">
+      <div className="p-0 md:p-4">
         {passedInterview ? (
           // Passed/Qualified View
           <div className="bg-white rounded-xl border border-emerald-200 shadow-sm p-6 flex flex-col items-center text-center gap-4 bg-emerald-50/30">

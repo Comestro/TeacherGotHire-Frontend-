@@ -557,22 +557,21 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         ? 'bg-white border-teal-200 shadow-sm hover:shadow-md'
                         : 'bg-white border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-300'
                         }`}>
-                        <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 sm:gap-6">
-                          {/* Icon Section */}
-                          <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${isQualified
-                            ? 'bg-teal-50 text-teal-600'
-                            : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:scale-105 transition-transform duration-300'
-                            }`}>
-                            {isQualified ? (
-                              <FaCheckCircle className="text-2xl sm:text-3xl" />
-                            ) : (
-                              <span className="text-2xl sm:text-3xl font-bold font-mono">01</span>
-                            )}
-                          </div>
-
+                        <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 sm:gap-6">                          
                           {/* Content Section */}
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center justify-start gap-2 mb-1">
+                          <div className="flex-1 text-left flex gap-3">
+                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${isQualified
+                              ? 'bg-teal-50 text-teal-600'
+                              : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:scale-105 transition-transform duration-300'
+                              }`}>
+                              {isQualified ? (
+                                <FaCheckCircle className="text-2xl sm:text-3xl" />
+                              ) : (
+                                <span className="text-2xl sm:text-3xl font-bold font-mono">01</span>
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="flex items-center justify-start gap-2 mb-1">
                               <h3 className="font-bold text-lg sm:text-xl text-slate-800">
                                 Level 1: (from home)
                               </h3>
@@ -583,8 +582,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                               )}
                             </div>
                             <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
-                              Fundamental concepts check. This is a mandatory step to unlock advanced levels.
+                              Fundamental concepts check.
                             </p>
+                            </div>
                           </div>
 
                           {/* Action Section */}
@@ -636,7 +636,11 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
                         <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 sm:gap-6">
                           {/* Icon Section */}
-                          <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${isLocked
+                          
+
+                          {/* Content Section */}
+                          <div className="flex-1 text-left flex gap-3">
+                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${isLocked
                             ? 'bg-slate-200 text-slate-400'
                             : isQualified
                               ? 'bg-teal-50 text-teal-600'
@@ -650,9 +654,8 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                               <span className="text-2xl sm:text-3xl font-bold font-mono">02</span>
                             )}
                           </div>
+                          <div className="flex flex-col">
 
-                          {/* Content Section */}
-                          <div className="flex-1 text-left">
                             <div className="flex items-center justify-start gap-2 mb-1">
                               <h3 className={`font-bold text-lg sm:text-xl ${isLocked ? 'text-slate-500' : 'text-slate-800'}`}>
                                 Level 2: (from home)
@@ -669,8 +672,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                               )}
                             </div>
                             <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
-                              In-depth subject knowledge test. Demonstrate your expertise to proceed to the final stage.
+                              In-depth subject knowledge test.
                             </p>
+                          </div>
                           </div>
 
                           {/* Action Section */}
@@ -711,7 +715,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   <div className="hidden lg:block h-6 w-0.5 bg-gray-300 mx-auto" />
 
                   {/* Final Stage: Split into Center Exam & Interview */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     {/* Center Exam Card */}
                     {levels.filter(l => l.level_code === 2.5).map(level => {
                       const isLocked = !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0);
@@ -725,7 +729,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       );
 
                       return (
-                        <div key={level.id} className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : isQualified ? 'border-green-200' : 'border-purple-200 shadow-sm'
+                        <div key={level.id} className={`relative py-1 px-2 rounded-xl border-2 transition-all bg-white overflow-hidden ${isLocked ? 'border-gray-200 opacity-75' : isQualified ? 'border-green-200' : 'border-purple-200 shadow-sm'
                           }`}>
                           {isLocked && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
                           <div className="p-2 lg:p-4 flex flex-col gap-3 h-full">
@@ -771,7 +775,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                     })}
 
                     {/* Interview Card */}
-                    <div className={`relative rounded-xl border-2 transition-all bg-white overflow-hidden ${!hasLevel2Qualified ? 'border-gray-200 opacity-75' : 'border-cyan-200 shadow-sm'
+                    <div className={`relative py-1 px-2 rounded-xl border-2 transition-all bg-white overflow-hidden ${!hasLevel2Qualified ? 'border-gray-200 opacity-75' : 'border-cyan-200 shadow-sm'
                       }`}>
                       {!hasLevel2Qualified && <div className="absolute inset-0 bg-gray-50/50 z-10 cursor-not-allowed" />}
                       <div className="p-2 lg:p-4 flex flex-col gap-3 h-full">
@@ -849,9 +853,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
             <motion.div
               key="interview"
               {...pageTransition}
-              className="bg-white rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8"
+              className=" rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8"
             >
-              <div className="bg-background p-4 sm:p-6 text-text border-b border-gray-100">
+              <div className="bg-background p-2 sm:p-6 text-text border-b border-gray-100">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center">
                     <FaCalendarAlt className="mr-2 sm:mr-3" aria-hidden="true" />
