@@ -142,7 +142,7 @@ const RecruiterSignUpPage = () => {
       return (
         <div className="w-full animate-fadeIn">
           <div className="space-y-2 mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-50 mb-4 border border-teal-100">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 mb-4 border border-teal-100">
               <HiOutlineShieldCheck className="w-8 h-8 text-teal-600" />
             </div>
             <h2 className="text-2xl font-bold text-slate-800">Verify Email</h2>
@@ -169,7 +169,7 @@ const RecruiterSignUpPage = () => {
                 type="text"
                 value={otp}
                 onChange={handleOTPChange}
-                className="w-full bg-white border border-slate-300 text-center text-2xl tracking-[0.5em] font-bold rounded-lg p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none"
+                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none"
                 placeholder="000000"
                 pattern="\d{6}"
                 maxLength={6}
@@ -205,7 +205,7 @@ const RecruiterSignUpPage = () => {
             <div className="space-y-3">
               <Button
                 type="submit"
-                className={`w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-bold shadow-sm shadow-teal-200 transition-all duration-200 ${loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : ""
+                className={`w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-md transform hover:-translate-y-0.5 transition-all duration-200 ${loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : ""
                   }`}
                 disabled={loading || otp.length !== 6}
               >
@@ -248,7 +248,7 @@ const RecruiterSignUpPage = () => {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
               <div className="relative">
                 <Input
-                  className={`w-full px-4 py-2.5 bg-white border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Fname ? "border-teal-500" : "border-slate-300"
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Fname ? "border-teal-500" : "border-slate-300"
                     }`}
                   placeholder="First Name"
                   {...register("Fname", { required: "First name is required" })}
@@ -264,7 +264,7 @@ const RecruiterSignUpPage = () => {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
               <div className="relative">
                 <Input
-                  className={`w-full px-4 py-2.5 bg-white border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Lname ? "border-teal-500" : "border-slate-300"
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Lname ? "border-teal-500" : "border-slate-300"
                     }`}
                   placeholder="Last Name"
                   {...register("Lname", { required: "Last name is required" })}
@@ -283,7 +283,7 @@ const RecruiterSignUpPage = () => {
               <Input
                 placeholder="name@example.com"
                 type="email"
-                className={`w-full px-4 py-2.5 bg-white border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
+                className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
                   ? !errors.email
                     ? "border-teal-500"
                     : "border-red-300"
@@ -310,7 +310,7 @@ const RecruiterSignUpPage = () => {
               <Input
                 placeholder="Create a password"
                 type={showPassword ? "text" : "password"}
-                className={`w-full px-4 py-2.5 bg-white border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
+                className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
                   ? !errors.password
                     ? "border-teal-500"
                     : "border-red-300"
@@ -345,7 +345,7 @@ const RecruiterSignUpPage = () => {
 
           <Button
             type="submit"
-            className={`w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-bold shadow-sm shadow-teal-200 transition-all duration-200 ${!isValid || loading ? "opacity-60 cursor-not-allowed" : ""
+            className={`w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-md transition-all duration-200 ${!isValid || loading ? "opacity-60 cursor-not-allowed" : ""
               }`}
             disabled={!isValid || loading}
           >
@@ -371,7 +371,7 @@ const RecruiterSignUpPage = () => {
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => navigate("/signup/teacher")}
-              className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
+              className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
             >
               <div className="flex flex-col items-center">
                 <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Teacher</span>
@@ -379,7 +379,7 @@ const RecruiterSignUpPage = () => {
             </button>
             <button
               onClick={() => navigate("/signin")}
-              className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
+              className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
             >
               <div className="flex flex-col items-center">
                 <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Sign In</span>
@@ -398,7 +398,7 @@ const RecruiterSignUpPage = () => {
       </Helmet>
       <CustomHeader />
       {loading && <Loader />}
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 pt-20 pb-10">
+      <div className="flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
 
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
@@ -418,8 +418,8 @@ const RecruiterSignUpPage = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <HiOutlineUserGroup className="w-6 h-6" />
                   </div>
                   <div>
@@ -428,8 +428,8 @@ const RecruiterSignUpPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
                     <HiOutlineBriefcase className="w-6 h-6" />
                   </div>
                   <div>
@@ -442,7 +442,7 @@ const RecruiterSignUpPage = () => {
 
             {/* Right Side: Signup Form */}
             <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="bg-white rounded-2xl p-8 sm:p-10 shadow-xl shadow-slate-200 border border-slate-100">
+              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 {renderForm()}
               </div>
 

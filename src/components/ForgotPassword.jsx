@@ -48,7 +48,7 @@ const ForgotPassword = () => {
       <CustomHeader />
       {loading && <Loader />}
       <ToastContainer />
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/30 to-cyan-200/30 blur-3xl animate-float" />
@@ -62,45 +62,45 @@ const ForgotPassword = () => {
             {/* Left Side: Hero Content (Hidden on mobile) */}
             <div className="hidden md:block w-1/2 space-y-8 animate-slide-up">
               <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
                   Recover Your <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">
+                  <span className="text-teal-600">
                     Account Access
                   </span>
                 </h1>
-                <p className="text-lg text-gray-600 max-w-md">
+                <p className="text-lg text-slate-600 max-w-md">
                   Don't worry, it happens to the best of us. We'll help you get back to your teaching journey in no time.
                 </p>
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <span className="font-bold text-xl">1</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">Enter Email</h3>
-                    <p className="text-sm text-gray-500">Provide your registered email address</p>
+                    <h3 className="font-bold text-slate-800">Enter Email</h3>
+                    <p className="text-sm text-slate-500">Provide your registered email address</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <span className="font-bold text-xl">2</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">Check Inbox</h3>
-                    <p className="text-sm text-gray-500">Receive a secure password reset link</p>
+                    <h3 className="font-bold text-slate-800">Check Inbox</h3>
+                    <p className="text-sm text-slate-500">Receive a secure password reset link</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
                     <span className="font-bold text-xl">3</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">Reset Password</h3>
-                    <p className="text-sm text-gray-500">Create a new password and log in</p>
+                    <h3 className="font-bold text-slate-800">Reset Password</h3>
+                    <p className="text-sm text-slate-500">Create a new password and log in</p>
                   </div>
                 </div>
               </div>
@@ -108,9 +108,7 @@ const ForgotPassword = () => {
 
             {/* Right Side: Form */}
             <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="glass rounded-2xl p-8 sm:p-10 relative overflow-hidden">
-                {/* Decorative top gradient */}
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-cyan-500" />
+              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
 
                 <div className="space-y-2 mb-8">
                   <Link
@@ -120,10 +118,10 @@ const ForgotPassword = () => {
                     <FaArrowLeft className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
                     Back to Login
                   </Link>
-                  <h2 className="text-3xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-bold text-slate-800">
                     Forgot Password?
                   </h2>
-                  <p className="text-gray-500">
+                  <p className="text-slate-500">
                     Enter your email to receive a reset link
                   </p>
                 </div>
@@ -133,8 +131,8 @@ const ForgotPassword = () => {
                     <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FaEnvelope className="text-teal-600 text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Check your email</h3>
-                    <p className="text-gray-600 text-sm mb-6">
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Check your email</h3>
+                    <p className="text-slate-600 text-sm mb-6">
                       We sent a password reset link to <br />
                       <span className="font-medium text-teal-700">{sentEmail}</span>
                     </p>
@@ -153,7 +151,7 @@ const ForgotPassword = () => {
                           setEmail(sentEmail);
                           setSent(false);
                         }}
-                        className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
+                        className="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors"
                       >
                         Click to send again
                       </button>
@@ -171,21 +169,21 @@ const ForgotPassword = () => {
                       onDismiss={() => setSuccessMessage(null)}
                     />
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700 ml-1">Email Address</label>
+                      <label className="block text-sm font-medium text-slate-700 ml-1">Email Address</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <FaEnvelope className="text-gray-400" />
+                          <FaEnvelope className="text-slate-400" />
                         </div>
                         <Input
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
-                          className={`w-full pl-11 pr-10 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${email
+                          className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${email
                             ? isEmailValid(email)
-                              ? "border-teal-500 bg-teal-50/30"
-                              : "border-red-300 bg-red-50/30"
-                            : "border-gray-200"
+                              ? "border-teal-500 bg-teal-50/10"
+                              : "border-red-300 bg-red-50/10"
+                            : "border-slate-200"
                             }`}
                           required
                         />
@@ -206,7 +204,7 @@ const ForgotPassword = () => {
 
                     <Button
                       type="submit"
-                      className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!email || !isEmailValid(email) || loading
+                      className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${!email || !isEmailValid(email) || loading
                         ? "opacity-60 cursor-not-allowed"
                         : ""
                         }`}
@@ -228,23 +226,23 @@ const ForgotPassword = () => {
                 <div className="mt-8">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
+                      <div className="w-full border-t border-slate-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white text-gray-500 font-medium">Or register as</span>
+                      <span className="px-4 bg-white text-slate-500 font-medium">Or register as</span>
                     </div>
                   </div>
 
                   <div className="mt-6 grid grid-cols-2 gap-4">
                     <Link
                       to="/signup/teacher"
-                      className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-teal-300 transition-all"
+                      className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all"
                     >
                       Teacher
                     </Link>
                     <Link
                       to="/signup/recruiter"
-                      className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-teal-300 transition-all"
+                      className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all"
                     >
                       Recruiter
                     </Link>
@@ -252,7 +250,7 @@ const ForgotPassword = () => {
                 </div>
               </div>
 
-              <p className="text-center text-gray-500 text-sm mt-8">
+              <p className="text-center text-slate-400 text-sm mt-8">
                 &copy; {new Date().getFullYear()} PTPI. All rights reserved.
               </p>
             </div>

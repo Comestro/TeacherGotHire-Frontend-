@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { createaccount, verifyTeacherOtp, resendTeacherOtp } from "../services/authServices";
 import { login } from "../services/authUtils";
-import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaCheck, FaUniversity, FaRocket } from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
@@ -92,7 +92,7 @@ function SignUpPage() {
       ? errors[fieldName]
         ? "border-red-500 focus:border-red-500"
         : "border-teal-600 focus:border-teal-600"
-      : "border-gray-300 focus:border-teal-600"
+      : "border-slate-300 focus:border-teal-600"
       }`;
   };
 
@@ -154,11 +154,11 @@ function SignUpPage() {
       return (
         <div className="w-full animate-fadeIn">
           <div className="space-y-2 mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 mb-4 border border-teal-100">
               <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
             </div>
-            <h2 className="text-3xl font-bold text-gray-800">Verify Email</h2>
-            <p className="text-gray-500">
+            <h2 className="text-2xl font-bold text-slate-800">Verify Email</h2>
+            <p className="text-slate-500">
               We've sent a code to <span className="font-medium text-teal-600">{userEmail}</span>
             </p>
           </div>
@@ -169,14 +169,14 @@ function SignUpPage() {
               onDismiss={() => setError("")}
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Enter Verification Code
               </label>
               <Input
                 type="text"
                 value={otp}
                 onChange={handleOTPChange}
-                className="w-full bg-gray-50/50 border border-gray-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none"
+                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none"
                 placeholder="000000"
                 pattern="\d{6}"
                 maxLength={6}
@@ -193,7 +193,7 @@ function SignUpPage() {
 
             <div className="text-center">
               {timer > 0 ? (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-slate-500">
                   Resend code in <span className="text-teal-600 font-bold">{timer}s</span>
                 </p>
               ) : (
@@ -213,7 +213,7 @@ function SignUpPage() {
             <div className="space-y-3">
               <Button
                 type="submit"
-                className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : ""
+                className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : ""
                   }`}
                 disabled={loading || otp.length !== 6}
               >
@@ -233,10 +233,10 @@ function SignUpPage() {
     return (
       <div className="w-full animate-fadeIn">
         <div className="space-y-2 mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-slate-800">
             Join as a Teacher
           </h2>
-          <p className="text-gray-500">
+          <p className="text-slate-500">
             Create your account to start teaching
           </p>
         </div>
@@ -248,10 +248,10 @@ function SignUpPage() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
               <div className="relative">
                 <Input
-                  className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Fname ? "border-teal-500 bg-teal-50/30" : "border-gray-200"
+                  className={`w-full px-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Fname ? "border-teal-500 bg-teal-50/10" : "border-slate-200"
                     }`}
                   placeholder="First Name"
                   {...register("Fname", { required: "First name is required" })}
@@ -264,10 +264,10 @@ function SignUpPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
               <div className="relative">
                 <Input
-                  className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Lname ? "border-teal-500 bg-teal-50/30" : "border-gray-200"
+                  className={`w-full px-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.Lname ? "border-teal-500 bg-teal-50/10" : "border-slate-200"
                     }`}
                   placeholder="Last Name"
                   {...register("Lname", { required: "Last name is required" })}
@@ -281,16 +281,16 @@ function SignUpPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
             <div className="relative">
               <Input
                 placeholder="name@example.com"
                 type="email"
-                className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
+                className={`w-full px-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
                   ? !errors.email
-                    ? "border-teal-500 bg-teal-50/30"
-                    : "border-red-300 bg-red-50/30"
-                  : "border-gray-200"
+                    ? "border-teal-500 bg-teal-50/10"
+                    : "border-red-300 bg-red-50/10"
+                  : "border-slate-200"
                   }`}
                 {...register("email", {
                   required: "Email is required",
@@ -308,16 +308,16 @@ function SignUpPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
             <div className="relative">
               <Input
                 placeholder="Create a password"
                 type={showPassword ? "text" : "password"}
-                className={`w-full px-4 py-3.5 bg-gray-50/50 border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
+                className={`w-full px-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.password
                   ? !errors.password
-                    ? "border-teal-500 bg-teal-50/30"
-                    : "border-red-300 bg-red-50/30"
-                  : "border-gray-200"
+                    ? "border-teal-500 bg-teal-50/10"
+                    : "border-red-300 bg-red-50/10"
+                  : "border-slate-200"
                   }`}
                 {...register("password", {
                   required: "Password is required",
@@ -332,7 +332,7 @@ function SignUpPage() {
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -340,15 +340,15 @@ function SignUpPage() {
             {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
 
             <div className="mt-3 flex gap-2 flex-wrap">
-              <span className={`text-xs px-2 py-1 rounded-full ${passwordCriteria.length ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>8+ chars</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${passwordCriteria.number ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>Number</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${passwordCriteria.special ? 'bg-teal-100 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>Special char</span>
+              <span className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.length ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>8+ chars</span>
+              <span className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.number ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>Number</span>
+              <span className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.special ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>Special char</span>
             </div>
           </div>
 
           <Button
             type="submit"
-            className={`w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 ${!isValid || loading ? "opacity-60 cursor-not-allowed" : ""
+            className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${!isValid || loading ? "opacity-60 cursor-not-allowed" : ""
               }`}
             disabled={!isValid || loading}
           >
@@ -364,28 +364,28 @@ function SignUpPage() {
         <div className="mt-8 space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+              <span className="px-4 bg-white text-slate-500 font-medium">Or continue with</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => navigate("/signup/recruiter")}
-              className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 group"
+              className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
             >
               <div className="flex flex-col items-center">
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">Recruiter</span>
+                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Recruiter</span>
               </div>
             </button>
             <button
               onClick={() => navigate("/signin")}
-              className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 group"
+              className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 group"
             >
               <div className="flex flex-col items-center">
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">Sign In</span>
+                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Sign In</span>
               </div>
             </button>
           </div>
@@ -402,13 +402,7 @@ function SignUpPage() {
       </Helmet>
       {loading && <Loader />}
       <ToastContainer />
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/30 to-cyan-200/30 blur-3xl animate-float" />
-          <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-l from-purple-200/30 to-indigo-200/30 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-t from-emerald-200/30 to-lime-200/30 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
-        </div>
+      <div className=" flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
 
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
@@ -416,35 +410,35 @@ function SignUpPage() {
             {/* Left Side: Hero Content */}
             <div className="hidden md:block w-1/2 space-y-8 animate-slide-up">
               <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
                   Join the Future of <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">
+                  <span className="text-teal-600">
                     Teaching Excellence
                   </span>
                 </h1>
-                <p className="text-lg text-gray-600 max-w-md">
+                <p className="text-lg text-slate-600 max-w-md">
                   Create your profile today and connect with top educational institutions looking for talent like you.
                 </p>
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+                    <FaUniversity className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">Verified Schools</h3>
-                    <p className="text-sm text-gray-500">Connect with trusted institutions</p>
+                    <h3 className="font-bold text-slate-800">Verified Schools</h3>
+                    <p className="text-sm text-slate-500">Connect with trusted institutions</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    <FaRocket className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">Fast Placement</h3>
-                    <p className="text-sm text-gray-500">Get hired faster with our platform</p>
+                    <h3 className="font-bold text-slate-800">Fast Placement</h3>
+                    <p className="text-sm text-slate-500">Get hired faster with our platform</p>
                   </div>
                 </div>
               </div>
@@ -452,12 +446,11 @@ function SignUpPage() {
 
             {/* Right Side: Signup Form */}
             <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="glass rounded-3xl p-8 sm:p-10 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-cyan-500" />
+              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 {renderForm()}
               </div>
 
-              <p className="text-center text-gray-500 text-sm mt-8">
+              <p className="text-center text-slate-400 text-sm mt-8">
                 &copy; {new Date().getFullYear()} PTPI. All rights reserved.
               </p>
             </div>
