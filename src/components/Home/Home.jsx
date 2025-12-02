@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherSection from "../HomePage/TeacherSection";
 import SchoolSection from "../HomePage/SchoolSection";
@@ -20,12 +20,14 @@ const Home = () => {
       <Helmet>
         <title>Home | PTPI</title>
       </Helmet>
-      <HeroSection />
-      <TeacherSection onSelectRole={handleRoleSelection} />
-      <SchoolSection onSelectRole={handleRoleSelection} />
-      <ExamSection /> 
-      <FeaturesSection />
-      <DetailSection />
+      <div className="space-y-20 pb-20">
+        <HeroSection />
+        <TeacherSection onSelectRole={handleRoleSelection} />
+        <SchoolSection onSelectRole={handleRoleSelection} />
+        <ExamSection />
+        <FeaturesSection />
+        <DetailSection />
+      </div>
     </>
   );
 };

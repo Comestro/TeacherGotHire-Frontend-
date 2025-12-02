@@ -56,7 +56,7 @@ export const fetchTeachers = createAsyncThunk(
       return response.data; 
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.detail || "An error occurred."
+        error.response?.data || "An error occurred."
       );
     }
   }

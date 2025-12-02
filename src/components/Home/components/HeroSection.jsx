@@ -95,7 +95,7 @@ const HeroSection = () => {
         </svg>
       ),
       steps: instituteSteps,
-      color: "teal"
+      color: "indigo"
     },
     {
       id: "teacher",
@@ -118,7 +118,7 @@ const HeroSection = () => {
         </svg>
       ),
       steps: teacherSteps,
-      color: "teal"
+      color: "purple"
     },
   ];
 
@@ -130,12 +130,12 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full bg-white min-h-screen">
+    <div className="relative w-full bg-slate-50">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Images */}
         <div
-          className="hidden md:block absolute z-0 inset-0 w-full h-full bg-cover bg-center"
+          className="hidden md:block absolute z-0 inset-0 w-full h-full bg-cover bg-center opacity-10"
           style={{ backgroundImage: "url('Home3.png')" }}
         ></div>
         <img
@@ -147,24 +147,24 @@ const HeroSection = () => {
         {/* Content */}
         <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="pt-24 md:pt-40 pb-16 md:pb-24">
-            <div className="text-center max-w-4xl mx-auto">
+            <div className="text-center max-w-4xl mx-auto animate-slide-up">
               {/* Heading */}
-              <h1 className="text-4xl md:text-6xl font-extrabold text-gray-800 mb-6">
-                <span className="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
                   Private Teacher
                 </span>
-                <br/>
+                <br />
                 Provider Institute
               </h1>
 
               {/* Subtitle */}
               <div className="relative mb-12">
-                <p className="text-xl md:text-3xl text-gray-600 font-medium mb-4">
+                <p className="text-xl md:text-3xl text-slate-600 font-medium mb-4">
                   पढ़ने, पढ़ाने और पढ़वाने का बेहतरीन मंच
                 </p>
                 <div className="absolute left-1/2 -bottom-4 transform -translate-x-1/2">
                   <svg
-                    className="w-48 md:w-64 text-teal-600"
+                    className="w-48 md:w-64 text-teal-500"
                     viewBox="0 0 180 12"
                     fill="none"
                   >
@@ -182,14 +182,14 @@ const HeroSection = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                 <Link
                   to="/recruiter"
-                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-500 text-white rounded-full hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 font-semibold"
+                  className="w-full sm:w-auto px-8 py-4 bg-teal-600 text-white rounded-xl shadow-sm hover:bg-teal-700 hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 font-bold transform hover:-translate-y-0.5"
                 >
                   <IoSearchOutline className="w-5 h-5" />
                   Find Your Perfect Teacher
                 </Link>
                 <Link
                   to="/teacher"
-                  className="w-full sm:w-auto px-8 py-4 border-2 border-teal-600 text-teal-600 rounded-full hover:bg-teal-50 transition-colors duration-300 font-semibold"
+                  className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:border-teal-500 hover:text-teal-600 transition-all duration-300 font-bold"
                 >
                   Join as a Teacher
                 </Link>
@@ -200,51 +200,55 @@ const HeroSection = () => {
       </div>
 
       {/* Highlight Steps Section */}
-      <div className="relative z-0 bg-gradient-to-b from-teal-50 to-white py-16 md:py-24">
+      <div className="relative z-0 py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {highlightItems.map((item) => (
+            {highlightItems.map((item, index) => (
               <div
                 key={item.title}
-                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300"
+                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="mb-4 text-teal-600">{item.icon}</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                <div className={`mb-6 p-4 rounded-2xl inline-block ${item.color === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
+                  item.color === 'purple' ? 'bg-purple-50 text-purple-600' :
+                    'bg-teal-50 text-teal-600'
+                  }`}>
+                  {item.icon}
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">
                   {item.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed mb-4">{item.content}</p>
+                <p className="text-slate-600 leading-relaxed mb-6">{item.content}</p>
 
                 {/* Steps Section - Always visible (3 steps) */}
                 {item.steps && (
-                  <div className="mt-4">
-                    <div className="space-y-3">
+                  <div className="mt-6 pt-6 border-t border-slate-100">
+                    <div className="space-y-4">
                       {item.steps
                         .slice(0, expandedCards[item.id] ? item.steps.length : INITIAL_STEPS_TO_SHOW)
                         .map((step, index) => (
                           <div key={index} className="flex items-start">
-                            <div className="flex-shrink-0 mr-3">
-                              <div className={`w-6 h-6 ${
-                                item.color === 'blue' ? 'bg-blue-600' : 
-                                item.color === 'purple' ? 'bg-purple-600' : 
-                                'bg-teal-600'
-                              } text-white rounded-full flex items-center justify-center text-xs font-bold`}>
+                            <div className="flex-shrink-0 mr-3 mt-0.5">
+                              <div className={`w-6 h-6 ${item.color === 'indigo' ? 'bg-indigo-100 text-indigo-600' :
+                                item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
+                                  'bg-teal-100 text-teal-600'
+                                } rounded-full flex items-center justify-center text-xs font-bold`}>
                                 {index + 1}
                               </div>
                             </div>
-                            <p className="text-sm text-gray-700">{step}</p>
+                            <p className="text-sm text-slate-600 leading-snug">{step}</p>
                           </div>
-                      ))}
+                        ))}
                     </div>
 
                     {/* Show More/Less Button (only if there are more steps) */}
                     {item.steps.length > INITIAL_STEPS_TO_SHOW && (
                       <button
                         onClick={() => toggleCardExpansion(item.id)}
-                        className={`mt-3 text-sm font-medium flex items-center ${
-                          item.color === 'blue' ? 'text-blue-600 hover:text-blue-700' : 
-                          item.color === 'purple' ? 'text-purple-600 hover:text-purple-700' : 
-                          'text-teal-600 hover:text-teal-700'
-                        }`}
+                        className={`mt-4 text-sm font-bold flex items-center transition-colors ${item.color === 'indigo' ? 'text-indigo-600 hover:text-indigo-700' :
+                          item.color === 'purple' ? 'text-purple-600 hover:text-purple-700' :
+                            'text-teal-600 hover:text-teal-700'
+                          }`}
                       >
                         {expandedCards[item.id] ? (
                           <>

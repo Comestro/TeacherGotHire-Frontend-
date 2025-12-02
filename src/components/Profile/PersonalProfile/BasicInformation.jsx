@@ -24,10 +24,9 @@ const hiLabels = {
   "Male": "पुरुष",
   "Female": "महिला",
   "Other": "अन्य",
-  "Single": "अविवाहित",
+  "Unmarried": "अविवाहित",
   "Married": "विवाहित",
-  "Divorced": "तलाकशुदा",
-  "Widowed": "विधवा/विधुर",
+  "Not Disclosed": "नहीं दिखाई देना",
   "English": "अंग्रेज़ी",
   "Hindi": "हिंदी",
 };
@@ -423,10 +422,8 @@ const BasicInformation = () => {
                   }`}
               >
                 <option value="">Select Status</option>
-                <option value="single">{bi("Single")}</option>
+                <option value="unmarried">{bi("Unmarried")}</option>
                 <option value="married">{bi("Married")}</option>
-                <option value="divorced">{bi("Divorced")}</option>
-                <option value="widowed">{bi("Widowed")}</option>
               </select>
             </div>
 

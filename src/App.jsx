@@ -91,8 +91,8 @@ function AppContent() {
 
           <Route path="contact" element={<ContactUs />} />
           <Route path="exam-mode" element={<ExamMode />} />
+          <Route path="get-preferred-teacher" element={<GetPreferredTeacher />} />
         </Route>
-        <Route path="get-preferred-teacher" element={<GetPreferredTeacher />} />
         <Route path="signup/teacher" element={<SignUpPage />} />
         <Route path="signin" element={<Login />} />
 
@@ -121,16 +121,8 @@ function AppContent() {
           <Route path="profile" element={<ExamSetterProfile />} />
         </Route>
 
-        {/* Recruiter Routes */}
-        <Route
-          path="recruiter"
-          element={
-            <RoleBasedRoute
-              element={<RecruiterLayout />}
-              allowedRoles={["recruiter"]}
-            />
-          }
-        >
+        {/* Recruiter Routes - Now Public with Conditions */}
+        <Route path="recruiter" element={<RecruiterLayout />}>
           <Route index element={<TeacherRecruiter />} />
           <Route path="teacher/:id" element={<TeacherViewPage />} />
         </Route>

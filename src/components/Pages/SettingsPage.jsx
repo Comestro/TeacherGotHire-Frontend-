@@ -523,9 +523,9 @@ export default function SettingsPage() {
                     className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all outline-none text-sm text-slate-700 appearance-none bg-white"
                   >
                     <option value="">Select Status</option>
-                    <option value="single">Single</option>
+                    <option value="unmarried">Unmarried</option>
                     <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
+                    <option value="not disclosed">Not Disclosed</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

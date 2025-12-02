@@ -3,61 +3,63 @@ import { IoIosArrowForward } from 'react-icons/io'
 
 const ExamSection = () => {
     return (
-        <div className="relative overflow-hidden mb-20">
-            {/* Content */}
-            <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center px-6 sm:px-12">
+        <div className="relative py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
+                    {/* Decorative background elements */}
+                    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-50/50 to-transparent" />
 
+                    <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 md:p-12 lg:p-16">
+                        {/* Left Section with Text */}
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                                    Create and conduct your first exam as a teacher in <span className="text-teal-600">under an hour!</span>
+                                </h1>
+                                <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+                                    We provide qualified teachers committed to shaping a brighter future for your students. Login today and connect with our expert educators!
+                                </p>
+                            </div>
 
-                <div className="text-gray-700 mb-10 md:mt-10">
-                    <h1 className="text-2xl sm:text-2xl text-gray-600 font-bold mb-6 leading-normal">
-                        Create and conduct your first exam as a teacher in under an hour!
-                    </h1>
-                    <p className="text-lg pl-2 sm:text-md mb-6 leading-relaxed font-serif text-gray-600">
-                        We provide qualified teachers committed to shaping a brighter future for your students. Login today and connect with our expert educators!
-                    </p>
-                    <ul className="space-y-4 text-lg sm:text-xl mb-6 leading-relaxed font-serif text-gray-600">
-                        <li className="flex text-lg text-gray-500 items-center">
-                            <IoIosArrowForward />
+                            <ul className="space-y-4">
+                                {[
+                                    "Without talking to a salesperson or scheduling a demo",
+                                    "Without putting a credit card on file",
+                                    "Without installing software or performing technical integrations",
+                                    "Without creating student accounts"
+                                ].map((item, index) => (
+                                    <li key={index} className="flex items-center text-lg text-slate-600 group">
+                                        <span className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mr-3 group-hover:bg-teal-100 transition-colors">
+                                            <IoIosArrowForward />
+                                        </span>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
 
-                            Without talking to a salesperson or scheduling a demo
-                        </li>
-                        <li className="flex text-lg text-gray-500 items-center">
-                            <IoIosArrowForward />
+                            <div className="pt-4">
+                                <button
+                                    className="px-8 py-4 bg-slate-800 text-white rounded-xl font-bold shadow-sm hover:bg-slate-900 hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300"
+                                >
+                                    Start your free trial
+                                </button>
+                            </div>
+                        </div>
 
-                            Without putting a credit card on file
-                        </li>
-                        <li className="flex text-lg text-gray-500 items-center">
-                            <IoIosArrowForward />
-
-                            Without installing software or performing technical integrations
-                        </li>
-                        <li className="flex text-lg text-gray-500 items-center">
-                            <IoIosArrowForward />
-
-                            Without creating student accounts
-                        </li>
-                    </ul>
-                </div>
-
-
-                {/*  Right Section with Image */}
-                <div className="relative w-full mt-5 text-center">
-                    <div className="w-full h-64 lg:h-96">
-                        <img
-                            src="edu.jpg"
-                            alt="Classroom"
-                            className="w-full h-full object-contain items-baseline"
-                        />
+                        {/* Right Section with Image */}
+                        <div className="relative lg:h-full flex items-center justify-center">
+                            <div className="relative w-full max-w-md aspect-square">
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-teal-50 rounded-2xl transform rotate-3" />
+                                <img
+                                    src="edu.jpg"
+                                    alt="Classroom"
+                                    className="relative z-10 w-full h-full object-cover rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className='flex justify-center'><button
-                onClick={() => onSelectRole("school")}
-                className="bg-gray-700 text-white font-medium text-lg px-6 py-3 rounded-full shadow-md hover:text-gray-700 hover:bg-gray-100"
-            >
-                Start your free trial
-            </button></div>
-
         </div>
     )
 }

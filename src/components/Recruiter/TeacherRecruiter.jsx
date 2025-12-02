@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Loader from "./components/Loader";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useOutletContext } from "react-router-dom";
+import { Link, useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
 import { BsBriefcase, BsGeoAlt, BsGrid, BsList, BsArrowClockwise } from "react-icons/bs";
 import { MdSchool, MdFilterAltOff, MdFilterAlt } from "react-icons/md";
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
@@ -17,11 +17,27 @@ const TeacherFilter = () => {
   const [itemsPerPage, setItemsPerPage] = useState(9);
   const [searchValue, setSearchValue] = useState("");
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Get sidebar state from layout context
   const { isOpen, setIsOpen } = useOutletContext();
 
   const { data, status, error } = useSelector((state) => state.teachers);
+
+  // Check for required filters
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) return; // Skip check for logged-in users
+
+    const jobType = searchParams.get("job_type");
+    const classCategory = searchParams.get("class_category");
+    const subjects = searchParams.get("subjects");
+
+    if (!jobType || !classCategory || !subjects) {
+      navigate("/get-preferred-teacher");
+    }
+  }, [searchParams, navigate]);
 
   // Utility functions for masking sensitive data
   const maskPhoneNumber = (phone) => {
@@ -42,10 +58,20 @@ const TeacherFilter = () => {
     }
   }, [data]);
 
-  // Initial fetch of all teachers
+  // Initial fetch of all teachers with filters
   useEffect(() => {
-    dispatch(fetchTeachers({}));
-  }, [dispatch]);
+    const filters = {};
+    if (searchParams.get("job_type")) filters.job_type = searchParams.get("job_type").split(",");
+    if (searchParams.get("class_category")) filters.class_category = searchParams.get("class_category").split(",");
+    if (searchParams.get("subjects")) filters.subjects = searchParams.get("subjects").split(",");
+    if (searchParams.get("state")) filters.state = searchParams.get("state").split(",");
+    if (searchParams.get("district")) filters.district = searchParams.get("district").split(",");
+    if (searchParams.get("pincode")) filters.pincode = searchParams.get("pincode").split(",");
+    if (searchParams.get("post_office")) filters.post_office = searchParams.get("post_office").split(",");
+    if (searchParams.get("area")) filters.area = searchParams.get("area").split(",");
+
+    dispatch(fetchTeachers(filters));
+  }, [dispatch, searchParams]);
 
   // Handle screen size changes for view mode
   useEffect(() => {
@@ -542,19 +568,25 @@ const TeacherFilter = () => {
       ) : (
         <div className="w-full h-screen flex flex-col items-center justify-center text-center p-4 sm:p-8">
           <div className="max-w-md mx-auto">
-            <div className="text-5xl sm:text-6xl text-secondary/30 mb-4">🏫</div>
+            <div className="text-5xl sm:text-6xl text-secondary/30 mb-4">
+              {error?.detail === "These parameters are required." ? "🔍" : "🏫"}
+            </div>
             <h3 className="text-xl sm:text-2xl font-bold text-text mb-2">
-              No Teachers Found
+              {error?.detail === "These parameters are required." 
+                ? "Please Apply Filters" 
+                : "No Teachers Found"}
             </h3>
             <p className="text-secondary mb-6 text-sm sm:text-base">
-              We couldn't find any teachers matching your search criteria.
+              {error?.detail === "These parameters are required."
+                ? error.message || "Please select class category, subject, and state to see results."
+                : "We couldn't find any teachers matching your search criteria."}
             </p>
             <button
-              onClick={handleRefresh}
+              onClick={() => setIsOpen(true)}
               className="text-primary hover:text-accent font-semibold flex items-center justify-center gap-2 mx-auto"
             >
-              <IoReloadOutline className="text-lg" />
-              Refresh Search
+              <MdFilterAlt className="text-lg" />
+              Open Filters
             </button>
           </div>
         </div>

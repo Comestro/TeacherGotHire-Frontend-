@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaGraduationCap, FaBriefcase, FaLightbulb, FaChalkboardTeacher, FaMapMarkerAlt, FaUserCog, FaBuilding, FaStar, FaClock } from "react-icons/fa";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +10,7 @@ import { fetchSingleTeacherById } from "../../services/apiService";
 
 export default function TeacherViewPageFull() {
   const { id } = useParams();
+  const navigate = useNavigate();
   console.log('Fetched teacher data:', id);
   const [teacher, setTeacher] = useState({});
   const [loading, setLoading] = useState(true);
@@ -110,7 +111,15 @@ export default function TeacherViewPageFull() {
   }, [id]);
 
   // ----------------- request flow -----------------
-  const handleRequestTeacher = () => setOpenRequestModal(true);
+  const handleRequestTeacher = () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      toast.info("Please login to request a teacher");
+      navigate("/signin");
+      return;
+    }
+    setOpenRequestModal(true);
+  };
 
   const handleSubmitRequest = async () => {
     if (!selectedClassCategory || !selectedSubject) {

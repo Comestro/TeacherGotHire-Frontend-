@@ -4,6 +4,7 @@ import { IoMdClose } from "react-icons/io";
 import { MdExpandMore, MdExpandLess, MdSchool, MdFilterAlt, MdCheckBox, MdCheckBoxOutlineBlank, MdSubject, MdCheck, MdFavorite, MdLanguage } from "react-icons/md";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   getAllSkills,
   getQualification,
@@ -16,6 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const dispatch = useDispatch();
   const sidebarRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // State for filters
   const [filters, setFilters] = useState({
@@ -97,6 +100,52 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setCategoryData(classCategories);
     setJobTypeData(teacherjobRole);
   }, [qualification, allSkill, classCategories, teacherjobRole]);
+
+  // Initialize filters from URL
+  useEffect(() => {
+    const newFilters = { ...filters };
+    
+    // Helper to split comma-separated values
+    const getList = (key) => {
+      const val = searchParams.get(key);
+      return val ? val.split(",") : [];
+    };
+
+    if (searchParams.has("job_type")) newFilters.job_type = getList("job_type");
+    if (searchParams.has("class_category")) newFilters.class_category = getList("class_category");
+    if (searchParams.has("subjects")) newFilters.subjects = getList("subjects");
+    if (searchParams.has("state")) newFilters.state = getList("state");
+    if (searchParams.has("city")) newFilters.city = getList("city");
+    if (searchParams.has("pincode")) newFilters.pincode = getList("pincode");
+    if (searchParams.has("block")) newFilters.block = getList("block");
+    if (searchParams.has("village")) newFilters.village = getList("village");
+    
+    // Other array filters
+    if (searchParams.has("qualification")) newFilters.qualification = getList("qualification");
+    if (searchParams.has("skill")) newFilters.skill = getList("skill");
+    if (searchParams.has("gender")) newFilters.gender = getList("gender");
+    if (searchParams.has("exam_status")) newFilters.exam_status = getList("exam_status");
+    if (searchParams.has("religion")) newFilters.religion = getList("religion");
+    if (searchParams.has("marital_status")) newFilters.marital_status = getList("marital_status");
+    if (searchParams.has("language")) newFilters.language = getList("language");
+
+    // Range filters
+    if (searchParams.has("experience_years_min")) newFilters.experience_years.min = searchParams.get("experience_years_min");
+    if (searchParams.has("experience_years_max")) newFilters.experience_years.max = searchParams.get("experience_years_max");
+    if (searchParams.has("total_marks_min")) newFilters.total_marks.min = searchParams.get("total_marks_min");
+    if (searchParams.has("total_marks_max")) newFilters.total_marks.max = searchParams.get("total_marks_max");
+
+    setFilters(newFilters);
+    
+    // Sync local selection states
+    setSelectedSkills(newFilters.skill);
+    setSelectedQualifications(newFilters.qualification);
+    setSelectedClassCategories(newFilters.class_category);
+    // Note: selectedSubjects is an object { category: [subjects] }, hard to reconstruct fully without category mapping logic
+    // For now, we just ensure the filter state is correct. 
+    // If we want checkboxes to work perfectly for subjects, we might need to infer categories or just rely on the flat list in filters.subject
+    
+  }, [searchParams]);
 
   // Handle clicks outside sidebar to close on mobile
   useEffect(() => {
@@ -1244,7 +1293,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-2">
-                      {["single", "married", "divorced", "widowed"].map((status) => (
+                      {["single", "married"].map((status) => (
                         <label
                           key={status}
                           className="flex items-center py-1 cursor-pointer group"
@@ -1394,7 +1443,21 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         <div className="sticky bottom-0 p-4 border-t bg-white shadow-lg md:shadow-none">
           <button
             onClick={() => {
-              dispatch(fetchTeachers(filters));
+              // Construct query params
+              const params = new URLSearchParams();
+              
+              Object.keys(filters).forEach(key => {
+                const value = filters[key];
+                
+                if (Array.isArray(value) && value.length > 0) {
+                  params.set(key, value.join(","));
+                } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                  if (value.min) params.set(`${key}_min`, value.min);
+                  if (value.max) params.set(`${key}_max`, value.max);
+                }
+              });
+
+              setSearchParams(params);
               if (!isDesktop) setIsOpen(false);
             }}
             className="w-full bg-primary text-white py-3 rounded font-semibold uppercase hover:bg-primary/90 transition-colors"

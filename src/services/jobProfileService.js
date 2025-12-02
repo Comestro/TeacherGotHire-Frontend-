@@ -32,9 +32,8 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      
       localStorage.removeItem('access_token'); // Clear the token
-      window.location.href = '/signin'; // Redirect to login page
+      // window.location.href = '/signin'; // Removed auto-redirect
     }
     return Promise.reject(error);
   }
@@ -42,7 +41,7 @@ apiClient.interceptors.response.use(
 
 export const fetchClassCategory = async()=>{
   try{
-     const response = await apiClient.get('/api/admin/classcategory/');
+     const response = await apiClient.get('/api/public/classcategory/');
      
      return response.data;
   }

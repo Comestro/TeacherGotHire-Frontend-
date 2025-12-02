@@ -1,149 +1,103 @@
 import axios from "axios";
 import { getApiUrl } from "../../store/configue";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   FiBook,
   FiMapPin,
   FiCheck,
   FiArrowLeft,
-  FiMail,
-  FiPhone,
-  FiSmile,
-  FiMessageSquare,
   FiBriefcase,
-  FiBookmark,
-  FiStar,
   FiUser,
-  FiEye,
-  FiSliders,
+  FiSearch,
+  FiChevronRight
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { showNotification } from "../../features/notificationSlice";
-import { fetchTeachers } from "../../features/teacherFilterSlice";
-import TeacherFilterSidebar from "./components/TeacherFilterSidebar";
+import { useNavigate } from "react-router-dom";
+import { getTeacherjobType } from "../../features/jobProfileSlice";
 import EnquiryHeader from "./components/EnquiryHeader";
 
-export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
+export const GetPreferredTeacher = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const apiClient = axios.create({
     baseURL: getApiUrl(),
     headers: {
       "Content-Type": "application/json",
     },
   });
-  const [subject, setSubject] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [contactError, setContactError] = useState("");
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [teacherType, setTeacherType] = useState("");
+  
+  // Data States
+  const [jobTypes, setJobTypes] = useState([]);
+  const [classCategories, setClassCategories] = useState([]);
+  
+  // Selection States
+  const [selectedJobType, setSelectedJobType] = useState("");
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  
+  // Location States
   const [pincode, setPincode] = useState("");
-  const [email, setEmail] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const modalRef = useRef(null);
-
-  // Pincode state
   const [loadingPincode, setLoadingPincode] = useState(false);
-  const [areas, setAreas] = useState([]);
-  const [selectedArea, setSelectedArea] = useState("");
-  const [pincodeDetails, setPincodeDetails] = useState({
-    state: "",
+  const [postOffices, setPostOffices] = useState([]);
+  const [selectedPostOffice, setSelectedPostOffice] = useState("");
+  const [locationDetails, setLocationDetails] = useState({
+    state: "Bihar", // Default fixed to Bihar as requested
+    district: "",
     city: "",
+    area: ""
   });
 
-  // Teacher search state
-  const [teachers, setTeachers] = useState([]);
-  const [teachersLoading, setTeachersLoading] = useState(false);
-  const [teachersError, setTeachersError] = useState("");
+  // Loading States
+  const [loading, setLoading] = useState(false);
 
-  // Add new state for filters
-  const [showFilters, setShowFilters] = useState(true);
-  const [filteredTeachers, setFilteredTeachers] = useState([]);
-  const [filterClassCategory, setFilterClassCategory] = useState("");
-  const [filterSubjects, setFilterSubjects] = useState([]);
-  const [filterPincode, setFilterPincode] = useState("");
-
-  const teacherTypes = [
-    {
-      type: "school",
-      title: "School Teacher",
-      description: "Teaching in a school environment",
-    },
-    {
-      type: "coaching",
-      title: "Coaching Teacher",
-      description: "Teaching in a coaching institute",
-    },
-    {
-      type: "personal",
-      title: "Personal(Home) Tutor",
-      description: "Private one-on-one tutoring",
-    },
-  ];
+  const { teacherjobRole } = useSelector((state) => state.jobProfile);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await apiClient.get("/api/public/classcategory/");
-        setSubject(response.data);
+        // Fetch Class Categories
+        const catResponse = await apiClient.get("/api/public/classcategory/");
+        setClassCategories(catResponse.data);
+
+        // Fetch Job Types
+        dispatch(getTeacherjobType());
         
         setLoading(false);
       } catch (error) {
-        setError(error.message);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setShowModal(false);
-        resetForm();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (currentStep === 3) {
-      // Initialize filters with previously selected values
-      setFilterClassCategory(selectedClassCategory);
-      setFilterSubjects(selectedSubjects);
-      setFilterPincode(pincode);
-      setFilteredTeachers(teachers);
+    if (teacherjobRole) {
+      setJobTypes(teacherjobRole);
     }
-  }, [currentStep, selectedClassCategory, selectedSubjects, pincode, teachers]);
+  }, [teacherjobRole]);
 
-  const resetForm = () => {
-    setCurrentStep(0);
-    setTeacherType("");
-    setSelectedSubjects([]);
-    setSelectedClassCategory("");
-    setContactNumber("");
-    setPincode("");
-    setEmail("");
-    setAreas([]);
-    setSelectedArea("");
-    setPincodeDetails({ state: "", city: "" });
-    setTeachers([]);
-    setTeachersError("");
-  };
-
-  const handleSubjectToggle = (subject) => {
+  const handleSubjectToggle = (subjectId) => {
     setSelectedSubjects((prev) =>
-      prev.includes(subject)
-        ? prev.filter((s) => s !== subject)
-        : [...prev, subject]
+      prev.includes(subjectId)
+        ? prev.filter((s) => s !== subjectId)
+        : [...prev, subjectId]
     );
   };
+
+  const BIHAR_DISTRICTS = [
+    "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", 
+    "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", 
+    "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", 
+    "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", 
+    "Saharsa", "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", 
+    "Supaul", "Vaishali", "West Champaran"
+  ];
 
   const handlePincodeChange = async (e) => {
     const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -156,702 +110,440 @@ export const GetPreferredTeacher = ({ showModal= true, setShowModal }) => {
           `https://api.postalpincode.in/pincode/${enteredPincode}`
         );
         if (response.data[0].Status === "Success") {
-          const postOffices = response.data[0].PostOffice;
-          if (postOffices.length > 0) {
-            setPincodeDetails({
-              state: postOffices[0].State,
-              city: postOffices[0].District,
-            });
-            setAreas(postOffices.map((po) => po.Name));
+          const offices = response.data[0].PostOffice;
+          if (offices.length > 0) {
+            setPostOffices(offices);
+            // Optional: Check if the pincode's district matches the selected district
+            // For now, we just populate post offices and don't force overwrite district if already selected
+            // Always update district and state from pincode
+            setLocationDetails(prev => ({
+              ...prev,
+              district: offices[0].District,
+              state: offices[0].State 
+            }));
             toast.success("Location details found!");
           } else {
-            toast.warning("No areas found for this pincode");
-            setAreas([]);
+            toast.warning("No post offices found for this pincode");
+            setPostOffices([]);
           }
         } else {
           toast.error("Invalid pincode entered");
-          setAreas([]);
+          setPostOffices([]);
         }
       } catch (error) {
         toast.error("Failed to fetch pincode details");
-        setAreas([]);
+        setPostOffices([]);
       } finally {
         setLoadingPincode(false);
       }
     } else {
-      setAreas([]);
-      setPincodeDetails({ state: "", city: "" });
-    }
-  };
-  const fetchTeachersData = async () => {
-    setTeachersLoading(true);
-    setTeachersError("");
-    try {
-      // Find the class category name
-      const classCategory = subject.find(
-        (cat) => cat.id === parseInt(selectedClassCategory)
-      );
-      const classCategoryName = classCategory ? classCategory.name : "";
-
-      // Find the subject names
-      const subjectNames = selectedSubjects
-        .map((subjectId) => {
-          for (const category of subject) {
-            const subject = category.subjects.find(
-              (subj) => subj.id === subjectId
-            );
-            if (subject) return subject.subject_name;
-          }
-          return null;
-        })
-        .filter((name) => name)
-        .join(",");
-
-      const filters = {
-        class_category_name: classCategoryName,
-        subject_names: subjectNames,
-        pincode: pincode,
-        area: selectedArea || undefined,
-      };
-
-      const result = await dispatch(fetchTeachers(filters)).unwrap();
-      setTeachers(result);
-      setTeachersLoading(false);
-    } catch (error) {
-      setTeachersError(error);
-      // toast.error(error || "Failed to fetch teachers");
-      setTeachersLoading(false);
+      setPostOffices([]);
+      // Don't clear district if manually selected
+      setLocationDetails(prev => ({ ...prev, city: "", area: "" }));
     }
   };
 
-  const handleSubmit = async () => {
-    if (!isValidEmail(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    if (!contactNumber) {
-      toast.error("Please enter a valid contact number");
-      return;
-    }
-
-    const formData = {
-      email: email,
-      contact: contactNumber,
-      subject: selectedSubjects,
-      teachertype: teacherType,
-      pincode: pincode,
-      state: pincodeDetails.state,
-      city: pincodeDetails.city,
-      area: selectedArea,
-      name: "Rahul",
-    };
-
-    try {
-      const response = await axios.post(
-        "https://api.ptpinstitute.com/api/self/recruiterenquiryform/",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200 || response.status === 201) {
-        setCurrentStep(5);
-        dispatch(
-          showNotification({
-            message: "Application submitted successfully!",
-            type: "success",
-          })
-        );
-      }
-    } catch (error) {
-      
-      if (
-        error.response?.data?.contact?.includes("This field must be unique.")
-      ) {
-        const errorMsg = "This contact number is already registered";
-        setContactError(errorMsg);
-        toast.error(errorMsg);
-      } else {
-        toast.error(
-          error.response?.data?.message ||
-            "Submission failed. Please try again."
-        );
-      }
-    }
-  };
-
-  const isValidEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const applyFilters = () => {
-    let filtered = [...teachers];
+  const handleSearch = () => {
+    // Construct query params
+    const queryParams = new URLSearchParams();
     
-    if (filterClassCategory) {
-      filtered = filtered.filter(teacher => 
-        teacher.preferences.some(pref => 
-          pref.class_category.some(cls => 
-            cls.id === parseInt(filterClassCategory)
-          )
-        )
-      );
-    }
-  
-    if (filterSubjects.length > 0) {
-      filtered = filtered.filter(teacher =>
-        teacher.preferences.some(pref =>
-          pref.prefered_subject.some(subj =>
-            filterSubjects.includes(subj.id)
-          )
-        )
-      );
-    }
-  
-    if (filterPincode) {
-      filtered = filtered.filter(teacher =>
-        teacher.teachersaddress.some(addr =>
-          addr.pincode === filterPincode
-        )
-      );
-    }
-  
-    setFilteredTeachers(filtered);
+    if (selectedJobType) queryParams.append("job_type", selectedJobType);
+    if (selectedClassCategory) queryParams.append("class_category", selectedClassCategory);
+    if (selectedSubjects.length > 0) queryParams.append("subjects", selectedSubjects.join(","));
+    
+    // Location params
+    if (locationDetails.state) queryParams.append("state", locationDetails.state);
+    if (locationDetails.district) queryParams.append("district", locationDetails.district);
+    if (pincode) queryParams.append("pincode", pincode);
+    if (selectedPostOffice) queryParams.append("post_office", selectedPostOffice);
+    if (locationDetails.area) queryParams.append("area", locationDetails.area);
+
+    // Navigate
+    navigate(`/recruiter?${queryParams.toString()}`);
   };
+
+  const getSelectedCategorySubjects = () => {
+    const category = classCategories.find(c => c.id === parseInt(selectedClassCategory));
+    return category ? category.subjects : [];
+  };
+
+  const steps = [
+    { title: 'Job Type', icon: FiBriefcase, desc: 'Select Role' },
+    { title: 'Class', icon: FiBook, desc: 'Select Level' },
+    { title: 'Subject', icon: FiSearch, desc: 'Choose Subjects' },
+    { title: 'Location', icon: FiMapPin, desc: 'Set Location' }
+  ];
 
   return (
-    <div>
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50">
-          <ToastContainer />
-          <div ref={modalRef} className="bg-white w-full h-full flex flex-col">
-            <div className="sticky top-0 bg-white border-b z-20 shadow-sm">
-              <EnquiryHeader />
+    <div className="min-h-[calc(100vh-150px)] bg-white flex flex-col md:flex-row">
+      <ToastContainer position="top-center" />
+      
+      {/* Mobile Header / Progress - Visible only on Mobile */}
+      <div className="md:hidden bg-slate-900 text-white p-6 sticky top-0 z-30">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold">Find Your Teacher</h1>
+          <span className="text-xs font-medium bg-slate-800 px-3 py-1 rounded-full text-teal-400">
+            Step {currentStep + 1}/{steps.length}
+          </span>
+        </div>
+        
+        {/* Mobile Progress Bar */}
+        <div className="relative h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className="absolute top-0 left-0 h-full bg-teal-500 transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          ></div>
+        </div>
+
+        {/* Current Step Label */}
+        <div className="mt-4 flex items-center gap-2 text-sm text-slate-300">
+          {steps[currentStep].icon({ size: 16, className: "text-teal-400" })}
+          <span>{steps[currentStep].title}</span>
+        </div>
+      </div>
+
+      {/* Left Sidebar / Progress Panel - Hidden on Mobile, Fixed on Desktop */}
+      <div className="hidden md:flex md:w-1/3 lg:w-1/4 bg-slate-900 text-white flex-col justify-between relative overflow-hidden flex-shrink-0 md:h-[92vh] md:sticky md:top-0">
+        {/* Decorative Circle */}
+        <div className="absolute -top-20 -left-20 w-60 h-60 bg-teal-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+        <div className="relative z-10 p-8 md:p-12 h-full flex flex-col">
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold mb-3">Find Your Teacher</h1>
+            <p className="text-slate-400 text-sm leading-relaxed">Complete the steps to find the perfect match for your requirements.</p>
+          </div>
+
+          <div className="space-y-8 flex-1">
+            {steps.map((step, index) => (
+              <div key={index} className="flex items-start gap-4 relative group">
+                {/* Connecting Line */}
+                {index !== steps.length - 1 && (
+                  <div className={`absolute left-[19px] top-10 w-0.5 h-12 md:h-16 ${
+                    index < currentStep ? 'bg-teal-500' : 'bg-slate-800'
+                  }`}></div>
+                )}
+                
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                  index === currentStep 
+                    ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-110' 
+                    : index < currentStep 
+                      ? 'bg-teal-500/20 text-teal-400' 
+                      : 'bg-slate-800 text-slate-600 group-hover:bg-slate-700'
+                }`}>
+                  {index < currentStep ? <FiCheck size={20} /> : <step.icon size={18} />}
+                </div>
+                
+                <div className={`transition-all duration-300 pt-2 ${
+                  index === currentStep ? 'opacity-100 translate-x-0' : 'opacity-50'
+                }`}>
+                  <h3 className={`font-semibold text-base ${
+                    index === currentStep ? 'text-white' : 'text-slate-300'
+                  }`}>{step.title}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-auto pt-8 border-t border-slate-800">
+            <p className="text-xs text-slate-500 italic">
+              "Connecting qualified teachers with great opportunities."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Content Panel - Scrollable */}
+      <div className="flex-1 flex flex-col bg-slate-50">
+        <div className="flex-1 flex flex-col justify-start px-4 py-7 max-w-5xl mx-auto w-full">
+          
+          {/* Step 0: Job Type Selection */}
+          {currentStep === 0 && (
+            <div className="animate-fade-in space-y-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">What are you looking for?</h2>
+                <p className="text-lg text-slate-500">Select the type of teaching role you need.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {jobTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => {
+                      setSelectedJobType(type.teacher_job_name);
+                      setCurrentStep(1);
+                    }}
+                    className={`group relative p-8 rounded-3xl border-2 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                      selectedJobType === type.teacher_job_name
+                        ? "border-teal-500 bg-white ring-4 ring-teal-500/10 shadow-lg shadow-teal-500/10"
+                        : "border-white bg-white hover:border-teal-100 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors ${
+                          selectedJobType === type.teacher_job_name 
+                            ? "bg-teal-50 text-teal-600" 
+                            : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                        }`}>
+                          <FiBriefcase size={28} />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-xl text-slate-900 group-hover:text-teal-700 transition-colors mb-1">
+                            {type.teacher_job_name}
+                          </h4>
+                          <p className="text-sm text-slate-500 font-medium">Find teachers for {type.teacher_job_name}</p>
+                        </div>
+                      </div>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                         selectedJobType === type.teacher_job_name ? "bg-teal-500 text-white" : "bg-slate-50 text-slate-300 group-hover:bg-teal-50 group-hover:text-teal-500"
+                      }`}>
+                        <FiChevronRight size={20} />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
 
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="">
-                <div className="relative min-h-[400px] mt-10 md:mt-5">
-                  {/* Step 0: Teacher Type Selection */}
-                  {currentStep === 0 && (
-                    <div className="animate-fade-in max-w-3xl mx-auto">
-                      <h3 className="text-lg font-medium mb-6">
-                        Select Your Teaching Type
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {teacherTypes.map((type) => (
-                          <button
-                            key={type.type}
-                            onClick={() => {
-                              setTeacherType(type.type);
-                              setCurrentStep(1);
-                            }}
-                            className={`p-4 rounded-lg border-2 text-left cursor-pointer transition-all ${
-                              teacherType === type.type
-                                ? "border-teal-500 bg-teal-50"
-                                : "border-gray-200 hover:border-teal-300"
-                            }`}
-                          >
-                            <FiBook className="text-teal-500 mb-2" size={24} />
-                            <h4 className="font-medium mb-1">{type.title}</h4>
-                            <p className="text-sm text-gray-600">
-                              {type.description}
-                            </p>
-                          </button>
-                        ))}
+          {/* Step 1: Class Category Selection */}
+          {currentStep === 1 && (
+            <div className="animate-fade-in space-y-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Select Class Level</h2>
+                <p className="text-lg text-slate-500">Which class category should the teacher be qualified for?</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {classCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedClassCategory(category.id);
+                      setCurrentStep(2);
+                    }}
+                    className={`group p-6 rounded-2xl border-2 text-left transition-all duration-300 hover:shadow-lg ${
+                      selectedClassCategory === category.id
+                        ? "border-teal-500 bg-white ring-4 ring-teal-500/10 shadow-md"
+                        : "border-white bg-white hover:border-teal-100 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
+                        selectedClassCategory === category.id 
+                          ? "bg-teal-50 text-teal-600" 
+                          : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                      }`}>
+                        <FiBook size={24} />
                       </div>
+                      <span className="font-bold text-lg text-slate-700 group-hover:text-teal-700 transition-colors">
+                        {category.name}
+                      </span>
                     </div>
-                  )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-                  {/* Step 1: Subject Selection */}
-                  {currentStep === 1 && (
-                    <div className="animate-slide-in max-w-3xl mx-auto">
-                      <h3 className="text-lg font-medium mb-4">
-                        Select Subjects
-                      </h3>
-                      <div className="mb-6">
-                        <label className="block text-sm font-medium mb-2 text-gray-600">
-                          Select Class Category
-                        </label>
-                        <select
-                          value={selectedClassCategory}
-                          onChange={(e) =>
-                            setSelectedClassCategory(e.target.value)
-                          }
-                          className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                        >
-                          <option value="">Select Class Category</option>
-                          {subject &&
-                            subject.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                      <div className="mb-5 max-h-[350px] overflow-y-auto">
-                        {subject &&
-                          selectedClassCategory &&
-                          subject
-                            .filter(
-                              (category) =>
-                                category.id === parseInt(selectedClassCategory)
-                            )
-                            .map((category) => {
-                              if (
-                                !category.subjects ||
-                                category.subjects.length === 0
-                              )
-                                return null;
-                              return (
-                                <div key={category.id} className="mb-6">
-                                  <h4 className="text-sm font-medium mb-3 text-gray-600">
-                                    {category.name}
-                                  </h4>
-                                  <div className="grid grid-cols-2 gap-3">
-                                    {category.subjects.map((subject) => (
-                                      <button
-                                        key={subject.id}
-                                        onClick={() =>
-                                          handleSubjectToggle(subject.id)
-                                        }
-                                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                                          selectedSubjects.includes(subject.id)
-                                            ? "border-teal-500 bg-teal-50"
-                                            : "border-gray-200 hover:border-teal-300"
-                                        }`}
-                                      >
-                                        <span className="text-sm">
-                                          {subject.subject_name}
-                                        </span>
-                                        {selectedSubjects.includes(
-                                          subject.id
-                                        ) && (
-                                          <FiCheck className="text-teal-500" />
-                                        )}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                        {selectedClassCategory &&
-                          subject &&
-                          subject
-                            .filter(
-                              (category) =>
-                                category.id === parseInt(selectedClassCategory)
-                            )
-                            .some((category) => !category.subjects?.length) && (
-                            <p className="text-gray-500 text-center py-4">
-                              No subjects available for this class category
-                            </p>
-                          )}
-                      </div>
-                      <div className="flex justify-between px-2">
-                        <button
-                          onClick={() => {
-                            setCurrentStep(0);
-                            setSelectedClassCategory("");
-                            setSelectedSubjects([]);
-                          }}
-                          className="text-gray-600 hover:text-gray-800 flex items-center"
-                        >
-                          <FiArrowLeft className="mr-2" /> Back
-                        </button>
-                        <button
-                          onClick={() => setCurrentStep(2)}
-                          className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
-                          disabled={
-                            !selectedSubjects.length || !selectedClassCategory
-                          }
-                        >
-                          Continue
-                        </button>
-                      </div>
-                    </div>
-                  )}
+          {/* Step 2: Subject Selection */}
+          {currentStep === 2 && (
+            <div className="animate-fade-in space-y-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Choose Subjects</h2>
+                <p className="text-lg text-slate-500">Select all the subjects you need assistance with.</p>
+              </div>
 
-                  {/* Step 2: Location Input */}
-                  {currentStep === 2 && (
-                    <div className="animate-slide-in max-w-3xl mx-auto">
-                      <h3 className="text-lg font-medium mb-6">
-                        Enter Your Location
-                      </h3>
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-600">
-                            Enter 6-digit pincode
-                          </label>
-                          <div className="relative">
-                            <FiMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="number"
-                              value={pincode}
-                              onChange={handlePincodeChange}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                              placeholder="Enter pincode"
-                              maxLength="6"
-                            />
-                            {loadingPincode && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-500"></div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {pincodeDetails.state && (
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div>
-                                <p className="text-sm text-gray-600">State</p>
-                                <p className="font-medium">
-                                  {pincodeDetails.state}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-gray-600">
-                                  District
-                                </p>
-                                <p className="font-medium">
-                                  {pincodeDetails.city}
-                                </p>
-                              </div>
-                            </div>
-                            {areas.length > 0 && (
-                              <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-600">
-                                  Select your area (optional)
-                                </label>
-                                <select
-                                  value={selectedArea}
-                                  onChange={(e) =>
-                                    setSelectedArea(e.target.value)
-                                  }
-                                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                >
-                                  <option value="">Select area</option>
-                                  {areas.map((area, index) => (
-                                    <option key={index} value={area}>
-                                      {area}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex justify-between px-4 mb-2 mt-5">
-                        <button
-                          onClick={() => setCurrentStep(1)}
-                          className="text-gray-600 hover:text-gray-800 flex items-center"
-                        >
-                          <FiArrowLeft className="mr-2" /> Back
-                        </button>
-                        <button
-                          onClick={() => {
-                            fetchTeachersData();
-                            setCurrentStep(3);
-                          }}
-                          disabled={
-                            pincode.length !== 6 ||
-                            loadingPincode ||
-                            !pincodeDetails.state
-                          }
-                          className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
-                        >
-                          Search Teachers
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3: Display Teachers */}
-                  {currentStep === 3 && (
-                    <div className="animate-slide-in min-h-screen">
-                      {/* Mobile Header with Filter Button */}
-                      <div className="md:hidden sticky -top-9 z-20 bg-white border-b px-4 py-3 flex justify-between items-center mb-4">
-                        <h3 className="font-medium">Available Teachers</h3>
-                        <button
-                          onClick={() => setShowFilters(true)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100"
-                        >
-                          <FiSliders className="text-teal-600" />
-                          <span>Filters</span>
-                        </button>
-                      </div>
-
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <TeacherFilterSidebar
-                          showFilters={showFilters}
-                          setShowFilters={setShowFilters}
-                          isMobile={window.innerWidth < 768}
-                          subject={subject}
-                          filterClassCategory={filterClassCategory}
-                          setFilterClassCategory={setFilterClassCategory}
-                          filterSubjects={filterSubjects}
-                          setFilterSubjects={setFilterSubjects}
-                          filterPincode={filterPincode}
-                          setFilterPincode={setFilterPincode}
-                          applyFilters={applyFilters}
-                          resetFilters={() => {
-                            setFilterClassCategory(selectedClassCategory);
-                            setFilterSubjects(selectedSubjects);
-                            setFilterPincode(pincode);
-                            setFilteredTeachers(teachers);
-                          }}
-                          onClose={() => setShowFilters(false)}
-                        />
-
-                        {/* Teachers List */}
-                        <div className="w-full">
-                        {teachersLoading && (
-                        <div className="text-center py-10">
-                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-500 mx-auto"></div>
-                          <p className="text-gray-600 mt-4">
-                            Loading teachers...
-                          </p>
-                        </div>
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div className="flex flex-wrap gap-3">
+                  {getSelectedCategorySubjects().map((subject) => (
+                    <button
+                      key={subject.id}
+                      onClick={() => handleSubjectToggle(subject.id)}
+                      className={`px-6 py-4 rounded-xl border-2 text-sm font-bold transition-all duration-200 flex items-center gap-3 ${
+                        selectedSubjects.includes(subject.id)
+                          ? "border-teal-500 bg-teal-500 text-white shadow-lg shadow-teal-500/20 scale-105"
+                          : "border-slate-100 text-slate-600 hover:border-teal-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {subject.subject_name}
+                      {selectedSubjects.includes(subject.id) && (
+                        <FiCheck size={18} className="text-white" />
                       )}
-                      {teachersError && !teachersLoading && (
-                        <div className="text-center py-10">
-{teachersError.includes('|') ? (
-                              <>
-                                <div className="mb-3 text-lg font-semibold text-teal-700">
-                                  {teachersError.split('|')[0].trim()}
-                                </div>
-                                <div className="text-lg text-black">
-                                  {teachersError.split('|')[1].trim()}
-                                </div>
-                              </>
-                            ) : (
-                              <div className="text-red-600">{teachersError}</div>
-                            )}                          <button
-                            onClick={fetchTeachersData}
-                            className="bg-teal-500 rounded mt-3 text-white px-6 py-2 hover:bg-teal-600"
-                          >
-                            Retry Again
-                          </button>
-                        </div>
-                      )}
-                      {!teachersLoading &&
-                        !teachersError &&
-                        teachers.length === 0 && (
-                          <div className="text-center py-10 max-w-md mx-auto">
-                            <p className="text-gray-600 mb-4">
-                                आपके चुने हुए विकल्पों के अनुसार यहां पर कोई शिक्षक उपलब्ध नहीं है कृपया दूसरी विकल्पों का चयन करें.
-                              / According to the options you have selected, no teacher is available here. Please choose other options.
-                            </p>
-                        
-                            <button
-                              onClick={() => setCurrentStep(2)}
-                              className="text-teal-500 hover:text-teal-700 flex items-center mx-auto"
-                            >
-                              <FiArrowLeft className="mr-2" /> Change Location
-                            </button>
-                          </div>
-                        )}
-                          
-                          {!teachersLoading && !teachersError && filteredTeachers.length > 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {filteredTeachers.map((teacher) => {
-                                const fullName = `${teacher.Fname} ${teacher.Lname}`;
-                                const address = Array.isArray(teacher.teachersaddress)
-                                  ? teacher.teachersaddress.find((addr) => addr.address_type === "current") ||
-                                    teacher.teachersaddress.find((addr) => addr.address_type === "permanent")
-                                  : undefined;
-                                const location = address
-                                  ? `${address.area ? address.area + ", " : ""}${address.postoffice}, ${address.district}, ${address.state}`
-                                  : "N/A";
-                                const subjects =
-                                  teacher.preferences?.[0]?.prefered_subject
-                                    ?.map((subj) => subj.subject_name)
-                                    .join(", ") || "N/A";
-                                const roles =
-                                  teacher.preferences?.[0]?.job_role
-                                    ?.map((role) => role.jobrole_name)
-                                    .join(", ") || "N/A";
-                                const rating = teacher.total_marks > 0 ? teacher.total_marks : null;
-                                const profilePic = teacher.profile_picture || null;
-                                return (
-                                  <div
-                                    key={teacher.id}
-                                    className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 w-full flex flex-col"
-                                  >
-                                    {/* Header Section */}
-                                    <div className="flex items-center gap-4 p-4 border-b">
-                                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                                        {profilePic ? (
-                                          <img src={profilePic} alt={fullName} className="w-full h-full object-cover" />
-                                        ) : (
-                                          <FiUser className="text-3xl text-teal-600" />
-                                        )}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-bold text-gray-900 truncate">{fullName}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          {rating && (
-                                            <span className="flex items-center text-amber-600 text-sm font-medium">
-                                              <FiStar className="mr-1" /> {rating}/5
-                                            </span>
-                                          )}
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-1 truncate">{location}</p>
-                                      </div>
-                                      <button className="text-gray-400 hover:text-teal-600 transition-colors">
-                                        <FiBookmark className="text-xl" />
-                                      </button>
-                                    </div>
-                                    {/* Details Section */}
-                                    <div className="flex-1 p-4 space-y-2">
-                                      <div className="flex items-center gap-2">
-                                        <FiBook className="text-teal-600" />
-                                        <span className="text-sm text-gray-500">Subjects:</span>
-                                        <span className="font-medium text-gray-900 break-words">{subjects}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <FiBriefcase className="text-teal-600" />
-                                        <span className="text-sm text-gray-500">Roles:</span>
-                                        <span className="font-medium text-gray-900 break-words">{roles}</span>
-                                      </div>
-                                    </div>
-                                    {/* Actions Section */}
-                                    <div className="border-t p-4 flex flex-col gap-2">
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-                                        <button className="flex items-center justify-center gap-2 bg-teal-50 text-teal-700 px-4 py-2 rounded-lg hover:bg-teal-100 transition-colors w-full">
-                                          <FiMessageSquare className="text-lg" />
-                                          <span>Message</span>
-                                        </button>
-                                        <button className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors w-full">
-                                          <FiPhone className="text-lg" />
-                                          <span>Contact Now</span>
-                                        </button>
-                                      </div>
-                                      <button className="flex items-center justify-center gap-2 text-teal-600 hover:text-teal-700 font-medium w-full">
-                                        <FiEye className="text-lg" />
-                                        <span>View Full Profile</span>
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
+                    </button>
+                  ))}
+                  {getSelectedCategorySubjects().length === 0 && (
+                    <div className="w-full text-center py-16">
+                      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FiBook className="text-slate-300" size={32} />
                       </div>
-                    </div>
-                  )}
-
-                  {/* Step 4: Contact Information */}
-                  {currentStep === 4 && (
-                    <div className="animate-slide-in max-w-3xl mx-auto">
-                      <h3 className="text-lg font-medium mb-6">
-                        Contact Information
-                      </h3>
-                      <div className="space-y-6">
-                        <div className="relative">
-                          <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                          <input
-                            type="tel"
-                            value={contactNumber}
-                            onChange={(e) => {
-                              const value = e.target.value
-                                .replace(/\D/g, "")
-                                .slice(0, 10);
-                              setContactNumber(value);
-                              setContactError("");
-                            }}
-                            maxLength="10"
-                            className={`w-full pl-10 pr-4 py-3 border ${
-                              contactError
-                                ? "border-red-500"
-                                : "border-gray-200"
-                            } rounded-lg focus:outline-none focus:ring-2 ${
-                              contactError
-                                ? "focus:ring-red-500"
-                                : "focus:ring-teal-500"
-                            }`}
-                            placeholder="Enter 10 digit phone number"
-                          />
-                          {contactNumber && contactNumber.length < 10 && (
-                            <p className="text-yellow-600 text-sm mt-1">
-                              Please enter a 10 digit phone number
-                            </p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-600">
-                            Email Address
-                          </label>
-                          <div className="relative">
-                            <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                              placeholder="Enter email address"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mt-5">
-                        <button
-                          onClick={() => setCurrentStep(3)}
-                          className="text-gray-600 hover:text-gray-800 flex items-center"
-                        >
-                          <FiArrowLeft className="mr-2" /> Back
-                        </button>
-                        <button
-                          onClick={handleSubmit}
-                          className="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 disabled:bg-gray-300"
-                        >
-                          Send Request
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 5: Success Screen */}
-                  {currentStep === 5 && (
-                    <div className="animate-fade-in max-w-3xl mx-auto">
-                      <div className="text-center py-10 px-4">
-                        <div className="mb-8">
-                          <FiSmile className="text-yellow-400 text-5xl mx-auto animate-pulse" />
-                        </div>
-                        <h3 className="text-2xl font-semibold mb-4">
-                          🎉 Success! You're All Set!
-                        </h3>
-                        <p className="text-gray-600 mb-6 text-lg">
-                          Thank you for your submission! Our team will contact
-                          you within 24 hours.
-                        </p>
-                        <button
-                          onClick={() => {
-                            setShowModal(false);
-                            resetForm();
-                          }}
-                          className="bg-teal-500 text-white px-8 py-3 rounded-lg hover:bg-teal-600 transition-colors flex items-center mx-auto"
-                        >
-                          <FiCheck className="mr-2" />
-                          Close Window
-                        </button>
-                        <p className="mt-6 text-sm text-gray-500">
-                          Check your email for confirmation details
-                        </p>
-                      </div>
+                      <p className="text-slate-400 font-medium">No subjects available for this category.</p>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Step 3: Location Details */}
+          {currentStep === 3 && (
+            <div className="animate-fade-in space-y-4">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Location Details</h2>
+                <p className="text-lg text-slate-500">Where would you like to find the teacher?</p>
+              </div>
+
+              <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* State */}
+                  <div className="group">
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">State</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={locationDetails.state}
+                        readOnly
+                        className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-500 font-bold cursor-not-allowed"
+                      />
+                      <FiMapPin className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                    </div>
+                  </div>
+
+                  {/* District Selection */}
+                  <div className="group">
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">District <span className="text-slate-300 font-normal normal-case ml-1">(Optional)</span></label>
+                    <div className="relative">
+                      <select
+                        value={locationDetails.district}
+                        onChange={(e) => setLocationDetails({ ...locationDetails, district: e.target.value })}
+                        className="w-full p-5 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-bold text-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="">Select District</option>
+                        {BIHAR_DISTRICTS.map((dist) => (
+                          <option key={dist} value={dist}>{dist}</option>
+                        ))}
+                      </select>
+                      <FiChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={24} />
+                    </div>
+                  </div>
+
+                  {/* Pincode */}
+                  <div className="group">
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pincode <span className="text-slate-300 font-normal normal-case ml-1">(Optional)</span></label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={pincode}
+                        onChange={handlePincodeChange}
+                        placeholder="Enter 6-digit code"
+                        maxLength="6"
+                        className="w-full p-5 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-bold text-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal"
+                      />
+                      {loadingPincode ? (
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 animate-spin rounded-full h-6 w-6 border-b-2 border-teal-500"></div>
+                      ) : (
+                        <div className={`absolute right-5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-colors ${pincode.length === 6 ? 'bg-green-500' : 'bg-slate-200'}`}></div>
+                      )}
+                    </div>
+                  </div>
+
+                {/* Post Office */}
+                {postOffices.length > 0 && (
+                  <div className="group">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Post Office</label>
+                      <div className="relative">
+                        <select
+                          value={selectedPostOffice}
+                          onChange={(e) => setSelectedPostOffice(e.target.value)}
+                          className="w-full p-5 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-bold text-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none appearance-none cursor-pointer"
+                        >
+                          <option value="">Select Post Office</option>
+                          {postOffices.map((po, idx) => (
+                            <option key={idx} value={po.Name}>{po.Name}</option>
+                          ))}
+                        </select>
+                        <FiChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={24} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </div>
+
+
+                {/* Area */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Area / Locality</label>
+                  <input
+                    type="text"
+                    value={locationDetails.area}
+                    onChange={(e) => setLocationDetails({ ...locationDetails, area: e.target.value })}
+                    placeholder="E.g., Near City Center, Main Road..."
+                    className="w-full p-5 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-bold text-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Footer Actions - Sticky Bottom */}
+        <div className="p-6 md:p-8 bg-white border-t border-slate-100 flex justify-between items-center sticky bottom-0 z-20">
+          <button
+            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+            disabled={currentStep === 0}
+            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg transition-all ${
+              currentStep === 0 
+                ? "text-slate-300 cursor-not-allowed" 
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            <FiArrowLeft size={24} /> Back
+          </button>
+
+          {currentStep < 3 ? (
+            <button
+              onClick={() => setCurrentStep(prev => prev + 1)}
+              disabled={
+                (currentStep === 0 && !selectedJobType) ||
+                (currentStep === 1 && !selectedClassCategory) ||
+                (currentStep === 2 && selectedSubjects.length === 0)
+              }
+              className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center gap-3"
+            >
+              Next Step <FiChevronRight size={24} />
+            </button>
+          ) : (
+            <button
+              onClick={handleSearch}
+              disabled={!locationDetails.state}
+              className="bg-teal-600 text-white px-12 py-4 rounded-2xl font-bold text-lg hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 hover:-translate-y-1 flex items-center gap-3"
+            >
+              Find Teachers <FiSearch size={24} />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
+
+// Helper icon
+const FiChevronDown = ({ className }) => (
+  <svg 
+    stroke="currentColor" 
+    fill="none" 
+    strokeWidth="2" 
+    viewBox="0 0 24 24" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className} 
+    height="1em" 
+    width="1em" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
