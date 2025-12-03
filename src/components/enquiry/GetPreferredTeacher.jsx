@@ -12,11 +12,10 @@ import {
   FiChevronRight
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { getTeacherjobType } from "../../features/jobProfileSlice";
 import EnquiryHeader from "./components/EnquiryHeader";
+import ErrorMessage from "../ErrorMessage";
 
 export const GetPreferredTeacher = () => {
   const dispatch = useDispatch();
@@ -50,6 +49,9 @@ export const GetPreferredTeacher = () => {
     city: "",
     area: ""
   });
+
+  // Message State
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   // Loading States
   const [loading, setLoading] = useState(false);
@@ -102,6 +104,7 @@ export const GetPreferredTeacher = () => {
   const handlePincodeChange = async (e) => {
     const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(enteredPincode);
+    setMessage({ text: "", type: "" }); // Clear previous messages
 
     if (enteredPincode.length === 6) {
       setLoadingPincode(true);
@@ -113,25 +116,23 @@ export const GetPreferredTeacher = () => {
           const offices = response.data[0].PostOffice;
           if (offices.length > 0) {
             setPostOffices(offices);
-            // Optional: Check if the pincode's district matches the selected district
-            // For now, we just populate post offices and don't force overwrite district if already selected
             // Always update district and state from pincode
             setLocationDetails(prev => ({
               ...prev,
               district: offices[0].District,
               state: offices[0].State 
             }));
-            toast.success("Location details found!");
+            setMessage({ text: "Location details found!", type: "success" });
           } else {
-            toast.warning("No post offices found for this pincode");
+            setMessage({ text: "No post offices found for this pincode", type: "warning" });
             setPostOffices([]);
           }
         } else {
-          toast.error("Invalid pincode entered");
+          setMessage({ text: "Invalid pincode entered", type: "error" });
           setPostOffices([]);
         }
       } catch (error) {
-        toast.error("Failed to fetch pincode details");
+        setMessage({ text: "Failed to fetch pincode details", type: "error" });
         setPostOffices([]);
       } finally {
         setLoadingPincode(false);
@@ -176,7 +177,6 @@ export const GetPreferredTeacher = () => {
 
   return (
     <div className="min-h-[calc(100vh-150px)] bg-white flex flex-col md:flex-row">
-      <ToastContainer position="top-center" />
       
       {/* Mobile Header / Progress - Visible only on Mobile */}
       <div className="md:hidden bg-slate-900 text-white p-6 sticky top-0 z-30">
@@ -258,6 +258,12 @@ export const GetPreferredTeacher = () => {
       <div className="flex-1 flex flex-col bg-slate-50">
         <div className="flex-1 flex flex-col justify-start px-4 py-7 max-w-5xl mx-auto w-full">
           
+          <ErrorMessage 
+            message={message.text} 
+            type={message.type} 
+            onDismiss={() => setMessage({ text: "", type: "" })} 
+          />
+
           {/* Step 0: Job Type Selection */}
           {currentStep === 0 && (
             <div className="animate-fade-in space-y-8">
@@ -448,6 +454,7 @@ export const GetPreferredTeacher = () => {
                       )}
                     </div>
                   </div>
+                </div>
 
                 {/* Post Office */}
                 {postOffices.length > 0 && (
@@ -470,7 +477,7 @@ export const GetPreferredTeacher = () => {
                     </div>
                   </div>
                 )}
-                </div>
+
 
 
                 {/* Area */}
