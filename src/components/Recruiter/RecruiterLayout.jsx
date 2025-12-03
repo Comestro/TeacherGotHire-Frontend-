@@ -16,7 +16,7 @@ const RecruiterLayout = () => {
       <Helmet>
         <title>PTPI | Recruiter Panel</title>
       </Helmet>
-      <div className='min:h-screen w-full bg-background'>
+      <div className='min-h-screen w-full bg-background'>
         <TeacherRecruiterHeader isOpen={isOpen} setIsOpen={setIsOpen} />
         <div className="flex w-full mt-16">
           {/* Hide sidebar on teacher view page */}
@@ -25,7 +25,7 @@ const RecruiterLayout = () => {
               <RecruiterSidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
             </div>
           )}
-          <div className={`w-full transition-all duration-300 ${!isTeacherViewPage && !isOpen ? 'md:ml-[330px]' : 'md:ml-0'} md:p-4`}>
+          <div className={`w-full transition-all duration-300 ${!isTeacherViewPage ? 'md:ml-[350px]' : 'md:ml-0'} md:p-4`}>
             <Outlet context={{ isOpen, setIsOpen }} />
           </div>
         </div>

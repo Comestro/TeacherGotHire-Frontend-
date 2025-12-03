@@ -373,7 +373,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar - Flipkart Style */}
       <motion.div
         ref={sidebarRef}
-        className="fixed left-0 top-16 h-[93%] bg-white flex flex-col
+        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white flex flex-col
             w-[90vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r border-gray-200 shadow-xl md:shadow-none"
         variants={sidebarVariants}
         initial={isDesktop ? "open" : "closed"}

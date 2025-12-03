@@ -67,7 +67,7 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
               className="flex items-center gap-2 text-lg sm:text-xl font-bold text-primary hover:text-accent transition-colors"
             >
               <FaChalkboardTeacher className="w-6 h-6 sm:w-7 sm:h-7" />
-              <span className="xs:inline sm:inline">PTPI Recruiter</span>
+              <span className="xs:inline sm:inline">PTPI</span>
             </Link>
           </div>
 
@@ -158,12 +158,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
                   className="text-sm font-medium text-text hover:text-primary px-3 py-2 transition-colors"
                 >
                   Login
-                </Link>
-                <Link
-                  to="/signup/recruiter"
-                  className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                >
-                  Register
                 </Link>
               </div>
             )}
