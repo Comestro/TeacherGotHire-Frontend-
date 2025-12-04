@@ -5,10 +5,10 @@ echo "🔄 Pulling latest changes from GitHub..."
 git pull origin main
 
 echo "📦 Installing dependencies..."
-npm install --force
+yarn install --force
 
 echo "🧹 Building project..."
-yarn run build --force
+npx vite build   # ← 100% working
 
 echo "♻️ Restarting app with PM2..."
 pm2 restart all

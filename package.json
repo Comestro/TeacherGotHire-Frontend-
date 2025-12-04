@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "yarn vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "proxy": "http://127.0.0.1:8000"
