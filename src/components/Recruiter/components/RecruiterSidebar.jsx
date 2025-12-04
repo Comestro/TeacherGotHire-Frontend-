@@ -33,12 +33,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     subject: [],
     experience_years: { min: "", max: "" },
     gender: [],
-    exam_status: [],
     job_type: [],
-    religion: [],
-    marital_status: [],
-    language: [],
-    total_marks: { min: "", max: "" },
   });
 
   // State for screen size detection
@@ -72,17 +67,12 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [expandedSections, setExpandedSections] = useState({
     location: true,
     education: false,
+    qualification: false,
+    skill: false,
+    subject: false,
     experience: false,
-    classCategory: false,
-    subjects: false,
-    skills: false,
     gender: false,
-    examStatus: false,
     jobType: false,
-    religion: false,
-    maritalStatus: false,
-    language: false,
-    totalMarks: false,
   });
 
   // Initial data fetch
@@ -124,15 +114,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (searchParams.has("qualification")) newFilters.qualification = getList("qualification");
     if (searchParams.has("skill")) newFilters.skill = getList("skill");
     if (searchParams.has("gender")) newFilters.gender = getList("gender");
-    if (searchParams.has("exam_status")) newFilters.exam_status = getList("exam_status");
-    if (searchParams.has("religion")) newFilters.religion = getList("religion");
-    if (searchParams.has("marital_status")) newFilters.marital_status = getList("marital_status");
-    if (searchParams.has("language")) newFilters.language = getList("language");
 
     // Range filters
     if (searchParams.has("experience_years_min")) newFilters.experience_years.min = searchParams.get("experience_years_min");
     if (searchParams.has("experience_years_max")) newFilters.experience_years.max = searchParams.get("experience_years_max");
-    if (searchParams.has("total_marks_min")) newFilters.total_marks.min = searchParams.get("total_marks_min");
     if (searchParams.has("total_marks_max")) newFilters.total_marks.max = searchParams.get("total_marks_max");
 
     setFilters(newFilters);
@@ -292,12 +277,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       subject: [],
       experience_years: { min: "", max: "" },
       gender: [],
-      exam_status: [],
       job_type: [],
-      religion: [],
-      marital_status: [],
-      language: [],
-      total_marks: { min: "", max: "" },
     });
 
     setSelectedSkills([]);
@@ -314,12 +294,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       subjects: false,
       skills: false,
       gender: false,
-      examStatus: false,
       jobType: false,
-      religion: false,
-      maritalStatus: false,
-      language: false,
-      totalMarks: false,
     });
 
     if (!isDesktop) setIsOpen(false);
@@ -546,79 +521,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     </button>
                   </span>
                 ))}
-
-                {/* Exam Status filters */}
-                {filters.exam_status.map((item, index) => (
-                  <span key={`exam_status-${index}`} className="inline-flex items-center bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs">
-                    Exam Status: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        exam_status: prev.exam_status.filter(e => e !== item)
-                      }));
-                    }} className="ml-1 text-cyan-600 hover:text-cyan-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Religion filters */}
-                {filters.religion.map((item, index) => (
-                  <span key={`religion-${index}`} className="inline-flex items-center bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
-                    Religion: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        religion: prev.religion.filter(r => r !== item)
-                      }));
-                    }} className="ml-1 text-gray-600 hover:text-gray-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Marital Status filters */}
-                {filters.marital_status.map((item, index) => (
-                  <span key={`marital_status-${index}`} className="inline-flex items-center bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs">
-                    Marital Status: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        marital_status: prev.marital_status.filter(m => m !== item)
-                      }));
-                    }} className="ml-1 text-rose-600 hover:text-rose-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Language filters */}
-                {filters.language.map((item, index) => (
-                  <span key={`language-${index}`} className="inline-flex items-center bg-lime-100 text-lime-800 px-2 py-1 rounded-full text-xs">
-                    Language: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        language: prev.language.filter(l => l !== item)
-                      }));
-                    }} className="ml-1 text-lime-600 hover:text-lime-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Total Marks filters */}
-                {(filters.total_marks.min || filters.total_marks.max) && (
-                  <span className="inline-flex items-center bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs">
-                    Total Marks: {filters.total_marks.min || 0}-{filters.total_marks.max || '∞'}
-                    <button onClick={() => setFilters(prev => ({
-                      ...prev,
-                      total_marks: { min: "", max: "" }
-                    }))} className="ml-1 text-emerald-600 hover:text-emerald-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                )}
               </div>
             </div>
           )}
@@ -1154,288 +1056,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+          </div>
 
-            {/* Exam Status Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("examStatus")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdCheck className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Exam Status</span>
-                </div>
-                {expandedSections.examStatus ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
 
-              <AnimatePresence>
-                {expandedSections.examStatus && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2">
-                      {["Qualified", "Not Qualified", "Pending"].map((status) => (
-                        <label
-                          key={status}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.exam_status.includes(status)}
-                              onChange={() => {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  exam_status: prev.exam_status.includes(status)
-                                    ? prev.exam_status.filter(s => s !== status)
-                                    : [...prev.exam_status, status]
-                                }));
-                              }}
-                            />
-                            {filters.exam_status.includes(status) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{status}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
-            {/* Religion Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("religion")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsPeople className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Religion</span>
-                </div>
-                {expandedSections.religion ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
 
-              <AnimatePresence>
-                {expandedSections.religion && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2">
-                      {["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Other"].map((religion) => (
-                        <label
-                          key={religion}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.religion.includes(religion)}
-                              onChange={() => {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  religion: prev.religion.includes(religion)
-                                    ? prev.religion.filter(r => r !== religion)
-                                    : [...prev.religion, religion]
-                                }));
-                              }}
-                            />
-                            {filters.religion.includes(religion) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{religion}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
-            {/* Marital Status Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("maritalStatus")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdFavorite className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Marital Status</span>
-                </div>
-                {expandedSections.maritalStatus ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
 
-              <AnimatePresence>
-                {expandedSections.maritalStatus && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2">
-                      {["single", "married"].map((status) => (
-                        <label
-                          key={status}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.marital_status.includes(status)}
-                              onChange={() => {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  marital_status: prev.marital_status.includes(status)
-                                    ? prev.marital_status.filter(s => s !== status)
-                                    : [...prev.marital_status, status]
-                                }));
-                              }}
-                            />
-                            {filters.marital_status.includes(status) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text capitalize">{status}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
-            {/* Language Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("language")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdLanguage className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Language</span>
-                </div>
-                {expandedSections.language ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.language && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2">
-                      {["Hindi", "English", "Bengali", "Telugu", "Tamil", "Urdu", "Other"].map((language) => (
-                        <label
-                          key={language}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.language.includes(language)}
-                              onChange={() => {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  language: prev.language.includes(language)
-                                    ? prev.language.filter(l => l !== language)
-                                    : [...prev.language, language]
-                                }));
-                              }}
-                            />
-                            {filters.language.includes(language) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{language}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Total Marks Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("totalMarks")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdSchool className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Total Marks</span>
-                </div>
-                {expandedSections.totalMarks ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.totalMarks && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          placeholder="Min"
-                          value={filters.total_marks.min}
-                          onChange={(e) => setFilters(prev => ({
-                            ...prev,
-                            total_marks: { ...prev.total_marks, min: e.target.value }
-                          }))}
-                          className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary"
-                        />
-                        <span className="text-secondary">to</span>
-                        <input
-                          type="number"
-                          placeholder="Max"
-                          value={filters.total_marks.max}
-                          onChange={(e) => setFilters(prev => ({
-                            ...prev,
-                            total_marks: { ...prev.total_marks, max: e.target.value }
-                          }))}
-                          className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary"
-                        />
-                      </div>
-                      <p className="text-xs text-secondary mt-2">Exam marks range</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
         </div>
 
