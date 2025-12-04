@@ -1,11 +1,16 @@
 #!/bin/bash
 cd /var/www/ptpinstitute
+
 echo "Pulling latest code..."
 git pull origin main
+
 echo "Installing dependencies..."
-npm install --force         # or composer install / pip install -r requirements.txt
+yarn install --force
+
 echo "Running build..."
-yarn run build --force       # optional if frontend
+yarn build
+
 echo "Restarting server..."
-pm2 restart all     # or systemctl restart apache2 / nginx / gunicorn
+pm2 restart all
+
 echo "Deployment complete!"
