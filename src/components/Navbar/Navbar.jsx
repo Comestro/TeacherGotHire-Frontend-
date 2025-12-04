@@ -327,7 +327,7 @@ const Navbar = ({ links }) => {
       </div>
 
       <TeacherEnquiry showModal={showEnquiry} setShowModal={setShowEnquiry} />
-      <style jsx>{`
+      <style>{`
         @keyframes shine {
           from {
             transform: translateX(-100%);
