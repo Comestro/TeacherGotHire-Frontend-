@@ -18,11 +18,13 @@ jobs:
         with:
           node-version: 20
 
+      # FIX 1: Install ALL dependencies (including devDependencies)
       - name: Install dependencies
-        run: yarn install --production
+        run: yarn install
 
+      # FIX 2: Use npx to run vite build
       - name: Build the app
-        run: yarn build
+        run: npx vite build
 
       - name: Deploy to KVM2 via SSH
         uses: appleboy/scp-action@v0.1.4
@@ -30,7 +32,7 @@ jobs:
           host: 147.93.30.100
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "build/*"
+          source: "dist/*"
           target: "/var/www/ptpinstitute/"
 
       - name: Restart Nginx or PM2
