@@ -1,8 +1,10 @@
 import React from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
+import {  useNavigate } from "react-router-dom";
 
 // FeatureCard Component
 const FeatureCard = ({ icon, title, description, quote }) => (
+
   <div className="bg-white border border-slate-200 shadow-none hover:shadow-sm rounded-2xl p-8 text-left transition-all duration-300 group h-full flex flex-col">
     <div className="mb-6 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
       {icon}
@@ -19,6 +21,7 @@ const FeatureCard = ({ icon, title, description, quote }) => (
 
 // DetailSection Component
 const DetailSection = () => {
+  const navigate = useNavigate();
   const features = [
     {
       icon: (
@@ -82,9 +85,9 @@ const DetailSection = () => {
         </div>
 
         <div className="text-center flex items-center justify-center">
-          <button className="bg-teal-600 text-white py-4 px-8 flex items-center justify-center rounded-xl text-lg font-bold shadow-sm hover:bg-teal-700 hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300">
+          <button onClick={() => navigate('/get-preferred-teacher')} className="bg-teal-600 text-white py-4 px-8 flex items-center justify-center rounded-xl text-lg font-bold shadow-sm hover:bg-teal-700 hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300">
             Find Tutors <FaArrowRightLong className="ml-2" />
-          </button>
+          </button> 
         </div>
       </div>
     </div>

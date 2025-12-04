@@ -453,23 +453,78 @@ const BasicInformation = () => {
 
             {/* Languages */}
             <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 {bi("Languages you can speek")} 
               </label>
-              <MultiSelect
-                value={formData.language}
-                onChange={(val) => handleInputChange("language", val)}
-                disabled={!isEditing}
-                options={[
-                  { value: "English", label: "English" },
-                  { value: "Hindi", label: "Hindi" },
-                  { value: "Bengali", label: "Bengali" },
-                  { value: "Telugu", label: "Telugu" },
-                  { value: "Tamil", label: "Tamil" },
-                  { value: "Urdu", label: "Urdu" },
-                  { value: "Other", label: "Other" },
-                ]}
-              />
+              
+              {!isEditing ? (
+                // View Mode - Show only selected languages as badges
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    const selectedValues = Array.isArray(formData.language) 
+                      ? formData.language 
+                      : (formData.language ? String(formData.language).split(',').map(v => v.trim()) : []);
+                    
+                    return selectedValues.length > 0 ? (
+                      selectedValues.map((lang) => (
+                        <span
+                          key={lang}
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-teal-50 text-teal-700 border border-teal-100"
+                        >
+                          {bi(lang)}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-slate-400 italic">No languages selected</span>
+                    );
+                  })()}
+                </div>
+              ) : (
+                // Edit Mode - Show all checkboxes
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {[
+                    { value: "English", label: "English" },
+                    { value: "Hindi", label: "Hindi" },
+                    { value: "Bengali", label: "Bengali" },
+                    { value: "Telugu", label: "Telugu" },
+                    { value: "Tamil", label: "Tamil" },
+                    { value: "Urdu", label: "Urdu" },
+                    { value: "Other", label: "Other" },
+                  ].map((lang) => {
+                    const selectedValues = Array.isArray(formData.language) 
+                      ? formData.language 
+                      : (formData.language ? String(formData.language).split(',').map(v => v.trim()) : []);
+                    const isChecked = selectedValues.includes(lang.value);
+                    
+                    return (
+                      <label
+                        key={lang.value}
+                        className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                          isChecked
+                            ? 'border-teal-500 bg-teal-50'
+                            : 'border-slate-200 hover:border-teal-300 bg-white'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              handleInputChange("language", [...selectedValues, lang.value]);
+                            } else {
+                              handleInputChange("language", selectedValues.filter(v => v !== lang.value));
+                            }
+                          }}
+                          className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-2 focus:ring-teal-500"
+                        />
+                        <span className={`text-sm font-medium ${isChecked ? 'text-teal-700' : 'text-slate-700'}`}>
+                          {bi(lang.label)}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
