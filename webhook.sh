@@ -7,6 +7,7 @@ git pull origin main
 echo "📦 Installing dependencies..."
 yarn install --force
 
+
 echo "🧹 Building project..."
 node node_modules/vite/bin/vite.js build   # ← FIXED
 
