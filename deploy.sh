@@ -8,7 +8,7 @@ echo "Installing dependencies..."
 yarn install --force
 
 echo "Running build..."
-yarn build
+node node_modules/vite/bin/vite.js build
 
 echo "Restarting server..."
 pm2 restart all

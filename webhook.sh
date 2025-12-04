@@ -8,7 +8,7 @@ echo "📦 Installing dependencies..."
 yarn install --force
 
 echo "🧹 Building project..."
-npx vite build   # ← 100% working
+node node_modules/vite/bin/vite.js build   # ← FIXED
 
 echo "♻️ Restarting app with PM2..."
 pm2 restart all
