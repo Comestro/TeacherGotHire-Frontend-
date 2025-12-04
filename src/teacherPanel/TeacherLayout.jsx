@@ -111,7 +111,7 @@ const TeacherLayout = () => {
         </div>
         <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
         <SidebarItem to="/teacher/personal-profile" icon={HiUser} label="Personal Details" />
-        <SidebarItem to="view-attempts" icon={HiMiniEye} label="View Attempts" />
+        <SidebarItem to="view-attempts" icon={HiMiniEye} label="View Exam Attempts" />
         <SidebarItem to="job-apply" icon={HiBriefcase} label="Job Applications" />
 
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">

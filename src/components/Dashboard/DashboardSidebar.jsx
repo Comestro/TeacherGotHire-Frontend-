@@ -104,7 +104,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 }
               >
                 <HiMiniEye className="size-5"/>
-                View Attempts
+                View Exam Attempts
               </NavLink>
 
               <NavLink
