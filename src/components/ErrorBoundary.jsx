@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HiExclamationTriangle, HiHome, HiRefresh } from 'react-icons/hi';
+import { HiExclamation, HiHome, HiRefresh } from 'react-icons/hi';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -39,7 +39,7 @@ class ErrorBoundary extends React.Component {
             <div className="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <HiExclamationTriangle className="w-8 h-8 text-white" />
+                  <HiExclamation className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-white">
