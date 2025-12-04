@@ -58,6 +58,7 @@ import QuestionManagementPortal from "./components/SubjectWiseExam/QuestionManag
 import { GetPreferredTeacher } from "./components/enquiry/GetPreferredTeacher";
 import ManageExam from "./components/ManageExam/ManageExam";
 import SubjectExpertLayout from "./components/ManageExam/SubjectExpertLayout";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ExamSetterProfile from "./components/ManageExam/ExamSetterProfile";
 import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
@@ -382,7 +383,9 @@ function App() {
     <Provider store={store}>
       <HelmetProvider>
         <BrowserRouter>
-          <AppContent />
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
         </BrowserRouter>
       </HelmetProvider>
     </Provider>
