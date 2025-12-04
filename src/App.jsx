@@ -7,7 +7,6 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
-import JobProfileEdit from "./components/Profile/JobProfile/jobProfileEdit";
 import AdminDashboard from "./admin/Dashboard/Dashboard";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
 import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
@@ -328,15 +327,7 @@ function AppContent() {
               />
             }
           />
-          <Route
-            path="job-profile"
-            element={
-              <RoleBasedRoute
-                element={<JobProfileEdit />}
-                allowedRoles={["teacher"]}
-              />
-            }
-          />
+          
           <Route
             path="view-attempts"
             element={
@@ -377,15 +368,7 @@ function AppContent() {
               />
             }
           />
-          <Route
-            path="job-profile"
-            element={
-              <RoleBasedRoute
-                element={<JobProfileEdit />}
-                allowedRoles={["teacher"]}
-              />
-            }
-          />
+       
         </Route>
 
         {/* 404 */}
@@ -394,7 +377,6 @@ function AppContent() {
     </>
   );
 }
-
 function App() {
   return (
     <Provider store={store}>

@@ -34,7 +34,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="flex flex-col h-screen bg-white">
           <div className="flex flex-col justify-center py-4">
             <h1 className="font-bold text-2xl text-primary text-center">
-              PTPI
+              PTPI11
             </h1>
             <p className="text-sm text-center text-accent font-medium mb-2">
               Private Teacher Provider Institute.
@@ -90,21 +90,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               >
                 <HiUser className="size-5" />
                 Personal Details
-              </NavLink>
-              <NavLink
-                to="/teacher/job-profile"
-                onClick={() => setIsOpen(false)}
-                end
-                className={({ isActive }) =>
-                  `block py-3 px-4 mx-2 rounded-lg ${
-                    isActive
-                      ? "bg-primary text-white font-semibold"
-                      : "text-secondary"
-                  } hover:bg-primary hover:text-white transition flex items-center gap-2`
-                }
-              >
-                <HiBriefcase className="size-5" />
-                Job Details
               </NavLink>
               <NavLink
                 to="view-attempts"

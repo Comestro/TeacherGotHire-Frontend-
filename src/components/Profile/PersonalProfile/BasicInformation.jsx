@@ -283,7 +283,7 @@ const BasicInformation = () => {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 transition-all text-sm font-medium shadow-sm"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 border border-slate-200 text-white rounded-lg hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all text-sm font-medium shadow-md"
           >
             <HiOutlinePencilAlt className="w-4 h-4" />
             {bi("Edit Profile")}
@@ -485,7 +485,7 @@ const BasicInformation = () => {
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 shadow-lg shadow-teal-200 transition-all hover:-translate-y-0.5"
+              className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 transition-all hover:-translate-y-0.5"
             >
               {bi("Save Changes")}
             </button>
