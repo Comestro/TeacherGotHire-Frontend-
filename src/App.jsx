@@ -382,7 +382,12 @@ function App() {
   return (
     <Provider store={store}>
       <HelmetProvider>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <ErrorBoundary>
             <AppContent />
           </ErrorBoundary>
