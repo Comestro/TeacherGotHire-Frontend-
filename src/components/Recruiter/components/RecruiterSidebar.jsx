@@ -1,10 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BsGeoAlt, BsPersonWorkspace, BsCode, BsCheck, BsSearch, BsBriefcase, BsGenderAmbiguous, BsPeople } from "react-icons/bs";
-import { IoMdClose } from "react-icons/io";
-import { MdExpandMore, MdExpandLess, MdSchool, MdFilterAlt, MdCheckBox, MdCheckBoxOutlineBlank, MdSubject, MdCheck, MdFavorite, MdLanguage } from "react-icons/md";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import {
+  FiFilter,
+  FiX,
+  FiChevronDown,
+  FiChevronUp,
+  FiMapPin,
+  FiSearch,
+  FiCheck,
+} from "react-icons/fi";
+import {
+  MdSchool,
+  MdWork,
+  MdCode,
+  MdCheckBox,
+  MdCheckBoxOutlineBlank,
+  MdPeople,
+} from "react-icons/md";
 import {
   getAllSkills,
   getQualification,
@@ -12,15 +26,95 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
-import { motion, AnimatePresence } from "framer-motion";
+
+// Bihar districts list
+const BIHAR_DISTRICTS = [
+  "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
+  "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad",
+  "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani",
+  "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa",
+  "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul",
+  "Vaishali", "West Champaran"
+].sort();
+
+// Filter Section Component (memoized to prevent re-renders)
+const FilterSection = React.memo(({ title, icon: Icon, section, isExpanded, onToggle, children }) => {
+  return (
+    <div className="border-b border-slate-200">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors group"
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${title} filters`}
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="w-5 h-5 text-teal-600" aria-hidden="true" />
+          <span className="font-semibold text-slate-700 text-sm uppercase tracking-wide">
+            {title}
+          </span>
+        </div>
+        {isExpanded ? (
+          <FiChevronUp className="w-4 h-4 text-slate-400" aria-hidden="true" />
+        ) : (
+          <FiChevronDown className="w-4 h-4 text-slate-400" aria-hidden="true" />
+        )}
+      </button>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-2">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+FilterSection.displayName = 'FilterSection';
+
+// Checkbox Item Component (memoized to prevent re-renders)
+const CheckboxItem = React.memo(({ checked, onChange, label, disabled = false }) => (
+  <label className="flex items-center gap-2 py-2 cursor-pointer group hover:bg-slate-50 px-2 rounded transition-colors">
+    <div className="relative flex items-center">
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        aria-label={label}
+      />
+      {checked ? (
+        <MdCheckBox className="w-5 h-5 text-teal-600" aria-hidden="true" />
+      ) : (
+        <MdCheckBoxOutlineBlank className="w-5 h-5 text-slate-400 group-hover:text-teal-500" aria-hidden="true" />
+      )}
+    </div>
+    <span className={`text-sm ${checked ? "text-teal-700 font-medium" : "text-slate-600"}`}>
+      {label}
+    </span>
+  </label>
+));
+
+CheckboxItem.displayName = 'CheckboxItem';
 
 const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const dispatch = useDispatch();
   const sidebarRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
-  // State for filters
+  // Redux data
+  const { qualification, allSkill, classCategories, teacherjobRole } = useSelector(
+    (state) => state.jobProfile
+  );
+
+  // Main filter state
   const [filters, setFilters] = useState({
     city: [],
     pincode: [],
@@ -28,54 +122,36 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     village: [],
     state: [],
     qualification: [],
-    skill: [],
     class_category: [],
     subject: [],
-    experience_years: { min: "", max: "" },
     gender: [],
     job_type: [],
   });
 
-  // State for screen size detection
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-
-  // Get data from redux store
-  const { qualification, allSkill, classCategories, teacherjobRole } = useSelector(
-    (state) => state.jobProfile
-  );
-
-  // State for local data
-  const [qualificationData, setQualificationData] = useState([]);
-  const [skillData, setSkillData] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
-  const [jobTypeData, setJobTypeData] = useState([]);
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [selectedQualifications, setSelectedQualifications] = useState([]);
-  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState({});
-  const [searchSkill, setSearchSkill] = useState("");
-
-  // Location input state
-  const [inputValues, setInputValues] = useState({
-    pincode: "",
-    city: "",
-    block: "",
-    village: "",
-  });
-
-  // Section toggle state
+  // UI state
   const [expandedSections, setExpandedSections] = useState({
     location: true,
     education: false,
-    qualification: false,
-    skill: false,
-    subject: false,
-    experience: false,
-    gender: false,
-    jobType: false,
+    classSubject: false,
+    other: false,
   });
 
-  // Initial data fetch
+  // Local state for inputs
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [postOffices, setPostOffices] = useState([]);
+  const [selectedPostOffice, setSelectedPostOffice] = useState("");
+  const [area, setArea] = useState("");
+  const [loadingPostOffices, setLoadingPostOffices] = useState(false);
+
+  const [selectedQualifications, setSelectedQualifications] = useState([]);
+  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState({});
+
+  // Responsive detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Initialize data
   useEffect(() => {
     dispatch(getAllSkills());
     dispatch(getQualification());
@@ -83,188 +159,171 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     dispatch(getTeacherjobType());
   }, [dispatch]);
 
-  // Update local data when redux data changes
+  // Fetch post offices when pincode changes
   useEffect(() => {
-    setQualificationData(qualification);
-    setSkillData(allSkill);
-    setCategoryData(classCategories);
-    setJobTypeData(teacherjobRole);
-  }, [qualification, allSkill, classCategories, teacherjobRole]);
+    if (pincode && pincode.length === 6) {
+      setLoadingPostOffices(true);
+      fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data[0]?.Status === "Success") {
+            setPostOffices(data[0].PostOffice || []);
+          } else {
+            setPostOffices([]);
+          }
+        })
+        .catch(() => setPostOffices([]))
+        .finally(() => setLoadingPostOffices(false));
+    } else {
+      setPostOffices([]);
+      setSelectedPostOffice("");
+    }
+  }, [pincode]);
 
-  // Initialize filters from URL
+  // Responsive handler
   useEffect(() => {
-    const newFilters = { ...filters };
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) setIsOpen(true);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setIsOpen]);
+
+  // Track if URL params have been loaded
+  const hasLoadedUrlParams = useRef(false);
+
+  // Load filters from URL (only once on mount)
+  useEffect(() => {
+    if (hasLoadedUrlParams.current) return;
     
-    // Helper to split comma-separated values
+    const newFilters = {};
     const getList = (key) => {
       const val = searchParams.get(key);
-      return val ? val.split(",") : [];
+      return val ? val.split(",").filter(Boolean) : [];
     };
 
-    if (searchParams.has("job_type")) newFilters.job_type = getList("job_type");
-    if (searchParams.has("class_category")) newFilters.class_category = getList("class_category");
-    if (searchParams.has("subjects")) newFilters.subjects = getList("subjects");
-    if (searchParams.has("state")) newFilters.state = getList("state");
-    if (searchParams.has("city")) newFilters.city = getList("city");
-    if (searchParams.has("pincode")) newFilters.pincode = getList("pincode");
-    if (searchParams.has("block")) newFilters.block = getList("block");
-    if (searchParams.has("village")) newFilters.village = getList("village");
-    
-    // Other array filters
-    if (searchParams.has("qualification")) newFilters.qualification = getList("qualification");
-    if (searchParams.has("skill")) newFilters.skill = getList("skill");
-    if (searchParams.has("gender")) newFilters.gender = getList("gender");
+    // Initialize with empty arrays/objects
+    newFilters.city = [];
+    newFilters.pincode = [];
+    newFilters.block = [];
+    newFilters.village = [];
+    newFilters.state = [];
+    newFilters.qualification = [];
+    newFilters.class_category = [];
+    newFilters.subject = [];
+    newFilters.gender = [];
+    newFilters.job_type = [];
 
-    // Range filters
-    if (searchParams.has("experience_years_min")) newFilters.experience_years.min = searchParams.get("experience_years_min");
-    if (searchParams.has("experience_years_max")) newFilters.experience_years.max = searchParams.get("experience_years_max");
-    if (searchParams.has("total_marks_max")) newFilters.total_marks.max = searchParams.get("total_marks_max");
+    // Load all filter types from URL
+    ["city", "pincode", "block", "village", "state", "qualification", "gender", "job_type"].forEach(
+      (key) => {
+        if (searchParams.has(key)) newFilters[key] = getList(key);
+      }
+    );
+
+
 
     setFilters(newFilters);
     
-    // Sync local selection states
-    setSelectedSkills(newFilters.skill);
-    setSelectedQualifications(newFilters.qualification);
-    setSelectedClassCategories(newFilters.class_category);
-    // Note: selectedSubjects is an object { category: [subjects] }, hard to reconstruct fully without category mapping logic
-    // For now, we just ensure the filter state is correct. 
-    // If we want checkboxes to work perfectly for subjects, we might need to infer categories or just rely on the flat list in filters.subject
+    // Load location-specific params
+    if (searchParams.has("district")) setSelectedDistrict(searchParams.get("district"));
+    if (searchParams.has("pincode")) setPincode(searchParams.get("pincode"));
+    if (searchParams.has("post_office")) setSelectedPostOffice(searchParams.get("post_office"));
+    if (searchParams.has("area")) setArea(searchParams.get("area"));
     
+    hasLoadedUrlParams.current = true;
   }, [searchParams]);
 
-  // Handle clicks outside sidebar to close on mobile
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        isOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
+  // Sync filters to URL
+  const syncFiltersToURL = () => {
+    const params = new URLSearchParams();
+
+    // Add location-specific params
+    params.set("state", "Bihar"); // Always Bihar
+    if (selectedDistrict) params.set("district", selectedDistrict);
+    if (pincode) params.set("pincode", pincode);
+    if (selectedPostOffice) params.set("post_office", selectedPostOffice);
+    if (area) params.set("area", area);
+
+    // Add other filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length > 0) {
+        params.set(key, value.join(","));
+      } else if (typeof value === "object" && (value.min || value.max)) {
+        if (value.min) params.set(`${key}_min`, value.min);
+        if (value.max) params.set(`${key}_max`, value.max);
       }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, setIsOpen]);
-
-  // Prevent body scroll when sidebar is open on mobile
-  useEffect(() => {
-    if (isOpen && !isDesktop) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, isDesktop]);
-
-  // Detect screen size changes
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Filter subjects based on selected class categories
-  const getFilteredSubjects = () => {
-    if (selectedClassCategories.length === 0) return [];
-
-    return classCategories
-      .filter((category) => selectedClassCategories.includes(category.name))
-      .map((category) => ({
-        categoryName: category.name,
-        subjects: [
-          ...new Set(category.subjects.map((sub) => sub.subject_name)),
-        ],
-      }));
-  };
-
-  // Toggle handlers for selections
-  const handleSkillToggle = (skillName) => {
-    setSelectedSkills((prev) =>
-      prev.includes(skillName)
-        ? prev.filter((skill) => skill !== skillName)
-        : [...prev, skillName]
-    );
-  };
-
-  const handleQualificationToggle = (qualificationName) => {
-    setSelectedQualifications((prev) =>
-      prev.includes(qualificationName)
-        ? prev.filter((name) => name !== qualificationName)
-        : [...prev, qualificationName]
-    );
-  };
-
-  const handleClassCategoryToggle = (categoryName) => {
-    setSelectedClassCategories((prev) =>
-      prev.includes(categoryName)
-        ? prev.filter((name) => name !== categoryName)
-        : [...prev, categoryName]
-    );
-  };
-
-  const handleSubjectToggle = (categoryName, subjectName) => {
-    setSelectedSubjects((prev) => {
-      const categorySubjects = prev[categoryName] || [];
-      return {
-        ...prev,
-        [categoryName]: categorySubjects.includes(subjectName)
-          ? categorySubjects.filter((sub) => sub !== subjectName)
-          : [...categorySubjects, subjectName],
-      };
     });
+
+    setSearchParams(params);
+    dispatch(fetchTeachers(params.toString()));
   };
 
-  // Location input handlers
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setInputValues((prev) => ({ ...prev, [name]: value }));
-  };
+  // Apply filters
+  const handleApplyFilters = () => {
+    // Flatten selectedSubjects object into an array
+    const allSelectedSubjects = Object.values(selectedSubjects).flat();
+    
+    // Create updated filters object
+    const updatedFilters = {
+      ...filters,
+      qualification: selectedQualifications,
+      class_category: selectedClassCategories,
+      subject: allSelectedSubjects,
+    };
+    
+    // Update state
+    setFilters(updatedFilters);
+    
+    // Build filter object for API (not query string!)
+    const filterObject = {};
+    
+    // Add location-specific params
+    filterObject.state = "Bihar"; // Always Bihar
+    if (selectedDistrict) filterObject.district = selectedDistrict;
+    if (pincode) filterObject.pincode = pincode;
+    if (selectedPostOffice) filterObject.post_office = selectedPostOffice;
+    if (area) filterObject.area = area;
 
-  const handleAddValue = (field) => {
-    if (inputValues[field].trim()) {
-      setFilters((prev) => ({
-        ...prev,
-        [field]: [...prev[field], inputValues[field].trim()],
-      }));
-      setInputValues((prev) => ({ ...prev, [field]: "" }));
+    // Add subjects
+    if (allSelectedSubjects.length > 0) {
+      filterObject.subject = allSelectedSubjects;
     }
+
+    // Add other filters
+    Object.entries(updatedFilters).forEach(([key, value]) => {
+      // Skip subject since we already added it
+      if (key === 'subject') return;
+      
+      if (Array.isArray(value) && value.length > 0) {
+        filterObject[key] = value;
+      } else if (typeof value === "object" && (value.min || value.max)) {
+        if (value.min) filterObject[`${key}_min`] = value.min;
+        if (value.max) filterObject[`${key}_max`] = value.max;
+      }
+    });
+
+    // Build URL params for browser URL
+    const params = new URLSearchParams();
+    Object.entries(filterObject).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        params.set(key, value.join(","));
+      } else {
+        params.set(key, value);
+      }
+    });
+
+    setSearchParams(params);
+    
+    // Pass object to fetchTeachers, not string!
+    dispatch(fetchTeachers(filterObject));
+    
+    if (isMobile) setIsOpen(false);
   };
 
-  const handleKeyDown = (e, field) => {
-    if (e.key === 'Enter') {
-      handleAddValue(field);
-    }
-  };
-
-  const handleRemoveValue = (field, index) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
-
-  // Section toggle handler
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  // Clear all filters
-  const handleClear = () => {
+  // Reset all filters
+  const handleResetFilters = () => {
     setFilters({
       city: [],
       pincode: [],
@@ -272,828 +331,343 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       village: [],
       state: [],
       qualification: [],
-      skill: [],
       class_category: [],
       subject: [],
-      experience_years: { min: "", max: "" },
       gender: [],
       job_type: [],
     });
-
-    setSelectedSkills([]);
     setSelectedQualifications([]);
     setSelectedClassCategories([]);
     setSelectedSubjects({});
-    setSearchSkill("");
+    setSelectedDistrict("");
+    setPincode("");
+    setPostOffices([]);
+    setSelectedPostOffice("");
+    setArea("");
+    setSearchParams(new URLSearchParams());
+    dispatch(fetchTeachers(""));
+  };
 
-    setExpandedSections({
-      location: true,
-      education: false,
-      experience: false,
-      classCategory: false,
-      subjects: false,
-      skills: false,
-      gender: false,
-      jobType: false,
+  // Toggle section
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+
+  // Count active filters
+  const getActiveFilterCount = () => {
+    let count = 0;
+    Object.entries(filters).forEach(([key, value]) => {
+      if (Array.isArray(value)) count += value.length;
+      else if (typeof value === "object" && (value.min || value.max)) count += 1;
     });
-
-    if (!isDesktop) setIsOpen(false);
+    return count;
   };
 
-  // Update filters when selections change
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, skill: selectedSkills }));
-  }, [selectedSkills]);
+  const activeCount = getActiveFilterCount();
 
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, qualification: selectedQualifications }));
-  }, [selectedQualifications]);
-
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      class_category: selectedClassCategories,
-    }));
-  }, [selectedClassCategories]);
-
-  useEffect(() => {
-    const allSubjects = Object.values(selectedSubjects).flat();
-    setFilters((prev) => ({ ...prev, subject: allSubjects }));
-  }, [selectedSubjects]);
-
-  // Animation variants for framer-motion
-  const sidebarVariants = {
-    open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
-    closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 30 } }
-  };
-
-  // Component rendering
   return (
     <>
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 bg-black z-40"
-            onClick={() => setIsOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Backdrop for mobile */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-
-
-      {/* Sidebar - Flipkart Style */}
-      <motion.div
+      {/* Sidebar */}
+      <aside
         ref={sidebarRef}
-        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white flex flex-col
-            w-[90vw] max-w-[350px] z-50 md:z-30 md:translate-x-0 md:w-[350px] border-r border-gray-200 shadow-xl md:shadow-none"
-        variants={sidebarVariants}
-        initial={isDesktop ? "open" : "closed"}
-        animate={(isOpen || isDesktop) ? "open" : "closed"}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`
+          fixed md:sticky top-0 h-[92vh] bg-white z-50 flex flex-col
+          ${isMobile ? "w-80 shadow-2xl" : "w-72 border-r border-slate-200"}
+          ${isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"}
+          transition-transform duration-300 ease-in-out
+        `}
+        aria-label="Teacher filters sidebar"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white z-10 border-b px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-text uppercase">Filters</h2>
-            {Object.values(filters).some(value =>
-              Array.isArray(value) ? value.length > 0 : (value.min || value.max)
-            ) && (
-                <button
-                  onClick={handleClear}
-                  className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded transition-colors"
-                  aria-label="Clear all filters"
-                >
-                  Clear All
-                </button>
-              )}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-white">
+          <div className="flex items-center gap-2">
+            <FiFilter className="w-5 h-5 text-teal-600" aria-hidden="true" />
+            <h2 className="text-lg font-bold text-slate-800">Filters</h2>
+            {activeCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-teal-600 text-white text-xs font-semibold rounded-full" aria-label={`${activeCount} active filters`}>
+                {activeCount}
+              </span>
+            )}
           </div>
+          {isMobile && (
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-slate-100 rounded transition-colors"
+              aria-label="Close filters"
+            >
+              <FiX className="w-5 h-5 text-slate-600" aria-hidden="true" />
+            </button>
+          )}
         </div>
 
-        {/* Active Filters Section */}
-        {Object.values(filters).some(value =>
-          Array.isArray(value) ? value.length > 0 : (value.min || value.max)
-        ) && (
-            <div className="bg-blue-50 border-b px-4 py-3">
-              <h3 className="text-sm font-semibold text-text mb-2">Active Filters:</h3>
-              <div className="flex flex-wrap gap-2">
-                {/* Location filters */}
-                {filters.state.map((item, index) => (
-                  <span key={`state-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    State: {item}
-                    <button onClick={() => handleRemoveValue('state', index)} className="ml-1 text-blue-600 hover:text-blue-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-                {filters.city.map((item, index) => (
-                  <span key={`city-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    city: {item}
-                    <button onClick={() => handleRemoveValue('city', index)} className="ml-1 text-blue-600 hover:text-blue-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-                {filters.block.map((item, index) => (
-                  <span key={`block-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    Block: {item}
-                    <button onClick={() => handleRemoveValue('block', index)} className="ml-1 text-blue-600 hover:text-blue-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-                {filters.village.map((item, index) => (
-                  <span key={`village-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    Village: {item}
-                    <button onClick={() => handleRemoveValue('village', index)} className="ml-1 text-blue-600 hover:text-blue-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-                {filters.pincode.map((item, index) => (
-                  <span key={`pincode-${index}`} className="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    Pincode: {item}
-                    <button onClick={() => handleRemoveValue('pincode', index)} className="ml-1 text-blue-600 hover:text-blue-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
+        {/* Filter Sections - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Location Filter */}
+          <FilterSection 
+            title="Location" 
+            icon={FiMapPin} 
+            section="location"
+            isExpanded={expandedSections.location}
+            onToggle={() => toggleSection("location")}
+          >
+            <div className="space-y-4">
+              {/* State - Dropdown with only Bihar */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">State</label>
+                <select
+                  value="Bihar"
+                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium cursor-not-allowed"
+                  aria-label="Select state"
+                >
+                  <option value="Bihar">Bihar</option>
+                </select>
+              </div>
 
-                {/* Qualification filters */}
-                {filters.qualification.map((item, index) => (
-                  <span key={`qualification-${index}`} className="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                    Qualification: {item}
-                    <button onClick={() => {
-                      setSelectedQualifications(prev => prev.filter(q => q !== item));
-                    }} className="ml-1 text-green-600 hover:text-green-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
+              {/* District Dropdown */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">District</label>
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  aria-label="Select district"
+                >
+                  <option value="">Select District</option>
+                  {BIHAR_DISTRICTS.map((district) => (
+                    <option key={district} value={district}>
+                      {district}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Skill filters */}
-                {filters.skill.map((item, index) => (
-                  <span key={`skill-${index}`} className="inline-flex items-center bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
-                    Skill: {item}
-                    <button onClick={() => {
-                      setSelectedSkills(prev => prev.filter(s => s !== item));
-                    }} className="ml-1 text-purple-600 hover:text-purple-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Class Category filters */}
-                {filters.class_category.map((item, index) => (
-                  <span key={`class_category-${index}`} className="inline-flex items-center bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
-                    Class: {item}
-                    <button onClick={() => {
-                      setSelectedClassCategories(prev => prev.filter(c => c !== item));
-                    }} className="ml-1 text-orange-600 hover:text-orange-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Subject filters */}
-                {filters.subject.map((item, index) => (
-                  <span key={`subject-${index}`} className="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                    Subject: {item}
-                    <button onClick={() => {
-                      // Find which category this subject belongs to and remove it
-                      const category = Object.keys(selectedSubjects).find(cat =>
-                        selectedSubjects[cat]?.includes(item)
-                      );
-                      if (category) {
-                        setSelectedSubjects(prev => ({
-                          ...prev,
-                          [category]: prev[category]?.filter(s => s !== item) || []
-                        }));
-                      }
-                    }} className="ml-1 text-yellow-600 hover:text-yellow-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
-
-                {/* Experience filters */}
-                {(filters.experience_years.min || filters.experience_years.max) && (
-                  <span className="inline-flex items-center bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs">
-                    Experience: {filters.experience_years.min || 0}-{filters.experience_years.max || '∞'} years
-                    <button onClick={() => setFilters(prev => ({
-                      ...prev,
-                      experience_years: { min: "", max: "" }
-                    }))} className="ml-1 text-indigo-600 hover:text-indigo-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
+              {/* Pincode Input */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Pincode</label>
+                <input
+                  type="text"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="Enter 6-digit pincode"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  aria-label="Enter pincode"
+                  maxLength="6"
+                />
+                {loadingPostOffices && (
+                  <p className="text-xs text-slate-500 mt-1">Fetching post offices...</p>
                 )}
+              </div>
 
-                {/* Gender filters */}
-                {filters.gender.map((item, index) => (
-                  <span key={`gender-${index}`} className="inline-flex items-center bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs">
-                    Gender: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        gender: prev.gender.filter(g => g !== item)
-                      }));
-                    }} className="ml-1 text-pink-600 hover:text-pink-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
+              {/* Post Office Dropdown (fetched from API) */}
+              {postOffices.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Post Office</label>
+                  <select
+                    value={selectedPostOffice}
+                    onChange={(e) => setSelectedPostOffice(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    aria-label="Select post office"
+                  >
+                    <option value="">Select Post Office</option>
+                    {postOffices.map((po, idx) => (
+                      <option key={idx} value={po.Name}>
+                        {po.Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-                {/* Job Type filters */}
-                {filters.job_type.map((item, index) => (
-                  <span key={`job_type-${index}`} className="inline-flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs">
-                    Job Type: {item}
-                    <button onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        job_type: prev.job_type.filter(j => j !== item)
-                      }));
-                    }} className="ml-1 text-teal-600 hover:text-teal-800">
-                      <IoMdClose size={12} />
-                    </button>
-                  </span>
-                ))}
+              {/* Area Input */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Area</label>
+                <input
+                  type="text"
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                  placeholder="Enter area/locality"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  aria-label="Enter area"
+                />
               </div>
             </div>
-          )}
+          </FilterSection>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="divide-y">
-            {/* Location Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("location")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsGeoAlt className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Location</span>
-                </div>
-                {expandedSections.location ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
+          {/* Education Filter */}
+          <FilterSection 
+            title="Education" 
+            icon={MdSchool} 
+            section="education"
+            isExpanded={expandedSections.education}
+            onToggle={() => toggleSection("education")}
+          >
+            <div className="space-y-2">
+              {qualification && qualification.length > 0 ? (
+                qualification.map((qual) => (
+                  <CheckboxItem
+                    key={qual.id}
+                    checked={selectedQualifications.includes(qual.name)}
+                    onChange={() => {
+                      setSelectedQualifications((prev) =>
+                        prev.includes(qual.name)
+                          ? prev.filter((q) => q !== qual.name)
+                          : [...prev, qual.name]
+                      );
+                    }}
+                    label={qual.name}
+                  />
+                ))
+              ) : (
+                <p className="text-sm text-slate-400 italic">No qualifications available</p>
+              )}
+            </div>
+          </FilterSection>
 
-              <AnimatePresence>
-                {expandedSections.location && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-3">
-                      {/* State Filter - Restricted to Bihar */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-secondary uppercase">
-                          State
-                        </label>
-                        <div className="flex space-x-2">
-                          <select
-                            value={inputValues.state || ""}
-                            onChange={(e) => {
-                              // Automatically add "Bihar" when selected if not already present
-                              if (e.target.value === "Bihar" && !filters.state.includes("Bihar")) {
-                                setFilters(prev => ({ ...prev, state: [...prev.state, "Bihar"] }));
-                              }
-                              setInputValues(prev => ({ ...prev, state: "" })); // Reset select
+          {/* Class & Subject Filter */}
+          <FilterSection 
+            title="Class & Subjects" 
+            icon={MdSchool} 
+            section="classSubject"
+            isExpanded={expandedSections.classSubject}
+            onToggle={() => toggleSection("classSubject")}
+          >
+            <div className="space-y-3">
+              {classCategories && classCategories.length > 0 ? (
+                classCategories.map((category) => (
+                  <div key={category.id} className="border border-slate-200 rounded-lg p-3">
+                    <CheckboxItem
+                      checked={selectedClassCategories.includes(category.name)}
+                      onChange={() => {
+                        setSelectedClassCategories((prev) =>
+                          prev.includes(category.name)
+                            ? prev.filter((c) => c !== category.name)
+                            : [...prev, category.name]
+                        );
+                      }}
+                      label={category.name}
+                    />
+                    {category.subjects && category.subjects.length > 0 && (
+                      <div className="ml-6 mt-2 space-y-1">
+                        {category.subjects.map((subject) => (
+                          <CheckboxItem
+                            key={subject.id}
+                            checked={
+                              selectedSubjects[category.name]?.includes(subject.subject_name) || false
+                            }
+                            onChange={() => {
+                              setSelectedSubjects((prev) => {
+                                const categorySubjects = prev[category.name] || [];
+                                return {
+                                  ...prev,
+                                  [category.name]: categorySubjects.includes(subject.subject_name)
+                                    ? categorySubjects.filter((s) => s !== subject.subject_name)
+                                    : [...categorySubjects, subject.subject_name],
+                                };
+                              });
                             }}
-                            className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary bg-white"
-                          >
-                            <option value="">Select State</option>
-                            <option value="Bihar">Bihar</option>
-                          </select>
-                        </div>
-                        {filters.state && filters.state.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {filters.state.map((value, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center bg-background text-text px-2 py-1 rounded text-xs"
-                              >
-                                <span>{value}</span>
-                                <button
-                                  onClick={() => handleRemoveValue('state', index)}
-                                  className="ml-1 hover:text-primary"
-                                  aria-label={`Remove ${value}`}
-                                >
-                                  <IoMdClose className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                            label={subject.subject_name}
+                          />
+                        ))}
                       </div>
-
-                      {/* city Filter - Bihar citys Dropdown */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-secondary uppercase">
-                          city
-                        </label>
-                        <div className="flex space-x-2">
-                          <select
-                            name="city"
-                            value={inputValues.city || ""}
-                            disabled={!filters.state.includes("Bihar")}
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  city: [...prev.city, e.target.value]
-                                }));
-                                setInputValues(prev => ({ ...prev, city: "" }));
-                              }
-                            }}
-                            className={`border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary bg-white ${!filters.state.includes("Bihar") ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <option value="">{!filters.state.includes("Bihar") ? "Select State First" : "Select city"}</option>
-                            {[
-                              "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
-                              "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui",
-                              "Jehanabad", "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai",
-                              "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada",
-                              "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura",
-                              "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
-                            ].map((city) => (
-                              <option key={city} value={city}>{city}</option>
-                            ))}
-                          </select>
-                        </div>
-                        {filters.city && filters.city.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {filters.city.map((value, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center bg-background text-text px-2 py-1 rounded text-xs"
-                              >
-                                <span>{value}</span>
-                                <button
-                                  onClick={() => handleRemoveValue('city', index)}
-                                  className="ml-1 hover:text-primary"
-                                  aria-label={`Remove ${value}`}
-                                >
-                                  <IoMdClose className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Other Location Fields (Block, Village, Pincode) */}
-                      {["pincode"].map((field) => (
-                        <div className="space-y-2" key={field}>
-                          <label htmlFor={field} className="text-xs font-medium text-secondary uppercase">
-                            {field}
-                          </label>
-                          <div className="flex space-x-2">
-                            <input
-                              id={field}
-                              name={field}
-                              type="text"
-                              value={inputValues[field] || ""}
-                              onChange={handleInputChange}
-                              onKeyDown={(e) => handleKeyDown(e, field)}
-                              placeholder={`Enter ${field}`}
-                              className="border rounded px-3 py-1.5 w-full text-sm focus:outline-none focus:border-primary"
-                            />
-                            <button
-                              onClick={() => handleAddValue(field)}
-                              className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
-                              aria-label={`Add ${field}`}
-                            >
-                              <BsCheck className="w-5 h-5" />
-                            </button>
-                          </div>
-
-                          {filters[field] && filters[field].length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {filters[field].map((value, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center bg-background text-text px-2 py-1 rounded text-xs"
-                                >
-                                  <span>{value}</span>
-                                  <button
-                                    onClick={() => handleRemoveValue(field, index)}
-                                    className="ml-1 hover:text-primary"
-                                    aria-label={`Remove ${value}`}
-                                  >
-                                    <IoMdClose className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400 italic">No class categories available</p>
+              )}
             </div>
+          </FilterSection>
 
-            {/* Education Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("education")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdSchool className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Education</span>
+
+          {/* Other Filters (Gender, Job Type) */}
+          <FilterSection 
+            title="Other" 
+            icon={MdPeople} 
+            section="other"
+            isExpanded={expandedSections.other}
+            onToggle={() => toggleSection("other")}
+          >
+            <div className="space-y-4">
+              {/* Gender */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-2">Gender</label>
+                <div className="space-y-2">
+                  {["Male", "Female", "Other"].map((gender) => (
+                    <CheckboxItem
+                      key={gender}
+                      checked={filters.gender.includes(gender.toLowerCase())}
+                      onChange={() => {
+                        setFilters((prev) => ({
+                          ...prev,
+                          gender: prev.gender.includes(gender.toLowerCase())
+                            ? prev.gender.filter((g) => g !== gender.toLowerCase())
+                            : [...prev.gender, gender.toLowerCase()],
+                        }));
+                      }}
+                      label={gender}
+                    />
+                  ))}
                 </div>
-                {expandedSections.education ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
+              </div>
 
-              <AnimatePresence>
-                {expandedSections.education && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2 max-h-60 overflow-y-auto">
-                      {qualificationData.map((qualification) => (
-                        <label
-                          key={qualification.id}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              id={`qualification-${qualification.id}`}
-                              className="sr-only"
-                              checked={selectedQualifications.includes(qualification.name)}
-                              onChange={() => handleQualificationToggle(qualification.name)}
-                            />
-                            {selectedQualifications.includes(qualification.name) ? (
-                              <MdCheckBox className="text-primary w-6 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">
-                            {qualification.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Job Type */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-2">Job Type</label>
+                <div className="space-y-2">
+                  {teacherjobRole && teacherjobRole.length > 0 ? (
+                    teacherjobRole.map((job) => (
+                      <CheckboxItem
+                        key={job.id}
+                        checked={filters.job_type.includes(job.teacher_job_name)}
+                        onChange={() => {
+                          setFilters((prev) => ({
+                            ...prev,
+                            job_type: prev.job_type.includes(job.teacher_job_name)
+                              ? prev.job_type.filter((j) => j !== job.teacher_job_name)
+                              : [...prev.job_type, job.teacher_job_name],
+                          }));
+                        }}
+                        label={job.teacher_job_name}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-400 italic">No job types available</p>
+                  )}
+                </div>
+              </div>
             </div>
-
-
-
-            {/* Gender Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("gender")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsGenderAmbiguous className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Gender</span>
-                </div>
-                {expandedSections.gender ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.gender && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2">
-                      {[
-                        { label: "Male", value: "male" },
-                        { label: "Female", value: "female" },
-                        { label: "Other", value: "other" }
-                      ].map((gender) => (
-                        <label
-                          key={gender.value}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.gender.includes(gender.value)}
-                              onChange={() => {
-                                setFilters(prev => ({
-                                  ...prev,
-                                  gender: prev.gender.includes(gender.value)
-                                    ? prev.gender.filter(g => g !== gender.value)
-                                    : [...prev.gender, gender.value]
-                                }));
-                              }}
-                            />
-                            {filters.gender.includes(gender.value) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{gender.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Job Type Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("jobType")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsBriefcase className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Job Type</span>
-                </div>
-                {expandedSections.jobType ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.jobType && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2 max-h-60 overflow-y-auto">
-                      {jobTypeData.map((role) => (
-                        <label
-                          key={role.id || role.teacher_job_name || role.job_type || index}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={filters.job_type.includes(role.teacher_job_name || role.job_type || role.name || role)}
-                              onChange={() => {
-                                const roleName = role.teacher_job_name || role.job_type || role.name || role;
-                                setFilters(prev => ({
-                                  ...prev,
-                                  job_type: prev.job_type.includes(roleName)
-                                    ? prev.job_type.filter(r => r !== roleName)
-                                    : [...prev.job_type, roleName]
-                                }));
-                              }}
-                            />
-                            {filters.job_type.includes(role.teacher_job_name || role.job_type || role.name || role) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{role.teacher_job_name || role.job_type || role.name || role}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Class Category Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("classCategory")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsPersonWorkspace className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Class Category</span>
-                </div>
-                {expandedSections.classCategory ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.classCategory && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-2 max-h-60 overflow-y-auto">
-                      {categoryData.map((category) => (
-                        <label
-                          key={category.id}
-                          className="flex items-center py-1 cursor-pointer group"
-                        >
-                          <div className="relative flex items-center">
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={selectedClassCategories.includes(category.name)}
-                              onChange={() => handleClassCategoryToggle(category.name)}
-                            />
-                            {selectedClassCategories.includes(category.name) ? (
-                              <MdCheckBox className="text-primary w-5 h-5" />
-                            ) : (
-                              <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                            )}
-                          </div>
-                          <span className="ml-2 text-sm text-text">{category.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Subjects Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("subjects")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MdSubject className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Subjects</span>
-                </div>
-                {expandedSections.subjects ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.subjects && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 max-h-72 overflow-y-auto">
-                      {getFilteredSubjects().length > 0 ? (
-                        getFilteredSubjects().map((categoryGroup, index) => (
-                          <div key={index} className="mb-3">
-                            <h4 className="text-xs font-bold text-secondary mb-2 uppercase">
-                              {categoryGroup.categoryName}
-                            </h4>
-                            <div className="space-y-2 pl-2">
-                              {categoryGroup.subjects.map((subject, subIndex) => (
-                                <label
-                                  key={subIndex}
-                                  className="flex items-center py-1 cursor-pointer group"
-                                >
-                                  <div className="relative flex items-center">
-                                    <input
-                                      type="checkbox"
-                                      className="sr-only"
-                                      checked={(selectedSubjects[categoryGroup.categoryName] || []).includes(subject)}
-                                      onChange={() => handleSubjectToggle(categoryGroup.categoryName, subject)}
-                                    />
-                                    {(selectedSubjects[categoryGroup.categoryName] || []).includes(subject) ? (
-                                      <MdCheckBox className="text-primary w-5 h-5" />
-                                    ) : (
-                                      <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                                    )}
-                                  </div>
-                                  <span className="ml-2 text-sm text-text">{subject}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4">
-                          <p className="text-xs text-secondary">
-                            Select class categories first
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Skills Filter */}
-            <div className="border-b">
-              <button
-                onClick={() => toggleSection("skills")}
-                className="flex items-center justify-between w-full px-4 py-3 hover:bg-background transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <BsCode className="text-text" size={16} />
-                  <span className="font-semibold text-text uppercase text-sm">Skills</span>
-                </div>
-                {expandedSections.skills ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
-
-              <AnimatePresence>
-                {expandedSections.skills && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-3">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Search skills..."
-                          value={searchSkill}
-                          onChange={(e) => setSearchSkill(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2 border rounded text-sm focus:outline-none focus:border-primary"
-                        />
-                        <BsSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" size={14} />
-                      </div>
-
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {skillData
-                          .filter((skill) =>
-                            skill.name.toLowerCase().includes(searchSkill.toLowerCase())
-                          )
-                          .map((skill) => (
-                            <label
-                              key={skill.id}
-                              className="flex items-center py-1 cursor-pointer group"
-                            >
-                              <div className="relative flex items-center">
-                                <input
-                                  type="checkbox"
-                                  className="sr-only"
-                                  checked={selectedSkills.includes(skill.name)}
-                                  onChange={() => handleSkillToggle(skill.name)}
-                                />
-                                {selectedSkills.includes(skill.name) ? (
-                                  <MdCheckBox className="text-primary w-5 h-5" />
-                                ) : (
-                                  <MdCheckBoxOutlineBlank className="text-secondary w-5 h-5 group-hover:text-primary" />
-                                )}
-                              </div>
-                              <span className="ml-2 text-sm text-text">{skill.name}</span>
-                            </label>
-                          ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-          </div>
-
-
-
-
-
-
-
-          </div>
+          </FilterSection>
         </div>
 
-        {/* Apply Button - Fixed at bottom */}
-        <div className="sticky bottom-0 p-4 border-t bg-white shadow-lg md:shadow-none">
+        {/* Footer - Sticky Buttons */}
+        <div className="border-t border-slate-200 p-4 space-y-2 bg-white">
           <button
-            onClick={() => {
-              // Construct query params
-              const params = new URLSearchParams();
-              
-              Object.keys(filters).forEach(key => {
-                const value = filters[key];
-                
-                if (Array.isArray(value) && value.length > 0) {
-                  params.set(key, value.join(","));
-                } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                  if (value.min) params.set(`${key}_min`, value.min);
-                  if (value.max) params.set(`${key}_max`, value.max);
-                }
-              });
-
-              setSearchParams(params);
-              if (!isDesktop) setIsOpen(false);
-            }}
-            className="w-full bg-primary text-white py-3 rounded font-semibold uppercase hover:bg-primary/90 transition-colors"
+            onClick={handleApplyFilters}
+            className="w-full px-4 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-lg shadow-teal-200 hover:shadow-teal-300"
+            aria-label="Apply filters"
           >
             Apply Filters
           </button>
+          <button
+            onClick={handleResetFilters}
+            disabled={activeCount === 0}
+            className="w-full px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Reset all filters"
+          >
+            Reset All
+          </button>
         </div>
-      </motion.div>
+      </aside>
     </>
   );
 };

@@ -8,6 +8,7 @@ import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlineAcademicCap, HiOutlinePhone } from "react-icons/hi";
 import { fetchTeachers, searchTeachers } from "../../features/teacherFilterSlice";
+import LocationModal from "./components/LocationModal";
 
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
@@ -58,8 +59,35 @@ const TeacherFilter = () => {
     }
   }, [data]);
 
+
+  // Check for required location filters
+  const [missingFields, setMissingFields] = useState([]);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  
+  useEffect(() => {
+    const state = searchParams.get("state");
+    const district = searchParams.get("district");
+    const pincode = searchParams.get("pincode");
+    const postOffice = searchParams.get("post_office");
+    
+    const missing = [];
+    if (!state) missing.push("State");
+    if (!district) missing.push("District");
+    if (!pincode) missing.push("Pincode");
+    if (!postOffice) missing.push("Post Office");
+    
+    setMissingFields(missing);
+  }, [searchParams]);
+
   // Initial fetch of all teachers with filters
   useEffect(() => {
+    // Don't fetch if required fields are missing
+    if (missingFields.length > 0) {
+      setTeachers([]);
+      setLoading(false);
+      return;
+    }
+    
     const filters = {};
     if (searchParams.get("job_type")) filters.job_type = searchParams.get("job_type").split(",");
     if (searchParams.get("class_category")) filters.class_category = searchParams.get("class_category").split(",");
@@ -71,7 +99,7 @@ const TeacherFilter = () => {
     if (searchParams.get("area")) filters.area = searchParams.get("area").split(",");
 
     dispatch(fetchTeachers(filters));
-  }, [dispatch, searchParams]);
+  }, [dispatch, searchParams, missingFields]);
 
   // Handle screen size changes for view mode
   useEffect(() => {
@@ -256,7 +284,51 @@ const TeacherFilter = () => {
         </div>
       </div>
 
-      {status === 'loading' ? (
+      {/* Missing Fields Message */}
+      {missingFields.length > 0 ? (
+        <div className="w-full min-h-[60vh] flex flex-col items-center justify-center bg-white rounded-xl border border-gray-100 p-8 text-center">
+          <div className="w-full max-w-2xl space-y-8">
+            {/* Icon & Header */}
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto">
+                <HiOutlineLocationMarker className="w-8 h-8 text-gray-900" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  Location Required
+                </h3>
+                <p className="text-gray-500 mt-2 text-lg">
+                  To show you the best teachers nearby, please complete your location details.
+                </p>
+              </div>
+            </div>
+
+            {/* Missing Fields List */}
+            <div className="flex flex-wrap justify-center gap-3">
+              {missingFields.map((field, index) => (
+                <div 
+                  key={index} 
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-100"
+                >
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-gray-700 font-medium">{field}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Action Button */}
+            <div className="pt-4">
+              <button
+                onClick={() => setIsLocationModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-black hover:bg-gray-800 text-white rounded-xl font-semibold transition-all w-full sm:w-auto min-w-[200px]"
+              >
+                <span>Add Location Details</span>
+                <FiArrowRight />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : status === 'loading' ? (
         <div className="w-full h-full flex justify-center items-center mt-16">
           <div className="h-fit mt-20">
             <Loader />
@@ -591,6 +663,29 @@ const TeacherFilter = () => {
           </div>
         </div>
       )}
+
+      {/* Location Modal */}
+      <LocationModal 
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onApply={(data) => {
+          const params = new URLSearchParams(searchParams);
+          params.set("state", "Bihar");
+          if (data.district) params.set("district", data.district);
+          if (data.pincode) params.set("pincode", data.pincode);
+          if (data.post_office) params.set("post_office", data.post_office);
+          if (data.area) params.set("area", data.area);
+          
+          navigate(`?${params.toString()}`);
+          setIsLocationModalOpen(false);
+        }}
+        initialData={{
+          district: searchParams.get("district"),
+          pincode: searchParams.get("pincode"),
+          post_office: searchParams.get("post_office"),
+          area: searchParams.get("area")
+        }}
+      />
     </div>
   );
 };
