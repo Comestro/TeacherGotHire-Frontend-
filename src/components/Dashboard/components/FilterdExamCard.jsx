@@ -107,6 +107,16 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     return sortedInterviews[0]?.status;
   };
 
+  const getPassedLanguage = (categoryId, subjectId, levelCode) => {
+    const relevantAttempt = attempts?.find(attempt =>
+      attempt?.exam?.class_category_id === categoryId &&
+      attempt?.exam?.subject_id === subjectId &&
+      attempt?.exam?.level_code === levelCode &&
+      attempt?.isqualified === true
+    );
+    return relevantAttempt?.exam?.language || relevantAttempt?.language; // Check both potential locations
+  };
+
   useImperativeHandle(ref, () => ({
     openInterview: (categoryId, subjectId) => {
       // Find category and subject objects
@@ -249,7 +259,11 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
       }
     } else {
       // Online exam flow
-      navigate("/exam");
+      if (!selectedLanguage) {
+        alert("Please select a language");
+        return;
+      }
+      navigate("/exam", { state: { language: selectedLanguage } });
     }
   };
 
@@ -574,6 +588,17 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   {/* Level 1 Card */}
                   {levels.filter(l => l.level_code === 1.0).map(level => {
                     const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0);
+                    
+                    // Check if passed in both languages
+                    const passedAttempts = attempts?.filter(a =>
+                        a?.exam?.class_category_id === selectedCategory?.id &&
+                        a?.exam?.subject_id === selectedSubject?.id &&
+                        a?.exam?.level_code === 1.0 &&
+                        a?.isqualified === true
+                    );
+                    const uniqueLanguages = new Set(passedAttempts?.map(a => a?.exam?.language || a?.language).filter(Boolean).map(l => l.toLowerCase()));
+                    const isFullyQualified = uniqueLanguages.size >= 2;
+
                     return (
                       <div key={level.id} className={`relative rounded-2xl border transition-all duration-300 overflow-hidden group ${isQualified
                         ? 'bg-white border-teal-200 shadow-sm hover:shadow-md'
@@ -612,9 +637,19 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                           {/* Action Section */}
                           <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
                             {isQualified ? (
-                              <div className="w-full md:w-auto px-5 py-2.5 bg-teal-50 text-teal-700 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border border-teal-100">
-                                <FaCheckCircle />
-                                <span>Completed</span>
+                              <div className="flex gap-2 w-full md:w-auto">
+                                {!isFullyQualified && (
+                                  <button
+                                    onClick={() => handleLevelSelect(level)}
+                                    className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl hover:bg-teal-700 font-medium text-sm transition-colors"
+                                  >
+                                    Reattempt
+                                  </button>
+                                )}
+                                <div className="px-4 py-2.5 bg-teal-50 text-teal-700 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border border-teal-100">
+                                  <FaCheckCircle />
+                                  <span className="hidden sm:inline">{isFullyQualified ? 'Fully Qualified' : 'Completed'}</span>
+                                </div>
                               </div>
                             ) : (
                               <button
@@ -1029,6 +1064,71 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       <span className="text-sm text-slate-600">Level</span>
                       <span className="text-sm font-semibold text-slate-900">{selectedLevel?.name}</span>
                     </div>
+                    
+                    {/* Language Selection */}
+                    {selectedLevel?.level_code !== 2.5 && (
+                      <div className="py-2">
+                        <span className="text-sm text-slate-600 block mb-2">Select Language</span>
+                        <div className="flex gap-3">
+                           {(() => {
+                              // Determine allowed languages
+                              let allowed = ['English', 'Hindi'];
+                              
+                              if (selectedLevel?.level_code === 1.0) {
+                                // Level 1 Logic: If passed, exclude passed language
+                                const passedLang = getPassedLanguage(selectedCategory?.id, selectedSubject?.id, 1.0);
+                                if (passedLang) {
+                                   if (passedLang.toLowerCase() === 'english') allowed = ['Hindi'];
+                                   else if (passedLang.toLowerCase() === 'hindi') allowed = ['English'];
+                                }
+                              } else if (selectedLevel?.level_code === 2.0) {
+                                // Level 2 Logic: Check passed Level 1 languages
+                                const passedL1Attempts = attempts?.filter(a =>
+                                    a?.exam?.class_category_id === selectedCategory?.id &&
+                                    a?.exam?.subject_id === selectedSubject?.id &&
+                                    a?.exam?.level_code === 1.0 &&
+                                    a?.isqualified === true
+                                );
+                                
+                                const passedL1Langs = new Set(passedL1Attempts?.map(a => a?.exam?.language || a?.language).filter(Boolean).map(l => l.toLowerCase()));
+
+                                if (passedL1Langs.size >= 2) {
+                                   allowed = ['English', 'Hindi']; // Qualified in both, allow choice
+                                } else if (passedL1Langs.size === 1) {
+                                   // Qualified in only one, restrict to that match
+                                   const lang = passedL1Langs.values().next().value;
+                                   if (lang === 'english') allowed = ['English'];
+                                   else if (lang === 'hindi') allowed = ['Hindi'];
+                                }
+                              }
+                              
+                              // Auto-select if only one option and nothing selected
+                              if (allowed.length === 1 && selectedLanguage !== allowed[0]) {
+                                 // We strictly shouldn't set state in render, but for this interaction flow ensuring valid state:
+                                 // Ideally use useEffect, but for direct interaction here:
+                                 if (!selectedLanguage || selectedLanguage !== allowed[0]) {
+                                    setTimeout(() => setSelectedLanguage(allowed[0]), 0);
+                                 }
+                              }
+
+                              return allowed.map(lang => (
+                                <button
+                                  key={lang}
+                                  type="button"
+                                  onClick={() => setSelectedLanguage(lang)}
+                                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                    selectedLanguage === lang
+                                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  {lang}
+                                </button>
+                              ));
+                           })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
 

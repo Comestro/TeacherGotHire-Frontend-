@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getAllQues } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
@@ -25,13 +25,18 @@ const MCQGuidelinePage = () => {
     setIsChecked(!isChecked);
   };
 
+  const location = useLocation();
+  const passedLanguage = location.state?.language;
+
   useEffect(() => {
-    if (subjectName === "English") {
+    if (passedLanguage) {
+      setSelectedLanguage(passedLanguage);
+    } else if (subjectName === "English") {
       setSelectedLanguage("English");
     } else if (subjectName === "Hindi") {
       setSelectedLanguage("Hindi");
     }
-  }, [subjectName]);
+  }, [subjectName, passedLanguage]);
 
   // Handle language change
   const handleLanguageChange = (event) => {
@@ -203,7 +208,8 @@ const MCQGuidelinePage = () => {
                 id="language"
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
-                className="w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all"
+                disabled={!!passedLanguage}
+                className={`w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all ${passedLanguage ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
               >
                 <option value="" disabled>
                   Choose language...
