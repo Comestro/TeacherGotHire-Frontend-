@@ -454,9 +454,9 @@ const JobApply = () => {
     handleCollapseForm();
   };
 
-  // Handle simple revoke with window confirmation
+  // Handle simple withdraw with window confirmation
   const handleRevoke = async (subjectId, classCategoryId, subjectName) => {
-    if (window.confirm(`Are you sure you want to revoke your application for ${subjectName}?`)) {
+    if (window.confirm(`Are you sure you want to withdraw your application for ${subjectName}? This action cannot be undone immediately.`)) {
       await handleApply(subjectId, classCategoryId, subjectName, true, null, null, 'revoke');
     }
   };
@@ -666,7 +666,7 @@ const JobApply = () => {
   return (
     <div className="max-w-8xl mx-auto">
       {/* Page header */}
-      <header className="mb-8">
+      <header className="mb-2">
         <h1 className="text-2xl font-semibold text-text">
           Job Applications
           <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी आवेदन</span>
@@ -792,7 +792,7 @@ const JobApply = () => {
                             className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                           >
                             <HiOutlineXCircle className="h-4 w-4 mr-2" />
-                            Revoke Application
+                            Withdraw Application
                           </button>
                         </>
                       ) : (

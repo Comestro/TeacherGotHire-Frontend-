@@ -49,7 +49,14 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
         .then((res) => res.json())
         .then((data) => {
           if (data && data[0]?.Status === "Success") {
-            setPostOffices(data[0].PostOffice || []);
+            const offices = data[0].PostOffice || [];
+            setPostOffices(offices);
+            
+            // Auto-fill district from the first post office result if available
+            if (offices.length > 0 && offices[0].District) {
+              setFormData(prev => ({ ...prev, district: offices[0].District }));
+            }
+            
             setError("");
           } else {
             setPostOffices([]);
