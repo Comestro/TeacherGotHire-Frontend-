@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { FiX, FiMapPin, FiCheck } from "react-icons/fi";
 import { MdLocationCity, MdLocalPostOffice } from "react-icons/md";
 
@@ -12,7 +13,9 @@ const BIHAR_DISTRICTS = [
   "Vaishali", "West Champaran"
 ].sort();
 
-const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
+const DEFAULT_INITIAL_DATA = {};
+
+const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL_DATA }) => {
   const [formData, setFormData] = useState({
     state: "Bihar",
     district: "",
@@ -77,7 +80,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     // Basic validation
     if (!formData.district) {
@@ -99,8 +102,8 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -109,6 +112,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
             Location Details
           </h3>
           <button 
+            type="button"
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
           >
@@ -116,8 +120,8 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        {/* Form Content */}
+        <div className="p-6 space-y-5">
           {error && (
             <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 font-medium">
               {error}
@@ -217,16 +221,18 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = {} }) => {
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="flex-1 px-4 py-3 bg-black hover:bg-gray-800 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-gray-200"
             >
               <FiCheck />
               Apply Location
             </button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
