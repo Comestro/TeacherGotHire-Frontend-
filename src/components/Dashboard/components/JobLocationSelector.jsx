@@ -47,6 +47,7 @@ const JobLocationSelector = ({ jobType, locations = [], onChange }) => {
             <div className="flex items-center gap-2 text-gray-700">
               <HiOutlineMapPin className="text-blue-500" />
               <span>
+                {loc.state ? <span className="font-medium text-gray-900">{loc.state}, </span> : ''}
                 {loc.district}
                 {loc.area ? `, ${loc.area}` : ""}
                 <span className="text-gray-400 text-xs ml-1">({loc.pincode})</span>

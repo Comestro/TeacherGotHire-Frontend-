@@ -302,6 +302,99 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
   );
 };
 
+// Summary Component for existing applications
+const ApplicationSummary = ({ applications, jobTypes }) => {
+  const [activeTab, setActiveTab] = useState(null);
+
+  useEffect(() => {
+    if (applications && applications.length > 0 && !activeTab) {
+      setActiveTab(getJobTypeId(applications[0].teacher_job_type));
+    }
+  }, [applications]);
+
+  if (!applications || applications.length === 0) return null;
+
+  return (
+    <div className="mb-6 bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+         <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Current Applications</h4>
+      </div>
+      
+      {/* Tabs */}
+      <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar">
+        {applications.map((app) => {
+          const jobId = getJobTypeId(app.teacher_job_type);
+          const jobName = getJobTypeName(jobTypes, jobId);
+          const isActive = activeTab === jobId;
+          
+          return (
+            <button
+              key={jobId}
+              onClick={() => setActiveTab(jobId)}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                isActive 
+                  ? 'border-primary text-primary bg-primary/5' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {jobName}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {applications.map((app) => {
+          const jobId = getJobTypeId(app.teacher_job_type);
+          if (activeTab !== jobId) return null;
+
+          return (
+            <div key={app.id} className="animate-in fade-in duration-200">
+               <div className="flex flex-wrap gap-6 mb-6">
+                 <div>
+                   <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">Expected Salary</span>
+                   <span className="text-lg font-bold text-gray-900">₹{app.salary_expectation}</span>
+                   <span className="text-sm text-gray-500 ml-1">/ {app.salary_type}</span>
+                 </div>
+                 
+                 <div>
+                    <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">Status</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Active
+                    </span>
+                 </div>
+               </div>
+
+               <div>
+                 <span className="text-xs font-semibold text-gray-400 uppercase block mb-3">Preferred Locations</span>
+                 {app.preferred_locations && app.preferred_locations.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {app.preferred_locations.map((loc, idx) => (
+                        <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
+                           <div className="font-medium text-gray-900 mb-0.5">
+                             {loc.state ? <span className="text-gray-600 font-normal">{loc.state}, </span> : ''}
+                             {loc.district}
+                           </div>
+                           <div className="text-gray-500 text-xs">
+                             {loc.post_office} {loc.pincode && `- ${loc.pincode}`}
+                           </div>
+                           {loc.area && <div className="text-gray-400 text-xs mt-0.5">{loc.area}</div>}
+                        </div>
+                      ))}
+                    </div>
+                 ) : (
+                   <p className="text-sm text-gray-500 italic">No specific locations set (Anywhere in state)</p>
+                 )}
+               </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const JobApply = () => {
   const dispatch = useDispatch();
   const { teacherjobRole: jobTypes, status: jobTypesStatus } = useSelector((state) => state.jobProfile);
@@ -664,31 +757,10 @@ const JobApply = () => {
 
                     {/* Show salary details if applied AND form is NOT expanded */}
                     {isApplied && activeApplications.length > 0 && !(expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId) && (
-                      <div className="mb-6">
-                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Current Application Details</div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {activeApplications.map((app, i) => {
-                          const jobTypeId = getJobTypeId(app.teacher_job_type);
-                          return (
-                            <div key={app.id || i} className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-                              <div className="font-medium text-sm text-gray-900 mb-1">
-                                {getJobTypeName(jobTypes, getJobTypeId(app.teacher_job_type))}
-                              </div>
-                              <div className="text-sm text-slate-600 mb-1">
-                                <span className="font-semibold text-gray-900">₹{app.salary_expectation}</span> 
-                                <span className="text-xs ml-1">({app.salary_type})</span>
-                              </div>
-                              {app.preferred_locations && app.preferred_locations.length > 0 && (
-                                <div className="text-xs text-slate-500">
-                                  <span className="font-medium text-slate-700">Locations: </span>
-                                  {app.preferred_locations.map(l => l.district).join(", ")}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        </div>
-                      </div>
+                      <ApplicationSummary 
+                        applications={activeApplications} 
+                        jobTypes={jobTypes} 
+                      />
                     )}
 
                   {/* Use a wrapper to control transitions if needed, but for now direct render */}

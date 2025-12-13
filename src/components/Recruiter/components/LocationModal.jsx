@@ -82,21 +82,11 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     
-    // Basic validation
-    if (!formData.district) {
-      setError("Please select a district");
-      return;
-    }
-    if (!formData.pincode || formData.pincode.length !== 6) {
-      setError("Please enter a valid 6-digit pincode");
-      return;
-    }
-    if (!formData.post_office) {
-      setError("Please select a post office");
-      return;
-    }
+    // Validation removed as per request
+    // if (!formData.district) ...
 
     onApply(formData);
+    onClose();
     onClose();
   };
 
@@ -141,7 +131,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* District */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">District <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">District</label>
             <div className="relative">
               <select
                 name="district"
@@ -162,7 +152,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* Pincode */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Pincode <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Pincode</label>
             <input
               type="text"
               name="pincode"
@@ -178,7 +168,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* Post Office */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Post Office <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Post Office</label>
             <div className="relative">
               <select
                 name="post_office"
