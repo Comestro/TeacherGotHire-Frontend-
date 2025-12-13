@@ -214,7 +214,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
             setSelectedClassCategories(initialSelectedCategories);
             newFilters.class_category = initialSelectedCategories;
-            setExpandedSections(prev => ({ ...prev, classSubject: true }));
+            setExpandedSections(prev => ({ ...prev, classSubject: false }));
         }
         const urlSubjects = getList("subject").length > 0 ? getList("subject") : getList("subject");
         
@@ -379,6 +379,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setPostOffices([]);
     setSelectedPostOffice("");
     setArea("");
+    setExpandedSections(prev => ({ ...prev, classSubject: true }));
     setSearchParams(new URLSearchParams());
     dispatch(fetchTeachers(""));
   };
@@ -571,10 +572,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             isExpanded={expandedSections.location}
             onToggle={() => toggleSection("location")}
           >
-            <div className="space-y-4">
+            <div className="space-y-2 py-2">
               {/* State - Dropdown with only Bihar */}
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">State</label>
+                <label className="block text-xs  font-medium text-slate-600 mb-1">State</label>
                 <select
                   value="Bihar"
                   className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium cursor-not-allowed"
@@ -764,9 +765,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             onClick={handleResetFilters}
             disabled={activeCount === 0}
             className="w-full px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Reset all filters"
+            aria-label="Clear all filters"
           >
-            Reset All
+            Clear Filters
           </button>
         </div>
       </aside>

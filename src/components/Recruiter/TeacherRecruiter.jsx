@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Loader from "./components/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
-import { BsBriefcase, BsGeoAlt, BsGrid, BsList, BsArrowClockwise } from "react-icons/bs";
+import { BsBriefcase, BsGeoAlt, BsArrowClockwise } from "react-icons/bs";
 import { MdSchool, MdFilterAltOff, MdFilterAlt } from "react-icons/md";
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
@@ -14,7 +14,7 @@ import LocationModal from "./components/LocationModal";
 const TeacherFilter = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'card' : 'list'); // 'card' or 'list'
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
   const [searchValue, setSearchValue] = useState("");
@@ -124,15 +124,7 @@ const TeacherFilter = () => {
 
     dispatch(fetchTeachers(filters));
   }, [dispatch, searchParams, missingFields, classCategories]);
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
-      setViewMode(isMobile ? 'card' : 'list');
-    };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       if (searchValue.trim()) {
@@ -249,46 +241,7 @@ const TeacherFilter = () => {
           </div>
         </div>
 
-        {/* Bottom Section - View Toggle and Clear Filters */}
-        <div className="hidden md:flex items-center justify-between gap-3 p-4">
-          {/* View Mode Toggle */}
-          <div className="flex bg-background rounded-lg p-1 shadow-inner">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 sm:px-4 py-2 rounded-md flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-secondary hover:text-text'
-              }`}
-              aria-label="List view"
-            >
-              <BsList size={18} />
-              <span className="hidden sm:inline">List</span>
-            </button>
-            <button
-              onClick={() => setViewMode('card')}
-              className={`px-3 sm:px-4 py-2 rounded-md flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-all ${
-                viewMode === 'card'
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-secondary hover:text-text'
-              }`}
-              aria-label="Card view"
-            >
-              <BsGrid size={18} />
-              <span className="hidden sm:inline">Card</span>
-            </button>
-          </div>
 
-          {/* Clear Filters Button */}
-          <button
-            onClick={handleClearFilters}
-            className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-background hover:bg-red-50 border border-transparent hover:border-red-200 rounded-lg text-secondary hover:text-red-600 flex items-center gap-1.5 font-medium transition-all"
-            aria-label="Clear filters"
-          >
-            <MdFilterAltOff size={18} />
-            <span className="hidden sm:inline">Clear</span>
-          </button>
-        </div>
       </div>
 
       {/* Missing Fields Message */}
@@ -343,210 +296,109 @@ const TeacherFilter = () => {
         </div>
       ) : teachers?.length > 0 ? (
         <>
-          {/* Card View */}
-          {viewMode === 'card' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mx-auto">
-              {currentTeachers.map((teacher) => {
-                const currentAddress = teacher.current_address || {};
-                const latestExperience = teacher.last_experience;
-                const highestQualification = teacher.last_education;
+      {/* List View - Always Visible */}
+      <div className="space-y-3 mx-auto">
+        {currentTeachers.map((teacher) => {
+          const currentAddress = teacher.current_address || {};
+          const latestExperience = teacher.last_experience;
+          const highestQualification = teacher.last_education;
 
-                return (
-                  <div
-                    key={teacher.id}
-                    className="bg-white p-5 rounded-lg hover:scale-[1.02] transition-transform duration-300"
-                  >
-                    {/* Header Section */}
-                    <div className="border-b pb-3 mb-4 flex items-center gap-4">
-                      <img
-                        className="h-16 w-16 rounded-full object-cover border-2 border-primary/20"
-                        src={teacher.profile_picture || "/images/profile.jpg"}
-                        alt={teacher.Fname}
-                        loading="lazy"
-                      />
-                      <div>
-                        <h2 className="text-xl font-bold text-text">
-                          {teacher.Fname} {teacher.Lname}
-                        </h2>
-                        {currentAddress.district && (
-                          <p className="text-sm text-secondary mt-0.5 flex items-center gap-1">
-                            <HiOutlineLocationMarker className="text-accent" size={14} />
-                            {currentAddress.district}, {currentAddress.state}
+          return (
+            <div
+              key={teacher.id}
+              className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Left: Profile Image */}
+                <div className="flex-shrink-0">
+                  <img
+                    className="h-20 w-20 rounded-lg object-cover border-2 border-primary/20"
+                    src={teacher.profile_picture || "/images/profile.jpg"}
+                    alt={teacher.Fname}
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Middle: Main Information */}
+                <div className="flex-1 min-w-0">
+                  {/* Name and Location */}
+                  <div className="mb-2">
+                    <h3 className="text-lg font-bold text-text truncate">
+                      {teacher.Fname} {teacher.Lname}
+                    </h3>
+                    {currentAddress.district && (
+                      <p className="text-sm text-secondary flex items-center gap-1 mt-1">
+                        <HiOutlineLocationMarker className="text-accent" size={14} />
+                        {currentAddress.district}, {currentAddress.state}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                    {/* Email */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <HiOutlineMail className="text-accent flex-shrink-0" size={16} />
+                      <div className="min-w-0">
+                        <p className="text-xs text-secondary font-medium">Email</p>
+                        <p className="text-text truncate">{maskEmail(teacher.email)}</p>
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    {teacher.phone_number && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <HiOutlinePhone className="text-accent flex-shrink-0" size={16} />
+                        <div className="min-w-0">
+                          <p className="text-xs text-secondary font-medium">Phone</p>
+                          <p className="text-text">{maskPhoneNumber(teacher.phone_number)}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Current Role */}
+                    {latestExperience && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BsBriefcase className="text-accent flex-shrink-0" size={16} />
+                        <div className="min-w-0">
+                          <p className="text-xs text-secondary font-medium">Current Role</p>
+                          <p className="text-text font-medium truncate">
+                            {latestExperience.role?.jobrole_name || "N/A"}
                           </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Key Information */}
-                    <div className="space-y-3 mb-4">
-                      {/* Email */}
-                      <div className="flex items-start gap-3">
-                        <HiOutlineMail className="text-accent mt-0.5 flex-shrink-0" size={18} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-secondary font-medium uppercase">Email</p>
-                          <p className="text-sm text-text truncate">{maskEmail(teacher.email)}</p>
                         </div>
                       </div>
+                    )}
 
-                      {/* Phone */}
-                      {teacher.phone_number && (
-                        <div className="flex items-start gap-3">
-                          <HiOutlinePhone className="text-accent mt-0.5 flex-shrink-0" size={18} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-secondary font-medium uppercase">Phone</p>
-                            <p className="text-sm text-text">{maskPhoneNumber(teacher.phone_number)}</p>
-                          </div>
+                    {/* Education */}
+                    {highestQualification && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <HiOutlineAcademicCap className="text-accent flex-shrink-0" size={16} />
+                        <div className="min-w-0">
+                          <p className="text-xs text-secondary font-medium">Education</p>
+                          <p className="text-text font-medium truncate">
+                            {highestQualification.qualification?.name || "N/A"}
+                          </p>
                         </div>
-                      )}
-
-                    
-
-                      {/* Job Role */}
-                      {latestExperience && (
-                        <div className="flex items-start gap-3">
-                          <BsBriefcase className="text-accent mt-0.5 flex-shrink-0" size={18} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-secondary font-medium uppercase">Current Role</p>
-                            <p className="text-sm text-text font-medium">{latestExperience.role?.jobrole_name || "N/A"}</p>
-                            <p className="text-xs text-secondary mt-0.5">{latestExperience.institution}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Education */}
-                      {highestQualification && (
-                        <div className="flex items-start gap-3">
-                          <HiOutlineAcademicCap className="text-accent mt-0.5 flex-shrink-0" size={18} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-secondary font-medium uppercase">Education</p>
-                            <p className="text-sm text-text font-medium">{highestQualification.qualification?.name || "N/A"}</p>
-                            <p className="text-xs text-secondary mt-0.5">
-                              {highestQualification.institution} • {highestQualification.year_of_passing}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Button */}
-                    <Link
-                      to={`teacher/${teacher.id}`}
-                      className="w-full flex items-center justify-center gap-1.5 text-sm bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold"
-                    >
-                      View Full Profile
-                      <FiArrowRight className="transition-transform group-hover:translate-x-1" />
-                    </Link>
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
 
-          {/* List View */}
-          {viewMode === 'list' && (
-            <div className="space-y-3 mx-auto">
-              {currentTeachers.map((teacher) => {
-                const currentAddress = teacher.current_address || {};
-                const latestExperience = teacher.last_experience;
-                const highestQualification = teacher.last_education;
-
-                return (
-                  <div
-                    key={teacher.id}
-                    className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow"
+                {/* Right: Action Button */}
+                <div className="flex-shrink-0 flex items-center">
+                  <Link
+                    to={`teacher/${teacher.id}`}
+                    className="inline-flex items-center justify-center gap-1.5 text-sm bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg transition-colors font-semibold whitespace-nowrap"
                   >
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      {/* Left: Profile Image */}
-                      <div className="flex-shrink-0">
-                        <img
-                          className="h-20 w-20 rounded-lg object-cover border-2 border-primary/20"
-                          src={teacher.profile_picture || "/images/profile.jpg"}
-                          alt={teacher.Fname}
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Middle: Main Information */}
-                      <div className="flex-1 min-w-0">
-                        {/* Name and Location */}
-                        <div className="mb-2">
-                          <h3 className="text-lg font-bold text-text truncate">
-                            {teacher.Fname} {teacher.Lname}
-                          </h3>
-                          {currentAddress.district && (
-                            <p className="text-sm text-secondary flex items-center gap-1 mt-1">
-                              <HiOutlineLocationMarker className="text-accent" size={14} />
-                              {currentAddress.district}, {currentAddress.state}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Details Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                          {/* Email */}
-                          <div className="flex items-center gap-2 min-w-0">
-                            <HiOutlineMail className="text-accent flex-shrink-0" size={16} />
-                            <div className="min-w-0">
-                              <p className="text-xs text-secondary font-medium">Email</p>
-                              <p className="text-text truncate">{maskEmail(teacher.email)}</p>
-                            </div>
-                          </div>
-
-                          {/* Phone */}
-                          {teacher.phone_number && (
-                            <div className="flex items-center gap-2 min-w-0">
-                              <HiOutlinePhone className="text-accent flex-shrink-0" size={16} />
-                              <div className="min-w-0">
-                                <p className="text-xs text-secondary font-medium">Phone</p>
-                                <p className="text-text">{maskPhoneNumber(teacher.phone_number)}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Current Role */}
-                          {latestExperience && (
-                            <div className="flex items-center gap-2 min-w-0">
-                              <BsBriefcase className="text-accent flex-shrink-0" size={16} />
-                              <div className="min-w-0">
-                                <p className="text-xs text-secondary font-medium">Current Role</p>
-                                <p className="text-text font-medium truncate">
-                                  {latestExperience.role?.jobrole_name || "N/A"}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Education */}
-                          {highestQualification && (
-                            <div className="flex items-center gap-2 min-w-0">
-                              <HiOutlineAcademicCap className="text-accent flex-shrink-0" size={16} />
-                              <div className="min-w-0">
-                                <p className="text-xs text-secondary font-medium">Education</p>
-                                <p className="text-text font-medium truncate">
-                                  {highestQualification.qualification?.name || "N/A"}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Right: Action Button */}
-                      <div className="flex-shrink-0 flex items-center">
-                        <Link
-                          to={`teacher/${teacher.id}`}
-                          className="inline-flex items-center justify-center gap-1.5 text-sm bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg transition-colors font-semibold whitespace-nowrap"
-                        >
-                          View Profile
-                          <FiArrowRight />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    View Profile
+                    <FiArrowRight />
+                  </Link>
+                </div>
+              </div>
             </div>
-          )}
+          );
+        })}
+      </div>
 
           {/* Pagination Controls */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg mt-4">
