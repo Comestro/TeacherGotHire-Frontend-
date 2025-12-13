@@ -265,7 +265,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
         // 2. Subjects
         // 'subjects' (plural) from user URL/TeacherRecruiter, 'subject' (singular) as fallback
-        const urlSubjects = getList("subjects").length > 0 ? getList("subjects") : getList("subject");
+        const urlSubjects = getList("subject").length > 0 ? getList("subject") : getList("subject");
         
         if (urlSubjects.length > 0) {
              const newSelectedSubjects = {};
@@ -275,8 +275,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
              urlSubjects.forEach(val => {
                  const isSubId = !isNaN(val);
 
-                 // Search all categories
-                 for (const cat of classCategories) {
+                 // Search categories
+                 // If specific categories are selected in URL, ONLY search within those.
+                 // Otherwise search all (implicit selection)
+                 const categoriesToSearch = initialSelectedCategories.length > 0 
+                    ? classCategories.filter(c => initialSelectedCategories.includes(c.name))
+                    : classCategories;
+
+                 for (const cat of categoriesToSearch) {
                      if (!cat.subjects) continue;
                      
                      const foundSub = cat.subjects.find(s => 
@@ -318,7 +324,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         
         // Mark as loaded
         hasLoadedUrlParams.current = true;
-    } else if (!searchParams.has("class_category") && !searchParams.has("subjects") && !searchParams.has("subject")) {
+    } else if (!searchParams.has("class_category") && !searchParams.has("subject") && !searchParams.has("subject")) {
         // If URL doesn't have these complex params, we don't need to wait for data
         hasLoadedUrlParams.current = true;
     }
@@ -337,10 +343,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (pincode) params.set("pincode", pincode);
     if (selectedPostOffice) params.set("post_office", selectedPostOffice);
     if (area) params.set("area", area);
-
-    // Add other filters
+    
     Object.entries(filters).forEach(([key, value]) => {
-      if (Array.isArray(value) && value.length > 0) {
+      // Skip empty arrays/values
+      if (Array.isArray(value) && value.length === 0) return;
+      if (!value) return;
+
+      if (Array.isArray(value)) {
+        // Use comma-separated for URL cleanliness
         params.set(key, value.join(","));
       } else if (typeof value === "object" && (value.min || value.max)) {
         if (value.min) params.set(`${key}_min`, value.min);
@@ -349,7 +359,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     });
 
     setSearchParams(params);
-    dispatch(fetchTeachers(params.toString()));
+    dispatch(fetchTeachers(filters)); // Pass object, not string
   };
 
   // Error state
@@ -414,7 +424,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
     // Add subjects (Use 'subjects' key for consistency)
     if (allSelectedSubjects.length > 0) {
-      filterObject.subjects = allSelectedSubjects;
+      filterObject.subject = allSelectedSubjects;
     }
 
     // Add other filters

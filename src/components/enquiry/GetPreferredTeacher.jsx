@@ -150,7 +150,7 @@ export const GetPreferredTeacher = () => {
     
     if (selectedJobType) queryParams.append("job_type", selectedJobType);
     if (selectedClassCategory) queryParams.append("class_category", selectedClassCategory);
-    if (selectedSubjects.length > 0) queryParams.append("subjects", selectedSubjects.join(","));
+    if (selectedSubjects.length > 0) queryParams.append("subject", selectedSubjects.join(","));
     
     // Location params
     if (locationDetails.state) queryParams.append("state", locationDetails.state);

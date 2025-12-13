@@ -10,15 +10,12 @@ import {
   getClassCategory,
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
-import TeacherRequestModal from "./TeacherRequestModal";
-
 const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   const { classCategories, teacherjobRole } = useSelector(
     (state) => state.jobProfile
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,9 +28,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
     dispatch(getTeacherjobType());
   }, [dispatch]);
 
-  
-  
-
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -44,10 +38,6 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
   return (
     <header className="bg-white border-b border-gray-200 fixed top-0 left-0 w-full z-50">
-      <TeacherRequestModal
-        isOpen={isRequestModalOpen}
-        onClose={() => setIsRequestModalOpen(false)}
-      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left Section: Mobile Menu Button and Logo */}
@@ -73,15 +63,15 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
           {/* Right Section: Request Button and Profile */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {/* Request Teacher Button - Visible on all screens */}
-            <button
-              onClick={() => setIsRequestModalOpen(true)}
-              className="flex items-center gap-1.5 sm:gap-2 bg-primary hover:bg-primary/90 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
+            {/* Post Job Requirement Button - Visible on all screens */}
+            <Link
+              to="/get-preferred-teacher"
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-md shadow-teal-500/20 transition-all hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5"
             >
               <FaChalkboardTeacher className="w-4 h-4" />
-              <span className="hidden sm:inline">Request Teacher</span>
-              <span className="sm:hidden">Request</span>
-            </button>
+              <span className="hidden sm:inline">Post a Job Requirement</span>
+              <span className="sm:hidden">Post Job</span>
+            </Link>
 
             {/* Profile Dropdown or Login Button */}
             {profile && profile.id ? (

@@ -34,9 +34,9 @@ const TeacherFilter = () => {
 
     const jobType = searchParams.get("job_type");
     const classCategory = searchParams.get("class_category");
-    const subjects = searchParams.get("subjects");
+    const subject = searchParams.get("subject");
 
-    if (!jobType || !classCategory || !subjects) {
+    if (!jobType || !classCategory || !subject) {
       navigate("/get-preferred-teacher");
     }
   }, [searchParams, navigate]);
@@ -61,19 +61,20 @@ const TeacherFilter = () => {
   }, [data]);
 
 
-  // Check for required location filters
+  // Check for required filters
   const [missingFields, setMissingFields] = useState([]);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  
   useEffect(() => {
-    const state = searchParams.get("state");
-    const district = searchParams.get("district");
-    const pincode = searchParams.get("pincode");
+    // We need at least one of these to show results
+    const jobType = searchParams.get("job_type");
+    const classCategory = searchParams.get("class_category");
+    const subject = searchParams.get("subject") || searchParams.get("subject");
     
+    // We don't strictly require these to load the page anymore since we show an empty state,
+    // but we can use this to drive the "start search" UI.
     const missing = [];
-    if (!state) missing.push("State");
-    if (!district) missing.push("District");
-    if (!pincode) missing.push("Pincode");
+    if (!classCategory) missing.push("class_category");
+    if (!subject) missing.push("subject");
     
     setMissingFields(missing);
   }, [searchParams]);
@@ -97,7 +98,7 @@ const TeacherFilter = () => {
     // Wait for classCategories to load if we have potential IDs (numbers) in URL
     const hasPossibleIds = [
         searchParams.get("class_category"),
-        searchParams.get("subjects")
+        searchParams.get("subject")
     ].some(val => val && val.split(",").some(v => !isNaN(v)));
 
     // If we need mapping but data isn't ready, wait
@@ -106,11 +107,16 @@ const TeacherFilter = () => {
     }
 
     const filters = {};
-    if (searchParams.get("job_type")) filters.job_type = searchParams.get("job_type").split(",");
+    
+    // Helper to get all values from either repeated keys or comma-separated strings
+    const getParams = (key) => searchParams.getAll(key).flatMap(v => v.split(","));
+
+    const jobTypes = getParams("job_type");
+    if (jobTypes.length > 0) filters.job_type = jobTypes;
     
     // Handle Class Category (Map ID -> Name if needed)
-    if (searchParams.get("class_category")) {
-        const rawCats = searchParams.get("class_category").split(",");
+    const rawCats = getParams("class_category");
+    if (rawCats.length > 0) {
         filters.class_category = rawCats.map(val => {
             if (!isNaN(val) && classCategories?.length > 0) {
                 const cat = classCategories.find(c => c.id?.toString() === val.toString());
@@ -120,15 +126,18 @@ const TeacherFilter = () => {
         });
     }
 
-    // Handle Subjects (Map ID -> Name if needed)
-    if (searchParams.get("subjects")) {
-        const rawSubs = searchParams.get("subjects").split(",");
+    // Handle subject (Map ID -> Name if needed)
+    // Check 'subject' (singular) first, then 'subject' (plural fallback)
+    let rawSubs = getParams("subject");
+    if (rawSubs.length === 0) rawSubs = getParams("subject");
+
+    if (rawSubs.length > 0) {
         filters.subject = rawSubs.map(val => { // Map to 'subject' for API
             if (!isNaN(val) && classCategories?.length > 0) {
                 // Search all categories for this subject ID
                 for (const cat of classCategories) {
-                    if (cat.subjects) {
-                        const foundSub = cat.subjects.find(s => s.id?.toString() === val.toString());
+                    if (cat.subject) {
+                        const foundSub = cat.subject.find(s => s.id?.toString() === val.toString());
                         if (foundSub) return foundSub.subject_name;
                     }
                 }
@@ -683,37 +692,49 @@ const TeacherFilter = () => {
           </div>
         </>
       ) : (
-        <div className="w-full h-screen flex flex-col items-center justify-center text-center p-4 sm:p-8">
-          <div className="max-w-md mx-auto">
-            <div className="text-5xl sm:text-6xl text-secondary/30 mb-4">
-              {error?.detail === "These parameters are required." ? "🔍" : "🏫"}
+        <div className="w-full flex-1 flex flex-col items-center justify-center p-4 sm:p-8 min-h-[60vh]">
+          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-slate-100 max-w-lg w-full text-center space-y-6 animate-fade-in">
+            {/* Icon Circle */}
+            <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-2">
+              {error?.detail === "These parameters are required." ? (
+                <MdFilterAlt className="w-10 h-10 text-teal-600" />
+              ) : (
+                <div className="text-4xl">🤔</div>
+              )}
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-text mb-2">
-              {error?.detail === "These parameters are required." 
-                ? "Please Apply Filters" 
-                : "No Teachers Found"}
-            </h3>
-            <p className="text-secondary mb-6 text-sm sm:text-base">
-              {error?.detail === "These parameters are required."
-                ? error.message || "Please select class category, subject, and state to see results."
-                : "We couldn't find any teachers matching your search criteria."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => setIsOpen(true)}
-                className="text-primary hover:text-accent font-semibold flex items-center justify-center gap-2"
-              >
-                <MdFilterAlt className="text-lg" />
-                Open Filters
-              </button>
-              
+
+            {/* Title & Description */}
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-slate-900">
+                {error?.detail === "These parameters are required." 
+                  ? "Start Your Search" 
+                  : "No Teachers Found"}
+              </h3>
+              <p className="text-slate-500 leading-relaxed">
+                {error?.detail === "These parameters are required."
+                  ? "Select a class category and subject to find the perfect teacher for your needs."
+                  : "We couldn't find any teachers matching your criteria. Try adjusting your filters or post a requirement."}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3 pt-2">
               <Link
                 to="/get-preferred-teacher"
-                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors shadow-sm shadow-teal-200"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5"
               >
                 <span>Post a Job Requirement</span>
                 <FiArrowRight />
               </Link>
+              
+              <button
+                onClick={() => setIsOpen(true)}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl font-semibold transition-colors"
+                aria-label="Open sidebar filters"
+              >
+                <MdFilterAlt />
+                <span>Adjust Filters</span>
+              </button>
             </div>
           </div>
         </div>
