@@ -11,11 +11,7 @@ import { toast } from "react-toastify";
 import { translateText } from "../../../services/apiService";
 import { createNewQuestion } from "../../../services/adminManageExam";
 import QuestionPreview from "./QuestionPreview";
-
-// Lazy-load equation editor to avoid runtime errors until package is installed
 const EquationEditor = lazy(() => import("equation-editor-react"));
-
-// New: small error boundary to isolate editor failures and provide editable fallback
 class EqErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -28,13 +24,9 @@ class EqErrorBoundary extends React.Component {
 
   }
   render() {
-    // When no error, render children (the real editor)
     if (!this.state.hasError) {
       return this.props.children;
     }
-
-    // Fallback UI: editable textarea using props passed from parent
-    // Props expected: fallbackValue, onChange (setter), onSave, onCancel
     const {
       fallbackValue = "",
       onChange = () => { },
@@ -100,11 +92,8 @@ const QuestionForm = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duplicateError, setDuplicateError] = useState(null);
-  // Add missing state for englishSectionEmpty
   const [englishSectionEmpty, setEnglishSectionEmpty] = useState(false);
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
-
-  // New: equation editor modal state
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
   const [eqEditorValue, setEqEditorValue] = useState("");
   const [eqEditorTarget, setEqEditorTarget] = useState({
@@ -113,19 +102,12 @@ const QuestionForm = () => {
     optionIndex: null,
     originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
   });
-
-  // Track if content was just updated from equation editor to avoid auto-conversion
   const [isFromEquationEditor, setIsFromEquationEditor] = useState(false);
-
-  // New: helper to insert LaTeX command at cursor or append
   const insertLatexCommand = (command) => {
     setEqEditorValue((prev) => prev + command);
   };
-
-  // New: LaTeX toolbar component
   const LatexToolbar = () => {
     const toolbarItems = [
-      // Basic symbols
       { label: "α", command: "\\alpha " },
       { label: "β", command: "\\beta " },
       { label: "γ", command: "\\gamma " },
@@ -140,20 +122,17 @@ const QuestionForm = () => {
       { label: "≠", command: "\\neq " },
       { label: "→", command: "\\rightarrow " },
       { label: "√", command: "\\sqrt{} ", insert: "\\sqrt{" },
-      // Fractions and structures
       { label: "x/y", command: "\\frac{}{} ", insert: "\\frac{" },
       { label: "x²", command: "^{} ", insert: "^{" },
       { label: "x₁", command: "_{} ", insert: "_{" },
       { label: "∑ᵢ", command: "\\sum_{i=1}^{n} " },
       { label: "∫ᵃᵇ", command: "\\int_{a}^{b} " },
       { label: "lim", command: "\\lim_{x \\to \\infty} " },
-      // Functions
       { label: "sin", command: "\\sin " },
       { label: "cos", command: "\\cos " },
       { label: "tan", command: "\\tan " },
       { label: "log", command: "\\log " },
       { label: "ln", command: "\\ln " },
-      // Brackets
       { label: "()", command: "\\left( \\right) ", insert: "\\left(" },
       { label: "[]", command: "\\left[ \\right] ", insert: "\\left[" },
       { label: "{}", command: "\\left\\{ \\right\\} ", insert: "\\left\\{" },
@@ -186,26 +165,17 @@ const QuestionForm = () => {
       </div>
     );
   };
-
-  // Helper: detect LaTeX-like tokens (dollars, backslash commands, braces, caret, underscore)
   const isLatexToken = (token) => {
     if (!token || typeof token !== "string") return false;
-    // contains dollar delimiters
     if (/\$/.test(token)) return true;
-    // starts with a backslash command like \frac or \alpha
     if (/^\\[A-Za-z]+/.test(token)) return true;
-    // contains common TeX characters which translators may mangle
     if (/[\\^_{}]/.test(token)) return true;
     return false;
   };
-
-  // Extract LaTeX fragments and replace with placeholders before sending to translator
   const extractLatexPlaceholders = (input) => {
     const placeholders = [];
     let idx = 0;
     if (!input) return { textWithPlaceholders: input || "", placeholders };
-    // match display math $$...$$, inline $...$, \[...\], \(...\),
-    // or backslash-commands with one-or-more {...} groups (e.g. \cfrac{...}{...})
     const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
     const textWithPlaceholders = input.replace(regex, (match) => {
       const key = `__LATEX_${idx}__`;
@@ -227,8 +197,6 @@ const QuestionForm = () => {
 
   const translatePreservingLatex = async (src) => {
     if (!src || !src.trim()) return "";
-    // Split into LaTeX and non-LaTeX segments using the same regex as extractor.
-    // Translate only the non-LaTeX segments and keep LaTeX segments unchanged.
     const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
 
     const promises = [];
@@ -236,20 +204,15 @@ const QuestionForm = () => {
     let match;
 
     while ((match = regex.exec(src)) !== null) {
-      // non-latex chunk before this match
       if (match.index > lastIndex) {
         const chunk = src.slice(lastIndex, match.index);
-        // translate the non-latex chunk; fall back to original chunk on error
         promises.push(
           translateText(chunk, "English", "Hindi").catch(() => chunk)
         );
       }
-      // latex chunk: preserve as-is
       promises.push(Promise.resolve(match[0]));
       lastIndex = regex.lastIndex;
     }
-
-    // tail chunk after last match
     if (lastIndex < src.length) {
       const tail = src.slice(lastIndex);
       promises.push(
@@ -260,28 +223,18 @@ const QuestionForm = () => {
     const parts = await Promise.all(promises);
     return parts.join("");
   };
-
-  // Function to detect if a word is in English
   const isEnglishWord = (word) => {
     if (!word || word.trim().length === 0) return false;
-
-    // Check if word contains primarily English characters
     const englishChars = word.match(/[A-Za-z]/g);
     const totalChars = word.replace(/[^A-Za-z0-9]/g, "").length;
-
-    // If more than 70% of alphanumeric characters are English letters, consider it English
     return (
       englishChars && totalChars > 0 && englishChars.length / totalChars > 0.7
     );
   };
-
-  // Function to get the last word from text
   const getLastWord = (text) => {
     const words = text.trim().split(/\s+/);
     return words[words.length - 1];
   };
-
-  // Function to replace last word in text
   const replaceLastWord = (text, newWord) => {
     const words = text.trim().split(/\s+/);
     if (words.length === 0) return newWord;
@@ -289,62 +242,34 @@ const QuestionForm = () => {
     words[words.length - 1] = newWord;
     return words.join(" ");
   };
-
-  // Heuristic: detect if a string looks like a math expression (contains ±, √, superscripts, fraction-style '/', =, or parentheses with operators)
   const looksLikeMath = (text) => {
     if (!text || typeof text !== 'string') return false;
     if (/[±√=\^_{}\\]/.test(text)) return true;
-    // superscript digits
     if (/[²³¹⁴⁵⁶⁷⁸⁹⁰]/.test(text)) return true;
-    // fraction with bracketed numerator "[...] / ..."
     if (/\[[^\]]+\]\s*\/\s*[^\s]+/.test(text)) return true;
-    // simple pattern containing operators
     if (/[+\-*\/]=?/.test(text)) return true;
     return false;
   };
-
-  // Convert common plain-math notation into LaTeX. This is intentionally conservative and focuses on patterns like ±, √(...), superscripts, bracketed numerators and simple fractions.
   const convertPlainMathToLatex = (input) => {
     if (!input || typeof input !== 'string') return input;
     let s = input.trim();
-
-    // If already contains dollar delimiters, assume user already wrote LaTeX
     if (/\$.*\$/.test(s) || /\\\[|\\\(|\\begin\{/.test(s)) return s;
 
     if (!looksLikeMath(s)) return s; // avoid false positives
-
-    // Replace common symbols
     s = s.replace(/±/g, ' \\pm ');
-
-    // Replace unicode superscripts like b² -> b^{2}
     const supMap = { '²': '2', '³': '3', '¹': '1', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁰': '0' };
     s = s.replace(/([A-Za-z0-9])([²³¹⁴⁵⁶⁷⁸⁹⁰]+)/g, (m, p1, p2) => {
       const nums = p2.split('').map(ch => supMap[ch] || ch).join('');
       return `${p1}^{${nums}}`;
     });
-
-    // sqrt(...) -> \sqrt{...}
     s = s.replace(/√\s*\(([^)]+)\)/g, (m, inner) => `\\sqrt{${inner.trim()}}`);
-
-    // bracketed numerator: [ ... ] / denom  => \frac{...}{denom}
     s = s.replace(/\[([^\]]+)\]\s*\/\s*([^\s,;]+)/g, (m, num, den) => `\\frac{${num.trim()}}{${den.trim()}}`);
-
-    // simple parentheses numerator: ( ... ) / denom
     s = s.replace(/\(([^)]+)\)\s*\/\s*([^\s,;]+)/g, (m, num, den) => `\\frac{${num.trim()}}{${den.trim()}}`);
-
-    // Insert spaces around operators for cleaner LaTeX
     s = s.replace(/\s*([+\-*=\/])\s*/g, ' $1 ');
-
-    // Collapse multiple spaces
     s = s.replace(/\s{2,}/g, ' ').trim();
-
-    // Wrap inline math in $...$
     return `$${s}$`;
   };
-
-  // Called onBlur for English fields to auto-convert plain math to LaTeX for preview
   const handleEnglishFieldBlur = (field, value, optionIndex = null) => {
-    // Skip auto-conversion if content just came from equation editor
     if (isFromEquationEditor) {
       setIsFromEquationEditor(false);
       return;
@@ -364,11 +289,6 @@ const QuestionForm = () => {
         toast.error("Please enter the question text in English first");
         return;
       }
-
-
-
-
-      // Prepare translation requests for all fields while preserving LaTeX
       const translationPromises = [
         translatePreservingLatex(englishQuestion.text),
         englishQuestion.solution.trim()
@@ -378,12 +298,8 @@ const QuestionForm = () => {
           option.trim() ? translatePreservingLatex(option) : Promise.resolve("")
         ),
       ];
-
-      // Translate all content in parallel
       const [translatedText, translatedSolution, ...translatedOptions] =
         await Promise.all(translationPromises);
-
-      // Update Hindi question with all translated content
       setHindiQuestion((prev) => ({
         ...prev,
         text: translatedText || "",
@@ -431,15 +347,12 @@ const QuestionForm = () => {
 
     setIsSubmitting(true);
     try {
-      // Now we expect both questions to be complete
       const englishPayload = {
         language: englishQuestion.language,
         text: englishQuestion.text.trim(),
         options: englishQuestion.options.map((opt) => opt.trim()),
         correct_option: englishQuestion.correct_option + 1
       };
-
-      // Only add solution if it exists
       if (englishQuestion.solution.trim()) {
         englishPayload.solution = englishQuestion.solution.trim();
       }
@@ -450,13 +363,9 @@ const QuestionForm = () => {
         options: hindiQuestion.options.map((opt) => opt.trim()),
         correct_option: hindiQuestion.correct_option + 1
       };
-
-      // Only add solution if it exists
       if (hindiQuestion.solution.trim()) {
         hindiPayload.solution = hindiQuestion.solution.trim();
       }
-
-      // Both questions are required now
       const questionsToSubmit = [englishPayload, hindiPayload];
 
       const payload = {
@@ -481,52 +390,36 @@ const QuestionForm = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Function to check if English and Hindi questions have duplicate content
   const checkDuplicateContent = () => {
-    // Skip check if either form is empty
     if (!englishQuestion.text.trim() || !hindiQuestion.text.trim()) {
       setDuplicateError(null);
       return false;
     }
-
-    // Check for duplicate text (ignoring case and whitespace)
     if (englishQuestion.text.trim().toLowerCase() === hindiQuestion.text.trim().toLowerCase()) {
       setDuplicateError("The English and Hindi question texts are identical. Please make them unique.");
       return true;
     }
-
-    // Check for duplicate options within English
     const englishOptions = englishQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
     const uniqueEnglishOptions = new Set(englishOptions);
     if (uniqueEnglishOptions.size !== englishOptions.length) {
       setDuplicateError("English options must be unique.");
       return true;
     }
-
-    // Check for duplicate options within Hindi
     const hindiOptions = hindiQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
     const uniqueHindiOptions = new Set(hindiOptions);
     if (uniqueHindiOptions.size !== hindiOptions.length) {
       setDuplicateError("Hindi options must be unique.");
       return true;
     }
-
-    // Check for duplicate solution if both have content
     if (englishQuestion.solution.trim() && hindiQuestion.solution.trim() &&
       englishQuestion.solution.trim().toLowerCase() === hindiQuestion.solution.trim().toLowerCase()) {
       setDuplicateError("The solutions are identical in both languages. Please make them unique.");
       return true;
     }
-
-    // No duplicates found
     setDuplicateError(null);
     return false;
   };
-
-  // Effect to check for duplicates whenever questions change
   useEffect(() => {
-    // Debounced duplicate check to avoid checking on every keystroke
     const duplicateCheckTimer = setTimeout(() => {
       checkDuplicateContent();
     }, 500);
@@ -535,8 +428,6 @@ const QuestionForm = () => {
   }, [englishQuestion.text, hindiQuestion.text,
   englishQuestion.options.join(), hindiQuestion.options.join(),
   englishQuestion.solution, hindiQuestion.solution]);
-
-  // Add state for field-level validation errors
   const [fieldErrors, setFieldErrors] = useState({
     english: {
       text: false,
@@ -549,15 +440,10 @@ const QuestionForm = () => {
       solution: false
     }
   });
-
-  // Update validateForm with more strict field validation
   const validateForm = () => {
-    // Check for duplicate content first
     if (checkDuplicateContent()) {
       return false;
     }
-
-    // Create a copy of field errors to update
     const newFieldErrors = {
       english: {
         text: false,
@@ -572,63 +458,43 @@ const QuestionForm = () => {
     };
 
     let hasError = false;
-
-    // English validation - required regardless of emptiness
-    // Question text is required
     if (!englishQuestion.text.trim()) {
       newFieldErrors.english.text = true;
       hasError = true;
     }
-
-    // Each option is required
     englishQuestion.options.forEach((opt, idx) => {
       if (!opt.trim()) {
         newFieldErrors.english.options[idx] = true;
         hasError = true;
       }
     });
-
-    // Check for duplicate options in English
     const englishOptions = englishQuestion.options.map(o => o.trim().toLowerCase());
     const uniqueEnglishOptions = new Set(englishOptions);
     if (uniqueEnglishOptions.size !== englishOptions.length) {
       toast.error("English options must be unique.");
       return false;
     }
-
-    // Hindi validation - required regardless of emptiness
-    // Question text is required
     if (!hindiQuestion.text.trim()) {
       newFieldErrors.hindi.text = true;
       hasError = true;
     }
-
-    // Each option is required
     hindiQuestion.options.forEach((opt, idx) => {
       if (!opt.trim()) {
         newFieldErrors.hindi.options[idx] = true;
         hasError = true;
       }
     });
-
-    // Check for duplicate options in Hindi
     const hindiOptions = hindiQuestion.options.map(o => o.trim().toLowerCase());
     const uniqueHindiOptions = new Set(hindiOptions);
     if (uniqueHindiOptions.size !== hindiOptions.length) {
       toast.error("Hindi options must be unique.");
       return false;
     }
-
-    // Update error state
     setFieldErrors(newFieldErrors);
-
-    // If there are errors, show a toast notification
     if (hasError) {
       toast.error("Both English and Hindi questions must be complete. Please fill in all required fields.");
       return false;
     }
-
-    // Ensure that both languages have complete information
     const isEnglishComplete = englishQuestion.text.trim() &&
       englishQuestion.options.every(opt => opt.trim());
 
@@ -644,15 +510,12 @@ const QuestionForm = () => {
   };
 
   const handleKeyUp = async (e, field, value, optionIndex = null) => {
-    // First update English question without translation
     updateEnglishQuestion(field, value, optionIndex);
 
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       setIsTranslating(true);
       try {
         const response = await translatePreservingLatex(value);
-
-        // Update Hindi question with translated text from response
         if (field === "options" && optionIndex !== null) {
           setHindiQuestion((prev) => {
             const updated = { ...prev };
@@ -674,8 +537,6 @@ const QuestionForm = () => {
       }
     }
   };
-
-  // New function to handle Hindi field real-time word-by-word translation
   const handleHindiKeyUp = async (e, field, value, optionIndex = null) => {
     updateHindiQuestion(field, value, optionIndex);
 
@@ -687,10 +548,8 @@ const QuestionForm = () => {
       setIsTranslating(true);
 
       try {
-        // Loop through each word to detect and translate English ones
         for (let i = 0; i < words.length; i++) {
           const word = words[i];
-          // Skip tokens that look like LaTeX (preserve math)
           if (isLatexToken(word)) continue;
           if (isEnglishWord(word)) {
             try {
@@ -726,8 +585,6 @@ const QuestionForm = () => {
       }
     }
   };
-
-  // Find first LaTeX fragment and return structured info.
   const extractFirstLatex = (src) => {
     if (!src || typeof src !== "string") return null;
     const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
@@ -736,8 +593,6 @@ const QuestionForm = () => {
     const match = m[0];
     const index = m.index;
     const length = match.length;
-
-    // Determine wrappers and inner content
     if (match.startsWith("$$") && match.endsWith("$$")) {
       return { match, inner: match.slice(2, -2), wrapperStart: "$$", wrapperEnd: "$$", index, length };
     }
@@ -750,22 +605,17 @@ const QuestionForm = () => {
     if (match.startsWith("\\(") && match.endsWith("\\)")) {
       return { match, inner: match.slice(2, -2), wrapperStart: "\\(", wrapperEnd: "\\)", index, length };
     }
-    // Command-like (e.g. \cfrac{...}{...}) — pass whole match as inner (don't strip)
     if (match.startsWith("\\")) {
       return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
     }
     return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
   };
-
-  // New: open editor for a specific target field
   const openEquationEditor = (language, field, optionIndex = null, initialValue = "") => {
-    // detect first LaTeX fragment and present it in editor (without wrappers)
     const latexInfo = extractFirstLatex(initialValue || "");
     setEqEditorTarget({ language, field, optionIndex, originalLatexInfo: latexInfo });
     if (latexInfo) {
       setEqEditorValue(latexInfo.inner ?? latexInfo.match ?? "");
     } else {
-      // no latex found — open with raw full text (or empty)
       setEqEditorValue((initialValue || "").trim());
     }
     setEqEditorOpen(true);
@@ -778,21 +628,16 @@ const QuestionForm = () => {
   const saveEquationToField = (latex) => {
     const val = (latex || "").trim();
     const info = eqEditorTarget.originalLatexInfo;
-    // Helper to perform replacement for a given text
     const replaceInText = (text) => {
       if (!info) {
-        // append as inline math by default
         const appended = (text.trim() ? text + " " : "") + `$${val}$`;
         return appended;
       }
-      // replace exact original match at stored index
       const before = text.slice(0, info.index);
       const after = text.slice(info.index + info.length);
       const wrapped = `${info.wrapperStart}${val}${info.wrapperEnd}`;
       return before + wrapped + after;
     };
-
-    // Mark that content is coming from equation editor to prevent auto-conversion
     setIsFromEquationEditor(true);
 
     if (eqEditorTarget.language === "English") {
@@ -818,27 +663,19 @@ const QuestionForm = () => {
     }
     setEqEditorOpen(false);
   };
-
-  // Check if English section is actually empty (completely)
   const isEnglishSectionTrulyEmpty = () => {
     return !englishQuestion.text.trim() &&
       !englishQuestion.options.some(opt => opt.trim()) &&
       !englishQuestion.solution.trim(); // Fixed: added missing solution check
   };
-
-  // Check if Hindi section is actually empty (completely)
   const isHindiSectionTrulyEmpty = () => {
     return !hindiQuestion.text.trim() &&
       !hindiQuestion.options.some(opt => opt.trim()) &&
       !hindiQuestion.solution.trim(); // Fixed: added missing solution check
   };
-
-  // Add effect to check English section emptiness
   useEffect(() => {
     setEnglishSectionEmpty(isEnglishSectionTrulyEmpty());
   }, [englishQuestion]);
-
-  // Add effect to check Hindi section emptiness 
   useEffect(() => {
     setHindiSectionEmpty(isHindiSectionTrulyEmpty());
   }, [hindiQuestion]);
@@ -1295,10 +1132,8 @@ const QuestionForm = () => {
                     <EquationEditor
                       value={eqEditorValue}
                       onChange={(val) => setEqEditorValue(val)}
-                      // common commands/operators to avoid internal undefined.split errors
                       autoCommands="pi theta sqrt sum prod alpha beta gamma rho frac pm"
                       autoOperatorNames="sin cos tan log ln exp"
-                      // keep config fallback as extra safety
                       config={{ autoCommands: "pi theta sqrt sum prod alpha beta gamma rho frac pm" }}
                       style={{ minHeight: 200 }}
                     />

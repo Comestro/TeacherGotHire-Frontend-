@@ -10,16 +10,12 @@ export default function Subheader({ handleSubmit }) {
   const [timerStarted, setTimerStarted] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const navigate = useNavigate();
-
-  // Initialize timer when duration is available
   useEffect(() => {
     if (examDuration && examDuration > 0 && !timerStarted) {
       setTimeLeft(examDuration * 60);
       setTimerStarted(true);
     }
   }, [examDuration, timerStarted]);
-
-  // Timer countdown logic
   useEffect(() => {
     if (timeLeft === null) return;
 
@@ -36,8 +32,6 @@ export default function Subheader({ handleSubmit }) {
 
     return () => clearInterval(timer);
   }, [timeLeft, handleSubmit]);
-
-  // Format time with min/sec labels
   const formatTime = (seconds) => {
     if (seconds === null) return "Loading...";
 

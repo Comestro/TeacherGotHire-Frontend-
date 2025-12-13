@@ -82,7 +82,6 @@ const ManageRecruiter = () => {
   const isMediumScreen = useMediaQuery(theme.breakpoints.down('lg'));
 
   useEffect(() => {
-    // Fetch recruiters data from the API
     setLoading(true);
     getRecruiter()
       .then(response => {
@@ -199,7 +198,6 @@ const ManageRecruiter = () => {
   };
 
   const handleFilterChange = () => {
-    // Your existing filter logic for the search box only
     const filtered = recruiters.filter((recruiter) => {
       return (
         searchQuery === "" ||
@@ -499,12 +497,10 @@ const ManageRecruiter = () => {
         ) : (
           <>
             {isXsScreen ? (
-              // Mobile view: Card layout - Keep this as is
               (<Box p={2}>
                 {renderMobileCards()}
               </Box>)
             ) : (
-              // Replace the TableContainer with DataGrid
               (<Box sx={{ height: 600, width: '100%' }}>
                 <DataGrid
                   rows={handleFilterChange()}
@@ -756,7 +752,6 @@ const ManageRecruiter = () => {
                     '& .MuiCheckbox-root': {
                       color: alpha('#0d9488', 0.6),
                     },
-                    // Center checkbox column
                     '& .MuiDataGrid-columnHeaderCheckbox, & .MuiDataGrid-cellCheckbox': {
                       display: 'flex',
                       justifyContent: 'center',

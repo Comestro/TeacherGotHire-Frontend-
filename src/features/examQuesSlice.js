@@ -635,7 +635,6 @@ const examQuesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // for get data handeling
       .addCase(getLevels.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -650,7 +649,6 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      // for get data handeling
       .addCase(getAllQues.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -668,7 +666,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(attemptsExam.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -683,7 +680,6 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      // for get data handeling
       .addCase(getExamSet.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -699,7 +695,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(getExamSets.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -715,7 +710,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(getInterview.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -730,7 +724,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(getReport.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -744,7 +737,6 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      // for get data handeling
       .addCase(getAllCenter.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -760,7 +752,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(getAllCenterUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -776,7 +767,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(generatePasskey.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -794,7 +784,6 @@ const examQuesSlice = createSlice({
       });
 
       builder
-      // for get data handeling
       .addCase(getgeneratedPasskey.pending, (state) => {
         state.loading = true;
         state.status = "loading";
@@ -811,7 +800,6 @@ const examQuesSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      // for get data handeling
       .addCase(verifyPasscode.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -826,7 +814,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(approveCenterUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -843,7 +830,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(postJobApply.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -859,7 +845,6 @@ const examQuesSlice = createSlice({
       });
 
     builder
-      // for get data handeling
       .addCase(getSetterInfo.pending, (state) => {
         state.loading = true;
         state.status = "loading";

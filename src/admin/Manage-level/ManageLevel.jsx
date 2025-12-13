@@ -77,7 +77,6 @@ const ManageLevel = () => {
 
   useEffect(() => {
     fetchLevels();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchLevels = async () => {
@@ -162,8 +161,6 @@ const ManageLevel = () => {
     setActionMenuAnchorEl(null);
     setActionMenuRow(null);
   };
-
-  // ----- MISSING view dialog handlers (added) -----
   const handleOpenViewDialog = (level) => {
     setSelectedLevel(level || null);
     setOpenViewDialog(true);
@@ -173,14 +170,12 @@ const ManageLevel = () => {
     setSelectedLevel(null);
     setOpenViewDialog(false);
   };
-  // -------------------------------------------------
 
   const handleDeleteLevel = async () => {
     if (!currentLevel) return;
 
     try {
       setSubmitting(true);
-      // await deleteLevel(currentLevel.id); // implement if you have API
       setLevels((prev) => prev.filter(level => level.id !== currentLevel.id));
       showSnackbar(`Level "${currentLevel.name}" deleted successfully!`);
       handleCloseDeleteModal();
@@ -199,7 +194,6 @@ const ManageLevel = () => {
 
     try {
       setSubmitting(true);
-      // await bulkDeleteLevels(selectedLevels); // implement if you have API
       setLevels(prev => prev.filter(level => !selectedLevels.includes(level.id)));
       showSnackbar(`${selectedLevels.length} level(s) deleted successfully!`);
       setSelectedLevels([]);

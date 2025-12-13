@@ -51,8 +51,6 @@ import {
   Report,
   FlagCircle,
 } from "@mui/icons-material";
-
-// Custom scrollbar styles
 const ScrollbarStyle = styled('style')({
   children: `
     .custom-scrollbar::-webkit-scrollbar {
@@ -119,7 +117,6 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
 
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
-    // data management
     { text: "Class category", icon: <Category />, link: "/admin/manage/class/category" },
     { text: "Subjects", icon: <MenuBook />, link: "/admin/manage/subject" },
     { text: "Skills", icon: <Psychology />, link: "/admin/manage/skills" },
@@ -127,14 +124,12 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
     { text: "Qualification", icon: <WorkspacePremium />, link: "/admin/manage/qualification" },
     { text: "Job Type", icon: <WorkOutline />, link: "/admin/manage/teacher/jobtype" },
     { text: "Exam", icon: <Quiz />, link: "/admin/manage/exam" },
-    // manage request
     { text: "Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
     { text: "Passkey", icon: <Key />, link: "/admin/manage/passkey" },
     { text: "Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
     { text: "Job Applied", icon: <AssignmentInd />, link: "/admin/manage/teacher/applied/job" },
     { text: "Recruiter Enquiry", icon: <NotificationImportant />, link: "/admin/manage/recruiter/enquiry" },
     { text: "Question Report", icon: <FlagCircle />, link: "/admin/manage/question/report" },
-    // manage users
     { text: "Teacher", icon: <School />, link: "/admin/manage/teacher" },
     { text: "Recruiter", icon: <SupervisorAccount />, link: "/admin/manage/recruiter" },
     { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },

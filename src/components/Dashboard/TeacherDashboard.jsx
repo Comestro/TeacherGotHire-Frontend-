@@ -54,19 +54,8 @@ function TeacherDashboard() {
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const jobProfileStatus = useSelector((state) => state.jobProfile?.status);
   const { examCards } = useSelector((state) => state?.exam);
-
-
-
-
-
-
-
-
-  // Get job eligibility and application status
   const { data: eligibilityData, isLoading: eligibilityLoading } = useGetApplyEligibilityQuery();
   const { data: jobApplyData, isLoading: jobApplyLoading } = useGetJobsApplyDetailsQuery();
-
-  // Memoize job application computations
   const eligibleExams = useMemo(() =>
     eligibilityData?.qualified_list?.filter(exam => exam.eligible === true) || [],
     [eligibilityData]
@@ -86,8 +75,6 @@ function TeacherDashboard() {
   useEffect(() => {
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
-
-    // Initial data loading
     const loadData = async () => {
       try {
         await Promise.all([
@@ -124,7 +111,6 @@ function TeacherDashboard() {
         setPasskeyStatus(null);
         setIsVerifyCard(false);
         if (examCards?.level?.level_code === 2.5) {
-          // setIsExamCenterModalOpen(true); // Removed to prevent double modal
         }
       }
     } catch (error) {
@@ -136,16 +122,12 @@ function TeacherDashboard() {
   useEffect(() => {
     refreshPasskeyStatus();
   }, [examCards]);
-
-  // Memoize qualified exam names computation
   const qualifiedExamNames = useMemo(() =>
     (attempts || [])
       .filter(item => item?.exam?.level_code === 2 && item?.isqualified)
       .map(item => item?.exam?.name),
     [attempts]
   );
-
-  // Memoize class categories check
   const hasClassCategories = useMemo(() =>
     teacherprefrence?.class_category?.length > 0,
     [teacherprefrence?.class_category]
@@ -181,7 +163,6 @@ function TeacherDashboard() {
       setLoading(false);
     }
   };
-  // Derive interview state for summary banner (placed here, not inside handlers)
   const interviews = useMemo(() => Array.isArray(interviewData) ? interviewData : [], [interviewData]);
   const hasScheduledInterview = useMemo(() => interviews.some(i => i?.status === "scheduled"), [interviews]);
   const hasRequestedInterview = useMemo(() => interviews.some(i => i?.status === "requested" || i?.status === "pending"), [interviews]);
@@ -191,9 +172,6 @@ function TeacherDashboard() {
       .sort((a, b) => new Date(a.time) - new Date(b.time));
     return upcoming[0] || null;
   }, [interviews]);
-
-  // Check if teacher has completed interview with passing grade (6+)
-  // Source 1: Dedicated interview list from store (examQues.interview)
   const hasPassedInterviewFromInterviews = useMemo(() => {
     return interviews.some(i =>
       i?.status === "fulfilled" &&
@@ -201,9 +179,6 @@ function TeacherDashboard() {
       parseInt(i.grade) >= 6
     );
   }, [interviews]);
-
-  // Source 2: Attempts array may include embedded interviews per attempt
-  // If any attempt (typically Level 2) has a fulfilled interview with grade >= 6, treat as passed
   const hasPassedInterviewFromAttempts = useMemo(() => {
     if (!Array.isArray(attempts)) return false;
     return attempts.some((att) => {
@@ -212,31 +187,24 @@ function TeacherDashboard() {
       return levelOk && intvs.some(iv => iv?.status === "fulfilled" && iv?.grade != null && parseInt(iv.grade) >= 6);
     });
   }, [attempts]);
-
-  // Final pass status: either source indicates a passing interview
   const hasPassedInterview = hasPassedInterviewFromInterviews || hasPassedInterviewFromAttempts;
 
   const isEligibleForInterview = qualifiedExamNames.length > 0 && !hasPassedInterview;
-  // Show interview section if there are active (scheduled/requested) interviews or eligible but not passed
   const shouldShowInterviewSection = hasScheduledInterview || hasRequestedInterview || (isEligibleForInterview && !hasPassedInterview);
   const interviewSectionRef = useRef(null);
   const filterdExamCardRef = useRef(null);
 
   const scrollToInterview = () => {
-    // Try to open the interview panel in FilterdExamCard
     if (filterdExamCardRef.current) {
       if (nextInterview) {
         filterdExamCardRef.current.openInterview(nextInterview.class_category?.id, nextInterview.subject?.id);
       } else {
-        // Find first qualified attempt to open
         const qualifiedAttempt = attempts?.find(item => item?.exam?.level_code === 2 && item?.isqualified);
         if (qualifiedAttempt) {
           filterdExamCardRef.current.openInterview(qualifiedAttempt.exam?.class_category_id, qualifiedAttempt.exam?.subject_id);
         }
       }
     }
-
-    // Scroll to the section
     if (interviewSectionRef.current) {
       const element = interviewSectionRef.current;
       const y = element.getBoundingClientRect().top + window.pageYOffset - 100; // 100px offset

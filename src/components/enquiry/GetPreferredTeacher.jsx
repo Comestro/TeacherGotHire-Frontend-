@@ -28,17 +28,11 @@ export const GetPreferredTeacher = () => {
   });
 
   const [currentStep, setCurrentStep] = useState(0);
-  
-  // Data States
   const [jobTypes, setJobTypes] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
-  
-  // Selection States
   const [selectedJobType, setSelectedJobType] = useState("");
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
-  
-  // Location States
   const [pincode, setPincode] = useState("");
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [postOffices, setPostOffices] = useState([]);
@@ -49,11 +43,7 @@ export const GetPreferredTeacher = () => {
     city: "",
     area: ""
   });
-
-  // Message State
   const [message, setMessage] = useState({ text: "", type: "" });
-
-  // Loading States
   const [loading, setLoading] = useState(false);
 
   const { teacherjobRole } = useSelector((state) => state.jobProfile);
@@ -62,11 +52,8 @@ export const GetPreferredTeacher = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch Class Categories
         const catResponse = await apiClient.get("/api/public/classcategory/");
         setClassCategories(catResponse.data);
-
-        // Fetch Job Types
         dispatch(getTeacherjobType());
         
         setLoading(false);
@@ -116,7 +103,6 @@ export const GetPreferredTeacher = () => {
           const offices = response.data[0].PostOffice;
           if (offices.length > 0) {
             setPostOffices(offices);
-            // Always update district and state from pincode
             setLocationDetails(prev => ({
               ...prev,
               district: offices[0].District,
@@ -139,27 +125,21 @@ export const GetPreferredTeacher = () => {
       }
     } else {
       setPostOffices([]);
-      // Don't clear district if manually selected
       setLocationDetails(prev => ({ ...prev, city: "", area: "" }));
     }
   };
 
   const handleSearch = () => {
-    // Construct query params
     const queryParams = new URLSearchParams();
     
     if (selectedJobType) queryParams.append("job_type", selectedJobType);
     if (selectedClassCategory) queryParams.append("class_category", selectedClassCategory);
     if (selectedSubjects.length > 0) queryParams.append("subject", selectedSubjects.join(","));
-    
-    // Location params
     if (locationDetails.state) queryParams.append("state", locationDetails.state);
     if (locationDetails.district) queryParams.append("district", locationDetails.district);
     if (pincode) queryParams.append("pincode", pincode);
     if (selectedPostOffice) queryParams.append("post_office", selectedPostOffice);
     if (locationDetails.area) queryParams.append("area", locationDetails.area);
-
-    // Navigate
     navigate(`/recruiter?${queryParams.toString()}`);
   };
 
@@ -536,8 +516,6 @@ export const GetPreferredTeacher = () => {
     </div>
   );
 };
-
-// Helper icon
 const FiChevronDown = ({ className }) => (
   <svg 
     stroke="currentColor" 

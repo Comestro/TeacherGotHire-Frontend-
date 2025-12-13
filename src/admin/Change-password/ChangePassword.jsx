@@ -46,7 +46,6 @@ export default function ChangePassword() {
       setErrorMessage("New password and confirm password do not match.");
       return;
     }
-    // Add logic to handle password change
     setSuccessMessage("Your password has been updated successfully.");
     setErrorMessage("");
   };

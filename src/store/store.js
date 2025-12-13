@@ -11,8 +11,6 @@ import teacherSlice from "../features/teacherFilterSlice";
 import notificationSlice from "../features/notificationSlice";
 import examSlice from "../features/examSlice";
 import { apiSlice } from '../features/api/apiSlice';
-
-// Step 1: Combine all reducers
 const rootReducer = combineReducers({
   auth: authSlice,
   personalProfile: personalProfileSlice,
@@ -24,8 +22,6 @@ const rootReducer = combineReducers({
   notification: notificationSlice,
   [apiSlice.reducerPath]: apiSlice.reducer,
 });
-
-// Step 2: Configure persist 
 const persistConfig = {
   key: "root",
   storage,
@@ -33,8 +29,6 @@ const persistConfig = {
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-// Step 3: Create the store with persistedReducer
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -44,8 +38,6 @@ const store = configureStore({
       },
     }).concat(apiSlice.middleware),
 });
-
-// Step 4: Create the persistor
 const persistor = persistStore(store);
 
 export  {  persistor };

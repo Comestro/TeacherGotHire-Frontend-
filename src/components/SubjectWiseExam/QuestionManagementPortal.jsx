@@ -17,8 +17,6 @@ import Loader from "../Loader";
 import SubjectExpertHeader from "./components/SubjectExpertHeader";
 import { createQuestion, updateQuestion, getQuestions, deleteQuestion } from "../../services/adminManageExam";
 import { fetchLevel } from "../../services/examQuesServices";
-
-// Component to add at the top of your file after imports
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
@@ -44,8 +42,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     </div>
   );
 };
-
-// Enhance the status badge renderer
 const renderStatusBadge = (status) => {
   const statusClasses = {
     draft: "bg-gray-100 text-gray-800 border border-gray-200",
@@ -86,11 +82,9 @@ const renderStatusBadge = (status) => {
 };
 
 const QuestionManagementPortal = () => {
-  // Redux selectors
   const dispatch = useDispatch();
   const { loading, setterExamSet } = useSelector((state) => state.examQues || {});
   const setterUser = useSelector((state) => state.examQues.setterInfo);
-  // const levels = useSelector((state) => state.examQues.levels || []);
   const [levels, setLevel] = useState(null);
 
 useEffect(() => {
@@ -111,15 +105,11 @@ useEffect(() => {
       
     }
   }, [setterUser, setterExamSet]);
-
-  // Fix the fetchData function to use proper parameters
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // These thunks expect no parameters or just an empty object
         await dispatch(getExamSets());
         await dispatch(getSetterInfo());
-        // await dispatc(getLevels());
       } catch (error) {
         
         toast.error("Failed to load data. Please try again.");
@@ -128,11 +118,7 @@ useEffect(() => {
 
     fetchData();
   }, [dispatch]);
-
-  // Form handling
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
-
-  // State declarations
   const [selectedExamSet, setSelectedExamSet] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({
     text: "",
@@ -167,40 +153,27 @@ useEffect(() => {
   const [examSetFilterType, setExamSetFilterType] = useState("All");
   const [examSetFilterClass, setExamSetFilterClass] = useState("All");
   const [examSetFilterLevel, setExamSetFilterLevel] = useState("All");
-
-  // Fix the setEditingExamSet function to properly handle categories and subjects
   const setEditingExamSet = (examSet) => {
     if (!examSet) return;
-
-    // Find the matching category from our categories list
     const matchingCategory = categories.find(cat => cat.id === examSet.class_category.id);
     if (matchingCategory) {
       setSelectedCategory(matchingCategory);
       setSubjects(matchingCategory.subjects || []);
-
-      // Find the matching subject
       const matchingSubject = matchingCategory.subjects.find(sub => sub.id === examSet.subject.id);
       setSelectedSubject(matchingSubject || null);
     }
   };
-
-  // Update the useEffect for processing categories and subjects
   useEffect(() => {
     if (setterUser && setterUser.length > 0) {
-      // Direct access to class_category which already contains subjects
       const categoriesWithSubjects = setterUser[0]?.class_category.map(cat => ({
         ...cat,
         totalQuestions: 0,
         pendingReviews: 0
       })) || [];
-
-      // Count questions and pending reviews for each category if setterExamSet exists
       if (categoriesWithSubjects && setterExamSet) {
         categoriesWithSubjects.forEach((category) => {
           let categoryQuestions = 0;
           let categoryPending = 0;
-
-          // For each subject in the category, count relevant exam sets
           category.subjects.forEach((subject) => {
             const subjectSets = setterExamSet.filter(
               (set) => set.subject.id === subject.id
@@ -218,8 +191,6 @@ useEffect(() => {
       }
 
       setCategories(categoriesWithSubjects);
-
-      // Initialize expanded states for categories
       const expanded = {};
       categoriesWithSubjects.forEach((cat) => {
         expanded[cat.id] = false;
@@ -227,8 +198,6 @@ useEffect(() => {
       setExpandedCategories(expanded);
     }
   }, [setterUser, setterExamSet]);
-
-  // Add window resize listener for mobile view
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth < 768);
@@ -244,12 +213,8 @@ useEffect(() => {
     const categoryId = parseInt(e.target.value);
     const category = categories.find((cat) => cat.id === categoryId);
     setSelectedCategory(category);
-
-    // Subjects are already in the category.subjects array
     setSubjects(category?.subjects || []);
     setSelectedSubject(null);
-
-    // Update form value
     setValue("class_category", categoryId.toString());
   };
 
@@ -257,20 +222,14 @@ useEffect(() => {
     const subjectId = parseInt(e.target.value);
     const subject = subjects.find((sub) => sub.id === subjectId);
     setSelectedSubject(subject);
-
-    // Update form value manually after state change
     setValue("subject", e.target.value);
   };
-
-  // Toggle category accordion
   const toggleCategory = (categoryId) => {
     setExpandedCategories(prev => ({
       ...prev,
       [categoryId]: !prev[categoryId]
     }));
   };
-
-  // Exam set CRUD operations
   const handleExamSetModalSubmit = async (data) => {
     try {
       const payload = {
@@ -306,32 +265,22 @@ useEffect(() => {
   const handleEdit = (index) => {
     const examSet = setterExamSet[index];
     setEditingIndex(index);
-
-    // Set up the form for editing
     reset();
-
-    // First set basic values
     setValue("name", examSet.name || "");
     setValue("description", examSet.description || "");
     setValue("total_marks", examSet.total_marks || 0);
     setValue("duration", examSet.duration || 0);
     setValue("type", examSet.type || "online");
-
-    // Find and set the category first
     const category = categories.find(cat => cat.id === examSet.class_category.id);
     if (category) {
       setSelectedCategory(category);
       setSubjects(category.subjects || []);
-
-      // Set form values AFTER setting the state
       setTimeout(() => {
         setValue("class_category", category.id.toString());
         setValue("subject", examSet.subject.id.toString());
         setValue("level", examSet.level.id.toString());
       }, 0);
     }
-
-    // Open the modal
     setExamSetModalOpen(true);
   };
 
@@ -348,14 +297,10 @@ useEffect(() => {
       }
     }
   };
-
-  // Add a function to filter exam sets
   const filterExamSets = () => {
     if (!setterExamSet) return [];
 
     let filtered = [...setterExamSet];
-
-    // Apply search filter
     if (examSetSearchQuery) {
       const query = examSetSearchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -365,26 +310,18 @@ useEffect(() => {
           set.subject?.subject_name?.toLowerCase().includes(query)
       );
     }
-
-    // Apply type filter
     if (examSetFilterType !== "All") {
       filtered = filtered.filter(set => set.type === examSetFilterType);
     }
-
-    // Apply class filter
     if (examSetFilterClass !== "All") {
       filtered = filtered.filter(set => set.class_category.id === parseInt(examSetFilterClass));
     }
-
-    // Apply level filter
     if (examSetFilterLevel !== "All") {
       filtered = filtered.filter(set => set.level.id === parseInt(examSetFilterLevel));
     }
 
     return filtered;
   };
-
-  // Question management
   const handleQuestionModalSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -485,8 +422,6 @@ useEffect(() => {
 
     setQuestionModalOpen(true);
   };
-
-  // Handle question deletion
   const handleDeleteQuestion = async (questionId) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
@@ -508,10 +443,7 @@ useEffect(() => {
   const fetchQuestionsForExamSet = async (examSetId) => {
     try {
       const questions = await getQuestions();
-      // Filter questions for current exam set
       const examSetQuestions = questions.filter(q => q.exam === examSetId);
-      
-      // Update UI directly
       setSelectedExamSet(prev => ({
         ...prev,
         questions: examSetQuestions
@@ -521,50 +453,33 @@ useEffect(() => {
       
     }
   };
-
-  // Update the useEffect where you need to load questions
   useEffect(() => {
     if (selectedExamSet?.id) {
       fetchQuestionsForExamSet(selectedExamSet.id);
     }
   }, [selectedExamSet?.id]);
-
-  // Filter and search functions
   const applyFilters = () => {
     if (!selectedExamSet?.questions) return [];
 
     let filtered = [...selectedExamSet.questions];
-
-    // Create a map to store English questions by their ID
     const englishQuestions = new Map();
-    
-    // First pass to identify English questions
     filtered.forEach(q => {
       if (q.language === "English") {
         englishQuestions.set(q.id, q);
       }
     });
-
-    // Sort and number questions based on related pairs
     filtered = filtered.sort((a, b) => {
-      // Get base question IDs (English version ID)
       const aBaseId = a.language === "Hindi" ? a.related_question : a.id;
       const bBaseId = b.language === "Hindi" ? b.related_question : b.id;
       
       return aBaseId - bBaseId;
     });
-
-    // Apply language filter
     if (selectedLanguage !== "All") {
       filtered = filtered.filter(q => q.language === selectedLanguage);
     }
-
-    // Apply status filter
     if (selectedStatus !== "All") {
       filtered = filtered.filter(q => q.status === selectedStatus);
     }
-
-    // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(q =>
@@ -572,8 +487,6 @@ useEffect(() => {
         q.options?.some(opt => opt?.toLowerCase().includes(query))
       );
     }
-
-    // Apply sorting
     filtered.sort((a, b) => {
       if (sortOrder === "newest") {
         return new Date(b.updated_at || b.created_at || Date.now()) -
@@ -590,8 +503,6 @@ useEffect(() => {
 
     return filtered;
   };
-
-  // Reset functions
   const resetQuestionForm = () => {
     setCurrentQuestion({
       text: "",
@@ -1959,7 +1870,6 @@ useEffect(() => {
                         {viewMode === "grid" && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {applyFilters().map((question, index) => {
-                              // Calculate the actual question number based on the base English question
                               const questionNumber = Math.ceil((index + 1) / 2);
                               
                               return (
@@ -2040,7 +1950,6 @@ useEffect(() => {
                               </thead>
                               <tbody className="bg-white divide-y divide-gray-200">
                                 {applyFilters().map((question, index) => {
-                                  // Calculate the actual question number based on the base English question
                                   const questionNumber = Math.ceil((index + 1) / 2);
                                   
                                   return (

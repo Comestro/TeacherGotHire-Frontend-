@@ -5,9 +5,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchSingleTeacherById } from "../../services/apiService";
 
-// NOTE: This file assumes TailwindCSS is configured in the project and the same theme tokens
-// (text, primary, accent, background, etc.) exist as utility classes or in your tailwind config.
-
 export default function TeacherViewPageFull() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,8 +31,6 @@ export default function TeacherViewPageFull() {
     await new Promise((r) => setTimeout(r, 700));
     return { success: true, job_id: 'JOB-12345' };
   };
-
-  // ----------------- helpers -----------------
   const maskPhoneNumber = (phone) => {
     if (!phone || phone.length < 6) return phone;
     return phone.slice(0, 4) + '****' + phone.slice(-2);
@@ -60,8 +55,6 @@ export default function TeacherViewPageFull() {
       return String(value);
     }
   };
-
-  // ----------------- data load -----------------
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -69,24 +62,16 @@ export default function TeacherViewPageFull() {
         setLoading(true);
         const data = await fetchSingleTeacherById(id);
         if (!mounted) return;
-
-        // API may return { teacher: {...}, attempts: [...] } or just teacher object
         const teacherData = data?.teacher ? data.teacher : data;
         const attemptsData = data?.attempts ? data.attempts : [];
 
         setTeacher(teacherData || {});
         setAttempts(attemptsData || []);
-
-        // preferences -> flatten categories/subjects for modal selects
         if (teacherData?.preferences?.length > 0) {
           const pref = teacherData.preferences[0];
-          // class categories are available as objects with subjects nested
           setClassCategories(pref.class_category || []);
-
-          // collect all subject objects from class categories (subjects arrays)
           const subjFromCategories = (pref.class_category || [])
             .flatMap((c) => c.subjects || []);
-          // If API previously provided prefered_subject directly, fall back
           const prefered = pref.prefered_subject || subjFromCategories;
           setSubjects(prefered || []);
         }
@@ -109,8 +94,6 @@ export default function TeacherViewPageFull() {
     window.addEventListener('scroll', handleScroll);
     return () => { mounted = false; window.removeEventListener('scroll', handleScroll); };
   }, [id]);
-
-  // ----------------- request flow -----------------
   const handleRequestTeacher = () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -145,8 +128,6 @@ export default function TeacherViewPageFull() {
       setModalLoading(false);
     }
   };
-
-  // ----------------- render helpers -----------------
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4 p-8">
@@ -162,24 +143,16 @@ export default function TeacherViewPageFull() {
       <div className="bg-red-50 text-red-700 p-6 rounded">Error: {error}</div>
     </div>
   );
-
-  // derive job locations from multiple possible shapes
   const jobLocations = (() => {
     if (!teacher) return [];
-
-    // support top-level job preference location field used by backend
     if (teacher.jobpreferencelocation) {
       if (Array.isArray(teacher.jobpreferencelocation) && teacher.jobpreferencelocation.length) {
         return teacher.jobpreferencelocation.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
       }
-      // single object or string
       return [teacher.jobpreferencelocation];
     }
-
-    // First: collect explicit job-preference locations from preferences (preferred job locations)
     const prefLocations = (teacher.preferences || [])
       .flatMap(p => {
-        // look for a variety of possible keys that may hold preferred job locations
         const candidates = [];
         if (p.preferred_job_locations && Array.isArray(p.preferred_job_locations)) candidates.push(...p.preferred_job_locations);
         if (p.job_pref_locations && Array.isArray(p.job_pref_locations)) candidates.push(...p.job_pref_locations);
@@ -191,20 +164,15 @@ export default function TeacherViewPageFull() {
         return candidates;
       })
       .filter(Boolean)
-      // exclude addresses that are explicitly current/permanent (user requested not to show those)
       .filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
 
     if (prefLocations.length) return prefLocations;
-
-    // Next fallback: top-level job_locations fields
     if (Array.isArray(teacher.job_locations) && teacher.job_locations.length) {
       return teacher.job_locations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
     }
     if (Array.isArray(teacher.joblocations) && teacher.joblocations.length) {
       return teacher.joblocations.filter(loc => !(loc && loc.address_type && ['current', 'permanent'].includes(String(loc.address_type).toLowerCase())));
     }
-
-    // Final fallback: teachersaddress but exclude 'current' and 'permanent' address types per request
     if (Array.isArray(teacher.teachersaddress) && teacher.teachersaddress.length) {
       const others = teacher.teachersaddress.filter(addr => !(addr && addr.address_type && ['current', 'permanent'].includes(String(addr.address_type).toLowerCase())));
       return others;
@@ -383,7 +351,6 @@ export default function TeacherViewPageFull() {
                                 {a.interviews
                                   .filter(iv => String(iv.status || '').toLowerCase() === 'fulfilled')
                                   .map((iv) => {
-                                    // determine score and percentage: prefer interview-level values, fallback to attempt-level
                                     const score = iv.grade;
                                     const total = 10
                                     const percentage = (typeof score === 'number' && typeof total === 'number' && total > 0) ? Math.round((score / total) * 100) : null;

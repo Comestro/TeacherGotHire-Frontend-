@@ -22,8 +22,6 @@ const ExamCenterModal = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [abortController] = useState(new AbortController());
-
-  // State management
   const [selectedCenterId, setSelectedCenterId] = useState("");
   const [entered_passcode, setPasscode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -33,33 +31,22 @@ const ExamCenterModal = ({
   const [showLanguageStep, setShowLanguageStep] = useState(false);
   const [pincodeFilter, setPincodeFilter] = useState("");
   const [verifiedExamId, setVerifiedExamId] = useState(null);
-
-  // Use RTK Query hook to fetch centers
   const {
     data: centers = [],
     isLoading: isLoadingCenters,
     error: centersError,
     refetch: refetchCenters,
   } = useGetCentersQuery(undefined, {
-    // Only fetch when modal is open and we're not on verify card
     skip: !isOpen || isverifyCard,
   });
-
-
-
-  // Redux state for other data
   const { passkeyresponse, error } = useSelector((state) => state.examQues);
   const { examCards } = useSelector((state) => state.exam);
-
-  // Filter centers by pincode
   const filteredCenters = React.useMemo(() => {
     if (!pincodeFilter || !Array.isArray(centers)) return centers;
     return centers.filter((center) =>
       center?.pincode?.includes(pincodeFilter)
     );
   }, [centers, pincodeFilter]);
-
-  // Debug log for centers data
   useEffect(() => {
     if (centers) {
 
@@ -69,8 +56,6 @@ const ExamCenterModal = ({
       toast.error("Failed to load exam centers. Please try again.");
     }
   }, [centers, centersError]);
-
-  // Manually trigger a refetch if needed
   useEffect(() => {
     if (isOpen && !isverifyCard) {
       refetchCenters();
@@ -104,8 +89,6 @@ const ExamCenterModal = ({
       }
 
       toast.success("Verification successful!");
-
-      // Show language selection step
       setShowLanguageStep(true);
 
     } catch (error) {
@@ -134,11 +117,7 @@ const ExamCenterModal = ({
       ).unwrap();
 
       toast.success("Passkey generated successfully! Please enter the verification code.");
-
-      // Move to passcode verification step
       setShowPasscodeStep(true);
-
-      // Trigger data refresh in parent
       if (onPasskeyGenerated) {
         onPasskeyGenerated();
       }

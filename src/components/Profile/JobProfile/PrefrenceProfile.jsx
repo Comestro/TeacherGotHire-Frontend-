@@ -60,8 +60,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     },
     mode: "onChange",
   });
-
-  // Update form with fetched preferences
   useEffect(() => {
     if (teacherprefrence) {
       const previousJobRoles = (teacherprefrence.job_role || []).map(item => String(item.id));
@@ -73,8 +71,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       });
     }
   }, [teacherprefrence, reset]);
-
-  // Show validation errors
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       const firstError = Object.values(errors)[0];
@@ -83,8 +79,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
       }
     }
   }, [errors]);
-
-  // Handle subjects based on selected categories
   const selectedClassCategories = watch("class_category") || [];
 
   const filteredSubjects = useMemo(() => {
@@ -99,8 +93,6 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
     const validSubjects = currentSubjects.filter((subId) =>
       filteredSubjects.some((sub) => sub?.id === Number(subId))
     );
-
-    // Only update if the length differs to avoid infinite loop
     if (validSubjects.length !== currentSubjects.length) {
       setValue("prefered_subject", validSubjects);
     }
@@ -159,21 +151,15 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   const onSubmit = async (data) => {
     const isValid = await validateStep();
     if (!isValid) return;
-
-    // Filter out class categories that don't have any selected subjects
     const filteredClassCategories = data.class_category.filter(catId => {
       const categoryObj = category?.find(c => c.id === Number(catId));
       if (!categoryObj) return false;
-
-      // Check if any subject from this category is selected
       const hasSelectedSubject = categoryObj.subjects?.some(sub =>
         data.prefered_subject.includes(String(sub.id))
       );
 
       return hasSelectedSubject;
     });
-
-    // Update data with filtered categories
     const finalData = {
       ...data,
       class_category: filteredClassCategories

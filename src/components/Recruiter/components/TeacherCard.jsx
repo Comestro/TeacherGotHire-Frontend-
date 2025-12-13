@@ -12,14 +12,8 @@ const TeacherCard = ({ teacher }) => {
     last_education,
     profile_picture,
   } = teacher;
-
-  // Get current address if exists
   const currentAddress = current_address || {};
-
-  // Get latest experience
   const latestExperience = last_experience;
-
-  // Get highest qualification
   const highestQualification = last_education;
 
   return (

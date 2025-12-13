@@ -14,17 +14,12 @@ const PersonalInformation = () => {
   const [error, setError] = useState("");
 
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
-
-  // Fetch education data on component mount
   useEffect(() => {
     dispatch(getProfile());
   }, []);
-
-  // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
       if (editingIndex !== null) {
-        // Update existing education record
         const updatedData = [...personalData];
         updatedData[editingIndex] = data;
         await updatePersonalProfile(data); // Call API for update
@@ -39,15 +34,11 @@ const PersonalInformation = () => {
       setError(err.message);
     }
   };
-
-  // Set form values for editing
   const handleEdit = (index) => {
     setEditingIndex(index);
     const selectedPersonal = personalData[index];
     Object.keys(selectedPersonal).forEach((key) => setValue(key, selectedPersonal[key]));
   };
-
-  // Cancel editing
   const handleCancel = () => {
     setEditingIndex(null);
     reset();

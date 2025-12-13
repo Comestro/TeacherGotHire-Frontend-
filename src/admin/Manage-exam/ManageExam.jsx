@@ -68,7 +68,6 @@ import {
 import Layout from '../Admin/Layout';
 import Loader from '../../components/Loader';
 import { Link } from 'react-router-dom';
-// services (these are kept as imports; your existing service functions are reused)
 import { getExam, deleteExam, createExam, updateExam } from '../../services/adminManageExam';
 import { getSubjects } from '../../services/adminSubujectApi';
 import { getClassCategory } from '../../services/adminClassCategoryApi';
@@ -81,8 +80,6 @@ import apiService from '../../services/apiService';
   - Exposed Approve (check) and Reject (times) buttons in Card and Table views
   - Confirmation dialog is bypassed for quick approve/reject; you can add a Dialog if you prefer extra confirmation
 */
-
-// ---------- Styled components (kept minimal) ----------
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -112,8 +109,6 @@ const ExamCard = styled(Card)(({ theme, status }) => ({
   background: status ? 'rgba(76,175,80,0.02)' : 'transparent',
   height: '100%',
 }));
-
-// ---------- Helper small components ----------
 const StatusChip = ({ approved }) => (
   <Chip
     label={approved ? 'Approved' : 'Pending'}
@@ -125,8 +120,6 @@ const StatusChip = ({ approved }) => (
     }}
   />
 );
-
-// ---------- Main component ----------
 export default function ExamManagement() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -137,23 +130,17 @@ export default function ExamManagement() {
   const [subjects, setSubjects] = useState([]);
   const [levels, setLevels] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
-
-  // UI state
   const [viewMode, setViewMode] = useState('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // filter values are IDs where applicable
   const [filterClassCategoryId, setFilterClassCategoryId] = useState('');
   const [filterSubjectId, setFilterSubjectId] = useState('');
   const [filterLevelId, setFilterLevelId] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterAddedBy, setFilterAddedBy] = useState('');
-
-  // form/modal state
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedExam, setSelectedExam] = useState(null);
   const [formData, setFormData] = useState({
@@ -166,13 +153,9 @@ export default function ExamManagement() {
     type: '',
   });
   const [formErrors, setFormErrors] = useState({});
-
-  // menu & snackbar
   const [actionMenuAnchor, setActionMenuAnchor] = useState(null);
   const [menuExam, setMenuExam] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-
-  // small derived set of unique users (by name)
   const uniqueUsers = useMemo(() => {
     const setNames = new Set();
     exams.forEach((ex) => {
@@ -181,8 +164,6 @@ export default function ExamManagement() {
     });
     return Array.from(setNames).sort();
   }, [exams]);
-
-  // -------------- data fetching --------------
   useEffect(() => {
     loadAll(page, rowsPerPage);
   }, [page, rowsPerPage]);
@@ -212,8 +193,6 @@ export default function ExamManagement() {
       setLoading(false);
     }
   };
-
-  // -------------- helpers --------------
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -221,12 +200,9 @@ export default function ExamManagement() {
   const getAssignedUserName = (exam) => {
     return exam.assigneduser_name || 'Admin';
   };
-
-  // -------------- filtering (memoized) --------------
   const filteredExams = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return exams.filter((exam) => {
-      // search by name or id
       const matchesQuery = !q || exam.name.toLowerCase().includes(q) || String(exam.id).includes(q);
 
       const matchesClass = !filterClassCategoryId || exam.class_category === classCategories.find(c=>c.id===filterClassCategoryId)?.name;
@@ -247,8 +223,6 @@ export default function ExamManagement() {
       );
     });
   }, [exams, searchQuery, filterClassCategoryId, filterSubjectId, filterLevelId, filterType, filterStatus, filterAddedBy, classCategories, subjects, levels]);
-
-  // -------------- CRUD actions (create/update/delete) --------------
   const handleOpenAdd = () => {
     setSelectedExam(null);
     setFormData({ name: '', subject: '', class_category: '', level: '', total_marks: '', duration: '', type: '' });
@@ -331,8 +305,6 @@ export default function ExamManagement() {
       setLoading(false);
     }
   };
-
-  // ---------- New: Approve / Reject handlers ----------
   const handleAccept = async (examToAccept) => {
     if (!examToAccept) return;
     setLoading(true);
@@ -360,15 +332,11 @@ export default function ExamManagement() {
       setLoading(false);
     }
   };
-
-  // -------------- pagination handlers --------------
   const handleChangePage = (e, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (e) => {
     setRowsPerPage(Number(e.target.value));
     setPage(0);
   };
-
-  // small helper to reset filters
   const clearAllFilters = () => {
     setFilterClassCategoryId('');
     setFilterSubjectId('');

@@ -8,8 +8,6 @@ const secureApiClient = axios.create({
   headers: { "Content-Type": "application/json" },
   withCredentials: true, 
 });
-
-// Add interceptor to attach the token to every request
 secureApiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) {
@@ -33,7 +31,6 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
     secureApiClient
       .get("/api/self/customuser/")
       .then((response) => {
-        // assuming your API returns an object with a "role" property
         setUserRole(response.data.role);
       })
       .catch((error) => {
@@ -133,18 +130,12 @@ const RoleBasedRoute = ({ element, allowedRoles }) => {
       </div>
     </div>
   );
-
-  // If there's no token, redirect to the login page.
   if (!token) {
     return <Navigate to="/signin" />;
   }
-
-  // If the user's role (from the backend) is not among allowedRoles, redirect to unauthorized page.
   if (!allowedRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" />;
   }
-
-  // Otherwise, render the protected element.
   return element;
 };
 

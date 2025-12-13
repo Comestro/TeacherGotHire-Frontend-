@@ -182,8 +182,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [duplicateError, setDuplicateError] = useState(null);
-
-  // Form validation error state
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
@@ -206,8 +204,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
       fetchQuestions();
     }
   }, [selectedExam]);
-
-  // Check for duplicate options in real-time
   useEffect(() => {
     const options = newQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
     const uniqueOptions = new Set(options);
@@ -228,13 +224,9 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         errors[`option_${index}`] = `Option ${index + 1} is required.`;
       }
     });
-
-    // Check for duplicate options
     const options = newQuestion.options.map(o => o.trim().toLowerCase());
     const uniqueOptions = new Set(options);
     if (uniqueOptions.size !== options.length) {
-      // Find which options are duplicates to show specific errors if needed, 
-      // or just a general error. For now, let's add a general error to the first duplicate found.
       const seen = new Set();
       newQuestion.options.forEach((opt, index) => {
         const normalized = opt.trim().toLowerCase();
@@ -244,8 +236,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         seen.add(normalized);
       });
     }
-
-    // Check if correct_option is provided and is between 1 and 4.
     if (newQuestion.correct_option === "" || isNaN(newQuestion.correct_option)) {
       errors.correct_option = "Correct Option is required.";
     } else if (newQuestion.correct_option < 1 || newQuestion.correct_option > 4) {
@@ -283,7 +273,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
       setOpenAddQuestionModal(false);
       setFormErrors({}); // clear any existing errors
     } catch (error) {
-      // If we receive field-specific errors, show them inline
       if (error.response?.data && typeof error.response.data === 'object') {
         const errors = {};
         for (const key in error.response.data) {
@@ -295,7 +284,6 @@ const ViewQuestionModal = ({ open, onClose, selectedExam }) => {
         }
         setFormErrors(errors);
       } else {
-        // Generic error handling via Snackbar
         const errorMsg = error.response?.data || "Action failed.";
         setSnackbarMessage(errorMsg);
         setSnackbarSeverity("error");

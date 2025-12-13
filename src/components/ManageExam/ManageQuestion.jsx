@@ -61,8 +61,6 @@ const ManageQuestion = () => {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
   const examId = location.state?.exam?.id;
-
-  // Sensors for drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -83,8 +81,6 @@ const ManageQuestion = () => {
           navigate("/manage-exam");
           return;
         }
-
-        // Fetch fresh exam data using examId
         const response = await getExamById(examData.id);
         
 
@@ -101,18 +97,10 @@ const ManageQuestion = () => {
 
     fetchExamData();
   }, [location.state, navigate]);
-
-  // Improved organize questions by order function to handle duplicate orders
   const organizeQuestionsByOrder = () => {
-    // Find the maximum order number to know the range we need to display
     const maxOrder = Math.max(...questions.map((q) => q.order || 0), 0);
-
-    // Create arrays for English and Hindi, but store arrays of questions at each order index
-    // to handle duplicate orders
     const englishByOrder = Array(maxOrder + 1).fill(null).map(() => []);
     const hindiByOrder = Array(maxOrder + 1).fill(null).map(() => []);
-
-    // Place questions in their respective arrays by order
     questions.forEach((question) => {
       const orderNum = question.order || 0;
       if (question.language === "English") {
@@ -121,9 +109,6 @@ const ManageQuestion = () => {
         hindiByOrder[orderNum].push(question);
       }
     });
-
-    // Remove the first element (index 0) if we're using 1-based indexing
-    // and there are no questions with order 0
     if (englishByOrder[0].length === 0 && hindiByOrder[0].length === 0) {
       englishByOrder.shift();
       hindiByOrder.shift();
@@ -135,8 +120,6 @@ const ManageQuestion = () => {
       maxOrder,
     };
   };
-
-  // Completely rewritten handleDragEnd function to fix position reordering issues
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -144,63 +127,35 @@ const ManageQuestion = () => {
 
     try {
       setIsReordering(true);
-
-      // Get the dragged question
       const activeQuestion = questions.find(q => q.id === active.id);
       if (!activeQuestion) return;
-
-      // Get the target question
       const overQuestion = questions.find(q => q.id === over.id);
       if (!overQuestion) return;
-
-      // Prevent reordering between different languages
       if (activeQuestion.language !== overQuestion.language) {
         toast.warn(`Cannot reorder between ${activeQuestion.language} and ${overQuestion.language} questions`);
         return;
       }
-
-      // Get the language of the questions we're reordering
       const language = activeQuestion.language;
-      
-      // Get all questions of this language and sort them by order
       const sameLanguageQuestions = questions
         .filter(q => q.language === language)
         .sort((a, b) => (a.order || 0) - (b.order || 0));
-      
-      // Find indices within the language-specific array
       const oldIndex = sameLanguageQuestions.findIndex(q => q.id === active.id);
       const newIndex = sameLanguageQuestions.findIndex(q => q.id === over.id);
       
       if (oldIndex === -1 || newIndex === -1) return;
-
-      
-      
-      // Create a new array with the items reordered
       const reorderedQuestions = arrayMove(
         [...sameLanguageQuestions],
         oldIndex,
         newIndex
       );
-      
-      // Reassign order values sequentially to all questions
       const updatedQuestions = reorderedQuestions.map((question, index) => ({
         ...question,
         order: index  // Use sequential index as the new order
       }));
-      
-      // Extract just the IDs in the new order for the API call
       const orderedIds = updatedQuestions.map(q => q.id);
-      
-      
-      
-      // Call the API with the ordered IDs
       await reorderQuestions(orderedIds);
-      
-      // Update the UI immediately by merging the updated questions into the current state
       setQuestions(prevQuestions => {
         const newQuestions = [...prevQuestions];
-        
-        // Replace each question with its updated version
         updatedQuestions.forEach(updatedQuestion => {
           const index = newQuestions.findIndex(q => q.id === updatedQuestion.id);
           if (index !== -1) {
@@ -212,8 +167,6 @@ const ManageQuestion = () => {
       });
       
       toast.success(`${language} questions reordered successfully`);
-      
-      // Refresh data from server to ensure everything is in sync
       await refreshExamData();
       
     } catch (error) {
@@ -226,7 +179,6 @@ const ManageQuestion = () => {
   };
 
   const getFilteredAndOrganizedQuestions = () => {
-    // First apply all filters (language, class, subject, search)
     const filtered = questions.filter((question) => {
       if (!question || !question.text) return false;
 
@@ -247,8 +199,6 @@ const ManageQuestion = () => {
         matchesSearch
       );
     });
-
-    // Then organize by language and order
     const byLanguage = {
       English: filtered.filter((q) => q.language === "English"),
       Hindi: filtered.filter((q) => q.language === "Hindi"),
@@ -290,19 +240,14 @@ const ManageQuestion = () => {
   };
 
   const handleAddQuestionAt = (index) => {
-    // Set the default order for a new question
     setIsModalOpen(true);
-    // Store the target position for when we create the new question
     sessionStorage.setItem('newQuestionOrder', index);
   };
 
   const handleSubmitQuestion = async (formData) => {
     try {
-      // Get stored order position if available
       const storedOrder = sessionStorage.getItem('newQuestionOrder');
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
-      
-      // Extract English and Hindi question data from formData
       const englishQuestion = formData.english ? {
         language: "English",
         text: formData.english.text || "",
@@ -318,8 +263,6 @@ const ManageQuestion = () => {
         options: formData.hindi.options || [],
         correct_option: formData.hindi.correct_option || 1
       } : null;
-      
-      // Create questions array with non-null questions
       const questions = [];
       if (englishQuestion && englishQuestion.text.trim() && englishQuestion.options.length) {
         questions.push(englishQuestion);
@@ -334,7 +277,6 @@ const ManageQuestion = () => {
       }
       
       if (editingQuestion) {
-        // Update only the language being edited
         let updatedQuestions = [];
         if (editingQuestion.language === "English") {
           if (englishQuestion && englishQuestion.text && englishQuestion.options && englishQuestion.options.length) {
@@ -374,7 +316,6 @@ const ManageQuestion = () => {
           toast.success("Question updated successfully");
         }
       } else {
-        // Create new question with specific order if provided
         const payload = {
           exam: exam.id,
           ...(orderPosition !== null ? { order: orderPosition } : {}),
@@ -384,7 +325,6 @@ const ManageQuestion = () => {
         const response = await createNewQuestion(payload);
 
         if (response && response.id) {
-          // Add new questions to the questions list
           if (Array.isArray(response)) {
             setQuestions((prevQuestions) => [...prevQuestions, ...response]);
           } else {
@@ -393,36 +333,24 @@ const ManageQuestion = () => {
           toast.success(`${questions.length} question(s) created successfully`);
         }
       }
-
-      // Clear the stored order after use
       sessionStorage.removeItem('newQuestionOrder');
-
-      // Close modal and reset editing state
       setIsModalOpen(false);
       setEditingQuestion(null);
-
-      // Fetch fresh exam data to update all stats
       await refreshExamData();
     } catch (error) {
       
       toast.error(error.response?.data?.error || "Failed to save question");
     }
   };
-
-  // Update handleDelete to immediately remove the question from UI
   const handleDelete = async (questionId) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
         await deleteQuestion(questionId);
-
-        // Immediately remove question from UI
         setQuestions((prevQuestions) =>
           prevQuestions.filter((q) => q.id !== questionId)
         );
 
         toast.success("Question deleted successfully");
-
-        // Refresh exam data to update stats
         await refreshExamData();
       } catch (error) {
         
@@ -430,8 +358,6 @@ const ManageQuestion = () => {
       }
     }
   };
-
-  // Get unique class categories and subject levels for filters
   const getFilterOptions = () => {
     const classCategories = [
       ...new Set(questions.map((q) => q.class_category).filter(Boolean)),
@@ -444,8 +370,6 @@ const ManageQuestion = () => {
   };
 
   const { classCategories, subjectLevels } = getFilterOptions();
-
-  // Reset all filters
   const clearFilters = () => {
     setSelectedLanguage("all");
     setSelectedClass("all");
@@ -751,7 +675,6 @@ const ManageQuestion = () => {
           onDragEnd={handleDragEnd}
         >
           {selectedLanguage === "all" && selectedClass === "all" && selectedSubject === "all" && !searchTerm ? (
-            // Show organized by order with parallel Hindi/English
             (<div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white">
                 <div className="flex items-center justify-between">
@@ -894,7 +817,6 @@ const ManageQuestion = () => {
                     </div>
                   </div>
                 ) : (
-                  // Empty state - Made responsive
                   (<div className="text-center py-8 sm:py-12">
                     <FiFileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
                     <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-1 sm:mb-2">
@@ -915,7 +837,6 @@ const ManageQuestion = () => {
               </div>
             </div>)
           ) : (
-            // Show filtered questions - Made responsive
             (<div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="p-4 sm:p-6">
                 {filteredQuestions.length === 0 ? (
@@ -936,7 +857,6 @@ const ManageQuestion = () => {
                     </button>
                   </div>
                 ) : (
-                  // Split into language columns if in filtered view
                   (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {/* Only show English column if there are English questions */}
                     {filteredByLanguage.English.length > 0 && (

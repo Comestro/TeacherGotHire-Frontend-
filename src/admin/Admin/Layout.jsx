@@ -113,7 +113,6 @@ export default function Layout({ children }) {
       <Main
         component="main"
         sx={{
-          // Drawer is a flex sibling; let it consume width in persistent mode. No manual margin-left here.
           ml: 0,
           width: '100%',
           overflowX: 'hidden !important',

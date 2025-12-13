@@ -21,8 +21,6 @@ const ViewTeacherAdmin = () => {
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // New filter states
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [filters, setFilters] = useState({
     classCategory: '',
@@ -37,8 +35,6 @@ const ViewTeacherAdmin = () => {
     minTestScore: 0,
     searchQuery: '',
   });
-  
-  // Mock data for dropdowns - in a real app these would come from API
   const [filterOptions, setFilterOptions] = useState({
     classCategories: ['Primary', 'Middle School', 'High School', 'College'],
     subjects: ['Mathematics', 'Science', 'English', 'History', 'Computer Science'],
@@ -53,8 +49,6 @@ const ViewTeacherAdmin = () => {
     qualifications: ['Matric', 'Bachelor', 'Master', 'PhD', 'B.Ed'],
     genders: ['Male', 'Female', 'Other'],
   });
-  
-  // Handle filter changes
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
     setFilters({
@@ -62,8 +56,6 @@ const ViewTeacherAdmin = () => {
       [name]: value,
     });
   };
-  
-  // Handle multi-select filters
   const handleMultiFilterChange = (event, filterName) => {
     const { value } = event.target;
     setFilters({
@@ -71,16 +63,12 @@ const ViewTeacherAdmin = () => {
       [filterName]: typeof value === 'string' ? value.split(',') : value,
     });
   };
-  
-  // Handle slider filters (experience range)
   const handleSliderChange = (event, newValue) => {
     setFilters({
       ...filters,
       experience: newValue,
     });
   };
-  
-  // Reset all filters
   const handleResetFilters = () => {
     setFilters({
       classCategory: '',
@@ -96,31 +84,22 @@ const ViewTeacherAdmin = () => {
       searchQuery: '',
     });
   };
-
-  // Use effect to update available subjects based on class category
   useEffect(() => {
     if (filters.classCategory) {
-      // In a real app, you would fetch subjects based on the selected class category
-      // For now, we'll use mock data filtering
       const filteredSubjects = filterOptions.subjects.filter(subject => {
         if (filters.classCategory === 'Primary') return ['Mathematics', 'English'].includes(subject);
         if (filters.classCategory === 'Middle School') return ['Mathematics', 'Science', 'English', 'History'].includes(subject);
         if (filters.classCategory === 'High School') return ['Mathematics', 'Science', 'English', 'History', 'Computer Science'].includes(subject);
         return true; // For College or if no filtering needed
       });
-      
-      // Update the available subjects
       setFilterOptions(prev => ({
         ...prev,
         availableSubjects: filteredSubjects
       }));
     }
   }, [filters.classCategory]);
-  
-  // Use effect to update available districts based on selected state
   useEffect(() => {
     if (filters.state && filterOptions.districts[filters.state]) {
-      // Clear district selection if state changes
       if (filters.district && !filterOptions.districts[filters.state].includes(filters.district)) {
         setFilters(prev => ({
           ...prev,
@@ -136,16 +115,11 @@ const ViewTeacherAdmin = () => {
       setError(null);
       try {
         const response = await fetchSingleTeacherById(id);
-        // The API may return { teacher: { ... }, attempts: [...] } or a flat teacher object.
         const raw = response || {};
         const teacher = raw.teacher || raw;
         setTeacherData(teacher || {});
-
-        // capture attempts from multiple possible locations
         const attemptsFromResp = raw.attempts || raw.attempt_history || raw.attempts_history || teacher.attempts || [];
         setAttempts(Array.isArray(attemptsFromResp) ? attemptsFromResp : []);
-
-        // Set page title with teacher name if available
         if (teacher?.Fname && teacher?.Lname) {
           document.title = `${teacher.Fname} ${teacher.Lname} | Profile`;
         } else if (teacher?.firstName || teacher?.lastName) {
@@ -164,8 +138,6 @@ const ViewTeacherAdmin = () => {
     };
 
     fetchTeacherData();
-
-    // Reset title on unmount
     return () => {
       document.title = "Teacher Management";
     };
@@ -182,8 +154,6 @@ const ViewTeacherAdmin = () => {
       return String(value);
     }
   };
-
-  // derive job locations from multiple possible shapes (same logic as recruiter view)
   const jobLocations = (() => {
     const teacher = teacherData || {};
     if (!teacher) return [];
@@ -231,8 +201,6 @@ const ViewTeacherAdmin = () => {
     type: "success",
     text: "Account deactivated successfully"
   });
-
-  // JSON viewer modal for inspecting complex fields
   const [openJsonDialog, setOpenJsonDialog] = useState(false);
   const [jsonDialogTitle, setJsonDialogTitle] = useState('');
   const [jsonDialogContent, setJsonDialogContent] = useState(null);
@@ -245,7 +213,6 @@ const ViewTeacherAdmin = () => {
 
 
   const handleDeactivate = () => {
-    // Here you would add the actual API call to deactivate the account
     setOpenDeactivateModal(false);
     setNotificationMessage({
       type: "success",

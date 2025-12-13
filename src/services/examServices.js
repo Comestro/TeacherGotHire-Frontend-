@@ -30,27 +30,13 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
 
       localStorage.removeItem("access_token"); // Clear the token
-      // window.location.href = "/signin"; // Redirect to login page - Removed to prevent refresh loop
     }
     return Promise.reject(error);
   }
 );
-
-// export const addExamCard = async ({subject_id,class_category_id,level_id}) => {
-//   try {
-//     const response = await apiClient.post(`api/self/new/exam/exam/`,{subject_id,class_category_id,level_id});
-//     
-//     return response.data;
-//   } catch (err) {
-//     
-//     throw err;
-//   }
-// };
 export const addExamCard = async ({ subject_id, class_category_id, level_id }) => {
   try {
     const params = new URLSearchParams();
-
-    // Only append parameters that exist
     if (subject_id) params.append('subject_id', subject_id);
     if (class_category_id) params.append('class_category_id', class_category_id);
     if (level_id) params.append('level_id', level_id);

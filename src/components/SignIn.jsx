@@ -44,8 +44,6 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState(null);
-
-  // States for OTP verification
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -53,8 +51,6 @@ function Login() {
   const [canResend, setCanResend] = useState(false);
 
   const watchedFields = watch();
-
-  // Timer for OTP resend
   useEffect(() => {
     let interval;
     if (showOTPForm && timer > 0) {
@@ -96,8 +92,6 @@ function Login() {
 
     try {
       await login(data);
-
-      // If login is successful, navigate based on role
       const role = localStorage.getItem("role");
       if (role === "recruiter") {
         navigate("/recruiter");
@@ -111,18 +105,12 @@ function Login() {
         navigate("/admin/dashboard");
       }
     } catch (err) {
-
-
-      // Check if error is related to account verification
       const errorMessage = err.message || "An error occurred during login";
-
-      // Handle CSRF token error specifically
       if (errorMessage.toLowerCase().includes("csrf") || errorMessage.toLowerCase().includes("session expired")) {
         toast.error(errorMessage, {
           position: "top-right",
           autoClose: 5000,
         });
-        // Reload the page to get a fresh CSRF token
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -136,14 +124,11 @@ function Login() {
         errorMessage.toLowerCase().includes("account not active") ||
         errorMessage.toLowerCase().includes("please verify your account")
       ) {
-        // Instead of just showing verification error, show OTP form
         const email = getValues("email");
         setUserEmail(email);
         setShowOTPForm(true);
         setTimer(30);
         setCanResend(false);
-
-        // Trigger sending OTP automatically
         handleResendOTP(email);
       } else {
         setLoginError(errorMessage);
@@ -206,12 +191,8 @@ function Login() {
 
       if (response.data.access_token) {
         toast.success("Account verified successfully! Please log in.");
-
-        // Set showOTPForm to false to return to login form
         setShowOTPForm(false);
         setOtp("");
-
-        // Do not auto-login. User must log in manually.
       }
     } catch (error) {
       setLoginError(error.message || "OTP verification failed");
@@ -225,17 +206,13 @@ function Login() {
   };
 
   const isEmailValid = (email) => {
-    // Visual feedback should be lenient during typing
     if (!email || email.length < 3) return false;
     if (!email.includes('@')) return false;
     const parts = email.split('@');
     if (parts.length !== 2) return false;
     if (!parts[0] || !parts[1]) return false;
-    // Don't require dot for visual feedback - allow during typing
     return true;
   };
-
-  // Render the appropriate form based on state
   const renderForm = () => {
     if (showOTPForm) {
       return (

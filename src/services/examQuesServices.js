@@ -30,7 +30,6 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
 
       localStorage.removeItem("access_token"); // Clear the token
-      // window.location.href = "/signin"; // Redirect to login page - Removed to prevent refresh loop
     }
     return Promise.reject(error);
   }
@@ -322,8 +321,6 @@ export const jobApply = async (payload) => {
     throw err;
   }
 };
-
-// Add PUT method for updating job applications
 export const updateJobApply = async (id, payload) => {
   try {
     const response = await apiClient.put(`/api/self/apply/${id}/`, payload);

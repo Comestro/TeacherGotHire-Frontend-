@@ -27,7 +27,6 @@ export const getClassCategory= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchClassCategory();
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -87,7 +86,6 @@ export const getQualification= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchQualification();
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -103,7 +101,6 @@ export const getAllSkills= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchAllSkills();
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -119,8 +116,6 @@ export const getPrefrence= createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchTeacherPrefrence();
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -136,8 +131,6 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await updateTeacherPrefrence(prefrenceData);
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -153,8 +146,6 @@ export const postPrefrence = createAsyncThunk(
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchTeacherJobPrefrenceLocation();
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -185,8 +176,6 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await editTeacherJobPrefrenceLocation(prefrenceData);
-        
-         // Filter out the deleted location
        
         return data; // Return the updated profile data
       } catch (error) {
@@ -202,8 +191,6 @@ export const postPrefrence = createAsyncThunk(
     async (prefrenceData, { rejectWithValue }) => {
       try {
         const data = await deleteTeacherJobPrefrenceLocation(prefrenceData);
-        
-         // Filter out the deleted location
        
         return data; // Return the updated profile data
       } catch (error) {
@@ -214,15 +201,11 @@ export const postPrefrence = createAsyncThunk(
       }
     }
   );
-
-// // Thunk for handling  education profile
 export const getEducationProfile = createAsyncThunk(
   "getEducationProfile",
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchEducationProfile();
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -238,8 +221,6 @@ export const postEducationProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await addEducationProfile(personalData);
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -256,8 +237,6 @@ export const putEducationProfile = createAsyncThunk(
   async ({payload, id }, { rejectWithValue }) => {
     try {
       const data = await updateEducationProfile({payload, id });
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue(error.message);
@@ -270,8 +249,6 @@ export const delEducationProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await deleteEducationProfile(personalData);
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -282,14 +259,11 @@ export const delEducationProfile = createAsyncThunk(
   }
 );
 
-// Thunk for handling skills profile
-
 export const getSkillsProfile = createAsyncThunk(
     "getSkillProfile",
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchSkillsProfile ();
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -305,8 +279,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await updateSkillsProfile(personalData);
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -322,8 +294,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (skillToRemove, { rejectWithValue }) => {
       try {
         const data = await deleteSkillProfile(skillToRemove);
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -339,8 +309,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (_, { rejectWithValue }) => {
       try {
         const data = await fetchExprienceProfile ();
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -356,8 +324,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await addExprienceProfile(personalData);
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue(error);
@@ -370,8 +336,6 @@ export const getSkillsProfile = createAsyncThunk(
     async ({payload, id }, { rejectWithValue }) => {
       try {
         const data = await updateExprienceProfile({payload, id });
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -387,8 +351,6 @@ export const getSkillsProfile = createAsyncThunk(
     async (personalData, { rejectWithValue }) => {
       try {
         const data = await deleteExprienceProfile(personalData);
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -398,9 +360,6 @@ export const getSkillsProfile = createAsyncThunk(
       }
     }
   );
-
-
-// Redux slice
 const jobProfileSlice = createSlice({
   name: "jobProfile",
   initialState,
@@ -410,9 +369,7 @@ const jobProfileSlice = createSlice({
     },
   }, // Add reducers if needed
   extraReducers: (builder) => {
-    // for handeling  class category
     builder
-    // for get data handeling
       .addCase(getClassCategory.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -425,10 +382,7 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-
-       // for handeling  job role
     builder
-    // for get data handeling
       .addCase(getJob.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -441,8 +395,6 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-
-       // for handeling  Teacherjob type
     builder
     
       .addCase(getTeacherjobType.pending, (state) => {
@@ -457,10 +409,7 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-
-      // for handeling  subject
     builder
-    // for get data handeling
       .addCase(getSubject.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -473,10 +422,7 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; 
       });
-
-        // for handeling  Qualification
     builder
-    // for get data handeling
       .addCase(getQualification.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -489,12 +435,8 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; 
       });
-
-
-    // for handeling  All Skills
     
     builder
-    // for get data handeling
       .addCase(getAllSkills.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -507,11 +449,8 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; 
       });
-      
- //    handle Teacher prefrence
 
       builder
-      // for get data handeling
         .addCase(getPrefrence.pending, (state) => {
           state.status = "loading";
           state.error = null;
@@ -519,18 +458,13 @@ const jobProfileSlice = createSlice({
         .addCase(getPrefrence.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.prefrence = action.payload; // Update profile data
-          //
         })
         .addCase(getPrefrence.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-      
-    
-    //    handle Teacher  Job prefrence
 
     builder
-    // for get data handeling
       .addCase(getJobPrefrence.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -546,7 +480,6 @@ const jobProfileSlice = createSlice({
       });
     
       builder
-      // for post data handeling
         .addCase(postJobPrefrence.pending, (state) => {
           state.status = "loading";
           state.error = null;
@@ -562,7 +495,6 @@ const jobProfileSlice = createSlice({
         });
 
         builder
-      // for post data handeling
         .addCase(deleteJobPrefrence.pending, (state) => {
           state.status = "loading";
           state.error = null;
@@ -578,7 +510,6 @@ const jobProfileSlice = createSlice({
         });
 
         builder
-      // for post data handeling
         .addCase(editJobPrefrence.pending, (state) => {
           state.status = "loading";
           state.error = null;
@@ -592,9 +523,7 @@ const jobProfileSlice = createSlice({
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-   // handling education profile
     builder
-    // for get data handeling
       .addCase(getEducationProfile.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -607,9 +536,6 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-      
-
-     //for post data handel
      
       builder
       .addCase(postEducationProfile.pending, (state) => {
@@ -630,9 +556,6 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-      
-
-      // hadle skills profile
 
 
       builder
@@ -648,10 +571,7 @@ const jobProfileSlice = createSlice({
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
-      
-       //handling education profile
     builder
-    // for get data handeling
       .addCase(getExprienceProfile.pending, (state) => {
         state.status = "loading";
         state.error = null;

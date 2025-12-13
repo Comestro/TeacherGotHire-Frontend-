@@ -25,19 +25,15 @@ export const fetchTeachers = createAsyncThunk(
   "teachers/fetchTeachers",
   async (filters, { rejectWithValue }) => {
     try {
-      // Build query string manually to handle array parameters
       const params = new URLSearchParams();
       
       Object.keys(filters).forEach(key => {
         const value = filters[key];
-        
-        // Handle array values (send as multiple params with same key)
         if (Array.isArray(value) && value.length > 0) {
           value.forEach(item => {
             params.append(key, item);
           });
         }
-        // Handle object values (like experience_years, total_marks)
         else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
           if (value.min !== "" && value.min !== undefined) {
             params.append(`${key}_min`, value.min);
@@ -46,7 +42,6 @@ export const fetchTeachers = createAsyncThunk(
             params.append(`${key}_max`, value.max);
           }
         }
-        // Handle simple string/number values
         else if (value !== "" && value !== undefined && value !== null) {
           params.append(key, value);
         }

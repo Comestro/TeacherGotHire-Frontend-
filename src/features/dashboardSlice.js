@@ -14,8 +14,6 @@ export const getSubjects = createAsyncThunk(
     "getSubjects", async (_, { rejectWithValue }) => {
       try {
         const data = await fetchSubjects();
-        
-         // Call the service
         return data; // Return the updated profile data
       } catch (error) {
         return rejectWithValue({
@@ -32,9 +30,7 @@ export const getSubjects = createAsyncThunk(
     initialState,
     reducers: {}, // Add reducers if needed
     extraReducers: (builder) => {
-      // handling subjects
       builder
-      // for get data handeling
         .addCase(getSubjects.pending, (state) => {
           state.status = "loading";
           state.error = null;

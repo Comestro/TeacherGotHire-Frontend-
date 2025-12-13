@@ -7,8 +7,6 @@ import { Helmet } from "react-helmet-async";
 const RecruiterLayout = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  
-  // Check if current route is teacher view page
   const isTeacherViewPage = location.pathname.match(/\/teacher\/\d+$/);
   
   return (

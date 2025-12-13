@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FiX, FiMapPin, FiCheck } from "react-icons/fi";
 import { MdLocationCity, MdLocalPostOffice } from "react-icons/md";
-
-// Bihar districts list (Same as in RecruiterSidebar)
 const BIHAR_DISTRICTS = [
   "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
   "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad",
@@ -27,8 +25,6 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
   const [postOffices, setPostOffices] = useState([]);
   const [loadingPostOffices, setLoadingPostOffices] = useState(false);
   const [error, setError] = useState("");
-
-  // Initialize with data if provided
   useEffect(() => {
     if (isOpen) {
       setFormData(prev => ({
@@ -40,8 +36,6 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
       }));
     }
   }, [isOpen, initialData]);
-
-  // Fetch post offices when pincode changes
   useEffect(() => {
     if (formData.pincode && formData.pincode.length === 6) {
       setLoadingPostOffices(true);
@@ -51,8 +45,6 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
           if (data && data[0]?.Status === "Success") {
             const offices = data[0].PostOffice || [];
             setPostOffices(offices);
-            
-            // Auto-fill district from the first post office result if available
             if (offices.length > 0 && offices[0].District) {
               setFormData(prev => ({ ...prev, district: offices[0].District }));
             }
@@ -88,9 +80,6 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
-    
-    // Validation removed as per request
-    // if (!formData.district) ...
 
     onApply(formData);
     onClose();

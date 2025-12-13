@@ -3,11 +3,7 @@ import { FiX, FiGlobe, FiRefreshCw, FiLoader } from 'react-icons/fi';
 import { translateText } from '../../../services/apiService';
 import { toast } from 'react-toastify';
 import QuestionPreview from './QuestionPreview';
-
-// Lazy-load equation editor
 const EquationEditor = lazy(() => import("equation-editor-react"));
-
-// New small error boundary + editable fallback for the equation editor
 class EqErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -88,8 +84,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     hindi: false
   });
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
-
-  // Add fieldErrors state that was missing
   const [fieldErrors, setFieldErrors] = useState({
     english: {
       text: false,
@@ -104,11 +98,8 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
   });
 
   const [duplicateError, setDuplicateError] = useState(null);
-
-  // Check for duplicates
   useEffect(() => {
     const checkDuplicates = () => {
-      // 1. Check English Options
       if (!editingQuestion || editingQuestion.language === 'English') {
         const englishOptions = englishQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
         const uniqueEnglishOptions = new Set(englishOptions);
@@ -117,8 +108,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           return;
         }
       }
-
-      // 2. Check Hindi Options
       if (!editingQuestion || editingQuestion.language === 'Hindi') {
         const hindiOptions = hindiQuestion.options.map(o => o.trim().toLowerCase()).filter(o => o);
         const uniqueHindiOptions = new Set(hindiOptions);
@@ -127,8 +116,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           return;
         }
       }
-
-      // 3. Cross-language check (only if adding new)
       if (!editingQuestion) {
         if (englishQuestion.text.trim() && hindiQuestion.text.trim() &&
           englishQuestion.text.trim().toLowerCase() === hindiQuestion.text.trim().toLowerCase()) {
@@ -149,11 +136,8 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     const timer = setTimeout(checkDuplicates, 300);
     return () => clearTimeout(timer);
   }, [englishQuestion, hindiQuestion, editingQuestion]);
-
-  // New: equation editor modal state
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
   const [eqEditorValue, setEqEditorValue] = useState("");
-  // modal key forces remount of boundary/editor so they initialize with eqEditorValue
   const [eqModalKey, setEqModalKey] = useState(0);
   const [eqEditorTarget, setEqEditorTarget] = useState({
     language: "English",
@@ -161,14 +145,10 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     optionIndex: null,
     originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
   });
-
-  // Initialize form with editing question data if available
   useEffect(() => {
     if (editingQuestion) {
-      // Find the Hindi version by checking if there's a parallel question with same order
       const findCorrespondingHindiQuestion = async () => {
         try {
-          // If current question is English, try to find its Hindi counterpart
           if (editingQuestion.language === 'English') {
             setEnglishQuestion({
               language: 'English',
@@ -179,8 +159,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
               correct_option: editingQuestion.correct_option ?
                 parseInt(editingQuestion.correct_option) - 1 : 0
             });
-
-            // We would need to fetch the Hindi version here, but for now just initialize empty
             setHindiQuestion({
               language: "Hindi",
               text: "",
@@ -190,7 +168,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
                 parseInt(editingQuestion.correct_option) - 1 : 0
             });
           }
-          // If current question is Hindi, try to find its English counterpart
           else if (editingQuestion.language === 'Hindi') {
             setHindiQuestion({
               language: 'Hindi',
@@ -201,8 +178,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
               correct_option: editingQuestion.correct_option ?
                 parseInt(editingQuestion.correct_option) - 1 : 0
             });
-
-            // We would need to fetch the English version here, but for now just initialize empty
             setEnglishQuestion({
               language: "English",
               text: "",
@@ -219,7 +194,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
       findCorrespondingHindiQuestion();
     } else {
-      // Reset form when not editing
       setEnglishQuestion({
         language: "English",
         text: "",
@@ -237,8 +211,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       });
     }
   }, [editingQuestion]);
-
-  // Function to detect if a word is in English
   const isEnglishWord = (word) => {
     if (!word || word.trim().length === 0) return false;
     const englishChars = word.match(/[A-Za-z]/g);
@@ -247,22 +219,16 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       englishChars && totalChars > 0 && englishChars.length / totalChars > 0.7
     );
   };
-
-  // Function to get the last word from text
   const getLastWord = (text) => {
     const words = text.trim().split(/\s+/);
     return words[words.length - 1];
   };
-
-  // Function to replace last word in text
   const replaceLastWord = (text, newWord) => {
     const words = text.trim().split(/\s+/);
     if (words.length === 0) return newWord;
     words[words.length - 1] = newWord;
     return words.join(" ");
   };
-
-  // New helper: detect LaTeX-like tokens (used in Hindi real-time translation)
   const isLatexToken = (token) => {
     if (!token || typeof token !== "string") return false;
     if (/\$/.test(token)) return true;
@@ -270,11 +236,8 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     if (/[\\^_{}]/.test(token)) return true;
     return false;
   };
-
-  // New: translatePreservingLatex - translate only non-latex segments
   const translatePreservingLatex = async (src) => {
     if (!src || !src.trim()) return "";
-    // regex matches $...$, $$...$$, \[...\], \(...\), or commands with one-or-more {...} groups
     const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
 
     const promises = [];
@@ -360,40 +323,26 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       return updated;
     });
   };
-
-  // Update canSubmitForm to make solution optional
   const canSubmitForm = () => {
-    // If we're editing, we only need to check the language being edited
     if (editingQuestion) {
       if (editingQuestion.language === 'English') {
         return englishQuestion.text.trim() &&
           englishQuestion.options.every(opt => opt.trim());
-        // Solution is now optional
       } else {
         return hindiQuestion.text.trim() &&
           hindiQuestion.options.every(opt => opt.trim());
-        // Solution is now optional
       }
     }
-
-    // For new questions, check if BOTH language sections are complete
     const isEnglishComplete =
       englishQuestion.text.trim() &&
       englishQuestion.options.every(opt => opt.trim());
-    // Solution is now optional
 
     const isHindiComplete =
       hindiQuestion.text.trim() &&
       hindiQuestion.options.every(opt => opt.trim());
-    // Solution is now optional
-
-    // Now require both languages to be complete
     return isEnglishComplete && isHindiComplete;
   };
-
-  // Update validateForm to make solution optional
   const validateForm = () => {
-    // Reset field errors
     const newFieldErrors = {
       english: {
         text: false,
@@ -406,18 +355,12 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         solution: false
       }
     };
-
-    // Reset text errors
     const newTextErrors = { english: false, hindi: false };
     let hasError = false;
-
-    // If editing, validate only the language being edited
     if (editingQuestion) {
       const isEditingEnglish = editingQuestion.language === 'English';
       const questionToValidate = isEditingEnglish ? englishQuestion : hindiQuestion;
       const errorField = isEditingEnglish ? newFieldErrors.english : newFieldErrors.hindi;
-
-      // Text is required
       if (!questionToValidate.text.trim()) {
         if (isEditingEnglish) {
           newTextErrors.english = true;
@@ -429,28 +372,15 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
         toast.error(`Question text in ${isEditingEnglish ? 'English' : 'Hindi'} is required`);
         hasError = true;
       }
-
-      // Each option is required
       questionToValidate.options.forEach((option, idx) => {
         if (!option.trim()) {
           errorField.options[idx] = true;
           hasError = true;
         }
       });
-
-      // If any option is empty, show an error
       if (errorField.options.some(err => err)) {
         toast.error(`All options in ${isEditingEnglish ? 'English' : 'Hindi'} are required`);
       }
-
-      // Solution is now optional - remove this check
-      // if (!questionToValidate.solution.trim()) {
-      //   errorField.solution = true;
-      //   toast.error(`Solution in ${isEditingEnglish ? 'English' : 'Hindi'} is required`);
-      //   hasError = true;
-      // }
-
-      // Correct option must have content
       const correctOptionText = questionToValidate.options[questionToValidate.correct_option];
       if (!correctOptionText || !correctOptionText.trim()) {
         errorField.options[questionToValidate.correct_option] = true;
@@ -462,80 +392,46 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       setTextErrors(newTextErrors);
       return !hasError;
     }
-
-    // For new questions, validate BOTH languages (they're both required now)
-
-    // English validation
     if (!englishQuestion.text.trim()) {
       newTextErrors.english = true;
       newFieldErrors.english.text = true;
       toast.error("Question text in English is required");
       hasError = true;
     }
-
-    // Each English option is required
     englishQuestion.options.forEach((option, idx) => {
       if (!option.trim()) {
         newFieldErrors.english.options[idx] = true;
         hasError = true;
       }
     });
-
-    // If any English option is empty, show an error
     if (newFieldErrors.english.options.some(err => err)) {
       toast.error("All options in English are required");
     }
-
-    // Solution is now optional - remove this check
-    // if (!englishQuestion.solution.trim()) {
-    //   newFieldErrors.english.solution = true;
-    //   toast.error("Solution in English is required");
-    //   hasError = true;
-    // }
-
-    // English correct option must have content
     if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
       newFieldErrors.english.options[englishQuestion.correct_option] = true;
       toast.error("The selected correct answer for English cannot be empty");
       hasError = true;
     }
-
-    // Hindi validation
     if (!hindiQuestion.text.trim()) {
       newTextErrors.hindi = true;
       newFieldErrors.hindi.text = true;
       toast.error("Question text in Hindi is required");
       hasError = true;
     }
-
-    // Each Hindi option is required
     hindiQuestion.options.forEach((option, idx) => {
       if (!option.trim()) {
         newFieldErrors.hindi.options[idx] = true;
         hasError = true;
       }
     });
-
-    // If any Hindi option is empty, show an error
     if (newFieldErrors.hindi.options.some(err => err)) {
       toast.error("All options in Hindi are required");
     }
-
-    // Solution is now optional - remove this check
-    // if (!hindiQuestion.solution.trim()) {
-    //   newFieldErrors.hindi.solution = true;
-    //   toast.error("Solution in Hindi is required");
-    //   hasError = true;
-    // }
-
-    // Hindi correct option must have content
     if (!hindiQuestion.options[hindiQuestion.correct_option]?.trim()) {
       newFieldErrors.hindi.options[hindiQuestion.correct_option] = true;
       toast.error("The selected correct answer for Hindi cannot be empty");
       hasError = true;
     }
-
-    // Update error states
     setFieldErrors(newFieldErrors);
     setTextErrors(newTextErrors);
 
@@ -545,14 +441,11 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
 
     return true;
   };
-
-  // Update handleSubmit to make solution optional
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      // Create structured form data for both languages
       const formData = {
         english: {
           language: "English",
@@ -567,8 +460,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
           correct_option: hindiQuestion.correct_option + 1
         }
       };
-
-      // Only add solutions if they exist
       if (englishQuestion.solution.trim()) {
         formData.english.solution = englishQuestion.solution.trim();
       }
@@ -576,10 +467,7 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       if (hindiQuestion.solution.trim()) {
         formData.hindi.solution = hindiQuestion.solution.trim();
       }
-
-      // If editing, handle single language edits
       if (editingQuestion) {
-        // Keep only the language being edited if we're in edit mode
         if (editingQuestion.language === 'English') {
           delete formData.hindi;
         } else if (editingQuestion.language === 'Hindi') {
@@ -598,15 +486,12 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
   };
 
   const handleKeyUp = async (e, field, value, optionIndex = null) => {
-    // First update English question without translation
     updateEnglishQuestion(field, value, optionIndex);
 
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       setIsTranslating(true);
       try {
         const response = await translatePreservingLatex(value);
-
-        // Update Hindi question with translated text from response
         if (field === "options" && optionIndex !== null) {
           setHindiQuestion((prev) => {
             const updated = { ...prev };
@@ -626,8 +511,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       }
     }
   };
-
-  // Hindi word-by-word handler: skip latex tokens
   const handleHindiKeyUp = async (e, field, value, optionIndex = null) => {
     updateHindiQuestion(field, value, optionIndex);
 
@@ -675,19 +558,14 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       }
     }
   };
-
-  // New: open/close/save eq editor
   const openEquationEditor = (language, field, optionIndex = null, initialValue = "") => {
-    // detect first LaTeX fragment and present it in editor (without wrappers)
     const latexInfo = extractFirstLatex(initialValue || "");
     setEqEditorTarget({ language, field, optionIndex, originalLatexInfo: latexInfo });
     if (latexInfo) {
       setEqEditorValue(latexInfo.inner ?? latexInfo.match ?? "");
     } else {
-      // no latex found — open with raw full text (or empty)
       setEqEditorValue((initialValue || "").trim());
     }
-    // bump modal key and open modal so boundary/editor remount with current value
     setEqModalKey((k) => k + 1);
     setEqEditorOpen(true);
   };
@@ -699,14 +577,11 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
   const saveEquationToField = (latex) => {
     const val = (latex || "").trim();
     const info = eqEditorTarget.originalLatexInfo;
-    // Helper to perform replacement for a given text
     const replaceInText = (text) => {
       if (!info) {
-        // append as inline math by default
         const appended = (text.trim() ? text + " " : "") + `$${val}$`;
         return appended;
       }
-      // replace exact original match at stored index
       const before = text.slice(0, info.index);
       const after = text.slice(info.index + info.length);
       const wrapped = `${info.wrapperStart}${val}${info.wrapperEnd}`;
@@ -736,8 +611,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     }
     setEqEditorOpen(false);
   };
-
-  // Find first LaTeX fragment and return structured info.
   const extractFirstLatex = (src) => {
     if (!src || typeof src !== "string") return null;
     const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\]|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
@@ -746,8 +619,6 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     const match = m[0];
     const index = m.index;
     const length = match.length;
-
-    // Determine wrappers and inner content
     if (match.startsWith("$$") && match.endsWith("$$")) {
       return { match, inner: match.slice(2, -2), wrapperStart: "$$", wrapperEnd: "$$", index, length };
     }
@@ -760,22 +631,16 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
     if (match.startsWith("\\(") && match.endsWith("\\)")) {
       return { match, inner: match.slice(2, -2), wrapperStart: "\\(", wrapperEnd: "\\)", index, length };
     }
-    // Command-like (e.g. \cfrac{...}{...}) — pass whole match as inner (don't strip)
     if (match.startsWith("\\")) {
       return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
     }
     return { match, inner: match, wrapperStart: "", wrapperEnd: "", index, length };
   };
-
-  // New: helper to insert LaTeX command at cursor or append
   const insertLatexCommand = (command) => {
     setEqEditorValue(prev => prev + command);
   };
-
-  // New: LaTeX toolbar component
   const LatexToolbar = () => {
     const toolbarItems = [
-      // Basic symbols
       { label: 'α', command: '\\alpha ' },
       { label: 'β', command: '\\beta ' },
       { label: 'γ', command: '\\gamma ' },
@@ -790,20 +655,17 @@ const QuestionModal = ({ isOpen, onClose, onSubmit, examId, editingQuestion }) =
       { label: '≠', command: '\\neq ' },
       { label: '→', command: '\\rightarrow ' },
       { label: '√', command: '\\sqrt{} ', insert: '\\sqrt{' },
-      // Fractions and structures
       { label: 'x/y', command: '\\frac{}{} ', insert: '\\frac{' },
       { label: 'x²', command: '^{} ', insert: '^{' },
       { label: 'x₁', command: '_{} ', insert: '_{' },
       { label: '∑ᵢ', command: '\\sum_{i=1}^{n} ' },
       { label: '∫ᵃᵇ', command: '\\int_{a}^{b} ' },
       { label: 'lim', command: '\\lim_{x \\to \\infty} ' },
-      // Functions
       { label: 'sin', command: '\\sin ' },
       { label: 'cos', command: '\\cos ' },
       { label: 'tan', command: '\\tan ' },
       { label: 'log', command: '\\log ' },
       { label: 'ln', command: '\\ln ' },
-      // Brackets
       { label: '()', command: '\\left( \\right) ', insert: '\\left(' },
       { label: '[]', command: '\\left[ \\right] ', insert: '\\left[' },
       { label: '{}', command: '\\left\\{ \\right\\} ', insert: '\\left\\{' },

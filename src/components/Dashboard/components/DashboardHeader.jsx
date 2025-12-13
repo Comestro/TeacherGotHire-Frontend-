@@ -13,8 +13,6 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
   const profile = useSelector((state) => state.auth.userData || {});
   const [showNotifications, setShowNotifications] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Mock notifications - in a real app, this would come from your state/API
   const notifications = [
     { id: 1, message: "Your exam has been scheduled", read: false, time: "2 hours ago" },
     { id: 2, message: "Profile completion reminder", read: true, time: "1 day ago" },

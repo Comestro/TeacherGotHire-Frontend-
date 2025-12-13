@@ -44,8 +44,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const modalRef = useRef(null);
-
-  // Pincode state
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState("");
@@ -53,8 +51,6 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     state: "",
     city: "",
   });
-
-  // Teacher search state
   const [teachers, setTeachers] = useState([]);
   const [teachersLoading, setTeachersLoading] = useState(false);
   const [teachersError, setTeachersError] = useState("");
@@ -168,13 +164,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     setTeachersLoading(true);
     setTeachersError("");
     try {
-      // Find the class category name
       const classCategory = subject.find(
         (cat) => cat.id === parseInt(selectedClassCategory)
       );
       const classCategoryName = classCategory ? classCategory.name : "";
-
-      // Find the subject names
       const subjectNames = selectedSubjects
         .map((subjectId) => {
           for (const category of subject) {

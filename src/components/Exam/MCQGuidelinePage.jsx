@@ -37,8 +37,6 @@ const MCQGuidelinePage = () => {
       setSelectedLanguage("Hindi");
     }
   }, [subjectName, passedLanguage]);
-
-  // Handle language change
   const handleLanguageChange = (event) => {
     const language = event.target.value;
     setSelectedLanguage(language); // Update selected language in state
@@ -55,22 +53,18 @@ const MCQGuidelinePage = () => {
 
       if (examCards?.type === "offline") {
         const examid = examCards?.id;
-        // Check passkey status
         const response = await checkPasskey({ exam: examid });
 
 
         if (response?.passkey === true) {
-          // If passkey exists, show verification with center info
           setExamCenterData(response.center);
           setShowVerificationCard(true);
         } else {
-          // If no passkey, show center selection
           setShowVerificationCard(false);
         }
         setIsExamCenterModalOpen(true);
         setCard(true);
       } else {
-        // Handle online exam flow
         await dispatch(
           getAllQues({
             exam_id: examCards?.id,
@@ -88,8 +82,6 @@ const MCQGuidelinePage = () => {
       setIsLoading(false);
     }
   };
-
-  // Modified ExamCente
   return (
     <div className="h-screen flex flex-col bg-background text-text overflow-hidden">
       {/* Header */}

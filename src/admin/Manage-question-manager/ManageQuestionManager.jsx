@@ -69,8 +69,6 @@ const ManageQuestionManager = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-
-  // State variables
   const [openModal, setOpenModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [managers, setManagers] = useState([]);
@@ -85,12 +83,8 @@ const ManageQuestionManager = () => {
   const [subjectSelectOpen, setSubjectSelectOpen] = useState(false);
   const [classCategorySelectOpen, setClassCategorySelectOpen] = useState(false);
   const [sortModel, setSortModel] = useState([{ field: 'name', sort: 'asc' }]);
-
-  // Add view dialog states
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [viewManager, setViewManager] = useState(null);
-
-  // UI states
   const [notification, setNotification] = useState({
     open: false,
     message: "",
@@ -104,12 +98,8 @@ const ManageQuestionManager = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [managerToDelete, setManagerToDelete] = useState(null);
-
-  // DataGrid local pagination state (used by your code references)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Form data
   const [userData, setUserData] = useState({
     id: null,
     email: "",
@@ -119,15 +109,11 @@ const ManageQuestionManager = () => {
     is_verified: true
   });
   const [selectedSubjects, setSelectedSubjects] = useState([]);
-
-  // Fetch data on component mount
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    // keep local page/rows sync with paginationModel
     setPage(paginationModel.page ?? 0);
     setRowsPerPage(paginationModel.pageSize ?? 10);
   }, [paginationModel]);
@@ -172,8 +158,6 @@ const ManageQuestionManager = () => {
       setLoading(false);
     }
   };
-
-  // View dialog handlers
   const handleOpenViewDialog = (manager) => {
     setViewManager(manager);
     setOpenViewDialog(true);
@@ -183,8 +167,6 @@ const ManageQuestionManager = () => {
     setViewManager(null);
     setOpenViewDialog(false);
   };
-
-  // Modal handlers
   const handleOpenModal = (isEdit = false, manager = null) => {
     setIsEditMode(isEdit);
 
@@ -250,8 +232,6 @@ const ManageQuestionManager = () => {
     setSelectedSubjects([]);
     setClassCategorySelectOpen(false);
   };
-
-  // Form submission
   const handleSave = async () => {
     try {
       setLoadingAction(true);
@@ -342,8 +322,6 @@ const ManageQuestionManager = () => {
       setLoadingAction(false);
     }
   };
-
-  // Delete functionality
   const handleDeleteConfirmation = (manager) => {
     setManagerToDelete(manager);
     setOpenDeleteModal(true);
@@ -377,8 +355,6 @@ const ManageQuestionManager = () => {
       setManagerToDelete(null);
     }
   };
-
-  // Status toggle functionality
   const handleToggleStatus = async (manager) => {
     try {
       setLoadingAction(true);
@@ -401,7 +377,6 @@ const ManageQuestionManager = () => {
       const response = await updateAssignedUserManager(manager.id, payload);
 
       if (response && (response.data || response.message)) {
-        // Update local state based on status field
         setManagers(prev =>
           prev.map(m =>
             m.id === manager.id
@@ -455,8 +430,6 @@ const ManageQuestionManager = () => {
       setLoadingAction(false);
     }
   };
-
-  // Form input handlers
   const handleInputChange = (e) => {
     setUserData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -529,14 +502,10 @@ const ManageQuestionManager = () => {
   };
 
   const filteredManagers = getFilteredManagers();
-
-  // Helper function to format subject with class category
   const getSubjectWithCategory = (subject, classCategoriesList) => {
     const category = classCategoriesList?.find(cat => cat.id === subject.class_category);
     return category ? `${subject.subject_name} (${category.name})` : subject.subject_name;
   };
-
-  // Mobile view renderer (was missing, caused ReferenceError)
   const renderMobileView = () => {
     return (
       <Stack spacing={2}>

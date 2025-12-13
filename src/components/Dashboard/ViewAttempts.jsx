@@ -22,9 +22,6 @@ function ViewAttempts() {
   const apiOutput1 = useSelector((state) => state.examQues?.attemptCount);
   const apiOutput2 = useSelector((state) => state.examQues?.attempts);
   const dispatch = useDispatch();
-
-
-  // Get unique attempted categories with better null handling
   const attemptedCategories = [
     ...new Set(
       apiOutput2
@@ -49,7 +46,6 @@ function ViewAttempts() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Filter results based on selected category with more lenient filtering
     const validResults = apiOutput2?.filter(result => {
       if (!result?.exam) {
         return false;
@@ -63,8 +59,6 @@ function ViewAttempts() {
     });
 
     setFilteredExamResults(results);
-
-    // More lenient subject extraction
     const subjectNames = [...new Set(
       results
         .filter(result => result?.exam?.subjet_name || result?.exam?.subject_name) // Check both possible property names
@@ -188,17 +182,12 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       const subjectMatch = result?.exam?.subject_name === subject;
       return result?.exam && subjectMatch;
     }) || [];
-
-  // Separate exam results and interviews
   const examRows = [];
   const interviewRows = [];
 
   subjectResults.forEach(result => {
     const level_id = result?.exam?.level_id;
     const levelKey = `level${level_id}`;
-
-
-    // Add exam result
     examRows.push({
       levelOrder: getLevelOrder(result?.exam?.level_name),
       levelName: result?.exam?.level_name,
@@ -212,15 +201,11 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
       date: new Date(result?.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(result?.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
       attemptCount: result?.attempt || '1',
     });
-
-    // Add interviews if any - filter out pending interviews
     if (result?.interviews?.length) {
       result.interviews
-        // Filter out interviews with "pending" status
         .filter(interview => interview?.status !== "pending")
         .forEach(interview => {
           if (interview?.subject === subject) { // Show all non-pending interviews for matching subject
-            // Determine interview level based on the parent exam
             const interviewLevel = `Interview - ${result?.exam?.level_name}`;
 
             interviewRows.push({
@@ -243,23 +228,14 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
         });
     }
   });
-
-  // Combine and sort all rows - interviews should be last
   const allRows = [...examRows, ...interviewRows].sort((a, b) => {
-    // Interviews always last
     if (a.type === "Interview" && b.type !== "Interview") return 1;
     if (a.type !== "Interview" && b.type === "Interview") return -1;
-
-    // For same type, sort by level order
     if (a.levelOrder !== b.levelOrder) {
       return a.levelOrder - b.levelOrder;
     }
-
-    // For same level, sort by date descending
     return new Date(b.date) - new Date(a.date);
   });
-
-  // Don't render anything if no valid results
   if (!allRows.length) return null;
 
   return (

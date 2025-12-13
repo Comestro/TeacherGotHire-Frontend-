@@ -23,16 +23,11 @@ const formatDate = (date) => {
 const Experience = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Assuming you use navigate elsewhere
-
-  // Selectors
   const experienceData = useSelector(
     (state) => state?.jobProfile?.exprienceData || []
   );
 
   const jobRole = useSelector((state) => state?.jobProfile?.jobRole);
-
-
-  // State Variables
   const [isEndDateDisabled, setIsEndDateDisabled] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null); // Tracks the index being edited
   const [isEditing, setIsEditing] = useState(false);
@@ -40,8 +35,6 @@ const Experience = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
-  // React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -49,19 +42,13 @@ const Experience = () => {
     reset,
     formState: { errors: formErrors },
   } = useForm();
-
-  // Fetch data on component mount
   useEffect(() => {
     dispatch(getJob());
     dispatch(getExprienceProfile());
   }, [dispatch]);
-
-  // Refetch profile data
   const fetchProfile = () => {
     dispatch(getExprienceProfile());
   };
-
-  // Form Submission Handler
   const onSubmit = async (data) => {
     try {
       setLoading(true); // Optionally add a loading state while submitting
@@ -69,11 +56,9 @@ const Experience = () => {
       setSuccessMessage(null);
       const payload = {
         institution: data.institution,
-        // achievements: data.achievements,
         role: data.job_role, // Updated field name
         description: data.description,
         start_date: data.start_date,
-        // end_date: data.end_date,
         ...(data.end_date && { end_date: data.end_date }),
         ...(data.achievements && { achievements: data.achievements }),
       };
@@ -89,8 +74,6 @@ const Experience = () => {
         fetchProfile();
         setSuccessMessage("Experience added successfully!");
       }
-
-      // Reset form and editing state
       setEditingIndex(null);
       setIsEditing(false);
       reset();
@@ -100,11 +83,7 @@ const Experience = () => {
 
       let apiErrors = {};
       let errorMessage = "Failed to save experience";
-
-      // Determine the error object (unwrapped payload or axios response)
       const responseData = err.response?.data || err;
-
-      // Handle specific validation error format
       if (responseData?.errors && Array.isArray(responseData.errors)) {
         responseData.errors.forEach(error => {
           if (error.attr) {
@@ -123,8 +102,6 @@ const Experience = () => {
       setGeneralError(errorMessage);
     }
   };
-
-  // Edit Handler
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsEditing(true);
@@ -132,9 +109,7 @@ const Experience = () => {
     setGeneralError(null);
     setSuccessMessage(null);
     const experience = experienceData[index];
-    // Populate form fields with existing data
     Object.keys(experience).forEach((key) => {
-      // Adjust the role field to match the select's expected value
       if (key === "role" && experience[key].id) {
         setValue("job_role", experience[key].id);
       } else {
@@ -142,8 +117,6 @@ const Experience = () => {
       }
     });
   };
-
-  // Delete Handler
   const handleDelete = async (index) => {
     try {
       const id = experienceData[index].id;
@@ -165,8 +138,6 @@ const Experience = () => {
       setGeneralError(errorMessage);
     }
   };
-
-  // Cancel Editing Handler
   const handleCancel = () => {
     setEditingIndex(null);
     setIsEditing(false);

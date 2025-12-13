@@ -379,10 +379,7 @@ const ExamDetails = () => {
         setFormSubmitting(true);
 
         try {
-            // Create a copy of newQuestion without the solution field
             const questionData = { ...newQuestion };
-            
-            // Only include solution if it's not empty
             if (!questionData.solution.trim()) {
                 delete questionData.solution;
             }
@@ -462,8 +459,6 @@ const ExamDetails = () => {
     };
 
     const filteredQuestions = questions.filter(q => q.language === selectedLanguage);
-
-    // Count questions by language
     const questionCounts = {
         English: questions.filter(q => q.language === "English").length,
         Hindi: questions.filter(q => q.language === "Hindi").length

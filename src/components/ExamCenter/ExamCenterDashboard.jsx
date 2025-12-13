@@ -4,31 +4,19 @@ import { useDispatch, useSelector } from "react-redux";
 
 const ExamCenterDashboard = () => { 
   const dispatch = useDispatch();
-
-  // Fetch the data when the component mounts
   useEffect(() => {
     dispatch(getAllCenterUser());
   }, [dispatch]);
-  
-  // Get centerUser from Redux state
   const { centerUser } = useSelector((state) => state.examQues);
-
-  // Local state for users
   const [users, setUsers] = useState([]);
-
-  // Update users state when centerUser changes
   useEffect(() => {
     if (centerUser) {
       setUsers(centerUser);
     }
   }, [centerUser]);
-
-  // Filters
   const [statusFilter, setStatusFilter] = useState(""); // "true", "false", or ""
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  // Filtered user list
   const filteredUsers = users.filter((user) => {
     const matchesStatus =
       statusFilter === "" || user.status.toString() === statusFilter;
@@ -37,21 +25,14 @@ const ExamCenterDashboard = () => {
       (!endDate || new Date(user.created_at) <= new Date(endDate));
     return matchesStatus && matchesDate;
   });
-
-  // Handle approve button click
   const handleApprove = async (userId) => {
     try {
-      // Dispatch action to approve the user
       dispatch(approveCenterUser(userId));
-
-      // Update local users state
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, status: true } : user
         )
       );
-
-      // Optionally, show a success message
       alert("User approved successfully!");
     } catch (error) {
       

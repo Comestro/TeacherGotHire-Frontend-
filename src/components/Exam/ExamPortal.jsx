@@ -31,11 +31,8 @@ const ExamPortal = () => {
 
 
   const { allQuestion, language: reduxLanguage, loading } = useSelector((state) => state.examQues);
-  // Get language from navigation state or Redux (Redux language is set by getAllQues action)
   const language = location.state?.language || reduxLanguage;
-  // Ensure questions are sorted by ascending order (order 1 first, then 2, 3, ...)
   const questions = [...(allQuestion.questions || [])].sort((a, b) => {
-    // Use Number() and fallback to a large number if order is missing
     const orderA = a.order !== undefined ? Number(a.order) : Number.MAX_SAFE_INTEGER;
     const orderB = b.order !== undefined ? Number(b.order) : Number.MAX_SAFE_INTEGER;
     return orderA - orderB;
@@ -55,12 +52,8 @@ const ExamPortal = () => {
   const reportOptions = useSelector((state) => state.examQues?.reportReason);
   const [selectedOption, setSelectedOption] = useState([]);
   const [confirmationMessage, setConfirmationMessage] = useState("");
-
-  // Refs for auto-scrolling
   const scrollContainerRef = useRef(null);
   const questionRefs = useRef({});
-
-  // Auto-scroll to active question
   useEffect(() => {
     if (scrollContainerRef.current && questionRefs.current[currentQuestionIndex]) {
       const container = scrollContainerRef.current;
@@ -69,8 +62,6 @@ const ExamPortal = () => {
       const containerWidth = container.offsetWidth;
       const elementLeft = activeElement.offsetLeft;
       const elementWidth = activeElement.offsetWidth;
-
-      // Calculate scroll position to center the element
       const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
 
       container.scrollTo({
@@ -93,7 +84,6 @@ const ExamPortal = () => {
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const handleSubmits = async () => {
-    // ensure we have a current question
     if (!currentQuestion) return;
     setIsSubmittingReport(true);
     try {
@@ -101,15 +91,10 @@ const ExamPortal = () => {
         question: currentQuestion.id,
         issue_type: selectedOption,
       };
-
-      // Call the service directly
       await AddReport(payload);
-
-      // Keep local confirmation and clear selections
       setConfirmationMessage('Your report has been submitted to Admin.');
       setSelectedOption([]);
       setIsOpen(false);
-      // Optionally refresh reasons or reports
       dispatch(getReport());
     } catch (err) {
       console.error('Report submit failed', err);
@@ -146,13 +131,10 @@ const ExamPortal = () => {
     questions.forEach((question) => {
       const userAnswer = selectedAnswers[question.id];
       if (userAnswer === undefined) {
-        // Unanswered
         is_unanswered++;
       } else if (userAnswer === question.correct_option) {
-        // Correctly answered
         correct_answer++;
       } else {
-        // Wrongly answered
         incorrect_answer++;
       }
     });
@@ -163,10 +145,6 @@ const ExamPortal = () => {
       incorrect_answer,
       is_unanswered,
     });
-
-
-
-    // Exit fullscreen
     if (document.exitFullscreen) {
       document.exitFullscreen().catch((err) => console.error("Error exiting fullscreen:", err));
     } else if (document.webkitExitFullscreen) {
@@ -190,10 +168,6 @@ const ExamPortal = () => {
       replace: true
     });
   }, [questions, selectedAnswers, dispatch, exam, language, navigate]);
-
-  // --- Security Restrictions ---
-
-  // 1. Enforce Fullscreen
   const enterFullscreen = async () => {
     try {
       const elem = document.documentElement;
@@ -236,8 +210,6 @@ const ExamPortal = () => {
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
-
-  // 2. Disable Right-click, Copy/Paste, and Keyboard Shortcuts
   useEffect(() => {
     const handleContextMenu = (e) => {
       e.preventDefault();
@@ -250,7 +222,6 @@ const ExamPortal = () => {
     };
 
     const handleKeyDown = (e) => {
-      // Prevent default behavior that causes auto-selection
       if (["Enter", "ArrowRight", "ArrowLeft"].includes(e.key)) {
         e.preventDefault();
       }
@@ -264,8 +235,6 @@ const ExamPortal = () => {
         handlePrevious();
         setTimeout(() => document.activeElement?.blur(), 0);
       }
-
-      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
       if (
         e.keyCode === 123 ||
         (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
@@ -274,27 +243,18 @@ const ExamPortal = () => {
         e.preventDefault();
         toast.warning("Developer tools are disabled.");
       }
-
-      // Disable F5 and Ctrl+R (Refresh)
       if (e.keyCode === 116 || (e.ctrlKey && e.keyCode === 82)) {
         e.preventDefault();
         toast.warning("Page refresh is disabled.");
       }
-
-      // Disable Esc (Attempt to prevent, though browser may override for fullscreen)
       if (e.keyCode === 27) {
         e.preventDefault();
-        // If Esc is pressed, we might lose fullscreen, so we warn
         toast.warning("Exiting fullscreen is not allowed.");
       }
-
-      // Disable Copy/Paste shortcuts
       if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
         e.preventDefault();
         toast.warning("Copy/Paste shortcuts are disabled.");
       }
-
-      // Disable Alt+Tab (cannot be fully prevented, but we can warn on blur)
     };
 
     document.addEventListener("contextmenu", handleContextMenu);
@@ -311,8 +271,6 @@ const ExamPortal = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleNext, handlePrevious]);
-
-  // 3. Prevent Tab Switching (Visibility Change & Blur)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -334,15 +292,11 @@ const ExamPortal = () => {
       window.removeEventListener("blur", handleWindowBlur);
     };
   }, []);
-
-  // 4. Prevent Navigation (Back Button & Reload)
   useEffect(() => {
-    // Push current state to history to trap back button
     window.history.pushState(null, null, window.location.href);
 
     const handlePopState = (e) => {
       window.history.pushState(null, null, window.location.href);
-      // Try to re-enter fullscreen if we were in it (might be blocked by browser without user gesture)
       enterFullscreen();
 
       setWarningCount(prev => prev + 1);
@@ -363,8 +317,6 @@ const ExamPortal = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
-
-  // Auto-submit on excessive warnings
   useEffect(() => {
     if (warningCount > 3) {
       toast.error("Maximum security violations exceeded. Auto-submitting exam.");

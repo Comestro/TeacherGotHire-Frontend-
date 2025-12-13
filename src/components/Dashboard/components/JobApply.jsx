@@ -29,23 +29,17 @@ const getJobTypeName = (jobTypes, id) => {
   const type = jobTypes?.find(t => t.id === parseInt(id));
   return type ? type.teacher_job_name : 'Unknown Job Type';
 };
-
-// Inline Application Form Component - Extracted
 const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, isEdit, jobTypes, jobTypesStatus }) => {
   const [selectedJobTypes, setSelectedJobTypes] = useState([]);
   const [salaryDetails, setSalaryDetails] = useState({});
   const [jobTypeLocations, setJobTypeLocations] = useState({});
   const [activeTab, setActiveTab] = useState(null);
-
-  // Initialize state when component mounts
   useEffect(() => {
-    // Default active tab to first job type if available
     if (jobTypes && jobTypes.length > 0 && !activeTab) {
       setActiveTab(jobTypes[0].id);
     }
 
     if (isEdit && Array.isArray(applicationData) && applicationData.length > 0) {
-      // Parse existing data from multiple application entries
       let initialJobTypes = [];
       let initialSalaryDetails = {};
       let initialLocations = {};
@@ -66,9 +60,6 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
       setSalaryDetails(initialSalaryDetails);
       setJobTypeLocations(initialLocations);
     } else {
-      // Reset for new application
-      // If creating new, maybe pre-select the first job type?
-      // For now keep empty, user must toggle to apply.
     }
   }, [isEdit, applicationData, jobTypes]);
   
@@ -76,9 +67,6 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
     setSelectedJobTypes(prev => {
       if (prev.includes(jobTypeId)) {
         const newTypes = prev.filter(id => id !== jobTypeId);
-        
-        // We keep the data in state so user doesn't lose it if they toggle back on accident
-        // But we won't send it on submit unless it's in selectedJobTypes
         
         return newTypes;
       } else {
@@ -111,27 +99,19 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
       toast.error("Please select at least one job type to apply for.");
       return;
     }
-
-    // Validate all selected types have salary
     for (const jobId of selectedJobTypes) {
       if (!salaryDetails[jobId]?.amount || parseFloat(salaryDetails[jobId].amount) <= 0) {
         const jobName = getJobTypeName(jobTypes, jobId);
         toast.error(`Please enter a valid salary for ${jobName}`);
-        // Switch to the tab with error
         setActiveTab(jobId);
         return;
       }
-      
-      // Validate locations (optional but good UI)
       const locations = jobTypeLocations[jobId] || [];
        if (locations.length === 0) {
           const jobName = getJobTypeName(jobTypes, jobId);
           toast.warning(`You haven't selected any location preference for ${jobName}. Defaulting to state/district if any.`);
-          // Not blocking, just warning/info
        }
     }
-
-    // Construct payload data
     const salaryData = {
       teacher_job_type: selectedJobTypes,
       salary_details: salaryDetails,
@@ -302,8 +282,6 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
     </div>
   );
 };
-
-// Summary Component for existing applications
 const ApplicationSummary = ({ applications, jobTypes }) => {
   const [activeTab, setActiveTab] = useState(null);
 
@@ -412,21 +390,10 @@ const JobApply = () => {
     isEdit: false,
     applicationData: null,
   });
-
-
-
-  // ConfirmationDialog component removed as per rework
-
-
-  // Get eligibility data using the new endpoint
   const { data: eligibilityData, isLoading: isEligibilityLoading, error: eligibilityError } = useGetApplyEligibilityQuery();
   const { data: jobApply, isLoading: isJobApplyLoading, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
-
-  // Extract eligible exams from the new response structure
   const eligibleExams = eligibilityData?.qualified_list ?
     eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
-
-  // Function to show/expand inline application form
   const handleExpandForm = (subjectId, classCategoryId, isEdit = false, applicationData = null, subjectName = '') => {
     setExpandedForm({
       subjectId,
@@ -436,8 +403,6 @@ const JobApply = () => {
       subjectName,
     });
   };
-
-  // Function to collapse inline form
   const handleCollapseForm = () => {
     setExpandedForm({
       subjectId: null,
@@ -447,35 +412,24 @@ const JobApply = () => {
       subjectName: '',
     });
   };
-
-  // Handle form submission directly
   const handleFormSubmit = async (salaryData) => {
     const { subjectId, classCategoryId, isEdit, subjectName } = expandedForm;
     await handleApply(subjectId, classCategoryId, subjectName, false, salaryData, null, isEdit ? 'update' : 'apply');
     handleCollapseForm();
   };
-
-  // Handle simple withdraw with window confirmation
   const handleRevoke = async (subjectId, classCategoryId, subjectName) => {
     if (window.confirm(`Are you sure you want to withdraw your application for ${subjectName}? This action cannot be undone immediately.`)) {
       await handleApply(subjectId, classCategoryId, subjectName, true, null, null, 'revoke');
     }
   };
-
-  // Updated handleApply function to manage multiple API requests
   const handleApply = async (subjectId, classCategoryId, subjectName, currentStatus = false, salaryData = null, applicationId = null, action = 'apply') => {
     try {
       console.log("=== handleApply Sync Debug ===");
       console.log("Action:", action);
       console.log("Salary Data:", salaryData);
-
-      // 1. Get all current applications for this subject/class
-      // We need to refetch or filter from the latest jobApply state to be sure
       const currentApplications = jobApply?.filter(item => {
         const itemSubjectId = item.subject?.id || item.subject || item.subject_id;
         const itemClassId = item.class_category?.id || item.class_category || item.class_category_id;
-
-        // Handle nested subject structure if needed
         let isSubjectMatch = itemSubjectId === subjectId;
         if (!isSubjectMatch && item.class_category?.subjects) {
           isSubjectMatch = item.class_category.subjects.some(sub =>
@@ -494,11 +448,7 @@ const JobApply = () => {
       console.log("DEBUG: Selected Job Types:", selectedJobTypes);
 
       console.log("Current Applications for Subject:", currentApplications);
-
-
-      // 2. Handle Revoke All
       if (action === 'revoke') {
-        // Revoke all active applications for this subject
         currentApplications.forEach(app => {
           if (app.status === true) {
             const jobId = getJobTypeId(app.teacher_job_type);
@@ -515,9 +465,6 @@ const JobApply = () => {
           }
         });
       } else {
-        // 3. Handle Apply/Update (Sync Logic)
-
-        // A. Process selected job types (Create or Update)
         selectedJobTypes.forEach(jobId => {
           const existingApp = currentApplications.find(app => getJobTypeId(app.teacher_job_type) === jobId);
           console.log(`DEBUG: Checking Job ID ${jobId}. Existing App Found:`, existingApp ? existingApp.id : 'No');
@@ -526,11 +473,8 @@ const JobApply = () => {
           const type = salaryDetails[jobId]?.type || "monthly";
 
           if (existingApp) {
-            // Update existing application if details changed or status is false
             const newLocations = salaryData?.job_type_locations?.[jobId] || [];
             const oldLocations = existingApp.preferred_locations || [];
-            
-            // Simple comparison using JSON stringify (assuming data structure consistency)
             const isLocationChanged = JSON.stringify(newLocations) !== JSON.stringify(oldLocations);
 
             if (existingApp.salary_expectation !== salary || existingApp.salary_type !== type || existingApp.status === false || isLocationChanged) {
@@ -555,7 +499,6 @@ const JobApply = () => {
               );
             }
           } else {
-            // Create new application
             console.log(`Creating new app for job ${jobId}`);
             const payload = {
               subject: subjectId,
@@ -576,8 +519,6 @@ const JobApply = () => {
             promises.push(dispatch(postJobApply(payload)).unwrap());
           }
         });
-
-        // B. Process unselected job types (Revoke if they exist and are active)
         currentApplications.forEach(app => {
           const jobId = getJobTypeId(app.teacher_job_type);
           if (!selectedJobTypes.includes(jobId) && app.status === true) {
@@ -595,8 +536,6 @@ const JobApply = () => {
           }
         });
       }
-
-      // 4. Execute all requests
       if (promises.length === 0) {
         console.log("No changes detected");
         toast.info("No changes to save");
@@ -605,8 +544,6 @@ const JobApply = () => {
 
       console.log(`Executing ${promises.length} requests...`);
       await Promise.all(promises);
-
-      // 5. Refetch and Show Success
       await refetchJobApply();
       
       let messageText = action === 'revoke'
@@ -688,22 +625,15 @@ const JobApply = () => {
                 const classCategoryId = exam.class_category_id;
                 const subjectName = exam.subject_name;
                 const className = exam.class_category_name;
-
-                // Find ALL matching applications for this subject/class
                 const applications = jobApply?.filter(item => {
                   let subjectMatch = false;
                   let categoryMatch = false;
-
-                  // Check subject match
                   if (item.subject === subjectId || item.subject_id === subjectId || item.subject?.id === subjectId) {
                     subjectMatch = true;
                   }
-
-                  // Check class category match
                   if (item.class_category === classCategoryId || item.class_category_id === classCategoryId || item.class_category?.id === classCategoryId) {
                     categoryMatch = true;
                   } else if (item.class_category?.subjects) {
-                    // Nested subject check
                     const hasSubject = item.class_category.subjects.some(sub =>
                       (typeof sub === 'object' ? sub.id === subjectId : sub === subjectId)
                     );
@@ -715,8 +645,6 @@ const JobApply = () => {
 
                   return subjectMatch && categoryMatch;
                 }) || [];
-
-                // Determine if applied (if any active application exists)
                 const activeApplications = applications.filter(app => app.status === true);
                 const isApplied = activeApplications.length > 0;
 

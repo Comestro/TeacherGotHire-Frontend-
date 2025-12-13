@@ -9,8 +9,6 @@ const HeroSection = () => {
     institute: false,
     teacher: false
   });
-
-  // Constants
   const INITIAL_STEPS_TO_SHOW = 3;
 
   const studentSteps = [

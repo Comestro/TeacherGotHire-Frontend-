@@ -67,8 +67,6 @@ const ManageClassCategory = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-  
-  // DataGrid specific state
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 10,
     page: 0,
@@ -106,12 +104,8 @@ const ManageClassCategory = () => {
       setLoading(false);
     }
   };
-
-  // Updated form validation with duplicate name check
   const validateForm = () => {
     const errors = {};
-
-    // Basic validation
     if (!selectedCategory?.name || selectedCategory.name.trim() === "") {
       errors.name = "Category name is required";
     } else if (selectedCategory.name.length < 2) {
@@ -119,7 +113,6 @@ const ManageClassCategory = () => {
     } else if (selectedCategory.name.length > 50) {
       errors.name = "Category name cannot exceed 50 characters";
     } else {
-      // Check for duplicate names (only for new categories)
       if (!selectedCategory.id) {
         const nameExists = categories.some(
           cat => cat.name.toLowerCase() === selectedCategory.name.toLowerCase()
@@ -130,8 +123,6 @@ const ManageClassCategory = () => {
         }
       }
     }
-
-    // Description validation (only if provided)
     if (selectedCategory?.description && selectedCategory.description.length > 500) {
       errors.description = "Description cannot exceed 500 characters";
     }
@@ -139,8 +130,6 @@ const ManageClassCategory = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // Enhanced showSnackbar function
   const showSnackbar = (message, severity = "success") => {
     const cleanMessage = Array.isArray(message) ? message[0] : message;
 

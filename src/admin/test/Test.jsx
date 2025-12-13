@@ -37,8 +37,6 @@ import {
   AccountCircle as AccountIcon,
   KeyboardArrowRight as ArrowRightIcon,
 } from '@mui/icons-material';
-
-// Mock data for the dashboard
 const mockData = {
   teachers: {
     total: 1248,

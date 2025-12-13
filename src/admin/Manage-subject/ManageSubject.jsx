@@ -70,8 +70,6 @@ const ManageSubject = () => {
   const [selectedToDelete, setSelectedToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = isMobile ? 5 : 10;
-
-  // Fetch subjects and classes on component mount
   useEffect(() => {
     fetchData();
   }, []);
@@ -97,16 +95,12 @@ const ManageSubject = () => {
       setLoading(false);
     }
   };
-
-  // Enhanced showSnackbar function
   const showSnackbar = (message, severity = "success") => {
-    // Clean up and format the message if needed
     let displayMessage;
 
     if (Array.isArray(message)) {
       displayMessage = message[0]; // Take first error if it's an array
     } else if (typeof message === 'object' && message !== null) {
-      // If message is an object, try to extract first error message
       const firstKey = Object.keys(message)[0];
       const firstValue = message[firstKey];
       displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
@@ -120,28 +114,20 @@ const ManageSubject = () => {
       severity,
     });
   };
-
-  // Handle adding a new subject
   const handleAddSubject = () => {
     setCurrentSubject({ class_category: "", subject_name: "" });
     setFormErrors({});
     setIsEditModalOpen(true);
   };
-
-  // Handle editing a subject
   const handleEditSubject = (subject) => {
     setCurrentSubject({ ...subject });
     setFormErrors({});
     setIsEditModalOpen(true);
   };
-
-  // Confirm delete dialog
   const handleConfirmDelete = (subject) => {
     setSelectedToDelete(subject);
     setOpenDeleteDialog(true);
   };
-
-  // Handle deleting a subject
   const handleDeleteSubject = async () => {
     if (!selectedToDelete) return;
 
@@ -153,9 +139,6 @@ const ManageSubject = () => {
       setOpenDeleteDialog(false);
       setSelectedToDelete(null);
     } catch (error) {
-      
-
-      // Extract specific error message if available
       if (error.response?.data) {
         if (error.response.data.non_field_errors) {
           showSnackbar(error.response.data.non_field_errors[0], "error");
@@ -175,8 +158,6 @@ const ManageSubject = () => {
       setSubmitting(false);
     }
   };
-
-  // Handle bulk deletion of selected subjects
   const handleBulkDelete = async () => {
     if (selectedSubjects.length === 0) return;
 
@@ -189,9 +170,6 @@ const ManageSubject = () => {
       fetchData();
       setSelectedSubjects([]);
     } catch (error) {
-      
-
-      // Extract specific error message if available
       if (error.response?.data) {
         if (error.response.data.non_field_errors) {
           showSnackbar(error.response.data.non_field_errors[0], "error");
@@ -209,12 +187,8 @@ const ManageSubject = () => {
       setSubmitting(false);
     }
   };
-
-  // Updated validateForm function with duplicate subject check
   const validateForm = () => {
     const errors = {};
-
-    // Basic validation
     if (!currentSubject.subject_name || currentSubject.subject_name.trim() === "") {
       errors.subject_name = "Subject name is required";
     } else if (currentSubject.subject_name.length < 2) {
@@ -226,7 +200,6 @@ const ManageSubject = () => {
     if (!currentSubject.class_category) {
       errors.class_category = "Please select a class category";
     } else if (currentSubject.subject_name) {
-      // Check for duplicate subject in the same class category (only for new subjects)
       if (!currentSubject.id) {
         const subjectExists = subjects.some(
           subject =>
@@ -244,8 +217,6 @@ const ManageSubject = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // Updated handleSaveSubject function with better error handling for duplicate subjects
   const handleSaveSubject = async () => {
     if (!validateForm()) return;
 
@@ -263,20 +234,13 @@ const ManageSubject = () => {
         fetchData();
       }
     } catch (error) {
-      
-
-      // Handle specific error formats from the server
       if (error.response?.data) {
         const responseData = error.response.data;
-
-        // Handle case where server returns non_field_errors array (duplicate subject error)
         if (responseData.non_field_errors && Array.isArray(responseData.non_field_errors)) {
           const errorMessage = responseData.non_field_errors[0];
           showSnackbar(errorMessage, "error");
           return;
         }
-
-        // Handle case where server returns subject_name field errors
         else if (responseData.subject_name && Array.isArray(responseData.subject_name)) {
           setFormErrors({
             ...formErrors,
@@ -285,8 +249,6 @@ const ManageSubject = () => {
           showSnackbar(responseData.subject_name[0], "error");
           return;
         }
-
-        // Handle case where server returns class_category field errors
         else if (responseData.class_category && Array.isArray(responseData.class_category)) {
           setFormErrors({
             ...formErrors,
@@ -295,15 +257,11 @@ const ManageSubject = () => {
           showSnackbar(responseData.class_category[0], "error");
           return;
         }
-
-        // Handle case where server returns general message
         else if (responseData.message) {
           showSnackbar(responseData.message, "error");
           return;
         }
       }
-
-      // Fallback for other error types
       showSnackbar(
         `Failed to ${currentSubject.id ? 'update' : 'create'} subject. Please try again.`,
         "error"
@@ -312,16 +270,12 @@ const ManageSubject = () => {
       setSubmitting(false);
     }
   };
-
-  // Handle form field changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentSubject({
       ...currentSubject,
       [name]: value,
     });
-
-    // Clear validation error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -329,8 +283,6 @@ const ManageSubject = () => {
       });
     }
   };
-
-  // Handle search functionality
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
@@ -343,15 +295,11 @@ const ManageSubject = () => {
     }
     setCurrentPage(1);
   };
-
-  // Pagination
   const pageCount = Math.max(1, Math.ceil(filteredSubjects.length / itemsPerPage));
   const currentSubjects = filteredSubjects.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // Select all checkbox functionality
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       setSelectedSubjects(currentSubjects.map((subject) => subject.id));
@@ -359,8 +307,6 @@ const ManageSubject = () => {
       setSelectedSubjects([]);
     }
   };
-
-  // Individual checkbox functionality
   const handleCheckboxChange = (subjectId) => {
     setSelectedSubjects((prev) => {
       if (prev.includes(subjectId)) {
@@ -370,8 +316,6 @@ const ManageSubject = () => {
       }
     });
   };
-
-  // Get class name by ID
   const getClassName = (classId) => {
     const classObj = classes.find((cls) => cls.id === classId);
     return classObj ? classObj.name : "N/A";

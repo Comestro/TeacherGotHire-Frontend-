@@ -72,8 +72,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const selectedState = watch("state");
   const selectedCity = watch("city");
   const pincodeValue = watch("pincode");
-
-  // Fetch initial job preferences on component mount
   useEffect(() => {
     dispatch(getPrefrence());
     dispatch(getJobPrefrence()); // Fetch job preferences from Redux store
@@ -82,8 +80,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const fetchjobrefrence = () => {
     dispatch(getJobPrefrence());
   };
-
-  // Function to reset form completely
   const resetFormCompletely = () => {
     reset({
       state: "Bihar",
@@ -96,8 +92,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
     setApiError("");
     setFieldErrors({}); // Clear field errors
   };
-
-  // Function to handle showing add form
   const handleShowAddForm = () => {
     resetFormCompletely(); // Reset form completely
     setIsFormVisible(true);
@@ -109,8 +103,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
   const handlePincodeChange = async (e) => {
     const pincode = e.target.value;
     setValue("pincode", pincode); // Update form value manually to trigger watch if needed
-
-    // Clear area error when pincode changes (new location)
     if (fieldErrors.area) {
       setFieldErrors(prev => ({ ...prev, area: null }));
     }
@@ -127,9 +119,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           if (fetchedPostOffices && fetchedPostOffices.length > 0) {
             setPostOffices(fetchedPostOffices); // Set post offices for dropdown
             setValue("post_office", ""); // Clear previous selection
-
-            // Optional: Validate if the pincode belongs to the selected city/state
-            // For now, we trust the user's flow as requested
           } else {
             setApiError("No post offices found for the given pincode.");
             setPostOffices([]); // Clear dropdown
@@ -146,10 +135,7 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       setPostOffices([]);
     }
   };
-
-  // Function to handle area input change
   const handleAreaChange = (e) => {
-    // Clear area error when user starts typing
     if (fieldErrors.area) {
       setFieldErrors(prev => ({ ...prev, area: null }));
     }
@@ -157,18 +143,14 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
-      // Clear previous errors
       setApiError("");
       setSuccessMessage(null);
       setFieldErrors({});
-
-      // Add preference_id to the data
       const locationData = {
         ...data,
         user: userData?.id, // Add the preference ID from Redux state
       };
       if (isEditing) {
-        // Update existing location
         const locationForEdit = jobLocations[editIndex].id;
         const editData = {
           ...data,
@@ -182,8 +164,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
 
         await dispatch(postJobPrefrence(locationData)).unwrap();
         fetchjobrefrence();
-
-        // Call the success callback if provided
         if (onLocationSuccess) {
           onLocationSuccess();
         }
@@ -193,22 +173,13 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       if (isEditing) {
         setSuccessMessage("Location updated successfully!");
       }
-
-      // Reset form and close
       resetFormCompletely();
       setIsEditing(false);
       setEditIndex(null);
       setIsFormVisible(false);
       setEditingRowIndex(null);
     } catch (err) {
-
-
-
-
-      // Most aggressive approach - check every possible path
       let errorFound = false;
-
-      // All possible paths where the error could be nested
       const errorPaths = [
         err,
         err?.response,
@@ -224,8 +195,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
         err?.payload?.response,
         err?.payload?.data
       ];
-
-      // Check each path for area error
       for (const path of errorPaths) {
         if (path && typeof path === 'object') {
           if (path.area) {
@@ -240,12 +209,8 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           }
         }
       }
-
-      // If still not found, search the stringified version
       if (!errorFound) {
         const errorStr = JSON.stringify(err);
-
-        // Look for the exact pattern in the string
         const patterns = [
           /"area":\s*\[\s*"([^"]+)"/,
           /"area":\s*"([^"]+)"/,
@@ -263,8 +228,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
           }
         }
       }
-
-      // If still nothing found, show generic error but check for specific strings
       if (!errorFound) {
         const errorStr = JSON.stringify(err).toLowerCase();
 
@@ -278,22 +241,14 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       }
     }
   };
-
-  // Handle Edit Button Click
   const handleEdit = async (index) => {
     const location = jobLocations[index];
-
-    // First reset the form
     resetFormCompletely();
-
-    // Then set the values for editing
     setValue("state", location.state || "Bihar");
     setValue("city", location.city);
     setValue("pincode", location.pincode);
     setValue("post_office", location.post_office);
     setValue("area", location.area);
-
-    // Set post offices if we have the pincode
     if (location.pincode && location.pincode.length === 6) {
       try {
         const response = await axios.get(`${getPincodeUrl()}${location.pincode}`);
@@ -330,8 +285,6 @@ const JobPrefrenceLocation = ({ onLocationSuccess }) => {
       setApiError("Failed to delete location. Please try again.");
     }
   };
-
-  // Handle form cancel
   const handleCancel = () => {
     resetFormCompletely();
     setIsFormVisible(false);

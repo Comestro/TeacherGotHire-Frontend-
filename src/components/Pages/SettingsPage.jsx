@@ -25,8 +25,6 @@ export default function SettingsPage() {
     e.preventDefault();
     setGeneralError(null);
     setSuccessMessage(null);
-
-    // Validation
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setGeneralError("New passwords do not match");
       return;

@@ -13,8 +13,6 @@ const Header = () => {
   const dropdownRef = useRef(null);
   const setterUser = useSelector((state) => state.examQues.setterInfo);
   const user = setterUser?.[0]?.user;
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     dispatch(getSetterInfo());
     const handleClickOutside = (event) => {

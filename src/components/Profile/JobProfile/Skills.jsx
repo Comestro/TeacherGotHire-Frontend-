@@ -30,14 +30,10 @@ const Skills = () => {
 
   const { handleSubmit, register, watch, setValue } = useForm();
   const inputValue = watch("skillInput", "");
-
-  // Fetch skills on component mount
   useEffect(() => {
     dispatch(getAllSkills());
     dispatch(getSkillsProfile());
   }, [dispatch]);
-
-  // Filter suggestions to exclude already selected skills
   useEffect(() => {
     if (inputValue) {
       const filteredSuggestions = skillsData.filter(

@@ -11,28 +11,21 @@ import {
 
 const TeacherModal = ({ open, onClose, teacherData }) => {
   if (!teacherData) return null;
-  
-  // Safely extract values from teacherData, checking both naming formats
   const firstName = teacherData.firstName || teacherData.Fname || "Teacher";
   const lastName = teacherData.lastName || teacherData.Lname || "Profile";
   const email = teacherData.email || "No email provided";
   const isActive = teacherData.isActive || teacherData.is_verified || false;
-  
-  // Other fields that might be present
   const phone = teacherData.phone || "No phone provided";
   const address = teacherData.address || "No address provided";
   const currentPosition = teacherData.currentPosition || "Not specified";
   const highestQualification = teacherData.highestQualification || "Not specified";
   const bio = teacherData.bio || "No bio information available.";
   const profilePicture = teacherData.profilePicture || "";
-
-  // Force a repaint of the modal content after it opens
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
         const content = document.getElementById('teacher-pdf-content');
         if (content) {
-          // Force reflow/repaint
           content.style.transform = 'translateZ(0)';
         }
       }, 200);

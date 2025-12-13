@@ -38,8 +38,6 @@ const Navbar = ({ links }) => {
 
   const hiddenPaths = ["/signin", "/signup/teacher"];
   const shouldHide = hiddenPaths.includes(location.pathname);
-
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {

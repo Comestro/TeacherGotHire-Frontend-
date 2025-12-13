@@ -6,16 +6,12 @@ const JobLocationSelector = ({ jobType, locations = [], onChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddLocation = (newLocation) => {
-    // Check limit
     if (locations.length >= 5) return;
-
-    // Check duplicate (simple check based on Pincode or District)
     const isDuplicate = locations.some(
       (loc) => loc.pincode === newLocation.pincode && loc.district === newLocation.district
     );
 
     if (isDuplicate) {
-      // You might want to show a toast here, but for now we just return
       return;
     }
 

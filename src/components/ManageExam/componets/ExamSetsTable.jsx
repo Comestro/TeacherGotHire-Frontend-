@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) => {
   const navigate = useNavigate();
-
-  // Format date in a readable way
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -15,10 +13,6 @@ const ExamSetsTable = ({ examSets, onEdit, onCopy, onDelete, refreshTrigger }) =
       day: 'numeric',
     });
   };
-
-  
-
-  // Group exams by class category and subject
   const groupedExams = examSets.reduce((acc, exam) => {
     const className = typeof exam.class_category === 'string' ? exam.class_category : (exam.class_category?.name || 'Unknown Class');
     const subjectName = typeof exam.subject === 'string' ? exam.subject : (exam.subject?.subject_name || 'Unknown Subject');

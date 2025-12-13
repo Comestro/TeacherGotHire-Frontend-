@@ -40,13 +40,7 @@ import Layout from "../Admin/Layout";
 import {
   getQuestionReport,
   updateQuestionReport,
-  // deleteQuestionReport,
-  // patchQuestionReport,
 } from "../../services/adminManageQuestionReport";
-
-// ------------------------
-// Helpers
-// ------------------------
 const safeFormatDate = (dateValue, format = "MMM DD, YYYY") => {
   if (!dateValue) return "—";
   try {
@@ -67,8 +61,6 @@ const issueTypeMapping = {
   "typo error": "Typographical error",
   other: "Other issue",
 };
-
-// New convention: false => Pending, true => Done
 const statusColors = {
   false: "#f9a825", // pending (yellow)
   true: "#388e3c", // done (green)
@@ -78,8 +70,6 @@ const statusLabels = {
   false: "Pending",
   true: "Done",
 };
-
-// small debounce hook
 function useDebounced(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
   const timer = useRef();
@@ -90,18 +80,12 @@ function useDebounced(value, delay = 300) {
   }, [value, delay]);
   return debounced;
 }
-
-// format issue helpers
 const formatIssueTypes = (issueTypeArray) => {
   if (!issueTypeArray || !issueTypeArray.length) return "Not specified";
   return issueTypeArray
     .map((issue) => issueTypeMapping[issue?.issue_type] || issue?.issue_type || "Unknown")
     .join(", ");
 };
-
-// ------------------------
-// Component
-// ------------------------
 export default function ManageQuestionReport() {
   const theme = useTheme();
   const isMobile = /xs|sm/.test(theme.breakpoints.values ? "lg" : ""); // not used heavily, kept for parity
@@ -119,17 +103,11 @@ export default function ManageQuestionReport() {
   const [sortOrder, setSortOrder] = useState("newest"); // newest / oldest / status
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  // pagination + table controls
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-
-  // detail panel
   const [selectedReport, setSelectedReport] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
-
-  // snackbar
   const [snack, setSnack] = useState({ open: false, msg: "", severity: "success" });
 
   useEffect(() => {
@@ -143,12 +121,10 @@ export default function ManageQuestionReport() {
     setError(null);
     try {
       const data = await getQuestionReport();
-      // Ensure array
       const normalized = Array.isArray(data) ? data : data?.data ?? [];
       setReports(
         normalized.map((r) => ({
           ...r,
-          // normalize missing nested structures
           question: r.question || null,
           user: r.user || null,
         }))
@@ -162,8 +138,6 @@ export default function ManageQuestionReport() {
       setLoading(false);
     }
   };
-
-  // Derived lists
   const uniqueIssueTypes = useMemo(() => {
     const set = new Set();
     reports.forEach((r) =>
@@ -171,8 +145,6 @@ export default function ManageQuestionReport() {
     );
     return Array.from(set);
   }, [reports]);
-
-  // Filtering & sorting pipeline
   const filtered = useMemo(() => {
     const q = (debouncedSearch || "").toLowerCase().trim();
 
@@ -202,13 +174,10 @@ export default function ManageQuestionReport() {
         );
       });
     }
-
-    // sort
     out.sort((a, b) => {
         if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
         if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
         if (sortOrder === "status") {
-          // Pending (false) first, then unknown, then Done (true)
           const score = (r) => (r.status === false ? 1 : r.status === true ? 3 : 2);
           return score(a) - score(b);
         }
@@ -217,14 +186,10 @@ export default function ManageQuestionReport() {
 
     return out;
   }, [reports, debouncedSearch, statusFilter, issueFilter, sortOrder]);
-
-  // pagination slice
   const paginated = useMemo(() => {
     const start = page * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
-
-  // DataGrid columns (keeps content accessible and uses autoHeight)
   const columns = useMemo(
     () => [
       {
@@ -322,8 +287,6 @@ export default function ManageQuestionReport() {
     ],
     [processing]
   );
-
-  // open details
   const openReportDetails = (row) => {
     setSelectedReport(row);
     setAdminNotes("");
@@ -334,10 +297,7 @@ export default function ManageQuestionReport() {
     setSelectedReport(null);
     setDrawerOpen(false);
   };
-
-  // mark done with confirm
   const confirmAndMarkDone = async (row) => {
-    // simple confirm
     const ok = window.confirm(`Mark report REP01-00${row.id} as Done?`);
     if (!ok) return;
     await markAsDone(row.id);
@@ -346,10 +306,8 @@ export default function ManageQuestionReport() {
   const markAsDone = async (id) => {
     setProcessing(true);
     try {
-      // API expects boolean false to indicate resolved in your earlier code
       const reportToUpdate = reports.find((r) => r.id === id);
       if (!reportToUpdate) throw new Error("Report not found");
-      // Now API expects status=true for Done. Build payload accordingly.
       const payload = {
         status: true,
         question: reportToUpdate.question?.id,
@@ -357,11 +315,8 @@ export default function ManageQuestionReport() {
       };
 
       await updateQuestionReport(id, payload);
-
-      // local update: mark as done (true)
       setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: true } : r)));
       showSnack(`Report REP01-00${id} marked as Done`);
-      // If detail panel open for this report, close it
       if (selectedReport?.id === id) closeReportDetails();
     } catch (err) {
       const msg = err?.response?.data?.detail || err?.message || "Failed to update report";
@@ -370,8 +325,6 @@ export default function ManageQuestionReport() {
       setProcessing(false);
     }
   };
-
-  // Save admin notes locally (no API specified in your snippet)
   const saveAdminNotes = () => {
     if (!selectedReport) return;
     setReports((prev) =>
@@ -379,8 +332,6 @@ export default function ManageQuestionReport() {
     );
     showSnack("Notes saved (locally)");
   };
-
-  // CSV export
   const exportCsv = () => {
     const headers = ["Report ID", "Question", "Reporter", "Email", "Issue", "Date", "Status"];
     const rows = filtered.map((r) => [
@@ -401,8 +352,6 @@ export default function ManageQuestionReport() {
     a.click();
     document.body.removeChild(a);
   };
-
-  // UI pieces
   const statusCounts = useMemo(() => {
     const total = reports.length;
     const pending = reports.filter((r) => r.status === false).length; // false == pending

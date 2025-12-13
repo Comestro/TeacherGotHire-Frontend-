@@ -43,8 +43,6 @@ import {
   FaTimes,
   FaEye
 } from 'react-icons/fa';
-
-// Redesigned PasskeyManagement to match the ManageSkills visual/layout patterns
 export default function PasskeyManagement() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

@@ -43,8 +43,6 @@ const TeacherLayout = () => {
   const { userData } = useSelector((state) => state.auth);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -58,14 +56,11 @@ const TeacherLayout = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    // You could add a toast here
   };
 
   useEffect(() => {
     dispatch(getUserData());
   }, [dispatch]);
-
-  // Close sidebar on route change (mobile)
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);

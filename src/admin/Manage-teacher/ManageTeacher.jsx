@@ -22,8 +22,6 @@ const ManageTeacher = () => {
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? "card" : "list");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  // Filters
   const [qualifications, setQualifications] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
@@ -45,12 +43,8 @@ const ManageTeacher = () => {
     gender: false,
     experience: false,
   });
-
-  // Notification and modals
   const [toast, setToast] = useState({ open: false, type: "info", message: "" });
   const [confirmModal, setConfirmModal] = useState({ open: false, id: null, status: null });
-
-  // Effects: fetch initial teachers, qualifications, subjects
   useEffect(() => {
     dispatch(fetchTeachers({}));
     (async () => {
@@ -68,15 +62,11 @@ const ManageTeacher = () => {
       } catch {}
     })();
   }, [dispatch]);
-
-  // Sync teachers to local
   useEffect(() => {
     if (Array.isArray(teacherData)) {
       setTeachers(teacherData);
     }
   }, [teacherData]);
-
-  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchValue.trim()) dispatch(searchTeachers(searchValue));
@@ -85,15 +75,11 @@ const ManageTeacher = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchValue, dispatch]);
-
-  // Window resize: switch view mode
   useEffect(() => {
     const onResize = () => setViewMode(window.innerWidth < 768 ? "card" : "list");
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
-
-  // Filtering logic supporting both data shapes
   const filtered = useMemo(() => {
     return teachers.filter((t) => {
       const qNames = (t.teacherqualifications || [])
@@ -138,8 +124,6 @@ const ManageTeacher = () => {
       return nameMatch && qualMatch && subjectMatch && locationMatch && statusMatch && genderMatch && experienceMatch && classMatch;
     });
   }, [teachers, searchValue, selectedQualifications, selectedSubjects, selectedClassCategories, locationFilters, selectedStatuses, selectedGenders, experienceRange]);
-
-  // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;

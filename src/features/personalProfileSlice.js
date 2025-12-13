@@ -2,10 +2,6 @@
 import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
 import {fetchAddressProfile,updateAddressProfile ,addAddressProfile}from "../services/profileServices";
 import {updateBasicProfile,fetchBasicProfile,fetchCompleteProfile} from "../services/profileServices"
-
-
-
-// Initial state
 const initialState = {
   basicData:{},
   personalData:{},
@@ -51,7 +47,6 @@ export const postBasic = createAsyncThunk(
   async (basicData, { rejectWithValue }) => {
     try {
      const data = await updateBasicProfile(basicData);
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -67,8 +62,6 @@ export const getAddress = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchAddressProfile();
-     // 
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -84,8 +77,6 @@ export const postAddress = createAsyncThunk(
   async (addressData, { rejectWithValue }) => {
     try {
       const data = await addAddressProfile(addressData);
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue(error.message);
@@ -97,23 +88,17 @@ export const putAddress = createAsyncThunk(
   async (updateData, { rejectWithValue }) => {
     try {
       const data = await updateAddressProfile(updateData);
-      
-       // Call the service
       return data; // Return the updated profile data
     }catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
-
-// Thunk for fetching personal profile
 export const getProfile = createAsyncThunk(
   "getProfile",
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchPersonalProfile();
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -129,8 +114,6 @@ export const postProfile = createAsyncThunk(
   async (personalData, { rejectWithValue }) => {
     try {
       const data = await updatePersonalProfile(personalData);
-      
-       // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -140,8 +123,6 @@ export const postProfile = createAsyncThunk(
     }
   }
 );
-
-// Redux slice
 const personalProfileSlice = createSlice({
   name: "personalProfile",
   initialState,
@@ -154,99 +135,71 @@ const personalProfileSlice = createSlice({
     },
   }, // Add reducers if needed
     extraReducers: (builder) => {
-      // for handeling  basic profile
       builder
-        // Handle pending state
         .addCase(getBasic.pending, (state) => {
           state.status = "loading";
           state.error = null;
         })
-        // Handle fulfilled state
         .addCase(getBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
           
           state.basicData = action.payload; 
-          // Update profile data
           
         })
-        // Handle rejected state
         .addCase(getBasic.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-        
-  
-        //for post data handel
        
         builder
-        // Handle pending state
         .addCase(postBasic.pending, (state) => {
           state.status = "loading";
           state.error = null;
         })
-        // Handle fulfilled state
         .addCase(postBasic.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.basicData = action.payload;
         })
-        // Handle rejected state
         .addCase(postBasic.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-  
-      // for handeling  address 
       builder
-        // Handle pending state
         .addCase(getAddress.pending, (state) => {
           state.status = "loading";
           state.error = null;
         })
-        // Handle fulfilled state
         .addCase(getAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
           state.address = action.payload; // Update profile data
-          //Object.assign(state, action.payload);
           
         })
-        // Handle rejected state
         .addCase(getAddress.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
-        
-  
-        //for post data handel
        
         builder
-        // Handle pending state
         .addCase(postAddress.pending, (state) => {
           state.status = "loading";
           state.error = null;
         })
-        // Handle fulfilled state
         .addCase(postAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-         // state.address = action.payload; // Update profile data
         })
-        // Handle rejected state
         .addCase(postAddress.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
         });
 
         builder
-        // Handle pending state
         .addCase(putAddress.pending, (state) => {
           state.status = "loading";
           state.error = null;
         })
-        // Handle fulfilled state
         .addCase(putAddress.fulfilled, (state, action) => {
           state.status = "succeeded";
-          //state.address = action.payload; // Update profile data
         })
-        // Handle rejected state
         .addCase(putAddress.rejected, (state, action) => {
           state.status = "failed";
           state.error = action.payload; // Set error from rejected payload
@@ -272,8 +225,6 @@ const personalProfileSlice = createSlice({
 
       
 });
-
-// Export reducer
 
 export const { setShowForm ,resetError} = personalProfileSlice.actions;
 export default personalProfileSlice.reducer;

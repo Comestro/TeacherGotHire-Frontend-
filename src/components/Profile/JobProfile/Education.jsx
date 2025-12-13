@@ -43,24 +43,18 @@ const Education = () => {
     reset,
     formState: { errors },
   } = useForm();
-
-  // Add new state for subject selections
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
   const [viewDetailsModal, setViewDetailsModal] = useState(false);
   const [selectedEducation, setSelectedEducation] = useState(null);
   const [generalError, setGeneralError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-
-  // Define streams for Intermediate
   const intermediateStreams = [
     { value: "Science", label: "I.Sc - Intermediate Science" },
     { value: "Commerce", label: "I.Com - Intermediate Commerce" },
     { value: "Arts", label: "I.A - Intermediate Arts" },
     { value: "Other", label: "Other" },
   ];
-
-  // Define degree types for Bachelor's
   const bachelorDegrees = [
     { value: "B.A", label: "B.A - Bachelor of Arts" },
     { value: "B.Sc", label: "B.Sc - Bachelor of Science" },
@@ -72,8 +66,6 @@ const Education = () => {
     { value: "LLB", label: "LLB - Bachelor of Laws" },
     { value: "Other", label: "Other" },
   ];
-
-  // Define degree types for Master's
   const masterDegrees = [
     { value: "M.A", label: "M.A - Master of Arts" },
     { value: "M.Sc", label: "M.Sc - Master of Science" },
@@ -85,14 +77,10 @@ const Education = () => {
     { value: "LLM", label: "LLM - Master of Laws" },
     { value: "Other", label: "Other" },
   ];
-
-  // Define common subjects for Matriculation
   const matricSubjects = [
     "Mathematics", "Science", "English", "Hindi", "Social Science",
     "Sanskrit", "Computer Science", "Physical Education"
   ];
-
-  // Define the qualification order mapping - moved to component level so it can be reused
   const qualificationOrder = {
     "Matriculation": 1,
     "Matric": 1,
@@ -125,8 +113,6 @@ const Education = () => {
     "Diploma": 8,
     "Certificate": 9,
   };
-
-  // Add handler for adding subject with marks
   const handleAddSubject = () => {
     if (subjectInput.name && subjectInput.marks) {
       const percentage = parseFloat(subjectInput.marks);
@@ -138,8 +124,6 @@ const Education = () => {
       }
     }
   };
-
-  // Fix handleRemoveSubject function syntax
   const handleRemoveSubject = (index) => {
     setSelectedSubjects(prev => prev.filter((_, i) => i !== index));
   };
@@ -148,14 +132,10 @@ const Education = () => {
     const value = e.target.value;
     setSelectedQualification(value);
     setValue("qualification", value);
-
-    // Reset dependent selections
     setSelectedStream("");
     setSelectedDegreeType("");
     setSelectedSubjects([]);
   };
-
-  // Fetch education data on component mount
   useEffect(() => {
     dispatch(getQualification());
     dispatch(getEducationProfile());
@@ -164,22 +144,13 @@ const Education = () => {
   const fetchProfile = () => {
     dispatch(getEducationProfile());
   };
-
-  // Add this function to determine the next allowed qualification levels
   const getNextAllowedQualificationLevels = (existingEducations) => {
-    // If no education exists yet, only allow level 1 (Matriculation)
     if (!existingEducations || existingEducations.length === 0) {
       return [1]; // Only allow Matriculation to start
     }
-
-    // Track which levels already exist in the user's education
     const existingLevels = new Set();
-
-    // Get all qualification levels that the user already has
     existingEducations.forEach(education => {
       let qualName = "";
-
-      // Extract qualification name
       if (education.qualification?.name) {
         qualName = education.qualification.name;
       } else if (typeof education.qualification === 'string') {
@@ -187,49 +158,29 @@ const Education = () => {
       } else {
         qualName = education.qualification_name || "";
       }
-
-      // Get the level for this qualification
       const level = qualificationOrder[qualName] || 0;
-
-      // Add to existing levels
       if (level > 0) {
         existingLevels.add(level);
       }
     });
-
-    // Get the maximum level the user has
     const maxLevel = existingLevels.size > 0 ? Math.max(...Array.from(existingLevels)) : 0;
-
-    // For adding new education:
-    // 1. Can add the next level only (maxLevel + 1)
-    // 2. Can also add any missing levels before maxLevel
     const allowedLevels = [];
-
-    // Add all missing levels from 1 to maxLevel
     for (let i = 1; i <= maxLevel; i++) {
       if (!existingLevels.has(i)) {
         allowedLevels.push(i);
       }
     }
-
-    // Add the next level if it's within our defined range (1-6)
     if (maxLevel < 6 && !allowedLevels.includes(maxLevel + 1)) {
       allowedLevels.push(maxLevel + 1);
     }
 
     return allowedLevels;
   };
-
-  // Function to sort qualifications for the dropdown
   const getSortedQualifications = (qualifications) => {
     if (!qualifications || qualifications.length === 0) {
       return [];
     }
-
-    // Get the allowed qualification levels for new entries
     const allowedLevels = getNextAllowedQualificationLevels(educationData);
-
-    // Filter and sort qualifications
     return [...qualifications]
       .filter(qual => {
         const level = qualificationOrder[qual.name] || 100;
@@ -241,20 +192,13 @@ const Education = () => {
         return orderA - orderB;
       });
   };
-
-  // Function to sort education data by qualification level
   const getSortedEducationData = (data) => {
     if (!data || data.length === 0) {
       return [];
     }
-
-    // Create a copy of the data to avoid mutating the original
     const sorted = [...data].sort((a, b) => {
-      // First try to get the qualification name from the object structure
       let qualA = a.qualification?.name;
       let qualB = b.qualification?.name;
-
-      // If qualification is just a string (not an object)
       if (typeof a.qualification === 'string') {
         qualA = a.qualification;
       }
@@ -262,16 +206,10 @@ const Education = () => {
       if (typeof b.qualification === 'string') {
         qualB = b.qualification;
       }
-
-      // If we still don't have qualification names, try backup properties
       qualA = qualA || a.qualification_name || "";
       qualB = qualB || b.qualification_name || "";
-
-      // Get the order values, default to a high number if not found
       const orderA = qualificationOrder[qualA] || 100;
       const orderB = qualificationOrder[qualB] || 100;
-
-      // If order is the same, sort by year of passing (newest first)
       if (orderA === orderB) {
         const yearA = parseInt(a.year_of_passing) || 0;
         const yearB = parseInt(b.year_of_passing) || 0;
@@ -283,17 +221,12 @@ const Education = () => {
 
     return sorted;
   };
-
-  // Handle saving or updating education data
   const onSubmit = async (data) => {
     try {
 
       setLoading(true);
       setGeneralError(null);
       setSuccessMessage(null);
-
-      // Send only base qualification to API
-      // Store stream/degree info separately for display purposes
       let qualificationName = selectedQualification;
       let streamOrDegree = "";
 
@@ -343,8 +276,6 @@ const Education = () => {
       setSelectedDegreeType("");
       reset();
     } catch (err) {
-
-      // Handle different error formats
       let errorMessage = "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
 
       if (err?.error) {
@@ -367,24 +298,17 @@ const Education = () => {
     setEditingIndex(index);
     setIsEditing(true);
     const education = educationData[index];
-
-    // Set form values
     Object.keys(education).forEach((key) => {
       setValue(key, education[key]);
     });
-
-    // Set selected qualification for the dropdown
     if (education.qualification && education.qualification.name) {
       setSelectedQualification(education.qualification.name);
     }
-
-    // Populate selectedSubjects with existing subjects
     setSelectedSubjects(education.subjects || []);
   };
 
   const handleDelete = async (index) => {
     try {
-      // Get the qualification level of the education being deleted
       const educationToDelete = educationData[index];
       let qualName = "";
 
@@ -397,8 +321,6 @@ const Education = () => {
       }
 
       const levelToDelete = qualificationOrder[qualName] || 0;
-
-      // Check if there are any higher level qualifications
       const hasHigherLevels = educationData.some((edu, idx) => {
         if (idx === index) return false; // Skip the one being deleted
 
@@ -414,8 +336,6 @@ const Education = () => {
         const eduLevel = qualificationOrder[eduQualName] || 0;
         return eduLevel > levelToDelete;
       });
-
-      // If there are higher levels, prevent deletion
       if (hasHigherLevels) {
         setGeneralError(
           "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।"
@@ -697,8 +617,6 @@ const Education = () => {
                 const isCurrentlyEditing = editingIndex !== null &&
                   educationData[editingIndex]?.qualification?.name === role.name;
                 const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
-
-                // Helper to get disabled reason
                 const getDisabledReason = () => {
                   if (alreadyAdded) return " (Already added / पहले से जोड़ा गया)";
                   if (!allowedLevels.includes(qualLevel)) {

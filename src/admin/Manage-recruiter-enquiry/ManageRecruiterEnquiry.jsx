@@ -78,14 +78,10 @@ const useDebouncedValue = (value, delay = 250) => {
 export default function ManageRecruiterEnquiry() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  // Data
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // UI state
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
@@ -104,8 +100,6 @@ export default function ManageRecruiterEnquiry() {
   const [adminNote, setAdminNote] = useState('');
 
   const [pageModel, setPageModel] = useState({ page: 0, pageSize: 10 });
-
-  // fetch inquiries
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -113,7 +107,6 @@ export default function ManageRecruiterEnquiry() {
       setError(null);
       try {
         const resp = await getRecruiterEnquiry();
-        // normalize/transform safely
         const transformed = Array.isArray(resp)
           ? resp.map((item) => ({
               id: item.id,
@@ -147,12 +140,8 @@ export default function ManageRecruiterEnquiry() {
     load();
     return () => { mounted = false; };
   }, []);
-
-  // Filtering + sorting
   useEffect(() => {
     let out = [...inquiries];
-
-    // search
     const q = (debouncedSearch || '').trim().toLowerCase();
     if (q) {
       out = out.filter((it) => {
@@ -168,23 +157,15 @@ export default function ManageRecruiterEnquiry() {
         return hay.includes(q);
       });
     }
-
-    // status filter
     if (filters.status && filters.status.length > 0) {
       out = out.filter((it) => filters.status.includes(it.status));
     }
-
-    // teacher type
     if (filters.teacherType) {
       out = out.filter((it) => it.teacherType === filters.teacherType);
     }
-
-    // state
     if (filters.state) {
       out = out.filter((it) => it.location.state === filters.state);
     }
-
-    // sort
     out.sort((a, b) => {
       const da = new Date(a.createdAt).getTime();
       const db = new Date(b.createdAt).getTime();
@@ -194,8 +175,6 @@ export default function ManageRecruiterEnquiry() {
     setFilteredInquiries(out);
     setPageModel((m) => ({ ...m, page: 0 })); // reset page on filter change
   }, [inquiries, debouncedSearch, filters, sortOption]);
-
-  // helpers
   const openDetails = (row) => {
     setSelectedInquiry(row);
     setIsDrawerOpen(true);
@@ -262,8 +241,6 @@ export default function ManageRecruiterEnquiry() {
     a.click();
     document.body.removeChild(a);
   };
-
-  // DataGrid columns
   const columns = useMemo(() => ([
     {
       field: 'recruiterName',

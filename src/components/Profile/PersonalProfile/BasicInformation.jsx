@@ -6,8 +6,6 @@ import { getUserData } from "../../../features/authSlice";
 import Loader from "../../Loader";
 import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown, HiCamera } from "react-icons/hi";
 import ErrorMessage from "../../ErrorMessage";
-
-// English -> Hindi label map
 const hiLabels = {
   "Profile Picture": "प्रोफ़ाइल चित्र",
   "Basic Information": "मूलभूत जानकारी",
@@ -206,8 +204,6 @@ const BasicInformation = () => {
     setLoading(true);
     setGeneralError(null);
     setSuccessMessage(null);
-
-    // Validation
     if (formData.phone_number && String(formData.phone_number).length !== 10) {
       setGeneralError("Please enter a valid 10-digit phone number / कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें");
       setLoading(false);
@@ -216,8 +212,6 @@ const BasicInformation = () => {
 
     try {
       const data = new FormData();
-
-      // Only append profile picture if it's a File object (newly uploaded)
       if (formData.profile_picture instanceof File) {
         data.append("profile_picture", formData.profile_picture);
       }
@@ -249,7 +243,6 @@ const BasicInformation = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setGeneralError(null);
-    // Reset form data
     setFormData({
       profile_picture: basicData.profile_picture,
       Fname: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
@@ -458,7 +451,6 @@ const BasicInformation = () => {
               </label>
               
               {!isEditing ? (
-                // View Mode - Show only selected languages as badges
                 <div className="flex flex-wrap gap-2">
                   {(() => {
                     const selectedValues = Array.isArray(formData.language) 
@@ -480,7 +472,6 @@ const BasicInformation = () => {
                   })()}
                 </div>
               ) : (
-                // Edit Mode - Show all checkboxes
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {[
                     { value: "English", label: "English" },

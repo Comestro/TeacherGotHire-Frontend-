@@ -86,7 +86,6 @@ const ManageHiringRequests = () => {
             id: item.id,
             recruiterName: item.recruiter_id.Fname + " " + item.recruiter_id.Lname,
             teacherName: item.teacher_id.Fname + " " + item.teacher_id.Lname,
-            // Provide fields that DataGrid may read directly (params.value)
             recruiter: formatName(item.recruiter_id.Fname + " " + item.recruiter_id.Lname),
             teacher: formatName(item.teacher_id.Fname + " " + item.teacher_id.Lname),
             role: item.role,
@@ -305,8 +304,6 @@ const ManageHiringRequests = () => {
       flex: 1,
       minWidth: 180,
       valueGetter: (params) => {
-        // params can sometimes be an empty object during internal DataGrid operations.
-        // Prefer the explicit row value, but fall back to params.value (if DataGrid provided it).
         const row = params?.row;
         const raw = row?.recruiterName ?? params?.value;
         if (raw == null || raw === '') return 'N/A';

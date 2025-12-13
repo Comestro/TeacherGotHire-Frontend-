@@ -14,7 +14,6 @@ const UnauthorizedAccess = () => {
     if (token) {
       handleLogout(dispatch, navigate);
     }
-    // Clear any existing tokens to prevent loops
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
   }, [dispatch, navigate]);

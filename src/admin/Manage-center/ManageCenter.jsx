@@ -69,8 +69,6 @@ import axios from "axios";
  * - DataGrid pagination + toolbar
  * - clearer pincode lookup UX
  */
-
-// tiny debounce hook
 function useDebounce(value, delay = 300) {
   const [v, setV] = useState(value);
   const t = useRef(null);
@@ -85,8 +83,6 @@ function useDebounce(value, delay = 300) {
 export default function ManageCenter() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // toolbar for DataGrid
   const CustomToolbar = () => (
     <GridToolbarContainer sx={{ gap: 1, p: 1 }}>
       <GridToolbarColumnsButton />
@@ -95,20 +91,14 @@ export default function ManageCenter() {
       <GridToolbarExport />
     </GridToolbarContainer>
   );
-
-  // data + loading
   const [examCenters, setExamCenters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [filterStatus, setFilterStatus] = useState("");
   const [pageState, setPageState] = useState({ page: 0, pageSize: 10 });
-
-  // form
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -127,13 +117,9 @@ export default function ManageCenter() {
   const [formErrors, setFormErrors] = useState({});
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [pincodeStatus, setPincodeStatus] = useState(null); // null | 'success' | 'error'
-
-  // deletes / submit
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [centerToDelete, setCenterToDelete] = useState(null);
-
-  // snack
   const [snack, setSnack] = useState({ open: false, msg: "", severity: "success" });
 
   useEffect(() => {
@@ -142,8 +128,6 @@ export default function ManageCenter() {
 
   const showSnack = (msg, severity = "success") => setSnack({ open: true, msg, severity });
   const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
-
-  // fetch centers
   const fetchExamCenters = async () => {
     setIsLoading(true);
     try {
@@ -159,8 +143,6 @@ export default function ManageCenter() {
       setIsLoading(false);
     }
   };
-
-  // derived filtered centers
   const filteredCenters = useMemo(() => {
     const q = (debouncedSearch || "").trim().toLowerCase();
     return examCenters.filter((c) => {
@@ -178,8 +160,6 @@ export default function ManageCenter() {
       return matchesQ && matchesStatus;
     });
   }, [examCenters, debouncedSearch, filterStatus]);
-
-  // ---------- Handlers: CRUD & actions ----------
   const openAddModal = () => {
     setSelectedCenter(null);
     setForm({
@@ -223,11 +203,8 @@ export default function ManageCenter() {
     setPincodeStatus(null);
     setIsModalOpen(true);
   };
-
-  // toggle status (optimistic)
   const handleToggleStatus = async (center) => {
     const updated = !center.status;
-    // optimistic update
     setExamCenters((prev) => prev.map((c) => (c.id === center.id ? { ...c, status: updated } : c)));
     try {
       const payload = { status: updated };
@@ -235,13 +212,10 @@ export default function ManageCenter() {
       showSnack(`Center ${updated ? "activated" : "deactivated"}`, "success");
     } catch (err) {
       console.error("toggleStatus error:", err);
-      // revert on error
       setExamCenters((prev) => prev.map((c) => (c.id === center.id ? { ...c, status: center.status } : c)));
       showSnack("Failed to update status", "error");
     }
   };
-
-  // delete
   const confirmDelete = (center) => {
     setCenterToDelete(center);
     setDeleteConfirmOpen(true);
@@ -263,11 +237,8 @@ export default function ManageCenter() {
       setCenterToDelete(null);
     }
   };
-
-  // form validation
   const validate = () => {
     const errors = {};
-    // when adding new center, require user info
     if (!selectedCenter) {
       if (!form.username) errors.username = "Username required";
       if (!form.email) errors.email = "Email required";
@@ -276,7 +247,6 @@ export default function ManageCenter() {
       if (!form.Fname) errors.Fname = "First name required";
       if (!form.Lname) errors.Lname = "Last name required";
     }
-    // center info
     if (!form.center_name) errors.center_name = "Center name required";
     if (!form.area) errors.area = "Area required";
     if (!form.pincode) errors.pincode = "Pincode required";
@@ -288,8 +258,6 @@ export default function ManageCenter() {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  // submit create/update
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validate()) {
@@ -300,9 +268,7 @@ export default function ManageCenter() {
 
     try {
       if (selectedCenter) {
-        // update existing center
         const payload = {
-          // include only what backend expects for update
           user: selectedCenter.user?.id,
           center_name: form.center_name,
           pincode: form.pincode,
@@ -314,11 +280,9 @@ export default function ManageCenter() {
           status: form.status,
         };
         await updateCenterManager(selectedCenter.id, payload);
-        // optimistic local update
         setExamCenters((prev) => prev.map((c) => (c.id === selectedCenter.id ? { ...c, ...payload } : c)));
         showSnack("Exam center updated", "success");
       } else {
-        // create new center (structure expected by your API earlier)
         const payload = {
           user: {
             username: form.username,
@@ -339,7 +303,6 @@ export default function ManageCenter() {
           },
         };
         const created = await createCenterManager(payload);
-        // append returned center if API returns it, otherwise refetch
         if (created && created.id) {
           setExamCenters((prev) => [created, ...prev]);
         } else {
@@ -351,14 +314,11 @@ export default function ManageCenter() {
     } catch (err) {
       console.error("submit error:", err);
       let errorMsg = "Failed to save exam center";
-
-      // Handle specific API error format
       const apiError = err?.response?.data;
       if (apiError?.status === "error" && Array.isArray(apiError?.errors) && apiError.errors.length > 0) {
         const detail = apiError.errors[0]?.detail;
         if (detail) {
           errorMsg = detail;
-          // Make unique constraint errors more user-friendly
           if (detail.includes("UNIQUE constraint failed")) {
             if (detail.includes("email")) errorMsg = "This email address is already in use.";
             else if (detail.includes("username")) errorMsg = "This username is already taken.";
@@ -373,8 +333,6 @@ export default function ManageCenter() {
       setIsSubmitting(false);
     }
   };
-
-  // pincode fetch
   const handleFetchPostal = async (pin) => {
     if (!/^\d{6}$/.test(pin)) {
       setPincodeStatus("error");
@@ -385,7 +343,6 @@ export default function ManageCenter() {
     try {
       const url = `${import.meta.env.VITE_POSTAL_API_URL || "https://api.postalpincode.in/pincode/"}${pin}`;
       const res = await axios.get(url);
-      // typical India postal API returns array with Status and PostOffice
       if (res?.data?.[0]?.Status === "Success") {
         const post = res.data[0].PostOffice?.[0];
         if (post) {
@@ -408,16 +365,12 @@ export default function ManageCenter() {
       setLoadingPincode(false);
     }
   };
-
-  // input change
   const handleInput = (e) => {
     const { name, value, type, checked } = e.target;
     const val = type === "checkbox" ? checked : value;
-    // restrict pincode numeric length
     if (name === "pincode") {
       if (!/^\d*$/.test(val) || val.length > 6) return;
     }
-    // restrict phone numeric length
     if (name === "phone" || name === "alt_phone") {
       if (!/^\d*$/.test(val) || val.length > 10) return;
     }
@@ -428,8 +381,6 @@ export default function ManageCenter() {
       handleFetchPostal(val);
     }
   };
-
-  // CSV export helper (small)
   const exportCsv = () => {
     const rows = filteredCenters.map((c) => [
       c.id,
@@ -453,8 +404,6 @@ export default function ManageCenter() {
     a.click();
     document.body.removeChild(a);
   };
-
-  // Render card for mobile
   const renderMobileCards = () =>
     filteredCenters.slice(pageState.page * pageState.pageSize, (pageState.page + 1) * pageState.pageSize).map((center) => (
       <Card
@@ -515,8 +464,6 @@ export default function ManageCenter() {
         </CardActions>
       </Card>
     ));
-
-  // DataGrid rows
   const dgRows = useMemo(
     () =>
       filteredCenters.map((c) => ({

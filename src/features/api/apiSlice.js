@@ -15,14 +15,12 @@ export const apiSlice = createApi({
     credentials: 'include',
   }),
   endpoints: (builder) => ({
-    // Define the centers endpoint
     getCenters: builder.query({
       query: () => '/api/admin/examcenter/',
       transformResponse: (response) => {
         
         return response;
       },
-      // Add error handling
       transformErrorResponse: (response) => {
         
         return response;
@@ -51,7 +49,4 @@ export const apiSlice = createApi({
 
   
 });
-
-
-// Export the auto-generated hook
 export const { useGetCentersQuery, useGetJobsApplyDetailsQuery, useGetApplyEligibilityQuery } = apiSlice;

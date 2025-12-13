@@ -108,16 +108,12 @@ export default function InterviewManagementRedesign() {
     dateFrom: null,
     dateTo: null,
   });
-
-  // Modals
   const [detailsModal, setDetailsModal] = useState({ open: false, data: null });
   const [scheduleModal, setScheduleModal] = useState({ open: false, data: null });
   const [rejectModal, setRejectModal] = useState({ open: false, data: null });
 
   const [completeModal, setCompleteModal] = useState({ open: false, data: null });
   const [createModal, setCreateModal] = useState(false);
-
-  // create form state
   const [createForm, setCreateForm] = useState({
     user: "",
     subject: "",
@@ -130,8 +126,6 @@ export default function InterviewManagementRedesign() {
     grade: "",
     attempt: 1
   });
-
-  // form / action state
   const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
   const [meetingLink, setMeetingLink] = useState("");
   const [meetingLinkError, setMeetingLinkError] = useState(false);
@@ -143,7 +137,6 @@ export default function InterviewManagementRedesign() {
 
   useEffect(() => {
     fetchInterviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const determineStatus = useCallback((interview) => {
@@ -214,9 +207,6 @@ export default function InterviewManagementRedesign() {
       setLoading(false);
     }
   };
-
-  // debounce search
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
     debounce((value) => setFilters((f) => ({ ...f, searchTerm: value })), 250),
     []
@@ -224,7 +214,6 @@ export default function InterviewManagementRedesign() {
 
   useEffect(() => {
     applyFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, interviewData]);
 
   const applyFilters = () => {
@@ -285,8 +274,6 @@ export default function InterviewManagementRedesign() {
     link.click();
     document.body.removeChild(link);
   };
-
-  // ---------- Actions ----------
   const openSchedule = (row) => {
     setScheduleModal({ open: true, data: row });
     setSelectedDateTime(dayjs(row.desiredDateTime !== "—" ? row.desiredDateTime : dayjs()));
@@ -394,8 +381,6 @@ export default function InterviewManagementRedesign() {
       setActionLoading(false);
     }
   };
-
-  // ---------- render helpers ----------
   const renderCard = (row) => (
     <Card key={row.id} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', transition: 'all 0.2s', '&:hover': { borderColor: 'primary.main', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
       <CardContent>
@@ -449,8 +434,6 @@ export default function InterviewManagementRedesign() {
       </CardContent>
     </Card>
   );
-
-  // ---------- DataGrid columns (memoized) ----------
   const tableColumns = useMemo(() => [
     {
       field: "name",

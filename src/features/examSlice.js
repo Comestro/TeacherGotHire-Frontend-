@@ -42,7 +42,6 @@ const examSlice = createSlice({
     },
     extraReducers:(builder) => {
         builder
-              // for get data handeling
               .addCase(examCard.pending, (state) => {
                 state.status = "loading";
                 state.error = null;

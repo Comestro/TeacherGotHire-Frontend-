@@ -94,8 +94,6 @@ const ManageTeacherApplied = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
-
-  // data + ui state
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,21 +110,15 @@ const ManageTeacherApplied = () => {
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [actionLoading, setActionLoading] = useState(false);
-
-  // pagination (local DataGrid pagination)
   const [pageSize, setPageSize] = useState(isMobile ? 5 : 10);
 
   useEffect(() => {
-    // fetch lookup options
     fetchClassCategories();
     fetchJobTypes();
-    // initial data
     fetchApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    // adjust page size on mobile
     setPageSize(isMobile ? 5 : 10);
   }, [isMobile]);
 
@@ -136,7 +128,6 @@ const ManageTeacherApplied = () => {
       const resp = await getClassCategory();
       if (Array.isArray(resp)) setClassCategoryOptions(resp.map((c) => c.name));
     } catch (err) {
-      // silent - non-fatal
     }
   }
 
@@ -145,7 +136,6 @@ const ManageTeacherApplied = () => {
       const resp = await getTeacherjobType();
       if (Array.isArray(resp)) setJobTypeOptions(resp.map((j) => j.teacher_job_name));
     } catch (err) {
-      // silent - non-fatal
     }
   }
 
@@ -178,8 +168,6 @@ const ManageTeacherApplied = () => {
   }
 
   /* ---------- Filters & search ---------- */
-  // Debounced search handler
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
     debounce((val) => {
       setSearchQuery(val);

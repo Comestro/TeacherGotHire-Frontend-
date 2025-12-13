@@ -8,6 +8,4 @@ export const createSubject = (data) => apiService.create(endpoint, data);
 export const updateSubject = (id, data) => apiService.update(endpoint, id, data);
 export const deleteSubject = (id) => apiService.delete(endpoint, id);
 export const deleteAllSubject = () => apiService.deleteAll(endpoint);
-
-// fetch class here
 export const getClasses = () => apiService.getAll("/api/admin/classcategory");

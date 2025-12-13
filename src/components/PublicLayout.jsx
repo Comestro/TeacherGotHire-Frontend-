@@ -9,7 +9,6 @@ const PublicLayout = () => {
       <div className="sticky top-0 z-50">
         <Navbar
           links={[
-            // { id: "1", label: "Login/Signup", to: "/signup/teacher" },
             { id: "1", label: "Find Tutor", to: "/signup/recruiter" },
             { id: "2", label: "Login/Signup", to: "/signin" },
           ]}

@@ -11,8 +11,6 @@ const SubjectExpertHeader = () => {
   const dropdownRef = useRef(null);
   const setterUser = useSelector((state) => state.examQues.setterInfo);
   const user = setterUser?.[0]?.user;
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

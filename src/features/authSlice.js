@@ -21,7 +21,6 @@ export const getUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await fetchUserData();
-      // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -37,8 +36,6 @@ export const getPostData = createAsyncThunk(
   async ({ Fname, Lname, email, password }, { rejectWithValue }) => {
     try {
       const data = await createaccount({ Fname, Lname, email, password });
-      
-      // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -59,7 +56,6 @@ export const recruiterPostData = createAsyncThunk(
         email,
         password,
       });
-      // Call the service
       return data; // Return the updated profile data
     } catch (error) {
       return rejectWithValue({
@@ -91,8 +87,6 @@ export const userLogout = createAsyncThunk(
       await logout();
       return { success: true };
     } catch (error) {
-      
-      // Still return success since local logout was done in the service
       return { success: true };
     }
   }
@@ -103,57 +97,44 @@ const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    // for handeling  basic profile
     builder
-      // Handle pending state
       .addCase(getUserData.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-      // Handle fulfilled state
       .addCase(getUserData.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.userData = action.payload;
       })
-      // Handle rejected state
       .addCase(getUserData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
 
-    //for post data handel
-
     builder
-      // Handle pending state
       .addCase(getPostData.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-      // Handle rejected state
       .addCase(getPostData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
 
     builder
-      // Handle pending state
       .addCase(recruiterPostData.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-      // Handle fulfilled state
       .addCase(recruiterPostData.fulfilled, (state, action) => {
         state.status = "succeeded";
-        //state.userData = action.payload;
       })
-      // Handle rejected state
       .addCase(recruiterPostData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
       });
 
     builder
-      // Handle pending state
       .addCase(getResendOtp.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -162,8 +143,6 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.resendotp = action.payload;
       })
-
-      // Handle rejected state
       .addCase(getResendOtp.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload; // Set error from rejected payload
@@ -178,7 +157,6 @@ const authSlice = createSlice({
         return initialState; // Reset state to initial
       })
       .addCase(userLogout.rejected, () => {
-        // Even if rejected, we want to reset the state
         return initialState;
       });
   },

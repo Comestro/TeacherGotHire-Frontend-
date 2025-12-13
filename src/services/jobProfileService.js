@@ -33,7 +33,6 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token'); // Clear the token
-      // window.location.href = '/signin'; // Removed auto-redirect
     }
     return Promise.reject(error);
   }
@@ -54,7 +53,6 @@ export const fetchClassCategory = async()=>{
 export const fetchJobRole = async()=>{
   try{
      const response = await apiClient.get('/api/admin/role/');
-    //
      return response.data;
   }
      catch (err) {
@@ -66,7 +64,6 @@ export const fetchJobRole = async()=>{
 export const fetchTeacherJobRole = async()=>{
   try{
      const response = await apiClient.get('/api/admin/teacherjobtype/');
-     //
      return response.data;
   }
      catch (err) {
@@ -78,7 +75,6 @@ export const fetchTeacherJobRole = async()=>{
 export const fetchSubject = async()=>{
   try{
      const response = await apiClient.get('/api/admin/subject/');
-    // 
      return response.data;
   }
      catch (err) {
@@ -116,10 +112,6 @@ export const updateEducationProfile = async({payload, id })=>{
         return JSON.parse(JSON.stringify(response)); 
      }
         catch (err) {
-  
-            
-        
-            // Extract validation errors
             const errorMessage = err.response?.data && typeof err.response.data === "object"
                 ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
                 : err.message || "Failed to update education profile";
@@ -136,10 +128,6 @@ export const addEducationProfile = async(expriencedata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
-  
-    
-
-    // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
         ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
         : err.message || "Failed to update education profile";
@@ -173,7 +161,6 @@ export const deleteEducationProfile = async(expriencedata)=>{
 }
 export const updateSkillsProfile = async(skillsdata)=>{
   try{
-    // 
     const response = await apiClient.post('api/self/teacherskill/',skillsdata);
     
     return JSON.parse(JSON.stringify(response));
@@ -254,7 +241,6 @@ export const deleteExprienceProfile = async(expriencedata)=>{
 export const updateTeacherPrefrence = async(prefrenceData)=>{
   try{
     const response = await apiClient.put('api/self/teacherpreference/',prefrenceData);
-    // 
     return JSON.parse(JSON.stringify(response));
   }
   catch(err){
@@ -265,7 +251,6 @@ export const updateTeacherPrefrence = async(prefrenceData)=>{
 export const fetchTeacherPrefrence = async()=>{
   try{
      const response = await apiClient.get('api/self/teacherpreference/');
-    //  
      return response.data;
   }
      catch (err) {

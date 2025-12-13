@@ -17,8 +17,6 @@ const ExamSetterModal = ({
   onExamUpdated 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Get filtered subjects based on selected class category
   const filteredSubjects = useMemo(() => {
     if (!formData.class_category) return [];
     const selectedCategory = classCategories.find(
@@ -26,11 +24,8 @@ const ExamSetterModal = ({
     );
     return selectedCategory?.subjects || [];
   }, [formData.class_category, classCategories]);
-
-  // Reset subject when class category changes
   const handleClassCategoryChange = (e) => {
     onInputChange(e);
-    // Reset subject when class category changes
     onInputChange({
       target: {
         name: 'subject',
@@ -38,13 +33,9 @@ const ExamSetterModal = ({
       }
     });
   };
-
-  // Handle level change to update type accordingly
   const handleLevelChange = (e) => {
     const selectedLevelId = parseInt(e.target.value);
     onInputChange(e);
-
-    // Reset type based on selected level
     if (selectedLevelId === 2) { // Level - 2 (From Home)
       onInputChange({
         target: {
@@ -61,8 +52,6 @@ const ExamSetterModal = ({
       });
     }
   };
-
-  // Determine if type selection should be disabled and what options to show
   const getTypeOptions = () => {
     const selectedLevelId = parseInt(formData.level);
     

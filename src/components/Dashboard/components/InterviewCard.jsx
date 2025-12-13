@@ -15,8 +15,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
   const interviewData = useSelector((state) => state.examQues.interview);
   const interview = Array.isArray(interviewData) ? interviewData : [];
   const attempts = useSelector((state) => state.examQues.attempts);
-
-  // Get qualified exams for Level 2
   const filteredExams = attempts?.filter(
     (item) => item?.exam?.level_code === 2 && item?.isqualified === true
   ) || [];
@@ -32,8 +30,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
   useEffect(() => {
     dispatch(getInterview());
   }, [dispatch]);
-
-  // Identify the specific interview and qualified exam based on props
   const currentInterview = useMemo(() => {
     if (!selectedSubject || !selectedCategory) return null;
     return interview.find(i =>
@@ -56,7 +52,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
     setNotification(null);
 
     try {
-      // Use currentQualifiedExam if available, otherwise fallback to finding by name
       const examData = currentQualifiedExam || filteredExams.find(item =>
         item?.exam?.name === selectedExam &&
         item?.isqualified
@@ -112,7 +107,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
   };
 
   const handleCancelInterview = () => {
-    // Placeholder for cancel action
     alert("Cancel functionality is not yet implemented.");
   };
 
@@ -239,17 +233,11 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
   const days = generateNextDays(14);
   const timeSlots = generateTimeSlots(selectedDay);
-
-  // If no subject selected, return null or empty (as per request "i already select subject")
   if (!selectedSubject || !selectedCategory) {
     return <div className="p-4 text-center text-slate-500">Please select a subject to view interview details. / साक्षात्कार विवरण देखने के लिए कृपया एक विषय चुनें।</div>;
   }
-
-  // Check if passed interview exists in attempts
   const passedInterviewFromAttempts = useMemo(() => {
     if (!attempts || !selectedSubject || !selectedCategory) return null;
-
-    // Find relevant attempt
     const attempt = attempts.find(att =>
       att?.exam?.subject_id === selectedSubject.id &&
       att?.exam?.class_category_id === selectedCategory.id &&
@@ -257,8 +245,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
     );
 
     if (!attempt?.interviews) return null;
-
-    // Find fulfilled interview with passing grade
     return attempt.interviews.find(iv =>
       iv?.status === "fulfilled" &&
       iv?.grade != null &&
@@ -308,7 +294,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
 
       <div className="p-0 md:p-4">
         {passedInterview ? (
-          // Passed/Qualified View
           <div className="bg-white rounded-xl border border-emerald-200 shadow-sm p-6 flex flex-col items-center text-center gap-4 bg-emerald-50/30">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mb-2">
               <FaCheckCircle size={32} />
@@ -324,7 +309,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
             </div>
           </div>
         ) : currentInterview ? (
-          // Scheduled View
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
@@ -400,7 +384,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
             </div>
           </div>
         ) : currentQualifiedExam ? (
-          // Not Scheduled but Qualified View
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
@@ -421,7 +404,6 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
             </button>
           </div>
         ) : (
-          // Not Qualified View
           <div className="text-center py-12 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
               <FaInfoCircle size={24} />

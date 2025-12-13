@@ -63,8 +63,6 @@ const EditPersonalProfile = () => {
       description: "Your expertise"
     },
   ];
-
-  // Auto-scroll active tab to center on mobile
   useEffect(() => {
     if (mobileTabsRef.current && tabRefs.current[activeTab]) {
       const container = mobileTabsRef.current;
@@ -73,8 +71,6 @@ const EditPersonalProfile = () => {
       const containerWidth = container.offsetWidth;
       const buttonLeft = activeButton.offsetLeft;
       const buttonWidth = activeButton.offsetWidth;
-      
-      // Calculate scroll position to center the button
       const scrollPosition = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
       
       container.scrollTo({

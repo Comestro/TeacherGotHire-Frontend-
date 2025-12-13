@@ -2,8 +2,6 @@ import axios from "axios";
 import { getApiUrl } from "../store/configue";
 
 const API_URL = getApiUrl();
-
-// Helper function to get CSRF token from cookies
 const getCsrfToken = () => {
   const name = 'csrftoken';
   let cookieValue = null;
@@ -27,16 +25,12 @@ const axiosInstance = axios.create({
   },
   withCredentials: true,
 });
-
-// Add a request interceptor to include the token and CSRF token dynamically
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
       config.headers["Authorization"] = `Token ${token}`;
     }
-    
-    // Add CSRF token for state-changing methods
     if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
       const csrfToken = getCsrfToken();
       if (csrfToken) {

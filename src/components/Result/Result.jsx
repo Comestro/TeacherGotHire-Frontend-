@@ -2,12 +2,9 @@
 import React, { useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale } from "chart.js";
-
-// Register the necessary components for chart.js
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale);
 
 const ResultPage = () => {
-  // Dummy data for the result
   const [result, setResult] = useState({
     score: 12, // Example: out of 20
     total: 20,
@@ -19,13 +16,9 @@ const ResultPage = () => {
     level: "Level 1",
     remainingAttempts: 0, // Attempts left for fail case
   });
-
-  // Quiz Stats data for Doughnut chart
   const [correctAnswers, setCorrectAnswers] = useState(result.correct);
   const [incorrectAnswers, setIncorrectAnswers] = useState(result.incorrect);
   const [skippedQuestions, setSkippedQuestions] = useState(result.total - result.correct - result.incorrect);
-
-  // Data for the Doughnut chart
   const data = {
     labels: ["Correct Answers", "Incorrect Answers", "Skipped Questions"],
     datasets: [
@@ -37,8 +30,6 @@ const ResultPage = () => {
       },
     ],
   };
-
-  // Options for the Doughnut chart
   const options = {
     responsive: true,
     plugins: {

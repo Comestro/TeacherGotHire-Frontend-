@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllCenter, generatePasskey } from '../../features/examQuesSlice';
 import { useDispatch, useSelector } from 'react-redux';
-// import {AllCenter} from "../../Services/examQuesServices"
 
 const ExamMode = () => {
 
@@ -24,35 +23,26 @@ const ExamMode = () => {
 
   useEffect(() => {
     dispatch(getAllCenter());
-
-    // Anti-screenshot & Anti-recording measures
     const handleContextMenu = (e) => {
       e.preventDefault();
       return false;
     };
 
     const handleKeyDown = (e) => {
-      // Prevent PrintScreen
       if (e.key === 'PrintScreen') {
         e.preventDefault();
         alert("Screenshots are disabled!");
         return false;
       }
-
-      // Prevent Ctrl/Cmd + P (Print)
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault();
         alert("Printing is disabled!");
         return false;
       }
-
-      // Prevent Ctrl/Cmd + Shift + S (Screenshot)
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 's') {
         e.preventDefault();
         return false;
       }
-
-      // Prevent Mac Screenshot shortcuts (Cmd + Shift + 3/4/5)
       if (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) {
         e.preventDefault();
         return false;
@@ -67,8 +57,6 @@ const ExamMode = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
-  // Blur on focus loss (anti-recording/multitasking)
   const [isWindowFocused, setIsWindowFocused] = useState(true);
 
   useEffect(() => {
@@ -89,8 +77,6 @@ const ExamMode = () => {
   const pass_exam_id = attempts
     ?.find(({ exam, isqualified }) => exam?.level?.id === 2 && isqualified)
     ?.exam?.id;
-
-  // Handle verification form submission
   const handleGeneratePasskey = async (event) => {
     event.preventDefault();
     if (selectedCenterId && pass_exam_id) {

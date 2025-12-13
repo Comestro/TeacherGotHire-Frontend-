@@ -21,8 +21,6 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers['Authorization'] = `Token ${token}`;
   }
-
-  // Let Axios handle Content-Type for FormData
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type']; // Axios auto-sets multipart/form-data
   } else {
@@ -40,8 +38,6 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
-
-// Response Interceptor to Handle 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => {
     return response;
@@ -89,7 +85,6 @@ export const updateBasicProfile = async(personaldata)=>{
 export const fetchBasicProfile = async()=>{
   try{
      const response = await apiClient.get('/api/self/basicProfile/');
-    // 
      return response.data;
   }
      catch (err) {
@@ -103,10 +98,6 @@ export const updateAddressProfile = async(addressdata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
-  
-    
-
-    // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
         ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
         : err.message || "Failed to update Address profile";
@@ -121,10 +112,6 @@ export const addAddressProfile = async(addressdata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
-  
-    
-
-    // Extract validation errors
     const errorMessage = err.response?.data && typeof err.response.data === "object"
         ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
         : err.message || "Failed to update Address profile";

@@ -44,14 +44,10 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
   const [showInterviewPanel, setShowInterviewPanel] = useState(false);
   const examReadyRef = useRef(null); // Create a ref for the target section
   const [showErrorDetails, setShowErrorDetails] = useState(false);
-
-  // Exam center modal states
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [examCenterData, setExamCenterData] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState("");
-
-  // Determine qualified Level 2 subjects
   const qualifiedSubjects = attempts?.filter(item =>
     item?.exam?.level_code === 2 && item?.isqualified === true
   ).map(item => ({
@@ -60,8 +56,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     categoryId: item?.exam?.class_category_id,
     categoryName: item?.exam?.class_category_name
   })) || [];
-
-  // Fetch levels on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -74,8 +68,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
     fetchData();
   }, []);
-
-  // Helper functions to check qualifications
   const checkLevelQualification = (categoryId, subjectId, levelCode) => {
     return attempts?.some(attempt =>
       attempt?.exam?.class_category_id === categoryId &&
@@ -119,7 +111,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
   useImperativeHandle(ref, () => ({
     openInterview: (categoryId, subjectId) => {
-      // Find category and subject objects
       const category = classCategories?.find(c => c.id === categoryId);
       const subject = category?.subjects?.find(s => s.id === subjectId);
 
@@ -163,8 +154,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
       setErrors("Please select both category and subject first");
       return;
     }
-
-    // Check Level 1 requirement for Level 2.0 and above
     if (level?.level_code >= 2.0) {
       const isLevel1Qualified = checkLevelQualification(
         selectedCategory?.id,
@@ -231,7 +220,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
   };
 
   const handleExam = async () => {
-    // Center exam flow solely by level_code
     if (selectedLevel?.level_code === 2.5) {
       try {
         let examid = examCards?.id;
@@ -258,7 +246,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
         setErrors("Failed to check exam status. Please try again.");
       }
     } else {
-      // Online exam flow
       if (!selectedLanguage) {
         alert("Please select a language");
         return;
@@ -295,19 +282,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     exit: { opacity: 0, x: -20 },
     transition: { duration: 0.3 }
   };
-
-  // Scroll to exam ready section when it appears
   useEffect(() => {
     if (examReady && examReadyRef.current) {
-      // Use setTimeout to ensure the element is fully rendered before scrolling
       const timer = setTimeout(() => {
         examReadyRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100); // Small delay
       return () => clearTimeout(timer); // Cleanup timer on unmount or change
     }
   }, [examReady]);
-
-  // Derived progress for the Assessment Process stepper
   const hasLevel1Qualified = useMemo(() => (
     selectedCategory && selectedSubject
       ? checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0)
@@ -329,8 +311,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
 
   const isJobEligible = useMemo(() => {
     if (!selectedCategory || !selectedSubject) return false;
-    
-    // Check Interview Qualification (Grade >= 6)
     const relevantAttempt = attempts?.find(attempt =>
       attempt?.exam?.class_category_id === selectedCategory?.id &&
       attempt?.exam?.subject_id === selectedSubject?.id &&
@@ -338,7 +318,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     );
     
     if (!relevantAttempt?.interviews?.length) {
-       // If no interview, check strictly for center exam
        return checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
     }
     
@@ -348,11 +327,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     
     const latest = sortedInterviews[0];
     const isInterviewQualified = latest?.status === 'fulfilled' && (latest?.grade >= 6);
-
-    // Check Center Exam Qualification (Level 2.5)
     const isCenterExamQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
-
-    // Eligible if EITHER is passed
     return isInterviewQualified || isCenterExamQualified;
   }, [selectedCategory, selectedSubject, attempts]);
 
@@ -595,8 +570,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   {/* Level 1 Card */}
                   {levels.filter(l => l.level_code === 1.0).map(level => {
                     const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 1.0);
-                    
-                    // Check if passed in both languages
                     const passedAttempts = attempts?.filter(a =>
                         a?.exam?.class_category_id === selectedCategory?.id &&
                         a?.exam?.subject_id === selectedSubject?.id &&
@@ -784,8 +757,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                     {levels.filter(l => l.level_code === 2.5).map(level => {
                       const isLocked = !checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.0);
                       const isQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
-
-                      // Find the attempt for this level to get the score
                       const attempt = attempts?.find(a =>
                         a?.exam?.class_category_id === selectedCategory?.id &&
                         a?.exam?.subject_id === selectedSubject?.id &&
@@ -1078,18 +1049,15 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         <span className="text-sm text-slate-600 block mb-2">Select Language</span>
                         <div className="flex gap-3">
                            {(() => {
-                              // Determine allowed languages
                               let allowed = ['English', 'Hindi'];
                               
                               if (selectedLevel?.level_code === 1.0) {
-                                // Level 1 Logic: If passed, exclude passed language
                                 const passedLang = getPassedLanguage(selectedCategory?.id, selectedSubject?.id, 1.0);
                                 if (passedLang) {
                                    if (passedLang.toLowerCase() === 'english') allowed = ['Hindi'];
                                    else if (passedLang.toLowerCase() === 'hindi') allowed = ['English'];
                                 }
                               } else if (selectedLevel?.level_code === 2.0) {
-                                // Level 2 Logic: Check passed Level 1 languages
                                 const passedL1Attempts = attempts?.filter(a =>
                                     a?.exam?.class_category_id === selectedCategory?.id &&
                                     a?.exam?.subject_id === selectedSubject?.id &&
@@ -1102,17 +1070,12 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 if (passedL1Langs.size >= 2) {
                                    allowed = ['English', 'Hindi']; // Qualified in both, allow choice
                                 } else if (passedL1Langs.size === 1) {
-                                   // Qualified in only one, restrict to that match
                                    const lang = passedL1Langs.values().next().value;
                                    if (lang === 'english') allowed = ['English'];
                                    else if (lang === 'hindi') allowed = ['Hindi'];
                                 }
                               }
-                              
-                              // Auto-select if only one option and nothing selected
                               if (allowed.length === 1 && selectedLanguage !== allowed[0]) {
-                                 // We strictly shouldn't set state in render, but for this interaction flow ensuring valid state:
-                                 // Ideally use useEffect, but for direct interaction here:
                                  if (!selectedLanguage || selectedLanguage !== allowed[0]) {
                                     setTimeout(() => setSelectedLanguage(allowed[0]), 0);
                                  }

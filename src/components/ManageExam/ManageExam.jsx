@@ -45,12 +45,8 @@ const ManageExam = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
   const [selectedStatus, setSelectedStatus] = useState('all'); // Add status filter
-  
-  // Add these new states to manage question addition
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [examForQuestions, setExamForQuestions] = useState(null);
-  
-  // Separate useEffect for fetching levels - runs only once
   useEffect(() => {
     const getLevels = async () => {
       try {
@@ -63,16 +59,11 @@ const ManageExam = () => {
     
     getLevels();
   }, []);
-  
-  // Updated useEffect for exam sets - now depends on refreshTrigger
   useEffect(() => {
     const fetchExamSets = async () => {
       try {
         setLoading(true);
-        // Try to fetch with pagination support; getExam may accept a page param
         const response = await getExam(page);
-
-        // If API returns paginated shape {count, next, previous, results}
         if (response && response.results && Array.isArray(response.results)) {
           setExamSets(response.results || []);
           setTotalCount(response.count || 0);
@@ -80,14 +71,12 @@ const ManageExam = () => {
           setPrevUrl(response.previous || null);
           setPageSize(response.results.length || pageSize);
         } else if (Array.isArray(response)) {
-          // Backwards compatibility: if API returns array
           setExamSets(response);
           setTotalCount(response.length);
           setPageSize(response.length || pageSize);
           setNextUrl(null);
           setPrevUrl(null);
         } else {
-          // Unexpected shape — try to be defensive
           setExamSets(response || []);
           setTotalCount((response && response.length) || 0);
           setPageSize((response && response.length) || pageSize);
@@ -104,20 +93,11 @@ const ManageExam = () => {
 
     fetchExamSets();
   }, [refreshTrigger, page]); // Re-run when refreshTrigger or page changes
-
-  // Get class categories and subjects from setterUser - Fix the subject extraction
   const classCategories = setterUser?.[0]?.class_category || [];
-
-  // Improved subject extraction
   const getSubjects = () => {
-    // Create an array of all subjects from all class categories
     let allSubjects = [];
-    
-    // Go through each class category
     classCategories.forEach(category => {
-      // If the category has subjects, add them to our array
       if (category.subjects && Array.isArray(category.subjects)) {
-        // Add class identifier to each subject to help user know which class it belongs to
         const subjectsWithClass = category.subjects.map(subject => ({
           ...subject,
           displayName: `${category.name} - ${subject.subject_name}` // Add class name prefix
@@ -128,11 +108,7 @@ const ManageExam = () => {
     
     return allSubjects;
   };
-
-  // Get all subjects
   const subjects = getSubjects();
-
-  // Helpers to normalize exam item fields (API may return strings or nested objects)
   const getExamClassName = (exam) => {
     if (!exam) return '';
     if (exam.class_category) {
@@ -170,7 +146,6 @@ const ManageExam = () => {
 
   const handleCopyExam = (exam) => {
     setIsCopying(true);
-    // Clone the exam data but change the name to indicate it's a copy
     const normalize = (v) => {
       if (!v && v !== 0) return '';
       if (typeof v === 'object') return v.id ? v.id.toString() : (v.name || v.label || '').toString();
@@ -237,25 +212,16 @@ const ManageExam = () => {
       toast.success('Exam deleted successfully!');
     }
   };
-
-  // Function to handle adding questions at a specific position
   const handleAddQuestionAt = (exam, index) => {
     setExamForQuestions(exam);
     setIsQuestionModalOpen(true);
-    // Store the target position for when we create the new question
     sessionStorage.setItem('newQuestionOrder', index);
   };
-
-  // Function to handle submitting a new question
   const handleSubmitQuestion = async (formData) => {
     try {
       setLoading(true);
-      
-      // Get stored order position if available
       const storedOrder = sessionStorage.getItem('newQuestionOrder');
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
-      
-      // Create payload with exam ID and order (if available)
       const payload = {
         ...formData,
         exam: examForQuestions.id,
@@ -266,11 +232,8 @@ const ManageExam = () => {
       
       if (response && response.id) {
         toast.success("Question added successfully!");
-        // Refresh the exam list to show updated question count
         setRefreshTrigger(prev => prev + 1);
       }
-      
-      // Clear the stored order after use
       sessionStorage.removeItem('newQuestionOrder');
       setIsQuestionModalOpen(false);
       setExamForQuestions(null);
@@ -282,24 +245,18 @@ const ManageExam = () => {
       setLoading(false);
     }
   };
-
-  // Update handleAddQuestions function
   const handleAddQuestions = (examId, position = null) => {
     const exam = examSets.find(exam => exam.id === examId);
     if (exam) {
       if (position !== null) {
-        // Add a question at a specific position
         handleAddQuestionAt(exam, position);
       } else {
-        // Navigate to the questions page without specifying a position
         navigate(`/manage-exam/questions/${examId}/add`);
       }
     } else {
       toast.error("Exam not found");
     }
   };
-
-  // Enhanced handleExamCreated function to show more feedback
   const handleExamCreated = (newExam) => {
     
     toast.success('Exam created successfully!');
@@ -307,16 +264,12 @@ const ManageExam = () => {
     setIsModalOpen(false); // Close modal after success
     setIsCopying(false); // Reset copying state
   };
-
-  // Enhanced handleExamUpdated function
   const handleExamUpdated = (updatedExam) => {
     
     toast.success('Exam updated successfully!');
     setRefreshTrigger(prev => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success
   };
-
-  // Get filtered subjects based on selected class category - similar to ExamSetterModal
   const filteredSubjects = useMemo(() => {
     if (selectedClassCategory === 'all') return [];
     
@@ -326,52 +279,36 @@ const ManageExam = () => {
     
     return selectedCategory?.subjects || [];
   }, [selectedClassCategory, classCategories]);
-
-  // Handle class category change
   const handleClassCategoryChange = (e) => {
     setSelectedClassCategory(e.target.value);
-    // Reset subject when class category changes
     setSelectedSubject('all');
   };
 
   const getFilteredExams = () => {
     return examSets.filter(exam => {
-      // Search filter for name and description
       const matchesSearch = searchTerm === '' || 
         (exam.name && exam.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (exam.description && exam.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      // Class category filter
-      // selectedClassCategory stores an id string (from classCategories). API may return class_category as name string.
       const matchesClassCategory = (() => {
         if (selectedClassCategory === 'all') return true;
-        // try by id if exam.class_category is object
         if (exam.class_category && typeof exam.class_category === 'object' && exam.class_category.id) {
           return exam.class_category.id.toString() === selectedClassCategory;
         }
-        // otherwise compare by name
         const selectedClassName = classCategories.find(c => c.id.toString() === selectedClassCategory)?.name;
         if (selectedClassName) return getExamClassName(exam) === selectedClassName;
         return false;
       })();
-      
-      // Subject filter - now depends on class category
       const matchesSubject = (() => {
         if (selectedSubject === 'all') return true;
-        // if exam.subject is object with id
         if (exam.subject && typeof exam.subject === 'object' && exam.subject.id) {
           return exam.subject.id.toString() === selectedSubject;
         }
-        // otherwise compare by subject name
         const selectedSubjectName = subjects.find(s => s.id && s.id.toString() === selectedSubject)?.subject_name;
         if (selectedSubjectName) return getExamSubjectName(exam) === selectedSubjectName;
         return false;
       })();
-      
-      // Level filter
       const matchesLevel = (() => {
         if (selectedLevel === 'all') return true;
-        // if exam.level is object with id
         if (exam.level && typeof exam.level === 'object' && exam.level.id) {
           return exam.level.id.toString() === selectedLevel;
         }
@@ -379,12 +316,8 @@ const ManageExam = () => {
         if (selectedLevelName) return getExamLevelName(exam) === selectedLevelName;
         return false;
       })();
-      
-      // Exam type filter
       const matchesType = selectedType === 'all' || 
         (exam.type && String(exam.type) === selectedType);
-      
-      // Status filter
       const matchesStatus = selectedStatus === 'all' ||
         (selectedStatus === 'published' && exam.status === true) ||
         (selectedStatus === 'draft' && exam.status === false);
@@ -392,34 +325,25 @@ const ManageExam = () => {
       return matchesSearch && matchesClassCategory && matchesSubject && matchesLevel && matchesType && matchesStatus;
     });
   };
-
-  // Sort exams by hierarchy: Class Category > Subject > Level > Type
   const getSortedAndGroupedExams = () => {
     const filtered = getFilteredExams();
     
     return filtered.sort((a, b) => {
-      // First sort by class category name
       const classA = a.class_category?.name || '';
       const classB = b.class_category?.name || '';
       if (classA !== classB) {
         return classA.localeCompare(classB);
       }
-      
-      // Then sort by subject name
       const subjectA = a.subject?.subject_name || '';
       const subjectB = b.subject?.subject_name || '';
       if (subjectA !== subjectB) {
         return subjectA.localeCompare(subjectB);
       }
-      
-      // Then sort by level (numerically if possible)
       const levelA = a.level?.id || 0;
       const levelB = b.level?.id || 0;
       if (levelA !== levelB) {
         return levelA - levelB;
       }
-      
-      // Finally sort by type: online (home) first, then offline (exam centre)
       const typeOrder = { 'online': 0, 'offline': 1 };
       const typeA = typeOrder[a.type] || 0;
       const typeB = typeOrder[b.type] || 0;

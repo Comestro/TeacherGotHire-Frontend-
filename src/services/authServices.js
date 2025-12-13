@@ -4,8 +4,6 @@ import store, { persistor } from "../store/store";
 import { userLogout } from "../features/authSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Helper function to get CSRF token from cookies
 const getCsrfToken = () => {
   const name = 'csrftoken';
   let cookieValue = null;
@@ -30,16 +28,12 @@ const apiClient = axios.create({
   withCredentials: true,
   maxBodyLength: Infinity, // For large payloads
 });
-
-// Interceptor to add token and CSRF token to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
-
-    // Add CSRF token for state-changing methods
     if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
       const csrfToken = getCsrfToken();
       if (csrfToken) {
@@ -77,8 +71,6 @@ const handleApiError = async (err) => {
     throw new Error(err.message || "An unexpected error occurred.");
   }
 };
-
-// Helper function for POST requests
 const postRequest = async (url, payload) => {
   try {
     const response = await apiClient.post(url, payload);
@@ -87,8 +79,6 @@ const postRequest = async (url, payload) => {
     await handleApiError(err);
   }
 };
-
-// Helper function for GET requests
 const getRequest = async (url) => {
   try {
     const response = await apiClient.get(url);
@@ -104,9 +94,6 @@ export const createaccount = async (userDetails) => {
 
     return response;
   } catch (error) {
-
-
-    // Rethrow error so it can be caught in `signup`
     throw error;
   }
 };
@@ -141,7 +128,6 @@ export const resendTeacherOtp = async (email) => {
 
 export const createRecruiteraccount = async (userDetails) => {
   const response = await postRequest("/api/register/recruiter/", userDetails);
-  // Removed auto-login to force OTP verification
   return response;
 };
 
@@ -182,8 +168,6 @@ export const login = async (credentials) => {
    
 
     const response = await apiClient.post("/api/login/", credentials);
-
-    // Handle case where API returns 200 OK but user is not verified
     if (response.data && response.data.is_verified === false) {
       const error = new Error(response.data.message || "Please verify your account.");
       error.is_verified = false;
@@ -211,30 +195,23 @@ export const login = async (credentials) => {
     return response.data;
   } catch (err) {
     if (err.response?.data) {
-      // Handle CSRF error specifically
       if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
         const csrfError = err.response.data.errors.find(e => e.code === 'error' && e.detail?.includes('CSRF'));
         if (csrfError) {
-          // Clear any stale tokens and retry
           document.cookie.split(";").forEach((c) => {
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
           });
           throw new Error('Session expired. Please refresh the page and try again.');
         }
       }
-
-      // Handle is_verified flag
       if (err.response.data.is_verified === false) {
         const error = new Error(err.response.data.message || "Please verify your account.");
         error.is_verified = false;
         throw error;
       }
-
-      // Handle string response
       if (typeof err.response.data === 'string') {
         throw new Error(err.response.data);
       }
-      // Handle object response
       if (typeof err.response.data === 'object') {
         const message = err.response.data.message || err.response.data.detail || "Invalid credentials. Please try again.";
         throw new Error(message);
@@ -264,36 +241,23 @@ export const changePassword = async ({ oldPassword, newPassword }) =>
 
 export const logout = async () => {
   try {
-    // Step 1: Call the logout API first
     await apiClient.post("/api/logout/").catch((err) => {
-
-      // Even if the API fails, proceed with local logout
     });
-
-    // Step 2: Clear local storage after the API call
     localStorage.removeItem("access_token");
     localStorage.removeItem("role");
-
-    // Step 3: Clear all cookies EXCEPT csrftoken
     document.cookie.split(";").forEach((c) => {
       const cookie = c.trim();
       const eqPos = cookie.indexOf("=");
       const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-
-      // Preserve the CSRF token so subsequent login requests don't fail
       if (name !== 'csrftoken') {
         document.cookie = name + "=;expires=" + new Date().toUTCString() + ";path=/";
       }
     });
-
-    // Step 4: Clear redux persist state
     await persistor.purge();
     await persistor.flush();
 
     return { success: true };
   } catch (err) {
-
-    // Still return success since we've cleared local state
     return { success: true };
   }
 };
