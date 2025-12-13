@@ -209,7 +209,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
           </div>
 
           {/* Actions */}
-          <div className="pt-4 flex gap-3">
+          <div className="pt-4 flex flex-col md:flex-row gap-3">
             <button
               type="button"
               onClick={onClose}

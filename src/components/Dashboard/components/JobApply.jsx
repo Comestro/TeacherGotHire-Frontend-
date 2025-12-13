@@ -281,7 +281,7 @@ const ApplicationForm = ({ onCancel, onConfirm, subjectName, applicationData, is
       </div>
 
 
-        <div className="flex gap-3 pt-4 border-t border-gray-100">
+        <div className="flex gap-3 flex-col md:flex-row pt-4 border-t border-gray-100">
           <button
             type="button"
             onClick={onCancel}
@@ -315,8 +315,8 @@ const ApplicationSummary = ({ applications, jobTypes }) => {
   if (!applications || applications.length === 0) return null;
 
   return (
-    <div className="mb-6 bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+    <div className="mb-6 bg-gray-50/50 rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
          <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Current Applications</h4>
       </div>
       
@@ -666,7 +666,7 @@ const JobApply = () => {
   return (
     <div className="max-w-8xl mx-auto">
       {/* Page header */}
-      <header className="mb-2">
+      <header className="mb-5">
         <h1 className="text-2xl font-semibold text-text">
           Job Applications
           <span className="ml-2 text-secondary text-sm font-normal">/ नौकरी आवेदन</span>
@@ -722,90 +722,100 @@ const JobApply = () => {
                 return (
                   <div
                     key={`${subjectId}-${classCategoryId}-${index}`}
-                    className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 p-6 ${isApplied
-                      ? 'border-success/30 bg-success/5'
-                      : 'border-slate-200'
-                      }`}
+                    className={`group bg-white border border-gray-200 rounded-2xl p-0 hover:border-gray-300 transition-all duration-200 overflow-hidden ${isApplied ? 'ring-1 ring-success/50 border-success/30' : ''}`}
                   >
-                    {/* Header with subject and class */}
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-bold text-xl text-gray-900">
-                            {subjectName}
-                          </h3>
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${isApplied
-                          ? 'bg-success/10 text-success border border-success/20'
-                          : 'bg-blue-50 text-blue-600 border border-blue-100'
-                          }`}>
-                          {isApplied ? 'Applied' : 'Eligible'}
-                        </span>
-                        </div>
-                        <p className="text-sm font-medium text-slate-500">
-                          {className}
-                        </p>
+                    {/* Compact Row Header */}
+                    <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      
+                      <div className="flex items-center gap-4">
+                         {/* Icon Placeholder or Status Indicator */}
+                         <div className={`h-12 w-12 rounded-full flex items-center justify-center text-xl font-bold ${
+                           isApplied ? 'bg-success/10 text-success' : 'bg-blue-50 text-blue-600'
+                         }`}>
+                           {subjectName.charAt(0)}
+                         </div>
+
+                         <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                                {subjectName}
+                              </h3>
+                              {isApplied && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/10 text-success">
+                                  Applied
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
+                               <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-semibold">{className}</span>
+                               <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                               <span className="text-xs">Eligible</span>
+                            </p>
+                         </div>
                       </div>
                       
                       {/* Status indicators moved to header on desktop */}
+                      {/* Status indicators moved/removed */}
                       <div className="flex items-center gap-4">
-                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50/50 border border-green-100">
-                          <HiOutlineCheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">Qualification Matched</span>
-                        </div>
+                         
                       </div>
                     </div>
 
-                    {/* Show salary details if applied AND form is NOT expanded */}
-                    {isApplied && activeApplications.length > 0 && !(expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId) && (
-                      <ApplicationSummary 
-                        applications={activeApplications} 
-                        jobTypes={jobTypes} 
-                      />
-                    )}
-
-                  {/* Use a wrapper to control transitions if needed, but for now direct render */}
-                  {expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId ? (
-                      <ApplicationForm
-                        isEdit={expandedForm.isEdit}
-                        applicationData={expandedForm.applicationData}
-                        subjectName={subjectName}
-                        onConfirm={handleFormSubmit}
-                        onCancel={handleCollapseForm}
-                        jobTypes={jobTypes}
-                        jobTypesStatus={jobTypesStatus}
-                      />
-                  ) : (
-                    /* Only show action buttons if form is NOT expanded */
-                    <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-slate-100 mt-2">
-                      {isApplied ? (
-                        <>
-                          <button
-                            onClick={() => handleExpandForm(subjectId, classCategoryId, true, activeApplications, subjectName)}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                          >
-                            <HiOutlinePencilSquare className="h-4 w-4 mr-2" />
-                            Update Salary & Preferences
-                          </button>
-
-                          <button
-                            onClick={() => handleRevoke(subjectId, classCategoryId, subjectName)}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                          >
-                            <HiOutlineXCircle className="h-4 w-4 mr-2" />
-                            Withdraw Application
-                          </button>
-                        </>
+                    {/* Content Body Wrapper */}
+                    <div className="px-5 pb-5">
+                      
+                      {/* Show salary details if applied AND form is NOT expanded */}
+                      {isApplied && activeApplications.length > 0 && !(expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId) && (
+                        <ApplicationSummary 
+                          applications={activeApplications} 
+                          jobTypes={jobTypes} 
+                        />
+                      )}
+  
+                      {/* Form or Buttons */}
+                      {expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId ? (
+                          <ApplicationForm
+                            isEdit={expandedForm.isEdit}
+                            applicationData={expandedForm.applicationData}
+                            subjectName={subjectName}
+                            onConfirm={handleFormSubmit}
+                            onCancel={handleCollapseForm}
+                            jobTypes={jobTypes}
+                            jobTypesStatus={jobTypesStatus}
+                          />
                       ) : (
-                        <button
-                          onClick={() => handleExpandForm(subjectId, classCategoryId, false, null, subjectName)}
-                          className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
-                        >
-                          <HiOutlineCurrencyDollar className="h-5 w-5 mr-2" />
-                          Set Salary & Apply
-                        </button>
+                        /* Only show action buttons if form is NOT expanded */
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
+                          {isApplied ? (
+                            <>
+                              <button
+                                onClick={() => handleExpandForm(subjectId, classCategoryId, true, activeApplications, subjectName)}
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                              >
+                                <HiOutlinePencilSquare className="h-4 w-4 mr-2" />
+                                Update Application
+                              </button>
+    
+                              <button
+                                onClick={() => handleRevoke(subjectId, classCategoryId, subjectName)}
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                              >
+                                <HiOutlineXCircle className="h-4 w-4 mr-2" />
+                                Withdraw Application
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleExpandForm(subjectId, classCategoryId, false, null, subjectName)}
+                              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
+                            >
+                              <HiOutlineCurrencyDollar className="h-5 w-5 mr-2" />
+                              Set Salary & Apply
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
 
                   </div>
                 );
