@@ -863,7 +863,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                               if (latestInterview?.grade !== undefined && latestInterview?.grade !== null && latestInterview?.status == 'fulfilled') {
                                 return (
                                   <span className={`text-xs font-semibold ${latestInterview.grade >= 6 ? 'text-green-600' : 'text-amber-600'}`}>
-                                    Grade: {latestInterview.grade}/10
+                                    Score: {Math.round(latestInterview.grade * 10)}%
                                   </span>
                                 );
                               }

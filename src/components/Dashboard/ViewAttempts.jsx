@@ -234,7 +234,7 @@ function SubjectResults({ subject, examResults, selectedCategory }) {
               status: interview?.status === "fulfilled" ? "Completed" :
                 interview?.status === "scheduled" ? "Scheduled" :
                   interview?.status === "requested" ? "Requested" : interview?.status,
-              score: interview?.grade ? `${interview.grade}/10` : 'N/A',
+              score: interview?.grade ? `${Math.round(interview.grade * 10)}%` : 'N/A',
               attemptCount: interview?.attempt || '-',
               date: interview?.time ? new Date(interview.time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(interview.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
               interviewDate: interview?.created_at ? new Date(interview.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + new Date(interview.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',

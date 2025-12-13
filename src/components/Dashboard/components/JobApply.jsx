@@ -13,7 +13,8 @@ import {
   HiOutlineXCircle, 
   HiOutlineExclamationTriangle, 
   HiOutlineInformationCircle,
-  HiOutlinePencilSquare
+  HiOutlinePencilSquare,
+  HiCurrencyRupee
 } from "react-icons/hi2";
 
 
@@ -756,8 +757,17 @@ const JobApply = () => {
                       
                       {/* Status indicators moved to header on desktop */}
                       {/* Status indicators moved/removed */}
+                      {/* Status indicators and Action Button moved to header */}
                       <div className="flex items-center gap-4">
-                         
+                        {!isApplied && !(expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId) && (
+                           <button
+                             onClick={() => handleExpandForm(subjectId, classCategoryId, false, null, subjectName)}
+                             className="hidden sm:inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
+                           >
+                             <HiCurrencyRupee className="h-5 w-5 mr-2" />
+                             Apply Job Now
+                           </button>
+                        )}
                       </div>
                     </div>
 
@@ -784,10 +794,9 @@ const JobApply = () => {
                             jobTypesStatus={jobTypesStatus}
                           />
                       ) : (
-                        /* Only show action buttons if form is NOT expanded */
-                        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
-                          {isApplied ? (
-                            <>
+                        /* Only show Update/Withdraw buttons if applied and form is NOT expanded */
+                        isApplied && (
+                          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
                               <button
                                 onClick={() => handleExpandForm(subjectId, classCategoryId, true, activeApplications, subjectName)}
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
@@ -803,17 +812,21 @@ const JobApply = () => {
                                 <HiOutlineXCircle className="h-4 w-4 mr-2" />
                                 Withdraw Application
                               </button>
-                            </>
-                          ) : (
+                          </div>
+                        )
+                      )}
+                      
+                      {/* Mobile Apply Button when form not expanded and not applied */}
+                      {!isApplied && !(expandedForm.subjectId === subjectId && expandedForm.classCategoryId === classCategoryId) && (
+                         <div className="sm:hidden mt-4 border-t border-gray-100 pt-4">
                             <button
-                              onClick={() => handleExpandForm(subjectId, classCategoryId, false, null, subjectName)}
-                              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
-                            >
-                              <HiOutlineCurrencyDollar className="h-5 w-5 mr-2" />
-                              Set Salary & Apply
-                            </button>
-                          )}
-                        </div>
+                             onClick={() => handleExpandForm(subjectId, classCategoryId, false, null, subjectName)}
+                             className="w-full inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
+                           >
+                             <HiCurrencyRupee className="h-5 w-5 mr-2" />
+                             Apply Job Now
+                           </button>
+                         </div>
                       )}
                     </div>
 
