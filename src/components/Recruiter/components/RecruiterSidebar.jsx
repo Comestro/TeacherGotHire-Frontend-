@@ -10,6 +10,7 @@ import {
   FiMapPin,
   FiSearch,
   FiCheck,
+  FiCrosshair,
 } from "react-icons/fi";
 import {
   MdSchool,
@@ -141,6 +142,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     dispatch(getClassCategory());
     dispatch(getTeacherjobType());
   }, [dispatch]);
+  const pendingAutoSelectPORef = useRef(null);
+
   useEffect(() => {
     if (pincode && pincode.length === 6) {
       setLoadingPostOffices(true);
@@ -148,7 +151,20 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         .then((res) => res.json())
         .then((data) => {
           if (data && data[0]?.Status === "Success") {
-            setPostOffices(data[0].PostOffice || []);
+            const offices = data[0].PostOffice || [];
+            setPostOffices(offices);
+            
+            // Auto-select PO if pending match exists
+            if (pendingAutoSelectPORef.current) {
+                const target = pendingAutoSelectPORef.current.toLowerCase();
+                const match = offices.find(
+                    po => po.Name.toLowerCase().includes(target) || target.includes(po.Name.toLowerCase())
+                );
+                if (match) {
+                    setSelectedPostOffice(match.Name);
+                }
+                pendingAutoSelectPORef.current = null; // Clear after attempt
+            }
           } else {
             setPostOffices([]);
           }
@@ -302,6 +318,89 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
        setErrors(prev => ({ ...prev, classCategories: false }));
     }
   }, [selectedDistrict, pincode, selectedClassCategories, errors]);
+
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const handleDetectLocation = (isAuto = false) => {
+    if (!navigator.geolocation) {
+      if (!isAuto) alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        // Using BigDataCloud free reverse geocoding API
+        fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.postcode) {
+              setPincode(data.postcode);
+              // Trigger pincode error clearance
+              setErrors(prev => ({ ...prev, pincode: false }));
+            }
+            
+            // Try to match district
+            // API returns 'city', 'locality', or 'principalSubdivision'
+            const potentialDistricts = [
+                data.city, 
+                data.locality, 
+                data.principalSubdivision,
+                data.localityInfo?.administrative?.[2]?.name // Sometimes district is here
+            ].filter(Boolean);
+
+            let matchedDistrict = "";
+            for (const distinctName of potentialDistricts) {
+                const found = BIHAR_DISTRICTS.find(d => d.toLowerCase() === distinctName.toLowerCase());
+                if (found) {
+                    matchedDistrict = found;
+                    break;
+                }
+            }
+
+            if (matchedDistrict) {
+                setSelectedDistrict(matchedDistrict);
+                setErrors(prev => ({ ...prev, district: false }));
+            }
+
+            // Auto-fill Area and Setup PO match
+            const detectedArea = data.locality || data.city || "";
+            if (detectedArea) {
+                setArea(detectedArea);
+                pendingAutoSelectPORef.current = detectedArea;
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to fetch address details", err);
+            if (!isAuto) alert("Could not fetch address details.");
+          })
+          .finally(() => setDetectingLocation(false));
+      },
+      (error) => {
+        console.error("Geolocation error", error);
+        setDetectingLocation(false);
+        if (!isAuto) {
+            if (error.code === 1) { // PERMISSION_DENIED
+                alert("Please allow location access to use this feature.");
+            } else {
+                alert("Unable to retrieve your location.");
+            }
+        }
+      }
+    );
+  };
+
+  const hasAutoDetectedRef = useRef(false);
+  useEffect(() => {
+    if (!hasAutoDetectedRef.current && !selectedDistrict && !pincode && !searchParams.has('pincode')) {
+        hasAutoDetectedRef.current = true;
+        handleDetectLocation(true);
+    }
+  }, []);
+
   const handleApplyFilters = () => {
     const newErrors = {};
     if (!selectedDistrict) newErrors.district = true;
@@ -575,7 +674,22 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             <div className="space-y-2 py-2">
               {/* State - Dropdown with only Bihar */}
               <div>
-                <label className="block text-xs  font-medium text-slate-600 mb-1">State</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-medium text-slate-600">State</label>
+                    <button
+                        onClick={() => handleDetectLocation(false)}
+                        disabled={detectingLocation}
+                        className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-semibold bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded transition-colors disabled:opacity-50"
+                        title="Auto-detect location from browser"
+                    >
+                        {detectingLocation ? (
+                            <div className="w-3 h-3 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <FiCrosshair className="w-3 h-3" />
+                        )}
+                        {detectingLocation ? "Detecting..." : "Detect Location"}
+                    </button>
+                  </div>
                 <select
                   value="Bihar"
                   className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium cursor-not-allowed"
