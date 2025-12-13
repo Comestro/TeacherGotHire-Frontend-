@@ -337,16 +337,23 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
       (attempt?.exam?.level_code === 2.0 || attempt?.exam?.level_code === 2)
     );
     
-    if (!relevantAttempt?.interviews?.length) return false;
+    if (!relevantAttempt?.interviews?.length) {
+       // If no interview, check strictly for center exam
+       return checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
+    }
     
     const sortedInterviews = [...relevantAttempt.interviews].sort((a, b) =>
       new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
     );
     
     const latest = sortedInterviews[0];
-    // Check if interview is fulfilled and passed (grade >= 6)
-    // Note: Adjust threshold if needed, using 6 based on previous context
-    return latest?.status === 'fulfilled' && (latest?.grade >= 6);
+    const isInterviewQualified = latest?.status === 'fulfilled' && (latest?.grade >= 6);
+
+    // Check Center Exam Qualification (Level 2.5)
+    const isCenterExamQualified = checkLevelQualification(selectedCategory?.id, selectedSubject?.id, 2.5);
+
+    // Eligible if EITHER is passed
+    return isInterviewQualified || isCenterExamQualified;
   }, [selectedCategory, selectedSubject, attempts]);
 
   return (
