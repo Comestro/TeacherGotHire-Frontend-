@@ -43,20 +43,20 @@ const FilterSection = React.memo(({ title, icon: Icon, section, isExpanded, onTo
     <div className="border-b border-slate-200">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors group"
+        className="w-full flex items-center justify-between px-4 py-3 bg-teal-600/30 hover:bg-teal-600/40 transition-colors group"
         aria-expanded={isExpanded}
         aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${title} filters`}
       >
         <div className="flex items-center gap-2">
-          <Icon className="w-5 h-5 text-teal-600" aria-hidden="true" />
-          <span className="font-semibold text-slate-700 text-sm uppercase tracking-wide">
+          <Icon className="w-5 h-5 text-teal-800" aria-hidden="true" />
+          <span className="font-semibold text-teal-800 text-sm uppercase tracking-wide">
             {title}
           </span>
         </div>
         {isExpanded ? (
-          <FiChevronUp className="w-4 h-4 text-slate-400" aria-hidden="true" />
+          <FiChevronUp className="w-4 h-4 text-teal-800" aria-hidden="true" />
         ) : (
-          <FiChevronDown className="w-4 h-4 text-slate-400" aria-hidden="true" />
+          <FiChevronDown className="w-4 h-4 text-teal-800" aria-hidden="true" />
         )}
       </button>
       <AnimatePresence>
@@ -68,7 +68,7 @@ const FilterSection = React.memo(({ title, icon: Icon, section, isExpanded, onTo
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2">{children}</div>
+            <div className="px-3">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -130,9 +130,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
   // UI state
   const [expandedSections, setExpandedSections] = useState({
-    location: true,
+    location: false,
     education: false,
-    classSubject: false,
+    classSubject: true,
     other: false,
   });
 
@@ -147,6 +147,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState({});
+  
+  // Collapsible state for class categories
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   // Responsive detection
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -194,46 +197,135 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const hasLoadedUrlParams = useRef(false);
 
   // Load filters from URL (only once on mount)
+  // Load filters from URL (only once on mount or when data is available)
   useEffect(() => {
     if (hasLoadedUrlParams.current) return;
     
-    const newFilters = {};
+    // Construct new filters with default empty arrays to prevent crashes
+    const newFilters = {
+      city: [],
+      pincode: [],
+      block: [],
+      village: [],
+      state: [],
+      qualification: [],
+      class_category: [],
+      subject: [],
+      gender: [],
+      job_type: []
+    };
+
     const getList = (key) => {
       const val = searchParams.get(key);
       return val ? val.split(",").filter(Boolean) : [];
     };
 
-    // Initialize with empty arrays/objects
-    newFilters.city = [];
-    newFilters.pincode = [];
-    newFilters.block = [];
-    newFilters.village = [];
-    newFilters.state = [];
-    newFilters.qualification = [];
-    newFilters.class_category = [];
-    newFilters.subject = [];
-    newFilters.gender = [];
-    newFilters.job_type = [];
-
-    // Load all filter types from URL
+    // Load basic textual filters (overwrite defaults if present)
     ["city", "pincode", "block", "village", "state", "qualification", "gender", "job_type"].forEach(
       (key) => {
         if (searchParams.has(key)) newFilters[key] = getList(key);
       }
     );
 
-
-
-    setFilters(newFilters);
-    
     // Load location-specific params
     if (searchParams.has("district")) setSelectedDistrict(searchParams.get("district"));
     if (searchParams.has("pincode")) setPincode(searchParams.get("pincode"));
     if (searchParams.has("post_office")) setSelectedPostOffice(searchParams.get("post_office"));
     if (searchParams.has("area")) setArea(searchParams.get("area"));
     
-    hasLoadedUrlParams.current = true;
-  }, [searchParams]);
+    // --- Complex Filters (Class Category & Subjects) ---
+    // These might require mapping ID -> Name, so we need classCategories data
+    if (classCategories && classCategories.length > 0) {
+        // 1. Class Categories
+        const urlCategories = getList("class_category");
+        let initialSelectedCategories = [];
+
+        if (urlCategories.length > 0) {
+            initialSelectedCategories = urlCategories.map(val => {
+                // If it looks like an ID (number), try to find by ID
+                if (!isNaN(val)) {
+                    const cat = classCategories.find(c => c.id?.toString() === val.toString());
+                    return cat ? cat.name : null;
+                }
+                // Otherwise assume it's a Name
+                // Validate if it exists in our list (optional, but good for safety)
+                const catByName = classCategories.find(c => c.name.toLowerCase() === val.toLowerCase());
+                return catByName ? catByName.name : val; 
+            }).filter(Boolean); // Remove nulls
+
+            // Remove duplicates
+            initialSelectedCategories = [...new Set(initialSelectedCategories)];
+
+            setSelectedClassCategories(initialSelectedCategories);
+            newFilters.class_category = initialSelectedCategories;
+            
+            // Auto-expand class section if categories present
+            setExpandedSections(prev => ({ ...prev, classSubject: true }));
+        }
+
+        // 2. Subjects
+        // 'subjects' (plural) from user URL/TeacherRecruiter, 'subject' (singular) as fallback
+        const urlSubjects = getList("subjects").length > 0 ? getList("subjects") : getList("subject");
+        
+        if (urlSubjects.length > 0) {
+             const newSelectedSubjects = {};
+             // Helper to normalize subject values (handle inconsistent casing)
+             const normalize = str => str.toString().toLowerCase().trim();
+
+             urlSubjects.forEach(val => {
+                 const isSubId = !isNaN(val);
+
+                 // Search all categories
+                 for (const cat of classCategories) {
+                     if (!cat.subjects) continue;
+                     
+                     const foundSub = cat.subjects.find(s => 
+                        isSubId 
+                        ? s.id?.toString() === val.toString() 
+                        : normalize(s.subject_name) === normalize(val)
+                     );
+
+                     if (foundSub) {
+                         if (!newSelectedSubjects[cat.name]) {
+                             newSelectedSubjects[cat.name] = [];
+                         }
+                         
+                         // Add subject name if unique
+                         if (!newSelectedSubjects[cat.name].includes(foundSub.subject_name)) {
+                             newSelectedSubjects[cat.name].push(foundSub.subject_name);
+                         }
+                         
+                         // Implicitly select the category if not already selected
+                         // And ensure we don't duplicate names
+                         if (!initialSelectedCategories.includes(cat.name)) {
+                             initialSelectedCategories.push(cat.name);
+                             setSelectedClassCategories(prev => {
+                                 if (!prev.includes(cat.name)) return [...prev, cat.name];
+                                 return prev;
+                             });
+                             // Also update newFilters to reflect this implicit selection
+                             newFilters.class_category = initialSelectedCategories;
+                         }
+                         
+                         // Expand this category in UI
+                         setExpandedCategories(prev => ({ ...prev, [cat.name]: true }));
+                     }
+                 }
+             });
+             setSelectedSubjects(newSelectedSubjects);
+             newFilters.subject = urlSubjects;
+        }
+        
+        // Mark as loaded
+        hasLoadedUrlParams.current = true;
+    } else if (!searchParams.has("class_category") && !searchParams.has("subjects") && !searchParams.has("subject")) {
+        // If URL doesn't have these complex params, we don't need to wait for data
+        hasLoadedUrlParams.current = true;
+    }
+
+    setFilters(newFilters);
+
+  }, [searchParams, classCategories]);
 
   // Sync filters to URL
   const syncFiltersToURL = () => {
@@ -260,8 +352,42 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     dispatch(fetchTeachers(params.toString()));
   };
 
-  // Apply filters
+  // Error state
+  const [errors, setErrors] = useState({});
+
+  // Clear errors when values change
+  useEffect(() => {
+    if (selectedDistrict && errors.district) {
+      setErrors(prev => ({ ...prev, district: false }));
+    }
+    if (pincode && errors.pincode) {
+       setErrors(prev => ({ ...prev, pincode: false }));
+    }
+    if (selectedClassCategories.length > 0 && errors.classCategories) {
+       setErrors(prev => ({ ...prev, classCategories: false }));
+    }
+  }, [selectedDistrict, pincode, selectedClassCategories, errors]);
+
+
+  // Apply filters with validation
   const handleApplyFilters = () => {
+    // Validate required fields
+    const newErrors = {};
+    if (!selectedDistrict) newErrors.district = true;
+    if (!pincode) newErrors.pincode = true;
+    if (selectedClassCategories.length === 0) newErrors.classCategories = true;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Expand sections with errors
+      setExpandedSections(prev => ({
+        ...prev,
+        location: true,
+        classSubject: true
+      }));
+      return;
+    }
+
     // Flatten selectedSubjects object into an array
     const allSelectedSubjects = Object.values(selectedSubjects).flat();
     
@@ -286,14 +412,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (selectedPostOffice) filterObject.post_office = selectedPostOffice;
     if (area) filterObject.area = area;
 
-    // Add subjects
+    // Add subjects (Use 'subjects' key for consistency)
     if (allSelectedSubjects.length > 0) {
-      filterObject.subject = allSelectedSubjects;
+      filterObject.subjects = allSelectedSubjects;
     }
 
     // Add other filters
     Object.entries(updatedFilters).forEach(([key, value]) => {
-      // Skip subject since we already added it
+      // Skip subject/subjects since we handled it
       if (key === 'subject') return;
       
       if (Array.isArray(value) && value.length > 0) {
@@ -412,6 +538,133 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* Filter Sections - Scrollable */}
         <div className="flex-1 overflow-y-auto">
+
+          {/* Class & Subject Filter (Moved to Top) */}
+          <FilterSection 
+            title="Class & Subjects" 
+            icon={MdSchool} 
+            section="classSubject"
+            isExpanded={expandedSections.classSubject}
+            onToggle={() => toggleSection("classSubject")}
+          >
+            <div className="space-y-0">
+              {classCategories && classCategories.length > 0 ? (
+                classCategories.map((category) => (
+                  <div 
+                    key={category.id} 
+                    className={`transition-all duration-200 border-b py-2 ${
+                        selectedClassCategories.includes(category.name) 
+                        ? 'border-teal-200 bg-teal-50/30' 
+                        : 'border-slate-200 hover:border-teal-100'
+                    }`}
+                  >
+                    <div 
+                        className="flex items-center justify-between cursor-pointer group"
+                        onClick={() => {
+                            if (category.subjects && category.subjects.length > 0) {
+                                setExpandedCategories(prev => ({
+                                    ...prev,
+                                    [category.name]: !prev[category.name]
+                                }));
+                            }
+                        }}
+                    >
+                        <span className={`font-medium text-sm transition-colors ${
+                            selectedClassCategories.includes(category.name)
+                            ? 'text-teal-700'
+                            : 'text-slate-700 group-hover:text-teal-600'
+                        }`}>
+                            {category.name}
+                        </span>
+                        
+                        {category.subjects && category.subjects.length > 0 && (
+                            <div
+                                className={`rounded-full transition-all ${
+                                    expandedCategories[category.name] 
+                                    ? 'bg-teal-100 text-teal-700 rotate-180' 
+                                    : 'group-hover:bg-slate-100 text-slate-400 group-hover:text-teal-600'
+                                }`}
+                            >
+                                <FiChevronDown className="w-5 h-5 transition-transform duration-200" />
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Collapsible Subjects Area */}
+                    <AnimatePresence>
+                        {expandedCategories[category.name] && category.subjects && category.subjects.length > 0 && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                        >
+                            <div className="border-slate-100/80">
+                                {category.subjects.map((subject) => (
+                                <div key={subject.id} className="">
+                            <CheckboxItem
+                              checked={
+                                (selectedSubjects[category.name] || []).includes(subject.subject_name)
+                              }
+                              onChange={() => {
+                                setSelectedSubjects((prev) => {
+                                  const categorySubjects = prev[category.name] || [];
+                                  const isAddingSubject = !categorySubjects.includes(subject.subject_name);
+                                  
+                                  // Handle implicit Category Selection/Deselection
+                                            if (isAddingSubject) {
+                                                // If adding a subject, ensure parent Class Category is selected
+                                                if (!selectedClassCategories.includes(category.name)) {
+                                                    setSelectedClassCategories(prevCats => [...prevCats, category.name]);
+                                                    
+                                                    // Auto-flow to Location
+                                                    if (!expandedSections.location) {
+                                                        setTimeout(() => {
+                                                            setExpandedSections(prev => ({ 
+                                                                ...prev, 
+                                                                classSubject: false,
+                                                                location: true 
+                                                            }));
+                                                        }, 800);
+                                                    }
+                                                }
+                                            } else {
+                                                // If removing the last subject, remove the parent Class Category
+                                                if (categorySubjects.length === 1 && categorySubjects[0] === subject.subject_name) {
+                                                    setSelectedClassCategories(prevCats => prevCats.filter(c => c !== category.name));
+                                                }
+                                            }
+
+                                            return {
+                                            ...prev,
+                                            [category.name]: isAddingSubject
+                                                ? [...categorySubjects, subject.subject_name]
+                                                : categorySubjects.filter((s) => s !== subject.subject_name),
+                                            };
+                                        });
+                                        }}
+                                        label={subject.subject_name}
+                                    />
+                                </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400 italic">No class categories available</p>
+              )}
+               {errors.classCategories && (
+                  <div className="p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs mt-2">
+                    Please select at least one class category
+                  </div>
+                )}
+            </div>
+          </FilterSection>
+
           {/* Location Filter */}
           <FilterSection 
             title="Location" 
@@ -439,16 +692,19 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                    errors.district ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  }`}
                   aria-label="Select district"
                 >
-                  <option value="">Select District</option>
+                  <option value="">Select District <span className="text-red-500">*</span></option>
                   {BIHAR_DISTRICTS.map((district) => (
                     <option key={district} value={district}>
                       {district}
                     </option>
                   ))}
                 </select>
+                {errors.district && <p className="text-red-500 text-xs mt-1">District is required</p>}
               </div>
 
               {/* Pincode Input */}
@@ -459,10 +715,13 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="Enter 6-digit pincode"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent ${
+                    errors.pincode ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  }`}
                   aria-label="Enter pincode"
                   maxLength="6"
                 />
+                {errors.pincode && <p className="text-red-500 text-xs mt-1">Pincode is required</p>}
                 {loadingPostOffices && (
                   <p className="text-xs text-slate-500 mt-1">Fetching post offices...</p>
                 )}
@@ -529,61 +788,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                 ))
               ) : (
                 <p className="text-sm text-slate-400 italic">No qualifications available</p>
-              )}
-            </div>
-          </FilterSection>
-
-          {/* Class & Subject Filter */}
-          <FilterSection 
-            title="Class & Subjects" 
-            icon={MdSchool} 
-            section="classSubject"
-            isExpanded={expandedSections.classSubject}
-            onToggle={() => toggleSection("classSubject")}
-          >
-            <div className="space-y-3">
-              {classCategories && classCategories.length > 0 ? (
-                classCategories.map((category) => (
-                  <div key={category.id} className="border border-slate-200 rounded-lg p-3">
-                    <CheckboxItem
-                      checked={selectedClassCategories.includes(category.name)}
-                      onChange={() => {
-                        setSelectedClassCategories((prev) =>
-                          prev.includes(category.name)
-                            ? prev.filter((c) => c !== category.name)
-                            : [...prev, category.name]
-                        );
-                      }}
-                      label={category.name}
-                    />
-                    {category.subjects && category.subjects.length > 0 && (
-                      <div className="ml-6 mt-2 space-y-1">
-                        {category.subjects.map((subject) => (
-                          <CheckboxItem
-                            key={subject.id}
-                            checked={
-                              selectedSubjects[category.name]?.includes(subject.subject_name) || false
-                            }
-                            onChange={() => {
-                              setSelectedSubjects((prev) => {
-                                const categorySubjects = prev[category.name] || [];
-                                return {
-                                  ...prev,
-                                  [category.name]: categorySubjects.includes(subject.subject_name)
-                                    ? categorySubjects.filter((s) => s !== subject.subject_name)
-                                    : [...categorySubjects, subject.subject_name],
-                                };
-                              });
-                            }}
-                            label={subject.subject_name}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-slate-400 italic">No class categories available</p>
               )}
             </div>
           </FilterSection>

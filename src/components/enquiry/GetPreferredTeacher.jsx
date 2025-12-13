@@ -419,7 +419,7 @@ export const GetPreferredTeacher = () => {
 
                   {/* District Selection */}
                   <div className="group">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">District <span className="text-slate-300 font-normal normal-case ml-1">(Optional)</span></label>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">District <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <select
                         value={locationDetails.district}
@@ -437,7 +437,7 @@ export const GetPreferredTeacher = () => {
 
                   {/* Pincode */}
                   <div className="group">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pincode <span className="text-slate-300 font-normal normal-case ml-1">(Optional)</span></label>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pincode <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <input
                         type="text"
@@ -525,7 +525,7 @@ export const GetPreferredTeacher = () => {
           ) : (
             <button
               onClick={handleSearch}
-              disabled={!locationDetails.state}
+              disabled={!locationDetails.state || !locationDetails.district || !pincode}
               className="bg-teal-600 text-white px-12 py-4 rounded-2xl font-bold text-lg hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 hover:-translate-y-1 flex items-center gap-3"
             >
               Find Teachers <FiSearch size={24} />

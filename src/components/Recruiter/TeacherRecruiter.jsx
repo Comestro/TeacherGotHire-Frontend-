@@ -8,6 +8,7 @@ import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlineAcademicCap, HiOutlinePhone } from "react-icons/hi";
 import { fetchTeachers, searchTeachers } from "../../features/teacherFilterSlice";
+import { getClassCategory } from "../../features/jobProfileSlice"; // Import action
 import LocationModal from "./components/LocationModal";
 
 const TeacherFilter = () => {
@@ -68,16 +69,21 @@ const TeacherFilter = () => {
     const state = searchParams.get("state");
     const district = searchParams.get("district");
     const pincode = searchParams.get("pincode");
-    const postOffice = searchParams.get("post_office");
     
     const missing = [];
     if (!state) missing.push("State");
     if (!district) missing.push("District");
     if (!pincode) missing.push("Pincode");
-    if (!postOffice) missing.push("Post Office");
     
     setMissingFields(missing);
   }, [searchParams]);
+
+  // Get Class Categories for ID mapping
+  const { classCategories } = useSelector((state) => state.jobProfile);
+  
+  useEffect(() => {
+    dispatch(getClassCategory());
+  }, [dispatch]);
 
   // Initial fetch of all teachers with filters
   useEffect(() => {
@@ -88,10 +94,49 @@ const TeacherFilter = () => {
       return;
     }
     
+    // Wait for classCategories to load if we have potential IDs (numbers) in URL
+    const hasPossibleIds = [
+        searchParams.get("class_category"),
+        searchParams.get("subjects")
+    ].some(val => val && val.split(",").some(v => !isNaN(v)));
+
+    // If we need mapping but data isn't ready, wait
+    if (hasPossibleIds && (!classCategories || classCategories.length === 0)) {
+        return;
+    }
+
     const filters = {};
     if (searchParams.get("job_type")) filters.job_type = searchParams.get("job_type").split(",");
-    if (searchParams.get("class_category")) filters.class_category = searchParams.get("class_category").split(",");
-    if (searchParams.get("subjects")) filters.subjects = searchParams.get("subjects").split(",");
+    
+    // Handle Class Category (Map ID -> Name if needed)
+    if (searchParams.get("class_category")) {
+        const rawCats = searchParams.get("class_category").split(",");
+        filters.class_category = rawCats.map(val => {
+            if (!isNaN(val) && classCategories?.length > 0) {
+                const cat = classCategories.find(c => c.id?.toString() === val.toString());
+                return cat ? cat.name : val;
+            }
+            return val;
+        });
+    }
+
+    // Handle Subjects (Map ID -> Name if needed)
+    if (searchParams.get("subjects")) {
+        const rawSubs = searchParams.get("subjects").split(",");
+        filters.subject = rawSubs.map(val => { // Map to 'subject' for API
+            if (!isNaN(val) && classCategories?.length > 0) {
+                // Search all categories for this subject ID
+                for (const cat of classCategories) {
+                    if (cat.subjects) {
+                        const foundSub = cat.subjects.find(s => s.id?.toString() === val.toString());
+                        if (foundSub) return foundSub.subject_name;
+                    }
+                }
+            }
+            return val;
+        });
+    }
+
     if (searchParams.get("state")) filters.state = searchParams.get("state").split(",");
     if (searchParams.get("district")) filters.district = searchParams.get("district").split(",");
     if (searchParams.get("pincode")) filters.pincode = searchParams.get("pincode").split(",");
@@ -99,7 +144,7 @@ const TeacherFilter = () => {
     if (searchParams.get("area")) filters.area = searchParams.get("area").split(",");
 
     dispatch(fetchTeachers(filters));
-  }, [dispatch, searchParams, missingFields]);
+  }, [dispatch, searchParams, missingFields, classCategories]);
 
   // Handle screen size changes for view mode
   useEffect(() => {
@@ -653,13 +698,23 @@ const TeacherFilter = () => {
                 ? error.message || "Please select class category, subject, and state to see results."
                 : "We couldn't find any teachers matching your search criteria."}
             </p>
-            <button
-              onClick={() => setIsOpen(true)}
-              className="text-primary hover:text-accent font-semibold flex items-center justify-center gap-2 mx-auto"
-            >
-              <MdFilterAlt className="text-lg" />
-              Open Filters
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setIsOpen(true)}
+                className="text-primary hover:text-accent font-semibold flex items-center justify-center gap-2"
+              >
+                <MdFilterAlt className="text-lg" />
+                Open Filters
+              </button>
+              
+              <Link
+                to="/get-preferred-teacher"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors shadow-sm shadow-teal-200"
+              >
+                <span>Post a Job Requirement</span>
+                <FiArrowRight />
+              </Link>
+            </div>
           </div>
         </div>
       )}
