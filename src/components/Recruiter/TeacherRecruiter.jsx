@@ -21,13 +21,9 @@ const TeacherFilter = () => {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
-  // Get sidebar state from layout context
   const { isOpen, setIsOpen } = useOutletContext();
 
   const { data, status, error } = useSelector((state) => state.teachers);
-
-  // Check for required filters
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) return; // Skip check for logged-in users
@@ -40,8 +36,6 @@ const TeacherFilter = () => {
       navigate("/get-preferred-teacher");
     }
   }, [searchParams, navigate]);
-
-  // Utility functions for masking sensitive data
   const maskPhoneNumber = (phone) => {
     if (!phone || phone.length < 6) return phone;
     return phone.slice(0, 4) + '****' + phone.slice(-2);
@@ -59,62 +53,42 @@ const TeacherFilter = () => {
       setTeachers(data);
     }
   }, [data]);
-
-
-  // Check for required filters
   const [missingFields, setMissingFields] = useState([]);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   useEffect(() => {
-    // We need at least one of these to show results
     const jobType = searchParams.get("job_type");
     const classCategory = searchParams.get("class_category");
     const subject = searchParams.get("subject") || searchParams.get("subject");
-    
-    // We don't strictly require these to load the page anymore since we show an empty state,
-    // but we can use this to drive the "start search" UI.
     const missing = [];
     if (!classCategory) missing.push("class_category");
     if (!subject) missing.push("subject");
     
     setMissingFields(missing);
   }, [searchParams]);
-
-  // Get Class Categories for ID mapping
   const { classCategories } = useSelector((state) => state.jobProfile);
   
   useEffect(() => {
     dispatch(getClassCategory());
   }, [dispatch]);
-
-  // Initial fetch of all teachers with filters
   useEffect(() => {
-    // Don't fetch if required fields are missing
     if (missingFields.length > 0) {
       setTeachers([]);
       setLoading(false);
       return;
     }
-    
-    // Wait for classCategories to load if we have potential IDs (numbers) in URL
     const hasPossibleIds = [
         searchParams.get("class_category"),
         searchParams.get("subject")
     ].some(val => val && val.split(",").some(v => !isNaN(v)));
-
-    // If we need mapping but data isn't ready, wait
     if (hasPossibleIds && (!classCategories || classCategories.length === 0)) {
         return;
     }
 
     const filters = {};
-    
-    // Helper to get all values from either repeated keys or comma-separated strings
     const getParams = (key) => searchParams.getAll(key).flatMap(v => v.split(","));
 
     const jobTypes = getParams("job_type");
     if (jobTypes.length > 0) filters.job_type = jobTypes;
-    
-    // Handle Class Category (Map ID -> Name if needed)
     const rawCats = getParams("class_category");
     if (rawCats.length > 0) {
         filters.class_category = rawCats.map(val => {
@@ -125,16 +99,12 @@ const TeacherFilter = () => {
             return val;
         });
     }
-
-    // Handle subject (Map ID -> Name if needed)
-    // Check 'subject' (singular) first, then 'subject' (plural fallback)
     let rawSubs = getParams("subject");
     if (rawSubs.length === 0) rawSubs = getParams("subject");
 
     if (rawSubs.length > 0) {
         filters.subject = rawSubs.map(val => { // Map to 'subject' for API
             if (!isNaN(val) && classCategories?.length > 0) {
-                // Search all categories for this subject ID
                 for (const cat of classCategories) {
                     if (cat.subject) {
                         const foundSub = cat.subject.find(s => s.id?.toString() === val.toString());
@@ -154,8 +124,6 @@ const TeacherFilter = () => {
 
     dispatch(fetchTeachers(filters));
   }, [dispatch, searchParams, missingFields, classCategories]);
-
-  // Handle screen size changes for view mode
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768;
@@ -165,8 +133,6 @@ const TeacherFilter = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Search functionality with debounce
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       if (searchValue.trim()) {
@@ -188,38 +154,25 @@ const TeacherFilter = () => {
       dispatch(searchTeachers(searchValue));
     }
   };
-
-  // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentTeachers = teachers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(teachers.length / itemsPerPage);
-
-  // Pagination navigation
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
-
-  // Refresh data
   const handleRefresh = () => {
     setLoading(true);
     
     dispatch(fetchTeachers());
   };
-
-  // Clear filters (assuming you'll have filters in the future)
   const handleClearFilters = () => {
-    // This would reset any filter state you might add later
     handleRefresh();
   };
-
-  // Generate page numbers for pagination
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
-
-  // Display visible page numbers with ellipsis
   const getVisiblePageNumbers = () => {
     if (totalPages <= 7) {
       return pageNumbers;
@@ -394,13 +347,8 @@ const TeacherFilter = () => {
           {viewMode === 'card' && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mx-auto">
               {currentTeachers.map((teacher) => {
-                // Get current address if exists
                 const currentAddress = teacher.current_address || {};
-
-                // Get latest experience
                 const latestExperience = teacher.last_experience;
-
-                // Get highest qualification
                 const highestQualification = teacher.last_education;
 
                 return (
@@ -498,13 +446,8 @@ const TeacherFilter = () => {
           {viewMode === 'list' && (
             <div className="space-y-3 mx-auto">
               {currentTeachers.map((teacher) => {
-                // Get current address if exists
                 const currentAddress = teacher.current_address || {};
-
-                // Get latest experience
                 const latestExperience = teacher.last_experience;
-
-                // Get highest qualification
                 const highestQualification = teacher.last_education;
 
                 return (

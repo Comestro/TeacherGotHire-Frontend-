@@ -26,8 +26,6 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
-
-// Bihar districts list
 const BIHAR_DISTRICTS = [
   "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
   "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad",
@@ -36,8 +34,6 @@ const BIHAR_DISTRICTS = [
   "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul",
   "Vaishali", "West Champaran"
 ].sort();
-
-// Filter Section Component (memoized to prevent re-renders)
 const FilterSection = React.memo(({ title, icon: Icon, section, isExpanded, onToggle, children }) => {
   return (
     <div className="border-b border-slate-200">
@@ -77,8 +73,6 @@ const FilterSection = React.memo(({ title, icon: Icon, section, isExpanded, onTo
 });
 
 FilterSection.displayName = 'FilterSection';
-
-// Checkbox Item Component (memoized to prevent re-renders)
 const CheckboxItem = React.memo(({ checked, onChange, label, disabled = false }) => (
   <label className="flex items-center gap-2 py-2 cursor-pointer group hover:bg-slate-50 px-2 rounded transition-colors">
     <div className="relative flex items-center">
@@ -108,13 +102,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const dispatch = useDispatch();
   const sidebarRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Redux data
   const { qualification, allSkill, classCategories, teacherjobRole } = useSelector(
     (state) => state.jobProfile
   );
-
-  // Main filter state
   const [filters, setFilters] = useState({
     city: [],
     pincode: [],
@@ -127,16 +117,12 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     gender: [],
     job_type: [],
   });
-
-  // UI state
   const [expandedSections, setExpandedSections] = useState({
     location: false,
     education: false,
     classSubject: true,
     other: false,
   });
-
-  // Local state for inputs
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [pincode, setPincode] = useState("");
   const [postOffices, setPostOffices] = useState([]);
@@ -147,22 +133,14 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [selectedQualifications, setSelectedQualifications] = useState([]);
   const [selectedClassCategories, setSelectedClassCategories] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState({});
-  
-  // Collapsible state for class categories
   const [expandedCategories, setExpandedCategories] = useState({});
-
-  // Responsive detection
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  // Initialize data
   useEffect(() => {
     dispatch(getAllSkills());
     dispatch(getQualification());
     dispatch(getClassCategory());
     dispatch(getTeacherjobType());
   }, [dispatch]);
-
-  // Fetch post offices when pincode changes
   useEffect(() => {
     if (pincode && pincode.length === 6) {
       setLoadingPostOffices(true);
@@ -182,8 +160,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       setSelectedPostOffice("");
     }
   }, [pincode]);
-
-  // Responsive handler
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -192,16 +168,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setIsOpen]);
-
-  // Track if URL params have been loaded
   const hasLoadedUrlParams = useRef(false);
-
-  // Load filters from URL (only once on mount)
-  // Load filters from URL (only once on mount or when data is available)
   useEffect(() => {
     if (hasLoadedUrlParams.current) return;
-    
-    // Construct new filters with default empty arrays to prevent crashes
     const newFilters = {
       city: [],
       pincode: [],
@@ -219,65 +188,42 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       const val = searchParams.get(key);
       return val ? val.split(",").filter(Boolean) : [];
     };
-
-    // Load basic textual filters (overwrite defaults if present)
     ["city", "pincode", "block", "village", "state", "qualification", "gender", "job_type"].forEach(
       (key) => {
         if (searchParams.has(key)) newFilters[key] = getList(key);
       }
     );
-
-    // Load location-specific params
     if (searchParams.has("district")) setSelectedDistrict(searchParams.get("district"));
     if (searchParams.has("pincode")) setPincode(searchParams.get("pincode"));
     if (searchParams.has("post_office")) setSelectedPostOffice(searchParams.get("post_office"));
     if (searchParams.has("area")) setArea(searchParams.get("area"));
-    
-    // --- Complex Filters (Class Category & Subjects) ---
-    // These might require mapping ID -> Name, so we need classCategories data
     if (classCategories && classCategories.length > 0) {
-        // 1. Class Categories
         const urlCategories = getList("class_category");
         let initialSelectedCategories = [];
 
         if (urlCategories.length > 0) {
             initialSelectedCategories = urlCategories.map(val => {
-                // If it looks like an ID (number), try to find by ID
                 if (!isNaN(val)) {
                     const cat = classCategories.find(c => c.id?.toString() === val.toString());
                     return cat ? cat.name : null;
                 }
-                // Otherwise assume it's a Name
-                // Validate if it exists in our list (optional, but good for safety)
                 const catByName = classCategories.find(c => c.name.toLowerCase() === val.toLowerCase());
                 return catByName ? catByName.name : val; 
             }).filter(Boolean); // Remove nulls
-
-            // Remove duplicates
             initialSelectedCategories = [...new Set(initialSelectedCategories)];
 
             setSelectedClassCategories(initialSelectedCategories);
             newFilters.class_category = initialSelectedCategories;
-            
-            // Auto-expand class section if categories present
             setExpandedSections(prev => ({ ...prev, classSubject: true }));
         }
-
-        // 2. Subjects
-        // 'subjects' (plural) from user URL/TeacherRecruiter, 'subject' (singular) as fallback
         const urlSubjects = getList("subject").length > 0 ? getList("subject") : getList("subject");
         
         if (urlSubjects.length > 0) {
              const newSelectedSubjects = {};
-             // Helper to normalize subject values (handle inconsistent casing)
              const normalize = str => str.toString().toLowerCase().trim();
 
              urlSubjects.forEach(val => {
                  const isSubId = !isNaN(val);
-
-                 // Search categories
-                 // If specific categories are selected in URL, ONLY search within those.
-                 // Otherwise search all (implicit selection)
                  const categoriesToSearch = initialSelectedCategories.length > 0 
                     ? classCategories.filter(c => initialSelectedCategories.includes(c.name))
                     : classCategories;
@@ -295,25 +241,17 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                          if (!newSelectedSubjects[cat.name]) {
                              newSelectedSubjects[cat.name] = [];
                          }
-                         
-                         // Add subject name if unique
                          if (!newSelectedSubjects[cat.name].includes(foundSub.subject_name)) {
                              newSelectedSubjects[cat.name].push(foundSub.subject_name);
                          }
-                         
-                         // Implicitly select the category if not already selected
-                         // And ensure we don't duplicate names
                          if (!initialSelectedCategories.includes(cat.name)) {
                              initialSelectedCategories.push(cat.name);
                              setSelectedClassCategories(prev => {
                                  if (!prev.includes(cat.name)) return [...prev, cat.name];
                                  return prev;
                              });
-                             // Also update newFilters to reflect this implicit selection
                              newFilters.class_category = initialSelectedCategories;
                          }
-                         
-                         // Expand this category in UI
                          setExpandedCategories(prev => ({ ...prev, [cat.name]: true }));
                      }
                  }
@@ -321,23 +259,16 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
              setSelectedSubjects(newSelectedSubjects);
              newFilters.subject = urlSubjects;
         }
-        
-        // Mark as loaded
         hasLoadedUrlParams.current = true;
     } else if (!searchParams.has("class_category") && !searchParams.has("subject") && !searchParams.has("subject")) {
-        // If URL doesn't have these complex params, we don't need to wait for data
         hasLoadedUrlParams.current = true;
     }
 
     setFilters(newFilters);
 
   }, [searchParams, classCategories]);
-
-  // Sync filters to URL
   const syncFiltersToURL = () => {
     const params = new URLSearchParams();
-
-    // Add location-specific params
     params.set("state", "Bihar"); // Always Bihar
     if (selectedDistrict) params.set("district", selectedDistrict);
     if (pincode) params.set("pincode", pincode);
@@ -345,12 +276,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (area) params.set("area", area);
     
     Object.entries(filters).forEach(([key, value]) => {
-      // Skip empty arrays/values
       if (Array.isArray(value) && value.length === 0) return;
       if (!value) return;
 
       if (Array.isArray(value)) {
-        // Use comma-separated for URL cleanliness
         params.set(key, value.join(","));
       } else if (typeof value === "object" && (value.min || value.max)) {
         if (value.min) params.set(`${key}_min`, value.min);
@@ -361,11 +290,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setSearchParams(params);
     dispatch(fetchTeachers(filters)); // Pass object, not string
   };
-
-  // Error state
   const [errors, setErrors] = useState({});
-
-  // Clear errors when values change
   useEffect(() => {
     if (selectedDistrict && errors.district) {
       setErrors(prev => ({ ...prev, district: false }));
@@ -377,11 +302,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
        setErrors(prev => ({ ...prev, classCategories: false }));
     }
   }, [selectedDistrict, pincode, selectedClassCategories, errors]);
-
-
-  // Apply filters with validation
   const handleApplyFilters = () => {
-    // Validate required fields
     const newErrors = {};
     if (!selectedDistrict) newErrors.district = true;
     if (!pincode) newErrors.pincode = true;
@@ -389,7 +310,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Expand sections with errors
       setExpandedSections(prev => ({
         ...prev,
         location: true,
@@ -397,39 +317,24 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       }));
       return;
     }
-
-    // Flatten selectedSubjects object into an array
     const allSelectedSubjects = Object.values(selectedSubjects).flat();
-    
-    // Create updated filters object
     const updatedFilters = {
       ...filters,
       qualification: selectedQualifications,
       class_category: selectedClassCategories,
       subject: allSelectedSubjects,
     };
-    
-    // Update state
     setFilters(updatedFilters);
-    
-    // Build filter object for API (not query string!)
     const filterObject = {};
-    
-    // Add location-specific params
     filterObject.state = "Bihar"; // Always Bihar
     if (selectedDistrict) filterObject.district = selectedDistrict;
     if (pincode) filterObject.pincode = pincode;
     if (selectedPostOffice) filterObject.post_office = selectedPostOffice;
     if (area) filterObject.area = area;
-
-    // Add subjects (Use 'subjects' key for consistency)
     if (allSelectedSubjects.length > 0) {
       filterObject.subject = allSelectedSubjects;
     }
-
-    // Add other filters
     Object.entries(updatedFilters).forEach(([key, value]) => {
-      // Skip subject/subjects since we handled it
       if (key === 'subject') return;
       
       if (Array.isArray(value) && value.length > 0) {
@@ -439,8 +344,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
         if (value.max) filterObject[`${key}_max`] = value.max;
       }
     });
-
-    // Build URL params for browser URL
     const params = new URLSearchParams();
     Object.entries(filterObject).forEach(([key, value]) => {
       if (Array.isArray(value)) {
@@ -451,14 +354,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     });
 
     setSearchParams(params);
-    
-    // Pass object to fetchTeachers, not string!
     dispatch(fetchTeachers(filterObject));
     
     if (isMobile) setIsOpen(false);
   };
-
-  // Reset all filters
   const handleResetFilters = () => {
     setFilters({
       city: [],
@@ -483,14 +382,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setSearchParams(new URLSearchParams());
     dispatch(fetchTeachers(""));
   };
-
-  // Toggle section
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
-
-
-  // Count active filters
   const getActiveFilterCount = () => {
     let count = 0;
     Object.entries(filters).forEach(([key, value]) => {
@@ -621,14 +515,9 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                                 setSelectedSubjects((prev) => {
                                   const categorySubjects = prev[category.name] || [];
                                   const isAddingSubject = !categorySubjects.includes(subject.subject_name);
-                                  
-                                  // Handle implicit Category Selection/Deselection
                                             if (isAddingSubject) {
-                                                // If adding a subject, ensure parent Class Category is selected
                                                 if (!selectedClassCategories.includes(category.name)) {
                                                     setSelectedClassCategories(prevCats => [...prevCats, category.name]);
-                                                    
-                                                    // Auto-flow to Location
                                                     if (!expandedSections.location) {
                                                         setTimeout(() => {
                                                             setExpandedSections(prev => ({ 
@@ -640,7 +529,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                                                     }
                                                 }
                                             } else {
-                                                // If removing the last subject, remove the parent Class Category
                                                 if (categorySubjects.length === 1 && categorySubjects[0] === subject.subject_name) {
                                                     setSelectedClassCategories(prevCats => prevCats.filter(c => c !== category.name));
                                                 }
