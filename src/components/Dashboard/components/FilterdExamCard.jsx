@@ -313,6 +313,28 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     return 0;
   }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
 
+  const isJobEligible = useMemo(() => {
+    if (!selectedCategory || !selectedSubject) return false;
+    
+    // Check Interview Qualification (Grade >= 6)
+    const relevantAttempt = attempts?.find(attempt =>
+      attempt?.exam?.class_category_id === selectedCategory?.id &&
+      attempt?.exam?.subject_id === selectedSubject?.id &&
+      (attempt?.exam?.level_code === 2.0 || attempt?.exam?.level_code === 2)
+    );
+    
+    if (!relevantAttempt?.interviews?.length) return false;
+    
+    const sortedInterviews = [...relevantAttempt.interviews].sort((a, b) =>
+      new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+    );
+    
+    const latest = sortedInterviews[0];
+    // Check if interview is fulfilled and passed (grade >= 6)
+    // Note: Adjust threshold if needed, using 6 based on previous context
+    return latest?.status === 'fulfilled' && (latest?.grade >= 6);
+  }, [selectedCategory, selectedSubject, attempts]);
+
   return (
     <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
       {/* Main selection column */}
@@ -842,6 +864,64 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Job Application Card - Show if eligible */}
+                  {isJobEligible ? (
+                    <>
+                      <div className="hidden lg:block h-6 w-0.5 bg-gray-300 mx-auto" />
+                      <div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 20 }} className="relative rounded-2xl border border-green-200 bg-green-50/30 shadow-sm hover:shadow-md transition-all p-5 sm:p-6 overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <FaUserTie size={100} className="text-green-600" />
+                        </div>
+                        
+                        <div className="relative flex flex-col md:flex-row items-center gap-6">
+                           <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                              <FaCheckCircle />
+                           </div>
+                           
+                           <div className="flex-1 text-center md:text-left">
+                              <h3 className="font-bold text-xl text-green-900 mb-1">You are Eligible to Apply!</h3>
+                              <p className="text-sm text-green-700 max-w-xl">
+                                 Congratulations! You have successfully cleared all assessment levels for <span className="font-semibold">{selectedSubject?.subject_name}</span>. You can now apply for open teaching positions.
+                              </p>
+                           </div>
+                           
+                           <button
+                              onClick={() => navigate('/teacher/job-apply')}
+                              className="shrink-0 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                           >
+                              Apply Now
+                              <FaArrowRight />
+                           </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Locked Guide Card */
+                    <>
+                      <div className="hidden lg:block h-6 w-0.5 bg-gray-200 mx-auto opacity-50" />
+                      <div className="relative rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-5 sm:p-6 text-center md:text-left transition-all hover:bg-gray-50 group cursor-default">
+                        <div className="flex flex-col md:flex-row items-center gap-6 opacity-60 group-hover:opacity-80 transition-opacity">
+                           <div className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                              <FaLock />
+                           </div>
+                           
+                           <div className="flex-1">
+                              <h3 className="font-bold text-lg text-gray-600 mb-1">Unlock Job Applications</h3>
+                              <p className="text-sm text-gray-500">
+                                 Complete all assessment levels and pass the interview to unlock direct job applications for <span className="font-medium text-gray-600">{selectedSubject?.subject_name}</span>.
+                              </p>
+                           </div>
+                           
+                           <div className="hidden md:block">
+                              <span className="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-xs font-bold uppercase tracking-wider">
+                                Locked
+                              </span>
+                           </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                 </div>
               </div>
