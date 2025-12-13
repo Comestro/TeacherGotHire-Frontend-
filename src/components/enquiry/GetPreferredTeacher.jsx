@@ -132,14 +132,33 @@ export const GetPreferredTeacher = () => {
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
     
-    if (selectedJobType) queryParams.append("job_type", selectedJobType);
-    if (selectedClassCategory) queryParams.append("class_category", selectedClassCategory);
-    if (selectedSubjects.length > 0) queryParams.append("subject", selectedSubjects.join(","));
+    // Ensure singular keys as requested
     if (locationDetails.state) queryParams.append("state", locationDetails.state);
     if (locationDetails.district) queryParams.append("district", locationDetails.district);
     if (pincode) queryParams.append("pincode", pincode);
     if (selectedPostOffice) queryParams.append("post_office", selectedPostOffice);
+    
+    if (selectedSubjects.length > 0) {
+         // Using 'subject' key instead of 'subjects'
+        const subjectNames = selectedSubjects.map(id => {
+             const cat = classCategories.find(c => c.id === parseInt(selectedClassCategory));
+             const sub = cat?.subjects?.find(s => s.id === id);
+             return sub ? sub.subject_name : id;
+        });
+        queryParams.append("subject", subjectNames.join(","));
+    }
+
+    if (selectedClassCategory) {
+        // Using 'class_category' key
+        const cat = classCategories.find(c => c.id === parseInt(selectedClassCategory));
+        if (cat) queryParams.append("class_category", cat.name);
+        else queryParams.append("class_category", selectedClassCategory);
+    }
+    
+    // Additional parameters if needed
+    if (selectedJobType) queryParams.append("job_type", selectedJobType);
     if (locationDetails.area) queryParams.append("area", locationDetails.area);
+
     navigate(`/recruiter?${queryParams.toString()}`);
   };
 

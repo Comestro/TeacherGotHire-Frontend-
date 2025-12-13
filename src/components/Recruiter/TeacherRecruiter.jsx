@@ -246,47 +246,23 @@ const TeacherFilter = () => {
 
       {/* Missing Fields Message */}
       {missingFields.length > 0 ? (
-        <div className="w-full min-h-[60vh] flex flex-col items-center justify-center bg-white rounded-xl border border-gray-100 p-8 text-center">
-          <div className="w-full max-w-2xl space-y-8">
-            {/* Icon & Header */}
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto">
-                <HiOutlineLocationMarker className="w-8 h-8 text-gray-900" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
-                  Location Required
-                </h3>
-                <p className="text-gray-500 mt-2 text-lg">
-                  To show you the best teachers nearby, please complete your location details.
-                </p>
-              </div>
+        <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+            <div className="bg-slate-50 p-4 rounded-full mb-4">
+                <MdFilterAlt className="w-8 h-8 text-slate-400" />
             </div>
-
-            {/* Missing Fields List */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {missingFields.map((field, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-100"
-                >
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-gray-700 font-medium">{field}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Action Button */}
-            <div className="pt-4">
-              <button
-                onClick={() => setIsLocationModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-black hover:bg-gray-800 text-white rounded-xl font-semibold transition-all w-full sm:w-auto min-w-[200px]"
-              >
-                <span>Add Location Details</span>
-                <FiArrowRight />
-              </button>
-            </div>
-          </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                Filters Required
+            </h3>
+            <p className="text-slate-500 max-w-sm mb-6">
+                Please select a <span className="font-medium text-slate-700">Class Category</span> and <span className="font-medium text-slate-700">Subject</span> to see available teachers.
+            </p>
+            <button
+                onClick={() => setIsOpen(true)}
+                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+            >
+                <MdFilterAlt size={16} />
+                <span>Select Filters</span>
+            </button>
         </div>
       ) : status === 'loading' ? (
         <div className="w-full h-full flex justify-center items-center mt-16">
@@ -487,53 +463,35 @@ const TeacherFilter = () => {
           </div>
         </>
       ) : (
-        <div className="w-full flex-1 flex flex-col items-center justify-center p-4 sm:p-8 min-h-[60vh]">
-          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-slate-100 max-w-lg w-full text-center space-y-6 animate-fade-in">
-            {/* Icon Circle */}
-            <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-2">
-              {error?.detail === "These parameters are required." ? (
-                <MdFilterAlt className="w-10 h-10 text-teal-600" />
-              ) : (
-                <div className="text-4xl">🤔</div>
-              )}
-            </div>
 
-            {/* Title & Description */}
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-slate-900">
-                {error?.detail === "These parameters are required." 
-                  ? "Start Your Search" 
-                  : "No Teachers Found"}
-              </h3>
-              <p className="text-slate-500 leading-relaxed">
-                {error?.detail === "These parameters are required."
-                  ? "Select a class category and subject to find the perfect teacher for your needs."
-                  : "We couldn't find any teachers matching your criteria. Try adjusting your filters or post a requirement."}
-              </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+            <div className="bg-slate-50 p-4 rounded-full mb-4">
+                <span className="text-3xl">🤔</span>
             </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-3 pt-2">
-              <Link
-                to="/get-preferred-teacher"
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5"
-              >
-                <span>Post a Job Requirement</span>
-                <FiArrowRight />
-              </Link>
-              
-              <button
-                onClick={() => setIsOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl font-semibold transition-colors"
-                aria-label="Open sidebar filters"
-              >
-                <MdFilterAlt />
-                <span>Adjust Filters</span>
-              </button>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                No Teachers Found
+            </h3>
+            <p className="text-slate-500 max-w-sm mb-8">
+                We couldn't find any teachers matching your criteria.
+            </p>
+            
+            <div className="flex items-center gap-4">
+                 <Link
+                    to="/get-preferred-teacher"
+                    className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm shadow-teal-200"
+                >
+                    शिक्षक खोजें
+                </Link>
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg transition-colors"
+                >
+                    Adjust Filters
+                </button>
             </div>
-          </div>
         </div>
       )}
+
 
       {/* Location Modal */}
       <LocationModal 
