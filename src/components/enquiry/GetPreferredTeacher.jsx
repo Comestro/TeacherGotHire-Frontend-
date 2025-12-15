@@ -10,6 +10,7 @@ import {
   FiUser,
   FiSearch,
   FiChevronRight,
+  FiCrosshair,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +42,6 @@ export const GetPreferredTeacher = () => {
     state: "Bihar", // Default fixed to Bihar as requested
     district: "",
     city: "",
-    area: "",
   });
   const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(false);
@@ -119,6 +119,118 @@ export const GetPreferredTeacher = () => {
     "Vaishali",
     "West Champaran",
   ];
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage({
+        type: "error",
+        text: "Geolocation is not supported by your browser",
+      });
+      return;
+    }
+
+    setLoadingPincode(true);
+    setMessage({ type: "success", text: "Detecting location..." });
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+
+          if (data && data.address) {
+            const { postcode, state_district, county } = data.address;
+            const district = state_district || county || "";
+            const zip = postcode || "";
+
+            let detectedDistrict = "";
+            if (district) {
+              const cleanDistrict = district.replace(/ District/i, "").trim();
+              const match = BIHAR_DISTRICTS.find(
+                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
+              );
+              if (match) detectedDistrict = match;
+            }
+
+            if (zip) {
+              setPincode(zip);
+
+              const piResponse = await axios.get(
+                `https://api.postalpincode.in/pincode/${zip}`
+              );
+              if (piResponse.data && piResponse.data[0].Status === "Success") {
+                const offices = piResponse.data[0].PostOffice;
+                if (offices.length > 0) {
+                  setPostOffices(offices);
+                  setLocationDetails((prev) => ({
+                    ...prev,
+                    district: offices[0].District,
+                    state: offices[0].State,
+                  }));
+                  setMessage({
+                    text: "Location detected successfully!",
+                    type: "success",
+                  });
+                } else {
+                  // If no post offices, at least keep the district we found from Nominatim
+                  if (detectedDistrict) {
+                    setLocationDetails((prev) => ({
+                      ...prev,
+                      district: detectedDistrict,
+                    }));
+                  }
+                  setMessage({
+                    text: "Location detected (partial data).",
+                    type: "success",
+                  });
+                }
+              } else {
+                // Fallback if PostOffice API fails
+                if (detectedDistrict) {
+                  setLocationDetails((prev) => ({
+                    ...prev,
+                    district: detectedDistrict,
+                  }));
+                }
+                setMessage({
+                  text: "Location detected from map.",
+                  type: "success",
+                });
+              }
+            } else {
+              if (detectedDistrict) {
+                setLocationDetails((prev) => ({
+                  ...prev,
+                  district: detectedDistrict,
+                }));
+                setMessage({
+                  text: "District detected. Please enter pincode.",
+                  type: "success",
+                });
+              } else {
+                setMessage({
+                  text: "Could not determine precise location.",
+                  type: "warning",
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          setMessage({ text: "Failed to detect location.", type: "error" });
+        } finally {
+          setLoadingPincode(false);
+        }
+      },
+      (error) => {
+        setMessage({ text: "Unable to retrieve location.", type: "error" });
+        setLoadingPincode(false);
+      }
+    );
+  };
 
   const handlePincodeChange = async (e) => {
     const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -199,7 +311,6 @@ export const GetPreferredTeacher = () => {
 
     // Additional parameters if needed
     if (selectedJobType) queryParams.append("job_type", selectedJobType);
-    if (locationDetails.area) queryParams.append("area", locationDetails.area);
 
     navigate(`/recruiter?${queryParams.toString()}`);
   };
@@ -403,7 +514,7 @@ export const GetPreferredTeacher = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {classCategories.map((category) => (
                   <button
                     key={category.id}
@@ -495,12 +606,21 @@ export const GetPreferredTeacher = () => {
               </div>
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-5">
                   {/* State */}
                   <div className="group">
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                      State
-                    </label>
+                    <div className="flex justify-between items-center">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        State
+                      </label>
+                      <button
+                        onClick={handleDetectLocation}
+                        className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-bold bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded transition-colors"
+                        title="Auto-detect location"
+                      >
+                        <FiCrosshair /> Detect
+                      </button>
+                    </div>
                     <div className="relative">
                       <input
                         type="text"
@@ -604,25 +724,6 @@ export const GetPreferredTeacher = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Area */}
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Area / Locality
-                  </label>
-                  <input
-                    type="text"
-                    value={locationDetails.area}
-                    onChange={(e) =>
-                      setLocationDetails({
-                        ...locationDetails,
-                        area: e.target.value,
-                      })
-                    }
-                    placeholder="E.g., Near City Center, Main Road..."
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal"
-                  />
-                </div>
               </div>
             </div>
           )}

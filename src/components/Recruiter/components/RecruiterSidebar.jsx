@@ -402,73 +402,65 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
   const handleDetectLocation = (isAuto = false) => {
     if (!navigator.geolocation) {
-      if (!isAuto) alert("Geolocation is not supported by your browser");
+      if (!isAuto) toast.error("Geolocation is not supported by your browser");
       return;
     }
 
     setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        // Using BigDataCloud free reverse geocoding API
-        fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.postcode) {
-              setPincode(data.postcode);
-              // Trigger pincode error clearance
-              setErrors((prev) => ({ ...prev, pincode: false }));
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // Using OpenStreetMap Nominatim API
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+
+          if (data && data.address) {
+            const { postcode, state_district, county, state } = data.address;
+
+            // Prioritize state_district, fall back to county
+            const district = state_district || county || "";
+            const zip = postcode || "";
+
+            if (state === "Bihar" || state?.toLowerCase() === "bihar") {
+              // Valid state logic if needed
             }
 
-            // Try to match district
-            // API returns 'city', 'locality', or 'principalSubdivision'
-            const potentialDistricts = [
-              data.city,
-              data.locality,
-              data.principalSubdivision,
-              data.localityInfo?.administrative?.[2]?.name, // Sometimes district is here
-            ].filter(Boolean);
-
-            let matchedDistrict = "";
-            for (const distinctName of potentialDistricts) {
-              const found = BIHAR_DISTRICTS.find(
-                (d) => d.toLowerCase() === distinctName.toLowerCase()
+            if (district) {
+              const cleanDistrict = district.replace(/ District/i, "").trim();
+              const match = BIHAR_DISTRICTS.find(
+                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
               );
-              if (found) {
-                matchedDistrict = found;
-                break;
-              }
+              if (match) setSelectedDistrict(match);
+              else setSelectedDistrict(cleanDistrict);
             }
 
-            if (matchedDistrict) {
-              setSelectedDistrict(matchedDistrict);
-              setErrors((prev) => ({ ...prev, district: false }));
+            if (zip) {
+              setPincode(zip);
             }
 
-            // Auto-fill Area and Setup PO match
-            const detectedArea = data.locality || data.city || "";
-            if (detectedArea) {
-              pendingAutoSelectPORef.current = detectedArea;
+            if (!isAuto) {
+              toast.success("Location detected successfully!");
             }
-          })
-          .catch((err) => {
-            console.error("Failed to fetch address details", err);
-            if (!isAuto) alert("Could not fetch address details.");
-          })
-          .finally(() => setDetectingLocation(false));
+          } else {
+            if (!isAuto) toast.error("Could not fetch address details.");
+          }
+        } catch (error) {
+          console.error("Location detection error:", error);
+          if (!isAuto) toast.error("Failed to detect location.");
+        } finally {
+          setDetectingLocation(false);
+        }
       },
       (error) => {
-        console.error("Geolocation error", error);
+        console.error("Geolocation error:", error);
         setDetectingLocation(false);
         if (!isAuto) {
-          if (error.code === 1) {
-            // PERMISSION_DENIED
-            alert("Please allow location access to use this feature.");
-          } else {
-            alert("Unable to retrieve your location.");
-          }
+          let msg = "Unable to retrieve your location.";
+          if (error.code === 1) msg = "User denied geolocation permission.";
+          toast.error(msg);
         }
       }
     );

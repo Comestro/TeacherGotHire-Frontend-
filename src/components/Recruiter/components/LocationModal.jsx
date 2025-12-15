@@ -1,38 +1,124 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { FiX, FiMapPin, FiCheck } from "react-icons/fi";
+import { FiX, FiMapPin, FiCheck, FiCrosshair } from "react-icons/fi";
 import { MdLocationCity, MdLocalPostOffice } from "react-icons/md";
 const BIHAR_DISTRICTS = [
-  "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur",
-  "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad",
-  "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani",
-  "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa",
-  "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul",
-  "Vaishali", "West Champaran"
+  "Araria",
+  "Arwal",
+  "Aurangabad",
+  "Banka",
+  "Begusarai",
+  "Bhagalpur",
+  "Bhojpur",
+  "Buxar",
+  "Darbhanga",
+  "East Champaran",
+  "Gaya",
+  "Gopalganj",
+  "Jamui",
+  "Jehanabad",
+  "Kaimur",
+  "Katihar",
+  "Khagaria",
+  "Kishanganj",
+  "Lakhisarai",
+  "Madhepura",
+  "Madhubani",
+  "Munger",
+  "Muzaffarpur",
+  "Nalanda",
+  "Nawada",
+  "Patna",
+  "Purnia",
+  "Rohtas",
+  "Saharsa",
+  "Samastipur",
+  "Saran",
+  "Sheikhpura",
+  "Sheohar",
+  "Sitamarhi",
+  "Siwan",
+  "Supaul",
+  "Vaishali",
+  "West Champaran",
 ].sort();
 
 const DEFAULT_INITIAL_DATA = {};
 
-const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL_DATA }) => {
+const LocationModal = ({
+  isOpen,
+  onClose,
+  onApply,
+  initialData = DEFAULT_INITIAL_DATA,
+}) => {
   const [formData, setFormData] = useState({
     state: "Bihar",
     district: "",
     pincode: "",
     post_office: "",
-    area: ""
+    area: "",
   });
 
   const [postOffices, setPostOffices] = useState([]);
   const [loadingPostOffices, setLoadingPostOffices] = useState(false);
-  const [error, setError] = useState("");
+  const [detecting, setDetecting] = useState(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported");
+      return;
+    }
+    setDetecting(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+
+          if (data && data.address) {
+            const { postcode, state_district, county } = data.address;
+            const district = state_district || county || "";
+            const zip = postcode || "";
+
+            if (district) {
+              const cleanDistrict = district.replace(/ District/i, "").trim();
+              const match = BIHAR_DISTRICTS.find(
+                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
+              );
+              if (match) {
+                setFormData((prev) => ({ ...prev, district: match }));
+              }
+            }
+
+            if (zip) {
+              setFormData((prev) => ({ ...prev, pincode: zip }));
+            }
+          }
+        } catch (err) {
+          setError("Failed to detect location");
+        } finally {
+          setDetecting(false);
+        }
+      },
+      () => {
+        setError("Unable to retrieve location");
+        setDetecting(false);
+      }
+    );
+  };
   useEffect(() => {
     if (isOpen) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         district: initialData.district || "",
         pincode: initialData.pincode || "",
         post_office: initialData.post_office || "",
-        area: initialData.area || ""
+        area: initialData.area || "",
       }));
     }
   }, [isOpen, initialData]);
@@ -46,9 +132,12 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
             const offices = data[0].PostOffice || [];
             setPostOffices(offices);
             if (offices.length > 0 && offices[0].District) {
-              setFormData(prev => ({ ...prev, district: offices[0].District }));
+              setFormData((prev) => ({
+                ...prev,
+                district: offices[0].District,
+              }));
             }
-            
+
             setError("");
           } else {
             setPostOffices([]);
@@ -67,15 +156,15 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handlePincodeChange = (e) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-    setFormData(prev => ({ ...prev, pincode: value }));
+    setFormData((prev) => ({ ...prev, pincode: value }));
   };
 
   const handleSubmit = (e) => {
@@ -97,7 +186,7 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
             <FiMapPin className="text-primary" />
             Location Details
           </h3>
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
@@ -114,9 +203,26 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
             </div>
           )}
 
-          {/* State (Read-only) */}
+          {/* State (Read-only) + Detect */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">State</label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-sm font-medium text-gray-700">
+                State
+              </label>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={detecting}
+                className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 transition-colors flex items-center gap-1"
+              >
+                {detecting ? (
+                  <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <FiCrosshair />
+                )}
+                {detecting ? "Detecting..." : "Detect Location"}
+              </button>
+            </div>
             <input
               type="text"
               value="Bihar"
@@ -127,7 +233,9 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* District */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">District</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              District
+            </label>
             <div className="relative">
               <select
                 name="district"
@@ -136,8 +244,10 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
               >
                 <option value="">Select District</option>
-                {BIHAR_DISTRICTS.map(district => (
-                  <option key={district} value={district}>{district}</option>
+                {BIHAR_DISTRICTS.map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
                 ))}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -148,7 +258,9 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* Pincode */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Pincode</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Pincode
+            </label>
             <input
               type="text"
               name="pincode"
@@ -158,13 +270,17 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
               className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             {loadingPostOffices && (
-              <p className="text-xs text-primary mt-1.5 font-medium animate-pulse">Fetching post offices...</p>
+              <p className="text-xs text-primary mt-1.5 font-medium animate-pulse">
+                Fetching post offices...
+              </p>
             )}
           </div>
 
           {/* Post Office */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Post Office</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Post Office
+            </label>
             <div className="relative">
               <select
                 name="post_office"
@@ -175,7 +291,9 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
               >
                 <option value="">Select Post Office</option>
                 {postOffices.map((po, idx) => (
-                  <option key={idx} value={po.Name}>{po.Name}</option>
+                  <option key={idx} value={po.Name}>
+                    {po.Name}
+                  </option>
                 ))}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -186,7 +304,10 @@ const LocationModal = ({ isOpen, onClose, onApply, initialData = DEFAULT_INITIAL
 
           {/* Area (Optional) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Area / Locality <span className="text-gray-400 font-normal">(Optional)</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Area / Locality{" "}
+              <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
             <input
               type="text"
               name="area"
