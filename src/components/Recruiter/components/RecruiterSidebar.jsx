@@ -823,7 +823,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   <button
                     onClick={() => handleDetectLocation(false)}
                     disabled={detectingLocation}
-                    className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-semibold bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-semibold bg-teal-100 mb-1 hover:bg-teal-200 px-3 py-2 rounded transition-colors disabled:opacity-50"
                     title="Auto-detect location from browser"
                   >
                     {detectingLocation ? (
