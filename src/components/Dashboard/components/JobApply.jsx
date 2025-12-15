@@ -738,7 +738,8 @@ const JobApply = () => {
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                               >
                                 <HiOutlineXCircle className="h-4 w-4 mr-2" />
-                                Withdraw Application
+                                {/* in hindi also */}
+                                Cancel Application / आवेदन रद्द करें
                               </button>
                           </div>
                         )

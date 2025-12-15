@@ -128,7 +128,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [pincode, setPincode] = useState("");
   const [postOffices, setPostOffices] = useState([]);
   const [selectedPostOffice, setSelectedPostOffice] = useState("");
-  const [area, setArea] = useState("");
+
   const [loadingPostOffices, setLoadingPostOffices] = useState(false);
 
   const [selectedQualifications, setSelectedQualifications] = useState([]);
@@ -212,7 +212,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (searchParams.has("district")) setSelectedDistrict(searchParams.get("district"));
     if (searchParams.has("pincode")) setPincode(searchParams.get("pincode"));
     if (searchParams.has("post_office")) setSelectedPostOffice(searchParams.get("post_office"));
-    if (searchParams.has("area")) setArea(searchParams.get("area"));
     if (classCategories && classCategories.length > 0) {
         const urlCategories = getList("class_category");
         let initialSelectedCategories = [];
@@ -289,7 +288,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (selectedDistrict) params.set("district", selectedDistrict);
     if (pincode) params.set("pincode", pincode);
     if (selectedPostOffice) params.set("post_office", selectedPostOffice);
-    if (area) params.set("area", area);
     
     Object.entries(filters).forEach(([key, value]) => {
       if (Array.isArray(value) && value.length === 0) return;
@@ -369,7 +367,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             // Auto-fill Area and Setup PO match
             const detectedArea = data.locality || data.city || "";
             if (detectedArea) {
-                setArea(detectedArea);
                 pendingAutoSelectPORef.current = detectedArea;
             }
           })
@@ -429,7 +426,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     if (selectedDistrict) filterObject.district = selectedDistrict;
     if (pincode) filterObject.pincode = pincode;
     if (selectedPostOffice) filterObject.post_office = selectedPostOffice;
-    if (area) filterObject.area = area;
     if (allSelectedSubjects.length > 0) {
       filterObject.subject = allSelectedSubjects;
     }
@@ -477,7 +473,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setPincode("");
     setPostOffices([]);
     setSelectedPostOffice("");
-    setArea("");
     setExpandedSections(prev => ({ ...prev, classSubject: true }));
     setSearchParams(new URLSearchParams());
     dispatch(fetchTeachers(""));
@@ -759,19 +754,6 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   </select>
                 </div>
               )}
-
-              {/* Area Input */}
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Area</label>
-                <input
-                  type="text"
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  placeholder="Enter area/locality"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  aria-label="Enter area"
-                />
-              </div>
             </div>
           </FilterSection>
 
