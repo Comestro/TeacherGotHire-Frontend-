@@ -22,8 +22,6 @@ import {
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import CustomHeader from "./commons/CustomHeader";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import ErrorMessage from "./ErrorMessage";
 
 function Login() {
@@ -43,7 +41,7 @@ function Login() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState(null);
+  const [notification, setNotification] = useState(null);
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -54,10 +52,9 @@ function Login() {
 
   useEffect(() => {
     if (location.state?.error) {
-      setLoginError(location.state.error);
-      // Optional: Clear state so refresh doesn't show it again?
-      // navigating replaces state? No.
-      // But standard pattern is fine.
+      setNotification({ message: location.state.error, type: "error" });
+    } else if (location.state?.success) {
+      setNotification({ message: location.state.success, type: "success" });
     }
   }, [location.state]);
 
@@ -98,7 +95,7 @@ function Login() {
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setLoginError(null);
+    setNotification(null);
 
     try {
       await login(data);
@@ -126,10 +123,7 @@ function Login() {
         errorMessage.toLowerCase().includes("csrf") ||
         errorMessage.toLowerCase().includes("session expired")
       ) {
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        });
+        setNotification({ message: errorMessage, type: "error" });
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -150,7 +144,7 @@ function Login() {
         setCanResend(false);
         handleResendOTP(email);
       } else {
-        setLoginError(errorMessage);
+        setNotification({ message: errorMessage, type: "error" });
       }
     } finally {
       setLoading(false);
@@ -161,7 +155,10 @@ function Login() {
     const emailToUse = email || userEmail;
 
     if (!emailToUse) {
-      toast.error("Email address is required for verification");
+      setNotification({
+        message: "Email address is required for verification",
+        type: "error",
+      });
       return;
     }
 
@@ -173,14 +170,14 @@ function Login() {
       setTimer(30);
       setCanResend(false);
 
-      toast.success("Verification code sent successfully", {
-        position: "top-right",
-        autoClose: 3000,
+      setNotification({
+        message: "Verification code sent successfully",
+        type: "success",
       });
     } catch (err) {
-      toast.error(err.message || "Failed to send verification code", {
-        position: "top-right",
-        autoClose: 3000,
+      setNotification({
+        message: err.message || "Failed to send verification code",
+        type: "error",
       });
     } finally {
       setLoading(false);
@@ -197,7 +194,7 @@ function Login() {
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setLoginError(null);
+    setNotification(null);
 
     try {
       const response = await verifyTeacherOtp({
@@ -207,12 +204,18 @@ function Login() {
       console.log(response);
 
       if (response.data.access_token) {
-        toast.success("Account verified successfully! Please log in.");
+        setNotification({
+          message: "Account verified successfully! Please log in.",
+          type: "success",
+        });
         setShowOTPForm(false);
         setOtp("");
       }
     } catch (error) {
-      setLoginError(error.message || "OTP verification failed");
+      setNotification({
+        message: error.message || "OTP verification failed",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -259,8 +262,9 @@ function Login() {
 
           <form onSubmit={handleOTPSubmit} className="space-y-6">
             <ErrorMessage
-              message={loginError}
-              onDismiss={() => setLoginError(null)}
+              message={notification?.message}
+              type={notification?.type}
+              onDismiss={() => setNotification(null)}
             />
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -393,8 +397,9 @@ function Login() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <ErrorMessage
-            message={loginError}
-            onDismiss={() => setLoginError(null)}
+            message={notification?.message}
+            type={notification?.type}
+            onDismiss={() => setNotification(null)}
           />
           <div className="space-y-1">
             <label className="block text-sm font-medium text-slate-700 ml-1">
@@ -601,7 +606,6 @@ function Login() {
       </Helmet>
       <CustomHeader />
       {loading && <Loader />}
-      <ToastContainer />
       <div className="flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
