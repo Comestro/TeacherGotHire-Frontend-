@@ -1049,13 +1049,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         <span className="text-sm text-slate-600 block mb-2">Select Language</span>
                         <div className="flex gap-3">
                            {(() => {
-                              let allowed = ['English', 'Hindi'];
+                              let enabled = ['English', 'Hindi'];
                               
                               if (selectedLevel?.level_code === 1.0) {
                                 const passedLang = getPassedLanguage(selectedCategory?.id, selectedSubject?.id, 1.0);
                                 if (passedLang) {
-                                   if (passedLang.toLowerCase() === 'english') allowed = ['Hindi'];
-                                   else if (passedLang.toLowerCase() === 'hindi') allowed = ['English'];
+                                   if (passedLang.toLowerCase() === 'english') enabled = ['Hindi'];
+                                   else if (passedLang.toLowerCase() === 'hindi') enabled = ['English'];
                                 }
                               } else if (selectedLevel?.level_code === 2.0) {
                                 const passedL1Attempts = attempts?.filter(a =>
@@ -1067,34 +1067,44 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 
                                 const passedL1Langs = new Set(passedL1Attempts?.map(a => a?.exam?.language || a?.language).filter(Boolean).map(l => l.toLowerCase()));
 
-                                if (passedL1Langs.size >= 2) {
-                                   allowed = ['English', 'Hindi']; // Qualified in both, allow choice
-                                } else if (passedL1Langs.size === 1) {
+                                if (passedL1Langs.size === 1) {
                                    const lang = passedL1Langs.values().next().value;
-                                   if (lang === 'english') allowed = ['English'];
-                                   else if (lang === 'hindi') allowed = ['Hindi'];
+                                   if (lang === 'english') enabled = ['English'];
+                                   else if (lang === 'hindi') enabled = ['Hindi'];
                                 }
                               }
-                              if (allowed.length === 1 && selectedLanguage !== allowed[0]) {
-                                 if (!selectedLanguage || selectedLanguage !== allowed[0]) {
-                                    setTimeout(() => setSelectedLanguage(allowed[0]), 0);
-                                 }
+                              
+                              // Auto-select first enabled if current selection is invalid
+                              const firstEnabled = enabled[0];
+                              if (firstEnabled && (!selectedLanguage || !enabled.includes(selectedLanguage))) {
+                                  setTimeout(() => setSelectedLanguage(firstEnabled), 0);
                               }
 
-                              return allowed.map(lang => (
-                                <button
-                                  key={lang}
-                                  type="button"
-                                  onClick={() => setSelectedLanguage(lang)}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                    selectedLanguage === lang
-                                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  {lang}
-                                </button>
-                              ));
+                              return ['English', 'Hindi'].map(lang => {
+                                const isEnabled = enabled.includes(lang);
+                                return (
+                                  <button
+                                    key={lang}
+                                    type="button"
+                                    disabled={!isEnabled}
+                                    onClick={() => isEnabled && setSelectedLanguage(lang)}
+                                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors relative ${
+                                      selectedLanguage === lang
+                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                                        : isEnabled
+                                          ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                          : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-70'
+                                    }`}
+                                  >
+                                    {lang}
+                                    {!isEnabled && (
+                                        <span className="ml-1 text-[10px] opacity-70">
+                                            {selectedLevel?.level_code === 1.0 ? "(Passed)" : "(Locked)"}
+                                        </span>
+                                    )}
+                                  </button>
+                                );
+                              });
                            })()}
                         </div>
                       </div>
