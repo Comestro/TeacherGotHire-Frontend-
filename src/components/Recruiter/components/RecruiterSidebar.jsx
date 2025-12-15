@@ -591,7 +591,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       <aside
         ref={sidebarRef}
         className={`
-          fixed md:sticky top-0 md:top-16 h-[92vh] md:h-[calc(100vh-4rem)] bg-white z-40 md:z-30 flex flex-col
+          fixed md:sticky top-0 md:top-16 h-screen md:h-[calc(100vh-4rem)] bg-white z-[60] md:z-30 flex flex-col
           ${isMobile ? "w-80 shadow-2xl" : "w-72 border-r border-slate-200"}
           ${isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"}
           transition-transform duration-300 ease-in-out
