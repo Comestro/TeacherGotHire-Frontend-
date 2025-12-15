@@ -345,7 +345,9 @@ const TeacherFilter = () => {
 
                           {/* Mobile View Profile Button (Hidden on Desktop) */}
                           <Link
-                            to={`teacher/${teacher.id}`}
+                            to={`teacher/${
+                              teacher.id
+                            }?${searchParams.toString()}`}
                             className="sm:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-colors"
                           >
                             <FiArrowRight />
@@ -410,7 +412,7 @@ const TeacherFilter = () => {
                     {/* Right: Action Button (Desktop) */}
                     <div className="hidden sm:flex flex-shrink-0 flex-col justify-center items-end self-center pl-4 border-l border-slate-100 h-24">
                       <Link
-                        to={`teacher/${teacher.id}`}
+                        to={`teacher/${teacher.id}?${searchParams.toString()}`}
                         className="inline-flex items-center justify-center gap-2 text-sm bg-slate-900 hover:bg-teal-600 text-white px-5 py-2.5 rounded-lg transition-all font-semibold shadow-sm hover:shadow-teal-200 hover:-translate-y-0.5"
                       >
                         View Profile
