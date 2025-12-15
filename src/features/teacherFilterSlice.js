@@ -47,7 +47,9 @@ export const fetchTeachers = createAsyncThunk(
         }
       });
       
-      const response = await axiosInstance.get(`/api/new/teacher/?${params.toString()}`);
+      const queryString = params.toString();
+      const url = queryString ? `/api/new/teacher/?${queryString}` : '/api/new/teacher/';
+      const response = await axiosInstance.get(url);
       return response.data; 
     } catch (error) {
       return rejectWithValue(

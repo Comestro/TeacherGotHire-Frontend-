@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -558,7 +559,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     setSelectedPostOffice("");
     setExpandedSections((prev) => ({ ...prev, classSubject: true }));
     setSearchParams(new URLSearchParams());
-    dispatch(fetchTeachers(""));
+    dispatch(fetchTeachers({ state: "Bihar" }));
   };
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -835,6 +836,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                 </div>
                 <select
                   value="Bihar"
+                  readOnly
                   className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium cursor-not-allowed"
                   aria-label="Select state"
                 >
@@ -909,15 +911,15 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               {postOffices.length > 0 && (
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Post Office
+                    Near Area
                   </label>
                   <select
                     value={selectedPostOffice}
                     onChange={(e) => setSelectedPostOffice(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    aria-label="Select post office"
+                    aria-label="Select area"
                   >
-                    <option value="">Select Post Office</option>
+                    <option value="">Select Area</option>
                     {postOffices.map((po, idx) => (
                       <option key={idx} value={po.Name}>
                         {po.Name}

@@ -698,7 +698,7 @@ export const GetPreferredTeacher = () => {
                     <div className="group">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Post Office
+                          Near Area
                         </label>
                         <div className="relative">
                           <select
@@ -708,7 +708,7 @@ export const GetPreferredTeacher = () => {
                             }
                             className="w-full p-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none appearance-none cursor-pointer"
                           >
-                            <option value="">Select Post Office</option>
+                            <option value="">Select Area</option>
                             {postOffices.map((po, idx) => (
                               <option key={idx} value={po.Name}>
                                 {po.Name}

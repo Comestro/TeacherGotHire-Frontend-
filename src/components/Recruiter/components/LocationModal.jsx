@@ -61,6 +61,7 @@ const LocationModal = ({
 
   const [postOffices, setPostOffices] = useState([]);
   const [loadingPostOffices, setLoadingPostOffices] = useState(false);
+  const [error, setError] = useState("");
   const [detecting, setDetecting] = useState(false);
 
   const handleDetectLocation = () => {
@@ -279,7 +280,7 @@ const LocationModal = ({
           {/* Post Office */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Post Office
+              Near Area
             </label>
             <div className="relative">
               <select
@@ -289,7 +290,7 @@ const LocationModal = ({
                 disabled={postOffices.length === 0}
                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none disabled:bg-gray-50 disabled:text-gray-400"
               >
-                <option value="">Select Post Office</option>
+                <option value="">Select Area</option>
                 {postOffices.map((po, idx) => (
                   <option key={idx} value={po.Name}>
                     {po.Name}
