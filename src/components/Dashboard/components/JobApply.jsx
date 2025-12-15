@@ -391,7 +391,8 @@ const JobApply = () => {
     applicationData: null,
   });
   const { data: eligibilityData, isLoading: isEligibilityLoading, error: eligibilityError } = useGetApplyEligibilityQuery();
-  const { data: jobApply, isLoading: isJobApplyLoading, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
+
+  const { data: jobApply, isLoading: isJobApplyLoading, error: jobApplyError, refetch: refetchJobApply } = useGetJobsApplyDetailsQuery();
   const eligibleExams = eligibilityData?.qualified_list ?
     eligibilityData.qualified_list.filter(exam => exam.eligible === true) : [];
   const handleExpandForm = (subjectId, classCategoryId, isEdit = false, applicationData = null, subjectName = '') => {
@@ -585,17 +586,23 @@ const JobApply = () => {
     );
   }
 
-  if (eligibilityError) {
+  if (eligibilityError || jobApplyError || jobTypesStatus === 'failed') {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="p-5 bg-error-light text-error-text rounded-lg border border-error/30">
-          <div className="flex items-start">
-            <HiOutlineXCircle className="mt-0.5 mr-3 h-6 w-6 text-error flex-shrink-0" aria-hidden="true" />
-            <div>
-              <h3 className="font-semibold text-base mb-1">Error loading data</h3>
-              <p className="text-sm">Unable to load eligibility data. Please try again later.</p>
-            </div>
+        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-dashed border-gray-300 text-center">
+          <div className="p-4 bg-red-50 rounded-full mb-4">
+             <HiOutlineExclamationTriangle className="h-10 w-10 text-red-500" />
           </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">Something went wrong</h3>
+          <p className="text-gray-500 max-w-md mb-6">
+            We couldn't load some required data. Please check your internet connection and try again.
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+          >
+             <span>Reload Page</span>
+          </button>
         </div>
       </div>
     );
@@ -732,7 +739,6 @@ const JobApply = () => {
                                 <HiOutlinePencilSquare className="h-4 w-4 mr-2" />
                                 Update Application
                               </button>
-    
                               <button
                                 onClick={() => handleRevoke(subjectId, classCategoryId, subjectName)}
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"

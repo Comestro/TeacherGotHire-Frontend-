@@ -331,7 +331,7 @@ function Login() {
                 placeholder="name@example.com"
                 type="email"
                 id="email"
-                className={`w-full pl-11 pr-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
+                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${dirtyFields.email
                   ? isEmailValid(watchedFields.email)
                     ? "border-teal-500 bg-teal-50/10"
                     : "border-red-300 bg-red-50/10"
