@@ -649,9 +649,10 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     onChange={() => {
                       const strId = role.id.toString();
                       const isSelected = filters.job_type.includes(strId);
-                      const newJobTypes = isSelected
-                        ? filters.job_type.filter((t) => t !== strId)
-                        : [...filters.job_type, strId];
+                      // Single Selection Logic:
+                      // If selected, deselect it (empty array).
+                      // If not selected, select ONLY this one (replace array).
+                      const newJobTypes = isSelected ? [] : [strId];
 
                       setFilters((prev) => ({
                         ...prev,
@@ -750,63 +751,43 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                                       selectedSubjects[category.name] || []
                                     ).includes(subject.subject_name)}
                                     onChange={() => {
-                                      setSelectedSubjects((prev) => {
-                                        const categorySubjects =
-                                          prev[category.name] || [];
-                                        const isAddingSubject =
-                                          !categorySubjects.includes(
-                                            subject.subject_name
-                                          );
-                                        if (isAddingSubject) {
-                                          if (
-                                            !selectedClassCategories.includes(
-                                              category.name
-                                            )
-                                          ) {
-                                            setSelectedClassCategories(
-                                              (prevCats) => [
-                                                ...prevCats,
-                                                category.name,
-                                              ]
-                                            );
-                                            if (!expandedSections.location) {
-                                              setTimeout(() => {
-                                                setExpandedSections((prev) => ({
-                                                  ...prev,
-                                                  classSubject: false,
-                                                  location: true,
-                                                }));
-                                              }, 800);
-                                            }
-                                          }
-                                        } else {
-                                          if (
-                                            categorySubjects.length === 1 &&
-                                            categorySubjects[0] ===
-                                              subject.subject_name
-                                          ) {
-                                            setSelectedClassCategories(
-                                              (prevCats) =>
-                                                prevCats.filter(
-                                                  (c) => c !== category.name
-                                                )
-                                            );
-                                          }
-                                        }
+                                      // Single Selection Logic for Subject & Class Category
+                                      const currentCategorySubjects =
+                                        selectedSubjects[category.name] || [];
+                                      const isSubjectSelected =
+                                        currentCategorySubjects.includes(
+                                          subject.subject_name
+                                        );
 
-                                        return {
-                                          ...prev,
-                                          [category.name]: isAddingSubject
-                                            ? [
-                                                ...categorySubjects,
-                                                subject.subject_name,
-                                              ]
-                                            : categorySubjects.filter(
-                                                (s) =>
-                                                  s !== subject.subject_name
-                                              ),
-                                        };
-                                      });
+                                      if (isSubjectSelected) {
+                                        // Deselecting: Clear everything explicitly to be safe, or just this one
+                                        // User request: "only one" implies if I uncheck, I have nothing.
+                                        setSelectedSubjects({});
+                                        setSelectedClassCategories([]);
+                                      } else {
+                                        // Selecting NEW subject:
+                                        // 1. Replace all subjects with ONLY this one
+                                        setSelectedSubjects({
+                                          [category.name]: [
+                                            subject.subject_name,
+                                          ],
+                                        });
+                                        // 2. Replace all class categories with ONLY this one
+                                        setSelectedClassCategories([
+                                          category.name,
+                                        ]);
+
+                                        // Auto-expand next section
+                                        if (!expandedSections.location) {
+                                          setTimeout(() => {
+                                            setExpandedSections((prev) => ({
+                                              ...prev,
+                                              classSubject: false,
+                                              location: true,
+                                            }));
+                                          }, 800);
+                                        }
+                                      }
                                     }}
                                     label={subject.subject_name}
                                   />

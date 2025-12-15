@@ -40,7 +40,6 @@ export default function TeacherViewPageFull() {
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState(null);
