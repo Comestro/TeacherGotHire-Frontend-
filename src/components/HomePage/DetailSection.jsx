@@ -1,8 +1,7 @@
 import React from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const FeatureCard = ({ icon, title, description, quote }) => (
-
   <div className="bg-white border border-slate-200 shadow-none hover:shadow-sm rounded-2xl p-8 text-left transition-all duration-300 group h-full flex flex-col">
     <div className="mb-6 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
       {icon}
@@ -10,7 +9,9 @@ const FeatureCard = ({ icon, title, description, quote }) => (
     <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 text-center">
       {title}
     </h3>
-    <p className="text-slate-600 mb-6 text-base leading-relaxed flex-grow text-center">{description}</p>
+    <p className="text-slate-600 mb-6 text-base leading-relaxed flex-grow text-center">
+      {description}
+    </p>
     <blockquote className="text-teal-600 font-medium text-center italic bg-teal-50 p-4 rounded-xl">
       &ldquo;{quote}&rdquo;
     </blockquote>
@@ -61,18 +62,26 @@ const DetailSection = () => {
   ];
 
   return (
-    <div className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="py-10 px-4 sm:px-6 lg:px-8 bg-slate-50">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-16">
+        <header className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500" style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>#1 Platform</span> for Teacher and Tutor Hiring
+            The{" "}
+            <span
+              className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500"
+              style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}
+            >
+              #1 Platform
+            </span>{" "}
+            for Teacher and Tutor Hiring
           </h1>
           <p className="text-teal-600 mt-4 text-lg sm:text-xl font-medium max-w-3xl mx-auto">
-            Connecting students with expert tutors and teachers. Quality education, on your schedule.
+            Connecting students with expert tutors and teachers. Quality
+            education, on your schedule.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {features.map((feature, index) => (
             <div key={index} className="h-full">
               <FeatureCard {...feature} />
@@ -81,9 +90,12 @@ const DetailSection = () => {
         </div>
 
         <div className="text-center flex items-center justify-center">
-          <button onClick={() => navigate('/get-preferred-teacher')} className="bg-teal-600 text-white py-4 px-8 flex items-center justify-center rounded-xl text-lg font-bold shadow-sm hover:bg-teal-700 hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300">
+          <button
+            onClick={() => navigate("/get-preferred-teacher")}
+            className="bg-teal-600 text-white py-4 px-8 flex items-center justify-center rounded-xl text-lg font-bold shadow-sm hover:bg-teal-700 hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300"
+          >
             Find Tutors <FaArrowRightLong className="ml-2" />
-          </button> 
+          </button>
         </div>
       </div>
     </div>

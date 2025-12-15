@@ -17,6 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { getTeacherjobType } from "../../features/jobProfileSlice";
 import EnquiryHeader from "./components/EnquiryHeader";
 import ErrorMessage from "../ErrorMessage";
+import Loader from "../Loader";
+import Skeleton from "../Skeleton";
 
 export const GetPreferredTeacher = () => {
   const dispatch = useDispatch();
@@ -73,9 +75,7 @@ export const GetPreferredTeacher = () => {
 
   const handleSubjectToggle = (subjectId) => {
     setSelectedSubjects((prev) =>
-      prev.includes(subjectId)
-        ? prev.filter((s) => s !== subjectId)
-        : [...prev, subjectId]
+      prev.includes(subjectId) ? [] : [subjectId]
     );
   };
 
@@ -432,7 +432,8 @@ export const GetPreferredTeacher = () => {
       </div>
 
       {/* Right Content Panel - Scrollable */}
-      <div className="flex-1 flex flex-col bg-slate-50">
+      <div className="flex-1 flex flex-col bg-slate-50 relative">
+        {loadingPincode && <Loader />}
         <div className="flex-1 flex flex-col justify-start px-4 py-6 max-w-5xl mx-auto w-full">
           <ErrorMessage
             message={message.text}
@@ -453,51 +454,55 @@ export const GetPreferredTeacher = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {jobTypes.map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => {
-                      setSelectedJobType(type.teacher_job_name);
-                      setCurrentStep(1);
-                    }}
-                    className={`group relative p-5 rounded-2xl border text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
-                      selectedJobType === type.teacher_job_name
-                        ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-md shadow-teal-500/10"
-                        : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                            selectedJobType === type.teacher_job_name
-                              ? "bg-teal-50 text-teal-600"
-                              : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
-                          }`}
-                        >
-                          <FiBriefcase size={20} />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-base text-slate-900 group-hover:text-teal-700 transition-colors mb-0.5">
-                            {type.teacher_job_name}
-                          </h4>
-                          <p className="text-xs text-slate-500 font-medium">
-                            Find teachers for {type.teacher_job_name}
-                          </p>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                {loading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                    ))
+                  : jobTypes.map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => {
+                          setSelectedJobType(type.teacher_job_name);
+                          setCurrentStep(1);
+                        }}
+                        className={`group relative p-5 rounded-2xl border text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
                           selectedJobType === type.teacher_job_name
-                            ? "bg-teal-500 text-white"
-                            : "bg-slate-50 text-slate-300 group-hover:bg-teal-50 group-hover:text-teal-500"
+                            ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-md shadow-teal-500/10"
+                            : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
                         }`}
                       >
-                        <FiChevronRight size={16} />
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                                selectedJobType === type.teacher_job_name
+                                  ? "bg-teal-50 text-teal-600"
+                                  : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                              }`}
+                            >
+                              <FiBriefcase size={20} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-base text-slate-900 group-hover:text-teal-700 transition-colors mb-0.5">
+                                {type.teacher_job_name}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium">
+                                Find teachers for {type.teacher_job_name}
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                              selectedJobType === type.teacher_job_name
+                                ? "bg-teal-500 text-white"
+                                : "bg-slate-50 text-slate-300 group-hover:bg-teal-50 group-hover:text-teal-500"
+                            }`}
+                          >
+                            <FiChevronRight size={16} />
+                          </div>
+                        </div>
+                      </button>
+                    ))}
               </div>
             </div>
           )}
@@ -515,35 +520,39 @@ export const GetPreferredTeacher = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {classCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setSelectedClassCategory(category.id);
-                      setCurrentStep(2);
-                    }}
-                    className={`group p-4 rounded-xl border text-left transition-all duration-300 hover:shadow-md ${
-                      selectedClassCategory === category.id
-                        ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-sm"
-                        : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                {loading
+                  ? Array.from({ length: 8 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                    ))
+                  : classCategories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setSelectedClassCategory(category.id);
+                          setCurrentStep(2);
+                        }}
+                        className={`group p-4 rounded-xl border text-left transition-all duration-300 hover:shadow-md ${
                           selectedClassCategory === category.id
-                            ? "bg-teal-50 text-teal-600"
-                            : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                            ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-sm"
+                            : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
                         }`}
                       >
-                        <FiBook size={18} />
-                      </div>
-                      <span className="font-bold text-sm text-slate-700 group-hover:text-teal-700 transition-colors">
-                        {category.name}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                              selectedClassCategory === category.id
+                                ? "bg-teal-50 text-teal-600"
+                                : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                            }`}
+                          >
+                            <FiBook size={18} />
+                          </div>
+                          <span className="font-bold text-sm text-slate-700 group-hover:text-teal-700 transition-colors">
+                            {category.name}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
               </div>
             </div>
           )}
@@ -615,10 +624,10 @@ export const GetPreferredTeacher = () => {
                       </label>
                       <button
                         onClick={handleDetectLocation}
-                        className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-bold bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded transition-colors"
+                        className="flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-700 font-bold bg-teal-100 hover:bg-teal-200 px-3 py-1.5 rounded transition-colors"
                         title="Auto-detect location"
                       >
-                        <FiCrosshair /> Detect
+                        <FiCrosshair /> Auto Detect
                       </button>
                     </div>
                     <div className="relative">

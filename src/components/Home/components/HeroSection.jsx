@@ -7,7 +7,7 @@ const HeroSection = () => {
   const [expandedCards, setExpandedCards] = useState({
     student: false,
     institute: false,
-    teacher: false
+    teacher: false,
   });
   const INITIAL_STEPS_TO_SHOW = 3;
 
@@ -26,7 +26,7 @@ const HeroSection = () => {
     "School Teacher या Coaching Teacher चयन करें",
     "Class Category और Subject को चुने!",
     "जिस जगह पर स्कूल या कोचिंग है वहां का पिन कोड नंबर डालें( चाहे तो आप Optional area को भी सेलेक्ट कर सकते हैं जो स्कूल या कोचिंग के करीब हो) फिर सर्च करें!",
-    "अगर मनो-योग्य शिक्षक मिलता है तो आप उसे Order कर सकते हैं"
+    "अगर मनो-योग्य शिक्षक मिलता है तो आप उसे Order कर सकते हैं",
   ];
 
   const teacherSteps = [
@@ -70,7 +70,7 @@ const HeroSection = () => {
         </svg>
       ),
       steps: studentSteps,
-      color: "teal"
+      color: "teal",
     },
     {
       id: "institute",
@@ -93,7 +93,7 @@ const HeroSection = () => {
         </svg>
       ),
       steps: instituteSteps,
-      color: "indigo"
+      color: "indigo",
     },
     {
       id: "teacher",
@@ -116,14 +116,14 @@ const HeroSection = () => {
         </svg>
       ),
       steps: teacherSteps,
-      color: "purple"
+      color: "purple",
     },
   ];
 
   const toggleCardExpansion = (cardId) => {
-    setExpandedCards(prev => ({
+    setExpandedCards((prev) => ({
       ...prev,
-      [cardId]: !prev[cardId]
+      [cardId]: !prev[cardId],
     }));
   };
 
@@ -144,7 +144,7 @@ const HeroSection = () => {
 
         {/* Content */}
         <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="pt-24 md:pt-40 pb-16 md:pb-24">
+          <div className="pt-20 md:pt-32 pb-10 md:pb-16">
             <div className="text-center max-w-4xl mx-auto animate-slide-up">
               {/* Heading */}
               <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
@@ -198,7 +198,7 @@ const HeroSection = () => {
       </div>
 
       {/* Highlight Steps Section */}
-      <div className="relative z-0 py-16 md:py-24">
+      <div className="relative z-0 py-12 md:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {highlightItems.map((item, index) => (
@@ -207,34 +207,53 @@ const HeroSection = () => {
                 className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className={`mb-6 p-4 rounded-2xl inline-block ${item.color === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
-                  item.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                    'bg-teal-50 text-teal-600'
-                  }`}>
+                <div
+                  className={`mb-6 p-4 rounded-2xl inline-block ${
+                    item.color === "indigo"
+                      ? "bg-indigo-50 text-indigo-600"
+                      : item.color === "purple"
+                      ? "bg-purple-50 text-purple-600"
+                      : "bg-teal-50 text-teal-600"
+                  }`}
+                >
                   {item.icon}
                 </div>
                 <h3 className="text-2xl font-bold text-slate-800 mb-4">
                   {item.title}
                 </h3>
-                <p className="text-slate-600 leading-relaxed mb-6">{item.content}</p>
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  {item.content}
+                </p>
 
                 {/* Steps Section - Always visible (3 steps) */}
                 {item.steps && (
                   <div className="mt-6 pt-6 border-t border-slate-100">
                     <div className="space-y-4">
                       {item.steps
-                        .slice(0, expandedCards[item.id] ? item.steps.length : INITIAL_STEPS_TO_SHOW)
+                        .slice(
+                          0,
+                          expandedCards[item.id]
+                            ? item.steps.length
+                            : INITIAL_STEPS_TO_SHOW
+                        )
                         .map((step, index) => (
                           <div key={index} className="flex items-start">
                             <div className="flex-shrink-0 mr-3 mt-0.5">
-                              <div className={`w-6 h-6 ${item.color === 'indigo' ? 'bg-indigo-100 text-indigo-600' :
-                                item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                                  'bg-teal-100 text-teal-600'
-                                } rounded-full flex items-center justify-center text-xs font-bold`}>
+                              <div
+                                className={`w-6 h-6 ${
+                                  item.color === "indigo"
+                                    ? "bg-indigo-100 text-indigo-600"
+                                    : item.color === "purple"
+                                    ? "bg-purple-100 text-purple-600"
+                                    : "bg-teal-100 text-teal-600"
+                                } rounded-full flex items-center justify-center text-xs font-bold`}
+                              >
                                 {index + 1}
                               </div>
                             </div>
-                            <p className="text-sm text-slate-600 leading-snug">{step}</p>
+                            <p className="text-sm text-slate-600 leading-snug">
+                              {step}
+                            </p>
                           </div>
                         ))}
                     </div>
@@ -243,10 +262,13 @@ const HeroSection = () => {
                     {item.steps.length > INITIAL_STEPS_TO_SHOW && (
                       <button
                         onClick={() => toggleCardExpansion(item.id)}
-                        className={`mt-4 text-sm font-bold flex items-center transition-colors ${item.color === 'indigo' ? 'text-indigo-600 hover:text-indigo-700' :
-                          item.color === 'purple' ? 'text-purple-600 hover:text-purple-700' :
-                            'text-teal-600 hover:text-teal-700'
-                          }`}
+                        className={`mt-4 text-sm font-bold flex items-center transition-colors ${
+                          item.color === "indigo"
+                            ? "text-indigo-600 hover:text-indigo-700"
+                            : item.color === "purple"
+                            ? "text-purple-600 hover:text-purple-700"
+                            : "text-teal-600 hover:text-teal-700"
+                        }`}
                       >
                         {expandedCards[item.id] ? (
                           <>
@@ -255,7 +277,8 @@ const HeroSection = () => {
                           </>
                         ) : (
                           <>
-                            Show {item.steps.length - INITIAL_STEPS_TO_SHOW} More Steps
+                            Show {item.steps.length - INITIAL_STEPS_TO_SHOW}{" "}
+                            More Steps
                             <IoIosArrowDown className="ml-1" />
                           </>
                         )}

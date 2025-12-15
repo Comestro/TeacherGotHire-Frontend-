@@ -20,12 +20,12 @@ const Home = () => {
       <Helmet>
         <title>Home | PTPI</title>
       </Helmet>
-      <div className="space-y-20 pb-20">
+      <div className="space-y-8 pb-10">
         <HeroSection />
         <TeacherSection onSelectRole={handleRoleSelection} />
         <SchoolSection onSelectRole={handleRoleSelection} />
-        <ExamSection />
-        <FeaturesSection />
+        {/* <ExamSection /> */}
+        {/* <FeaturesSection /> */}
         <DetailSection />
       </div>
     </>

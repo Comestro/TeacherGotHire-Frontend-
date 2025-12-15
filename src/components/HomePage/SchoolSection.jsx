@@ -2,14 +2,14 @@ import React from "react";
 
 const SchoolSection = ({ onSelectRole }) => {
   return (
-    <div className="relative py-12 px-4 sm:px-6 lg:px-8">
+    <div className="relative py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
           {/* Decorative background elements */}
           <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-teal-50/50 to-transparent" />
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl" />
 
-          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 md:p-12 lg:p-16">
+          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-6 md:p-10 lg:p-12">
             {/* Left Section with Image */}
             <div className="relative lg:h-full flex items-center justify-center order-2 lg:order-1">
               <div className="relative w-full max-w-md aspect-square">
@@ -27,13 +27,18 @@ const SchoolSection = ({ onSelectRole }) => {
             <div className="space-y-8 order-1 lg:order-2">
               <div className="space-y-4">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
-                  <span className="block text-lg font-medium text-teal-600 mb-2 tracking-wide uppercase">For Institutions</span>
-                  Does your school need <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-indigo-600 font-extrabold">Dedicated Teachers?</span>
+                  <span className="block text-lg font-medium text-teal-600 mb-2 tracking-wide uppercase">
+                    For Institutions
+                  </span>
+                  Does your school need{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-indigo-600 font-extrabold">
+                    Dedicated Teachers?
+                  </span>
                 </h1>
                 <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
                   We provide qualified teachers committed to shaping a brighter
-                  future for your students. Login today and connect with our expert
-                  educators!
+                  future for your students. Login today and connect with our
+                  expert educators!
                 </p>
               </div>
 

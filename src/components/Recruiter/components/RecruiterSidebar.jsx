@@ -9,17 +9,14 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiMapPin,
-  FiSearch,
-  FiCheck,
   FiCrosshair,
 } from "react-icons/fi";
 import {
   MdSchool,
   MdWork,
-  MdCode,
   MdCheckBox,
   MdCheckBoxOutlineBlank,
-  MdPeople,
+  MdMale
 } from "react-icons/md";
 import {
   getAllSkills,
@@ -114,7 +111,7 @@ const FilterSection = React.memo(
 FilterSection.displayName = "FilterSection";
 const CheckboxItem = React.memo(
   ({ checked, onChange, label, disabled = false }) => (
-    <label className="flex items-center gap-2 py-2 cursor-pointer group hover:bg-slate-50 px-2 rounded transition-colors">
+    <label className="flex items-center gap-1 py-1 cursor-pointer group hover:bg-slate-50  rounded transition-colors">
       <div className="relative flex items-center">
         <input
           type="checkbox"
@@ -965,19 +962,15 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
 
           {/* Other Filters (Gender, Job Type) */}
           <FilterSection
-            title="Other"
-            icon={MdPeople}
+            title="Gender"
+            icon={MdMale}
             section="other"
             isExpanded={expandedSections.other}
             onToggle={() => toggleSection("other")}
           >
-            <div className="space-y-4">
+            <div className="space-y-2 mt-2">
               {/* Gender */}
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-2">
-                  Gender
-                </label>
-                <div className="space-y-2">
+                <div className="">
                   {["Male", "Female", "Other"].map((gender) => (
                     <CheckboxItem
                       key={gender}
@@ -996,52 +989,16 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                     />
                   ))}
                 </div>
-              </div>
 
-              {/* Job Type */}
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-2">
-                  Job Type
-                </label>
-                <div className="space-y-2">
-                  {teacherjobRole && teacherjobRole.length > 0 ? (
-                    teacherjobRole.map((job) => (
-                      <CheckboxItem
-                        key={job.id}
-                        checked={filters.job_type.includes(
-                          job.teacher_job_name
-                        )}
-                        onChange={() => {
-                          setFilters((prev) => ({
-                            ...prev,
-                            job_type: prev.job_type.includes(
-                              job.teacher_job_name
-                            )
-                              ? prev.job_type.filter(
-                                  (j) => j !== job.teacher_job_name
-                                )
-                              : [...prev.job_type, job.teacher_job_name],
-                          }));
-                        }}
-                        label={job.teacher_job_name}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-400 italic">
-                      No job types available
-                    </p>
-                  )}
-                </div>
-              </div>
             </div>
           </FilterSection>
         </div>
 
         {/* Footer - Sticky Buttons */}
-        <div className="border-t border-slate-200 p-4 space-y-2 bg-white">
+        <div className="border-t gap-4 flex flex-row-reverse border-slate-200 p-2 bg-white">
           <button
             onClick={handleApplyFilters}
-            className="w-full px-4 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-lg shadow-teal-200 hover:shadow-teal-300"
+            className="w-full px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-lg "
             aria-label="Apply filters"
           >
             Apply Filters
@@ -1049,7 +1006,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
           <button
             onClick={handleResetFilters}
             disabled={activeCount === 0}
-            className="w-full px-4 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 bg-slate-400 text-slate-100 font-medium rounded-lg hover:bg-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Clear all filters"
           >
             Clear Filters
