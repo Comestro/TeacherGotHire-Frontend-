@@ -488,7 +488,6 @@ const JobApply = () => {
                   salary_expectation: salary,
                   salary_type: type,
                   status: true,
-                  status: true,
                   preferred_locations: newLocations.map(loc => ({
                     state: loc.state,
                     district: loc.district,
