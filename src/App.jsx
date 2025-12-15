@@ -373,6 +373,7 @@ function AppContent() {
         </Route>
 
         {/* 404 */}
+        <Route path="error" element={<ErrorBoundary />} />
         <Route path="*" element={<Error404 />} />
       </Routes>
     </>
