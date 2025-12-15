@@ -1,3 +1,5 @@
+import React from "react";
+
 const TeacherSection = ({ onSelectRole }) => {
   return (
     <div className="relative py-6 px-4 sm:px-6 lg:px-8">

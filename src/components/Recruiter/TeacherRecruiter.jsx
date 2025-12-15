@@ -49,17 +49,7 @@ const TeacherFilter = () => {
       navigate("/get-preferred-teacher");
     }
   }, [searchParams, navigate]);
-  const maskPhoneNumber = (phone) => {
-    if (!phone || phone.length < 6) return phone;
-    return phone.slice(0, 4) + "****" + phone.slice(-2);
-  };
-
-  const maskEmail = (email) => {
-    if (!email) return email;
-    const [local, domain] = email.split("@");
-    if (!domain || local.length <= 2) return email;
-    return local.slice(0, 2) + "***@" + domain;
-  };
+  
 
   useEffect(() => {
     if (data) {

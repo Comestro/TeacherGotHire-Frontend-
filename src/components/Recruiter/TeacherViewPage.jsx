@@ -168,8 +168,12 @@ export default function TeacherViewPageFull() {
   const handleRequestTeacher = () => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      toast.info("Please login to request a teacher");
-      navigate("/signin");
+      navigate("/signin", {
+        state: {
+          from: window.location.pathname + window.location.search,
+          error: "Please login to request this teacher.",
+        },
+      });
       return;
     }
     setOpenRequestModal(true);
@@ -405,12 +409,12 @@ export default function TeacherViewPageFull() {
       {/* Top Navigation */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link
-            to="/recruiter"
+          <button
+            onClick={() => navigate(-1)}
             className="inline-flex items-center text-slate-500 hover:text-teal-600 transition-colors font-medium"
           >
             <FaArrowLeft className="mr-2 text-sm" /> Back to Teachers
-          </Link>
+          </button>
         </div>
       </header>
 

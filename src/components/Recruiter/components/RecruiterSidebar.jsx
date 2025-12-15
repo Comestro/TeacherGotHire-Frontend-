@@ -16,7 +16,7 @@ import {
   MdWork,
   MdCheckBox,
   MdCheckBoxOutlineBlank,
-  MdMale
+  MdMale,
 } from "react-icons/md";
 import {
   getAllSkills,
@@ -25,6 +25,19 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
+import { MapContainer, TileLayer, Circle, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for Leaflet default marker icon in React (if needed, though we use Circle)
+import L from "leaflet";
+// Map updater component to recenter map when coords change
+const MapUpdater = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, map.getZoom());
+  }, [center, map]);
+  return null;
+};
 const BIHAR_DISTRICTS = [
   "Araria",
   "Arwal",
@@ -154,7 +167,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
     pincode: [],
     block: [],
     village: [],
-    state: [],
+    state: ["Bihar"],
     qualification: [],
     class_category: [],
     subject: [],
@@ -172,6 +185,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   const [pincode, setPincode] = useState("");
   const [postOffices, setPostOffices] = useState([]);
   const [selectedPostOffice, setSelectedPostOffice] = useState("");
+  const [mapCoordinates, setMapCoordinates] = useState(null); // { lat, lng }
 
   const [loadingPostOffices, setLoadingPostOffices] = useState(false);
 
@@ -222,6 +236,36 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       setSelectedPostOffice("");
     }
   }, [pincode]);
+
+  // Effect to geocode manual district selection
+  useEffect(() => {
+    if (selectedDistrict && !detectingLocation) {
+      // Only fetch if we don't have precise coords or if checking district center
+      // Actually, let's just fetch center of district for visualization if not auto-detected recently
+      // Debounce or just fetch
+      const fetchDistrictCoords = async () => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${selectedDistrict},Bihar&format=json&limit=1`
+          );
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setMapCoordinates({
+              lat: parseFloat(data[0].lat),
+              lng: parseFloat(data[0].lon),
+            });
+          }
+        } catch (e) {
+          console.error("Failed to geocode district", e);
+        }
+      };
+      // Only if mapCoordinates is null (don't overwrite precise GPS) or if we want to follow selection?
+      // Let's overwrite so map follows content. But User might have GPS'd then changed district.
+      // If user explicitly changes district, map should probably move.
+      // I'll add a check or just let it update.
+      fetchDistrictCoords();
+    }
+  }, [selectedDistrict]);
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -409,9 +453,11 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          setMapCoordinates({ lat: latitude, lng: longitude });
+
           // Using OpenStreetMap Nominatim API
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=en`
           );
           const data = await response.json();
 
@@ -427,12 +473,42 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
             }
 
             if (district) {
-              const cleanDistrict = district.replace(/ District/i, "").trim();
+              let cleanDistrict = district.replace(/ District/i, "").trim();
+              console.log(
+                "Detected District Raw:",
+                district,
+                "Clean:",
+                cleanDistrict
+              );
+
+              // Handle common Nominatim vs Bihar Districts naming differences
+              const aliases = {
+                "Purba Champaran": "East Champaran",
+                "Pashchim Champaran": "West Champaran",
+                "Kaimur (Bhabua)": "Kaimur",
+              };
+              cleanDistrict = aliases[cleanDistrict] || cleanDistrict;
+
               const match = BIHAR_DISTRICTS.find(
                 (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
               );
-              if (match) setSelectedDistrict(match);
-              else setSelectedDistrict(cleanDistrict);
+              if (match) {
+                setSelectedDistrict(match);
+              } else {
+                // Try partial match if no exact match
+                const partialMatch = BIHAR_DISTRICTS.find(
+                  (d) =>
+                    cleanDistrict.toLowerCase().includes(d.toLowerCase()) ||
+                    d.toLowerCase().includes(cleanDistrict.toLowerCase())
+                );
+                if (partialMatch) setSelectedDistrict(partialMatch);
+                else {
+                  console.log(
+                    "No matching district found in list for:",
+                    cleanDistrict
+                  );
+                }
+              }
             }
 
             if (zip) {
@@ -460,7 +536,8 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
           if (error.code === 1) msg = "User denied geolocation permission.";
           toast.error(msg);
         }
-      }
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
     );
   };
 
@@ -844,7 +921,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               {/* District Dropdown */}
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">
-                  District
+                  District <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={selectedDistrict}
@@ -856,9 +933,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   }`}
                   aria-label="Select district"
                 >
-                  <option value="">
-                    Select District <span className="text-red-500">*</span>
-                  </option>
+                  <option value="">Select District</option>
                   {BIHAR_DISTRICTS.map((district) => (
                     <option key={district} value={district}>
                       {district}
@@ -925,6 +1000,29 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
                   </select>
                 </div>
               )}
+
+              {/* Map Preview */}
+              {mapCoordinates && (
+                <div className="mt-3 rounded-lg overflow-hidden border border-slate-200">
+                  <MapContainer
+                    center={mapCoordinates}
+                    zoom={13}
+                    style={{ height: "200px", width: "100%" }}
+                    className="z-0"
+                  >
+                    <MapUpdater center={mapCoordinates} />
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Circle
+                      center={mapCoordinates}
+                      pathOptions={{ fillColor: "blue", color: "blue" }}
+                      radius={1500}
+                    />
+                  </MapContainer>
+                </div>
+              )}
             </div>
           </FilterSection>
 
@@ -970,26 +1068,25 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
           >
             <div className="space-y-2 mt-2">
               {/* Gender */}
-                <div className="">
-                  {["Male", "Female", "Other"].map((gender) => (
-                    <CheckboxItem
-                      key={gender}
-                      checked={filters.gender.includes(gender.toLowerCase())}
-                      onChange={() => {
-                        setFilters((prev) => ({
-                          ...prev,
-                          gender: prev.gender.includes(gender.toLowerCase())
-                            ? prev.gender.filter(
-                                (g) => g !== gender.toLowerCase()
-                              )
-                            : [...prev.gender, gender.toLowerCase()],
-                        }));
-                      }}
-                      label={gender}
-                    />
-                  ))}
-                </div>
-
+              <div className="">
+                {["Male", "Female", "Other"].map((gender) => (
+                  <CheckboxItem
+                    key={gender}
+                    checked={filters.gender.includes(gender.toLowerCase())}
+                    onChange={() => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        gender: prev.gender.includes(gender.toLowerCase())
+                          ? prev.gender.filter(
+                              (g) => g !== gender.toLowerCase()
+                            )
+                          : [...prev.gender, gender.toLowerCase()],
+                      }));
+                    }}
+                    label={gender}
+                  />
+                ))}
+              </div>
             </div>
           </FilterSection>
         </div>

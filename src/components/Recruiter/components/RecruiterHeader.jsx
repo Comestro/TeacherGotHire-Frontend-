@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
@@ -21,6 +21,20 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
 
   const profile = useSelector((state) => state.auth.userData || {});
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     dispatch(getUserData());
@@ -75,7 +89,7 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
             {/* Profile Dropdown or Login Button */}
             {profile && profile.id ? (
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button
                   className="flex items-center gap-3 text-text hover:text-primary focus:outline-none transition-colors p-2 hover:bg-background rounded-lg"
                   onClick={toggleProfileMenu}

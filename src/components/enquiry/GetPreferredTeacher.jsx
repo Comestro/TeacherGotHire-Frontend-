@@ -10,6 +10,7 @@ import {
   FiUser,
   FiSearch,
   FiChevronRight,
+  FiX,
   FiCrosshair,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
@@ -334,7 +335,16 @@ export const GetPreferredTeacher = () => {
       {/* Mobile Header / Progress - Visible only on Mobile */}
       <div className="md:hidden bg-slate-900 text-white p-4 sticky top-0 z-30">
         <div className="flex justify-between items-center mb-3">
-          <h1 className="text-lg font-bold">Find Your Teacher</h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="text-slate-400 hover:text-white transition-colors"
+              title="Exit"
+            >
+              <FiX size={20} />
+            </button>
+            <h1 className="text-lg font-bold">Find Your Teacher</h1>
+          </div>
           <span className="text-[10px] font-medium bg-slate-800 px-2 py-0.5 rounded-full text-teal-400">
             Step {currentStep + 1}/{steps.length}
           </span>
@@ -362,12 +372,21 @@ export const GetPreferredTeacher = () => {
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
 
         <div className="relative z-10 p-6 md:p-8 h-full flex flex-col">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold mb-2">Find Your Teacher</h1>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              Complete the steps to find the perfect match for your
-              requirements.
-            </p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">Find Your Teacher</h1>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Complete the steps to find the perfect match for your
+                requirements.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/")}
+              className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Exit"
+            >
+              <FiX size={24} />
+            </button>
           </div>
 
           <div className="space-y-6 flex-1">
