@@ -18,8 +18,11 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getTeacherjobType,
   getClassCategory,
+  getSubject,
 } from "../../features/jobProfileSlice";
 import { fetchSingleTeacherById } from "../../services/apiService";
+import { requestTeacher } from "../../services/profileServices";
+import ErrorMessage from "../ErrorMessage";
 
 export default function TeacherViewPageFull() {
   const { id } = useParams();
@@ -39,11 +42,9 @@ export default function TeacherViewPageFull() {
   const [modalLoading, setModalLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccessMsg, setSubmitSuccessMsg] = useState(null);
 
-  const requestTeacher = async (payload) => {
-    await new Promise((r) => setTimeout(r, 700));
-    return { success: true, job_id: "JOB-12345" };
-  };
   const maskPhoneNumber = (phone) => {
     if (!phone || phone.length < 6) return phone;
     return phone.slice(0, 4) + "****" + phone.slice(-2);
@@ -99,8 +100,11 @@ export default function TeacherViewPageFull() {
     }
   };
   const dispatch = useDispatch();
-  const { teacherjobRole, classCategories: globalClassCategories } =
-    useSelector((state) => state.jobProfile);
+  const {
+    teacherjobRole,
+    classCategories: globalClassCategories,
+    subject: allSubjects,
+  } = useSelector((state) => state.jobProfile);
 
   // We will use the global categories for the modal dropdowns to allow hiring for any category.
   // We still maintain local state for 'subjects' based on selection, but 'classCategories' should come from store.
@@ -119,6 +123,7 @@ export default function TeacherViewPageFull() {
   useEffect(() => {
     dispatch(getTeacherjobType());
     dispatch(getClassCategory());
+    dispatch(getSubject());
   }, [dispatch]);
 
   // We need to handle the 'subjects' list which updates based on selected category.
@@ -175,13 +180,23 @@ export default function TeacherViewPageFull() {
   const [prefilledFilters, setPrefilledFilters] = useState({});
 
   // Derive subjects based on selected class category from global list
+  // Note: If classCategories objects don't have 'subjects', we might need to filter 'allSubjects'
   const currentSubjects = useMemo(() => {
-    if (!selectedClassCategory || !globalClassCategories) return [];
-    const cat = globalClassCategories.find(
+    if (!selectedClassCategory) return [];
+    // Try nested first
+    const cat = globalClassCategories?.find(
       (c) => c.id.toString() === selectedClassCategory.toString()
     );
-    return cat?.subjects || [];
-  }, [selectedClassCategory, globalClassCategories]);
+    if (cat?.subjects && cat.subjects.length > 0) return cat.subjects;
+
+    // Fallback: filter global subjects if they have class_category property
+    if (allSubjects?.length > 0) {
+      return allSubjects.filter(
+        (s) => s.class_category === parseInt(selectedClassCategory)
+      );
+    }
+    return [];
+  }, [selectedClassCategory, globalClassCategories, allSubjects]);
 
   useEffect(() => {
     // Parse URL params for pre-fills
@@ -223,19 +238,10 @@ export default function TeacherViewPageFull() {
       }
     }
 
-    // For subject, we need to search across ALL categories or wait for category selection
-    // Determine subject ID if name matches. If we haven't selected a category yet, we might need to find it first.
-    if (
-      urlSubjects.length > 0 &&
-      !selectedSubject &&
-      globalClassCategories?.length > 0
-    ) {
-      let foundSub = null;
-      // Flatten all subjects to find a match
-      const allSubjects = globalClassCategories.flatMap(
-        (c) => c.subjects || []
-      );
-      foundSub = allSubjects.find((s) =>
+    // For subject, we need to search across ALL subjects
+    // Determine subject ID if name matches.
+    if (urlSubjects.length > 0 && !selectedSubject && allSubjects?.length > 0) {
+      const foundSub = allSubjects.find((s) =>
         urlSubjects.some((urlName) => {
           const decoded = decodeURIComponent(urlName).trim().toLowerCase();
           const subName = s.subject_name.trim().toLowerCase();
@@ -245,80 +251,117 @@ export default function TeacherViewPageFull() {
 
       if (foundSub) {
         setSelectedSubject(foundSub.id);
-        // If category not selected, try to infer it from the subject if possible (optional, but good for consistency)
-        if (!selectedClassCategory) {
-          const parentCat = globalClassCategories.find((c) =>
-            c.subjects?.some((s) => s.id === foundSub.id)
-          );
-          if (parentCat) setSelectedClassCategory(parentCat.id);
+        // If category not selected, try to infer it from the subject if possible (optional)
+        if (!selectedClassCategory && foundSub.class_category) {
+          setSelectedClassCategory(foundSub.class_category);
         }
       }
     }
-  }, [teacher, globalClassCategories, selectedClassCategory, selectedSubject]);
+  }, [
+    teacher,
+    globalClassCategories,
+    allSubjects,
+    selectedClassCategory,
+    selectedSubject,
+  ]);
 
   const handleSubmitRequest = async () => {
-    if (!selectedClassCategory || !selectedSubject) {
-      toast.error("Please select both class category and subject");
-      return;
-    }
-
     try {
       setModalLoading(true);
+      setSubmitError(null); // Clear previous errors
 
-      // Determine Job Type IDs (Assuming logic to map name to ID if needed, or pass as is if API accepts names.
-      // Based on user request, API expects array of integers.
-      // Since URL usually has names or IDs, we'll try to use what we have or default.
-      // NOTE: In a real scenario, we'd need to map job_type names to IDs using the stored list.
-      // For now, we'll assume we pass what we have (if they are IDs) or mapped values.
-      // *Wait*, recruiter sidebar passes names ("PGT", "TGT"). API needs IDs.
-      // We don't have the job role list here easily unless we fetch it.
-      // Simplification: We will send an empty array or try to parse if numeric,
-      // but strictly following the prompt: "job type also required... give in payload".
-      // We'll pass the array of IDs if we can, otherwise we might need to fetch metadata.
-      // Let's assume for this step we pass an array of '1' just to satisfy the structure if we can't map,
-      // OR better, let's fetch teacher job types on mount similar to sidebar.
+      // Resolve Class Category ID
+      let finalClassId = selectedClassCategory;
+      if (!finalClassId && prefilledFilters.class_category?.length > 0) {
+        const urlName = decodeURIComponent(prefilledFilters.class_category[0])
+          .trim()
+          .toLowerCase();
+        const found = globalClassCategories?.find(
+          (c) =>
+            c.name.trim().toLowerCase() === urlName ||
+            c.name
+              .trim()
+              .toLowerCase()
+              .replace(/class\s+/i, "") === urlName
+        );
+        if (found) finalClassId = found.id;
+      }
 
-      // However, to keep it simple and working:
-      // We'll trust the user selects via filters that result in IDs if possible,
-      // BUT RecruiterSidebar passes NAMES.
-      // We will look up the IDs if we had the list.
-      // Given we don't prefer fetching a new list here just for this,
-      // we'll pass the `teacher_job_type` as matching the `class_category` if sensible,
-      // OR just pass the values from URL if they are numeric.
-      // If URL has names, we might be stuck.
-      // Let's rely on the `class_category` and `subject` being the main ones.
-      // The prompt says "teacher_job_type optional array of integers".
-      // We'll try to find a matching job type from the `teacher` object if available, or omit if not critical.
-      // BUT prompt says "same put on top in filter... give in payload".
+      // Resolve Subject ID
+      let finalSubjectId = selectedSubject;
+      if (!finalSubjectId && prefilledFilters.subject?.length > 0) {
+        const urlName = decodeURIComponent(prefilledFilters.subject[0])
+          .trim()
+          .toLowerCase();
+        const found = allSubjects?.find((s) => {
+          return s.subject_name.trim().toLowerCase() == urlName;
+        });
+        if (found) finalSubjectId = found.id;
+      }
 
-      // Let's construct the payload with what we have.
+      // Resolve Job Type IDs
+      let finalJobTypeIds = [];
+      if (prefilledFilters.job_type?.length > 0) {
+        // If strictly numeric in URL, use as is. Else map from names.
+        finalJobTypeIds = prefilledFilters.job_type
+          .map((val) => {
+            if (!isNaN(val)) return parseInt(val);
+            // Try map name
+            const foundJob = teacherjobRole?.find(
+              (r) => r.teacher_job_name.toLowerCase() === val.toLowerCase()
+            );
+            return foundJob;
+          })
+          .filter(Boolean);
+      }
+
       const payload = {
         teacher_id: teacher.id,
-        recruiter_id: 1, // Ideally from auth/context, but prompt example uses 123. API will likely infer from token.
-        class_category: [parseInt(selectedClassCategory)],
-        subject: [parseInt(selectedSubject)],
-        teacher_job_type:
-          prefilledFilters.job_type?.map((id) => parseInt(id)) || [],
+        recruiter_id: 1,
+        class_category: [parseInt(finalClassId)],
+        subject: [parseInt(finalSubjectId)],
+        teacher_job_type: finalJobTypeIds.length > 0 ? finalJobTypeIds : [],
       };
 
-      // Attempt to map URL job_type names to IDs if we fetch them,
-      // OR simply pass them if the backend accepts mixed.
-      // Prompt example: "teacher_job_type": [1, 2].
-      // We will leave it empty for now unless we can map, to avoid 400 errors with strings.
-      // IMPROVEMENT: We should ideally fetch the list to map.
+      if (!finalClassId) {
+        if (prefilledFilters.class_category?.length > 0) {
+          setSubmitError(
+            `Class Category '${prefilledFilters.class_category[0]}' not found. Please select from the dropdown.`
+          );
+        } else {
+          setSubmitError(
+            "Could not determine Class Category. Please check filters."
+          );
+        }
+        setModalLoading(false);
+        return;
+      }
+      if (!finalSubjectId) {
+        if (prefilledFilters.subject?.length > 0) {
+          setSubmitError(
+            `Subject '${prefilledFilters.subject[0]}' not found. Please check for typos or select from the dropdown.`
+          );
+        } else {
+          setSubmitError("Could not determine Subject. Please check filters.");
+        }
+        setModalLoading(false);
+        return;
+      }
 
       const res = await requestTeacher(payload);
-      if (res?.success) {
-        setOpenRequestModal(false);
-        setSelectedClassCategory("");
-        setSelectedSubject("");
+
+      // Assume success if no error thrown (service throws on non-2xx)
+      // Assume success if no error thrown (service throws on non-2xx)
+      if (res) {
         setSuccess(true);
-        toast.success("Teacher request sent successfully!");
-      } else {
-        throw new Error("Request failed");
+        setSubmitSuccessMsg("Teacher request sent successfully!");
+        // Keep modal open to show success message
       }
     } catch (err) {
-      toast.error(`Failed to request teacher: ${err?.message || "Unknown"}`);
+      console.error(err);
+      setSubmitError(
+        `Failed to request teacher: ${err?.message || "Unknown error"}`
+      );
     } finally {
       setModalLoading(false);
     }
@@ -337,7 +380,11 @@ export default function TeacherViewPageFull() {
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="bg-red-50 text-red-700 p-6 rounded">Error: {error}</div>
+        <ErrorMessage
+          message={error}
+          type="error"
+          className="max-w-md w-full"
+        />
       </div>
     );
 
@@ -945,164 +992,150 @@ export default function TeacherViewPageFull() {
             </div>
 
             <div className="p-6 space-y-5">
-              <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-100 mb-2">
-                <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 overflow-hidden border border-teal-200">
-                  <img
-                    src={
-                      teacher.profiles?.profile_picture || "/images/profile.jpg"
-                    }
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-teal-600 font-bold uppercase">
-                    Candidate
-                  </p>
-                  <p className="text-sm font-bold text-slate-800">
-                    {teacher.Fname} {teacher.Lname}
-                  </p>
-                </div>
-              </div>
-
-              {/* Request Summary / Review Section */}
-              {(prefilledFilters.job_type?.length > 0 ||
-                selectedClassCategory ||
-                selectedSubject) && (
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-2">
-                    Request Summary
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {/* Job Types */}
-                    {prefilledFilters.job_type?.map((id) => {
-                      const role = teacherjobRole?.find(
-                        (r) => r.id.toString() === id.toString()
-                      );
-                      return role ? (
-                        <span
-                          key={`job-${id}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm"
-                        >
-                          <span className="text-slate-400 text-[10px] uppercase">
-                            Job:
-                          </span>
-                          {role.teacher_job_name}
-                        </span>
-                      ) : null;
-                    })}
-
-                    {/* Class Category - Show from State OR URL */}
-                    {(selectedClassCategory ||
-                      prefilledFilters.class_category?.length > 0) && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm">
-                        <span className="text-slate-400 text-[10px] uppercase">
-                          Class:
-                        </span>
-                        {selectedClassCategory
-                          ? globalClassCategories?.find(
-                              (c) =>
-                                c.id.toString() ===
-                                selectedClassCategory.toString()
-                            )?.name
-                          : decodeURIComponent(
-                              prefilledFilters.class_category[0]
-                            )}
-                      </span>
-                    )}
-
-                    {/* Subject - Show from State OR URL */}
-                    {(selectedSubject ||
-                      prefilledFilters.subject?.length > 0) && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm">
-                        <span className="text-slate-400 text-[10px] uppercase">
-                          Subject:
-                        </span>
-                        {/* Find subject in any category or currentSubjects, here we can look in flat list if needed, or simplified */}
-                        {selectedSubject
-                          ? globalClassCategories
-                              ?.flatMap((c) => c.subjects || [])
-                              .find(
-                                (s) =>
-                                  s.id.toString() === selectedSubject.toString()
-                              )?.subject_name
-                          : decodeURIComponent(prefilledFilters.subject[0])}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {!globalClassCategories || globalClassCategories.length === 0 ? (
-                // Just a loading or empty state if global data failed
-                <div className="text-center py-8">
-                  <p className="text-slate-500">Loading options...</p>
+              {submitSuccessMsg ? (
+                <div className="py-4">
+                  <ErrorMessage message={submitSuccessMsg} type="success" />
                 </div>
               ) : (
                 <>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Select Class Category
-                    </label>
-                    <select
-                      value={selectedClassCategory}
-                      onChange={(e) => {
-                        setSelectedClassCategory(e.target.value);
-                        setSelectedSubject("");
-                      }}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    >
-                      <option value="">Choose a category...</option>
-                      {globalClassCategories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-100 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 overflow-hidden border border-teal-200">
+                      <img
+                        src={
+                          teacher.profiles?.profile_picture ||
+                          "/images/profile.jpg"
+                        }
+                        className="w-full h-full object-cover"
+                        alt=""
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs text-teal-600 font-bold uppercase">
+                        Candidate
+                      </p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {teacher.Fname} {teacher.Lname}
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Select Subject
-                    </label>
-                    <select
-                      value={selectedSubject}
-                      onChange={(e) => setSelectedSubject(e.target.value)}
-                      disabled={!selectedClassCategory}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="">
-                        {selectedClassCategory
-                          ? "Choose a subject..."
-                          : "Select class category first"}
-                      </option>
-                      {currentSubjects.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.subject_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Request Summary / Review Section */}
+                  {(prefilledFilters.job_type?.length > 0 ||
+                    selectedClassCategory ||
+                    selectedSubject) && (
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+                      {/* ... existing summary content ... */}
+                      <p className="text-xs font-bold text-slate-500 uppercase mb-2">
+                        Request Summary
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {/* Job Types */}
+                        {prefilledFilters.job_type?.map((id) => {
+                          const role = teacherjobRole?.find(
+                            (r) => r.id.toString() === id.toString()
+                          );
+                          return role ? (
+                            <span
+                              key={`job-${id}`}
+                              className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm"
+                            >
+                              <span className="text-slate-400 text-[10px] uppercase">
+                                Job:
+                              </span>
+                              {role.teacher_job_name}
+                            </span>
+                          ) : null;
+                        })}
+
+                        {/* Class Category - Show from State OR URL */}
+                        {(selectedClassCategory ||
+                          prefilledFilters.class_category?.length > 0) && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm">
+                            <span className="text-slate-400 text-[10px] uppercase">
+                              Class:
+                            </span>
+                            {selectedClassCategory
+                              ? globalClassCategories?.find(
+                                  (c) =>
+                                    c.id.toString() ===
+                                    selectedClassCategory.toString()
+                                )?.name
+                              : decodeURIComponent(
+                                  prefilledFilters.class_category[0]
+                                )}
+                          </span>
+                        )}
+
+                        {/* Subject - Show from State OR URL */}
+                        {(selectedSubject ||
+                          prefilledFilters.subject?.length > 0) && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded text-slate-700 shadow-sm">
+                            <span className="text-slate-400 text-[10px] uppercase">
+                              Subject:
+                            </span>
+                            {selectedSubject
+                              ? globalClassCategories
+                                  ?.flatMap((c) => c.subjects || [])
+                                  .find(
+                                    (s) =>
+                                      s.id.toString() ===
+                                      selectedSubject.toString()
+                                  )?.subject_name
+                              : decodeURIComponent(prefilledFilters.subject[0])}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {!globalClassCategories ||
+                  globalClassCategories.length === 0 ? (
+                    // Just a loading or empty state if global data failed
+                    <div className="text-center py-8">
+                      <p className="text-slate-500">Loading options...</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Selection Inputs Removed as per request */}
+                      {/* The modal now relies on URL pre-fills and auto-resolution */}
+                    </>
+                  )}
+
+                  {/* Error Message Display */}
+                  <ErrorMessage
+                    message={submitError}
+                    type="error"
+                    onDismiss={() => setSubmitError(null)}
+                  />
                 </>
               )}
             </div>
 
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setOpenRequestModal(false)}
-                className="px-5 py-2.5 rounded-lg font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitRequest}
-                disabled={
-                  modalLoading || !selectedClassCategory || !selectedSubject
-                }
-                className="px-6 py-2.5 rounded-lg bg-teal-600 text-white font-semibold shadow-md hover:bg-teal-700 hover:shadow-lg disabled:opacity-50 disabled:shadow-none transition-all"
-              >
-                {modalLoading ? "Sending..." : "Send Request"}
-              </button>
+              {submitSuccessMsg ? (
+                <button
+                  onClick={() => setOpenRequestModal(false)}
+                  className="px-5 py-2.5 rounded-lg font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+                >
+                  Close
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setOpenRequestModal(false)}
+                    className="px-5 py-2.5 rounded-lg font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitRequest}
+                    disabled={modalLoading}
+                    className="px-5 py-2.5 rounded-lg font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
+                  >
+                    {modalLoading ? "Sending..." : "Send Request"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
