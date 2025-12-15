@@ -313,9 +313,9 @@ const TeacherFilter = () => {
                   key={teacher.id}
                   className="group bg-white rounded-xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-lg transition-all duration-300 ease-in-out"
                 >
-                  <div className="flex flex-col sm:flex-row gap-5 items-start">
+                  <div className="flex gap-5 items-start">
                     {/* Left: Profile Image */}
-                    <div className="flex-shrink-0 relative">
+                    <div className="flex-shrink-0  relative">
                       <div className="w-20 h-20 rounded-xl overflow-hidden shadow-sm border-2 border-slate-100 group-hover:border-teal-100 transition-colors">
                         <img
                           className="w-full h-full object-cover"
