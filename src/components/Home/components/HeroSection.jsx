@@ -1,16 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const HeroSection = () => {
-  const [expandedCards, setExpandedCards] = useState({
-    student: false,
-    institute: false,
-    teacher: false,
-  });
-  const INITIAL_STEPS_TO_SHOW = 3;
-
   const studentSteps = [
     "सबसे पहले www.ptpinstitute.com को सर्च करें!",
     'होम पेज पर जाएं, "शिक्षक खोजें" बटन पर क्लिक करें!',
@@ -120,13 +112,6 @@ const HeroSection = () => {
     },
   ];
 
-  const toggleCardExpansion = (cardId) => {
-    setExpandedCards((prev) => ({
-      ...prev,
-      [cardId]: !prev[cardId],
-    }));
-  };
-
   return (
     <div className="relative w-full bg-slate-50">
       {/* Hero Section */}
@@ -197,15 +182,14 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Highlight Steps Section */}
+      {/* Simplified Highlight Section */}
       <div className="relative z-0 py-12 md:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {highlightItems.map((item, index) => (
+            {highlightItems.map((item) => (
               <div
                 key={item.title}
-                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group h-full flex flex-col"
               >
                 <div
                   className={`mb-6 p-4 rounded-2xl inline-block ${
@@ -225,65 +209,29 @@ const HeroSection = () => {
                   {item.content}
                 </p>
 
-                {/* Steps Section - Always visible (3 steps) */}
+                {/* Steps List - Simple & Clean */}
                 {item.steps && (
-                  <div className="mt-6 pt-6 border-t border-slate-100">
-                    <div className="space-y-4">
-                      {item.steps
-                        .slice(
-                          0,
-                          expandedCards[item.id]
-                            ? item.steps.length
-                            : INITIAL_STEPS_TO_SHOW
-                        )
-                        .map((step, index) => (
-                          <div key={index} className="flex items-start">
-                            <div className="flex-shrink-0 mr-3 mt-0.5">
-                              <div
-                                className={`w-6 h-6 ${
-                                  item.color === "indigo"
-                                    ? "bg-indigo-100 text-indigo-600"
-                                    : item.color === "purple"
-                                    ? "bg-purple-100 text-purple-600"
-                                    : "bg-teal-100 text-teal-600"
-                                } rounded-full flex items-center justify-center text-xs font-bold`}
-                              >
-                                {index + 1}
-                              </div>
-                            </div>
-                            <p className="text-sm text-slate-600 leading-snug">
-                              {step}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-
-                    {/* Show More/Less Button (only if there are more steps) */}
-                    {item.steps.length > INITIAL_STEPS_TO_SHOW && (
-                      <button
-                        onClick={() => toggleCardExpansion(item.id)}
-                        className={`mt-4 text-sm font-bold flex items-center transition-colors ${
-                          item.color === "indigo"
-                            ? "text-indigo-600 hover:text-indigo-700"
-                            : item.color === "purple"
-                            ? "text-purple-600 hover:text-purple-700"
-                            : "text-teal-600 hover:text-teal-700"
-                        }`}
-                      >
-                        {expandedCards[item.id] ? (
-                          <>
-                            Show Less
-                            <IoIosArrowUp className="ml-1" />
-                          </>
-                        ) : (
-                          <>
-                            Show {item.steps.length - INITIAL_STEPS_TO_SHOW}{" "}
-                            More Steps
-                            <IoIosArrowDown className="ml-1" />
-                          </>
-                        )}
-                      </button>
-                    )}
+                  <div className="mt-auto pt-6 border-t border-slate-100">
+                    <ul className="space-y-3">
+                      {item.steps.map((step, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <span
+                            className={`flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
+                              item.color === "indigo"
+                                ? "bg-indigo-100 text-indigo-600"
+                                : item.color === "purple"
+                                ? "bg-purple-100 text-purple-600"
+                                : "bg-teal-100 text-teal-600"
+                            }`}
+                          >
+                            {index + 1}
+                          </span>
+                          <span className="text-sm text-slate-600 leading-snug">
+                            {step}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
