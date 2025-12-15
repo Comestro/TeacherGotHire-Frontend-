@@ -606,10 +606,10 @@ export const GetPreferredTeacher = () => {
               </div>
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-3 md:gap-5">
                   {/* State */}
                   <div className="group">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mb-1.5">
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         State
                       </label>
@@ -636,7 +636,7 @@ export const GetPreferredTeacher = () => {
                   </div>
 
                   {/* District Selection */}
-                  <div className="group">
+                  <div className="group mt-2">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
                       District <span className="text-red-500">*</span>
                     </label>
@@ -692,38 +692,38 @@ export const GetPreferredTeacher = () => {
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Post Office */}
-                {postOffices.length > 0 && (
-                  <div className="group">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                        Post Office
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={selectedPostOffice}
-                          onChange={(e) =>
-                            setSelectedPostOffice(e.target.value)
-                          }
-                          className="w-full p-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none appearance-none cursor-pointer"
-                        >
-                          <option value="">Select Post Office</option>
-                          {postOffices.map((po, idx) => (
-                            <option key={idx} value={po.Name}>
-                              {po.Name}
-                            </option>
-                          ))}
-                        </select>
-                        <FiChevronDown
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                          size={20}
-                        />
+                  {/* Post Office - Moved Inside Grid */}
+                  {postOffices.length > 0 && (
+                    <div className="group">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Post Office
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={selectedPostOffice}
+                            onChange={(e) =>
+                              setSelectedPostOffice(e.target.value)
+                            }
+                            className="w-full p-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none appearance-none cursor-pointer"
+                          >
+                            <option value="">Select Post Office</option>
+                            {postOffices.map((po, idx) => (
+                              <option key={idx} value={po.Name}>
+                                {po.Name}
+                              </option>
+                            ))}
+                          </select>
+                          <FiChevronDown
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                            size={20}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
