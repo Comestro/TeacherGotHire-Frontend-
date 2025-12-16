@@ -1,42 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  IconButton,
-  Snackbar,
-  Paper,
-  useTheme,
-  useMediaQuery,
-  CircularProgress,
-  Backdrop,
-  Alert,
-  InputAdornment,
-  Stack,
-  Tooltip,
-  Modal,
-  Menu,
-  MenuItem,
-  Chip,
-} from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { DataGrid } from "@mui/x-data-grid";
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Close as CloseIcon,
-  Refresh as RefreshIcon,
-  FilterList as FilterIcon,
-  MoreVert as MoreIcon,
-  School as SchoolIcon,
-  CheckCircle as CheckCircleIcon,
-  WarningAmber as WarningAmberIcon,
-} from "@mui/icons-material";
+  FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiSearch,
+  FiX,
+  FiRefreshCw,
+  FiAward,
+  FiCheckCircle,
+  FiAlertCircle,
+} from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import {
   getQualification,
@@ -46,43 +19,57 @@ import {
 } from "../../services/adminManageQualificationApi";
 
 const ManageQualification = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  
   const [qualifications, setQualifications] = useState([]);
+  const [filteredQualifications, setFilteredQualifications] = useState([]);
   const [selectedQualifications, setSelectedQualifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [openAddEditModal, setOpenAddEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [currentQualification, setCurrentQualification] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [snackbar, setSnackbar] = useState({
+  const [formErrors, setFormErrors] = useState({});
+  const [notification, setNotification] = useState({
     open: false,
     message: "",
-    severity: "success",
+    type: "success",
   });
-  const [formErrors, setFormErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 10,
-    page: 0
+  const [newQualificationName, setNewQualificationName] = useState("");
+
+  const inputRef = useRef(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Sort defaults
+  const [sortConfig, setSortConfig] = useState({
+    key: "name",
+    direction: "asc",
   });
-  const [sortModel, setSortModel] = useState([{ field: 'name', sort: 'asc' }]);
-  const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
-  const [actionMenuRow, setActionMenuRow] = useState(null);
 
   useEffect(() => {
     fetchQualifications();
   }, []);
 
+  useEffect(() => {
+    if (openAddEditModal && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 100);
+    }
+  }, [openAddEditModal]);
+
   const fetchQualifications = async () => {
     setLoading(true);
     try {
       const data = await getQualification();
-      setQualifications(Array.isArray(data) ? data : []);
+      const processedData = Array.isArray(data) ? data : [];
+      setQualifications(processedData);
+      setFilteredQualifications(processedData);
     } catch (error) {
-      showSnackbar(
-        error.response?.data?.message || "Failed to load qualifications. Please try again.",
+      showNotification(
+        error.response?.data?.message || "Failed to load qualifications.",
         "error"
       );
     } finally {
@@ -90,35 +77,36 @@ const ManageQualification = () => {
     }
   };
 
-  const showSnackbar = (message, severity = "success") => {
-    let displayMessage;
-    if (Array.isArray(message)) {
-      displayMessage = message[0];
-    } else if (typeof message === 'object' && message !== null) {
-      const firstKey = Object.keys(message)[0];
-      const firstValue = message[firstKey];
-      displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
-    } else {
-      displayMessage = message;
+  const showNotification = (message, type = "success") => {
+    let displayMessage = message;
+    if (typeof message === "object" && message !== null) {
+      displayMessage = Object.values(message).flat().join(", ");
+    } else if (Array.isArray(message)) {
+      displayMessage = message.join(", ");
     }
-    setSnackbar({
+
+    setNotification({
       open: true,
       message: displayMessage,
-      severity,
+      type,
     });
+    setTimeout(() => {
+      setNotification((prev) => ({ ...prev, open: false }));
+    }, 4000);
   };
 
   const handleOpenAddEditModal = (qualification = null) => {
     setCurrentQualification(qualification);
+    setNewQualificationName(qualification ? qualification.name : "");
     setFormErrors({});
     setOpenAddEditModal(true);
   };
 
   const handleCloseAddEditModal = () => {
-    if (submitting) return;
-    setCurrentQualification(null);
-    setFormErrors({});
     setOpenAddEditModal(false);
+    setCurrentQualification(null);
+    setNewQualificationName("");
+    setFormErrors({});
   };
 
   const handleOpenDeleteModal = (qualification) => {
@@ -127,40 +115,112 @@ const ManageQualification = () => {
   };
 
   const handleCloseDeleteModal = () => {
-    if (submitting) return;
-    setCurrentQualification(null);
     setOpenDeleteModal(false);
+    setCurrentQualification(null);
   };
 
-  const handleActionMenuOpen = (event, row) => {
-    setActionMenuAnchorEl(event.currentTarget);
-    setActionMenuRow(row);
+  const validateForm = () => {
+    const errors = {};
+    if (!newQualificationName || newQualificationName.trim() === "") {
+      errors.name = "Qualification name is required";
+    } else if (newQualificationName.trim().length < 2) {
+      errors.name = "Qualification name must be at least 2 characters";
+    } else if (newQualificationName.trim().length > 100) {
+      errors.name = "Qualification name cannot exceed 100 characters";
+    } else {
+      const duplicate = qualifications.find(
+        (q) =>
+          q.name.toLowerCase() === newQualificationName.trim().toLowerCase() &&
+          q.id !== currentQualification?.id
+      );
+      if (duplicate) {
+        errors.name = "Qualification with this name already exists";
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const handleActionMenuClose = () => {
-    setActionMenuAnchorEl(null);
-    setActionMenuRow(null);
+  const handleSaveQualification = async () => {
+    if (!validateForm()) return;
+
+    setSubmitting(true);
+    try {
+      const payload = { name: newQualificationName.trim() };
+
+      if (currentQualification) {
+        await updateQualification(currentQualification.id, payload);
+        const updatedList = qualifications.map((q) =>
+          q.id === currentQualification.id ? { ...q, ...payload } : q
+        );
+        setQualifications(updatedList);
+        setFilteredQualifications(updatedList);
+        showNotification(
+          `Qualification "${payload.name}" updated successfully`
+        );
+      } else {
+        const newQual = await createQualification(payload);
+        const newList = [...qualifications, newQual];
+        setQualifications(newList);
+        setFilteredQualifications(newList);
+        showNotification(`Qualification "${newQual.name}" added successfully`);
+      }
+      handleCloseAddEditModal();
+    } catch (error) {
+      if (error.response?.data) {
+        const responseData = error.response.data;
+        if (responseData.message) {
+          showNotification(responseData.message, "error");
+        } else if (responseData.non_field_errors) {
+          showNotification(responseData.non_field_errors[0], "error");
+        } else if (responseData.name) {
+          setFormErrors({ name: responseData.name[0] });
+          showNotification(responseData.name[0], "error");
+        } else {
+          showNotification(
+            `Failed to ${
+              currentQualification ? "update" : "add"
+            } qualification.`,
+            "error"
+          );
+        }
+      } else {
+        showNotification(
+          `Failed to ${currentQualification ? "update" : "add"} qualification.`,
+          "error"
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteQualification = async () => {
     if (!currentQualification) return;
+
     setSubmitting(true);
     try {
       await deleteQualification(currentQualification.id);
-      setQualifications(
-        qualifications.filter(
-          (qualification) => qualification.id !== currentQualification.id
-        )
+      const newList = qualifications.filter(
+        (q) => q.id !== currentQualification.id
       );
-      showSnackbar(`Qualification "${currentQualification.name}" deleted successfully.`);
-      if (selectedQualifications.includes(currentQualification.id)) {
-        setSelectedQualifications(
-          selectedQualifications.filter(id => id !== currentQualification.id)
-        );
-      }
+      setQualifications(newList);
+      setFilteredQualifications(newList);
+      setSelectedQualifications(
+        selectedQualifications.filter((id) => id !== currentQualification.id)
+      );
+
+      showNotification(
+        `Qualification "${currentQualification.name}" deleted successfully`
+      );
       handleCloseDeleteModal();
     } catch (error) {
-      handleApiError(error, "Failed to delete qualification.");
+      if (error.response?.data?.message) {
+        showNotification(error.response.data.message, "error");
+      } else {
+        showNotification("Failed to delete qualification.", "error");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -173,1005 +233,442 @@ const ManageQualification = () => {
       await Promise.all(
         selectedQualifications.map((id) => deleteQualification(id))
       );
-      setQualifications(
-        qualifications.filter(
-          (qualification) => !selectedQualifications.includes(qualification.id)
-        )
+      const newList = qualifications.filter(
+        (q) => !selectedQualifications.includes(q.id)
       );
-      showSnackbar(`${selectedQualifications.length} qualifications deleted successfully.`);
+      setQualifications(newList);
+      setFilteredQualifications(newList);
       setSelectedQualifications([]);
+      showNotification(
+        `${selectedQualifications.length} qualifications deleted successfully`
+      );
     } catch (error) {
-      
-      handleApiError(error, "Failed to delete selected qualifications.");
+      showNotification("Failed to delete some qualifications.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleApiError = (error, fallbackMessage) => {
-    if (error.response?.data) {
-      const responseData = error.response.data;
-      if (typeof responseData === 'object' && !Array.isArray(responseData)) {
-        const fieldErrors = {};
-        let hasFieldErrors = false;
-        for (const [field, errorMessages] of Object.entries(responseData)) {
-          if (Array.isArray(errorMessages) && errorMessages.length > 0) {
-            fieldErrors[field] = errorMessages[0];
-            hasFieldErrors = true;
-          } else if (typeof errorMessages === 'string') {
-            fieldErrors[field] = errorMessages;
-            hasFieldErrors = true;
-          }
-        }
-        if (hasFieldErrors) {
-          setFormErrors(fieldErrors);
-          const firstField = Object.keys(fieldErrors)[0];
-          showSnackbar(fieldErrors[firstField], "error");
-          return;
-        }
-      }
-      if (responseData.non_field_errors && Array.isArray(responseData.non_field_errors)) {
-        showSnackbar(responseData.non_field_errors[0], "error");
-        return;
-      }
-      if (typeof responseData === 'string') {
-        showSnackbar(responseData, "error");
-        return;
-      }
-      if (responseData.message) {
-        showSnackbar(responseData.message, "error");
-        return;
-      }
-      if (responseData.detail) {
-        showSnackbar(responseData.detail, "error");
-        return;
-      }
-    }
-    showSnackbar(fallbackMessage, "error");
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    if (!currentQualification?.name || currentQualification.name.trim() === "") {
-      errors.name = "Qualification name is required";
-    } else if (currentQualification.name.length < 2) {
-      errors.name = "Qualification name must be at least 2 characters";
-    } else if (currentQualification.name.length > 100) {
-      errors.name = "Qualification name cannot exceed 100 characters";
+  // Search
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = qualifications.filter((q) =>
+        q.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredQualifications(filtered);
     } else {
-      const duplicate = qualifications.find(
-        (qual) =>
-          qual.name.toLowerCase() === currentQualification.name.trim().toLowerCase() &&
-          qual.id !== currentQualification?.id
-      );
-      if (duplicate) {
-        errors.name = "This qualification name already exists";
-      }
+      setFilteredQualifications(qualifications);
     }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    setCurrentPage(1);
+  }, [searchTerm, qualifications]);
+
+  // Sort
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc")
+      direction = "desc";
+    setSortConfig({ key, direction });
   };
 
-  const handleSaveQualification = async () => {
-    if (!validateForm()) return;
-    setSubmitting(true);
-    try {
-      const payload = {
-        name: currentQualification.name.trim(),
-      };
-      if (currentQualification.id) {
-        await updateQualification(currentQualification.id, payload);
-        setQualifications(
-          qualifications.map((qualification) =>
-            qualification.id === currentQualification.id
-              ? { ...qualification, ...payload }
-              : qualification
-          )
-        );
-        showSnackbar(`Qualification "${payload.name}" updated successfully.`);
-      } else {
-        const newQualification = await createQualification(payload);
-        setQualifications([...qualifications, newQualification]);
-        showSnackbar(`Qualification "${payload.name}" added successfully.`);
-      }
-      handleCloseAddEditModal();
-    } catch (error) {
-      
-      handleApiError(
-        error, 
-        `Failed to ${currentQualification.id ? 'update' : 'add'} qualification. Please try again.`
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentQualification({
-      ...(currentQualification || {}),
-      [name]: value
-    });
-    if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
-        [name]: undefined
+  const sortedQualifications = React.useMemo(() => {
+    let items = [...filteredQualifications];
+    if (sortConfig.key) {
+      items.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key])
+          return sortConfig.direction === "asc" ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key])
+          return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
       });
     }
-  };
+    return items;
+  }, [filteredQualifications, sortConfig]);
 
-  const handleSelectAll = (newSelection) => {
-    setSelectedQualifications(newSelection);
-  };
-
-  const filteredQualifications = qualifications.filter((qual) =>
-    qual.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentQualificationsList = sortedQualifications.slice(
+    indexOfFirstItem,
+    indexOfLastItem
   );
+  const totalPages = Math.ceil(sortedQualifications.length / itemsPerPage);
 
-  const columns = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      width: 80,
-      sortable: true,
-      renderCell: (params) => (
-        <Chip
-          label={`#${params.value}`}
-          size="small"
-          sx={{
-            bgcolor: alpha('#0d9488', 0.1),
-            color: '#0d9488',
-            fontWeight: 600,
-          }}
-        />
-      ),
-    },
-    {
-      field: 'name',
-      headerName: 'Qualification Name',
-      flex: 1,
-      minWidth: 200,
-      sortable: true,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor: '#0d9488',
-            }}
-          />
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-            {params.value}
-          </Typography>
-        </Box>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 140,
-      sortable: false,
-      headerAlign: 'center',
-      align: 'center',
-      renderCell: (params) => (
-        <Stack direction="row" spacing={0.5}>
-          <Tooltip title="Edit Qualification" arrow>
-            <IconButton
-              size="small"
-              onClick={() => handleOpenAddEditModal(params.row)}
-              sx={{
-                color: '#0d9488',
-                bgcolor: alpha('#0d9488', 0.1),
-                '&:hover': {
-                  bgcolor: alpha('#0d9488', 0.2),
-                },
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete Qualification" arrow>
-            <IconButton
-              size="small"
-              onClick={() => handleOpenDeleteModal(params.row)}
-              sx={{
-                color: '#ef4444',
-                bgcolor: alpha('#ef4444', 0.1),
-                '&:hover': {
-                  bgcolor: alpha('#ef4444', 0.2),
-                },
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="More Options" arrow>
-            <IconButton
-              size="small"
-              onClick={(e) => handleActionMenuOpen(e, params.row)}
-              sx={{
-                color: '#64748B',
-                bgcolor: alpha('#64748B', 0.1),
-                '&:hover': {
-                  bgcolor: alpha('#64748B', 0.2),
-                },
-              }}
-            >
-              <MoreIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      ),
-    }
-  ];
+  const handleSelectAll = (e) => {
+    if (e.target.checked)
+      setSelectedQualifications(currentQualificationsList.map((q) => q.id));
+    else setSelectedQualifications([]);
+  };
+
+  const handleSelectOne = (id) => {
+    if (selectedQualifications.includes(id))
+      setSelectedQualifications(selectedQualifications.filter((i) => i !== id));
+    else setSelectedQualifications([...selectedQualifications, id]);
+  };
 
   return (
     <Layout>
-      <Box sx={{ width: '100%' }}>
-        {/* Compact Header */}
-        <Box
-          sx={{
-            bgcolor: '#F8FAFC',
-            mb: 3,
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                color: '#1E293B',
-                mb: 0.5,
-              }}
-            >
-              Manage Teacher Qualifications
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+        {/* Header */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Manage Qualifications
+            </h1>
+            <p className="text-sm text-gray-500">
               Create and manage teacher qualification requirements
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
+            </p>
+          </div>
+          <button
             onClick={() => handleOpenAddEditModal()}
-            sx={{
-              bgcolor: '#0d9488',
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              '&:hover': {
-                bgcolor: '#0a7a6f',
-              },
-            }}
+            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm"
           >
+            <FiPlus size={20} />
             Add New Qualification
-          </Button>
-        </Box>
+          </button>
+        </div>
 
-        {/* Main Content Card */}
-        <Card
-          elevation={0}
-          sx={{
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            overflow: 'hidden',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          }}
-        >
-          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            {/* Search and Actions Bar */}
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between',
-                alignItems: { xs: 'stretch', sm: 'center' },
-                gap: 2,
-                mb: 3,
-                pb: 2,
-                borderBottom: '2px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <TextField
-                  variant="outlined"
-                  size="small"
-                  placeholder="Search qualifications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{
-                    minWidth: { xs: '100%', sm: '280px' },
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      '&:hover fieldset': {
-                        borderColor: '#0d9488',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#0d9488',
-                      },
-                    },
-                  }}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#0d9488' }} />
-                        </InputAdornment>
-                      ),
-                    }
-                  }}
-                />
-              </Box>
+        {/* Content Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Toolbar */}
+          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+            <div className="relative w-full sm:w-72">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search qualifications..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
+              />
+            </div>
 
-              <Stack direction="row" spacing={1}>
-                <Tooltip title="Refresh Data">
-                  <IconButton
-                    size="small"
-                    onClick={fetchQualifications}
-                    sx={{
-                      bgcolor: alpha('#0d9488', 0.1),
-                      color: '#0d9488',
-                      '&:hover': {
-                        bgcolor: alpha('#0d9488', 0.2),
-                      },
-                    }}
-                  >
-                    <RefreshIcon />
-                  </IconButton>
-                </Tooltip>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<FilterIcon />}
-                  sx={{
-                    display: { xs: 'none', md: 'flex' },
-                    borderColor: '#0d9488',
-                    color: '#0d9488',
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    '&:hover': {
-                      borderColor: '#0d9488',
-                      bgcolor: alpha('#0d9488', 0.05),
-                    },
-                  }}
-                >
-                  Filter
-                </Button>
-                {selectedQualifications.length > 0 && (
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={handleBulkDelete}
-                    disabled={submitting}
-                    sx={{
-                      textTransform: 'none',
-                      borderRadius: 2,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Delete ({selectedQualifications.length})
-                  </Button>
-                )}
-              </Stack>
-            </Box>
-
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-                <CircularProgress sx={{ color: '#0d9488' }} size={48} />
-              </Box>
-            ) : filteredQualifications.length === 0 ? (
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  py: 8,
-                  px: 3,
-                }}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={fetchQualifications}
+                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                title="Refresh"
               >
-                <SchoolIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
-                <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
-                  {searchTerm ? "No qualifications found" : "No qualifications yet"}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                <FiRefreshCw size={18} />
+              </button>
+              {selectedQualifications.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+                >
+                  <FiTrash2 size={16} />
+                  Delete ({selectedQualifications.length})
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="p-8 text-center text-gray-500 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mb-2"></div>
+                Loading qualifications...
+              </div>
+            ) : sortedQualifications.length === 0 ? (
+              <div className="p-12 text-center text-gray-500">
+                <FiAward className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900">
+                  No qualifications found
+                </h3>
+                <p className="mt-1 text-sm">
                   {searchTerm
                     ? "Try adjusting your search terms"
-                    : "Get started by creating your first qualification"}
-                </Typography>
-                {!searchTerm && (
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => handleOpenAddEditModal()}
-                    sx={{
-                      bgcolor: '#0d9488',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      px: 4,
-                      py: 1.5,
-                      borderRadius: 2,
-                      '&:hover': {
-                        bgcolor: '#0a7a6f',
-                      },
-                    }}
-                  >
-                    Create First Qualification
-                  </Button>
-                )}
-              </Box>
+                    : "Get started by adding a new qualification"}
+                </p>
+              </div>
             ) : (
-              <Box
-                sx={{
-                  height: 500,
-                  width: '100%',
-                  '& .MuiDataGrid-root': {
-                    border: 'none',
-                  },
-                  '& .MuiDataGrid-columnHeaders': {
-                    bgcolor: alpha('#0d9488', 0.05),
-                    borderBottom: '2px solid',
-                    borderColor: '#0d9488',
-                    '& .MuiDataGrid-columnHeaderTitle': {
-                      fontWeight: 700,
-                      color: '#1E293B',
-                    },
-                  },
-                  '& .MuiDataGrid-row': {
-                    '&:hover': {
-                      bgcolor: alpha('#0d9488', 0.04),
-                    },
-                    '&.Mui-selected': {
-                      bgcolor: alpha('#0d9488', 0.08),
-                      '&:hover': {
-                        bgcolor: alpha('#0d9488', 0.12),
-                      },
-                    },
-                  },
-                  '& .MuiCheckbox-root': {
-                    color: '#0d9488',
-                    '&.Mui-checked': {
-                      color: '#0d9488',
-                    },
-                  },
-                }}
-              >
-                <DataGrid
-                  rows={filteredQualifications}
-                  columns={columns}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={setPaginationModel}
-                  pageSizeOptions={[5, 10, 25, 50]}
-                  pagination
-                  checkboxSelection
-                  disableRowSelectionOnClick
-                  sortModel={sortModel}
-                  onSortModelChange={setSortModel}
-                  onRowSelectionModelChange={(newSelection) => {
-                    setSelectedQualifications(newSelection);
-                  }}
-                  rowSelectionModel={selectedQualifications}
-                  loading={loading}
-                  autoHeight={false}
-                  getRowHeight={() => 'auto'}
-                  getEstimatedRowHeight={() => 60}
-                  sx={{
-                    '& .MuiDataGrid-row': {
-                      minHeight: '52px!important',
-                    },
-                    '& .MuiDataGrid-cell': {
-                      py: 1.5,
-                    },
-                  }}
-                />
-              </Box>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="p-4 w-12 text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          currentQualificationsList.length > 0 &&
+                          selectedQualifications.length ===
+                            currentQualificationsList.length
+                        }
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                      />
+                    </th>
+                    <th
+                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("id")}
+                    >
+                      ID
+                    </th>
+                    <th
+                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("name")}
+                    >
+                      Qualification Name
+                    </th>
+                    <th className="p-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {currentQualificationsList.map((qual) => (
+                    <tr
+                      key={qual.id}
+                      className={`hover:bg-teal-50/30 transition-colors ${
+                        selectedQualifications.includes(qual.id)
+                          ? "bg-teal-50/50"
+                          : ""
+                      }`}
+                    >
+                      <td className="p-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedQualifications.includes(qual.id)}
+                          onChange={() => handleSelectOne(qual.id)}
+                          className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                        />
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          #{qual.id}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                          <span className="font-medium text-gray-900">
+                            {qual.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenAddEditModal(qual)}
+                            className="p-1.5 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                            title="Edit"
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleOpenDeleteModal(qual)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Action Menu */}
-        <Menu
-          anchorEl={actionMenuAnchorEl}
-          open={Boolean(actionMenuAnchorEl)}
-          onClose={handleActionMenuClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          PaperProps={{
-            elevation: 3,
-            sx: {
-              borderRadius: 2,
-              minWidth: 180,
-              mt: 1,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-            },
-          }}
-        >
-          <MenuItem 
-            onClick={() => {
-              handleOpenAddEditModal(actionMenuRow);
-              handleActionMenuClose();
-            }}
-            sx={{
-              py: 1.5,
-              px: 2,
-              '&:hover': {
-                bgcolor: alpha('#0d9488', 0.08),
-              },
-            }}
-          >
-            <EditIcon fontSize="small" sx={{ mr: 1.5, color: '#0d9488' }} />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>Edit Qualification</Typography>
-          </MenuItem>
-          <MenuItem 
-            onClick={() => {
-              handleOpenDeleteModal(actionMenuRow);
-              handleActionMenuClose();
-            }}
-            sx={{
-              py: 1.5,
-              px: 2,
-              '&:hover': {
-                bgcolor: alpha('#ef4444', 0.08),
-              },
-            }}
-          >
-            <DeleteIcon fontSize="small" sx={{ mr: 1.5, color: '#ef4444' }} />
-            <Typography variant="body2" sx={{ fontWeight: 500, color: '#ef4444' }}>Delete Qualification</Typography>
-          </MenuItem>
-          <MenuItem 
-            onClick={() => {
-              handleActionMenuClose();
-            }}
-            sx={{
-              py: 1.5,
-              px: 2,
-              '&:hover': {
-                bgcolor: alpha('#64748B', 0.08),
-              },
-            }}
-          >
-            <SchoolIcon fontSize="small" sx={{ mr: 1.5, color: '#64748B' }} />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>View Details</Typography>
-          </MenuItem>
-        </Menu>
+          {/* Pagination */}
+          {sortedQualifications.length > 0 && (
+            <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                Showing {indexOfFirstItem + 1} to{" "}
+                {Math.min(indexOfLastItem, sortedQualifications.length)} of{" "}
+                {sortedQualifications.length}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .slice(
+                    Math.max(0, currentPage - 2),
+                    Math.min(totalPages, currentPage + 1)
+                  )
+                  .map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        currentPage === page
+                          ? "bg-teal-600 text-white border-teal-600"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Add/Edit Modal */}
-        <Modal
-          open={openAddEditModal}
-          onClose={!submitting ? handleCloseAddEditModal : undefined}
-          closeAfterTransition
-          slots={{
-            backdrop: Backdrop
-          }}
-          slotProps={{
-            backdrop: {
-              timeout: 500,
-              sx: { backdropFilter: 'blur(4px)' },
-            }
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '480px' },
-              maxWidth: '95%',
-              bgcolor: 'background.paper',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              borderRadius: 3,
-              overflow: 'hidden',
-            }}
-          >
-            {/* Modal Header */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
-                color: '#F8FAFC',
-                p: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {currentQualification?.id ? <EditIcon /> : <AddIcon />}
-                </Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  {currentQualification?.id ? "Edit Qualification" : "Add New Qualification"}
-                </Typography>
-              </Box>
-              {!submitting && (
-                <IconButton
+        {openAddEditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="text-lg font-bold text-gray-800">
+                  {currentQualification
+                    ? "Edit Qualification"
+                    : "Add New Qualification"}
+                </h3>
+                <button
                   onClick={handleCloseAddEditModal}
-                  sx={{
-                    color: '#F8FAFC',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <CloseIcon />
-                </IconButton>
-              )}
-            </Box>
+                  <FiX size={20} />
+                </button>
+              </div>
 
-            {/* Modal Body */}
-            <Box sx={{ p: 3 }}>
-              <TextField
-                fullWidth
-                label="Qualification Name"
-                name="name"
-                value={currentQualification?.name || ""}
-                onChange={handleInputChange}
-                error={Boolean(formErrors.name)}
-                helperText={formErrors.name || "Enter the qualification name"}
-                disabled={submitting}
-                autoFocus
-                required
-                sx={{
-                  mb: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#0d9488',
-                    },
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#0d9488',
-                  },
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SchoolIcon sx={{ color: '#0d9488' }} />
-                      </InputAdornment>
-                    ),
-                  }
-                }}
-              />
+              <div className="p-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Qualification Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={newQualificationName}
+                    onChange={(e) => {
+                      setNewQualificationName(e.target.value);
+                      if (formErrors.name) setFormErrors({});
+                    }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      formErrors.name
+                        ? "border-red-300 focus:ring-red-200"
+                        : "border-gray-300 focus:ring-teal-500/20 focus:border-teal-500"
+                    }`}
+                    placeholder="e.g. Bachelor's Degree"
+                  />
+                  {formErrors.name && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      <FiAlertCircle /> {formErrors.name}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-              {/* Action Buttons */}
-              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
+              <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+                <button
                   onClick={handleCloseAddEditModal}
-                  disabled={submitting}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderColor: '#64748B',
-                    color: '#64748B',
-                    '&:hover': {
-                      borderColor: '#64748B',
-                      bgcolor: alpha('#64748B', 0.05),
-                    },
-                  }}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
+                </button>
+                <button
                   onClick={handleSaveQualification}
                   disabled={submitting}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    bgcolor: '#0d9488',
-                    '&:hover': {
-                      bgcolor: '#0a7a6f',
-                    },
-                  }}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
                 >
-                  {submitting ? (
-                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
-                  ) : currentQualification?.id ? (
-                    <>
-                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Update Qualification
-                    </>
-                  ) : (
-                    <>
-                      <AddIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Create Qualification
-                    </>
+                  {submitting && (
+                    <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div>
                   )}
-                </Button>
-              </Stack>
-            </Box>
-          </Box>
-        </Modal>
+                  {currentQualification ? "Update" : "Create"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Delete Modal */}
-        <Modal
-          open={openDeleteModal}
-          onClose={!submitting ? handleCloseDeleteModal : undefined}
-          closeAfterTransition
-          slots={{
-            backdrop: Backdrop
-          }}
-          slotProps={{
-            backdrop: {
-              timeout: 500,
-              sx: { backdropFilter: 'blur(4px)' },
-            }
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: '440px' },
-              maxWidth: '95%',
-              bgcolor: 'background.paper',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              borderRadius: 3,
-              overflow: 'hidden',
-            }}
-          >
-            {/* Modal Header */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                color: '#F8FAFC',
-                p: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <DeleteIcon />
-                </Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Delete Qualification
-                </Typography>
-              </Box>
-              {!submitting && (
-                <IconButton
-                  onClick={handleCloseDeleteModal}
-                  sx={{
-                    color: '#F8FAFC',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              )}
-            </Box>
-
-            {/* Modal Body */}
-            <Box sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  bgcolor: alpha('#ef4444', 0.1),
-                  borderRadius: 2,
-                  p: 2.5,
-                  mb: 2.5,
-                  border: '1px solid',
-                  borderColor: alpha('#ef4444', 0.2),
-                }}
-              >
-                <Typography variant="body1" sx={{ mb: 1.5, color: '#1E293B', fontWeight: 500 }}>
-                  Are you sure you want to delete this qualification?
-                </Typography>
-                <Box
-                  sx={{
-                    bgcolor: '#fff',
-                    borderRadius: 1.5,
-                    p: 2,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ color: '#64748B', mb: 0.5, fontSize: '0.75rem' }}>
-                    Qualification Name
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
+        {openDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FiAlertCircle className="text-red-600" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  Delete Qualification?
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  Are you sure you want to delete{" "}
+                  <span className="font-semibold text-gray-800">
                     "{currentQualification?.name}"
-                  </Typography>
-                </Box>
-              </Box>
+                  </span>
+                  ?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleCloseDeleteModal}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors w-full"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteQualification}
+                    disabled={submitting}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed font-medium transition-colors w-full flex justify-center items-center gap-2"
+                  >
+                    {submitting && (
+                      <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                    )}
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-              <Alert
-                severity="warning"
-                icon={false}
-                sx={{
-                  borderRadius: 2,
-                  bgcolor: alpha('#f59e0b', 0.1),
-                  border: '1px solid',
-                  borderColor: alpha('#f59e0b', 0.2),
-                  '& .MuiAlert-message': {
-                    color: '#92400e',
-                  },
-                }}
-              >
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  ⚠️ Warning: This action cannot be undone!
-                </Typography>
-                <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-                  All associated data will be permanently removed from the system.
-                </Typography>
-              </Alert>
-
-              {/* Action Buttons */}
-              <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={handleCloseDeleteModal}
-                  disabled={submitting}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderColor: '#64748B',
-                    color: '#64748B',
-                    '&:hover': {
-                      borderColor: '#64748B',
-                      bgcolor: alpha('#64748B', 0.05),
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={handleDeleteQualification}
-                  disabled={submitting}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    bgcolor: '#ef4444',
-                    '&:hover': {
-                      bgcolor: '#dc2626',
-                    },
-                  }}
-                >
-                  {submitting ? (
-                    <CircularProgress size={24} sx={{ color: '#F8FAFC' }} />
+        {/* Notifications */}
+        {notification.open && (
+          <div
+            className={`fixed top-4 right-4 z-[60] max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden animate-slide-in-right border-l-4 ${
+              notification.type === "error"
+                ? "border-red-500"
+                : "border-teal-500"
+            }`}
+          >
+            <div className="p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  {notification.type === "success" ? (
+                    <FiCheckCircle className="h-6 w-6 text-teal-500" />
                   ) : (
-                    <>
-                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Delete Permanently
-                    </>
+                    <FiAlertCircle className="h-6 w-6 text-red-500" />
                   )}
-                </Button>
-              </Stack>
-            </Box>
-          </Box>
-        </Modal>
-
-        {/* Enhanced Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={5000}
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          sx={{ mt: { xs: 7, sm: 8 } }}
-        >
-          <Alert 
-            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
-            severity={snackbar.severity}
-            variant="filled"
-            icon={
-              snackbar.severity === 'success' ? (
-                <CheckCircleIcon />
-              ) : snackbar.severity === 'error' ? (
-                <WarningAmberIcon />
-              ) : undefined
-            }
-            sx={{
-              borderRadius: 2,
-              minWidth: 300,
-              fontWeight: 500,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-              ...(snackbar.severity === 'success' && {
-                bgcolor: '#0d9488',
-                '& .MuiAlert-icon': {
-                  color: '#F8FAFC',
-                },
-              }),
-              ...(snackbar.severity === 'error' && {
-                bgcolor: '#ef4444',
-                '& .MuiAlert-icon': {
-                  color: '#F8FAFC',
-                },
-              }),
-              '& .MuiAlert-message': {
-                maxWidth: '100%',
-                wordBreak: 'break-word',
-              },
-            }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-
-        {/* Enhanced Backdrop */}
-        <Backdrop
-          open={submitting}
-          sx={{
-            color: '#fff',
-            zIndex: (theme) => theme.zIndex.modal + 1,
-            backdropFilter: 'blur(8px)',
-            bgcolor: 'rgba(13, 148, 136, 0.1)',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 2,
-              bgcolor: 'rgba(255, 255, 255, 0.95)',
-              p: 4,
-              borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            }}
-          >
-            <CircularProgress size={48} sx={{ color: '#0d9488' }} />
-            <Typography
-              variant="body1"
-              sx={{
-                color: '#1E293B',
-                fontWeight: 600,
-              }}
-            >
-              Processing...
-            </Typography>
-          </Box>
-        </Backdrop>
-      </Box>
+                </div>
+                <div className="ml-3 w-0 flex-1 pt-0.5">
+                  <p className="text-sm font-medium text-gray-900">
+                    {notification.type === "success" ? "Success" : "Error"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {notification.message}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0 flex">
+                  <button
+                    className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+                    onClick={() =>
+                      setNotification((prev) => ({ ...prev, open: false }))
+                    }
+                  >
+                    <span className="sr-only">Close</span>
+                    <FiX className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </Layout>
   );
 };

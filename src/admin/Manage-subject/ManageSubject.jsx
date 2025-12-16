@@ -1,42 +1,17 @@
 import React, { useState, useEffect } from "react";
 import {
-  Container,
-  Typography,
-  Button,
-  TextField,
-  TableCell,
-  IconButton,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Snackbar,
-  Grid,
-  Paper,
-  useTheme,
-  useMediaQuery,
-  CircularProgress,
-  Divider,
-  FormHelperText,
-  Backdrop,
-  Card,
-  CardContent,
-  Chip,
-} from "@mui/material";
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Search as SearchIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material";
-import { Alert } from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+  FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiSearch,
+  FiX,
+  FiRefreshCw,
+  FiGrid,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiChevronDown,
+  FiBook,
+} from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import {
   getSubjects,
@@ -45,12 +20,9 @@ import {
   createSubject,
   getClasses,
 } from "../../services/adminSubujectApi";
+import ErrorMessage from "../../components/ErrorMessage";
 
 const ManageSubject = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-
   const [subjects, setSubjects] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -58,18 +30,27 @@ const ManageSubject = () => {
   const [currentSubject, setCurrentSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [classes, setClasses] = useState([]);
-  const [snackbar, setSnackbar] = useState({
+  const [notification, setNotification] = useState({
     open: false,
     message: "",
-    severity: "success",
+    type: "success",
   });
   const [formErrors, setFormErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedToDelete, setSelectedToDelete] = useState(null);
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 5 : 10;
+  const [itemsPerPage] = useState(10);
+
+  // Sort defaults
+  const [sortConfig, setSortConfig] = useState({
+    key: "subject_name",
+    direction: "asc",
+  });
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -79,85 +60,91 @@ const ManageSubject = () => {
     try {
       const [subjectsData, classesData] = await Promise.all([
         getSubjects(),
-        getClasses()
+        getClasses(),
       ]);
 
-      setSubjects(subjectsData);
-      setFilteredSubjects(subjectsData);
-      setClasses(classesData);
+      setSubjects(Array.isArray(subjectsData) ? subjectsData : []);
+      setFilteredSubjects(Array.isArray(subjectsData) ? subjectsData : []);
+      setClasses(Array.isArray(classesData) ? classesData : []);
     } catch (error) {
-      
-      showSnackbar(
-        error.response?.data?.message || "Failed to load data. Please try again later.",
+      showNotification(
+        error.response?.data?.message ||
+          "Failed to load data. Please try again later.",
         "error"
       );
     } finally {
       setLoading(false);
     }
   };
-  const showSnackbar = (message, severity = "success") => {
-    let displayMessage;
 
-    if (Array.isArray(message)) {
-      displayMessage = message[0]; // Take first error if it's an array
-    } else if (typeof message === 'object' && message !== null) {
-      const firstKey = Object.keys(message)[0];
-      const firstValue = message[firstKey];
-      displayMessage = Array.isArray(firstValue) ? firstValue[0] : JSON.stringify(message);
-    } else {
-      displayMessage = message;
+  const showNotification = (message, type = "success") => {
+    let displayMessage = message;
+    if (typeof message === "object" && message !== null) {
+      displayMessage = Object.values(message).flat().join(", ");
+    } else if (Array.isArray(message)) {
+      displayMessage = message.join(", ");
     }
 
-    setSnackbar({
+    setNotification({
       open: true,
       message: displayMessage,
-      severity,
+      type,
     });
+    setTimeout(() => {
+      setNotification((prev) => ({ ...prev, open: false }));
+    }, 4000);
   };
+
   const handleAddSubject = () => {
     setCurrentSubject({ class_category: "", subject_name: "" });
     setFormErrors({});
     setIsEditModalOpen(true);
   };
+
   const handleEditSubject = (subject) => {
     setCurrentSubject({ ...subject });
     setFormErrors({});
     setIsEditModalOpen(true);
   };
+
   const handleConfirmDelete = (subject) => {
     setSelectedToDelete(subject);
     setOpenDeleteDialog(true);
   };
+
   const handleDeleteSubject = async () => {
     if (!selectedToDelete) return;
 
     setSubmitting(true);
     try {
       await deleteSubject(selectedToDelete.id);
-      showSnackbar(`Subject "${selectedToDelete.subject_name}" deleted successfully`);
-      fetchData();
+      showNotification(
+        `Subject "${selectedToDelete.subject_name}" deleted successfully`
+      );
+      // Optimistic update
+      const newSubjects = subjects.filter((s) => s.id !== selectedToDelete.id);
+      setSubjects(newSubjects);
+      setFilteredSubjects((prev) =>
+        prev.filter((s) => s.id !== selectedToDelete.id)
+      );
+
       setOpenDeleteDialog(false);
       setSelectedToDelete(null);
     } catch (error) {
       if (error.response?.data) {
-        if (error.response.data.non_field_errors) {
-          showSnackbar(error.response.data.non_field_errors[0], "error");
-        } else if (error.response.data.message) {
-          showSnackbar(error.response.data.message, "error");
-        } else if (typeof error.response.data === 'string') {
-          showSnackbar(error.response.data, "error");
-        } else {
-          showSnackbar("Failed to delete subject. It might be in use.", "error");
-        }
+        showNotification(error.response.data, "error");
       } else {
-        showSnackbar("Failed to delete subject. Please try again.", "error");
+        showNotification(
+          "Failed to delete subject. Please try again.",
+          "error"
+        );
       }
-
       setOpenDeleteDialog(false);
     } finally {
       setSubmitting(false);
     }
   };
+
   const handleBulkDelete = async () => {
     if (selectedSubjects.length === 0) return;
 
@@ -166,30 +153,32 @@ const ManageSubject = () => {
       await Promise.all(
         selectedSubjects.map((subjectId) => deleteSubject(subjectId))
       );
-      showSnackbar(`${selectedSubjects.length} subjects deleted successfully`);
-      fetchData();
+      showNotification(
+        `${selectedSubjects.length} subjects deleted successfully`
+      );
+
+      const newSubjects = subjects.filter(
+        (s) => !selectedSubjects.includes(s.id)
+      );
+      setSubjects(newSubjects);
+      setFilteredSubjects((prev) =>
+        prev.filter((s) => !selectedSubjects.includes(s.id))
+      );
+
       setSelectedSubjects([]);
     } catch (error) {
-      if (error.response?.data) {
-        if (error.response.data.non_field_errors) {
-          showSnackbar(error.response.data.non_field_errors[0], "error");
-        } else if (error.response.data.message) {
-          showSnackbar(error.response.data.message, "error");
-        } else if (typeof error.response.data === 'string') {
-          showSnackbar(error.response.data, "error");
-        } else {
-          showSnackbar("Failed to delete selected subjects. Some might be in use.", "error");
-        }
-      } else {
-        showSnackbar("Failed to delete selected subjects. Please try again.", "error");
-      }
+      showNotification("Failed to delete some subjects.", "error");
     } finally {
       setSubmitting(false);
     }
   };
+
   const validateForm = () => {
     const errors = {};
-    if (!currentSubject.subject_name || currentSubject.subject_name.trim() === "") {
+    if (
+      !currentSubject.subject_name ||
+      currentSubject.subject_name.trim() === ""
+    ) {
       errors.subject_name = "Subject name is required";
     } else if (currentSubject.subject_name.length < 2) {
       errors.subject_name = "Subject name must be at least 2 characters";
@@ -202,13 +191,16 @@ const ManageSubject = () => {
     } else if (currentSubject.subject_name) {
       if (!currentSubject.id) {
         const subjectExists = subjects.some(
-          subject =>
-            subject.subject_name.toLowerCase() === currentSubject.subject_name.toLowerCase() &&
+          (subject) =>
+            subject.subject_name.toLowerCase() ===
+              currentSubject.subject_name.toLowerCase() &&
             subject.class_category === currentSubject.class_category
         );
 
         if (subjectExists) {
-          const classCategory = classes.find(c => c.id === currentSubject.class_category)?.name || '';
+          const classCategory =
+            classes.find((c) => c.id === currentSubject.class_category)?.name ||
+            "";
           errors.subject_name = `Subject '${currentSubject.subject_name}' already exists for class category '${classCategory}'.`;
         }
       }
@@ -217,6 +209,7 @@ const ManageSubject = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const handleSaveSubject = async () => {
     if (!validateForm()) return;
 
@@ -224,52 +217,69 @@ const ManageSubject = () => {
     try {
       if (currentSubject.id) {
         await updateSubject(currentSubject.id, currentSubject);
-        showSnackbar(`Subject "${currentSubject.subject_name}" updated successfully`);
+        showNotification(
+          `Subject "${currentSubject.subject_name}" updated successfully`
+        );
+        // Update local state
+        const updatedList = subjects.map((s) =>
+          s.id === currentSubject.id ? currentSubject : s
+        );
+        setSubjects(updatedList);
+        setFilteredSubjects((prev) =>
+          prev.map((s) => (s.id === currentSubject.id ? currentSubject : s))
+        );
+
         setIsEditModalOpen(false);
-        fetchData();
       } else {
-        await createSubject(currentSubject);
-        showSnackbar(`Subject "${currentSubject.subject_name}" added successfully`);
+        const newSub = await createSubject(currentSubject);
+        showNotification(
+          `Subject "${currentSubject.subject_name}" added successfully`
+        );
+        // Add to local state
+        setSubjects([...subjects, newSub]);
+        setFilteredSubjects((prev) => [...prev, newSub]);
+
         setIsEditModalOpen(false);
-        fetchData();
       }
     } catch (error) {
       if (error.response?.data) {
         const responseData = error.response.data;
-        if (responseData.non_field_errors && Array.isArray(responseData.non_field_errors)) {
-          const errorMessage = responseData.non_field_errors[0];
-          showSnackbar(errorMessage, "error");
+        if (
+          responseData.non_field_errors &&
+          Array.isArray(responseData.non_field_errors)
+        ) {
+          showNotification(responseData.non_field_errors[0], "error");
           return;
-        }
-        else if (responseData.subject_name && Array.isArray(responseData.subject_name)) {
-          setFormErrors({
-            ...formErrors,
-            subject_name: responseData.subject_name[0]
-          });
-          showSnackbar(responseData.subject_name[0], "error");
+        } else if (responseData.subject_name) {
+          setFormErrors((prev) => ({
+            ...prev,
+            subject_name: responseData.subject_name[0],
+          }));
+          showNotification(responseData.subject_name[0], "error");
           return;
-        }
-        else if (responseData.class_category && Array.isArray(responseData.class_category)) {
-          setFormErrors({
-            ...formErrors,
-            class_category: responseData.class_category[0]
-          });
-          showSnackbar(responseData.class_category[0], "error");
+        } else if (responseData.class_category) {
+          setFormErrors((prev) => ({
+            ...prev,
+            class_category: responseData.class_category[0],
+          }));
+          showNotification(responseData.class_category[0], "error");
           return;
-        }
-        else if (responseData.message) {
-          showSnackbar(responseData.message, "error");
+        } else if (responseData.message) {
+          showNotification(responseData.message, "error");
           return;
         }
       }
-      showSnackbar(
-        `Failed to ${currentSubject.id ? 'update' : 'create'} subject. Please try again.`,
+      showNotification(
+        `Failed to ${
+          currentSubject.id ? "update" : "create"
+        } subject. Please try again.`,
         "error"
       );
     } finally {
       setSubmitting(false);
     }
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentSubject({
@@ -283,23 +293,67 @@ const ManageSubject = () => {
       });
     }
   };
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query) {
+
+  // Search
+  useEffect(() => {
+    if (searchQuery) {
       const filtered = subjects.filter((subject) =>
-        subject.subject_name.toLowerCase().includes(query.toLowerCase())
+        subject.subject_name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredSubjects(filtered);
     } else {
       setFilteredSubjects(subjects);
     }
     setCurrentPage(1);
+  }, [searchQuery, subjects]);
+
+  // Sort
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   };
-  const pageCount = Math.max(1, Math.ceil(filteredSubjects.length / itemsPerPage));
-  const currentSubjects = filteredSubjects.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+
+  const sortedSubjects = React.useMemo(() => {
+    let sortableItems = [...filteredSubjects];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle class category sort specifically if needed
+        if (sortConfig.key === "class_category") {
+          const classA =
+            classes.find((c) => c.id === a.class_category)?.name || "";
+          const classB =
+            classes.find((c) => c.id === b.class_category)?.name || "";
+          aValue = classA;
+          bValue = classB;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredSubjects, sortConfig, classes]);
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSubjects = sortedSubjects.slice(
+    indexOfFirstItem,
+    indexOfLastItem
   );
+  const totalPages = Math.ceil(sortedSubjects.length / itemsPerPage);
+
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       setSelectedSubjects(currentSubjects.map((subject) => subject.id));
@@ -307,6 +361,7 @@ const ManageSubject = () => {
       setSelectedSubjects([]);
     }
   };
+
   const handleCheckboxChange = (subjectId) => {
     setSelectedSubjects((prev) => {
       if (prev.includes(subjectId)) {
@@ -316,6 +371,7 @@ const ManageSubject = () => {
       }
     });
   };
+
   const getClassName = (classId) => {
     const classObj = classes.find((cls) => cls.id === classId);
     return classObj ? classObj.name : "N/A";
@@ -323,417 +379,373 @@ const ManageSubject = () => {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-        {/* Header Card */}
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            mb: { xs: 2, sm: 3 },
-            overflow: 'hidden'
-          }}
-        >
-          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
-                <Typography
-                  variant={isMobile ? "h5" : "h4"}
-                  sx={{
-                    fontWeight: 700,
-                    color: 'primary.main',
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
-                  }}
-                >
-                  Manage Subjects
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddSubject}
-                  fullWidth={isMobile}
-                  sx={{
-                    py: { xs: 1, sm: 'auto' },
-                    textTransform: 'none',
-                    boxShadow: 2
-                  }}
-                >
-                  Add New Subject
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        {/* Search and List Card */}
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: { xs: 1, sm: 2 },
-            overflow: 'hidden',
-            mb: 2
-          }}
-        >
-          <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-            <Box
-              display="flex"
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              gap={2}
-              mb={2}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                }}
-              >
-                Subjects ({filteredSubjects.length})
-              </Typography>
-
-              <TextField
-                label="Subject Name"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                name="subject_name"
-                value={currentSubject?.subject_name || ""}
-                onChange={handleInputChange}
-                error={Boolean(formErrors.subject_name)}
-                helperText={formErrors.subject_name || ""}
-                disabled={submitting}
-                autoFocus
-                sx={{ mt: 2 }}
-              />
-            </Box>
-
-            {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress />
-              </Box>
-            ) : filteredSubjects.length === 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {searchQuery
-                  ? "No subjects match your search criteria."
-                  : "No subjects available. Add a new subject to get started."
-                }
-              </Alert>
-            ) : (
-              <>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    overflow: 'auto',
-                    mb: 2
-                  }}
-                >
-                  <DataGrid
-                    rows={filteredSubjects}
-                    columns={[
-                      { field: 'id', headerName: 'ID', width: 90 },
-                      { field: 'subject_name', headerName: 'Subject Name', flex: 1 },
-                      {
-                        field: 'class_category',
-                        headerName: 'Class Category',
-                        flex: 1,
-                        renderCell: (params) => {
-                          const classObj = classes.find((cls) => cls.id === params.value);
-                          return (
-                            <Chip
-                              label={classObj ? classObj.name : "N/A"}
-                              size="small"
-                              color="primary"
-                              variant="outlined"
-                            />
-                          );
-                        }
-                      },
-                      {
-                        field: 'actions',
-                        headerName: 'Actions',
-                        sortable: false,
-                        renderCell: (params) => (
-                          <Box display="flex" gap={1}>
-                            <IconButton
-                              size={isMobile ? "small" : "medium"}
-                              color="primary"
-                              onClick={() => handleEditSubject(params.row)}
-                            >
-                              <EditIcon fontSize={isMobile ? "small" : "medium"} />
-                            </IconButton>
-                            <IconButton
-                              size={isMobile ? "small" : "medium"}
-                              color="error"
-                              onClick={() => handleConfirmDelete(params.row)}
-                            >
-                              <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
-                            </IconButton>
-                          </Box>
-                        ),
-                      },
-                    ]}
-                    pageSize={itemsPerPage}
-                    rowsPerPageOptions={[itemsPerPage]}
-                    checkboxSelection
-                    disableSelectionOnClick
-                    components={{
-                      Toolbar: GridToolbar,
-                    }}
-                    onSelectionModelChange={(newSelection) => {
-                      setSelectedSubjects(newSelection);
-                    }}
-                    sx={{ height: 400 }}
-                  />
-                </Paper>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Subject Add/Edit Dialog */}
-        <Dialog
-          open={isEditModalOpen}
-          onClose={() => !submitting && setIsEditModalOpen(false)}
-          fullWidth
-          maxWidth="sm"
-          PaperProps={{
-            sx: {
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' }
-            }
-          }}
-        >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {currentSubject && currentSubject.id
-                  ? "Edit Subject"
-                  : "Add Subject"
-                }
-              </Typography>
-              {!submitting && (
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={() => setIsEditModalOpen(false)}
-                  aria-label="close"
-                  size="small"
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </DialogTitle>
-
-          <Divider />
-
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <FormControl
-              fullWidth
-              margin="normal"
-              error={Boolean(formErrors.class_category)}
-              disabled={submitting}
-            >
-              <InputLabel>Class Category</InputLabel>
-              <Select
-                value={currentSubject?.class_category || ""}
-                onChange={(e) => handleInputChange({
-                  target: { name: 'class_category', value: e.target.value }
-                })}
-                label="Class Category"
-                name="class_category"
-              >
-                {classes.map((cls) => (
-                  <MenuItem key={cls.id} value={cls.id}>
-                    {cls.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {formErrors.class_category && (
-                <FormHelperText error>{formErrors.class_category}</FormHelperText>
-              )}
-            </FormControl>
-
-            <TextField
-              label="Subject Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              name="subject_name"
-              value={currentSubject?.subject_name || ""}
-              onChange={handleInputChange}
-              error={Boolean(formErrors.subject_name)}
-              helperText={formErrors.subject_name}
-              disabled={submitting}
-              autoFocus
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button
-                onClick={() => setIsEditModalOpen(false)}
-                variant="outlined"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                onClick={handleSaveSubject}
-                variant="contained"
-                color="primary"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
-                }}
-              >
-                {submitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : currentSubject?.id ? (
-                  "Update"
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => !submitting && setOpenDeleteDialog(false)}
-          PaperProps={{
-            sx: {
-              borderRadius: { xs: 1, sm: 2 },
-              width: { xs: '95%', sm: 'auto' },
-              maxWidth: '450px'
-            }
-          }}
-        >
-          <DialogTitle sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ color: 'error.main', fontWeight: 600 }}>
-                Delete Subject
-              </Typography>
-              {!submitting && (
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  onClick={() => setOpenDeleteDialog(false)}
-                  aria-label="close"
-                  size="small"
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </DialogTitle>
-
-          <Divider />
-
-          <DialogContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-            <Typography variant="body1" mb={1}>
-              Are you sure you want to delete this subject:
-            </Typography>
-            <Typography variant="subtitle1" fontWeight={600} mb={2}>
-              "{selectedToDelete?.subject_name}"
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              This action cannot be undone.
-            </Typography>
-          </DialogContent>
-
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                gap: 1
-              }}
-            >
-              <Button
-                onClick={() => setOpenDeleteDialog(false)}
-                variant="outlined"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 2, sm: 1 },
-                  textTransform: 'none'
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDeleteSubject}
-                variant="contained"
-                color="error"
-                disabled={submitting}
-                fullWidth={isMobile}
-                sx={{
-                  order: { xs: 1, sm: 2 },
-                  textTransform: 'none'
-                }}
-              >
-                {submitting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
-
-        {/* Notification Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          sx={{ mt: { xs: 7, sm: 8 } }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            variant="filled"
-            sx={{ width: "100%", boxShadow: 3 }}
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+        {/* Header */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Manage Subjects
+            </h1>
+            <p className="text-sm text-gray-500">
+              Create and manage subjects for different class categories
+            </p>
+          </div>
+          <button
+            onClick={handleAddSubject}
+            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm"
           >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
+            <FiPlus size={20} />
+            Add New Subject
+          </button>
+        </div>
 
-        {/* Loading backdrop */}
-        <Backdrop
-          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}
-          open={submitting}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      </Container>
+        {/* Content Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Toolbar */}
+          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+            <div className="relative w-full sm:w-72">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search subjects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={fetchData}
+                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                title="Refresh"
+              >
+                <FiRefreshCw size={18} />
+              </button>
+              {selectedSubjects.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+                >
+                  <FiTrash2 size={16} />
+                  Delete ({selectedSubjects.length})
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="p-8 text-center text-gray-500 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mb-2"></div>
+                Loading subjects...
+              </div>
+            ) : sortedSubjects.length === 0 ? (
+              <div className="p-12 text-center text-gray-500">
+                <FiBook className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900">
+                  No subjects found
+                </h3>
+                <p className="mt-1 text-sm">
+                  {searchQuery
+                    ? "Try adjusting your search terms"
+                    : "Get started by creating a new subject"}
+                </p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="p-4 w-12 text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          currentSubjects.length > 0 &&
+                          selectedSubjects.length === currentSubjects.length
+                        }
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                      />
+                    </th>
+                    <th
+                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("id")}
+                    >
+                      ID
+                    </th>
+                    <th
+                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("subject_name")}
+                    >
+                      Subject Name
+                    </th>
+                    <th
+                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("class_category")}
+                    >
+                      Class Category
+                    </th>
+                    <th className="p-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {currentSubjects.map((subject) => (
+                    <tr
+                      key={subject.id}
+                      className={`hover:bg-teal-50/30 transition-colors ${
+                        selectedSubjects.includes(subject.id)
+                          ? "bg-teal-50/50"
+                          : ""
+                      }`}
+                    >
+                      <td className="p-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubjects.includes(subject.id)}
+                          onChange={() => handleCheckboxChange(subject.id)}
+                          className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                        />
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          #{subject.id}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium text-gray-900">
+                          {subject.subject_name}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                          {getClassName(subject.class_category)}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEditSubject(subject)}
+                            className="p-1.5 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                            title="Edit"
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleConfirmDelete(subject)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {sortedSubjects.length > 0 && (
+            <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                Showing {indexOfFirstItem + 1} to{" "}
+                {Math.min(indexOfLastItem, sortedSubjects.length)} of{" "}
+                {sortedSubjects.length}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .slice(
+                    Math.max(0, currentPage - 2),
+                    Math.min(totalPages, currentPage + 1)
+                  )
+                  .map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        currentPage === page
+                          ? "bg-teal-600 text-white border-teal-600"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Add/Edit Modal */}
+        {isEditModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-in">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="text-lg font-bold text-gray-800">
+                  {currentSubject?.id ? "Edit Subject" : "Add New Subject"}
+                </h3>
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Class Category <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      name="class_category"
+                      value={currentSubject?.class_category || ""}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 transition-all ${
+                        formErrors.class_category
+                          ? "border-red-300 focus:ring-red-200"
+                          : "border-gray-300 focus:ring-teal-500/20 focus:border-teal-500"
+                      }`}
+                    >
+                      <option value="">Select a category</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.name}
+                        </option>
+                      ))}
+                    </select>
+                    <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+                  {formErrors.class_category && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      <FiAlertCircle /> {formErrors.class_category}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subject Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="subject_name"
+                    value={currentSubject?.subject_name || ""}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      formErrors.subject_name
+                        ? "border-red-300 focus:ring-red-200"
+                        : "border-gray-300 focus:ring-teal-500/20 focus:border-teal-500"
+                    }`}
+                    placeholder="e.g. Mathematics"
+                  />
+                  {formErrors.subject_name && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      <FiAlertCircle /> {formErrors.subject_name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSubject}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
+                >
+                  {submitting && (
+                    <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                  )}
+                  {currentSubject?.id ? "Update Subject" : "Create Subject"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Dialog */}
+        {openDeleteDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FiAlertCircle className="text-red-600" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  Delete Subject?
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  Are you sure you want to delete{" "}
+                  <span className="font-semibold text-gray-800">
+                    "{selectedToDelete?.subject_name}"
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => setOpenDeleteDialog(false)}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors w-full"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteSubject}
+                    disabled={submitting}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed font-medium transition-colors w-full flex justify-center items-center gap-2"
+                  >
+                    {submitting && (
+                      <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                    )}
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification Toast */}
+        {notification.open && (
+          <div className="fixed top-4 right-4 z-[60] max-w-sm w-full animate-slide-in-right">
+            <ErrorMessage
+              message={notification.message}
+              type={notification.type}
+              onDismiss={() =>
+                setNotification((prev) => ({ ...prev, open: false }))
+              }
+              className="shadow-lg border-l-4"
+            />
+          </div>
+        )}
+      </div>
     </Layout>
   );
 };

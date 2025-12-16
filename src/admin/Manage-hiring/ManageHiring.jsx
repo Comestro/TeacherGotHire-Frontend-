@@ -1,55 +1,23 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  Select,
-  MenuItem,
-  Button,
-  Modal,
-  IconButton,
-  Divider,
-  FormControl,
-  InputLabel,
-  Stack,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  Chip,
-  Card,
-  CardContent,
-  InputAdornment,
-  Tooltip,
-  Backdrop,
-  useMediaQuery,
-  useTheme,
-  Grid,
-} from "@mui/material";
-import { alpha } from '@mui/material/styles';
-import { DataGrid } from "@mui/x-data-grid";
-import {
-  Close as CloseIcon,
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  People as PeopleIcon,
-  Download as DownloadIcon,
-  FilterList as FilterListIcon,
-  Clear as ClearIcon,
-  Check as CheckIcon,
-  Close as CloseActionIcon,
-  Work as WorkIcon,
-} from "@mui/icons-material";
-import { FiMoreVertical } from "react-icons/fi";
+  FiRefreshCw,
+  FiDownload,
+  FiSearch,
+  FiX,
+  FiCheck,
+  FiMoreVertical,
+  FiBriefcase,
+  FiFilter,
+  FiChevronLeft,
+  FiChevronRight,
+} from "react-icons/fi";
 import Layout from "../Admin/Layout";
-import { getHireRequest, updateHireRequest } from "../../services/adminHiringRequest";
+import {
+  getHireRequest,
+  updateHireRequest,
+} from "../../services/adminHiringRequest";
 
 const ManageHiringRequests = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [filters, setFilters] = useState({
     status: "all",
     recruiterName: "",
@@ -57,7 +25,7 @@ const ManageHiringRequests = () => {
   });
 
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: isMobile ? 5 : 10,
+    pageSize: 10,
     page: 0,
   });
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,15 +34,11 @@ const ManageHiringRequests = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
+  const [notification, setNotification] = useState({
+    show: false,
     message: "",
-    severity: "success",
+    type: "success",
   });
-
-  useEffect(() => {
-    setPaginationModel((prev) => ({ ...prev, pageSize: isMobile ? 5 : 10 }));
-  }, [isMobile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,24 +46,29 @@ const ManageHiringRequests = () => {
       try {
         const response = await getHireRequest();
         if (Array.isArray(response)) {
-          const formatData = response.map((item) => ({
+          // Sort by date descending (newest first)
+          const sortedResponse = [...response].sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+
+          const formatData = sortedResponse.map((item) => ({
             id: item.id,
-            recruiterName: item.recruiter_id.Fname + " " + item.recruiter_id.Lname,
-            teacherName: item.teacher_id.Fname + " " + item.teacher_id.Lname,
-            recruiter: formatName(item.recruiter_id.Fname + " " + item.recruiter_id.Lname),
-            teacher: formatName(item.teacher_id.Fname + " " + item.teacher_id.Lname),
-            role: item.role,
-            subjects: item.subject,
+            recruiterName: item.recruiter_id, // Store full object for proper handling
+            teacherName: item.teacher_id, // Store full object for proper handling
+            recruiter: formatName(item.recruiter_id),
+            teacher: formatName(item.teacher_id),
+            role: item.teacher_job_type?.[0]?.teacher_job_name || "N/A",
+            subjects:
+              item.subject?.map((s) => ({ ...s, subject_name: s.name })) || [],
             status: item.status,
             requestDate: item.date,
           }));
           setData(formatData);
-          console.log("Fetched hiring requests:", formatData);
           setFilteredData(formatData);
         }
       } catch (error) {
         console.error("Error fetching hiring requests:", error);
-        showSnackbar("Failed to load hiring requests", "error");
+        showNotification("Failed to load hiring requests", "error");
       } finally {
         setLoading(false);
       }
@@ -109,20 +78,32 @@ const ManageHiringRequests = () => {
 
   useEffect(() => {
     const filtered = data.filter((row) => {
-      const recruiterMatch = !filters.recruiterName || 
-        formatName(row.recruiterName).toLowerCase().includes(filters.recruiterName.toLowerCase());
-      const teacherMatch = !filters.teacherName || 
-        formatName(row.teacherName).toLowerCase().includes(filters.teacherName.toLowerCase());
-      const statusMatch = filters.status === "all" || 
+      const recruiterMatch =
+        !filters.recruiterName ||
+        formatName(row.recruiterName)
+          .toLowerCase()
+          .includes(filters.recruiterName.toLowerCase());
+      const teacherMatch =
+        !filters.teacherName ||
+        formatName(row.teacherName)
+          .toLowerCase()
+          .includes(filters.teacherName.toLowerCase());
+      const statusMatch =
+        filters.status === "all" ||
         row.status.toLowerCase() === filters.status.toLowerCase();
 
       return recruiterMatch && teacherMatch && statusMatch;
     });
     setFilteredData(filtered);
+    setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page on filter
   }, [filters, data]);
 
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
+  const showNotification = (message, type = "success") => {
+    setNotification({ show: true, message, type });
+    setTimeout(
+      () => setNotification({ show: false, message: "", type: "success" }),
+      3000
+    );
   };
 
   const formatName = (user) => {
@@ -160,17 +141,11 @@ const ManageHiringRequests = () => {
 
   const handleApproveRequest = async () => {
     if (!selectedRequest) return;
-    
+
     setSubmitting(true);
     try {
-      const recruiterId =
-        typeof selectedRequest.recruiterName === 'object'
-          ? selectedRequest.recruiterName?.id
-          : selectedRequest.recruiterName;
-      const teacherId =
-        typeof selectedRequest.teacherName === 'object'
-          ? selectedRequest.teacherName?.id
-          : selectedRequest.teacherName;
+      const recruiterId = selectedRequest.recruiterName?.id;
+      const teacherId = selectedRequest.teacherName?.id;
 
       await updateHireRequest(selectedRequest.id, {
         recruiter_id: recruiterId,
@@ -179,14 +154,16 @@ const ManageHiringRequests = () => {
       });
       setData((prev) =>
         prev.map((item) =>
-          item.id === selectedRequest.id ? { ...item, status: "fulfilled" } : item
+          item.id === selectedRequest.id
+            ? { ...item, status: "fulfilled" }
+            : item
         )
       );
-      showSnackbar("Request approved successfully!");
+      showNotification("Request approved successfully!");
       handleCloseModal();
     } catch (error) {
       console.error("Error approving request:", error);
-      showSnackbar("Failed to approve request", "error");
+      showNotification("Failed to approve request", "error");
     } finally {
       setSubmitting(false);
     }
@@ -194,17 +171,11 @@ const ManageHiringRequests = () => {
 
   const handleRejectRequest = async () => {
     if (!selectedRequest) return;
-    
+
     setSubmitting(true);
     try {
-      const recruiterId =
-        typeof selectedRequest.recruiterName === 'object'
-          ? selectedRequest.recruiterName?.id
-          : selectedRequest.recruiterName;
-      const teacherId =
-        typeof selectedRequest.teacherName === 'object'
-          ? selectedRequest.teacherName?.id
-          : selectedRequest.teacherName;
+      const recruiterId = selectedRequest.recruiterName?.id;
+      const teacherId = selectedRequest.teacherName?.id;
 
       await updateHireRequest(selectedRequest.id, {
         recruiter_id: recruiterId,
@@ -214,14 +185,16 @@ const ManageHiringRequests = () => {
       });
       setData((prev) =>
         prev.map((item) =>
-          item.id === selectedRequest.id ? { ...item, status: "rejected" } : item
+          item.id === selectedRequest.id
+            ? { ...item, status: "rejected" }
+            : item
         )
       );
-      showSnackbar("Request rejected successfully", "warning");
+      showNotification("Request rejected successfully", "warning");
       handleCloseModal();
     } catch (error) {
       console.error("Error rejecting request:", error);
-      showSnackbar("Failed to reject request", "error");
+      showNotification("Failed to reject request", "error");
     } finally {
       setSubmitting(false);
     }
@@ -247,7 +220,9 @@ const ManageHiringRequests = () => {
       Recruiter: formatName(row.recruiterName),
       Teacher: formatName(row.teacherName),
       Role: row.role || "N/A",
-      Subjects: row.subjects?.map((subject) => subject.subject_name).join(", ") || "N/A",
+      Subjects:
+        row.subjects?.map((subject) => subject.subject_name).join(", ") ||
+        "N/A",
       Status: row.status,
       Date: formatDate(row.requestDate),
     }));
@@ -265,636 +240,406 @@ const ManageHiringRequests = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showSnackbar("Data exported successfully!", "success");
+    showNotification("Data exported successfully!");
   };
 
-  const getStatusChip = (status) => {
-    const statusLower = status?.toLowerCase();
-    let color, bgcolor;
-    
-    if (statusLower === "fulfilled") {
-      color = "#2e7d32";
-      bgcolor = "#e8f5e9";
-    } else if (statusLower === "rejected") {
-      color = "#d32f2f";
-      bgcolor = "#ffebee";
-    } else {
-      color = "#ed6c02";
-      bgcolor = "#fff3e0";
-    }
-
-    return (
-      <Chip
-        label={status}
-        size="small"
-        sx={{
-          bgcolor,
-          color,
-          fontWeight: 600,
-          textTransform: 'capitalize',
-        }}
-      />
-    );
+  const getStatusColor = (status) => {
+    const s = status?.toLowerCase();
+    if (s === "fulfilled")
+      return "bg-green-100 text-green-700 border-green-200";
+    if (s === "rejected") return "bg-red-100 text-red-700 border-red-200";
+    return "bg-orange-100 text-orange-700 border-orange-200";
   };
 
-  const columns = [
-    {
-      field: 'recruiter',
-      headerName: 'Recruiter',
-      flex: 1,
-      minWidth: 180,
-      valueGetter: (params) => {
-        const row = params?.row;
-        const raw = row?.recruiterName ?? params?.value;
-        if (raw == null || raw === '') return 'N/A';
-        return formatName(raw);
-      },
-      renderCell: (params) => {
-        const raw = params?.row?.recruiter ?? params?.row?.recruiterName ?? params?.value;
-        const display = raw == null || raw === '' ? '—' : formatName(raw);
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-              {display}
-            </Typography>
-          </Box>
-        );
-      },
-    },
-    {
-      field: 'teacher',
-      headerName: 'Teacher',
-      flex: 1,
-      minWidth: 180,
-      valueGetter: (params) => {
-        const row = params?.row;
-        const raw = row?.teacherName ?? params?.value;
-        if (raw == null || raw === '') return 'N/A';
-        return formatName(raw);
-      },
-      renderCell: (params) => {
-        const raw = params?.row?.teacher ?? params?.row?.teacherName ?? params?.value;
-        const display = raw == null || raw === '' ? '—' : formatName(raw);
-        return (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-            {display}
-          </Typography>
-        );
-      },
-    },
-    {
-      field: 'role',
-      headerName: 'Role',
-      width: 150,
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ color: '#64748B' }}>
-          {params.value || '—'}
-        </Typography>
-      ),
-    },
-    {
-      field: 'subjects',
-      headerName: 'Subjects',
-      flex: 1,
-      minWidth: 200,
-      valueGetter: (params) => {
-        const row = params?.row;
-        return row?.subjects?.[0]?.subject_name;
-      },
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ color: '#64748B' }}>
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 130,
-      renderCell: (params) => getStatusChip(params.value),
-    },
-    {
-      field: 'requestDate',
-      headerName: 'Date',
-      width: 120,
-      valueFormatter: (params) => formatDate(params?.value),
-      renderCell: (params) => (
-        <Typography variant="body2" sx={{ color: '#64748B' }}>
-          {params.formattedValue}
-        </Typography>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: (params) => (
-        <Tooltip title="View Details">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenModal(params.row);
-            }}
-            sx={{
-              bgcolor: alpha('#0d9488', 0.1),
-              color: '#0d9488',
-              '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
-            }}
-          >
-            <FiMoreVertical />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
-  ];
-
-  const handleRowClick = (params) => {
-    handleOpenModal(params.row);
-  };
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredData.length / paginationModel.pageSize);
+  const displayedData = filteredData.slice(
+    paginationModel.page * paginationModel.pageSize,
+    (paginationModel.page + 1) * paginationModel.pageSize
+  );
 
   return (
     <Layout>
-      {/* Compact Header */}
-      <Box
-        sx={{
-          mb: { xs: 2, sm: 3 },
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          gap: 2,
-          bgcolor: '#fff',
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 800, color: '#1E293B', mb: 0.5 }}
-          >
-            Manage Hiring Requests
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Review, approve, or reject teacher hiring requests
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1}>
-          <Tooltip title="Refresh Data">
-            <IconButton
+      <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 font-sans">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Manage Hiring Requests
+            </h1>
+            <p className="text-slate-500 mt-1">
+              Review, approve, or reject teacher hiring requests
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
               onClick={() => window.location.reload()}
-              sx={{
-                bgcolor: alpha('#0d9488', 0.1),
-                color: '#0d9488',
-                '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
-              }}
+              className="p-2 text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
+              title="Refresh Data"
             >
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={handleExportData}
-            sx={{
-              bgcolor: '#0d9488',
-              textTransform: 'none',
-              fontWeight: 700,
-              borderRadius: 2,
-              '&:hover': { bgcolor: '#0a7a6f' },
-            }}
-          >
-            Export
-          </Button>
-        </Stack>
-      </Box>
-      <Card
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        }}
-      >
-        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          {/* Filters Section */}
-          <Box
-            sx={{
-              mb: 3,
-              pb: 2,
-              borderBottom: '2px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: '#1E293B' }}>
-              Filters
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={filters.status}
-                    label="Status"
-                    onChange={(e) => handleFilterChange("status", e.target.value)}
-                    sx={{
-                      borderRadius: 2,
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#0d9488',
-                      },
-                    }}
-                  >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="fulfilled">Fulfilled</MenuItem>
-                    <MenuItem value="rejected">Rejected</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  label="Recruiter Name"
-                  size="small"
-                  fullWidth
-                  value={filters.recruiterName}
-                  onChange={(e) => handleFilterChange("recruiterName", e.target.value)}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      '&:hover fieldset': { borderColor: '#0d9488' },
-                      '&.Mui-focused fieldset': { borderColor: '#0d9488' },
-                    },
-                  }}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
-                        </InputAdornment>
-                      ),
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  label="Teacher Name"
-                  size="small"
-                  fullWidth
-                  value={filters.teacherName}
-                  onChange={(e) => handleFilterChange("teacherName", e.target.value)}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      '&:hover fieldset': { borderColor: '#0d9488' },
-                      '&.Mui-focused fieldset': { borderColor: '#0d9488' },
-                    },
-                  }}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#0d9488', fontSize: 20 }} />
-                        </InputAdornment>
-                      ),
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<ClearIcon />}
-                  onClick={handleClearFilters}
-                  sx={{
-                    borderColor: '#64748B',
-                    color: '#64748B',
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    height: '40px',
-                    fontWeight: 600,
-                    '&:hover': {
-                      borderColor: '#64748B',
-                      bgcolor: alpha('#64748B', 0.05),
-                    },
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
+              <FiRefreshCw className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleExportData}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+            >
+              <FiDownload className="w-4 h-4" />
+              <span>Export</span>
+            </button>
+          </div>
+        </div>
 
-          {/* Data Grid */}
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-              <CircularProgress sx={{ color: '#0d9488' }} size={48} />
-            </Box>
-          ) : filteredData.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
-              <PeopleIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
-              <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
-                No hiring requests found
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#64748B' }}>
-                {filters.status !== "all" || filters.recruiterName || filters.teacherName
-                  ? 'Try adjusting your filters'
-                  : 'No hiring requests have been submitted yet'}
-              </Typography>
-            </Box>
-          ) : (
-            <Paper
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                overflow: 'hidden',
-                width: '100%',
-                '& .MuiDataGrid-root': { border: 'none' },
-                '& .MuiDataGrid-columnHeaders': {
-                  bgcolor: alpha('#0d9488', 0.05),
-                  borderBottom: '2px solid',
-                  borderColor: '#0d9488',
-                  '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, color: '#1E293B' },
-                },
-                '& .MuiDataGrid-row': {
-                  '&:hover': { bgcolor: alpha('#0d9488', 0.04), cursor: 'pointer' },
-                  '&.Mui-selected': {
-                    bgcolor: alpha('#0d9488', 0.08),
-                    '&:hover': { bgcolor: alpha('#0d9488', 0.12) },
-                  },
-                },
-                '& .MuiCheckbox-root': {
-                  color: '#0d9488',
-                  '&.Mui-checked': { color: '#0d9488' },
-                },
-              }}
-            >
-              <DataGrid
-                rows={filteredData}
-                columns={columns}
-                paginationModel={paginationModel}
-                onPaginationModelChange={setPaginationModel}
-                pageSizeOptions={[5, 10, 25, 50]}
-                loading={loading}
-                disableRowSelectionOnClick
-                onRowClick={handleRowClick}
-                getRowId={(row) => row.id}
-                getRowHeight={() => 'auto'}
-                getEstimatedRowHeight={() => 60}
-                sx={{
-                  '& .MuiDataGrid-row': { minHeight: '52px!important' },
-                  '& .MuiDataGrid-cell': { py: 1.5 },
-                }}
-              />
-            </Paper>
-          )}
-        </CardContent>
-      </Card>
-      {/* Details Modal */}
-      <Modal
-        open={modalOpen}
-        onClose={() => !submitting && handleCloseModal()}
-        closeAfterTransition
-        slots={{
-          backdrop: Backdrop
-        }}
-        slotProps={{
-          backdrop: { timeout: 500, sx: { backdropFilter: 'blur(4px)' } }
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: { xs: '90%', sm: '600px' },
-            bgcolor: 'background.paper',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
-              color: '#F8FAFC',
-              p: 3,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <WorkIcon />
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Request Details
-              </Typography>
-            </Box>
-            {!submitting && (
-              <IconButton
-                onClick={handleCloseModal}
-                sx={{ color: '#F8FAFC', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+        {/* Filters Panel */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+          <div className="flex items-center gap-2 mb-4 text-slate-700 font-semibold border-b border-slate-100 pb-2">
+            <FiFilter className="w-4 h-4" /> Filters
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Status
+              </label>
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-700"
               >
-                <CloseIcon />
-              </IconButton>
-            )}
-          </Box>
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="fulfilled">Fulfilled</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
 
-          {selectedRequest && (
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={2.5}>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      bgcolor: alpha('#0d9488', 0.05),
-                      borderRadius: 2,
-                      p: 2,
-                      border: '1px solid',
-                      borderColor: alpha('#0d9488', 0.2),
-                    }}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Recruiter Name
+              </label>
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search Recruiter..."
+                  value={filters.recruiterName}
+                  onChange={(e) =>
+                    handleFilterChange("recruiterName", e.target.value)
+                  }
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Teacher Name
+              </label>
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search Teacher..."
+                  value={filters.teacherName}
+                  onChange={(e) =>
+                    handleFilterChange("teacherName", e.target.value)
+                  }
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={handleClearFilters}
+                className="w-full px-4 py-2 border border-slate-300 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <FiX className="w-4 h-4" /> Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            </div>
+          ) : displayedData.length === 0 ? (
+            <div className="text-center py-20 bg-slate-50">
+              <FiBriefcase className="mx-auto h-16 w-16 text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900">
+                No requests found
+              </h3>
+              <p className="text-slate-500 mt-1">
+                Try adjusting your filters or search criteria
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Responsive Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-bold tracking-wider">
+                      <th className="px-6 py-4">Recruiter</th>
+                      <th className="px-6 py-4">Teacher</th>
+                      <th className="px-6 py-4">Role</th>
+                      <th className="px-6 py-4">Subjects</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {displayedData.map((request) => (
+                      <tr
+                        key={request.id}
+                        className="hover:bg-slate-50 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                            <span className="font-semibold text-slate-800">
+                              {request.recruiter}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-semibold text-slate-800">
+                            {request.teacher}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {request.role || "—"}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {request.subjects?.[0]?.subject_name || "—"}
+                          {request.subjects?.length > 1 && (
+                            <span className="text-xs text-slate-400 ml-1">
+                              +{request.subjects.length - 1}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                              request.status
+                            )} capitalize`}
+                          >
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-500 text-sm whitespace-nowrap">
+                          {formatDate(request.requestDate)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleOpenModal(request)}
+                            className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                            title="View Details"
+                          >
+                            <FiMoreVertical className="w-5 h-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="border-t border-slate-200 px-6 py-4 flex items-center justify-between bg-slate-50">
+                <span className="text-sm text-slate-500">
+                  Showing {paginationModel.page * paginationModel.pageSize + 1}{" "}
+                  to{" "}
+                  {Math.min(
+                    (paginationModel.page + 1) * paginationModel.pageSize,
+                    filteredData.length
+                  )}{" "}
+                  of {filteredData.length} results
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      setPaginationModel((prev) => ({
+                        ...prev,
+                        page: Math.max(0, prev.page - 1),
+                      }))
+                    }
+                    disabled={paginationModel.page === 0}
+                    className="p-2 border border-slate-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
                   >
-                    <Typography variant="caption" sx={{ color: '#64748B', mb: 0.5, display: 'block' }}>
-                      Recruiter
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
-                      {formatName(selectedRequest.recruiterName)}
-                    </Typography>
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      bgcolor: '#F8FAFC',
-                      borderRadius: 2,
-                      p: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
+                    <FiChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginationModel((prev) => ({
+                        ...prev,
+                        page: Math.min(totalPages - 1, prev.page + 1),
+                      }))
+                    }
+                    disabled={paginationModel.page >= totalPages - 1}
+                    className="p-2 border border-slate-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
                   >
-                    <Typography variant="caption" sx={{ color: '#64748B', mb: 0.5, display: 'block' }}>
-                      Teacher
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1E293B' }}>
-                      {formatName(selectedRequest.teacherName)}
-                    </Typography>
-                  </Box>
-                </Grid>
+                    <FiChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{ color: '#64748B', mb: 0.5, display: 'block' }}>
-                    Role
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
-                    {selectedRequest.role || 'N/A'}
-                  </Typography>
-                </Grid>
+        {/* Custom Modal */}
+        {modalOpen && selectedRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-slide-up">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6 text-white flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <FiBriefcase className="w-5 h-5" />
+                  <h2 className="text-xl font-bold">Request Details</h2>
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
 
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{ color: '#64748B', mb: 0.5, display: 'block' }}>
-                    Status
-                  </Typography>
-                  {getStatusChip(selectedRequest.status)}
-                </Grid>
+              {/* Modal Content */}
+              <div className="p-6 space-y-4">
+                <div className="bg-teal-50 border border-teal-100 p-4 rounded-xl">
+                  <span className="text-xs text-teal-600 uppercase tracking-wider font-semibold">
+                    Recruiter
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-800">
+                    {formatName(selectedRequest.recruiterName)}
+                  </h3>
+                </div>
 
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: '#64748B', mb: 1, display: 'block' }}>
-                    Subjects
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {selectedRequest.subjects?.map((subject, index) => (
-                      <Chip
-                        key={index}
-                        label={subject.subject_name}
-                        size="small"
-                        sx={{
-                          bgcolor: alpha('#0d9488', 0.1),
-                          color: '#0d9488',
-                          fontWeight: 600,
-                        }}
-                      />
-                    )) || <Typography variant="body2" color="text.secondary">No subjects</Typography>}
-                  </Box>
-                </Grid>
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl">
+                  <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                    Teacher
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-800">
+                    {formatName(selectedRequest.teacherName)}
+                  </h3>
+                </div>
 
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: '#64748B', mb: 0.5, display: 'block' }}>
-                    Request Date
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-xs text-slate-400 font-semibold block mb-1">
+                      ROLE
+                    </span>
+                    <p className="text-slate-800 font-medium">
+                      {selectedRequest.role || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-400 font-semibold block mb-1">
+                      STATUS
+                    </span>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-xs font-bold border capitalize ${getStatusColor(
+                        selectedRequest.status
+                      )}`}
+                    >
+                      {selectedRequest.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-xs text-slate-400 font-semibold block mb-2">
+                    SUBJECTS
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRequest.subjects?.length > 0 ? (
+                      selectedRequest.subjects.map((sub, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded border border-teal-100"
+                        >
+                          {sub.subject_name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-slate-400 italic">
+                        No subjects listed
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100">
+                  <span className="text-xs text-slate-400 font-semibold block">
+                    REQUEST DATE
+                  </span>
+                  <p className="text-slate-800 font-medium">
                     {formatDate(selectedRequest.requestDate)}
-                  </Typography>
-                </Grid>
-              </Grid>
+                  </p>
+                </div>
+              </div>
 
-              <Divider sx={{ my: 3 }} />
-
-              <Stack direction="row" spacing={2}>
-                <Button
-                  fullWidth
-                  variant="outlined"
+              {/* Modal Footer */}
+              <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                <button
                   onClick={handleCloseModal}
                   disabled={submitting}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderColor: '#64748B',
-                    color: '#64748B',
-                    '&:hover': { borderColor: '#64748B', bgcolor: alpha('#64748B', 0.05) },
-                  }}
+                  className="flex-1 px-4 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-white transition-colors"
                 >
                   Close
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  startIcon={<CheckIcon />}
-                  onClick={handleApproveRequest}
-                  disabled={submitting || selectedRequest.status === 'fulfilled'}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    bgcolor: '#0d9488',
-                    '&:hover': { bgcolor: '#0a7a6f' },
-                  }}
-                >
-                  {submitting ? <CircularProgress size={24} sx={{ color: '#F8FAFC' }} /> : 'Approve'}
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="error"
-                  startIcon={<CloseActionIcon />}
-                  onClick={handleRejectRequest}
-                  disabled={submitting || selectedRequest.status === 'rejected'}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                  }}
-                >
-                  {submitting ? <CircularProgress size={24} /> : 'Reject'}
-                </Button>
-              </Stack>
-            </Box>
-          )}
-        </Box>
-      </Modal>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        sx={{ mt: { xs: 7, sm: 8 } }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          variant="filled"
-          elevation={6}
-          icon={snackbar.severity === 'success' ? <CheckCircleIcon /> : undefined}
-          sx={{
-            width: '100%',
-            minWidth: '300px',
-            borderRadius: 2,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-            '& .MuiAlert-message': { maxWidth: '100%', wordBreak: 'break-word', fontWeight: 500 },
-            ...(snackbar.severity === 'success' && { bgcolor: '#0d9488', color: '#F8FAFC' }),
-          }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-      <Backdrop
-        sx={{
-          color: '#F8FAFC',
-          zIndex: (theme) => theme.zIndex.drawer + 2,
-          backdropFilter: 'blur(4px)',
-          bgcolor: 'rgba(13, 148, 136, 0.2)',
-        }}
-        open={submitting}
-      >
-        <Box sx={{ textAlign: 'center' }}>
-          <CircularProgress size={56} thickness={4} sx={{ color: '#0d9488', mb: 2 }} />
-          <Typography variant="body1" sx={{ fontWeight: 600, color: '#1E293B' }}>
-            Processing...
-          </Typography>
-        </Box>
-      </Backdrop>
+                </button>
+                <div className="flex-[2] flex gap-2">
+                  <button
+                    onClick={handleRejectRequest}
+                    disabled={
+                      submitting || selectedRequest.status === "rejected"
+                    }
+                    className="flex-1 px-4 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 border border-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Reject
+                  </button>
+                  <button
+                    onClick={handleApproveRequest}
+                    disabled={
+                      submitting || selectedRequest.status === "fulfilled"
+                    }
+                    className="flex-1 px-4 py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                  >
+                    {submitting ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <FiCheck className="w-5 h-5" /> Approve
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notification Toast */}
+        {notification.show && (
+          <div
+            className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-up z-50 ${
+              notification.type === "success"
+                ? "bg-teal-600 text-white"
+                : "bg-red-500 text-white"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <FiCheck className="w-5 h-5" />
+            ) : (
+              <FiX className="w-5 h-5" />
+            )}
+            <span className="font-medium">{notification.message}</span>
+          </div>
+        )}
+      </div>
     </Layout>
   );
 };
