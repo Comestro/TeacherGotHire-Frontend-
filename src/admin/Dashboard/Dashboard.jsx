@@ -1,57 +1,25 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Avatar,
-  IconButton,
-  Chip,
-  Switch,
-  useTheme,
-  useMediaQuery,
-  Tab,
-  Tabs,
-  Badge,
-  Tooltip,
-} from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import {
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  School as SchoolIcon,
-  WorkOutline as JobIcon,
-  CalendarToday as CalendarIcon,
-  Assessment as AssessmentIcon,
-  TrendingUp as TrendingUpIcon,
-  CheckCircle as CheckCircleIcon,
-  Schedule as ScheduleIcon,
-  Notifications as NotificationsIcon,
-  Mail as MailIcon,
-  Settings as SettingsIcon,
-  AccountCircle as AccountIcon,
-  KeyboardArrowRight as ArrowRightIcon,
-  Timeline as TimelineIcon,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  ShowChart as ShowChartIcon,
-  Category,
-  MenuBook,
-  Psychology,
-  Grade,
-  WorkspacePremium,
-  Quiz,
-  BusinessCenter,
-  Key,
-  VideoCall,
-  AssignmentInd,
-  NotificationImportant,
-  SupervisorAccount,
-  QuestionAnswer as QuestionAnswerIcon,
-  LocationOn,
-  MoreHoriz,
-  WorkOutline,
-} from "@mui/icons-material";
+  FiUsers,
+  FiBriefcase,
+  FiCalendar,
+  FiCheckSquare,
+  FiClipboard,
+  FiTarget,
+  FiFileText,
+  FiGrid,
+  FiKey,
+  FiActivity,
+  FiStar,
+  FiAward,
+  FiBell,
+  FiMessageSquare,
+  FiMapPin,
+  FiBook,
+  FiBarChart2,
+  FiPieChart,
+  FiTrendingUp,
+} from "react-icons/fi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -82,10 +50,7 @@ ChartJS.register(
 );
 
 export default function AdminDashboard() {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const [chartTab, setChartTab] = useState(0);
   const [showAllActions, setShowAllActions] = useState(false);
   const [mockData, setMockData] = useState({
@@ -109,29 +74,28 @@ export default function AdminDashboard() {
       try {
         const response = await getDashboardData();
         setMockData(response);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      }
     };
 
     fetchDashboardData();
   }, []);
-
-  const handleChartTabChange = (event, newValue) => {
-    setChartTab(newValue);
-  };
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: isMobile ? "bottom" : "top",
+        position: "top",
         labels: {
           color: "#333",
-          boxWidth: isMobile ? 8 : 30,
           font: {
-            size: isMobile ? 8 : 10,
+            size: 11,
+            family: "'Inter', sans-serif",
           },
-          padding: isMobile ? 5 : 8,
+          usePointStyle: true,
+          boxWidth: 8,
         },
       },
       title: {
@@ -141,32 +105,28 @@ export default function AdminDashboard() {
     scales: {
       x: {
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
-          display: !isMobile,
+          display: false,
+          drawBorder: false,
         },
         ticks: {
-          color: "#666",
+          color: "#64748B",
           font: {
-            size: isMobile ? 8 : 10,
+            size: 11,
           },
-          maxRotation: isMobile ? 45 : 0,
         },
       },
       y: {
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: "#E2E8F0",
+          borderDash: [5, 5],
+          drawBorder: false,
         },
         ticks: {
-          color: "#666",
+          color: "#64748B",
           font: {
-            size: isMobile ? 8 : 10,
+            size: 11,
           },
-          callback: function (value) {
-            if (isMobile && value > 100) {
-              return value.toString().substring(0, 1) + "00";
-            }
-            return value;
-          },
+          padding: 8,
         },
       },
     },
@@ -176,191 +136,183 @@ export default function AdminDashboard() {
     {
       label: "Teachers",
       value: mockData.teachers?.total,
-      color: "#0d9488",
-      icon: <PeopleIcon sx={{ fontSize: 40 }} />,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+      borderColor: "border-teal-100",
+      icon: <FiUsers size={24} />,
     },
     {
       label: "Recruiters",
       value: mockData.recruiters?.total,
-      color: "#06B6D4",
-      icon: <SchoolIcon sx={{ fontSize: 40 }} />,
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
+      borderColor: "border-cyan-100",
+      icon: <FiBriefcase size={24} />,
     },
     {
       label: "Interviews",
       value: mockData.interviews?.completed,
-      color: "#14b8a6",
-      icon: <CalendarIcon sx={{ fontSize: 40 }} />,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-100",
+      icon: <FiCalendar size={24} />,
     },
     {
       label: "Hiring",
       value: mockData.HireRequests?.total,
-      color: "#0891b2",
-      icon: <BusinessCenter sx={{ fontSize: 40 }} />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-100",
+      icon: <FiCheckSquare size={24} />,
     },
     {
       label: "Center",
       value: mockData.examcenters?.total_examcenter,
-      color: "#0d9488",
-      icon: <Quiz sx={{ fontSize: 40 }} />,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+      borderColor: "border-teal-100",
+      icon: <FiTarget size={24} />,
     },
     {
       label: "Applications",
       value: mockData.TeacherApply?.total,
-      color: "#14b8a6",
-      icon: <AssignmentInd sx={{ fontSize: 40 }} />,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-100",
+      icon: <FiClipboard size={24} />,
     },
   ];
 
   const quickActions = [
     {
-      icon: <SchoolIcon />,
+      icon: <FiUsers />,
       text: "Teachers",
-      color: "#0d9488",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
       link: "/admin/manage/teacher",
     },
     {
-      icon: <SupervisorAccount />,
+      icon: <FiBriefcase />,
       text: "Recruiters",
-      color: "#06B6D4",
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
       link: "/admin/manage/recruiter",
     },
     {
-      icon: <BusinessCenter />,
+      icon: <FiCheckSquare />,
       text: "Hiring",
-      color: "#14b8a6",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
       link: "/admin/manage/hiring",
     },
     {
-      icon: <VideoCall />,
+      icon: <FiCalendar />,
       text: "Interviews",
-      color: "#0891b2",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
       link: "/admin/manage/interview",
     },
     {
-      icon: <Quiz />,
+      icon: <FiTarget />,
       text: "Exams",
-      color: "#0d9488",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
       link: "/admin/manage/exam",
     },
     {
-      icon: <MenuBook />,
+      icon: <FiBook />,
       text: "Subjects",
-      color: "#14b8a6",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
       link: "/admin/manage/subject",
     },
     {
-      icon: <Category />,
+      icon: <FiGrid />,
       text: "Categories",
-      color: "#2dd4bf",
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
       link: "/admin/manage/class/category",
     },
     {
-      icon: <Key />,
+      icon: <FiKey />,
       text: "Passkeys",
-      color: "#06B6D4",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
       link: "/admin/manage/passkey",
     },
     {
-      icon: <Psychology />,
+      icon: <FiActivity />,
       text: "Skills",
-      color: "#0d9488",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
       link: "/admin/manage/skills",
     },
     {
-      icon: <Grade />,
+      icon: <FiStar />,
       text: "Levels",
-      color: "#14b8a6",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
       link: "/admin/manage/level",
     },
     {
-      icon: <WorkspacePremium />,
+      icon: <FiAward />,
       text: "Qualifications",
-      color: "#0891b2",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
       link: "/admin/manage/qualification",
     },
     {
-      icon: <AssignmentInd />,
+      icon: <FiFileText />,
       text: "Job Applications",
-      color: "#06B6D4",
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
       link: "/admin/manage/teacher/applied/job",
     },
     {
-      icon: <NotificationImportant />,
+      icon: <FiBell />,
       text: "Enquiries",
-      color: "#0d9488",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
       link: "/admin/manage/recruiter/enquiry",
     },
     {
-      icon: <QuestionAnswerIcon />,
+      icon: <FiMessageSquare />,
       text: "Question manager",
-      color: "#14b8a6",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
       link: "/admin/manage/question/manager",
     },
     {
-      icon: <LocationOn />,
+      icon: <FiMapPin />,
       text: "Exam Centers",
-      color: "#2dd4bf",
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
       link: "/admin/manage/exam/center",
     },
     {
-      icon: <WorkOutline />,
+      icon: <FiBriefcase />,
       text: "Job Types",
-      color: "#0891b2",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
       link: "/admin/manage/teacher/jobtype",
     },
   ];
 
   const displayedQuickActions = showAllActions
     ? quickActions
-    : quickActions.slice(0, isMobile ? 6 : isTablet ? 8 : 12);
-
-  const handleActionClick = (link) => {
-    navigate(link);
-  };
+    : quickActions.slice(0, 12);
 
   return (
     <Layout>
-      <Box
-        sx={{
-          flexGrow: 1,
-          minHeight: "100vh",
-          color: "#1E293B",
-          transition: "all 0.3s ease",
-          overflowX: "hidden !important",
-          width: "100%",
-          maxWidth: "100%",
-        }}
-      >
-        {/* Compact Header */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 1.5,
-            pb: 1,
-            borderBottom: "2px solid #e2e8f0",
-          }}
-        >
-          <Box>
-            <Typography
-              variant={isMobile ? "subtitle1" : "h6"}
-              fontWeight="600"
-              sx={{ color: "#0d9488", mb: 0.25, fontSize: "1rem" }}
-            >
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen font-sans">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-gray-200 pb-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-teal-700 mb-1">
               Teacher Assessment & Hiring Portal
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#64748B",
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                fontSize: "0.7rem",
-              }}
-            >
-              <DashboardIcon sx={{ fontSize: 14 }} />
+            </h1>
+            <p className="text-sm text-gray-500 flex items-center gap-2">
+              <FiActivity className="text-teal-500" />
               Dashboard Overview •{" "}
               {new Date().toLocaleDateString("en-US", {
                 weekday: "short",
@@ -368,120 +320,81 @@ export default function AdminDashboard() {
                 month: "short",
                 day: "numeric",
               })}
-            </Typography>
-          </Box>
-        </Box>
+            </p>
+          </div>
+        </div>
 
-        {/* Compact Key Metrics */}
-        <Grid container spacing={1} sx={{ mb: 1.5 }}>
+        {/* Key Metrics Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {statsSummary.map((stat, index) => (
-            <Grid size={{ xs: 6, sm: 4, md: 2 }} key={index}>
-              <Paper
-                elevation={0}
-                sx={{
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                  backgroundColor: "white",
-                  border: "1px solid #e2e8f0",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 12px rgba(13,148,136,0.1)",
-                    borderColor: stat.color,
-                  },
-                }}
-              >
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0 }}
-                >
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 1.5,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: stat.color,
-                    }}
-                  >
-                    {React.cloneElement(stat.icon, { sx: { fontSize: 24 } })}
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
-                      variant="h4"
-                      fontWeight="700"
-                      sx={{
-                        color: "#1E293B",
-                        lineHeight: 1,
-                        fontSize: "1.1rem",
-                      }}
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#64748B", fontSize: "0.7rem" }}
-                    >
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* Main Content Grid */}
-        <Grid container spacing={2}>
-          {/* Left Column - Analytics Cards */}
-          <Grid size={{ xs: 12, md: 8 }}>
-            {/* Charts Section */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-              }}
+            <div
+              key={index}
+              className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
             >
-              <Tabs
-                value={chartTab}
-                onChange={handleChartTabChange}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  mb: 1.5,
-                  minHeight: 36,
-                  "& .MuiTab-root": {
-                    minHeight: 36,
-                    py: 0.5,
-                    px: 1.5,
-                    fontSize: "0.75rem",
-                    minWidth: "auto",
-                  },
-                }}
-              >
-                <Tab
-                  icon={<ShowChartIcon sx={{ fontSize: 20 }} />}
-                  label="Trends"
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<BarChartIcon sx={{ fontSize: 20 }} />}
-                  label="Comparison"
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<PieChartIcon sx={{ fontSize: 20 }} />}
-                  label="Distribution"
-                  iconPosition="start"
-                />
-              </Tabs>
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className={`w-10 h-10 rounded-lg ${stat.bgColor} ${stat.color} flex items-center justify-center transition-colors group-hover:scale-110 duration-300`}
+                >
+                  {stat.icon}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-gray-800 leading-tight">
+                    {stat.value || 0}
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate">{stat.label}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-              <Box sx={{ height: { xs: 180, sm: 220, md: 250 } }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Charts Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-gray-800">Analytics</h2>
+                <div className="flex p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => setChartTab(0)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      chartTab === 0
+                        ? "bg-white text-teal-700 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <FiTrendingUp /> Trends
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setChartTab(1)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      chartTab === 1
+                        ? "bg-white text-teal-700 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <FiBarChart2 /> Compare
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setChartTab(2)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      chartTab === 2
+                        ? "bg-white text-teal-700 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <FiPieChart /> Distribution
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-64 md:h-80">
                 {chartTab === 0 && (
                   <Line
                     options={chartOptions}
@@ -499,15 +412,31 @@ export default function AdminDashboard() {
                           data: [
                             mockData.teachers?.total || 0,
                             mockData.recruiters?.total || 0,
-                            mockData.interviews?.upcoming +
-                              mockData.interviews?.completed || 0,
+                            (mockData.interviews?.upcoming || 0) +
+                              (mockData.interviews?.completed || 0),
                             mockData.HireRequests?.total || 0,
                             mockData.TeacherApply?.total || 0,
                           ],
                           borderColor: "#0d9488",
-                          backgroundColor: "rgba(13, 148, 136, 0.1)",
+                          backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(
+                              0,
+                              0,
+                              0,
+                              300
+                            );
+                            gradient.addColorStop(0, "rgba(13, 148, 136, 0.2)");
+                            gradient.addColorStop(1, "rgba(13, 148, 136, 0)");
+                            return gradient;
+                          },
                           tension: 0.4,
                           fill: true,
+                          pointBackgroundColor: "#fff",
+                          pointBorderColor: "#0d9488",
+                          pointBorderWidth: 2,
+                          pointRadius: 4,
+                          pointHoverRadius: 6,
                         },
                       ],
                     }}
@@ -530,276 +459,152 @@ export default function AdminDashboard() {
                             mockData.teachers?.total || 0,
                             mockData.recruiters?.total || 0,
                             mockData.interviews?.upcoming || 0,
-                            mockData.HireRequests?.total || 0,
+                            mockData.HireRequests?.approved || 0,
                           ],
                           backgroundColor: "#0d9488",
+                          borderRadius: 4,
                         },
                         {
-                          label: "Pending",
+                          label: "Pending/Completed",
                           data: [
                             mockData.teachers?.pending || 0,
                             mockData.recruiters?.pending || 0,
-                            0,
+                            mockData.interviews?.completed || 0,
                             mockData.HireRequests?.requested || 0,
                           ],
-                          backgroundColor: "#06B6D4",
+                          backgroundColor: "#99f6e4",
+                          borderRadius: 4,
                         },
                       ],
                     }}
                   />
                 )}
                 {chartTab === 2 && (
-                  <Doughnut
-                    options={{ ...chartOptions, maintainAspectRatio: false }}
-                    data={{
-                      labels: [
-                        "Teachers",
-                        "Recruiters",
-                        "Exam Centers",
-                        "Applications",
-                      ],
-                      datasets: [
-                        {
-                          data: [
-                            mockData.teachers?.total || 0,
-                            mockData.recruiters?.total || 0,
-                            mockData.examcenters?.total_examcenter || 0,
-                            mockData.TeacherApply?.total || 0,
+                  <div className="h-full flex items-center justify-center p-4">
+                    <div className="w-64 h-64">
+                      <Doughnut
+                        options={{
+                          ...chartOptions,
+                          cutout: "70%",
+                          plugins: {
+                            legend: {
+                              position: "right",
+                            },
+                          },
+                        }}
+                        data={{
+                          labels: [
+                            "Teachers",
+                            "Recruiters",
+                            "Hiring Requests",
+                            "Applications",
                           ],
-                          backgroundColor: [
-                            "#0d9488",
-                            "#06B6D4",
-                            "#14b8a6",
-                            "#2dd4bf",
+                          datasets: [
+                            {
+                              data: [
+                                mockData.teachers?.total || 0,
+                                mockData.recruiters?.total || 0,
+                                mockData.HireRequests?.total || 0,
+                                mockData.TeacherApply?.total || 0,
+                              ],
+                              backgroundColor: [
+                                "#0d9488",
+                                "#06b6d4",
+                                "#3b82f6",
+                                "#10b981",
+                              ],
+                              borderWidth: 0,
+                            },
                           ],
-                          borderWidth: 2,
-                          borderColor: "#fff",
-                        },
-                      ],
-                    }}
-                  />
+                        }}
+                      />
+                    </div>
+                  </div>
                 )}
-              </Box>
-            </Paper>
-          </Grid>
+              </div>
+            </div>
+          </div>
 
-          {/* Right Column - Quick Access & Resources */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            {/* Quick Actions */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-                mb: 2,
-              }}
-            >
-              <Typography
-                variant="body2"
-                fontWeight="600"
-                sx={{
-                  mb: 1.5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  fontSize: "0.9rem",
-                }}
-              >
-                <SettingsIcon sx={{ fontSize: 22, color: "#0d9488" }} />
-                Quick Actions
-              </Typography>
-
-              <Grid container spacing={1}>
-                {quickActions.map((action, index) => (
-                  <Grid size={6} key={index}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      onClick={() => handleActionClick(action.link)}
-                      sx={{
-                        py: 0.75,
-                        px: 0.75,
-                        flexDirection: "column",
-                        gap: 0.5,
-                        border: "1px solid #e2e8f0",
-                        backgroundColor: "#fafafa",
-                        color: "#1E293B",
-                        textTransform: "none",
-                        minHeight: "auto",
-                        "&:hover": {
-                          borderColor: action.color,
-                          backgroundColor: `${action.color}10`,
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          color: action.color,
-                          fontSize: 28,
-                          "& svg": { fontSize: 28 },
-                        }}
-                      >
-                        {action.icon}
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: "0.75rem",
-                          lineHeight: 1.2,
-                          textAlign: "center",
-                        }}
-                      >
-                        {action.text}
-                      </Typography>
-                    </Button>
-                  </Grid>
-                ))}
-              </Grid>
-
-              {quickActions.length > 8 && (
-                <Button
-                  fullWidth
-                  size="small"
+          {/* Quick Actions & Recent Activity (Right Column) */}
+          <div className="space-y-6">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-800">
+                  Quick Actions
+                </h2>
+                <button
                   onClick={() => setShowAllActions(!showAllActions)}
-                  sx={{
-                    mt: 1,
-                    textTransform: "none",
-                    fontSize: "0.75rem",
-                    py: 0.5,
-                  }}
+                  className="text-xs text-teal-600 hover:text-teal-700 font-medium hover:underline transition-all"
                 >
-                  {showAllActions
-                    ? "Show Less"
-                    : `Show All (${quickActions.length - 8} more)`}
-                </Button>
-              )}
-            </Paper>
+                  {showAllActions ? "Show Less" : "View All"}
+                </button>
+              </div>
 
-            {/* System Resources */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <Typography
-                variant="body2"
-                fontWeight="600"
-                sx={{
-                  mb: 1.5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  fontSize: "0.9rem",
-                }}
-              >
-                <AssessmentIcon sx={{ fontSize: 22, color: "#0d9488" }} />
-                Resources
-              </Typography>
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                {displayedQuickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => navigate(action.link)}
+                    className="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-teal-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group h-24"
+                  >
+                    <div
+                      className={`text-2xl mb-2 ${action.color} group-hover:scale-110 transition-transform`}
+                    >
+                      {action.icon}
+                    </div>
+                    <span className="text-xs font-medium text-gray-600 group-hover:text-teal-700 text-center leading-tight">
+                      {action.text}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {[
-                {
-                  icon: <MenuBook sx={{ fontSize: 20 }} />,
-                  label: "Subjects",
-                  count: mockData.subjects?.total,
-                  color: "#0d9488",
-                },
-                {
-                  icon: <Category sx={{ fontSize: 20 }} />,
-                  label: "Categories",
-                  count: mockData.class_categories?.total,
-                  color: "#06B6D4",
-                },
-                {
-                  icon: <Psychology sx={{ fontSize: 20 }} />,
-                  label: "Skills",
-                  count: mockData.skills?.total,
-                  color: "#14b8a6",
-                },
-                {
-                  icon: <Key sx={{ fontSize: 20 }} />,
-                  label: "Passkeys",
-                  count: mockData.passkeys?.total,
-                  color: "#0891b2",
-                },
-                {
-                  icon: <QuestionAnswerIcon sx={{ fontSize: 20 }} />,
-                  label: "Questions",
-                  count: mockData.assignedquestionusers?.total,
-                  color: "#0d9488",
-                },
-                {
-                  icon: <LocationOn sx={{ fontSize: 20 }} />,
-                  label: "Centers",
-                  count: mockData.examcenters?.total_examcenter,
-                  color: "#14b8a6",
-                },
-              ].map((resource, idx) => (
-                <Box
-                  key={idx}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    py: 0.75,
-                    px: 1,
-                    mb: 0.5,
-                    borderRadius: 1,
-                    bgcolor: "#fafafa",
-                    border: "1px solid #e2e8f0",
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      bgcolor: `${resource.color}10`,
-                      borderColor: resource.color,
-                    },
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 1,
-                        bgcolor: `${resource.color}15`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: resource.color,
-                      }}
-                    >
-                      {resource.icon}
-                    </Box>
-                    <Typography
-                      variant="caption"
-                      fontWeight="500"
-                      sx={{ fontSize: "0.8rem" }}
-                    >
-                      {resource.label}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={resource.count}
-                    size="small"
-                    sx={{
-                      bgcolor: `${resource.color}20`,
-                      color: resource.color,
-                      fontWeight: 600,
-                      height: 22,
-                      fontSize: "0.75rem",
-                    }}
-                  />
-                </Box>
-              ))}
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
+            {/* Application Stages Preview */}
+            <div className="bg-gradient-to-br from-teal-600 to-teal-800 p-6 rounded-xl text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-teal-400 opacity-20 rounded-full blur-xl"></div>
+
+              <h3 className="text-lg font-bold mb-1 relative z-10">
+                Application Status
+              </h3>
+              <p className="text-teal-100 text-xs mb-4 relative z-10">
+                Overview of recent activity
+              </p>
+
+              <div className="space-y-3 relative z-10">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-teal-300"></span>{" "}
+                    Pending
+                  </span>
+                  <span className="font-bold">
+                    {mockData.TeacherApply?.pending || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>{" "}
+                    Approved
+                  </span>
+                  <span className="font-bold">
+                    {mockData.TeacherApply?.approved || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-300"></span>{" "}
+                    Requests
+                  </span>
+                  <span className="font-bold">
+                    {mockData.HireRequests?.requested || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 }

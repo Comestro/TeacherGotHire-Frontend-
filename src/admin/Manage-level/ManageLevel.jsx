@@ -189,10 +189,10 @@ const ManageLevel = () => {
 
     setSubmitting(true);
     try {
-     if (typeof deleteLevel === "function") {
+      if (typeof deleteLevel === "function") {
         await deleteLevel(currentLevel.id);
       } else {
- console.warn(
+        console.warn(
           "deleteLevel API might be missing, updating local state only if fails"
         );
         // For now, I will simulate success if function missing, but I added it to imports.
@@ -414,7 +414,7 @@ const ManageLevel = () => {
                     >
                       Level Name
                     </th>
-                   
+
                     <th className="px-3 py-2 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -447,7 +447,6 @@ const ManageLevel = () => {
                           </span>
                         </div>
                       </td>
-                     
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1">
                           <button

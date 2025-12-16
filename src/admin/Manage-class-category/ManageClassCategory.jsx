@@ -11,6 +11,7 @@ import {
   FiAlertCircle,
   FiMoreVertical,
   FiFilter,
+  FiEye,
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import {
@@ -413,7 +414,7 @@ const ManageClassCategory = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    <th className="p-4 w-12 text-center">
+                    <th className="px-3 py-2 w-10 text-center">
                       <input
                         type="checkbox"
                         checked={
@@ -425,24 +426,19 @@ const ManageClassCategory = () => {
                       />
                     </th>
                     <th
-                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort("id")}
                     >
                       ID
                     </th>
                     <th
-                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort("name")}
                     >
                       Category Name
                     </th>
-                    <th
-                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort("description")}
-                    >
-                      Description
-                    </th>
-                    <th className="p-4 text-center">Actions</th>
+                    
+                    <th className="px-3 py-2 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -455,7 +451,7 @@ const ManageClassCategory = () => {
                           : ""
                       }`}
                     >
-                      <td className="p-4 text-center">
+                      <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={selectedCategories.includes(category.id)}
@@ -463,46 +459,41 @@ const ManageClassCategory = () => {
                           className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                         />
                       </td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      <td className="px-3 py-2">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
                           #{category.id}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                          <span className="font-medium text-gray-900">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+                          <span className="font-medium text-gray-900 text-sm">
                             {category.name}
                           </span>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <p
-                          className="text-gray-500 text-sm truncate max-w-xs"
-                          title={category.description}
-                        >
-                          {category.description || (
-                            <span className="italic text-gray-400">
-                              No description provided
-                            </span>
-                          )}
-                        </p>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleOpenDetailsModal(category)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="View"
+                          >
+                            <FiEye size={14} />
+                          </button>
                           <button
                             onClick={() => handleOpenAddEditModal(category)}
-                            className="p-1.5 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded transition-colors"
                             title="Edit"
                           >
-                            <FiEdit2 size={16} />
+                            <FiEdit2 size={14} />
                           </button>
                           <button
                             onClick={() => handleOpenDeleteModal(category)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                           >
-                            <FiTrash2 size={16} />
+                            <FiTrash2 size={14} />
                           </button>
                         </div>
                       </td>
