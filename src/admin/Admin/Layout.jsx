@@ -23,39 +23,23 @@ export default function Layout({ children }) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
 
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-          // Adjust margin or width based on sidebar state if needed,
-          // but traditionally with flexbox, 'flex-1' takes remaining space.
-          // If Sidebar is fixed/absolute on mobile, we need to handle that.
-          // Let's assume Sidebar handles its own width/visibility and this div takes remaining space.
           isSidebarOpen ? "md:ml-0" : "md:ml-0"
         }`}
-        style={
-          {
-            // If sidebar is properly "flexed" it consumes space.
-            // If we want the drawer effect where content pushes, we just use flex.
-            // If MUI drawer was "persistent", it pushed content.
-            // If we want to replicate that:
-            // The Sidebar component needs to be a flex item that expands/collapses width.
-          }
-        }
       >
         {/* Header / AppBar */}
         <header
-          className="h-14 bg-gradient-to-r from-teal-600 to-teal-500 shadow-md flex items-center px-4 fixed w-full z-40 transition-all duration-300"
+          className="h-14 bg-gradient-to-r from-teal-600 to-teal-500 shadow-md flex items-center px-4 fixed w-full md:w-[calc(100%-240px)] z-40 transition-all duration-300"
           style={{
-            // If we want the header to span the whole width fixed, we leave it w-full.
-            // If it should shift with sidebar, we'd adjust left padding or margin.
-            // For a standard admin panel, header usually spans full width or sits next to sidebar.
-            // The MUI one had zIndex.drawer + 1, so it likely sat ON TOP of sidebar?
-            // "zIndex: theme.zIndex.drawer + 1" means Header is above Sidebar.
-            zIndex: 50,
+            zIndex: 40,
+            marginLeft: isSidebarOpen ? undefined : 0, // Logic for width adjustment if we were collapsing sidebar
+            width: isSidebarOpen ? undefined : "100%",
           }}
         >
           <button
@@ -63,15 +47,10 @@ export default function Layout({ children }) {
             className="text-white p-2 rounded-lg hover:bg-white/20 transition-colors mr-4 focus:outline-none md:hidden"
             aria-label="Toggle Sidebar"
           >
-            {/* Only show toggle on mobile if sidebar is permanent on desktop? 
-                 MUI logic: "open={open && !isMobile}". 
-                 Desktop toggles "persistent" drawer. Mobile toggles "temporary".
-                 We will implement a responsive sidebar.
-             */}
             {isSidebarOpen ? <FiChevronLeft size={24} /> : <FiMenu size={24} />}
           </button>
 
-          {/* Desktop Toggle (if we want to collapse sidebar on desktop too) */}
+          {/* Desktop Toggle */}
           <button
             onClick={handleSidebarToggle}
             className="hidden md:block text-white p-2 rounded-lg hover:bg-white/20 transition-colors mr-4 focus:outline-none"
@@ -86,11 +65,10 @@ export default function Layout({ children }) {
         </header>
 
         {/* Main Content Spacer for fixed header */}
-        {/* Main Content Spacer for fixed header */}
-        <div className="h-14" />
+        <div className="h-14 flex-shrink-0" />
 
         {/* Content Body */}
-        <main className="flex-1 overflow-x-hidden w-full max-w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full custom-scrollbar p-0">
           <div className="max-w-8xl mx-auto w-full">{children}</div>
         </main>
       </div>
