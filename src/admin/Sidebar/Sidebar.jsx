@@ -1,111 +1,32 @@
 import React, { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { styled, useTheme } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import MuiDrawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
-import Divider from "@mui/material/Divider";
-import { Badge, Collapse } from "@mui/material";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { handleLogout } from "../../services/authUtils";
 import {
-  Logout as LogoutIcon,
-  Dashboard as DashboardIcon,
-  Person as PersonIcon,
-  Subject as SubjectIcon,
-  School as SchoolIcon,
-  Work as WorkIcon,
-  QuestionAnswer as QuestionAnswerIcon,
-  Build as BuildIcon,
-  Assignment as AssignmentIcon,
-  Class as ClassIcon,
-  Layers as LayersIcon,
-  Settings as SettingsIcon,
-  Lock as LockIcon,
-  ExpandLess as ExpandLessIcon,
-  ExpandMore as ExpandMoreIcon,
-  Groups as GroupsIcon,
-  Key,
-  VideoCall,
-  BusinessCenter,
-  Quiz,
-  LibraryBooks,
-  WorkOutline,
-  Category,
-  MenuBook,
-  Psychology,
-  Grade,
-  WorkspacePremium,
-  AssignmentInd,
-  NotificationImportant,
-  School,
-  SupervisorAccount,
-  QuestionMark,
-  LocationOn,
-  Report,
-  FlagCircle,
-} from "@mui/icons-material";
-const ScrollbarStyle = styled('style')({
-  children: `
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-    .custom-scrollbar {
-      scrollbar-width: thin;
-      scrollbar-color: #888 #f1f1f1;
-      overflow-y: auto;
-      overflow-x: hidden !important;
-    }
-  `
-});
+  FiGrid,
+  FiBox,
+  FiBook,
+  FiAward,
+  FiTrendingUp,
+  FiBriefcase,
+  FiFileText,
+  FiGlobe,
+  FiKey,
+  FiVideo,
+  FiUserCheck,
+  FiMessageSquare,
+  FiFlag,
+  FiUsers,
+  FiUser,
+  FiHelpCircle,
+  FiMapPin,
+  FiSettings,
+  FiLogOut,
+  FiChevronDown,
+  FiChevronUp,
+} from "react-icons/fi";
 
-const drawerWidth = 300;
-
-const Drawer = styled(MuiDrawer)(({ theme, open }) => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-  boxSizing: "border-box",
-  ...(open && {
-    "& .MuiDrawer-paper": {
-      width: drawerWidth,
-      overflowX: "hidden !important",
-      background: 'linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)',
-      boxShadow: '8px 0px 32px rgba(0,0,0,0.12)',
-      borderRight: `2px solid #CBD5E1`,
-      borderRadius: '0 16px 16px 0',
-    },
-  }),
-  ...(!open && {
-    "& .MuiDrawer-paper": {
-      overflowX: "hidden !important",
-      background: 'linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)',
-      boxShadow: '8px 0px 32px rgba(0,0,0,0.12)',
-      borderRight: `2px solid #CBD5E1`,
-      borderRadius: '0 16px 16px 0',
-    },
-  }),
-}));
-
-export default function Sidebar({ open, handleDrawerClose, variant = 'permanent' }) {
-  const theme = useTheme();
+export default function Sidebar({ isOpen, onToggle }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -115,332 +36,293 @@ export default function Sidebar({ open, handleDrawerClose, variant = 'permanent'
     setCollapseOpen((prev) => !prev);
   };
 
+  const isActive = (path) => location.pathname === path;
+
+  // Menu Items Config
+  // Converted Icons to React Icons (Feather) for consistency
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, link: "/admin/dashboard" },
-    { text: "Class category", icon: <Category />, link: "/admin/manage/class/category" },
-    { text: "Subjects", icon: <MenuBook />, link: "/admin/manage/subject" },
-    { text: "Skills", icon: <Psychology />, link: "/admin/manage/skills" },
-    { text: "Level", icon: <Grade />, link: "/admin/manage/level" },
-    { text: "Qualification", icon: <WorkspacePremium />, link: "/admin/manage/qualification" },
-    { text: "Job Type", icon: <WorkOutline />, link: "/admin/manage/teacher/jobtype" },
-    { text: "Exam", icon: <Quiz />, link: "/admin/manage/exam" },
-    { text: "Hiring", icon: <BusinessCenter />, link: "/admin/manage/hiring" },
-    { text: "Passkey", icon: <Key />, link: "/admin/manage/passkey" },
-    { text: "Interview", icon: <VideoCall />, link: "/admin/manage/interview" },
-    { text: "Job Applied", icon: <AssignmentInd />, link: "/admin/manage/teacher/applied/job" },
-    { text: "Recruiter Enquiry", icon: <NotificationImportant />, link: "/admin/manage/recruiter/enquiry" },
-    { text: "Question Report", icon: <FlagCircle />, link: "/admin/manage/question/report" },
-    { text: "Teacher", icon: <School />, link: "/admin/manage/teacher" },
-    { text: "Recruiter", icon: <SupervisorAccount />, link: "/admin/manage/recruiter" },
-    { text: "Question Manager", icon: <QuestionAnswerIcon />, link: "/admin/manage/question/manager" },
-    { text: "Exam Center", icon: <LocationOn />, link: "/admin/manage/exam/center" },
+    {
+      text: "Dashboard",
+      icon: <FiGrid />,
+      link: "/admin/dashboard",
+      section: "main",
+    },
+
+    // Data Management
+    {
+      text: "Class category",
+      icon: <FiBox />,
+      link: "/admin/manage/class/category",
+      section: "data",
+    },
+    {
+      text: "Subjects",
+      icon: <FiBook />,
+      link: "/admin/manage/subject",
+      section: "data",
+    },
+    {
+      text: "Skills",
+      icon: <FiTrendingUp />,
+      link: "/admin/manage/skills",
+      section: "data",
+    },
+    {
+      text: "Level",
+      icon: <FiAward />,
+      link: "/admin/manage/level",
+      section: "data",
+    },
+    {
+      text: "Qualification",
+      icon: <FiAward />,
+      link: "/admin/manage/qualification",
+      section: "data",
+    }, // Using Award for qual too
+    {
+      text: "Job Type",
+      icon: <FiBriefcase />,
+      link: "/admin/manage/teacher/jobtype",
+      section: "data",
+    },
+    {
+      text: "Exam",
+      icon: <FiFileText />,
+      link: "/admin/manage/exam",
+      section: "data",
+    },
+
+    // Manage Requests
+    {
+      text: "Hiring",
+      icon: <FiGlobe />,
+      link: "/admin/manage/hiring",
+      section: "requests",
+    },
+    {
+      text: "Passkey",
+      icon: <FiKey />,
+      link: "/admin/manage/passkey",
+      section: "requests",
+    },
+    {
+      text: "Interview",
+      icon: <FiVideo />,
+      link: "/admin/manage/interview",
+      section: "requests",
+    },
+    {
+      text: "Job Applied",
+      icon: <FiUserCheck />,
+      link: "/admin/manage/teacher/applied/job",
+      section: "requests",
+    },
+    {
+      text: "Recruiter Enquiry",
+      icon: <FiMessageSquare />,
+      link: "/admin/manage/recruiter/enquiry",
+      section: "requests",
+    },
+    {
+      text: "Question Report",
+      icon: <FiFlag />,
+      link: "/admin/manage/question/report",
+      section: "requests",
+    },
+
+    // Manage Users
+    {
+      text: "Teacher",
+      icon: <FiUsers />,
+      link: "/admin/manage/teacher",
+      section: "users",
+    },
+    {
+      text: "Recruiter",
+      icon: <FiUser />,
+      link: "/admin/manage/recruiter",
+      section: "users",
+    },
+    {
+      text: "Question Manager",
+      icon: <FiHelpCircle />,
+      link: "/admin/manage/question/manager",
+      section: "users",
+    },
+    {
+      text: "Exam Center",
+      icon: <FiMapPin />,
+      link: "/admin/manage/exam/center",
+      section: "users",
+    },
   ];
+
+  // Group items
+  const mainItems = menuItems.filter((item) => item.section === "main");
+  const dataItems = menuItems.filter((item) => item.section === "data");
+  const requestItems = menuItems.filter((item) => item.section === "requests");
+  const userItems = menuItems.filter((item) => item.section === "users");
+
+  const NavItem = ({ item }) => {
+    const active = isActive(item.link);
+    return (
+      <Link
+        to={item.link}
+        className={`flex items-center px-3 py-2 mx-2 my-0.5 rounded-md transition-all duration-200 group ${
+          active
+            ? "bg-teal-600 text-white shadow-sm mx-3"
+            : "text-gray-600 hover:bg-gray-100 hover:text-teal-600"
+        }`}
+      >
+        <div
+          className={`mr-3 p-1 rounded-full flex items-center justify-center transition-colors ${
+            active
+              ? "bg-teal-500 text-white"
+              : "bg-teal-50 text-teal-600 group-hover:bg-teal-100"
+          }`}
+        >
+          {React.cloneElement(item.icon, { size: 16 })}
+        </div>
+        <span className="font-medium text-sm tracking-wide">{item.text}</span>
+      </Link>
+    );
+  };
+
+  const SectionHeader = ({ title }) => (
+    <div className="px-5 py-1.5 mt-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+      {title}
+    </div>
+  );
 
   return (
     <>
-      <ScrollbarStyle />
-      <Drawer
-        anchor="left"
-        variant={variant}
-        open={open}
-        onClose={handleDrawerClose}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          overflowX: "hidden !important",
-          '& .MuiDrawer-paper': {
-            width: variant === 'permanent' ? drawerWidth : undefined,
-            overflowX: "hidden !important"
-          }
-        }}
-        PaperProps={{
-          className: "custom-scrollbar",
-          sx: {
-            overflowX: "hidden !important",
-            width: variant === 'permanent' ? drawerWidth : undefined,
-          }
-        }}
+      {/* Mobile Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onToggle}
+      />
+
+      {/* Sidebar Container */}
+      <nav
+        className={`fixed md:relative z-50 h-screen w-[240px] bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out shadow-xl md:shadow-none ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:hidden"
+        } ${
+          // On desktop, if isOpen is false, we might want to hide it completely or show mini sidebar?
+          // Current requirement suggests standard toggle.
+          // Layout.jsx logic handles the main content margin.
+          // This simply handles sidebar visibility.
+          ""
+        }`}
+        // If we want permanent sidebar on desktop that can collapse:
+        // We'd need two states: mobileOpen and desktopCollapsed.
+        // For simplicity: isOpen controls both. If desktop & !isOpen -> Hidden.
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", padding: theme.spacing(2, 1), background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: '#F8FAFC', ...theme.mixins.toolbar, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-          <Box
-            sx={{
-              flexGrow: 1,
-              textAlign: "center",
-              fontWeight: "bold",
-              fontSize: 28,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-            }}
-          >
+        {/* Brand / Logo Area */}
+        <div className="h-14 flex items-center justify-center bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-sm flex-shrink-0">
+          <h1 className="text-xl font-bold tracking-wider text-shadow-sm">
             PTPI
-          </Box>
-        </Box>
-        <Divider />
-        <List sx={{ py: 1, overflowX: "hidden !important" }}>
-          {menuItems.slice(0, 1).map((item, index) => (
-            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.5 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: "initial",
-                  px: 3,
-                  borderRadius: 2,
-                  mx: 1,
-                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
-                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
-                    transform: 'translateX(4px)',
-                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-                  },
-                }}
+          </h1>
+        </div>
+
+        {/* Scrollable Nav Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar pb-2 bg-gradient-to-b from-gray-50 to-white">
+          <div className="py-2">
+            {mainItems.map((item, idx) => (
+              <NavItem key={`main-${idx}`} item={item} />
+            ))}
+
+            <SectionHeader title="Data Management" />
+            {dataItems.map((item, idx) => (
+              <NavItem key={`data-${idx}`} item={item} />
+            ))}
+
+            <SectionHeader title="Manage Requests" />
+            {requestItems.map((item, idx) => (
+              <NavItem key={`req-${idx}`} item={item} />
+            ))}
+
+            <SectionHeader title="Manage Users" />
+            {userItems.map((item, idx) => (
+              <NavItem key={`user-${idx}`} item={item} />
+            ))}
+
+            <div className="my-2 border-t border-gray-100" />
+
+            {/* Settings Collapse */}
+            <div className="mx-2 my-0.5">
+              <button
+                onClick={handleCollapseToggle}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-all duration-200 group ${
+                  collapseOpen
+                    ? "bg-gray-100 text-teal-700"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: 3,
-                    color: '#F8FAFC',
-                    backgroundColor: '#0d9488',
-                    borderRadius: '50%',
-                    width: 32,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: 1, fontWeight: 500 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <ListSubheader sx={{ fontWeight: 'bold', position:"static", fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
-            Data Management
-          </ListSubheader>
-          {menuItems.slice(1, 8).map((item, index) => (
-            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 44,
-                  justifyContent: "initial",
-                  px: 3,
-                  borderRadius: 2,
-                  mx: 1,
-                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
-                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
-                    transform: 'translateX(4px)',
-                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-                  },
-                }}
+                <div className="flex items-center">
+                  <div className="mr-3 p-1 rounded-full bg-teal-50 text-teal-600 group-hover:bg-teal-100">
+                    <FiSettings size={16} />
+                  </div>
+                  <span className="font-medium text-sm tracking-wide">
+                    Settings
+                  </span>
+                </div>
+                {collapseOpen ? (
+                  <FiChevronUp size={14} />
+                ) : (
+                  <FiChevronDown size={14} />
+                )}
+              </button>
+
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  collapseOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                }`}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: 3,
-                    color: '#F8FAFC',
-                    backgroundColor: '#0d9488',
-                    borderRadius: '50%',
-                    width: 32,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                <Link
+                  to="/admin/change/password"
+                  className={`flex items-center pl-12 pr-4 py-1.5 mt-0.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive("/admin/change/password")
+                      ? "text-teal-600 bg-teal-50"
+                      : "text-gray-500 hover:text-teal-600 hover:bg-gray-50"
+                  }`}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: 1 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
-            Manage Requests
-          </ListSubheader>
-          {menuItems.slice(8, 14).map((item, index) => (
-            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 44,
-                  justifyContent: "initial",
-                  px: 3,
-                  borderRadius: 2,
-                  mx: 1,
-                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
-                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
-                    transform: 'translateX(4px)',
-                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: 3,
-                    justifyContent: "center",
-                    color: '#F8FAFC',
-                    backgroundColor: '#0d9488',
-                    borderRadius: '50%',
-                    width: 32,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: 1 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <ListSubheader sx={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1E293B', backgroundColor: 'transparent', px: 3, py: 1, textTransform: 'uppercase', letterSpacing: 1, borderBottom: '1px solid #E2E8F0' }}>
-            Manage Users
-          </ListSubheader>
-          {menuItems.slice(14).map((item, index) => (
-            <ListItem key={index} disablePadding sx={{ display: "block", py: 0.25 }}>
-              <ListItemButton
-                component={Link}
-                to={item.link}
-                sx={{
-                  minHeight: 44,
-                  justifyContent: "initial",
-                  px: 3,
-                  borderRadius: 2,
-                  mx: 1,
-                  backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
-                  color: location.pathname === item.link ? '#F8FAFC' : '#374151',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
-                    transform: 'translateX(4px)',
-                    boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: 3,
-                    justifyContent: "center",
-                    color: '#F8FAFC',
-                    backgroundColor: '#0d9488',
-                    borderRadius: '50%',
-                    width: 32,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: 1 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <Divider sx={{ my: 1 }} />
-          {/* Collapsible Settings Section */}
-          <ListItem disablePadding onClick={handleCollapseToggle} sx={{ py: 0.5 }}>
-            <ListItemButton sx={{ minHeight: 48, px: 3, borderRadius: 2, mx: 1, backgroundColor: collapseOpen ? '#06B6D4' : 'transparent', color: collapseOpen ? '#F8FAFC' : '#374151', transition: 'all 0.3s ease', '&:hover': { backgroundColor: '#0891B2', transform: 'translateX(4px)', boxShadow: '2px 2px 8px rgba(0,0,0,0.1)' } }}>
-              <ListItemIcon sx={{ color: '#F8FAFC', backgroundColor: '#0d9488', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 3, minWidth: 0 }}>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Settings" sx={{ fontWeight: 500 }} />
-              {collapseOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding sx={{ py: 0, overflowX: "hidden !important" }}>
-              {
-                [{
-                  text: "Change-Password",
-                  icon: <LockIcon />,
-                  link: "/admin/change/password",
-                },
-               ,
-              ].map((item, index) => (
-                <ListItem key={index} disablePadding sx={{ py: 0.25 }}>
-                  <ListItemButton
-                    component={Link}
-                    to={item.link}
-                    sx={{
-                      pl: 6,
-                      minHeight: 40,
-                      justifyContent: "initial",
-                      px: 3,
-                      borderRadius: 2,
-                      mx: 1,
-                      backgroundColor: location.pathname === item.link ? '#06B6D4' : 'transparent',
-                      color: location.pathname === item.link ? '#F8FAFC' : '#374151',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: location.pathname === item.link ? '#0891B2' : '#F1F5F9',
-                        transform: 'translateX(4px)',
-                        boxShadow: '2px 2px 8px rgba(0,0,0,0.1)',
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: 3,
-                        justifyContent: "center",
-                        color: '#F8FAFC',
-                        backgroundColor: '#0d9488',
-                        borderRadius: '50%',
-                        width: 32,
-                        height: 32,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      sx={{ opacity: 1, color: "teal", "&:hover": { color: "white" } }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          </Collapse>
-        </List>
-        <Divider sx={{ my: 0.5 }} />
-        {/* Logout Button */}
-        <List>
-          <ListItem disablePadding sx={{ mt: 0.5 }}>
-            <ListItemButton onClick={() => handleLogout(dispatch, navigate)} sx={{ minHeight: 36, borderRadius: 2, mx: 1, transition: 'all 0.3s ease', '&:hover': { backgroundColor: '#FEE2E2', transform: 'translateX(4px)', boxShadow: '2px 2px 8px rgba(0,0,0,0.1)' } }}>
-              <ListItemIcon>
-                <LogoutIcon color="error" />
-              </ListItemIcon>
-              <ListItemText primary="Logout" sx={{ color: "error.main" }} />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer>
+                  Change Password
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer / Logout */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          <button
+            onClick={() => handleLogout(dispatch, navigate)}
+            className="w-full flex items-center justify-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-medium text-sm shadow-sm group"
+          >
+            <FiLogOut className="mr-2 group-hover:scale-110 transition-transform" />
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* Styles for custom scrollbar */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </>
   );
 }

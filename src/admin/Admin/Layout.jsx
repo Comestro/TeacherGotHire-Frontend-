@@ -1,133 +1,99 @@
 import React, { useState } from "react";
-import { styled } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import MuiAppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import CssBaseline from "@mui/material/CssBaseline";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import { useTheme, useMediaQuery } from "@mui/material";
-import Sidebar from "../Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
-
-const drawerWidth = 280;
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)',
-  boxShadow: '0 4px 20px 0 rgba(13, 148, 136, 0.25)',
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-  overflowX: "hidden",
-}));
-
-const Main = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
-  padding: theme.spacing(0),
-  marginTop: 64, // AppBar height
-  width: '100%',
-  overflowX: 'hidden', // Prevent horizontal overflow in main content
-  transition: theme.transitions.create('margin', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-}));
+import { FiMenu, FiChevronLeft } from "react-icons/fi";
+import Sidebar from "../Sidebar/Sidebar";
 
 export default function Layout({ children }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [open, setOpen] = useState(!isMobile);
-
-  const handleDrawerClose = () => setOpen(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
+
+  const handleSidebarToggle = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  // Mobile toggle logic can be handled within Sidebar or here depending on responsiveness requirements
+  // For simplicity based on previous MUI logic, we'll keep a state that sidebar consumes.
+  // We'll also pass a mobile-specific prop if needed, or let Sidebar handle media queries.
+
+  // Format page title from path
   const path = location.pathname
-    .replace(/\//g, " ") // Replace all slashes with spaces
+    .replace(/\//g, " ")
     .replace("-", " ")
-    .trim() // Remove any leading/trailing spaces
+    .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
-    <Box sx={{
-      display: "flex",
-      width: "100%",
-      paddingRight:"10px",
-      paddingLeft:"10px",
-      position: "relative",
-      overflow: "hidden" // This prevents horizontal scrollbar on the whole layout
-    }}>
-      <CssBaseline />
-      <AppBar position="fixed" open={open && !isMobile}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="toggle drawer"
-            onClick={() => setOpen(!open)}
-            edge="start"
-            sx={{ marginRight: 2 }}
-          >
-            {open ? <ChevronLeftIcon /> : <MenuIcon />}
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: 500,
-              letterSpacing: '0.5px',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-              flexGrow: 1
-            }}
-          >
-            {path}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      {isMobile ? (
-        <Sidebar
-          open={open}
-          handleDrawerClose={handleDrawerClose}
-          variant="temporary"
-        />
-      ) : (
-        open && (
-          <Sidebar
-            open={true}
-            handleDrawerClose={handleDrawerClose}
-            variant="permanent"
-          />
-        )
-      )}
-      <Main
-        component="main"
-        sx={{
-          ml: 0,
-          width: '100%',
-          overflowX: 'hidden !important',
-          maxWidth: '100%',
-        }}
+    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
+
+      {/* Main Content Area */}
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+          // Adjust margin or width based on sidebar state if needed,
+          // but traditionally with flexbox, 'flex-1' takes remaining space.
+          // If Sidebar is fixed/absolute on mobile, we need to handle that.
+          // Let's assume Sidebar handles its own width/visibility and this div takes remaining space.
+          isSidebarOpen ? "md:ml-0" : "md:ml-0"
+        }`}
+        style={
+          {
+            // If sidebar is properly "flexed" it consumes space.
+            // If we want the drawer effect where content pushes, we just use flex.
+            // If MUI drawer was "persistent", it pushed content.
+            // If we want to replicate that:
+            // The Sidebar component needs to be a flex item that expands/collapses width.
+          }
+        }
       >
-        <Box sx={{
-          overflowX: 'hidden !important',
-          width: '100%',
-          maxWidth: '100%',
-          p: { xs: 1, sm: 2 },
-        }}>
-          {children}
-        </Box>
-      </Main>
-    </Box>
+        {/* Header / AppBar */}
+        <header
+          className="h-14 bg-gradient-to-r from-teal-600 to-teal-500 shadow-md flex items-center px-4 fixed w-full z-40 transition-all duration-300"
+          style={{
+            // If we want the header to span the whole width fixed, we leave it w-full.
+            // If it should shift with sidebar, we'd adjust left padding or margin.
+            // For a standard admin panel, header usually spans full width or sits next to sidebar.
+            // The MUI one had zIndex.drawer + 1, so it likely sat ON TOP of sidebar?
+            // "zIndex: theme.zIndex.drawer + 1" means Header is above Sidebar.
+            zIndex: 50,
+          }}
+        >
+          <button
+            onClick={handleSidebarToggle}
+            className="text-white p-2 rounded-lg hover:bg-white/20 transition-colors mr-4 focus:outline-none md:hidden"
+            aria-label="Toggle Sidebar"
+          >
+            {/* Only show toggle on mobile if sidebar is permanent on desktop? 
+                 MUI logic: "open={open && !isMobile}". 
+                 Desktop toggles "persistent" drawer. Mobile toggles "temporary".
+                 We will implement a responsive sidebar.
+             */}
+            {isSidebarOpen ? <FiChevronLeft size={24} /> : <FiMenu size={24} />}
+          </button>
+
+          {/* Desktop Toggle (if we want to collapse sidebar on desktop too) */}
+          <button
+            onClick={handleSidebarToggle}
+            className="hidden md:block text-white p-2 rounded-lg hover:bg-white/20 transition-colors mr-4 focus:outline-none"
+            aria-label="Toggle Sidebar"
+          >
+            <FiMenu size={24} />
+          </button>
+
+          <h1 className="text-xl font-medium text-white tracking-wide truncate shadow-sm">
+            {path || "Dashboard"}
+          </h1>
+        </header>
+
+        {/* Main Content Spacer for fixed header */}
+        {/* Main Content Spacer for fixed header */}
+        <div className="h-14" />
+
+        {/* Content Body */}
+        <main className="flex-1 overflow-x-hidden w-full max-w-full">
+          <div className="max-w-8xl mx-auto w-full">{children}</div>
+        </main>
+      </div>
+    </div>
   );
 }

@@ -307,22 +307,22 @@ const ManageQualification = () => {
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      <div className="p-2 md:p-4 bg-gray-50 min-h-screen">
         {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-xl font-bold text-gray-800">
               Manage Qualifications
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-gray-500">
               Create and manage teacher qualification requirements
             </p>
           </div>
           <button
             onClick={() => handleOpenAddEditModal()}
-            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm"
+            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm text-sm"
           >
-            <FiPlus size={20} />
+            <FiPlus size={18} />
             Add New Qualification
           </button>
         </div>
@@ -330,7 +330,7 @@ const ManageQualification = () => {
         {/* Content Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Toolbar */}
-          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+          <div className="p-3 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
             <div className="relative w-full sm:w-72">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -338,24 +338,24 @@ const ManageQualification = () => {
                 placeholder="Search qualifications..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
+                className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={fetchQualifications}
-                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                className="p-1.5 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
                 title="Refresh"
               >
-                <FiRefreshCw size={18} />
+                <FiRefreshCw size={16} />
               </button>
               {selectedQualifications.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium"
                 >
-                  <FiTrash2 size={16} />
+                  <FiTrash2 size={14} />
                   Delete ({selectedQualifications.length})
                 </button>
               )}
@@ -385,7 +385,7 @@ const ManageQualification = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    <th className="p-4 w-12 text-center">
+                    <th className="px-3 py-2 w-10 text-center">
                       <input
                         type="checkbox"
                         checked={
@@ -398,18 +398,18 @@ const ManageQualification = () => {
                       />
                     </th>
                     <th
-                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort("id")}
                     >
                       ID
                     </th>
                     <th
-                      className="p-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort("name")}
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("qualification_name")}
                     >
                       Qualification Name
                     </th>
-                    <th className="p-4 text-center">Actions</th>
+                    <th className="px-3 py-2 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -422,7 +422,7 @@ const ManageQualification = () => {
                           : ""
                       }`}
                     >
-                      <td className="p-4 text-center">
+                      <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={selectedQualifications.includes(qual.id)}
@@ -430,34 +430,34 @@ const ManageQualification = () => {
                           className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                         />
                       </td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      <td className="px-3 py-2">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
                           #{qual.id}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                          <span className="font-medium text-gray-900">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+                          <span className="font-medium text-gray-900 text-sm">
                             {qual.name}
                           </span>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleOpenAddEditModal(qual)}
-                            className="p-1.5 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded transition-colors"
                             title="Edit"
                           >
-                            <FiEdit2 size={16} />
+                            <FiEdit2 size={14} />
                           </button>
                           <button
                             onClick={() => handleOpenDeleteModal(qual)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                           >
-                            <FiTrash2 size={16} />
+                            <FiTrash2 size={14} />
                           </button>
                         </div>
                       </td>

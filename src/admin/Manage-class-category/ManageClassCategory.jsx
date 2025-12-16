@@ -334,22 +334,22 @@ const ManageClassCategory = () => {
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      <div className="p-2 md:p-4 bg-gray-50 min-h-screen">
         {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-xl font-bold text-gray-800">
               Class Categories
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-gray-500">
               Manage and organize your class categories
             </p>
           </div>
           <button
             onClick={() => handleOpenAddEditModal()}
-            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm"
+            className="flex items-center justify-center gap-2 bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm text-sm"
           >
-            <FiPlus size={20} />
+            <FiPlus size={18} />
             Add New Category
           </button>
         </div>
@@ -357,7 +357,7 @@ const ManageClassCategory = () => {
         {/* Content Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Toolbar */}
-          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+          <div className="p-3 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
             <div className="relative w-full sm:w-72">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -365,25 +365,25 @@ const ManageClassCategory = () => {
                 placeholder="Search categories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
+                className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm transition-all"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={fetchData}
-                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                className="p-1.5 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
                 title="Refresh"
               >
-                <FiRefreshCw size={18} />
+                <FiRefreshCw size={16} />
               </button>
 
               {selectedCategories.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium"
                 >
-                  <FiTrash2 size={16} />
+                  <FiTrash2 size={14} />
                   Delete ({selectedCategories.length})
                 </button>
               )}
