@@ -1,34 +1,4 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  Button,
-  IconButton,
-  Modal,
-  Snackbar,
-  Alert,
-  CircularProgress,
-  Backdrop,
-  Card,
-  CardContent,
-  Avatar,
-  Chip,
-  Stack,
-  Tooltip,
-  Divider,
-  useTheme,
-  MenuItem,
-  Collapse,
-  InputAdornment
-} from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { alpha } from "@mui/material/styles";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { DateTimePicker, DatePicker } from "@mui/x-date-pickers";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import {
@@ -42,11 +12,17 @@ import {
   FiBarChart2,
   FiFilter,
   FiSearch,
-  FiCalendar,
-  FiExternalLink
+  FiExternalLink,
+  FiPlus,
+  FiAlertCircle,
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
-import { getInterview, updateInterview, createInterview } from "../../services/adminInterviewApi";
+import {
+  getInterview,
+  updateInterview,
+  createInterview,
+  getReadyForInterview,
+} from "../../services/adminInterviewApi";
 import debounce from "lodash/debounce";
 
 dayjs.extend(isBetween);
@@ -56,44 +32,61 @@ const stringToColor = (string = "") => {
   for (let i = 0; i < string.length; i++) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
   }
-  let color = "#";
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  return color;
+  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+  return "#" + "00000".substring(0, 6 - c.length) + c;
 };
 
-const CenteredPaper = ({ children, sx = {} }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%,-50%)",
-      width: { xs: "94%", sm: 500 },
-      maxHeight: "90vh",
-      overflow: "auto",
-      p: 0,
-      borderRadius: 3,
-      border: '1px solid',
-      borderColor: 'divider',
-      outline: 'none',
-      ...sx,
-    }}
-  >
-    {children}
-  </Paper>
-);
+const ErrorMessage = ({ message, type = "error", onClose }) => {
+  if (!message) return null;
+  return (
+    <div
+      className={`fixed bottom-4 right-4 z-50 animate-fade-in-up px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+        type === "success" ? "bg-teal-600 text-white" : "bg-red-500 text-white"
+      }`}
+    >
+      {type === "success" ? <FiCheck /> : <FiAlertCircle />}
+      <p className="text-sm font-medium">{message}</p>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
+        >
+          <FiX size={14} />
+        </button>
+      )}
+    </div>
+  );
+};
+
+const Modal = ({ isOpen, onClose, title, children, footer }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
+      <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h3 className="font-bold text-gray-800 text-lg">{title}</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FiX size={20} />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto custom-scrollbar">{children}</div>
+        {footer && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function InterviewManagementRedesign() {
-  const theme = useTheme();
-
   const [loading, setLoading] = useState(true);
   const [interviewData, setInterviewData] = useState([]);
   const [filteredTeachers, setFilteredTeachers] = useState([]);
-
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState("table");
 
@@ -105,35 +98,58 @@ export default function InterviewManagementRedesign() {
     subject: "",
     level: "",
     attempt: "",
-    dateFrom: null,
-    dateTo: null,
+    dateFrom: "",
+    dateTo: "",
   });
-  const [detailsModal, setDetailsModal] = useState({ open: false, data: null });
-  const [scheduleModal, setScheduleModal] = useState({ open: false, data: null });
-  const [rejectModal, setRejectModal] = useState({ open: false, data: null });
 
-  const [completeModal, setCompleteModal] = useState({ open: false, data: null });
+  const [detailsModal, setDetailsModal] = useState({ open: false, data: null });
+  const [scheduleModal, setScheduleModal] = useState({
+    open: false,
+    data: null,
+  });
+  const [rejectModal, setRejectModal] = useState({ open: false, data: null });
+  const [completeModal, setCompleteModal] = useState({
+    open: false,
+    data: null,
+  });
   const [createModal, setCreateModal] = useState(false);
+  const [readyUsers, setReadyUsers] = useState([]);
+  const [readyLoading, setReadyLoading] = useState(false);
+
   const [createForm, setCreateForm] = useState({
     user: "",
     subject: "",
     level: "",
     class_category: "",
-    time: dayjs(),
+    time: "",
     link: "",
     status: "requested",
     reject_reason: "",
     grade: "",
-    attempt: 1
+    attempt: 1,
   });
-  const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
+
+  const [selectedDateTime, setSelectedDateTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
   const [meetingLinkError, setMeetingLinkError] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [interviewScore, setInterviewScore] = useState("");
 
   const [actionLoading, setActionLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ show: true, message, type });
+    setTimeout(
+      () => setNotification({ show: false, message: "", type: "success" }),
+      4000
+    );
+  };
 
   useEffect(() => {
     fetchInterviews();
@@ -179,10 +195,12 @@ export default function InterviewManagementRedesign() {
           score: item.grade != null ? item.grade : "Not graded",
           status,
           apiStatus: item.status,
-          desiredDateTime: item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm") : "—",
+          desiredDateTime: item.time
+            ? dayjs(item.time).format("YYYY-MM-DD HH:mm")
+            : "—",
           scheduledDate:
             (item.status === "scheduled" || item.status === "fulfilled") &&
-              item.time
+            item.time
               ? dayjs(item.time).format("YYYY-MM-DD HH:mm")
               : null,
           rejectionReason: item.rejectionReason || null,
@@ -191,22 +209,21 @@ export default function InterviewManagementRedesign() {
           createdAt: item.created_at
             ? dayjs(item.created_at).format("YYYY-MM-DD HH:mm")
             : "—",
-          mergedSubject: `${item.subject?.subject_name || ""} (${item.class_category?.name || ""})`,
+          mergedSubject: `${item.subject?.subject_name || ""} (${
+            item.class_category?.name || ""
+          })`,
           original: item,
         };
       });
       setInterviewData(data);
       setFilteredTeachers(data);
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err?.message || "Failed to fetch interviews",
-        severity: "error",
-      });
+      showNotification(err?.message || "Failed to fetch interviews", "error");
     } finally {
       setLoading(false);
     }
   };
+
   const debouncedSearch = useCallback(
     debounce((value) => setFilters((f) => ({ ...f, searchTerm: value })), 250),
     []
@@ -221,62 +238,101 @@ export default function InterviewManagementRedesign() {
     const q = (filters.searchTerm || "").toLowerCase().trim();
 
     if (filters.status) out = out.filter((t) => t.status === filters.status);
-    if (filters.teacherName) out = out.filter((t) => t.name.toLowerCase().includes(filters.teacherName.toLowerCase()));
-    if (filters.classCategory) out = out.filter((t) => t.classCategory === filters.classCategory);
-    if (filters.subject) out = out.filter((t) => t.subjectName === filters.subject);
+    if (filters.teacherName)
+      out = out.filter((t) =>
+        t.name.toLowerCase().includes(filters.teacherName.toLowerCase())
+      );
+    if (filters.classCategory)
+      out = out.filter((t) => t.classCategory === filters.classCategory);
+    if (filters.subject)
+      out = out.filter((t) => t.subjectName === filters.subject);
     if (filters.level) out = out.filter((t) => t.level === filters.level);
-    if (filters.attempt) out = out.filter((t) => String(t.attempt) === String(filters.attempt));
+    if (filters.attempt)
+      out = out.filter((t) => String(t.attempt) === String(filters.attempt));
 
     if (filters.dateFrom && filters.dateTo) {
       out = out.filter((t) => {
         if (!t.desiredDateTime || t.desiredDateTime === "—") return false;
         const d = dayjs(t.desiredDateTime);
-        return (d.isAfter(filters.dateFrom) || d.isSame(filters.dateFrom, "day")) && (d.isBefore(filters.dateTo) || d.isSame(filters.dateTo, "day"));
+        const from = dayjs(filters.dateFrom);
+        const to = dayjs(filters.dateTo);
+        return (
+          (d.isAfter(from) || d.isSame(from, "day")) &&
+          (d.isBefore(to) || d.isSame(to, "day"))
+        );
       });
     }
 
     if (q) {
       out = out.filter((t) =>
-        Object.values(t).some((v) =>
-          String(v).toLowerCase().includes(q)
-        )
+        Object.values(t).some((v) => String(v).toLowerCase().includes(q))
       );
     }
 
     setFilteredTeachers(out);
+    setPagination((p) => ({ ...p, page: 0 }));
   };
 
-  const resetFilters = () => setFilters({
-    searchTerm: "",
-    status: "",
-    teacherName: "",
-    classCategory: "",
-    subject: "",
-    level: "",
-    attempt: "",
-    dateFrom: null,
-    dateTo: null,
-  });
+  const resetFilters = () =>
+    setFilters({
+      searchTerm: "",
+      status: "",
+      teacherName: "",
+      classCategory: "",
+      subject: "",
+      level: "",
+      attempt: "",
+      dateFrom: "",
+      dateTo: "",
+    });
 
   const exportCsv = () => {
-    const headers = ["Teacher Name", "Email", "Subject (Class)", "Status", "Score", "Desired Date/Time", "Scheduled Date"];
+    const headers = [
+      "Teacher Name",
+      "Email",
+      "Subject (Class)",
+      "Status",
+      "Score",
+      "Desired Date/Time",
+      "Scheduled Date",
+    ];
     const rows = filteredTeachers.map((t) =>
-      [t.name, t.email, t.mergedSubject, `${t.status} (${t.mode})`, t.score, t.desiredDateTime, t.scheduledDate || "Not scheduled"]
-        .map((cell) => `"${String(cell || "")?.replace(/"/g, '""')}"`) // safe quoting
+      [
+        t.name,
+        t.email,
+        t.mergedSubject,
+        `${t.status}`,
+        t.score,
+        t.desiredDateTime,
+        t.scheduledDate || "Not scheduled",
+      ]
+        .map((cell) => `"${String(cell || "")?.replace(/"/g, '""')}"`)
         .join(",")
     );
-    const csv = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.join("\n");
+    const csv =
+      "data:text/csv;charset=utf-8," +
+      headers.join(",") +
+      "\n" +
+      rows.join("\n");
     const encoded = encodeURI(csv);
     const link = document.createElement("a");
     link.setAttribute("href", encoded);
-    link.setAttribute("download", `teacher_interviews_${dayjs().format("YYYY-MM-DD")}.csv`);
+    link.setAttribute(
+      "download",
+      `teacher_interviews_${dayjs().format("YYYY-MM-DD")}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
   const openSchedule = (row) => {
     setScheduleModal({ open: true, data: row });
-    setSelectedDateTime(dayjs(row.desiredDateTime !== "—" ? row.desiredDateTime : dayjs()));
+    setSelectedDateTime(
+      row.desiredDateTime !== "—"
+        ? dayjs(row.desiredDateTime).format("YYYY-MM-DDTHH:mm")
+        : dayjs().format("YYYY-MM-DDTHH:mm")
+    );
     setMeetingLink(row.link || "");
     setMeetingLinkError(false);
   };
@@ -288,12 +344,19 @@ export default function InterviewManagementRedesign() {
     }
     setActionLoading(true);
     try {
-      await updateInterview(scheduleModal.data.id, { status: "scheduled", time: selectedDateTime.format("YYYY-MM-DD HH:mm:ss"), link: meetingLink });
-      setSnackbar({ open: true, message: "Interview scheduled", severity: "success" });
+      await updateInterview(scheduleModal.data.id, {
+        status: "scheduled",
+        time: dayjs(selectedDateTime).format("YYYY-MM-DD HH:mm:ss"),
+        link: meetingLink,
+      });
+      showNotification("Interview scheduled successfully", "success");
       setScheduleModal({ open: false, data: null });
       fetchInterviews();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.response?.data?.message || err?.message || "Failed to schedule", severity: "error" });
+      showNotification(
+        err?.response?.data?.message || err?.message || "Failed to schedule",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -306,17 +369,23 @@ export default function InterviewManagementRedesign() {
 
   const rejectInterview = async () => {
     if (!rejectionReason.trim()) {
-      setSnackbar({ open: true, message: "Rejection reason required", severity: "error" });
+      showNotification("Rejection reason required", "error");
       return;
     }
     setActionLoading(true);
     try {
-      await updateInterview(rejectModal.data.id, { status: "rejected", rejectionReason });
-      setSnackbar({ open: true, message: "Interview rejected", severity: "success" });
+      await updateInterview(rejectModal.data.id, {
+        status: "rejected",
+        rejectionReason,
+      });
+      showNotification("Interview rejected", "success");
       setRejectModal({ open: false, data: null });
       fetchInterviews();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.response?.data?.message || err?.message || "Failed to reject", severity: "error" });
+      showNotification(
+        err?.response?.data?.message || err?.message || "Failed to reject",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -330,17 +399,23 @@ export default function InterviewManagementRedesign() {
   const completeInterview = async () => {
     const score = Number(interviewScore);
     if (isNaN(score) || score < 0 || score > 10) {
-      setSnackbar({ open: true, message: "Score must be 0-10", severity: "error" });
+      showNotification("Score must be 0-10", "error");
       return;
     }
     setActionLoading(true);
     try {
-      await updateInterview(completeModal.data.id, { status: "fulfilled", grade: score });
-      setSnackbar({ open: true, message: "Interview marked complete", severity: "success" });
+      await updateInterview(completeModal.data.id, {
+        status: "fulfilled",
+        grade: score,
+      });
+      showNotification("Interview marked complete", "success");
       setCompleteModal({ open: false, data: null });
       fetchInterviews();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.response?.data?.message || err?.message || "Failed to complete", severity: "error" });
+      showNotification(
+        err?.response?.data?.message || err?.message || "Failed to complete",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -351,680 +426,722 @@ export default function InterviewManagementRedesign() {
     try {
       const payload = {
         ...createForm,
-        time: createForm.time ? createForm.time.format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
+        time: createForm.time
+          ? dayjs(createForm.time).format("YYYY-MM-DDTHH:mm:ss[Z]")
+          : null,
         grade: createForm.grade ? Number(createForm.grade) : null,
         user: Number(createForm.user),
         subject: Number(createForm.subject),
         level: Number(createForm.level),
         class_category: Number(createForm.class_category),
-        attempt: Number(createForm.attempt)
+        attempt: Number(createForm.attempt),
       };
       await createInterview(payload);
-      setSnackbar({ open: true, message: "Interview created successfully", severity: "success" });
+      showNotification("Interview created successfully", "success");
       setCreateModal(false);
       setCreateForm({
         user: "",
         subject: "",
         level: "",
         class_category: "",
-        time: dayjs(),
+        time: "",
         link: "",
         status: "requested",
         reject_reason: "",
         grade: "",
-        attempt: 1
+        attempt: 1,
       });
       fetchInterviews();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.response?.data?.message || err?.message || "Failed to create interview", severity: "error" });
+      showNotification(
+        err?.response?.data?.message || err?.message || "Failed to create",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
   };
-  const renderCard = (row) => (
-    <Card key={row.id} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', transition: 'all 0.2s', '&:hover': { borderColor: 'primary.main', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
-      <CardContent>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <Avatar src={row.profilePicture} sx={{ bgcolor: stringToColor(row.name), width: 48, height: 48 }}>{row.name?.charAt(0)}</Avatar>
-            <Box>
-              <Typography fontWeight={700} variant="subtitle1">{row.name}</Typography>
-              <Typography variant="caption" color="text.secondary">{row.email}</Typography>
-            </Box>
-          </Box>
-          <Chip
-            label={row.status}
-            size="small"
-            sx={{ fontWeight: 600, borderRadius: 1.5 }}
-            color={row.status === "Completed" ? "success" : row.status === "Scheduled" ? "info" : row.status === "Pending" ? "warning" : "error"}
-            variant="soft"
-          />
-        </Box>
 
-        <Divider sx={{ mb: 2 }} />
+  const handleOpenCreate = async () => {
+    setCreateModal(true);
+    setReadyLoading(true);
+    try {
+      const resp = await getReadyForInterview();
+      setReadyUsers(resp.teachers || []);
+    } catch (err) {
+      console.error("Failed to load ready users", err);
+      showNotification("Failed to load candidates", "warning");
+    } finally {
+      setReadyLoading(false);
+    }
+  };
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid xs={6}>
-            <Typography variant="caption" color="text.secondary" display="block">Subject</Typography>
-            <Typography variant="body2" fontWeight={500}>{row.mergedSubject}</Typography>
-          </Grid>
-          <Grid xs={6}>
-            <Typography variant="caption" color="text.secondary" display="block">Desired Time</Typography>
-            <Typography variant="body2" fontWeight={500}>{row.desiredDateTime}</Typography>
-          </Grid>
-        </Grid>
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Completed":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "Scheduled":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "Rejected":
+        return "bg-red-100 text-red-700 border-red-200";
+      default:
+        return "bg-amber-100 text-amber-700 border-amber-200";
+    }
+  };
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-          <Button size="small" variant="outlined" startIcon={<FiEye />} onClick={() => setDetailsModal({ open: true, data: row })}>View</Button>
+  const displayedData = useMemo(() => {
+    const start = pagination.page * pagination.pageSize;
+    return filteredTeachers.slice(start, start + pagination.pageSize);
+  }, [filteredTeachers, pagination]);
 
-          {row.status === "Pending" && (
-            <>
-              <Button size="small" variant="contained" startIcon={<FiClock />} onClick={() => openSchedule(row)}>Schedule</Button>
-              <IconButton size="small" color="error" onClick={() => openReject(row)}><FiX /></IconButton>
-            </>
-          )}
-
-          {row.status === "Scheduled" && (
-            <>
-              <Button variant="contained" color="success" size="small" startIcon={<FiCheck />} onClick={() => openComplete(row)}>Complete</Button>
-              {row.link && <IconButton size="small" color="primary" onClick={() => window.open(row.link, "_blank")}><FiExternalLink /></IconButton>}
-            </>
-          )}
-        </Box>
-      </CardContent>
-    </Card>
-  );
-  const tableColumns = useMemo(() => [
-    {
-      field: "name",
-      headerName: "Teacher",
-      flex: 1.5,
-      minWidth: 220,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", py: 1 }}>
-          <Avatar src={params.row.profilePicture} sx={{ bgcolor: stringToColor(params.row.name), width: 32, height: 32, fontSize: '0.875rem' }}>{params.row.name?.charAt(0)}</Avatar>
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>{params.row.name}</Typography>
-            <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
-          </Box>
-        </Box>
-      ),
-    },
-    { field: "mergedSubject", headerName: "Subject (Class)", flex: 1, minWidth: 180, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value}</Typography> },
-    { field: "desiredDateTime", headerName: "Desired Date/Time", flex: 1, minWidth: 160, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value}</Typography> },
-    {
-      field: "score",
-      headerName: "Grade",
-      width: 100,
-      renderCell: (params) => (
-        <Box sx={{ py: 1.5 }}>
-          {params.value !== "Not graded" ? (
-            <Chip label={`${params.value}/10`} size="small" variant="outlined" sx={{ borderRadius: 1, fontWeight: 600 }} />
-          ) : (
-            <Typography variant="caption" color="text.secondary">—</Typography>
-          )}
-        </Box>
-      ),
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      minWidth: 140,
-      renderCell: (params) => (
-        <Box sx={{ py: 1.5 }}>
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{ fontWeight: 600, borderRadius: 1 }}
-            color={params.value === "Completed" ? "success" : params.value === "Scheduled" ? "info" : params.value === "Pending" ? "warning" : "error"}
-            variant={params.value === "Pending" ? "outlined" : "filled"}
-          />
-        </Box>
-      ),
-    },
-    { field: "scheduledDate", headerName: "Scheduled", flex: 1, minWidth: 160, renderCell: (p) => <Typography variant="body2" sx={{ py: 1.5 }}>{p.value || "—"}</Typography> },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 180,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 0.5, py: 0.5 }}>
-          <Tooltip title="View Details">
-            <IconButton size="small" onClick={() => setDetailsModal({ open: true, data: params.row })}>
-              <FiEye size={18} />
-            </IconButton>
-          </Tooltip>
-
-          {params.row.apiStatus === "requested" && (
-            <>
-              <Tooltip title="Schedule">
-                <IconButton size="small" color="primary" onClick={() => openSchedule(params.row)}>
-                  <FiClock size={18} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Reject">
-                <IconButton size="small" color="error" onClick={() => openReject(params.row)}>
-                  <FiX size={18} />
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
-
-          {params.row.apiStatus === "scheduled" && (
-            <>
-              <Tooltip title="Complete">
-                <IconButton size="small" color="success" onClick={() => openComplete(params.row)}>
-                  <FiCheck size={18} />
-                </IconButton>
-              </Tooltip>
-              {params.row.link && (
-                <Tooltip title="Join Meeting">
-                  <IconButton size="small" color="info" onClick={() => window.open(params.row.link, "_blank")}>
-                    <FiExternalLink size={18} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </>
-          )}
-        </Box>
-      ),
-    },
-  ], [openComplete]);
+  const totalPages = Math.ceil(filteredTeachers.length / pagination.pageSize);
 
   return (
     <Layout>
-      <Box sx={{ maxWidth: 1400, mx: 'auto', p: { xs: 2, md: 3 } }}>
+      <div className="p-2 md:p-4 bg-gray-50 min-h-screen font-sans">
+        {notification.show && (
+          <ErrorMessage
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification({ ...notification, show: false })}
+          />
+        )}
+
         {/* Header */}
-        <Box sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-          gap: 2,
-          flexWrap: "wrap",
-          pb: 2,
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}>
-          <Box>
-            <Typography variant="h4" sx={{
-              fontSize: { xs: '1.5rem', md: '1.75rem' },
-              fontWeight: 800,
-              background: 'linear-gradient(45deg, #2563eb, #3b82f6)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 0.5
-            }}>
-              Interview Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div>
+            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <FiBarChart2 className="text-teal-600" /> Interview Management
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
               Streamline your teacher assessment process
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Tooltip title="Refresh Data">
-              <IconButton onClick={fetchInterviews} size="small" sx={{ border: '1px solid', borderColor: 'divider' }}>
-                <FiRefreshCw />
-              </IconButton>
-            </Tooltip>
-
-            <Button
-              variant="contained"
-              startIcon={<FiCalendar />}
-              onClick={() => setCreateModal(true)}
-              size="medium"
-              sx={{ borderRadius: 2, textTransform: 'none' }}
+          <div className="flex gap-2">
+            <button
+              onClick={fetchInterviews}
+              className="p-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
             >
-              Add Interview
-            </Button>
-
-            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', p: 0.5 }}>
-              <Tooltip title="Table View">
-                <IconButton
-                  size="small"
-                  onClick={() => setViewMode("table")}
-                  color={viewMode === "table" ? "primary" : "default"}
-                  sx={{ borderRadius: 0.5 }}
-                >
-                  <FiList />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Card View">
-                <IconButton
-                  size="small"
-                  onClick={() => setViewMode("card")}
-                  color={viewMode === "card" ? "primary" : "default"}
-                  sx={{ borderRadius: 0.5 }}
-                >
-                  <FiBarChart2 />
-                </IconButton>
-              </Tooltip>
-            </Box>
-
-            <Button
-              variant={filtersOpen ? "contained" : "outlined"}
-              startIcon={<FiFilter />}
-              onClick={() => setFiltersOpen((s) => !s)}
-              size="medium"
-              sx={{ borderRadius: 2, textTransform: 'none' }}
+              <FiRefreshCw className={loading ? "animate-spin" : ""} />
+            </button>
+            <button
+              onClick={handleOpenCreate}
+              className="flex items-center gap-2 px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium text-sm shadow-sm transition-colors"
             >
-              Filters
-            </Button>
-          </Stack>
-        </Box>
+              <FiPlus /> Add Interview
+            </button>
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 ${
+                  viewMode === "table"
+                    ? "bg-teal-50 text-teal-600"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                <FiList />
+              </button>
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-2 ${
+                  viewMode === "card"
+                    ? "bg-teal-50 text-teal-600"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                <FiBarChart2 />
+              </button>
+            </div>
+            <button
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors ${
+                filtersOpen
+                  ? "bg-teal-50 border-teal-200 text-teal-700"
+                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <FiFilter /> Filters
+            </button>
+          </div>
+        </div>
 
-        {/* Filter panel */}
-        <Collapse in={filtersOpen}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              mb: 4,
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: alpha(theme.palette.primary.main, 0.02)
-            }}
-          >
-            <Grid container spacing={2} alignItems="center">
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  placeholder="Search by name, email, subject..."
+        {/* Filters Panel */}
+        {filtersOpen && (
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-4 animate-slide-down">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="md:col-span-1 relative">
+                <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={filters.searchTerm}
                   onChange={(e) => debouncedSearch(e.target.value)}
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <FiSearch color="gray" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ bgcolor: 'background.paper' }}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                 />
-              </Grid>
-
-              <Grid xs={12} md={6}>
-                <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                  <Button variant="outlined" startIcon={<FiDownload />} onClick={exportCsv} size="small">Export CSV</Button>
-                  <Button variant="text" onClick={resetFilters} size="small" color="error">Reset Filters</Button>
-                </Box>
-              </Grid>
-
-              <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
-
-              <Grid xs={12} md={3}><TextField label="Teacher Name" size="small" value={filters.teacherName} onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
-              <Grid xs={12} md={3}><TextField label="Class Category" size="small" value={filters.classCategory} onChange={(e) => setFilters({ ...filters, classCategory: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
-              <Grid xs={12} md={3}><TextField label="Subject" size="small" value={filters.subject} onChange={(e) => setFilters({ ...filters, subject: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
-              <Grid xs={12} md={3}><TextField label="Level" size="small" value={filters.level} onChange={(e) => setFilters({ ...filters, level: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
-
-              <Grid xs={12} md={3}><TextField label="Attempt" size="small" type="number" value={filters.attempt} onChange={(e) => setFilters({ ...filters, attempt: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }} /></Grid>
-
-              <Grid xs={12} md={3}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker label="From (Desired)" value={filters.dateFrom} onChange={(v) => setFilters({ ...filters, dateFrom: v })} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { bgcolor: 'background.paper' } } }} />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid xs={12} md={3}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker label="To (Desired)" value={filters.dateTo} onChange={(v) => setFilters({ ...filters, dateTo: v })} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { bgcolor: 'background.paper' } } }} />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid xs={12} md={3}>
-                <TextField select label="Status" size="small" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} fullWidth sx={{ bgcolor: 'background.paper' }}>
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Scheduled">Scheduled</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </TextField>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Collapse>
-
-        {/* Main list / table */}
-        <Paper elevation={0} sx={{ p: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-          {loading ? (
-            <Box sx={{ p: 8, textAlign: "center" }}>
-              <CircularProgress size={40} thickness={4} />
-              <Typography sx={{ mt: 2, fontWeight: 500 }} color="text.secondary">Loading interviews...</Typography>
-            </Box>
-          ) : filteredTeachers.length === 0 ? (
-            <Box sx={{ p: 8, textAlign: "center" }}>
-              <Box sx={{ mb: 2, bgcolor: 'action.hover', width: 64, height: 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto' }}>
-                <FiSearch size={24} color="gray" />
-              </Box>
-              <Typography variant="h6" fontWeight={600} gutterBottom>No interviews found</Typography>
-              <Typography color="text.secondary">Try adjusting your filters or search terms</Typography>
-            </Box>
-          ) : viewMode === "table" ? (
-            <Box sx={{ width: "100%" }}>
-              <DataGrid
-                rows={filteredTeachers}
-                columns={tableColumns}
-                pageSizeOptions={[10, 25, 50]}
-                disableRowSelectionOnClick
-                getRowId={(r) => r.id}
-                autoHeight
-                getRowHeight={() => 'auto'}
-                sx={{
-                  '& .MuiDataGrid-cell': {
-                    py: 1,
-                    px: 2,
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  },
-                  '& .MuiDataGrid-columnHeaders': {
-                    bgcolor: 'action.hover',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.05em',
-                    color: 'text.secondary',
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  },
-                  '& .MuiDataGrid-row:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.02)
-                  },
-                  border: 'none',
-                }}
+              </div>
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none bg-white"
+              >
+                <option value="">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Teacher Name"
+                value={filters.teacherName}
+                onChange={(e) =>
+                  setFilters({ ...filters, teacherName: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none"
               />
-            </Box>
-          ) : (
-            <Stack spacing={2} sx={{ p: 3, bgcolor: 'background.default' }}>{filteredTeachers.map(renderCard)}</Stack>
-          )}
-        </Paper>
-      </Box>
+              <input
+                type="text"
+                placeholder="Subject"
+                value={filters.subject}
+                onChange={(e) =>
+                  setFilters({ ...filters, subject: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none"
+              />
 
-      {/* DETAILS MODAL */}
-      <Modal open={detailsModal.open} onClose={() => setDetailsModal({ open: false, data: null })}>
-        <CenteredPaper>
-          {detailsModal.data && (
-            <>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="h6" fontWeight={700}>Interview Details</Typography>
-                <IconButton size="small" onClick={() => setDetailsModal({ open: false, data: null })}><FiX /></IconButton>
-              </Box>
+              <div className="md:col-span-4 flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={resetFilters}
+                  className="text-red-500 text-sm hover:underline px-3"
+                >
+                  Reset Filters
+                </button>
+                <button
+                  onClick={exportCsv}
+                  className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                >
+                  <FiDownload /> Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-              <Box sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Avatar src={detailsModal.data.profilePicture} sx={{ width: 64, height: 64, bgcolor: stringToColor(detailsModal.data.name), fontSize: '1.5rem' }}>
-                    {detailsModal.data.name?.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6" fontWeight={700}>{detailsModal.data.name}</Typography>
-                    <Typography color="text.secondary">{detailsModal.data.email}</Typography>
-                  </Box>
-                </Box>
-
-                <Grid container spacing={3}>
-                  <Grid xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Subject</Typography>
-                    <Typography variant="body1" fontWeight={500}>{detailsModal.data.mergedSubject}</Typography>
-                  </Grid>
-                  <Grid xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Status</Typography>
-                    <Box sx={{ mt: 0.5 }}>
-                      <Chip label={detailsModal.data.status} size="small" color={detailsModal.data.status === "Completed" ? "success" : detailsModal.data.status === "Scheduled" ? "info" : "warning"} />
-                    </Box>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Desired Time</Typography>
-                    <Typography variant="body1">{detailsModal.data.desiredDateTime}</Typography>
-                  </Grid>
-
-                  {detailsModal.data.scheduledDate && (
-                    <Grid xs={12} sm={6}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Scheduled Time</Typography>
-                      <Typography variant="body1" color="primary.main" fontWeight={500}>{detailsModal.data.scheduledDate}</Typography>
-                    </Grid>
+        {/* Content */}
+        {loading ? (
+          <div className="p-12 text-center bg-white rounded-xl shadow-sm">
+            <div className="animate-spin w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p className="text-gray-500 text-sm">Loading interviews...</p>
+          </div>
+        ) : filteredTeachers.length === 0 ? (
+          <div className="p-12 text-center bg-white rounded-xl shadow-sm">
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FiSearch className="text-gray-400 text-xl" />
+            </div>
+            <h3 className="text-gray-900 font-medium">No interviews found</h3>
+            <p className="text-gray-500 text-sm mt-1">
+              Try adjusting your filters
+            </p>
+          </div>
+        ) : viewMode === "table" ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
+                    <th className="px-4 py-3">Teacher</th>
+                    <th className="px-4 py-3">Subject (Class)</th>
+                    <th className="px-4 py-3">Desired Time</th>
+                    <th className="px-4 py-3">Grade</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Scheduled</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {displayedData.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="hover:bg-gray-50/80 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase"
+                            style={{ backgroundColor: stringToColor(row.name) }}
+                          >
+                            {row.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {row.name}
+                            </p>
+                            <p className="text-xs text-gray-500">{row.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {row.mergedSubject}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">
+                        {row.desiredDateTime}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.score !== "Not graded" ? (
+                          <span className="font-bold text-gray-800">
+                            {row.score}/10
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-bold border ${getStatusColor(
+                            row.status
+                          )}`}
+                        >
+                          {row.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">
+                        {row.scheduledDate || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() =>
+                              setDetailsModal({ open: true, data: row })
+                            }
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:shadow-sm ring-1 ring-inset ring-indigo-100 transition-all"
+                            title="View"
+                          >
+                            <FiEye size={16} />
+                          </button>
+                          {row.apiStatus === "requested" && (
+                            <>
+                              <button
+                                onClick={() => openSchedule(row)}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm ring-1 ring-inset ring-blue-100 transition-all"
+                                title="Schedule"
+                              >
+                                <FiClock size={16} />
+                              </button>
+                              <button
+                                onClick={() => openReject(row)}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm ring-1 ring-inset ring-red-100 transition-all"
+                                title="Reject"
+                              >
+                                <FiX size={16} />
+                              </button>
+                            </>
+                          )}
+                          {row.apiStatus === "scheduled" && (
+                            <>
+                              <button
+                                onClick={() => openComplete(row)}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 hover:shadow-sm ring-1 ring-inset ring-green-100 transition-all"
+                                title="Complete"
+                              >
+                                <FiCheck size={16} />
+                              </button>
+                              {row.link && (
+                                <button
+                                  onClick={() =>
+                                    window.open(row.link, "_blank")
+                                  }
+                                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 hover:shadow-sm ring-1 ring-inset ring-purple-100 transition-all"
+                                  title="Link"
+                                >
+                                  <FiExternalLink size={16} />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedData.map((row) => (
+              <div
+                key={row.id}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase"
+                      style={{ backgroundColor: stringToColor(row.name) }}
+                    >
+                      {row.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">{row.name}</p>
+                      <p className="text-xs text-gray-500">{row.email}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded text-xs font-bold border ${getStatusColor(
+                      row.status
+                    )}`}
+                  >
+                    {row.status}
+                  </span>
+                </div>
+                <div className="space-y-2 text-sm text-gray-600 mb-3">
+                  <div className="flex justify-between">
+                    <span>Subject:</span>{" "}
+                    <span className="font-medium">{row.mergedSubject}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Desired:</span> <span>{row.desiredDateTime}</span>
+                  </div>
+                  {row.scheduledDate && (
+                    <div className="flex justify-between text-blue-600">
+                      <span>Scheduled:</span> <span>{row.scheduledDate}</span>
+                    </div>
                   )}
+                </div>
+                <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => setDetailsModal({ open: true, data: row })}
+                    className="text-xs font-medium text-gray-500 hover:text-gray-900"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-                  {detailsModal.data.rejectionReason && (
-                    <Grid xs={12}>
-                      <Typography variant="caption" color="error" fontWeight={600} textTransform="uppercase">Rejection Reason</Typography>
-                      <Paper variant="outlined" sx={{ p: 2, mt: 1, bgcolor: '#fff5f5', borderColor: '#feb2b2' }}>
-                        <Typography variant="body2" color="error.dark">{detailsModal.data.rejectionReason}</Typography>
-                      </Paper>
-                    </Grid>
-                  )}
+        {/* Pagination */}
+        {!loading && filteredTeachers.length > 0 && viewMode === "table" && (
+          <div className="mt-4 flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+            <span className="text-xs text-gray-500">
+              Page {pagination.page + 1} of {totalPages || 1}
+            </span>
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPagination({ ...pagination, page: i })}
+                  className={`w-7 h-7 flex items-center justify-center rounded text-xs font-medium ${
+                    pagination.page === i
+                      ? "bg-teal-600 text-white"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
-                  {detailsModal.data.link && (
-                    <Grid xs={12}>
-                      <Button variant="outlined" startIcon={<FiExternalLink />} onClick={() => window.open(detailsModal.data.link, '_blank')} fullWidth>
-                        Open Meeting Link
-                      </Button>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-
-              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button onClick={() => setDetailsModal({ open: false, data: null })}>Close</Button>
-              </Box>
-            </>
-          )}
-        </CenteredPaper>
-      </Modal>
-
-      {/* SCHEDULE MODAL */}
-      <Modal open={scheduleModal.open} onClose={() => setScheduleModal({ open: false, data: null })}>
-        <CenteredPaper>
-          {scheduleModal.data && (
-            <>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="h6" fontWeight={700}>Schedule Interview</Typography>
-                <IconButton size="small" onClick={() => setScheduleModal({ open: false, data: null })}><FiX /></IconButton>
-              </Box>
-
-              <Box sx={{ p: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>Teacher</Typography>
-                <Typography variant="h6" gutterBottom>{scheduleModal.data.name}</Typography>
-
-                <Box sx={{ mt: 3 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DateTimePicker
-                      label="Select Date & Time"
-                      value={selectedDateTime}
-                      onChange={setSelectedDateTime}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </LocalizationProvider>
-                </Box>
-
-                <TextField
-                  fullWidth
-                  label="Meeting Link"
-                  placeholder="https://meet.google.com/..."
-                  value={meetingLink}
-                  onChange={(e) => { setMeetingLink(e.target.value); if (e.target.value.trim()) setMeetingLinkError(false); }}
-                  error={meetingLinkError}
-                  helperText={meetingLinkError ? "Meeting link is required" : ""}
-                  sx={{ mt: 3 }}
-                />
-              </Box>
-
-              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                <Button onClick={() => setScheduleModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" onClick={scheduleInterview} disabled={actionLoading} startIcon={actionLoading ? <CircularProgress size={18} color="inherit" /> : <FiClock />}>
-                  Schedule
-                </Button>
-              </Box>
-            </>
-          )}
-        </CenteredPaper>
-      </Modal>
-
-      {/* REJECT MODAL */}
-      <Modal open={rejectModal.open} onClose={() => setRejectModal({ open: false, data: null })}>
-        <CenteredPaper>
-          {rejectModal.data && (
-            <>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#fff5f5' }}>
-                <Typography variant="h6" fontWeight={700} color="error">Reject Interview</Typography>
-                <IconButton size="small" onClick={() => setRejectModal({ open: false, data: null })}><FiX /></IconButton>
-              </Box>
-
-              <Box sx={{ p: 3 }}>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Please provide a reason for rejecting the interview request from <strong>{rejectModal.data.name}</strong>.
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Rejection Reason"
-                  placeholder="e.g., Not qualified for this level..."
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  autoFocus
-                />
-              </Box>
-
-              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                <Button onClick={() => setRejectModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" color="error" onClick={rejectInterview} disabled={actionLoading}>
-                  {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Confirm Rejection'}
-                </Button>
-              </Box>
-            </>
-          )}
-        </CenteredPaper>
-      </Modal>
-
-      {/* COMPLETE MODAL */}
-      <Modal open={completeModal.open} onClose={() => setCompleteModal({ open: false, data: null })}>
-        <CenteredPaper>
-          {completeModal.data && (
-            <>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#f0fdf4' }}>
-                <Typography variant="h6" fontWeight={700} color="success.main">Complete Interview</Typography>
-                <IconButton size="small" onClick={() => setCompleteModal({ open: false, data: null })}><FiX /></IconButton>
-              </Box>
-
-              <Box sx={{ p: 3 }}>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Rate the interview performance for <strong>{completeModal.data.name}</strong>.
-                </Typography>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-                  <TextField
-                    type="number"
-                    label="Score (0-10)"
-                    value={interviewScore}
-                    onChange={(e) => setInterviewScore(e.target.value)}
-                    slotProps={{ htmlInput: { min: 0, max: 10, step: 0.5 } }}
-                    sx={{ width: 150 }}
-                    autoFocus
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    / 10 Points
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                <Button onClick={() => setCompleteModal({ open: false, data: null })}>Cancel</Button>
-                <Button variant="contained" color="success" onClick={completeInterview} disabled={actionLoading}>
-                  {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Mark as Complete'}
-                </Button>
-              </Box>
-            </>
-          )}
-        </CenteredPaper>
-      </Modal>
-
-      {/* CREATE MODAL */}
-      <Modal open={createModal} onClose={() => setCreateModal(false)}>
-        <CenteredPaper>
-          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight={700}>Create Interview Record</Typography>
-            <IconButton size="small" onClick={() => setCreateModal(false)}><FiX /></IconButton>
-          </Box>
-
-          <Box sx={{ p: 3 }}>
-            <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
-                <TextField label="User ID" type="number" fullWidth size="small" value={createForm.user} onChange={(e) => setCreateForm({ ...createForm, user: e.target.value })} />
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <TextField label="Subject ID" type="number" fullWidth size="small" value={createForm.subject} onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })} />
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <TextField label="Level ID" type="number" fullWidth size="small" value={createForm.level} onChange={(e) => setCreateForm({ ...createForm, level: e.target.value })} />
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <TextField label="Class Category ID" type="number" fullWidth size="small" value={createForm.class_category} onChange={(e) => setCreateForm({ ...createForm, class_category: e.target.value })} />
-              </Grid>
-
-              <Grid xs={12} sm={6}>
-                <TextField select label="Status" fullWidth size="small" value={createForm.status} onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}>
-                  <MenuItem value="requested">Requested</MenuItem>
-                  <MenuItem value="scheduled">Scheduled</MenuItem>
-                  <MenuItem value="fulfilled">Fulfilled</MenuItem>
-                  <MenuItem value="rejected">Rejected</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <TextField label="Attempt" type="number" fullWidth size="small" value={createForm.attempt} onChange={(e) => setCreateForm({ ...createForm, attempt: e.target.value })} />
-              </Grid>
-
-              <Grid xs={12}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateTimePicker
-                    label="Interview Time"
-                    value={createForm.time}
-                    onChange={(v) => setCreateForm({ ...createForm, time: v })}
-                    slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid xs={12}>
-                <TextField label="Meeting Link" fullWidth size="small" value={createForm.link} onChange={(e) => setCreateForm({ ...createForm, link: e.target.value })} />
-              </Grid>
-
-              {createForm.status === 'rejected' && (
-                <Grid xs={12}>
-                  <TextField label="Rejection Reason" fullWidth multiline rows={2} size="small" value={createForm.reject_reason} onChange={(e) => setCreateForm({ ...createForm, reject_reason: e.target.value })} />
-                </Grid>
+      {/* MODALS */}
+      <Modal
+        isOpen={detailsModal.open}
+        onClose={() => setDetailsModal({ open: false, data: null })}
+        title="Interview Details"
+        footer={
+          <button
+            onClick={() => setDetailsModal({ open: false, data: null })}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          >
+            Close
+          </button>
+        }
+      >
+        {detailsModal.data && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white uppercase"
+                style={{
+                  backgroundColor: stringToColor(detailsModal.data.name),
+                }}
+              >
+                {detailsModal.data.name.charAt(0)}
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900">
+                  {detailsModal.data.name}
+                </h4>
+                <p className="text-sm text-gray-500">
+                  {detailsModal.data.email}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase">
+                  Subject
+                </label>
+                <p>{detailsModal.data.mergedSubject}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase">
+                  Status
+                </label>
+                <p>{detailsModal.data.status}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase">
+                  Desired Time
+                </label>
+                <p>{detailsModal.data.desiredDateTime}</p>
+              </div>
+              {detailsModal.data.scheduledDate && (
+                <div>
+                  <label className="block text-xs font-bold text-blue-400 uppercase">
+                    Scheduled
+                  </label>
+                  <p className="font-medium text-blue-600">
+                    {detailsModal.data.scheduledDate}
+                  </p>
+                </div>
               )}
-
-              {createForm.status === 'fulfilled' && (
-                <Grid xs={12}>
-                  <TextField label="Grade (0-10)" type="number" fullWidth size="small" value={createForm.grade} onChange={(e) => setCreateForm({ ...createForm, grade: e.target.value })} slotProps={{ htmlInput: { step: 0.1, min: 0, max: 10 } }} />
-                </Grid>
+              {detailsModal.data.rejectionReason && (
+                <div className="col-span-2 bg-red-50 p-3 rounded border border-red-100">
+                  <label className="block text-xs font-bold text-red-500 uppercase">
+                    Rejection Reason
+                  </label>
+                  <p className="text-red-700">
+                    {detailsModal.data.rejectionReason}
+                  </p>
+                </div>
               )}
-            </Grid>
-          </Box>
-
-          <Box sx={{ p: 2, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            <Button onClick={() => setCreateModal(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleCreateInterview} disabled={actionLoading}>
-              {actionLoading ? <CircularProgress size={18} color="inherit" /> : 'Create Record'}
-            </Button>
-          </Box>
-        </CenteredPaper>
+            </div>
+          </div>
+        )}
       </Modal>
 
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>{snackbar.message}</Alert>
-      </Snackbar>
+      <Modal
+        isOpen={scheduleModal.open}
+        onClose={() => setScheduleModal({ open: false, data: null })}
+        title="Schedule Interview"
+        footer={
+          <>
+            <button
+              onClick={() => setScheduleModal({ open: false, data: null })}
+              className="px-4 py-2 text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={scheduleInterview}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
+            >
+              {actionLoading ? "Scheduling..." : "Schedule"}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Date & Time
+            </label>
+            <input
+              type="datetime-local"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              value={selectedDateTime}
+              onChange={(e) => setSelectedDateTime(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Meeting Link
+            </label>
+            <input
+              type="text"
+              className={`w-full border rounded-lg px-3 py-2 ${
+                meetingLinkError ? "border-red-500" : "border-gray-300"
+              }`}
+              value={meetingLink}
+              onChange={(e) => setMeetingLink(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+        </div>
+      </Modal>
 
-      <Backdrop open={actionLoading} sx={{ zIndex: (t) => t.zIndex.drawer + 2, color: '#fff' }}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
+      <Modal
+        isOpen={rejectModal.open}
+        onClose={() => setRejectModal({ open: false, data: null })}
+        title="Reject Interview"
+        footer={
+          <>
+            <button
+              onClick={() => setRejectModal({ open: false, data: null })}
+              className="px-4 py-2 text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={rejectInterview}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {actionLoading ? "Rejecting..." : "Confirm Rejection"}
+            </button>
+          </>
+        }
+      >
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Reason
+          </label>
+          <textarea
+            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            rows="3"
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Reason for rejection..."
+          ></textarea>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={completeModal.open}
+        onClose={() => setCompleteModal({ open: false, data: null })}
+        title="Complete Interview"
+        footer={
+          <>
+            <button
+              onClick={() => setCompleteModal({ open: false, data: null })}
+              className="px-4 py-2 text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={completeInterview}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {actionLoading ? "Saving..." : "Mark Complete"}
+            </button>
+          </>
+        }
+      >
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Score (0-10)
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max="10"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            value={interviewScore}
+            onChange={(e) => setInterviewScore(e.target.value)}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={createModal}
+        onClose={() => setCreateModal(false)}
+        title="Create Record"
+        footer={
+          <>
+            <button
+              onClick={() => setCreateModal(false)}
+              className="px-4 py-2 text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateInterview}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
+            >
+              {actionLoading ? "Creating..." : "Create"}
+            </button>
+          </>
+        }
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-bold text-gray-500">Candidate</label>
+            {readyLoading ? (
+              <div className="text-xs text-gray-400 p-1">Loading users...</div>
+            ) : (
+              <select
+                className="w-full border rounded px-2 py-1 bg-white"
+                value={createForm.user}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, user: e.target.value })
+                }
+              >
+                <option value="">Select Candidate</option>
+                {readyUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.Fname} {u.Lname} ({u.email})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-500">
+              Subject ID
+            </label>
+            <input
+              type="number"
+              className="w-full border rounded px-2 py-1"
+              value={createForm.subject}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, subject: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-500">Level ID</label>
+            <input
+              type="number"
+              className="w-full border rounded px-2 py-1"
+              value={createForm.level}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, level: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-500">
+              Category ID
+            </label>
+            <input
+              type="number"
+              className="w-full border rounded px-2 py-1"
+              value={createForm.class_category}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, class_category: e.target.value })
+              }
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-bold text-gray-500">Time</label>
+            <input
+              type="datetime-local"
+              className="w-full border rounded px-2 py-1"
+              value={createForm.time}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, time: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 }

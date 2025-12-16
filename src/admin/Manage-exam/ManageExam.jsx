@@ -590,51 +590,60 @@ export default function ExamManagement() {
                         </span>
                       </td>
                       <td className="px-3 py-2">
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Approve Button */}
                           <button
                             onClick={() => handleStatusChange(exam, true)}
                             disabled={exam.status}
-                            className={`p-1 rounded transition-colors ${
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
                               exam.status
-                                ? "text-gray-300 cursor-not-allowed"
-                                : "text-green-600 hover:bg-green-50"
+                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                : "bg-green-50 text-green-600 hover:bg-green-100 hover:shadow-sm ring-1 ring-inset ring-green-100"
                             }`}
                             title="Approve"
                           >
-                            <FiCheck size={14} />
+                            <FiCheck size={16} />
                           </button>
+
+                          {/* Reject Button */}
                           <button
                             onClick={() => handleStatusChange(exam, false)}
                             disabled={!exam.status}
-                            className={`p-1 rounded transition-colors ${
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
                               !exam.status
-                                ? "text-gray-300 cursor-not-allowed"
-                                : "text-yellow-600 hover:bg-yellow-50"
+                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                : "bg-amber-50 text-amber-600 hover:bg-amber-100 hover:shadow-sm ring-1 ring-inset ring-amber-100"
                             }`}
                             title="Reject"
                           >
-                            <FiX size={14} />
+                            <FiX size={16} />
                           </button>
+
+                          {/* View Button */}
                           <Link
                             to={`/admin/exam/${exam.id}`}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:shadow-sm ring-1 ring-inset ring-indigo-100 transition-all"
                             title="View Questions"
                           >
-                            <FiEye size={14} />
+                            <FiEye size={16} />
                           </Link>
+
+                          {/* Edit Button */}
                           <button
                             onClick={() => handleEdit(exam)}
-                            className="p-1 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm ring-1 ring-inset ring-blue-100 transition-all"
                             title="Edit"
                           >
-                            <FiEdit2 size={14} />
+                            <FiEdit2 size={16} />
                           </button>
+
+                          {/* Delete Button */}
                           <button
                             onClick={() => handleDelete(exam)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm ring-1 ring-inset ring-red-100 transition-all"
                             title="Delete"
                           >
-                            <FiTrash2 size={14} />
+                            <FiTrash2 size={16} />
                           </button>
                         </div>
                       </td>
