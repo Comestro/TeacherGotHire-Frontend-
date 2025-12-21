@@ -1,32 +1,41 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { fetchLevel } from '../../services/examServices';
-import { deleteExam, getExam } from '../../services/adminManageExam';
-import { useSelector } from 'react-redux';
-import { FiPlus, FiBook, FiFileText, FiSearch, FiFilter, FiX, FiLayers, FiBookOpen } from 'react-icons/fi';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import ExamSetsTable from './componets/ExamSetsTable';
-import ExamSetterModal from './componets/ExamSetterModal';
-import QuestionModal from './componets/QuestionModal';
+import React, { useEffect, useState, useMemo } from "react";
+import { fetchLevel } from "../../services/examServices";
+import { deleteExam, getExam } from "../../services/adminManageExam";
+import { useSelector } from "react-redux";
+import {
+  FiPlus,
+  FiBook,
+  FiFileText,
+  FiSearch,
+  FiFilter,
+  FiX,
+  FiLayers,
+  FiBookOpen,
+} from "react-icons/fi";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ExamSetsTable from "./componets/ExamSetsTable";
+import ExamSetterModal from "./componets/ExamSetterModal";
+import QuestionModal from "./componets/QuestionModal";
 
 const ManageExam = () => {
   const [level, setLevel] = useState([]);
   const [examSets, setExamSets] = useState([]);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExam, setEditingExam] = useState(null);
   const [formData, setFormData] = useState({
-    set_name: '',
-    description: '',
-    subject: '',
-    level: '',
-    class_category: '',
-    total_marks: '',
-    duration: '',
-    type: 'online',
-    total_questions: '' // Add total_questions to formData
+    set_name: "",
+    description: "",
+    subject: "",
+    level: "",
+    class_category: "",
+    total_marks: "",
+    duration: "",
+    type: "online",
+    total_questions: "", // Add total_questions to formData
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isCopying, setIsCopying] = useState(false);
@@ -38,13 +47,13 @@ const ManageExam = () => {
 
   const setterUser = useSelector((state) => state.examQues.setterInfo);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [selectedClassCategory, setSelectedClassCategory] = useState('all');
-  const [selectedSubject, setSelectedSubject] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedLevel, setSelectedLevel] = useState('all'); // Add level filter
-  const [selectedStatus, setSelectedStatus] = useState('all'); // Add status filter
+  const [selectedClassCategory, setSelectedClassCategory] = useState("all");
+  const [selectedSubject, setSelectedSubject] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedLevel, setSelectedLevel] = useState("all"); // Add level filter
+  const [selectedStatus, setSelectedStatus] = useState("all"); // Add status filter
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [examForQuestions, setExamForQuestions] = useState(null);
   useEffect(() => {
@@ -52,11 +61,9 @@ const ManageExam = () => {
       try {
         const response = await fetchLevel();
         setLevel(response);
-      } catch (error) {
-        
-      }
+      } catch (error) {}
     };
-    
+
     getLevels();
   }, []);
   useEffect(() => {
@@ -83,9 +90,8 @@ const ManageExam = () => {
           setNextUrl(null);
           setPrevUrl(null);
         }
-
       } catch (error) {
-        toast.error('Failed to fetch exam sets');
+        toast.error("Failed to fetch exam sets");
       } finally {
         setLoading(false);
       }
@@ -96,59 +102,62 @@ const ManageExam = () => {
   const classCategories = setterUser?.[0]?.class_category || [];
   const getSubjects = () => {
     let allSubjects = [];
-    classCategories.forEach(category => {
+    classCategories.forEach((category) => {
       if (category.subjects && Array.isArray(category.subjects)) {
-        const subjectsWithClass = category.subjects.map(subject => ({
+        const subjectsWithClass = category.subjects.map((subject) => ({
           ...subject,
-          displayName: `${category.name} - ${subject.subject_name}` // Add class name prefix
+          displayName: `${category.name} - ${subject.subject_name}`, // Add class name prefix
         }));
         allSubjects = [...allSubjects, ...subjectsWithClass];
       }
     });
-    
+
     return allSubjects;
   };
   const subjects = getSubjects();
   const getExamClassName = (exam) => {
-    if (!exam) return '';
+    if (!exam) return "";
     if (exam.class_category) {
-      if (typeof exam.class_category === 'object') return exam.class_category.name || '';
+      if (typeof exam.class_category === "object")
+        return exam.class_category.name || "";
       return String(exam.class_category);
     }
-    return '';
+    return "";
   };
 
   const getExamSubjectName = (exam) => {
-    if (!exam) return '';
+    if (!exam) return "";
     if (exam.subject) {
-      if (typeof exam.subject === 'object') return exam.subject.subject_name || exam.subject.name || '';
+      if (typeof exam.subject === "object")
+        return exam.subject.subject_name || exam.subject.name || "";
       return String(exam.subject);
     }
-    return '';
+    return "";
   };
 
   const getExamLevelName = (exam) => {
-    if (!exam) return '';
+    if (!exam) return "";
     if (exam.level) {
-      if (typeof exam.level === 'object') return exam.level.name || '';
+      if (typeof exam.level === "object") return exam.level.name || "";
       return String(exam.level);
     }
-    return '';
+    return "";
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleCopyExam = (exam) => {
     setIsCopying(true);
     const normalize = (v) => {
-      if (!v && v !== 0) return '';
-      if (typeof v === 'object') return v.id ? v.id.toString() : (v.name || v.label || '').toString();
+      if (!v && v !== 0) return "";
+      if (typeof v === "object")
+        return v.id ? v.id.toString() : (v.name || v.label || "").toString();
       return v.toString();
     };
 
@@ -161,22 +170,22 @@ const ManageExam = () => {
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
-      total_questions: exam.total_questions || 10 // Add total_questions when copying
+      total_questions: exam.total_questions || 10, // Add total_questions when copying
     });
     setIsModalOpen(true);
   };
 
   const resetForm = () => {
     setFormData({
-      set_name: '',
-      description: '',
-      subject: '',
-      level: '',
-      class_category: '',
-      total_marks: '',
-      duration: '',
-      type: 'online',
-      total_questions: '' // Add total_questions to reset
+      set_name: "",
+      description: "",
+      subject: "",
+      level: "",
+      class_category: "",
+      total_marks: "",
+      duration: "",
+      type: "online",
+      total_questions: "", // Add total_questions to reset
     });
     setIsModalOpen(false);
     setEditingExam(null);
@@ -186,13 +195,14 @@ const ManageExam = () => {
   const handleEdit = (exam) => {
     setEditingExam(exam);
     const normalize = (v) => {
-      if (!v && v !== 0) return '';
-      if (typeof v === 'object') return v.id ? v.id.toString() : (v.name || v.label || '').toString();
+      if (!v && v !== 0) return "";
+      if (typeof v === "object")
+        return v.id ? v.id.toString() : (v.name || v.label || "").toString();
       return v.toString();
     };
 
     setFormData({
-      set_name: exam.set_name || '', // Add the set name from exam
+      set_name: exam.set_name || "", // Add the set name from exam
       description: exam.description,
       subject: normalize(exam.subject),
       level: normalize(exam.level),
@@ -200,53 +210,51 @@ const ManageExam = () => {
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
-      total_questions: exam.total_questions || 10 // Add total_questions when editing
+      total_questions: exam.total_questions || 10, // Add total_questions when editing
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (examId) => {
-    if (window.confirm('Are you sure you want to delete this exam set?')) {
-      setExamSets(prev => prev.filter(exam => exam.id !== examId));
+    if (window.confirm("Are you sure you want to delete this exam set?")) {
+      setExamSets((prev) => prev.filter((exam) => exam.id !== examId));
       let data = await deleteExam(examId);
-      toast.success('Exam deleted successfully!');
+      toast.success("Exam deleted successfully!");
     }
   };
   const handleAddQuestionAt = (exam, index) => {
     setExamForQuestions(exam);
     setIsQuestionModalOpen(true);
-    sessionStorage.setItem('newQuestionOrder', index);
+    sessionStorage.setItem("newQuestionOrder", index);
   };
   const handleSubmitQuestion = async (formData) => {
     try {
       setLoading(true);
-      const storedOrder = sessionStorage.getItem('newQuestionOrder');
+      const storedOrder = sessionStorage.getItem("newQuestionOrder");
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
       const payload = {
         ...formData,
         exam: examForQuestions.id,
-        ...(orderPosition !== null ? { order: orderPosition } : {})
+        ...(orderPosition !== null ? { order: orderPosition } : {}),
       };
-      
+
       const response = await createQuestion(payload);
-      
+
       if (response && response.id) {
         toast.success("Question added successfully!");
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
       }
-      sessionStorage.removeItem('newQuestionOrder');
+      sessionStorage.removeItem("newQuestionOrder");
       setIsQuestionModalOpen(false);
       setExamForQuestions(null);
-      
     } catch (error) {
-      
       toast.error(error.response?.data?.message || "Failed to add question");
     } finally {
       setLoading(false);
     }
   };
   const handleAddQuestions = (examId, position = null) => {
-    const exam = examSets.find(exam => exam.id === examId);
+    const exam = examSets.find((exam) => exam.id === examId);
     if (exam) {
       if (position !== null) {
         handleAddQuestionAt(exam, position);
@@ -258,84 +266,111 @@ const ManageExam = () => {
     }
   };
   const handleExamCreated = (newExam) => {
-    
-    toast.success('Exam created successfully!');
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    toast.success("Exam created successfully!");
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success
     setIsCopying(false); // Reset copying state
   };
   const handleExamUpdated = (updatedExam) => {
-    
-    toast.success('Exam updated successfully!');
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+    toast.success("Exam updated successfully!");
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
     setIsModalOpen(false); // Close modal after success
   };
   const filteredSubjects = useMemo(() => {
-    if (selectedClassCategory === 'all') return [];
-    
+    if (selectedClassCategory === "all") return [];
+
     const selectedCategory = classCategories.find(
-      cat => cat.id.toString() === selectedClassCategory
+      (cat) => cat.id.toString() === selectedClassCategory
     );
-    
+
     return selectedCategory?.subjects || [];
   }, [selectedClassCategory, classCategories]);
   const handleClassCategoryChange = (e) => {
     setSelectedClassCategory(e.target.value);
-    setSelectedSubject('all');
+    setSelectedSubject("all");
   };
 
   const getFilteredExams = () => {
-    return examSets.filter(exam => {
-      const matchesSearch = searchTerm === '' || 
-        (exam.name && exam.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (exam.description && exam.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    return examSets.filter((exam) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        (exam.name &&
+          exam.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (exam.description &&
+          exam.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesClassCategory = (() => {
-        if (selectedClassCategory === 'all') return true;
-        if (exam.class_category && typeof exam.class_category === 'object' && exam.class_category.id) {
+        if (selectedClassCategory === "all") return true;
+        if (
+          exam.class_category &&
+          typeof exam.class_category === "object" &&
+          exam.class_category.id
+        ) {
           return exam.class_category.id.toString() === selectedClassCategory;
         }
-        const selectedClassName = classCategories.find(c => c.id.toString() === selectedClassCategory)?.name;
-        if (selectedClassName) return getExamClassName(exam) === selectedClassName;
+        const selectedClassName = classCategories.find(
+          (c) => c.id.toString() === selectedClassCategory
+        )?.name;
+        if (selectedClassName)
+          return getExamClassName(exam) === selectedClassName;
         return false;
       })();
       const matchesSubject = (() => {
-        if (selectedSubject === 'all') return true;
-        if (exam.subject && typeof exam.subject === 'object' && exam.subject.id) {
+        if (selectedSubject === "all") return true;
+        if (
+          exam.subject &&
+          typeof exam.subject === "object" &&
+          exam.subject.id
+        ) {
           return exam.subject.id.toString() === selectedSubject;
         }
-        const selectedSubjectName = subjects.find(s => s.id && s.id.toString() === selectedSubject)?.subject_name;
-        if (selectedSubjectName) return getExamSubjectName(exam) === selectedSubjectName;
+        const selectedSubjectName = subjects.find(
+          (s) => s.id && s.id.toString() === selectedSubject
+        )?.subject_name;
+        if (selectedSubjectName)
+          return getExamSubjectName(exam) === selectedSubjectName;
         return false;
       })();
       const matchesLevel = (() => {
-        if (selectedLevel === 'all') return true;
-        if (exam.level && typeof exam.level === 'object' && exam.level.id) {
+        if (selectedLevel === "all") return true;
+        if (exam.level && typeof exam.level === "object" && exam.level.id) {
           return exam.level.id.toString() === selectedLevel;
         }
-        const selectedLevelName = level.find(l => l.id.toString() === selectedLevel)?.name;
-        if (selectedLevelName) return getExamLevelName(exam) === selectedLevelName;
+        const selectedLevelName = level.find(
+          (l) => l.id.toString() === selectedLevel
+        )?.name;
+        if (selectedLevelName)
+          return getExamLevelName(exam) === selectedLevelName;
         return false;
       })();
-      const matchesType = selectedType === 'all' || 
+      const matchesType =
+        selectedType === "all" ||
         (exam.type && String(exam.type) === selectedType);
-      const matchesStatus = selectedStatus === 'all' ||
-        (selectedStatus === 'published' && exam.status === true) ||
-        (selectedStatus === 'draft' && exam.status === false);
-      
-      return matchesSearch && matchesClassCategory && matchesSubject && matchesLevel && matchesType && matchesStatus;
+      const matchesStatus =
+        selectedStatus === "all" ||
+        (selectedStatus === "published" && exam.status === true) ||
+        (selectedStatus === "draft" && exam.status === false);
+
+      return (
+        matchesSearch &&
+        matchesClassCategory &&
+        matchesSubject &&
+        matchesLevel &&
+        matchesType &&
+        matchesStatus
+      );
     });
   };
   const getSortedAndGroupedExams = () => {
     const filtered = getFilteredExams();
-    
+
     return filtered.sort((a, b) => {
-      const classA = a.class_category?.name || '';
-      const classB = b.class_category?.name || '';
+      const classA = a.class_category?.name || "";
+      const classB = b.class_category?.name || "";
       if (classA !== classB) {
         return classA.localeCompare(classB);
       }
-      const subjectA = a.subject?.subject_name || '';
-      const subjectB = b.subject?.subject_name || '';
+      const subjectA = a.subject?.subject_name || "";
+      const subjectB = b.subject?.subject_name || "";
       if (subjectA !== subjectB) {
         return subjectA.localeCompare(subjectB);
       }
@@ -344,10 +379,10 @@ const ManageExam = () => {
       if (levelA !== levelB) {
         return levelA - levelB;
       }
-      const typeOrder = { 'online': 0, 'offline': 1 };
+      const typeOrder = { online: 0, offline: 1 };
       const typeA = typeOrder[a.type] || 0;
       const typeB = typeOrder[b.type] || 0;
-      
+
       return typeA - typeB;
     });
   };
@@ -355,269 +390,261 @@ const ManageExam = () => {
   const filteredExams = getSortedAndGroupedExams();
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedClassCategory('all');
-    setSelectedSubject('all');
-    setSelectedLevel('all');
-    setSelectedType('all');
-    setSelectedStatus('all');
+    setSearchTerm("");
+    setSelectedClassCategory("all");
+    setSelectedSubject("all");
+    setSelectedLevel("all");
+    setSelectedType("all");
+    setSelectedStatus("all");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="max-w-8xl mx-auto">
-        {/* Header - Made more responsive */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4">
+      <div className="max-w-8xl mx-auto text-left">
+        {/* Unified Control Panel */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 overflow-hidden">
+          {/* Header & Primary Action */}
+          <div className="bg-teal-700 p-3 sm:px-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center">
-                <FiBook className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600 mr-2 sm:mr-3" />
+              <h1 className="text-lg font-bold text-white flex items-center leading-tight">
+                <FiBook className="w-4 h-4 mr-2 text-teal-200" />
                 Manage Exam Sets
               </h1>
-              <p className="text-gray-600 mt-1 sm:mt-2">Create and manage your examination sets</p>
+              <p className="text-[10px] text-teal-100 font-medium uppercase tracking-wider">
+                Control Center / {totalCount} Exam Sets
+              </p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg flex items-center justify-center sm:justify-start space-x-2 transition-colors shadow-lg w-full sm:w-auto"
+              className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
             >
-              <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Create Exam Set</span>
+              <FiPlus className="w-4 h-4 mr-1.5" /> Create Exam Set
             </button>
           </div>
-        </div>
 
-        {/* Add Filters and Search Section - Improved for mobile */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="relative w-full sm:w-auto">
-                <FiSearch className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search exam sets..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
+          {/* Toolbar - Filters & Search */}
+          <div className="p-2 sm:p-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <FiSearch className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search exam sets..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-500 transition-all bg-white"
+              />
+            </div>
 
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-colors w-full sm:w-auto justify-center sm:justify-start ${
-                  isFilterExpanded || selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedStatus !== 'all'
-                    ? "bg-teal-100 text-teal-700 hover:bg-teal-200"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className={`flex items-center px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all ${
+                  isFilterExpanded ||
+                  selectedClassCategory !== "all" ||
+                  selectedSubject !== "all" ||
+                  selectedType !== "all" ||
+                  selectedStatus !== "all"
+                    ? "bg-teal-50 border-teal-200 text-teal-700"
+                    : "bg-white border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <FiFilter className="w-4 h-4 mr-2" />
+                <FiFilter className="w-3.5 h-3.5 mr-1.5" />
                 Filters
-                {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all' || selectedStatus !== 'all') && (
-                  <span className="ml-2 bg-teal-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {(selectedClassCategory !== 'all' ? 1 : 0) +
-                   (selectedSubject !== 'all' ? 1 : 0) +
-                   (selectedType !== 'all' ? 1 : 0) +
-                   (selectedLevel !== 'all' ? 1 : 0) +
-                   (selectedStatus !== 'all' ? 1 : 0)}
+                {(selectedClassCategory !== "all" ||
+                  selectedSubject !== "all" ||
+                  selectedType !== "all" ||
+                  selectedLevel !== "all" ||
+                  selectedStatus !== "all") && (
+                  <span className="ml-1.5 bg-teal-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                    {(selectedClassCategory !== "all" ? 1 : 0) +
+                      (selectedSubject !== "all" ? 1 : 0) +
+                      (selectedType !== "all" ? 1 : 0) +
+                      (selectedLevel !== "all" ? 1 : 0) +
+                      (selectedStatus !== "all" ? 1 : 0)}
                   </span>
                 )}
               </button>
-            </div>
 
-            <div className="text-gray-500 text-sm hidden sm:block truncate">
-              Showing {filteredExams.length} of {totalCount} exam sets
+              <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-gray-200">
+                <span className="text-[10px] font-bold text-gray-400 uppercase">View</span>
+                <span className="text-xs font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
+                  {filteredExams.length}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">Results</span>
+              </div>
             </div>
           </div>
 
-          {/* Expanded filters - Made grid more responsive */}
+          {/* Filter Drawer - Compact */}
           {isFilterExpanded && (
-            <div className="bg-gray-50 p-4 rounded-lg mt-2 border border-gray-200 animate-fadeIn">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Class Category Selection */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiLayers className="mr-2" /> Class Category
-                  </label>
-                  <select
-                    value={selectedClassCategory}
-                    onChange={handleClassCategoryChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Class Categories</option>
-                    {classCategories.map((category) => (
-                      <option key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Subject Selection */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiBookOpen className="mr-2" /> Subject
-                  </label>
-                  <select
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    disabled={selectedClassCategory === 'all'}
-                  >
-                    <option value="all">
-                      {selectedClassCategory === 'all' 
-                        ? 'Please select a class category first' 
-                        : 'All Subjects'}
-                    </option>
-                    {filteredSubjects.length > 0 ? (
-                      filteredSubjects.map((subject) => (
-                        <option key={subject.id} value={subject.id.toString()}>
-                          {subject.subject_name}
-                        </option>
-                      ))
-                    ) : selectedClassCategory !== 'all' && (
-                      <option disabled>No subjects available</option>
-                    )}
-                  </select>
-                </div>
-
-                {/* Level Filter */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiLayers className="mr-2" /> Level
-                  </label>
-                  <select
-                    value={selectedLevel}
-                    onChange={(e) => setSelectedLevel(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Levels</option>
-                    {level.map((lvl) => (
-                      <option key={lvl.id} value={lvl.id.toString()}>
-                        {lvl.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Exam Type */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiFilter className="mr-2" /> Exam Type
-                  </label>
-                  <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="online">Home Exam</option>
-                    <option value="offline">Exam Centre</option>
-                  </select>
-                </div>
-
-                {/* Status Filter */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center">
-                    <FiLayers className="mr-2" /> Status
-                  </label>
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-gray-600 hover:text-teal-600 flex items-center"
+            <div className="px-3 py-3 bg-white border-b border-gray-100 grid grid-cols-2 lg:grid-cols-5 gap-3 animate-dropdown">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Category</label>
+                <select
+                  value={selectedClassCategory}
+                  onChange={handleClassCategoryChange}
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-teal-500 font-medium"
                 >
-                  <FiX className="mr-1" /> Clear filters
-                </button>
+                  <option value="all">All Category</option>
+                  {classCategories.map((category) => (
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Subject</label>
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-teal-500 font-medium"
+                  disabled={selectedClassCategory === "all"}
+                >
+                  <option value="all">
+                    {selectedClassCategory === "all" ? "Select category" : "All Subject"}
+                  </option>
+                  {filteredSubjects.map((subject) => (
+                    <option key={subject.id} value={subject.id.toString()}>
+                      {subject.subject_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Level</label>
+                <select
+                  value={selectedLevel}
+                  onChange={(e) => setSelectedLevel(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-teal-500 font-medium"
+                >
+                  <option value="all">All Level</option>
+                  {level.map((lvl) => (
+                    <option key={lvl.id} value={lvl.id.toString()}>
+                      {lvl.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Exam Type</label>
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-teal-500 font-medium"
+                >
+                  <option value="all">All Type</option>
+                  <option value="online">Home Exam</option>
+                  <option value="offline">Exam Centre</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase flex justify-between">
+                  <span>Status</span>
+                  <button onClick={clearFilters} className="text-teal-600 hover:underline">Clear</button>
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-teal-500 font-medium"
+                >
+                  <option value="all">All Status</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
               </div>
             </div>
           )}
+        </div>
 
-          {/* Active filter badges - Improved wrapping */}
-          {(selectedClassCategory !== 'all' || selectedSubject !== 'all' || selectedType !== 'all' || selectedLevel !== 'all' || selectedStatus !== 'all') && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {selectedClassCategory !== 'all' && (
-                <div className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm flex items-center">
+          {/* Active filter badges - Improved wrapping and compact */}
+          {(selectedClassCategory !== "all" ||
+            selectedSubject !== "all" ||
+            selectedType !== "all" ||
+            selectedLevel !== "all" ||
+            selectedStatus !== "all") && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {selectedClassCategory !== "all" && (
+                <div className="bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center">
                   <FiLayers className="mr-1 h-3 w-3" />
-                  {classCategories.find(c => c.id.toString() === selectedClassCategory)?.name || 'Class'}
+                  {classCategories.find(
+                    (c) => c.id.toString() === selectedClassCategory
+                  )?.name || "Class"}
                   <button
                     onClick={() => {
-                      setSelectedClassCategory('all');
-                      setSelectedSubject('all'); // Reset subject when clearing class
+                      setSelectedClassCategory("all");
+                      setSelectedSubject("all");
                     }}
-                    className="ml-2 text-teal-600 hover:text-teal-800"
+                    className="ml-1.5 text-teal-400 hover:text-teal-600"
                   >
-                    <FiX />
+                    <FiX size={10} />
                   </button>
                 </div>
               )}
 
-              {selectedSubject !== 'all' && (
-                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+              {selectedSubject !== "all" && (
+                <div className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center">
                   <FiBookOpen className="mr-1 h-3 w-3" />
-                  {filteredSubjects.find(s => s.id.toString() === selectedSubject)?.subject_name || 'Subject'}
+                  {filteredSubjects.find(
+                    (s) => s.id.toString() === selectedSubject
+                  )?.subject_name || "Subject"}
                   <button
-                    onClick={() => setSelectedSubject('all')}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
+                    onClick={() => setSelectedSubject("all")}
+                    className="ml-1.5 text-blue-400 hover:text-blue-600"
                   >
-                    <FiX />
+                    <FiX size={10} />
                   </button>
                 </div>
               )}
 
-              {selectedLevel !== 'all' && (
-                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center">
+              {selectedLevel !== "all" && (
+                <div className="bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center">
                   <FiLayers className="mr-1 h-3 w-3" />
-                  {level.find(l => l.id.toString() === selectedLevel)?.name || 'Level'}
+                  {level.find((l) => l.id.toString() === selectedLevel)?.name ||
+                    "Level"}
                   <button
-                    onClick={() => setSelectedLevel('all')}
-                    className="ml-2 text-green-600 hover:text-green-800"
+                    onClick={() => setSelectedLevel("all")}
+                    className="ml-1.5 text-green-400 hover:text-green-600"
                   >
-                    <FiX />
+                    <FiX size={10} />
                   </button>
                 </div>
               )}
 
-              {selectedType !== 'all' && (
-                <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
+              {selectedType !== "all" && (
+                <div className="bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center">
                   <FiFilter className="mr-1 h-3 w-3" />
                   {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
                   <button
-                    onClick={() => setSelectedType('all')}
-                    className="ml-2 text-purple-600 hover:text-purple-800"
+                    onClick={() => setSelectedType("all")}
+                    className="ml-1.5 text-purple-400 hover:text-purple-600"
                   >
-                    <FiX />
+                    <FiX size={10} />
                   </button>
                 </div>
               )}
 
-              {selectedStatus !== 'all' && (
-                <div className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm flex items-center">
+              {selectedStatus !== "all" && (
+                <div className="bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full text-[11px] font-medium flex items-center">
                   <FiLayers className="mr-1 h-3 w-3" />
-                  {selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
+                  {selectedStatus.charAt(0).toUpperCase() +
+                    selectedStatus.slice(1)}
                   <button
-                    onClick={() => setSelectedStatus('all')}
-                    className="ml-2 text-orange-600 hover:text-orange-800"
+                    onClick={() => setSelectedStatus("all")}
+                    className="ml-1.5 text-orange-400 hover:text-orange-600"
                   >
-                    <FiX />
+                    <FiX size={10} />
                   </button>
                 </div>
               )}
             </div>
           )}
-          
+
           {/* Mobile view count */}
-          <div className="text-gray-500 text-sm block sm:hidden text-center mt-4">
-            Showing {filteredExams.length} of {totalCount} exam sets
+          <div className="text-gray-500 text-[11px] block sm:hidden text-center mt-3">
+            Showing{" "}
+            <span className="font-semibold">{filteredExams.length}</span> of{" "}
+            {totalCount} exam sets
           </div>
         </div>
 
@@ -627,12 +654,14 @@ const ManageExam = () => {
             <div className="max-w-md mx-auto">
               <FiFileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                {examSets.length === 0 ? 'No Exam Sets Found' : 'No Matching Exam Sets'}
+                {examSets.length === 0
+                  ? "No Exam Sets Found"
+                  : "No Matching Exam Sets"}
               </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
                 {examSets.length === 0
-                  ? 'Get started by creating your first exam set. You can add questions after creating an exam set.' 
-                  : 'Try adjusting your search or filter settings to find what you\'re looking for.'}
+                  ? "Get started by creating your first exam set. You can add questions after creating an exam set."
+                  : "Try adjusting your search or filter settings to find what you're looking for."}
               </p>
               {examSets.length === 0 ? (
                 <button
@@ -654,7 +683,7 @@ const ManageExam = () => {
             </div>
           </div>
         ) : (
-          <ExamSetsTable 
+          <ExamSetsTable
             examSets={filteredExams}
             onAddQuestions={handleAddQuestions}
             onEdit={handleEdit}
@@ -667,24 +696,35 @@ const ManageExam = () => {
         {/* Pagination controls for paginated API responses */}
         {totalCount > 0 && (
           <div className="mt-4 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-            <div className="text-sm text-gray-600">Total: {totalCount} exam sets</div>
+            <div className="text-sm text-gray-600">
+              Total: {totalCount} exam sets
+            </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || !prevUrl}
-                className={`px-3 py-1 rounded-md border ${page <= 1 || !prevUrl ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+                className={`px-3 py-1 rounded-md border ${
+                  page <= 1 || !prevUrl
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-50"
+                }`}
               >
                 Prev
               </button>
 
               <div className="text-sm text-gray-700">
-                Page {page} of {Math.max(1, Math.ceil(totalCount / (pageSize || 1)))}
+                Page {page} of{" "}
+                {Math.max(1, Math.ceil(totalCount / (pageSize || 1)))}
               </div>
 
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={!nextUrl}
-                className={`px-3 py-1 rounded-md border ${!nextUrl ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50'}`}
+                className={`px-3 py-1 rounded-md border ${
+                  !nextUrl
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-50"
+                }`}
               >
                 Next
               </button>
@@ -693,7 +733,7 @@ const ManageExam = () => {
         )}
 
         {/* Modal remains unchanged */}
-        <ExamSetterModal 
+        <ExamSetterModal
           isOpen={isModalOpen}
           onClose={resetForm}
           editingExam={editingExam}
@@ -714,7 +754,7 @@ const ManageExam = () => {
             onClose={() => {
               setIsQuestionModalOpen(false);
               setExamForQuestions(null);
-              sessionStorage.removeItem('newQuestionOrder');
+              sessionStorage.removeItem("newQuestionOrder");
             }}
             onSubmit={handleSubmitQuestion}
             examId={examForQuestions?.id}

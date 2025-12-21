@@ -1,26 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { FiX } from 'react-icons/fi';
-import { createExam, updateExam } from '../../../services/adminManageExam';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useState, useMemo } from "react";
+import { FiX } from "react-icons/fi";
+import { createExam, updateExam } from "../../../services/adminManageExam";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const ExamSetterModal = ({ 
-  isOpen, 
-  onClose, 
+const ExamSetterModal = ({
+  isOpen,
+  onClose,
   editingExam,
   isCopying, // Add new prop to indicate if we're copying an exam set
-  formData, 
+  formData,
   onInputChange,
   level,
   classCategories,
   onExamCreated,
-  onExamUpdated 
+  onExamUpdated,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const filteredSubjects = useMemo(() => {
     if (!formData.class_category) return [];
     const selectedCategory = classCategories.find(
-      cat => cat.id === parseInt(formData.class_category)
+      (cat) => cat.id === parseInt(formData.class_category)
     );
     return selectedCategory?.subjects || [];
   }, [formData.class_category, classCategories]);
@@ -28,41 +28,45 @@ const ExamSetterModal = ({
     onInputChange(e);
     onInputChange({
       target: {
-        name: 'subject',
-        value: ''
-      }
+        name: "subject",
+        value: "",
+      },
     });
   };
   const handleLevelChange = (e) => {
     const selectedLevelId = parseInt(e.target.value);
     onInputChange(e);
-    if (selectedLevelId === 2) { // Level - 2 (From Home)
+    if (selectedLevelId === 2) {
+      // Level - 2 (From Home)
       onInputChange({
         target: {
-          name: 'type',
-          value: 'online'
-        }
+          name: "type",
+          value: "online",
+        },
       });
-    } else if (selectedLevelId === 3) { // Level - 2 (From Exam Centre)
+    } else if (selectedLevelId === 3) {
+      // Level - 2 (From Exam Centre)
       onInputChange({
         target: {
-          name: 'type',
-          value: 'offline'
-        }
+          name: "type",
+          value: "offline",
+        },
       });
     }
   };
   const getTypeOptions = () => {
     const selectedLevelId = parseInt(formData.level);
-    
-    if (selectedLevelId === 2) { // Level - 2 (From Home)
-      return [{ value: 'online', label: 'Online' }];
-    } else if (selectedLevelId === 3) { // Level - 2 (From Exam Centre)
-      return [{ value: 'offline', label: 'Offline' }];
+
+    if (selectedLevelId === 2) {
+      // Level - 2 (From Home)
+      return [{ value: "online", label: "Online" }];
+    } else if (selectedLevelId === 3) {
+      // Level - 2 (From Exam Centre)
+      return [{ value: "offline", label: "Offline" }];
     }
     return [
-      { value: 'online', label: 'Online' },
-      { value: 'offline', label: 'Offline' }
+      { value: "online", label: "Online" },
+      { value: "offline", label: "Offline" },
     ];
   };
 
@@ -80,7 +84,7 @@ const ExamSetterModal = ({
         type: formData.type,
         total_marks: parseInt(formData.total_marks),
         duration: parseInt(formData.duration),
-        total_questions: parseInt(formData.total_questions || 0) // Add total_questions to payload
+        total_questions: parseInt(formData.total_questions || 0), // Add total_questions to payload
       };
 
       if (editingExam) {
@@ -93,8 +97,7 @@ const ExamSetterModal = ({
 
       onClose();
     } catch (error) {
-      toast.error(error.message || 'Failed to save exam set');
-      
+      toast.error(error.message || "Failed to save exam set");
     } finally {
       setIsSubmitting(false);
     }
@@ -103,71 +106,72 @@ const ExamSetterModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {editingExam && !isCopying ? 'Edit Exam Set' : 'Create New Exam Set'}
-              {isCopying && (
-                <span className="ml-2 text-sm font-normal text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
-                  Copying from existing exam
-                </span>
-              )}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <FiX className="w-6 h-6" />
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[95vh] overflow-hidden flex flex-col border border-gray-200">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            {editingExam && !isCopying
+              ? "Edit Exam Set"
+              : "Create New Exam Set"}
+            {isCopying && (
+              <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full uppercase tracking-wider border border-teal-100">
+                Copying
+              </span>
+            )}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
+          >
+            <FiX className="w-5 h-5" />
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-4 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Set Name <span className="text-red-500">*</span>
+              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                Exam Set Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="set_name"
-                value={formData.set_name || ''}
+                value={formData.set_name || ""}
                 onChange={onInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 required
-                placeholder="Enter exam set name..."
+                placeholder="e.g. Mathematics - Term 1"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Exam Description
+              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                Description
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={onInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                rows="3"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"
+                rows="2"
                 required
-                placeholder="Enter exam description..."
+                placeholder="Brief description of the exam set..."
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Class Category Selection - Moved before Subject */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   Class Category
                 </label>
                 <select
                   name="class_category"
                   value={formData.class_category}
                   onChange={handleClassCategoryChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
                   required
                 >
-                  <option value="">Select Class Category</option>
+                  <option value="">Select Class</option>
                   {classCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -176,23 +180,22 @@ const ExamSetterModal = ({
                 </select>
               </div>
 
-              {/* Subject Selection - Now shows filtered subjects */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   Subject
                 </label>
                 <select
                   name="subject"
                   value={formData.subject}
                   onChange={onInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
                   required
-                  disabled={!formData.class_category} // Disable if no class category selected
+                  disabled={!formData.class_category}
                 >
                   <option value="">
-                    {formData.class_category 
-                      ? 'Select Subject' 
-                      : 'Please select a class category first'}
+                    {formData.class_category
+                      ? "Select Subject"
+                      : "Select class first"}
                   </option>
                   {filteredSubjects.map((subject) => (
                     <option key={subject.id} value={subject.id}>
@@ -203,17 +206,16 @@ const ExamSetterModal = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Level and Type Selection */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   Level
                 </label>
                 <select
                   name="level"
                   value={formData.level}
                   onChange={handleLevelChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
                   required
                 >
                   <option value="">Select Level</option>
@@ -225,11 +227,8 @@ const ExamSetterModal = ({
                 </select>
               </div>
 
-              {/* Updated Type Selection */}
-           
-              {/* Marks and Duration Inputs */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   Total Marks
                 </label>
                 <input
@@ -237,53 +236,52 @@ const ExamSetterModal = ({
                   name="total_marks"
                   value={formData.total_marks}
                   onChange={onInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
                   required
                   min="1"
-                  placeholder="Enter total marks"
+                  placeholder="e.g. 100"
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Duration (minutes)
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  Duration (mins)
                 </label>
                 <input
                   type="number"
                   name="duration"
                   value={formData.duration}
                   onChange={onInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
                   required
                   min="1"
-                  placeholder="Enter duration in minutes"
+                  placeholder="e.g. 60"
                 />
               </div>
-            
-            {/* Add Total Questions field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Questions
-              </label>
-              <input
-                type="number"
-                name="total_questions"
-                value={formData.total_questions || ''}
-                onChange={onInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                min="1"
-                placeholder="Enter total questions"
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                Set the number of questions for this exam
-              </p>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  Total Questions
+                </label>
+                <input
+                  type="number"
+                  name="total_questions"
+                  value={formData.total_questions || ""}
+                  onChange={onInputChange}
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  min="1"
+                  placeholder="e.g. 50"
+                />
+              </div>
             </div>
-            </div>
-            <div className="flex justify-end space-x-4 pt-6">
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-1.5 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                 disabled={isSubmitting}
               >
                 Cancel
@@ -291,20 +289,39 @@ const ExamSetterModal = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors ${
-                  isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                className={`px-4 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium shadow-sm ${
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
                 {isSubmitting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <span className="flex items-center gap-2">
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
-                    Processing...
+                    Saving...
                   </span>
+                ) : isCopying ? (
+                  "Create Copy"
+                ) : editingExam ? (
+                  "Update Exam Set"
                 ) : (
-                  isCopying ? 'Create Copy' : (editingExam ? 'Update Exam Set' : 'Create Exam Set')
+                  "Create Exam Set"
                 )}
               </button>
             </div>

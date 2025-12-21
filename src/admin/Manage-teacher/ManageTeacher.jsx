@@ -10,7 +10,13 @@ import { getQualification } from "../../services/adminManageQualificationApi";
 import { getSubjects } from "../../services/adminSubujectApi";
 import { updateTeacher } from "../../services/adminTeacherApi";
 import { getClassCategory } from "../../services/adminClassCategoryApi";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEye,
+  FiCheck,
+  FiX,
+} from "react-icons/fi";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import {
   HiOutlineAcademicCap,
@@ -119,9 +125,13 @@ const ManageTeacher = () => {
             : s?.subject_name?.toLowerCase?.()
         )
         .filter(Boolean);
-      const addresses = (t.teachersaddress || [])
-        .map((a) => a?.state?.toLowerCase())
-        .filter(Boolean);
+      const addrObj = t.teachersaddress || {};
+      const addresses = [
+        addrObj.current_address?.state,
+        addrObj.permanent_address?.state,
+      ]
+        .filter(Boolean)
+        .map((s) => s.toLowerCase());
       const currentState = t.current_address?.state?.toLowerCase();
       const currentDistrict = t.current_address?.district?.toLowerCase();
 
@@ -277,8 +287,10 @@ const ManageTeacher = () => {
           .join("; ") ||
           t.last_education?.qualification?.name ||
           "",
-        (t.teachersaddress || [])
-          .map((a) => a?.state)
+        [
+          t.teachersaddress?.current_address?.state,
+          t.teachersaddress?.permanent_address?.state,
+        ]
           .filter(Boolean)
           .join("; ") ||
           t.current_address?.state ||
@@ -351,93 +363,142 @@ const ManageTeacher = () => {
   return (
     <Layout>
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm mb-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div className="space-y-4 mb-6">
+        {/* Header Top: Title + Stats + Main Actions */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-text">
+            <h1 className="text-2xl font-bold text-gray-900">
               Manage Teachers
             </h1>
-            <p className="text-sm text-secondary mt-1">
-              {teachers.length} total • {activeTeachers} active •{" "}
-              {inactiveTeachers} inactive
-            </p>
+            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+              <span className="font-medium text-gray-900">
+                {teachers.length}
+              </span>{" "}
+              total
+              <span className="w-1 h-1 rounded-full bg-gray-300" />
+              <span className="text-green-600 font-medium">
+                {activeTeachers} active
+              </span>
+              <span className="w-1 h-1 rounded-full bg-gray-300" />
+              <span className="text-gray-500">{inactiveTeachers} inactive</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={handleRefresh}
-              className="px-3 py-2 bg-background hover:bg-gray-100 text-text rounded-lg border border-gray-200 flex items-center gap-2"
+              className="px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm flex items-center gap-2 transition-all text-sm font-medium"
             >
-              <IoReloadOutline /> Refresh
+              <IoReloadOutline className="text-lg" />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
             <button
               onClick={handleExport}
-              className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center gap-2"
+              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-lg flex items-center gap-2 transition-all text-sm font-medium border border-transparent"
             >
-              <IoDownloadOutline /> Export CSV
+              <IoDownloadOutline className="text-lg" />
+              <span className="hidden sm:inline">Export CSV</span>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Search and filters */}
-      <div className="bg-white rounded-xl shadow-sm mb-4">
-        {/* Search */}
-        <div className="relative mb-4">
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Search by name, email, or ID"
-            className="w-full bg-background border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg px-4 py-2.5 pl-10 text-sm text-text placeholder-secondary focus:outline-none transition-all"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
-            />
-          </svg>
-        </div>
-
-        {/* Filters Button */}
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg flex items-center gap-2"
-        >
-          <MdFilterAlt /> Filters
-        </button>
-
-        <div className="mt-3 flex items-center justify-between">
-          <p className="text-xs text-secondary">
-            Showing {filtered.length} of {teachers.length} teachers
-          </p>
-          {selectedQualifications.length ||
-          selectedSubjects.length ||
-          selectedClassCategories.length ||
-          locationFilters.state.length ||
-          locationFilters.district.length ||
-          selectedStatuses.length ||
-          selectedGenders.length ||
-          experienceRange.min ||
-          experienceRange.max ? (
-            <button
-              onClick={handleClearFilters}
-              className="text-primary text-sm inline-flex items-center gap-1"
-            >
-              <MdFilterAltOff /> Clear filters
-            </button>
-          ) : (
-            <div className="text-secondary text-sm inline-flex items-center gap-1">
-              <MdFilterAlt className="text-secondary" /> No filters applied
+        {/* Toolbar: Search + Filter + View Toggle */}
+        <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+          {/* Search */}
+          <div className="relative w-full sm:w-96">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </div>
-          )}
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+              placeholder="Search by name, email, or ID..."
+            />
+          </div>
+
+          {/* Right Group */}
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            {/* Filter Trigger */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                selectedQualifications.length ||
+                selectedSubjects.length ||
+                selectedStatuses.length
+                  ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <MdFilterAlt className="text-lg" />
+              Filters
+              {filtered.length !== teachers.length && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
+                  !
+                </span>
+              )}
+            </button>
+
+            {/* View Toggle */}
+            <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-md transition-all ${
+                  viewMode === "list"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                title="List View"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-1.5 rounded-md transition-all ${
+                  viewMode === "card"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                title="Card View"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -463,7 +524,8 @@ const ManageTeacher = () => {
           {viewMode === "card" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {currentTeachers.map((t) => {
-                const currentAddress = t.current_address || {};
+                const currentAddress =
+                  t.teachersaddress?.current_address || t.current_address || {};
                 const latestEducation = t.last_education;
                 const initials = `${t.Fname?.charAt(0) || ""}${
                   t.Lname?.charAt(0) || ""
@@ -480,14 +542,14 @@ const ManageTeacher = () => {
                     .join(", ") ||
                   latestEducation?.qualification?.name ||
                   "N/A";
+
                 return (
                   <div
                     key={t.id}
-                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 group relative"
                   >
-                    {/* Header Section */}
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 ring-2 ring-white shadow-sm">
                         {t.profile_picture ? (
                           <img
                             src={t.profile_picture}
@@ -495,310 +557,208 @@ const ManageTeacher = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-lg">
+                          <div className="w-full h-full flex items-center justify-center text-primary font-bold text-lg">
                             {initials}
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h2 className="text-lg font-bold text-text truncate">
+                      <div className="min-w-0 flex-1">
+                        <h2 className="text-base font-bold text-gray-900 truncate">
                           {t.Fname} {t.Lname}
                         </h2>
-                        {(currentAddress.district || currentAddress.state) && (
-                          <p className="text-xs text-secondary flex items-center gap-1 mt-1">
-                            <HiOutlineLocationMarker
-                              className="text-accent"
-                              size={12}
-                            />
-                            {currentAddress.district
-                              ? `${currentAddress.district}, `
-                              : ""}
-                            {currentAddress.state || ""}
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          t.is_active
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-rose-50 text-rose-700 border border-rose-200"
-                        }`}
-                      >
-                        {t.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-
-                    {/* Details Grid */}
-                    <div className="space-y-3 mb-4">
-                      {/* Email */}
-                      <div className="flex items-center gap-3">
-                        <HiOutlineMail
-                          className="text-accent flex-shrink-0"
-                          size={16}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-secondary font-medium">
-                            Email
-                          </p>
-                          <p className="text-sm text-text truncate">
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              t.is_active ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          />
+                          <p className="text-xs text-gray-500 truncate">
                             {t.email}
                           </p>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Phone */}
-                      {t.phone_number && (
-                        <div className="flex items-center gap-3">
-                          <HiOutlinePhone
-                            className="text-accent flex-shrink-0"
-                            size={16}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-secondary font-medium">
-                              Phone
-                            </p>
-                            <p className="text-sm text-text">
-                              {t.phone_number}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Qualification */}
-                      <div className="flex items-center gap-3">
-                        <HiOutlineAcademicCap
-                          className="text-accent flex-shrink-0"
-                          size={16}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-secondary font-medium">
-                            Qualification
-                          </p>
-                          <p className="text-sm text-text truncate">
-                            {qualifications}
-                          </p>
-                        </div>
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
+                          Qualification
+                        </p>
+                        <p className="text-gray-700 font-medium truncate">
+                          {qualifications}
+                        </p>
                       </div>
-
-                      {/* Subjects */}
-                      <div className="flex items-start gap-3">
-                        <div className="text-accent flex-shrink-0 mt-0.5">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                            />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-secondary font-medium">
-                            Subjects
-                          </p>
-                          <p className="text-sm text-text break-words">
-                            {subjects}
-                          </p>
-                        </div>
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
+                          Location
+                        </p>
+                        <p className="text-gray-700 font-medium truncate">
+                          {currentAddress.district || "—"}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openConfirm(t.id, t.is_active)}
+                          className={`h-8 px-3 rounded-lg text-xs font-medium border transition-colors ${
+                            t.is_active
+                              ? "border-red-100 text-red-600 bg-red-50 hover:bg-red-100"
+                              : "border-green-100 text-green-600 bg-green-50 hover:bg-green-100"
+                          }`}
+                        >
+                          {t.is_active ? "Deactivate" : "Activate"}
+                        </button>
+                      </div>
                       <Link
                         to={`/admin/view/teacher/${t.id}`}
-                        className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium text-center transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        title="View Profile"
                       >
-                        View Profile
+                        <FiChevronRight size={18} />
                       </Link>
-                      <button
-                        onClick={() => openConfirm(t.id, t.is_active)}
-                        className={`px-3 py-2 rounded-lg text-sm border font-medium transition-colors ${
-                          t.is_active
-                            ? "border-rose-200 text-rose-700 hover:bg-rose-50"
-                            : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                        }`}
-                      >
-                        {t.is_active ? "Deactivate" : "Activate"}
-                      </button>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="space-y-3">
-              {currentTeachers.map((t) => {
-                console.log(t);
-                const currentAddress = t.current_address || {};
-                const latestEducation = t.last_education;
-                const initials = `${t.Fname?.charAt(0) || ""}${
-                  t.Lname?.charAt(0) || ""
-                }`.toUpperCase();
-                const subjects =
-                  (t.teachersubjects || [])
-                    .map((s) => (typeof s === "string" ? s : s?.subject_name))
-                    .filter(Boolean)
-                    .join(", ") || "N/A";
-                const qualifications =
-                  (t.teacherqualifications || [])
-                    .map((q) => q?.qualification?.name)
-                    .filter(Boolean)
-                    .join(", ") ||
-                  latestEducation?.qualification?.name ||
-                  "N/A";
-                return (
-                  <div
-                    key={t.id}
-                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                      {/* Left Section: Avatar and Basic Info */}
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                          {t.profile_picture ? (
-                            <img
-                              src={t.profile_picture}
-                              alt={`${t.Fname} ${t.Lname}`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-lg">
-                              {initials}
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-lg font-bold text-text truncate">
-                            {t.Fname} {t.Lname}
-                          </h3>
-                          <div className="flex items-center gap-4 text-sm text-secondary mt-1">
-                            <div className="flex items-center gap-1">
-                              <HiOutlineMail
-                                className="text-accent flex-shrink-0"
-                                size={14}
-                              />
-                              <span className="truncate">{t.email}</span>
-                            </div>
-                            {t.phone_number && (
-                              <div className="flex items-center gap-1">
-                                <HiOutlinePhone
-                                  className="text-accent flex-shrink-0"
-                                  size={14}
-                                />
-                                <span>{t.phone_number}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                      <th className="px-4 py-3">Teacher</th>
+                      <th className="px-4 py-3">Qualification</th>
+                      <th className="px-4 py-3">Subjects</th>
+                      <th className="px-4 py-3">Location</th>
+                      <th className="px-4 py-3 text-center">Status</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {currentTeachers.map((t) => {
+                      const currentAddress =
+                        t.teachersaddress?.current_address ||
+                        t.current_address ||
+                        {};
+                      const latestEducation = t.last_education;
+                      const initials = `${t.Fname?.charAt(0) || ""}${
+                        t.Lname?.charAt(0) || ""
+                      }`.toUpperCase();
+                      const subjects =
+                        (t.teachersubjects || [])
+                          .map((s) =>
+                            typeof s === "string" ? s : s?.subject_name
+                          )
+                          .filter(Boolean)
+                          .join(", ") || "—";
+                      const qualifications =
+                        (t.teacherqualifications || [])
+                          .map((q) => q?.qualification?.name)
+                          .filter(Boolean)
+                          .join(", ") ||
+                        latestEducation?.qualification?.name ||
+                        "—";
 
-                      {/* Middle Section: Details */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1">
-                        {/* Qualification */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <HiOutlineAcademicCap
-                            className="text-accent flex-shrink-0"
-                            size={16}
-                          />
-                          <div className="min-w-0">
-                            <p className="text-xs text-secondary font-medium">
-                              Qualification
-                            </p>
-                            <p className="text-sm text-text truncate">
-                              {qualifications}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Subjects */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="text-accent flex-shrink-0">
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                              />
-                            </svg>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs text-secondary font-medium">
-                              Subjects
-                            </p>
-                            <p className="text-sm text-text truncate">
-                              {subjects}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Location */}
-                        {(currentAddress.district || currentAddress.state) && (
-                          <div className="flex items-center gap-2 min-w-0">
-                            <HiOutlineLocationMarker
-                              className="text-accent flex-shrink-0"
-                              size={16}
-                            />
-                            <div className="min-w-0">
-                              <p className="text-xs text-secondary font-medium">
-                                Location
-                              </p>
-                              <p className="text-sm text-text truncate">
-                                {currentAddress.district
-                                  ? `${currentAddress.district}, `
-                                  : ""}
-                                {currentAddress.state || ""}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right Section: Status and Actions */}
-                      <div className="flex items-center gap-3 lg:justify-end">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                            t.is_active
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-rose-50 text-rose-700 border border-rose-200"
-                          }`}
+                      return (
+                        <tr
+                          key={t.id}
+                          className="hover:bg-gray-50/80 transition-colors group"
                         >
-                          {t.is_active ? "Active" : "Inactive"}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Link
-                            to={`/admin/view/teacher/${t.id}`}
-                            className="px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors"
-                          >
-                            View Profile
-                          </Link>
-                          <button
-                            onClick={() => openConfirm(t.id, t.is_active)}
-                            className={`px-3 py-2 rounded-lg text-sm border font-medium transition-colors whitespace-nowrap ${
-                              t.is_active
-                                ? "border-rose-200 text-rose-700 hover:bg-rose-50"
-                                : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                            }`}
-                          >
-                            {t.is_active ? "Deactivate" : "Activate"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 overflow-hidden shrink-0">
+                                {t.profile_picture ? (
+                                  <img
+                                    src={t.profile_picture}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  initials
+                                )}
+                              </div>
+                              <div className="min-w-0 max-w-[180px]">
+                                <div className="font-semibold text-gray-900 text-sm truncate">
+                                  {t.Fname} {t.Lname}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate">
+                                  {t.email}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div
+                              className="text-sm text-gray-700 max-w-[150px] truncate"
+                              title={qualifications}
+                            >
+                              {qualifications}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div
+                              className="text-sm text-gray-700 max-w-[150px] truncate"
+                              title={subjects}
+                            >
+                              {subjects}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm text-gray-700">
+                              {currentAddress.district || "—"}
+                              {currentAddress.state && (
+                                <span className="text-gray-400 text-xs block">
+                                  {currentAddress.state}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                                t.is_active
+                                  ? "bg-green-50 text-green-700 border-green-200"
+                                  : "bg-red-50 text-red-700 border-red-200"
+                              }`}
+                            >
+                              {t.is_active ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Link
+                                to={`/admin/view/teacher/${t.id}`}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 ring-1 ring-inset ring-indigo-100 transition-all"
+                                title="View Profile"
+                              >
+                                <FiEye size={16} />
+                              </Link>
+                              <button
+                                onClick={() => openConfirm(t.id, t.is_active)}
+                                className={`w-8 h-8 flex items-center justify-center rounded-lg ring-1 ring-inset transition-all ${
+                                  t.is_active
+                                    ? "bg-red-50 text-red-600 hover:bg-red-100 ring-red-100"
+                                    : "bg-green-50 text-green-600 hover:bg-green-100 ring-green-100"
+                                }`}
+                                title={t.is_active ? "Deactivate" : "Activate"}
+                              >
+                                {t.is_active ? (
+                                  <FiX size={16} />
+                                ) : (
+                                  <FiCheck size={16} />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

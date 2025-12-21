@@ -793,36 +793,44 @@ const QuestionModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {editingQuestion ? "Edit Question" : "Add New Question"}
-              {editingQuestion && (
-                <span className="ml-2 text-sm font-normal text-gray-500">
-                  (Editing {editingQuestion.language} Version)
-                </span>
-              )}
-            </h2>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden flex flex-col border border-gray-200">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            {editingQuestion ? "Edit Question" : "Add New Question"}
+            {editingQuestion && (
+              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                {editingQuestion.language}
+              </span>
+            )}
+          </h2>
+          <div className="flex items-center gap-3">
+            {isTranslating && (
+              <span className="flex items-center gap-1.5 px-2 py-1 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold uppercase tracking-wider animate-pulse border border-teal-100">
+                <FiRefreshCw className="animate-spin" />
+                Translating...
+              </span>
+            )}
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
             >
-              <FiX className="w-6 h-6" />
+              <FiX className="w-5 h-5" />
             </button>
           </div>
+        </div>
 
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           {/* Translation Controls */}
-          <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-4 sm:p-6 rounded-xl border border-blue-100 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+          <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-3 sm:p-4 rounded-xl border border-blue-100 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-start sm:items-center gap-3">
-                <FiGlobe className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 mt-1 sm:mt-0" />
+                <FiGlobe className="w-5 h-5 text-teal-600 mt-0.5 sm:mt-0" />
                 <div>
-                  <span className="text-base sm:text-lg font-semibold text-gray-800 block">
+                  <span className="text-sm font-semibold text-gray-800 block">
                     Real-time Word Translation
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-600">
+                  <span className="text-[11px] text-gray-600">
                     Type English words in Hindi fields - each word translates
                     after Space/Enter
                   </span>
@@ -835,16 +843,16 @@ const QuestionModal = ({
                   isTranslating ||
                   (editingQuestion && editingQuestion.language === "Hindi")
                 }
-                className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 text-sm sm:text-base w-full sm:w-auto justify-center"
+                className="bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-wider shadow-sm w-full sm:w-auto justify-center"
               >
                 {isTranslating ? (
                   <>
-                    <FiLoader className="w-4 h-4 animate-spin" />
+                    <FiLoader className="w-3.5 h-3.5 animate-spin" />
                     <span>Translating...</span>
                   </>
                 ) : (
                   <>
-                    <FiRefreshCw className="w-4 h-4" />
+                    <FiRefreshCw className="w-3.5 h-3.5" />
                     <span>Re-translate All</span>
                   </>
                 )}

@@ -6,7 +6,7 @@
   .glass {
     @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-md;
   }
-  
+
   .glass-dark {
     @apply bg-slate-900/70 backdrop-blur-lg border border-white/10 shadow-md;
   }
@@ -45,9 +45,15 @@
 
 /* Animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {
@@ -55,10 +61,41 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-slide-up {
   animation: slideUp 0.5s ease-out forwards;
+}
+
+/* KaTeX Compact Overrides */
+.katex-compact .katex-display {
+  margin: 0.2rem 0 !important;
+  text-align: left !important;
+}
+
+.katex-compact .katex {
+  font-size: 1.05em !important;
+}
+
+.animate-dropdown {
+  animation: dropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

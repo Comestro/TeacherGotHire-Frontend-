@@ -1,9 +1,10 @@
-import React from 'react';
-import { InlineMath, BlockMath } from 'react-katex';
+import React from "react";
+import { InlineMath, BlockMath } from "react-katex";
 const looksLikeTeX = (s) => {
-  if (!s || typeof s !== 'string') return false;
+  if (!s || typeof s !== "string") return false;
   if (/\$/.test(s)) return false;
-  if (/\\(frac|int|sum|lim|sqrt|alpha|beta|gamma|pi|sin|cos|tan)\b/.test(s)) return true;
+  if (/\\(frac|int|sum|lim|sqrt|alpha|beta|gamma|pi|sin|cos|tan)\b/.test(s))
+    return true;
   if (/\\[a-zA-Z]+/.test(s)) return true; // any backslash command
   if (/\^{|_\{/.test(s)) return true; // superscript/subscript with braces
   if (/\^\w|_\w/.test(s)) return true; // simple sup/sub
@@ -14,7 +15,11 @@ const MathRenderer = ({ text }) => {
   if (!text) return null;
   const trimmed = text.trim();
   if (looksLikeTeX(trimmed)) {
-    return <BlockMath>{trimmed}</BlockMath>;
+    return (
+      <div className="katex-compact py-1">
+        <BlockMath>{trimmed}</BlockMath>
+      </div>
+    );
   }
   const displayParts = text.split(/(\$\$[\s\S]*?\$\$)/g);
 
@@ -33,7 +38,9 @@ const MathRenderer = ({ text }) => {
               if (!p) return null;
               const inlineMatch = p.match(/^\$([^$]+)\$$/);
               if (inlineMatch) {
-                return <InlineMath key={`i-${i}-${j}`}>{inlineMatch[1]}</InlineMath>;
+                return (
+                  <InlineMath key={`i-${i}-${j}`}>{inlineMatch[1]}</InlineMath>
+                );
               }
               return <span key={`t-${i}-${j}`}>{p}</span>;
             })}

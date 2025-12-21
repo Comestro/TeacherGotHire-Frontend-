@@ -10,11 +10,6 @@ export default function Layout({ children }) {
   const handleSidebarToggle = () => {
     setIsSidebarOpen((prev) => !prev);
   };
-
-  // Mobile toggle logic can be handled within Sidebar or here depending on responsiveness requirements
-  // For simplicity based on previous MUI logic, we'll keep a state that sidebar consumes.
-  // We'll also pass a mobile-specific prop if needed, or let Sidebar handle media queries.
-
   // Format page title from path
   const path = location.pathname
     .replace(/\//g, " ")
