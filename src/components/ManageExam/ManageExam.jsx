@@ -466,11 +466,15 @@ const ManageExam = () => {
               </button>
 
               <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-gray-200">
-                <span className="text-[10px] font-bold text-gray-400 uppercase">View</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">
+                  View
+                </span>
                 <span className="text-xs font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
                   {filteredExams.length}
                 </span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase">Results</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">
+                  Results
+                </span>
               </div>
             </div>
           </div>
@@ -479,7 +483,9 @@ const ManageExam = () => {
           {isFilterExpanded && (
             <div className="px-3 py-3 bg-white border-b border-gray-100 grid grid-cols-2 lg:grid-cols-5 gap-3 animate-dropdown">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Category</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">
+                  Category
+                </label>
                 <select
                   value={selectedClassCategory}
                   onChange={handleClassCategoryChange}
@@ -494,7 +500,9 @@ const ManageExam = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Subject</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">
+                  Subject
+                </label>
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
@@ -502,7 +510,9 @@ const ManageExam = () => {
                   disabled={selectedClassCategory === "all"}
                 >
                   <option value="all">
-                    {selectedClassCategory === "all" ? "Select category" : "All Subject"}
+                    {selectedClassCategory === "all"
+                      ? "Select category"
+                      : "All Subject"}
                   </option>
                   {filteredSubjects.map((subject) => (
                     <option key={subject.id} value={subject.id.toString()}>
@@ -512,7 +522,9 @@ const ManageExam = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Level</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">
+                  Level
+                </label>
                 <select
                   value={selectedLevel}
                   onChange={(e) => setSelectedLevel(e.target.value)}
@@ -527,7 +539,9 @@ const ManageExam = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Exam Type</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">
+                  Exam Type
+                </label>
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
@@ -541,7 +555,12 @@ const ManageExam = () => {
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase flex justify-between">
                   <span>Status</span>
-                  <button onClick={clearFilters} className="text-teal-600 hover:underline">Clear</button>
+                  <button
+                    onClick={clearFilters}
+                    className="text-teal-600 hover:underline"
+                  >
+                    Clear
+                  </button>
                 </label>
                 <select
                   value={selectedStatus}
@@ -555,7 +574,6 @@ const ManageExam = () => {
               </div>
             </div>
           )}
-        </div>
 
           {/* Active filter badges - Improved wrapping and compact */}
           {(selectedClassCategory !== "all" ||
