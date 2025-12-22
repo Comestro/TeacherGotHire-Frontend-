@@ -290,6 +290,16 @@ export default function Sidebar({ isOpen, onToggle }) {
                 >
                   Change Password
                 </Link>
+                <Link
+                  to="/admin/manage/backup"
+                  className={`flex items-center pl-12 pr-4 py-1.5 mt-0.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive("/admin/manage/backup")
+                      ? "text-teal-600 bg-teal-50"
+                      : "text-gray-500 hover:text-teal-600 hover:bg-gray-50"
+                  }`}
+                >
+                  System Backup
+                </Link>
               </div>
             </div>
           </div>

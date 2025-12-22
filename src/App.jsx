@@ -1,5 +1,11 @@
 import React, { useMemo } from "react";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Home from "./components/Home/Home";
 import SignUpPage from "./components/Signup";
 import Login from "./components/SignIn";
@@ -62,20 +68,27 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ExamSetterProfile from "./components/ManageExam/ExamSetterProfile";
 import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
+import ManageBackup from "./admin/Manage-backup/ManageBackup";
 
 function AppContent() {
   const location = useLocation();
 
   const title = useMemo(() => {
-    if (location.pathname.startsWith('/admin')) return 'Admin Panel - TeacherGotHire';
-    if (location.pathname.startsWith('/teacher')) return 'Teacher Dashboard - TeacherGotHire';
-    if (location.pathname.startsWith('/recruiter')) return 'Recruiter Dashboard - TeacherGotHire';
-    if (location.pathname.startsWith('/exam')) return 'Exam Portal - TeacherGotHire';
-    if (location.pathname === '/signin') return 'Sign In - TeacherGotHire';
-    if (location.pathname === '/signup/teacher') return 'Teacher Sign Up - TeacherGotHire';
-    if (location.pathname === '/signup/recruiter') return 'Recruiter Sign Up - TeacherGotHire';
-    if (location.pathname === '/') return 'Home - TeacherGotHire';
-    return 'TeacherGotHire';
+    if (location.pathname.startsWith("/admin"))
+      return "Admin Panel - TeacherGotHire";
+    if (location.pathname.startsWith("/teacher"))
+      return "Teacher Dashboard - TeacherGotHire";
+    if (location.pathname.startsWith("/recruiter"))
+      return "Recruiter Dashboard - TeacherGotHire";
+    if (location.pathname.startsWith("/exam"))
+      return "Exam Portal - TeacherGotHire";
+    if (location.pathname === "/signin") return "Sign In - TeacherGotHire";
+    if (location.pathname === "/signup/teacher")
+      return "Teacher Sign Up - TeacherGotHire";
+    if (location.pathname === "/signup/recruiter")
+      return "Recruiter Sign Up - TeacherGotHire";
+    if (location.pathname === "/") return "Home - TeacherGotHire";
+    return "TeacherGotHire";
   }, [location.pathname]);
 
   return (
@@ -91,16 +104,16 @@ function AppContent() {
 
           <Route path="contact" element={<ContactUs />} />
           <Route path="exam-mode" element={<ExamMode />} />
-          <Route path="get-preferred-teacher" element={<GetPreferredTeacher />} />
+          <Route
+            path="get-preferred-teacher"
+            element={<GetPreferredTeacher />}
+          />
         </Route>
         <Route path="signup/teacher" element={<SignUpPage />} />
         <Route path="signin" element={<Login />} />
 
         <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route
-          path="reset-password/:uid/:token"
-          element={<ResetPassword />}
-        />
+        <Route path="reset-password/:uid/:token" element={<ResetPassword />} />
         <Route path="signup/recruiter" element={<RecruiterSignUpPage />} />
 
         {/* Unauthorized Page */}
@@ -114,7 +127,15 @@ function AppContent() {
         </Route>
         {/* <Route path="subject-expert" element={<QuestionManagementPortal />} /> */}
 
-        <Route path="manage-exam" element={<SubjectExpertLayout />} >
+        <Route
+          path="manage-exam"
+          element={
+            <RoleBasedRoute
+              element={<SubjectExpertLayout />}
+              allowedRoles={["questionuser", "admin"]}
+            />
+          }
+        >
           <Route index element={<ManageExam />} />
           <Route path="questions/:examId" element={<ManageQuestion />} />
           <Route path="questions/:examId/add" element={<QuestionForm />} />
@@ -249,8 +270,12 @@ function AppContent() {
         />
         <Route
           path="admin/exam/:examId"
-          element={<ExamDetails />}
-          allowedRoles={["admin"]}
+          element={
+            <RoleBasedRoute
+              element={<ExamDetails />}
+              allowedRoles={["admin"]}
+            />
+          }
         />
         <Route
           path="admin/manage/exam/center"
@@ -299,13 +324,30 @@ function AppContent() {
         />
         <Route
           path="admin/manage/hiring"
-          element={<ManageHiringRequests />}
-          allowedRoles={["admin"]}
+          element={
+            <RoleBasedRoute
+              element={<ManageHiringRequests />}
+              allowedRoles={["admin"]}
+            />
+          }
         />
         <Route
           path="admin/manage/interview"
-          element={<InterviewManagement />}
-          allowedRoles={["admin"]}
+          element={
+            <RoleBasedRoute
+              element={<InterviewManagement />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+        <Route
+          path="admin/manage/backup"
+          element={
+            <RoleBasedRoute
+              element={<ManageBackup />}
+              allowedRoles={["admin"]}
+            />
+          }
         />
 
         {/* Teacher Routes */}
@@ -328,7 +370,7 @@ function AppContent() {
               />
             }
           />
-          
+
           <Route
             path="view-attempts"
             element={
@@ -369,7 +411,6 @@ function AppContent() {
               />
             }
           />
-       
         </Route>
 
         {/* 404 */}
