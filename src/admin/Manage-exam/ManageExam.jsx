@@ -120,37 +120,101 @@ export default function ExamManagement() {
     return Array.from(setNames).sort();
   }, [exams]);
 
-  useEffect(() => {
-    loadAll(page, itemsPerPage);
-  }, [page, itemsPerPage]);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
-  // Reset page when filters change
   useEffect(() => {
-    setPage(1);
+    // Only load if not searching (search handled by debounce effect)
+    if (!searchQuery) {
+      loadAll({ page, itemsPerPage });
+    }
   }, [
-    searchQuery,
+    page,
+    itemsPerPage,
+    // Add filters here to trigger reload in pagination mode
     filterClassCategoryId,
     filterSubjectId,
     filterLevelId,
     filterType,
     filterStatus,
-    filterAddedBy,
   ]);
 
-  const loadAll = async (currentPage = 1, currentRowsPerPage = 10) => {
+  // Search Debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        loadAll({ search: searchQuery });
+      } else {
+        // Handled by the other effect when searchQuery becomes empty
+        if (isSearchMode) {
+          setPage(1);
+          setIsSearchMode(false);
+          loadAll({ page: 1, itemsPerPage });
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    searchQuery,
+    // Add filters here to trigger reload in search mode
+    filterClassCategoryId,
+    filterSubjectId,
+    filterLevelId,
+    filterType,
+    filterStatus,
+  ]);
+
+  const loadAll = async ({
+    page: currentPage = 1,
+    itemsPerPage: currentRowsPerPage = 10,
+    search = "",
+  }) => {
     setLoading(true);
     try {
+      // Build Params
+      const params = new URLSearchParams();
+
+      if (search) {
+        params.append("search", search);
+        setIsSearchMode(true);
+      } else {
+        params.append("page", currentPage);
+        params.append("page_size", currentRowsPerPage);
+        setIsSearchMode(false);
+      }
+
+      // Append Filters
+      if (filterClassCategoryId)
+        params.append("class_category", filterClassCategoryId);
+      if (filterSubjectId) params.append("subject", filterSubjectId);
+      if (filterLevelId) params.append("level", filterLevelId);
+      if (filterType) params.append("type", filterType);
+      if (filterStatus) params.append("status", filterStatus);
+
       const examResp = await apiService.getAll(
-        `api/examsetter/?page=${currentPage}&page_size=${currentRowsPerPage}`
+        `api/examsetter/?${params.toString()}`
       );
+
       const [subjectResp, classResp, levelResp] = await Promise.all([
         getSubjects(),
         getClassCategory(),
         getLevel(),
       ]);
 
-      setExams(Array.isArray(examResp.results) ? examResp.results : []);
-      setTotalCount(examResp.count || 0);
+      // Handle Response Types
+      if (Array.isArray(examResp)) {
+        // Global Search or Filter Result without Pagination
+        setExams(examResp);
+        setTotalCount(examResp.length);
+      } else if (examResp?.results) {
+        // Paginated Result
+        setExams(examResp.results);
+        setTotalCount(examResp.count || 0);
+      } else {
+        setExams([]);
+        setTotalCount(0);
+      }
+
       setSubjects(Array.isArray(subjectResp) ? subjectResp : []);
       setClassCategories(Array.isArray(classResp) ? classResp : []);
       setLevels(Array.isArray(levelResp) ? levelResp : []);
@@ -174,53 +238,15 @@ export default function ExamManagement() {
   };
 
   const filteredExams = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
     return exams.filter((exam) => {
-      const matchesQuery =
-        !q ||
-        exam.name.toLowerCase().includes(q) ||
-        String(exam.id).includes(q);
-      const matchesClass =
-        !filterClassCategoryId ||
-        exam.class_category ===
-          classCategories.find((c) => c.id === Number(filterClassCategoryId))
-            ?.name;
-      const matchesSub =
-        !filterSubjectId ||
-        exam.subject ===
-          subjects.find((s) => s.id === Number(filterSubjectId))?.subject_name;
-      const matchesLevel =
-        !filterLevelId ||
-        exam.level === levels.find((l) => l.id === Number(filterLevelId))?.name;
-      const matchesType = !filterType || exam.type === filterType;
-      const matchesStatus =
-        filterStatus === "" ? true : String(exam.status) === filterStatus;
+      // Server is handling Class, Subject, Level, Type, Status, Search
+      // We only filter 'Added By' logically on client side if needed
       const matchesAdded =
         !filterAddedBy || getAssignedUserName(exam) === filterAddedBy;
 
-      return (
-        matchesQuery &&
-        matchesClass &&
-        matchesSub &&
-        matchesLevel &&
-        matchesType &&
-        matchesStatus &&
-        matchesAdded
-      );
+      return matchesAdded;
     });
-  }, [
-    exams,
-    searchQuery,
-    filterClassCategoryId,
-    filterSubjectId,
-    filterLevelId,
-    filterType,
-    filterStatus,
-    filterAddedBy,
-    classCategories,
-    subjects,
-    levels,
-  ]);
+  }, [exams, filterAddedBy]);
 
   const handleOpenAdd = () => {
     setSelectedExam(null);
@@ -419,7 +445,10 @@ export default function ExamManagement() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-gray-100">
               <select
                 value={filterClassCategoryId}
-                onChange={(e) => setFilterClassCategoryId(e.target.value)}
+                onChange={(e) => {
+                  setFilterClassCategoryId(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Classes</option>
@@ -432,7 +461,10 @@ export default function ExamManagement() {
 
               <select
                 value={filterSubjectId}
-                onChange={(e) => setFilterSubjectId(e.target.value)}
+                onChange={(e) => {
+                  setFilterSubjectId(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Subjects</option>
@@ -451,7 +483,10 @@ export default function ExamManagement() {
 
               <select
                 value={filterLevelId}
-                onChange={(e) => setFilterLevelId(e.target.value)}
+                onChange={(e) => {
+                  setFilterLevelId(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Levels</option>
@@ -464,7 +499,10 @@ export default function ExamManagement() {
 
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
+                onChange={(e) => {
+                  setFilterType(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Types</option>
@@ -474,7 +512,10 @@ export default function ExamManagement() {
 
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Status</option>
@@ -650,7 +691,7 @@ export default function ExamManagement() {
           )}
 
           {/* Pagination */}
-          {totalCount > 0 && (
+          {!isSearchMode && totalCount > 0 && (
             <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-xs bg-gray-50">
               <span className="text-gray-500">
                 Showing {(page - 1) * itemsPerPage + 1} to{" "}
