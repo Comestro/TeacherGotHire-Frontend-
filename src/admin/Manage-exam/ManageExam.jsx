@@ -264,9 +264,7 @@ export default function ExamManagement() {
     if (!formData.duration || Number(formData.duration) <= 0)
       errs.duration = "Must be > 0";
 
-    const selectedLevel = levels.find((l) => l.id === Number(formData.level));
-    if (selectedLevel && selectedLevel.level_code >= 2.0 && !formData.type)
-      errs.type = "Required for this level";
+    if (!formData.type) errs.type = "Required";
 
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -283,11 +281,8 @@ export default function ExamManagement() {
         level: formData.level,
         total_marks: formData.total_marks,
         duration: formData.duration,
-        type: undefined,
+        type: formData.type,
       };
-      const selectedLvl = levels.find((l) => l.id === Number(formData.level));
-      if (selectedLvl && selectedLvl.level_code >= 2.0)
-        payload.type = formData.type;
 
       if (selectedExam) {
         await updateExam(selectedExam.id, payload);
@@ -813,33 +808,29 @@ export default function ExamManagement() {
                   )}
                 </div>
 
-                {Number(formData.level) &&
-                  levels.find((l) => l.id === Number(formData.level))
-                    ?.level_code >= 2.0 && (
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
-                        Exam Type *
-                      </label>
-                      <select
-                        value={formData.type}
-                        onChange={(e) =>
-                          setFormData({ ...formData, type: e.target.value })
-                        }
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                          formErrors.type ? "border-red-500" : "border-gray-300"
-                        }`}
-                      >
-                        <option value="">Select Type</option>
-                        <option value="online">Online</option>
-                        <option value="offline">Offline</option>
-                      </select>
-                      {formErrors.type && (
-                        <span className="text-xs text-red-500">
-                          {formErrors.type}
-                        </span>
-                      )}
-                    </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Exam Type *
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                      formErrors.type ? "border-red-500" : "border-gray-300"
+                    }`}
+                  >
+                    <option value="">Select Type</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                  {formErrors.type && (
+                    <span className="text-xs text-red-500">
+                      {formErrors.type}
+                    </span>
                   )}
+                </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
