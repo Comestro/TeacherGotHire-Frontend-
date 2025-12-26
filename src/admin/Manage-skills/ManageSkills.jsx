@@ -126,8 +126,8 @@ const ManageSkills = () => {
       errors.name = "Skill name is required";
     } else if (newSkillName.trim().length < 2) {
       errors.name = "Skill name must be at least 2 characters";
-    } else if (newSkillName.trim().length > 50) {
-      errors.name = "Skill name cannot exceed 50 characters";
+    } else if (newSkillName.trim().length > 255) {
+      errors.name = "Skill name cannot exceed 255 characters";
     } else {
       // Check for duplicates
       const duplicate = skills.find(
@@ -175,6 +175,8 @@ const ManageSkills = () => {
           showNotification(responseData.name[0], "error");
         } else if (responseData.message) {
           showNotification(responseData.message, "error");
+        } else if (responseData.detail) {
+          showNotification(responseData.detail, "error");
         } else {
           showNotification(
             `Failed to ${selectedSkill ? "update" : "add"} skill.`,
