@@ -383,9 +383,7 @@ const ManageSubject = () => {
         {/* Header */}
         <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">
-              Manage Subjects
-            </h1>
+            <h1 className="text-xl font-bold text-gray-800">Manage Subjects</h1>
             <p className="text-xs text-gray-500">
               Create and manage subjects for different class categories
             </p>
@@ -533,7 +531,7 @@ const ManageSubject = () => {
                             <FiEdit2 size={14} />
                           </button>
                           <button
-                            onClick={() => handleDeleteSubject(subject)}
+                            onClick={() => handleConfirmDelete(subject)}
                             className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                           >
