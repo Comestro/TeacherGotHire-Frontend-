@@ -168,7 +168,11 @@ const ManageMissingSubject = () => {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-gray-700">
-                            {req.user?.name || "Anonymous"}
+                            {req.user
+                              ? `${req.user.Fname || ""} ${req.user.Lname || ""}`.trim() ||
+                                req.user.username ||
+                                "Anonymous"
+                              : "Anonymous"}
                           </span>
                           {req.user?.email && (
                             <span className="text-xs text-gray-500">
