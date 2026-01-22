@@ -24,6 +24,7 @@ import {
   FiLogOut,
   FiChevronDown,
   FiChevronUp,
+  FiInbox,
 } from "react-icons/fi";
 
 export default function Sidebar({ isOpen, onToggle }) {
@@ -127,6 +128,12 @@ export default function Sidebar({ isOpen, onToggle }) {
       text: "Question Report",
       icon: <FiFlag />,
       link: "/admin/manage/question/report",
+      section: "requests",
+    },
+    {
+      text: "Missing Subject",
+      icon: <FiInbox />,
+      link: "/admin/manage/missing-subject",
       section: "requests",
     },
 

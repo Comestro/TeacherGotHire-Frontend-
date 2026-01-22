@@ -69,6 +69,7 @@ import ExamSetterProfile from "./components/ManageExam/ExamSetterProfile";
 import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
 import ManageBackup from "./admin/Manage-backup/ManageBackup";
+import ManageMissingSubject from "./admin/Manage-missing-subject/ManageMissingSubject";
 
 function AppContent() {
   const location = useLocation();
@@ -218,6 +219,15 @@ function AppContent() {
           element={
             <RoleBasedRoute
               element={<ManageQuestionReport />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+        <Route
+          path="admin/manage/missing-subject"
+          element={
+            <RoleBasedRoute
+              element={<ManageMissingSubject />}
               allowedRoles={["admin"]}
             />
           }
