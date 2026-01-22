@@ -148,6 +148,7 @@ const ManageMissingSubject = () => {
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <th className="px-6 py-4">Subject Name</th>
+                    <th className="px-6 py-4">Requested By</th>
                     <th className="px-6 py-4">Description</th>
                     <th className="px-6 py-4">Requested On</th>
                     <th className="px-6 py-4 text-right">Actions</th>
@@ -163,6 +164,18 @@ const ManageMissingSubject = () => {
                         <span className="font-semibold text-gray-700">
                           {req.subject_name}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700">
+                            {req.user?.name || "Anonymous"}
+                          </span>
+                          {req.user?.email && (
+                            <span className="text-xs text-gray-500">
+                              {req.user.email}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span
