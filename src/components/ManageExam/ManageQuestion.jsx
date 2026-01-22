@@ -702,7 +702,7 @@ const ManageQuestion = () => {
                   </div>
                 ) : (
                   <div className="text-center py-10">
-                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    {/* <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
                       <FiFileText className="w-6 h-6 text-gray-300" />
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
@@ -716,7 +716,7 @@ const ManageQuestion = () => {
                       className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg inline-flex items-center text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
                     >
                       <FiPlus className="mr-1.5" /> Add First Question
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
