@@ -82,7 +82,11 @@ const QuestionForm = () => {
       try {
         const response = await getExamById(examId);
         if (response && response.subject && response.subject.subject_name) {
-          setSubjectName(response.subject.subject_name);
+          const fetchedSubjectName = response.subject.subject_name;
+          setSubjectName(fetchedSubjectName);
+          // Update the language field based on subject - pass the subject name directly
+          const primaryLang = getPrimaryLanguageFromName(fetchedSubjectName);
+          setEnglishQuestion((prev) => ({ ...prev, language: primaryLang }));
         }
       } catch (error) {
         console.error("Failed to fetch exam details:", error);
@@ -124,8 +128,39 @@ const QuestionForm = () => {
     return languages.some((lang) => lowerName.includes(lang));
   };
 
+  const getPrimaryLanguage = () => {
+    if (!subjectName) return "English";
+    const lowerName = subjectName.toLowerCase();
+
+    // Map subject names to their language
+    if (lowerName.includes("hindi")) return "Hindi";
+    if (lowerName.includes("urdu")) return "Urdu";
+    if (lowerName.includes("sanskrit")) return "Sanskrit";
+    if (lowerName.includes("bengali")) return "Bengali";
+    if (lowerName.includes("marathi")) return "Marathi";
+    if (lowerName.includes("telugu")) return "Telugu";
+    if (lowerName.includes("tamil")) return "Tamil";
+    if (lowerName.includes("gujarati")) return "Gujarati";
+    if (lowerName.includes("kannada")) return "Kannada";
+    if (lowerName.includes("malayalam")) return "Malayalam";
+    if (lowerName.includes("punjabi")) return "Punjabi";
+    if (lowerName.includes("odia")) return "Odia";
+    if (lowerName.includes("assamese")) return "Assamese";
+    if (lowerName.includes("maithili")) return "Maithili";
+    if (lowerName.includes("santali")) return "Santali";
+    if (lowerName.includes("kashmiri")) return "Kashmiri";
+    if (lowerName.includes("nepali")) return "Nepali";
+    if (lowerName.includes("konkani")) return "Konkani";
+    if (lowerName.includes("sindhi")) return "Sindhi";
+    if (lowerName.includes("dogri")) return "Dogri";
+    if (lowerName.includes("manipuri")) return "Manipuri";
+    if (lowerName.includes("bodo")) return "Bodo";
+
+    return "English"; // Default to English for non-language subjects
+  };
+
   const [englishQuestion, setEnglishQuestion] = useState({
-    language: "English",
+    language: getPrimaryLanguage(),
     text: "",
     solution: "",
     options: ["", "", "", ""],
@@ -1330,7 +1365,7 @@ const QuestionForm = () => {
           >
             <QuestionPreview
               question={englishQuestion}
-              activeLanguage="English"
+              activeLanguage={englishQuestion.language || getPrimaryLanguage()}
             />
             {!isLanguageSubject() && (
               <QuestionPreview
