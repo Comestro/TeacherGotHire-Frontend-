@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teachergothire-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    # If there are environment variables that the build process needs,
+    # uncomment block below and provide them or use an env file if frontend needs it at RUNTIME
+    # environment:
+    #   - VITE_API_BASE_URL=https://api.example.com
