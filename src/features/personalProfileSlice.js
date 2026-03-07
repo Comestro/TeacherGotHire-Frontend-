@@ -1,7 +1,5 @@
-
-import { createSlice,createAsyncThunk  } from "@reduxjs/toolkit";
-import {fetchAddressProfile,updateAddressProfile ,addAddressProfile}from "../services/profileServices";
-import {updateBasicProfile,fetchBasicProfile,fetchCompleteProfile} from "../services/profileServices"
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchAddressProfile, updateAddressProfile, addAddressProfile, updateBasicProfile, fetchBasicProfile, fetchCompleteProfile } from "../services/profileServices";
 const initialState = {
   basicData:{},
   personalData:{},
@@ -98,12 +96,12 @@ export const getProfile = createAsyncThunk(
   "getProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const data = await fetchPersonalProfile();
-      return data; // Return the updated profile data
+      const data = await fetchBasicProfile();
+      return data;
     } catch (error) {
       return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        message: error.message,
+        code: error.code || "UNKNOWN_ERROR",
       });
     }
   }
@@ -113,12 +111,12 @@ export const postProfile = createAsyncThunk(
   "postProfile",
   async (personalData, { rejectWithValue }) => {
     try {
-      const data = await updatePersonalProfile(personalData);
-      return data; // Return the updated profile data
+      const data = await updateBasicProfile(personalData);
+      return data;
     } catch (error) {
       return rejectWithValue({
-        message: error.message, // Only include the error message
-        code: error.code || "UNKNOWN_ERROR", // Add a custom field if needed
+        message: error.message,
+        code: error.code || "UNKNOWN_ERROR",
       });
     }
   }

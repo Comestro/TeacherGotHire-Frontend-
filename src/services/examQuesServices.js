@@ -333,7 +333,7 @@ export const updateJobApply = async (id, payload) => {
 
 export const fetchQuestionsByExamSet = async (examSetId) => {
   try {
-    const response = await axios.get(`${API_URL}/exam/questions/${examSetId}`);
+    const response = await apiClient.get(`/exam/questions/${examSetId}`);
     return response.data;
   } catch (error) {
 

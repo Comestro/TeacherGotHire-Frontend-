@@ -78,7 +78,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       try {
         const response = await apiClient.get("/api/public/classcategory/");
         setSubject(response.data);
-        
+
         setLoading(false);
       } catch (error) {
         setError(error.message);
@@ -118,7 +118,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     setSelectedSubjects((prev) =>
       prev.includes(subject)
         ? prev.filter((s) => s !== subject)
-        : [...prev, subject]
+        : [...prev, subject],
     );
   };
 
@@ -130,7 +130,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       setLoadingPincode(true);
       try {
         const response = await axios.get(
-          `https://api.postalpincode.in/pincode/${enteredPincode}`
+          `https://api.postalpincode.in/pincode/${enteredPincode}`,
         );
         if (response.data[0].Status === "Success") {
           const postOffices = response.data[0].PostOffice;
@@ -165,14 +165,14 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     setTeachersError("");
     try {
       const classCategory = subject.find(
-        (cat) => cat.id === parseInt(selectedClassCategory)
+        (cat) => cat.id === parseInt(selectedClassCategory),
       );
       const classCategoryName = classCategory ? classCategory.name : "";
       const subjectNames = selectedSubjects
         .map((subjectId) => {
           for (const category of subject) {
             const subject = category.subjects.find(
-              (subj) => subj.id === subjectId
+              (subj) => subj.id === subjectId,
             );
             if (subject) return subject.subject_name;
           }
@@ -229,7 +229,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.status === 200 || response.status === 201) {
@@ -238,11 +238,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
           showNotification({
             message: "Application submitted successfully!",
             type: "success",
-          })
+          }),
         );
       }
     } catch (error) {
-      
       if (
         error.response?.data?.contact?.includes("This field must be unique.")
       ) {
@@ -252,7 +251,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
       } else {
         toast.error(
           error.response?.data?.message ||
-            "Submission failed. Please try again."
+            "Submission failed. Please try again.",
         );
       }
     }
@@ -366,7 +365,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           subject
                             .filter(
                               (category) =>
-                                category.id === parseInt(selectedClassCategory)
+                                category.id === parseInt(selectedClassCategory),
                             )
                             .map((category) => {
                               if (
@@ -396,7 +395,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                                           {subject.subject_name}
                                         </span>
                                         {selectedSubjects.includes(
-                                          subject.id
+                                          subject.id,
                                         ) && (
                                           <FiCheck className="text-teal-500" />
                                         )}
@@ -411,7 +410,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           subject
                             .filter(
                               (category) =>
-                                category.id === parseInt(selectedClassCategory)
+                                category.id === parseInt(selectedClassCategory),
                             )
                             .some((category) => !category.subjects?.length) && (
                             <p className="text-gray-500 text-center py-4">
@@ -555,17 +554,19 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                       {teachersError && !teachersLoading && (
                         <div className="text-center py-8">
                           <div className="bg-red-50 border border-red-100 rounded-lg p-5 mb-4">
-                            {teachersError.includes('|') ? (
+                            {teachersError.includes("|") ? (
                               <>
                                 <div className="mb-3 text-lg font-medium text-red-700">
-                                  {teachersError.split('|')[0].trim()}
+                                  {teachersError.split("|")[0].trim()}
                                 </div>
                                 <div className="text-base text-gray-700">
-                                  {teachersError.split('|')[1].trim()}
+                                  {teachersError.split("|")[1].trim()}
                                 </div>
                               </>
                             ) : (
-                              <div className="text-red-600">{teachersError}</div>
+                              <div className="text-red-600">
+                                {teachersError}
+                              </div>
                             )}
                           </div>
                           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -589,10 +590,13 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                         teachers.length === 0 && (
                           <div className="text-center py-10">
                             <p className="text-gray-600 mb-4">
-                              आपके चुने हुए विकल्पों के अनुसार यहां पर कोई शिक्षक उपलब्ध नहीं है कृपया दूसरी विकल्पों का चयन करें.
-                              / According to the options you have selected, no teacher is available here. Please choose other options.
+                              आपके चुने हुए विकल्पों के अनुसार यहां पर कोई
+                              शिक्षक उपलब्ध नहीं है कृपया दूसरी विकल्पों का चयन
+                              करें. / According to the options you have
+                              selected, no teacher is available here. Please
+                              choose other options.
                             </p>
-                            
+
                             <button
                               onClick={() => setCurrentStep(2)}
                               className="text-teal-500 hover:text-teal-700 flex items-center mx-auto"
@@ -616,10 +620,10 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                               const fullName = `${teacher.Fname} ${teacher.Lname}`;
                               const address =
                                 teacher.teachersaddress.find(
-                                  (addr) => addr.address_type === "current"
+                                  (addr) => addr.address_type === "current",
                                 ) ||
                                 teacher.teachersaddress.find(
-                                  (addr) => addr.address_type === "permanent"
+                                  (addr) => addr.address_type === "permanent",
                                 );
                               const location = address
                                 ? `${address.area ? address.area + ", " : ""}${
@@ -830,7 +834,7 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
                           <FiSmile className="text-yellow-400 text-5xl mx-auto animate-pulse" />
                         </div>
                         <h3 className="text-2xl font-semibold mb-4">
-                          🎉 Success! You're All Set!
+                          🎉 Success! You&apos;re All Set!
                         </h3>
                         <p className="text-gray-600 mb-6 text-lg">
                           Thank you for your submission! Our team will contact

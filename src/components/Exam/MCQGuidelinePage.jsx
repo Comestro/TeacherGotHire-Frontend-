@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getAllQues } from "../../features/examQuesSlice";
 import ExamCenterModal from "../Dashboard/components/passkeyCard";
 import { checkPasskey } from "../../services/examServices";
-import { HiOutlineArrowLeft, HiOutlineClipboardDocumentList, HiOutlineExclamationTriangle, HiOutlineGlobeAlt, HiOutlineLanguage } from "react-icons/hi2";
-import { HiOutlineArrowRight, HiOutlineBookOpen, HiOutlineCheck, HiOutlineCheckCircle, HiOutlineClock, HiOutlineCog, HiOutlineDesktopComputer, HiOutlineEye, HiOutlineLightningBolt, HiOutlineRefresh, HiOutlineSpeakerphone, HiOutlineSupport, HiOutlineUpload } from "react-icons/hi";
+import { HiOutlineArrowLeft, HiOutlineClipboardDocumentList} from "react-icons/hi2";
+import { HiOutlineArrowRight } from "react-icons/hi";
 const MCQGuidelinePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -14,8 +14,8 @@ const MCQGuidelinePage = () => {
   const { examCards } = useSelector((state) => state.exam);
   const { loading } = useSelector((state) => state.examQues);
   const subjectName = examCards?.subject?.name;
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+  const [, setIsLoading] = useState(false);
+  const [, setError] = useState();
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState();
   const [showVerificationCard, setShowVerificationCard] = useState(false);
   const [card, setCard] = useState(false);

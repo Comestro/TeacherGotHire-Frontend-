@@ -14,7 +14,6 @@ export const createQuestion = (data) => apiService.create("/api/examsetter/quest
 export const updateQuestion = (id, data) => apiService.update("/api/examsetter/question", id, data);
 export const deleteQuestion = (id) => apiService.delete("/api/new/examsetter/question", id);
 
-
 export const createNewQuestion = (data) => apiService.create("/api/new/examsetter/question", data);
 export const updateNewQuestion = (id, data) => apiService.update("/api/new/examsetter/question", id, data);
 export const reorderQuestions = async (questionIds) => {
@@ -22,20 +21,9 @@ export const reorderQuestions = async (questionIds) => {
     const payload = { 
       order: questionIds
     };
-    
-    
-    
-    const response = await axiosInstance.post(
-      `/admin/teacher/api/questions/reorder/`,
-      payload
-    );
-    
-    
+    const response = await apiService.create(`api/questions/reorder/`, payload);
     return response.data;
   } catch (error) {
-    
     throw error;
   }
 };
-
-

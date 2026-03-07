@@ -156,7 +156,7 @@ export default function ManageCenter() {
         (c.user?.Lname || "").toLowerCase().includes(q);
       const matchesStatus =
         !filterStatus ||
-        (filterStatus === "active" ? Boolean(c.status) : !Boolean(c.status));
+        (filterStatus === "active" ? Boolean(c.status) : !c.status);
       return matchesQ && matchesStatus;
     });
   }, [examCenters, debouncedSearch, filterStatus]);
