@@ -33,6 +33,7 @@ import {
 } from "@dnd-kit/sortable";
 import QuestionCard from "./componets/QuestionCard";
 import QuestionModal from "./componets/QuestionModal";
+import BulkUploadModal from "./componets/BulkUploadModal";
 
 import {
   createQuestion,
@@ -59,6 +60,7 @@ const ManageQuestion = () => {
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
   const examId = location.state?.exam?.id;
   const sensors = useSensors(
@@ -69,7 +71,7 @@ const ManageQuestion = () => {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -135,7 +137,7 @@ const ManageQuestion = () => {
       if (!overQuestion) return;
       if (activeQuestion.language !== overQuestion.language) {
         toast.warn(
-          `Cannot reorder between ${activeQuestion.language} and ${overQuestion.language} questions`
+          `Cannot reorder between ${activeQuestion.language} and ${overQuestion.language} questions`,
         );
         return;
       }
@@ -144,7 +146,7 @@ const ManageQuestion = () => {
         .filter((q) => q.language === language)
         .sort((a, b) => (a.order || 0) - (b.order || 0));
       const oldIndex = sameLanguageQuestions.findIndex(
-        (q) => q.id === active.id
+        (q) => q.id === active.id,
       );
       const newIndex = sameLanguageQuestions.findIndex((q) => q.id === over.id);
 
@@ -152,7 +154,7 @@ const ManageQuestion = () => {
       const reorderedQuestions = arrayMove(
         [...sameLanguageQuestions],
         oldIndex,
-        newIndex
+        newIndex,
       );
       const updatedQuestions = reorderedQuestions.map((question, index) => ({
         ...question,
@@ -164,7 +166,7 @@ const ManageQuestion = () => {
         const newQuestions = [...prevQuestions];
         updatedQuestions.forEach((updatedQuestion) => {
           const index = newQuestions.findIndex(
-            (q) => q.id === updatedQuestion.id
+            (q) => q.id === updatedQuestion.id,
           );
           if (index !== -1) {
             newQuestions[index] = updatedQuestion;
@@ -210,7 +212,7 @@ const ManageQuestion = () => {
 
   const getLanguageStats = () => {
     const englishCount = questions.filter(
-      (q) => q.language === "English"
+      (q) => q.language === "English",
     ).length;
     const hindiCount = questions.filter((q) => q.language === "Hindi").length;
     const totalMarks = exam?.total_marks || 0;
@@ -332,8 +334,8 @@ const ManageQuestion = () => {
         if (response && response.id) {
           setQuestions((prevQuestions) =>
             prevQuestions.map((q) =>
-              q.id === editingQuestion.id ? response : q
-            )
+              q.id === editingQuestion.id ? response : q,
+            ),
           );
           toast.success("Question updated successfully");
         }
@@ -368,7 +370,7 @@ const ManageQuestion = () => {
       try {
         await deleteQuestion(questionId);
         setQuestions((prevQuestions) =>
-          prevQuestions.filter((q) => q.id !== questionId)
+          prevQuestions.filter((q) => q.id !== questionId),
         );
 
         toast.success("Question deleted successfully");
@@ -429,12 +431,22 @@ const ManageQuestion = () => {
                 </span>
               </h1>
             </div>
-            <button
-              onClick={() => navigate(`/manage-exam/questions/${exam.id}/add`)}
-              className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
-            >
-              <FiPlus className="w-4 h-4 mr-1.5" /> Add Question
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsBulkModalOpen(true)}
+                className="bg-teal-600 text-white hover:bg-teal-500 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all border border-teal-500"
+              >
+                <FiFileText className="w-4 h-4 mr-1.5" /> Bulk Upload
+              </button>
+              <button
+                onClick={() =>
+                  navigate(`/manage-exam/questions/${exam.id}/add`)
+                }
+                className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
+              >
+                <FiPlus className="w-4 h-4 mr-1.5" /> Add Question
+              </button>
+            </div>
           </div>
 
           <div className="p-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
@@ -745,7 +757,7 @@ const ManageQuestion = () => {
                     {/* Filtered Results - Grouped by Language */}
                     {["English", "Hindi"].map((lang) => {
                       const langQuestions = questions.filter(
-                        (q) => q.language === lang
+                        (q) => q.language === lang,
                       );
                       if (
                         langQuestions.length === 0 &&
@@ -801,6 +813,14 @@ const ManageQuestion = () => {
           onSubmit={handleSubmitQuestion}
           examId={exam?.id}
           editingQuestion={editingQuestion}
+        />
+
+        <BulkUploadModal
+          isOpen={isBulkModalOpen}
+          onClose={() => setIsBulkModalOpen(false)}
+          examId={examId}
+          onUploadSuccess={refreshExamData}
+          subjectName={exam?.subject?.subject_name}
         />
       </div>
     </div>
