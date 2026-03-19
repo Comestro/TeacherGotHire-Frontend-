@@ -1,17 +1,26 @@
 import React, { useState } from "react";
 import { HiOutlineMapPin, HiPlus, HiXMark } from "react-icons/hi2";
+import { toast } from "react-toastify";
 import LocationModal from "../../Recruiter/components/LocationModal";
 
 const JobLocationSelector = ({ jobType, locations = [], onChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddLocation = (newLocation) => {
-    if (locations.length >= 5) return;
-    const isDuplicate = locations.some(
-      (loc) => loc.pincode === newLocation.pincode && loc.district === newLocation.district
+    if (locations.length >= 5) {
+      toast.warning("You can add a maximum of 5 locations.");
+      return;
+    }
+
+    // Check for duplicate: same pincode is not allowed more than once
+    const isDuplicatePincode = locations.some(
+      (loc) => loc.pincode === newLocation.pincode
     );
 
-    if (isDuplicate) {
+    if (isDuplicatePincode) {
+      toast.error(
+        `Pincode ${newLocation.pincode} is already added. Please use a different pincode.`
+      );
       return;
     }
 
