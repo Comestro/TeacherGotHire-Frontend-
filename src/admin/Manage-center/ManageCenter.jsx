@@ -56,7 +56,7 @@ import {
   getManageCenter,
   updateCenterManager,
 } from "../../services/adminManageCenterApi";
-import axios from "axios";
+import { lookupPincode } from "../../services/pincodeService";
 
 /**
  * ManageCenter (refactor + redesign)
@@ -341,18 +341,11 @@ export default function ManageCenter() {
     setLoadingPincode(true);
     setPincodeStatus(null);
     try {
-      const url = `${import.meta.env.VITE_POSTAL_API_URL || "https://api.postalpincode.in/pincode/"}${pin}`;
-      const res = await axios.get(url);
-      if (res?.data?.[0]?.Status === "Success") {
-        const post = res.data[0].PostOffice?.[0];
-        if (post) {
-          setForm((f) => ({ ...f, city: post.District || f.city, state: post.State || f.state }));
-          setPincodeStatus("success");
-          showSnack("Pincode resolved", "success");
-        } else {
-          setPincodeStatus("error");
-          showSnack("No post office found for this pincode", "error");
-        }
+      const result = await lookupPincode(pin);
+      if (result.success && result.district) {
+        setForm((f) => ({ ...f, city: result.district || f.city, state: result.state || f.state }));
+        setPincodeStatus("success");
+        showSnack("Pincode resolved", "success");
       } else {
         setPincodeStatus("error");
         showSnack("Invalid pincode", "error");

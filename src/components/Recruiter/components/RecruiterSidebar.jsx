@@ -25,6 +25,7 @@ import {
   getTeacherjobType,
 } from "../../../features/jobProfileSlice";
 import { fetchTeachers } from "../../../features/teacherFilterSlice";
+import { lookupPincode, reverseGeocode } from "../../../services/pincodeService";
 import { MapContainer, TileLayer, Circle, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -205,17 +206,15 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
   useEffect(() => {
     if (pincode && pincode.length === 6) {
       setLoadingPostOffices(true);
-      fetch(`https://api.postalpincode.in/pincode/${pincode}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data[0]?.Status === "Success") {
-            const offices = data[0].PostOffice || [];
-            setPostOffices(offices);
+      lookupPincode(pincode)
+        .then((result) => {
+          if (result.success) {
+            setPostOffices(result.postOffices);
 
             // Auto-select PO if pending match exists
             if (pendingAutoSelectPORef.current) {
               const target = pendingAutoSelectPORef.current.toLowerCase();
-              const match = offices.find(
+              const match = result.postOffices.find(
                 (po) =>
                   po.Name.toLowerCase().includes(target) ||
                   target.includes(po.Name.toLowerCase())
@@ -223,7 +222,7 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
               if (match) {
                 setSelectedPostOffice(match.Name);
               }
-              pendingAutoSelectPORef.current = null; // Clear after attempt
+              pendingAutoSelectPORef.current = null;
             }
           } else {
             setPostOffices([]);
@@ -455,71 +454,40 @@ const RecruiterSidebar = ({ isOpen, setIsOpen }) => {
           const { latitude, longitude } = position.coords;
           setMapCoordinates({ lat: latitude, lng: longitude });
 
-          // Using OpenStreetMap Nominatim API
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=en`
-          );
-          const data = await response.json();
+          const result = await reverseGeocode(latitude, longitude);
 
-          if (data && data.address) {
-            const { postcode, state_district, county, state } = data.address;
+          if (result.district) {
+            let cleanDistrict = result.district;
 
-            // Prioritize state_district, fall back to county
-            const district = state_district || county || "";
-            const zip = postcode || "";
+            // Handle common Nominatim vs Bihar Districts naming differences
+            const aliases = {
+              "Purba Champaran": "East Champaran",
+              "Pashchim Champaran": "West Champaran",
+              "Kaimur (Bhabua)": "Kaimur",
+            };
+            cleanDistrict = aliases[cleanDistrict] || cleanDistrict;
 
-            if (state === "Bihar" || state?.toLowerCase() === "bihar") {
-              // Valid state logic if needed
-            }
-
-            if (district) {
-              let cleanDistrict = district.replace(/ District/i, "").trim();
-              console.log(
-                "Detected District Raw:",
-                district,
-                "Clean:",
-                cleanDistrict
+            const match = BIHAR_DISTRICTS.find(
+              (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
+            );
+            if (match) {
+              setSelectedDistrict(match);
+            } else {
+              const partialMatch = BIHAR_DISTRICTS.find(
+                (d) =>
+                  cleanDistrict.toLowerCase().includes(d.toLowerCase()) ||
+                  d.toLowerCase().includes(cleanDistrict.toLowerCase())
               );
-
-              // Handle common Nominatim vs Bihar Districts naming differences
-              const aliases = {
-                "Purba Champaran": "East Champaran",
-                "Pashchim Champaran": "West Champaran",
-                "Kaimur (Bhabua)": "Kaimur",
-              };
-              cleanDistrict = aliases[cleanDistrict] || cleanDistrict;
-
-              const match = BIHAR_DISTRICTS.find(
-                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
-              );
-              if (match) {
-                setSelectedDistrict(match);
-              } else {
-                // Try partial match if no exact match
-                const partialMatch = BIHAR_DISTRICTS.find(
-                  (d) =>
-                    cleanDistrict.toLowerCase().includes(d.toLowerCase()) ||
-                    d.toLowerCase().includes(cleanDistrict.toLowerCase())
-                );
-                if (partialMatch) setSelectedDistrict(partialMatch);
-                else {
-                  console.log(
-                    "No matching district found in list for:",
-                    cleanDistrict
-                  );
-                }
-              }
+              if (partialMatch) setSelectedDistrict(partialMatch);
             }
+          }
 
-            if (zip) {
-              setPincode(zip);
-            }
+          if (result.pincode) {
+            setPincode(result.pincode);
+          }
 
-            if (!isAuto) {
-              toast.success("Location detected successfully!");
-            }
-          } else {
-            if (!isAuto) toast.error("Could not fetch address details.");
+          if (!isAuto) {
+            toast.success("Location detected successfully!");
           }
         } catch (error) {
           console.error("Location detection error:", error);

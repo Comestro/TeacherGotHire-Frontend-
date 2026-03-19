@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../../store/configue";
 import { useState, useEffect } from "react";
+import { lookupPincode, reverseGeocode } from "../../services/pincodeService";
 import {
   FiBook,
   FiMapPin,
@@ -137,86 +138,58 @@ export const GetPreferredTeacher = () => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-          );
-          const data = await response.json();
+          const result = await reverseGeocode(latitude, longitude);
 
-          if (data && data.address) {
-            const { postcode, state_district, county } = data.address;
-            const district = state_district || county || "";
-            const zip = postcode || "";
+          let detectedDistrict = "";
+          if (result.district) {
+            const match = BIHAR_DISTRICTS.find(
+              (d) => d.toLowerCase() === result.district.toLowerCase()
+            );
+            if (match) detectedDistrict = match;
+          }
 
-            let detectedDistrict = "";
-            if (district) {
-              const cleanDistrict = district.replace(/ District/i, "").trim();
-              const match = BIHAR_DISTRICTS.find(
-                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
-              );
-              if (match) detectedDistrict = match;
-            }
+          if (result.pincode) {
+            setPincode(result.pincode);
 
-            if (zip) {
-              setPincode(zip);
-
-              const piResponse = await axios.get(
-                `https://api.postalpincode.in/pincode/${zip}`
-              );
-              if (piResponse.data && piResponse.data[0].Status === "Success") {
-                const offices = piResponse.data[0].PostOffice;
-                if (offices.length > 0) {
-                  setPostOffices(offices);
-                  setLocationDetails((prev) => ({
-                    ...prev,
-                    district: offices[0].District,
-                    state: offices[0].State,
-                  }));
-                  setMessage({
-                    text: "Location detected successfully!",
-                    type: "success",
-                  });
-                } else {
-                  // If no post offices, at least keep the district we found from Nominatim
-                  if (detectedDistrict) {
-                    setLocationDetails((prev) => ({
-                      ...prev,
-                      district: detectedDistrict,
-                    }));
-                  }
-                  setMessage({
-                    text: "Location detected (partial data).",
-                    type: "success",
-                  });
-                }
-              } else {
-                // Fallback if PostOffice API fails
-                if (detectedDistrict) {
-                  setLocationDetails((prev) => ({
-                    ...prev,
-                    district: detectedDistrict,
-                  }));
-                }
-                setMessage({
-                  text: "Location detected from map.",
-                  type: "success",
-                });
-              }
+            const pincodeResult = await lookupPincode(result.pincode);
+            if (pincodeResult.success) {
+              setPostOffices(pincodeResult.postOffices);
+              setLocationDetails((prev) => ({
+                ...prev,
+                district: pincodeResult.district || detectedDistrict,
+                state: pincodeResult.state || prev.state,
+              }));
+              setMessage({
+                text: "Location detected successfully!",
+                type: "success",
+              });
             } else {
               if (detectedDistrict) {
                 setLocationDetails((prev) => ({
                   ...prev,
                   district: detectedDistrict,
                 }));
-                setMessage({
-                  text: "District detected. Please enter pincode.",
-                  type: "success",
-                });
-              } else {
-                setMessage({
-                  text: "Could not determine precise location.",
-                  type: "warning",
-                });
               }
+              setMessage({
+                text: "Location detected from map.",
+                type: "success",
+              });
+            }
+          } else {
+            if (detectedDistrict) {
+              setLocationDetails((prev) => ({
+                ...prev,
+                district: detectedDistrict,
+              }));
+              setMessage({
+                text: "District detected. Please enter pincode.",
+                type: "success",
+              });
+            } else {
+              setMessage({
+                text: "Could not determine precise location.",
+                type: "warning",
+              });
             }
           }
         } catch (error) {
@@ -236,31 +209,20 @@ export const GetPreferredTeacher = () => {
   const handlePincodeChange = async (e) => {
     const enteredPincode = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(enteredPincode);
-    setMessage({ text: "", type: "" }); // Clear previous messages
+    setMessage({ text: "", type: "" });
 
     if (enteredPincode.length === 6) {
       setLoadingPincode(true);
       try {
-        const response = await axios.get(
-          `https://api.postalpincode.in/pincode/${enteredPincode}`
-        );
-        if (response.data[0].Status === "Success") {
-          const offices = response.data[0].PostOffice;
-          if (offices.length > 0) {
-            setPostOffices(offices);
-            setLocationDetails((prev) => ({
-              ...prev,
-              district: offices[0].District,
-              state: offices[0].State,
-            }));
-            setMessage({ text: "Location details found!", type: "success" });
-          } else {
-            setMessage({
-              text: "No post offices found for this pincode",
-              type: "warning",
-            });
-            setPostOffices([]);
-          }
+        const result = await lookupPincode(enteredPincode);
+        if (result.success) {
+          setPostOffices(result.postOffices);
+          setLocationDetails((prev) => ({
+            ...prev,
+            district: result.district,
+            state: result.state || prev.state,
+          }));
+          setMessage({ text: "Location details found!", type: "success" });
         } else {
           setMessage({ text: "Invalid pincode entered", type: "error" });
           setPostOffices([]);

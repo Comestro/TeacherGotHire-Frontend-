@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FiX, FiMapPin, FiCheck, FiCrosshair } from "react-icons/fi";
 import { MdLocationCity, MdLocalPostOffice } from "react-icons/md";
+import { lookupPincode, reverseGeocode } from "../../../services/pincodeService";
 const BIHAR_DISTRICTS = [
   "Araria",
   "Arwal",
@@ -76,29 +77,19 @@ const LocationModal = ({
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-          );
-          const data = await response.json();
+          const result = await reverseGeocode(latitude, longitude);
 
-          if (data && data.address) {
-            const { postcode, state_district, county } = data.address;
-            const district = state_district || county || "";
-            const zip = postcode || "";
-
-            if (district) {
-              const cleanDistrict = district.replace(/ District/i, "").trim();
-              const match = BIHAR_DISTRICTS.find(
-                (d) => d.toLowerCase() === cleanDistrict.toLowerCase()
-              );
-              if (match) {
-                setFormData((prev) => ({ ...prev, district: match }));
-              }
+          if (result.district) {
+            const match = BIHAR_DISTRICTS.find(
+              (d) => d.toLowerCase() === result.district.toLowerCase()
+            );
+            if (match) {
+              setFormData((prev) => ({ ...prev, district: match }));
             }
+          }
 
-            if (zip) {
-              setFormData((prev) => ({ ...prev, pincode: zip }));
-            }
+          if (result.pincode) {
+            setFormData((prev) => ({ ...prev, pincode: result.pincode }));
           }
         } catch (err) {
           setError("Failed to detect location");
@@ -126,19 +117,16 @@ const LocationModal = ({
   useEffect(() => {
     if (formData.pincode && formData.pincode.length === 6) {
       setLoadingPostOffices(true);
-      fetch(`https://api.postalpincode.in/pincode/${formData.pincode}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data[0]?.Status === "Success") {
-            const offices = data[0].PostOffice || [];
-            setPostOffices(offices);
-            if (offices.length > 0 && offices[0].District) {
+      lookupPincode(formData.pincode)
+        .then((result) => {
+          if (result.success) {
+            setPostOffices(result.postOffices);
+            if (result.district) {
               setFormData((prev) => ({
                 ...prev,
-                district: offices[0].District,
+                district: result.district,
               }));
             }
-
             setError("");
           } else {
             setPostOffices([]);

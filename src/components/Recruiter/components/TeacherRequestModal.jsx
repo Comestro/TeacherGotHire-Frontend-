@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getClassCategory } from "../../../features/jobProfileSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import { lookupPincode } from "../../../services/pincodeService";
 import { createTeacherRequest } from "../../../services/profileServices";
 import { IoMdClose } from "react-icons/io";
 import { FaChalkboardTeacher, FaMapMarkerAlt } from "react-icons/fa";
@@ -37,23 +37,15 @@ const TeacherRequestModal = ({ isOpen, onClose }) => {
     if (enteredPincode.length === 6) {
       setLoadingPincode(true);
       try {
-        const response = await axios.get(
-          `https://api.postalpincode.in/pincode/${enteredPincode}`
-        );
+        const result = await lookupPincode(enteredPincode);
 
-        if (response.data[0].Status === "Success") {
-          const postOffices = response.data[0].PostOffice;
-          setPostOffice(postOffices);
-
-          if (postOffices.length > 0) {
-            setPincodeDetails({
-              state: postOffices[0].State,
-              city: postOffices[0].District,
-            });
-            toast.success("Location details found!");
-          } else {
-            toast.warning("No areas found for this pincode");
-          }
+        if (result.success) {
+          setPostOffice(result.postOffices);
+          setPincodeDetails({
+            state: result.state,
+            city: result.district,
+          });
+          toast.success("Location details found!");
         } else {
           toast.error("Invalid pincode entered");
         }

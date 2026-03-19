@@ -12,14 +12,16 @@ const JobLocationSelector = ({ jobType, locations = [], onChange }) => {
       return;
     }
 
-    // Check for duplicate: same pincode is not allowed more than once
-    const isDuplicatePincode = locations.some(
-      (loc) => loc.pincode === newLocation.pincode
+    // Check for duplicate: same pincode + same near area is not allowed
+    const isDuplicate = locations.some(
+      (loc) =>
+        loc.pincode === newLocation.pincode &&
+        loc.post_office === newLocation.post_office
     );
 
-    if (isDuplicatePincode) {
+    if (isDuplicate) {
       toast.error(
-        `Pincode ${newLocation.pincode} is already added. Please use a different pincode.`
+        `This location (${newLocation.post_office || newLocation.pincode}) is already added.`
       );
       return;
     }
@@ -54,8 +56,9 @@ const JobLocationSelector = ({ jobType, locations = [], onChange }) => {
               <span>
                 {loc.state ? <span className="font-medium text-gray-900">{loc.state}, </span> : ''}
                 {loc.district}
-                {loc.area ? `, ${loc.area}` : ""}
-                <span className="text-gray-400 text-xs ml-1">({loc.pincode})</span>
+                {loc.post_office ? `, ${loc.post_office}` : ""}
+                {loc.area ? ` (${loc.area})` : ""}
+                <span className="text-gray-400 text-xs ml-1">- {loc.pincode}</span>
               </span>
             </div>
             <button

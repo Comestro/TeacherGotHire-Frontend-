@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getApiUrl } from "../../store/configue";
 import { useState, useEffect, useRef } from "react";
+import { lookupPincode } from "../../services/pincodeService";
 import {
   FiX,
   FiBook,
@@ -129,22 +130,14 @@ export const TeacherEnquiry = ({ showModal, setShowModal }) => {
     if (enteredPincode.length === 6) {
       setLoadingPincode(true);
       try {
-        const response = await axios.get(
-          `https://api.postalpincode.in/pincode/${enteredPincode}`,
-        );
-        if (response.data[0].Status === "Success") {
-          const postOffices = response.data[0].PostOffice;
-          if (postOffices.length > 0) {
-            setPincodeDetails({
-              state: postOffices[0].State,
-              city: postOffices[0].District,
-            });
-            setAreas(postOffices.map((po) => po.Name));
-            toast.success("Location details found!");
-          } else {
-            toast.warning("No areas found for this pincode");
-            setAreas([]);
-          }
+        const result = await lookupPincode(enteredPincode);
+        if (result.success) {
+          setPincodeDetails({
+            state: result.state,
+            city: result.district,
+          });
+          setAreas(result.postOffices.map((po) => po.Name));
+          toast.success("Location details found!");
         } else {
           toast.error("Invalid pincode entered");
           setAreas([]);
