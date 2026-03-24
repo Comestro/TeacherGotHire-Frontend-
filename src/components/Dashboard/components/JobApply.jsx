@@ -45,10 +45,6 @@ const ApplicationForm = ({
   const [jobTypeLocations, setJobTypeLocations] = useState({});
   const [activeTab, setActiveTab] = useState(null);
   useEffect(() => {
-    if (jobTypes && jobTypes.length > 0 && !activeTab) {
-      setActiveTab(jobTypes[0].id);
-    }
-
     if (
       isEdit &&
       Array.isArray(applicationData) &&
@@ -73,9 +69,16 @@ const ApplicationForm = ({
       setSelectedJobTypes(initialJobTypes);
       setSalaryDetails(initialSalaryDetails);
       setJobTypeLocations(initialLocations);
+
+      if (initialJobTypes.length > 0 && !activeTab) {
+        setActiveTab(initialJobTypes[0]);
+      }
     } else {
+      if (jobTypes && jobTypes.length > 0 && !activeTab) {
+        setActiveTab(jobTypes[0].id);
+      }
     }
-  }, [isEdit, applicationData, jobTypes]);
+  }, [isEdit, applicationData, jobTypes, activeTab]);
 
   const handleJobTypeToggle = (jobTypeId) => {
     setSelectedJobTypes((prev) => {
@@ -464,10 +467,10 @@ const JobApply = () => {
   );
 
   useEffect(() => {
-    if (jobTypesStatus === "idle") {
+    if (!jobTypes || jobTypes.length === 0) {
       dispatch(getTeacherjobType());
     }
-  }, [jobTypesStatus, dispatch]);
+  }, [dispatch]);
 
   const [expandedForm, setExpandedForm] = useState({
     subjectId: null,
@@ -739,7 +742,7 @@ const JobApply = () => {
     );
   }
 
-  if (eligibilityError || jobApplyError || jobTypesStatus === "failed") {
+  if (eligibilityError || jobApplyError) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-dashed border-gray-300 text-center">
