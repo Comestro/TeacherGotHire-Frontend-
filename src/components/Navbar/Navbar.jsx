@@ -97,14 +97,14 @@ const Navbar = ({ links }) => {
         className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-xl"
         onClick={() => { setIsRegisterOpen(false); setIsMobileOpen(false); }}
       >
-        <FiUserPlus className="mr-3 text-teal-600" /> As Teacher
+        <FiUserPlus className="mr-3 text-teal-600" /> As a Teacher
       </Link>
       <Link
         to="/signup/recruiter"
         className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-b-xl"
         onClick={() => { setIsRegisterOpen(false); setIsMobileOpen(false); }}
       >
-        <FiBriefcase className="mr-3 text-teal-600" /> As Recruiter
+        <FiBriefcase className="mr-3 text-teal-600" /> As a Recruiter
       </Link>
     </div>
   );
