@@ -306,14 +306,14 @@ const Navbar = ({ links }) => {
                         onClick={() => setIsMobileOpen(false)}
                         className="flex items-center gap-2 w-full px-4 py-2 text-slate-600 hover:text-teal-600 transition-colors"
                       >
-                        <span>As Teacher</span>
+                        <span>As a Teacher</span>
                       </Link>
                       <Link
                         to="/signup/recruiter"
                         onClick={() => setIsMobileOpen(false)}
                         className="flex items-center gap-2 w-full px-4 py-2 text-slate-600 hover:text-teal-600 transition-colors"
                       >
-                        <span>As Recruiter</span>
+                        <span>As a Recruiter</span>
                       </Link>
                     </div>
                   )}

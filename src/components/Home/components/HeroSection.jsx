@@ -23,7 +23,8 @@ const HeroSection = () => {
 
   const teacherSteps = [
     "सबसे पहले www.ptpinstitute.com को सर्च करें!",
-    'होम पेज पर जाएं "Register as a Teacher" पर क्लिक करें!',
+    'होम पेज पर जाएं "Register" पर क्लिक करें!',
+    "फिर 'As a Teacher' link पर क्लिक करें!",
     'फॉर्म को भरकर "Sign up as a Teacher" करें!',
     "ID बनाने के बाद उसमें ईमेल आईडी और फोन नंबर जोड़े और सारा डिटेल को को भरना है",
     "Level-1( Test from home) का टेस्ट घर से दे!",
