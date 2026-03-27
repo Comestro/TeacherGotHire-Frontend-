@@ -77,11 +77,22 @@ const RecruiterSignUpPage = () => {
         otp: otp
       });
 
-      if (response.data.access_token) {
-        setSuccessMessage('Account verified successfully! Please log in.');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('role');
-        setTimeout(() => navigate('/signin'), 1200);
+      if (response.status === "success" && response.data) {
+        setSuccessMessage('Account verified and logged in successfully!');
+        
+        const { access_token, role } = response.data;
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("role", role);
+
+        setTimeout(() => {
+          if (role === "recruiter") {
+            navigate("/recruiter");
+          } else if (role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/signin");
+          }
+        }, 1200);
       }
     } catch (error) {
       setError(error.message || 'OTP verification failed');

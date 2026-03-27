@@ -100,13 +100,15 @@ export const createaccount = async (userDetails) => {
 
 export const verifyTeacherOtp = async ({ email, otp }) => {
   try {
-    const response = await apiClient.post('https://api.ptpinstitute.com/api/verify_otp/', {
+    const response = await apiClient.post('/api/verify_otp/', {
       email,
       otp
     });
 
-    if (response.data && response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
+    if (response.data && response.data.status === "success" && response.data.data) {
+      const { access_token, role } = response.data.data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('role', role);
     }
     return response.data;
   } catch (error) {
@@ -116,7 +118,7 @@ export const verifyTeacherOtp = async ({ email, otp }) => {
 
 export const resendTeacherOtp = async (email) => {
   try {
-    const response = await apiClient.post('https://api.ptpinstitute.com/api/resend_otp/', {
+    const response = await apiClient.post('/api/resend_otp/', {
       email: email
     });
     return response.data;
@@ -133,13 +135,15 @@ export const createRecruiteraccount = async (userDetails) => {
 
 export const verifyRecruiterOtp = async ({ email, otp }) => {
   try {
-    const response = await apiClient.post('https://api.ptpinstitute.com/api/verify_otp/', {
+    const response = await apiClient.post('/api/verify_otp/', {
       email,
       otp
     });
 
-    if (response.data && response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
+    if (response.data && response.data.status === "success" && response.data.data) {
+      const { access_token, role } = response.data.data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('role', role);
     }
     return response.data;
   } catch (error) {
@@ -149,7 +153,7 @@ export const verifyRecruiterOtp = async ({ email, otp }) => {
 
 export const resendRecruiterOtp = async (email) => {
   try {
-    const response = await apiClient.post('https://api.ptpinstitute.com/api/resend_otp/', {
+    const response = await apiClient.post('/api/resend_otp/', {
       email: email
     });
     return response.data;

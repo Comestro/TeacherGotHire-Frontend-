@@ -203,13 +203,29 @@ function Login() {
       });
       console.log(response);
 
-      if (response.data.access_token) {
+      if (response.status === "success" && response.data) {
         setNotification({
-          message: "Account verified successfully! Please log in.",
+          message: "Account verified and logged in successfully!",
           type: "success",
         });
-        setShowOTPForm(false);
-        setOtp("");
+        
+        const { access_token, role } = response.data;
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("role", role);
+
+        setTimeout(() => {
+          if (role === "recruiter") {
+            navigate("/recruiter");
+          } else if (role === "teacher") {
+            navigate("/teacher");
+          } else if (role === "centeruser") {
+            navigate("/examcenter");
+          } else if (role === "questionuser") {
+            navigate("/manage-exam");
+          } else {
+            navigate("/admin/dashboard");
+          }
+        }, 1200);
       }
     } catch (error) {
       setNotification({
