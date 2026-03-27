@@ -130,7 +130,8 @@ function Login() {
         return;
       }
       if (
-        err.is_verified == false || // Check for the flag from authServices
+        err.is_verified === false || 
+        err.is_pending === true ||
         errorMessage.toLowerCase().includes("verify") ||
         errorMessage.toLowerCase().includes("verification") ||
         errorMessage.toLowerCase().includes("activate") ||

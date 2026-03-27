@@ -64,7 +64,12 @@ const handleApiError = async (err) => {
     if (!message) {
       message = `An error occurred. Status code: ${status}`;
     }
-    throw new Error(message);
+    const error = new Error(message);
+    if (data && typeof data === 'object') {
+      error.is_verified = data.is_verified;
+      error.is_pending = data.is_pending;
+    }
+    throw error;
   } else if (err.request) {
     throw new Error("No response from the server. Please check your network connection.");
   } else {
