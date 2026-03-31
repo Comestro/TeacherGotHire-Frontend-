@@ -363,7 +363,7 @@ const ManageTeacher = () => {
   return (
     <Layout>
       {/* Header */}
-      <div className="space-y-4 mb-6">
+      <div className="space-y-4 mb-6 p-4">
         {/* Header Top: Title + Stats + Main Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
