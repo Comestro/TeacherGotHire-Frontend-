@@ -113,7 +113,7 @@ const QuestionCard = ({
       </div>
 
       <div className="mb-4">
-        <div className="text-sm sm:text-base text-gray-800 font-medium leading-relaxed">
+        <div className="text-sm sm:text-base text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">
           <MathRenderer text={question.text} />
         </div>
       </div>
@@ -139,7 +139,7 @@ const QuestionCard = ({
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 whitespace-pre-wrap">
                   <MathRenderer text={option} />
                 </div>
               </div>
@@ -158,7 +158,7 @@ const QuestionCard = ({
                   Solution
                 </p>
               </div>
-              <div className="text-xs sm:text-sm text-indigo-900 leading-relaxed pl-7">
+              <div className="text-xs sm:text-sm text-indigo-900 leading-relaxed pl-7 whitespace-pre-wrap">
                 <MathRenderer text={question.solution} />
               </div>
             </div>

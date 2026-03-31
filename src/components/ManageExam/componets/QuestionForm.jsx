@@ -282,31 +282,43 @@ const QuestionForm = () => {
   };
 
   const translatePreservingLatex = async (src) => {
-    if (!src || !src.trim()) return "";
-    const regex =
-      /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+    if (!src || !src.trim()) return src || "";
+    
+    // Split by newlines to preserve paragraph structure
+    const lines = src.split(/(\n+)/);
+    
+    const translatedLines = await Promise.all(lines.map(async (line) => {
+      // If it's just newlines, return as is
+      if (/^\n+$/.test(line)) return line;
+      if (!line.trim()) return line;
 
-    const promises = [];
-    let lastIndex = 0;
-    let match;
+      const regex =
+        /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
 
-    while ((match = regex.exec(src)) !== null) {
-      if (match.index > lastIndex) {
-        const chunk = src.slice(lastIndex, match.index);
-        promises.push(
-          translateText(chunk, "English", "Hindi").catch(() => chunk),
-        );
+      const promises = [];
+      let lastIndex = 0;
+      let match;
+
+      while ((match = regex.exec(line)) !== null) {
+        if (match.index > lastIndex) {
+          const chunk = line.slice(lastIndex, match.index);
+          promises.push(
+            translateText(chunk, "English", "Hindi").catch(() => chunk),
+          );
+        }
+        promises.push(Promise.resolve(match[0]));
+        lastIndex = regex.lastIndex;
       }
-      promises.push(Promise.resolve(match[0]));
-      lastIndex = regex.lastIndex;
-    }
-    if (lastIndex < src.length) {
-      const tail = src.slice(lastIndex);
-      promises.push(translateText(tail, "English", "Hindi").catch(() => tail));
-    }
+      if (lastIndex < line.length) {
+        const tail = line.slice(lastIndex);
+        promises.push(translateText(tail, "English", "Hindi").catch(() => tail));
+      }
 
-    const parts = await Promise.all(promises);
-    return parts.join("");
+      const parts = await Promise.all(promises);
+      return parts.join("");
+    }));
+
+    return translatedLines.join("");
   };
   const isEnglishWord = (word) => {
     if (!word || word.trim().length === 0) return false;
@@ -701,27 +713,32 @@ const QuestionForm = () => {
 
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       if (isLanguageSubject()) return;
-      const words = value.trim().split(/\s+/);
-      let updatedWords = [...words];
+      
+      // Split by whitespace but keep the whitespace segments to preserve them
+      const segments = value.split(/(\s+)/);
+      let updatedSegments = [...segments];
       let hasTranslation = false;
 
       setIsTranslating(true);
 
       try {
-        for (let i = 0; i < words.length; i++) {
-          const word = words[i];
-          if (isLatexToken(word)) continue;
-          if (isEnglishWord(word)) {
+        for (let i = 0; i < segments.length; i++) {
+          const segment = segments[i];
+          // Skip whitespace/empty segments
+          if (!segment || !/\S/.test(segment)) continue;
+          
+          if (isLatexToken(segment)) continue;
+          if (isEnglishWord(segment)) {
             try {
-              const translated = await translateText(word, "English", "Hindi");
-              updatedWords[i] = translated;
+              const translated = await translateText(segment, "English", "Hindi");
+              updatedSegments[i] = translated;
               hasTranslation = true;
             } catch (error) {}
           }
         }
 
         if (hasTranslation) {
-          const updatedText = updatedWords.join(" ");
+          const updatedText = updatedSegments.join("");
 
           if (field === "options" && optionIndex !== null) {
             setHindiQuestion((prev) => {
@@ -840,7 +857,8 @@ const QuestionForm = () => {
     const info = eqEditorTarget.originalLatexInfo;
     const replaceInText = (text) => {
       if (!info) {
-        const appended = (text.trim() ? text + " " : "") + `$${val}$`;
+        // Preserve all existing whitespace, including newlines, when appending
+        const appended = (text || "") + (text && !text.endsWith(" ") && !text.endsWith("\n") ? " " : "") + `$${val}$`;
         return appended;
       }
       const before = text.slice(0, info.index);
