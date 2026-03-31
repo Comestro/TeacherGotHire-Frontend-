@@ -24,11 +24,11 @@ const QuestionPreview = ({ question, activeLanguage }) => {
                         : "🇺🇸"}{" "}
             {question.language || activeLanguage} Version:
           </h4>
-          <p className="text-gray-700 mb-3 font-medium">
+          <div className="text-gray-700 mb-3 font-medium whitespace-pre-wrap">
             <MathRenderer
               text={question.text || "Question text will appear here..."}
             />
-          </p>
+          </div>
           <div className="space-y-2">
             {question.options.map((opt, idx) => (
               <div
@@ -42,7 +42,7 @@ const QuestionPreview = ({ question, activeLanguage }) => {
                 <span className="font-semibold min-w-6">
                   {String.fromCharCode(65 + idx)}.
                 </span>
-                <span>
+                <span className="whitespace-pre-wrap">
                   <MathRenderer text={opt || `Option ${idx + 1}`} />
                 </span>
                 {question.correct_option === idx && (
@@ -54,9 +54,9 @@ const QuestionPreview = ({ question, activeLanguage }) => {
           {question.solution && (
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <h5 className="font-medium text-blue-900 mb-1">Solution:</h5>
-              <p className="text-blue-800 text-sm">
+              <div className="text-blue-800 text-sm whitespace-pre-wrap">
                 <MathRenderer text={question.solution} />
-              </p>
+              </div>
             </div>
           )}
         </div>
