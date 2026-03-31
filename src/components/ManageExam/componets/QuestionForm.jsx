@@ -180,6 +180,7 @@ const QuestionForm = () => {
   const [duplicateError, setDuplicateError] = useState(null);
   const [englishSectionEmpty, setEnglishSectionEmpty] = useState(false);
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
+  const [isLatexEnabled, setIsLatexEnabled] = useState(false); // Added toggle state for LaTeX
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
   const [eqEditorValue, setEqEditorValue] = useState("");
   const [eqEditorTarget, setEqEditorTarget] = useState({
@@ -378,6 +379,8 @@ const QuestionForm = () => {
       setIsFromEquationEditor(false);
       return;
     }
+
+    if (!isLatexEnabled) return; // Only convert if LaTeX is enabled
 
     const converted = convertPlainMathToLatex(value);
     if (converted !== value) {
@@ -912,43 +915,81 @@ const QuestionForm = () => {
             </div>
           </div>
 
-          {/* Translation Controls - Hide for language subjects */}
-          {!isLanguageSubject() && (
-            <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-6 rounded-xl border border-blue-100 mb-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <FiGlobe className="w-6 h-6 text-teal-600" />
-                  <div>
-                    <span className="text-lg font-semibold text-gray-800 block">
-                      Real-time Word Translation
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      Type English words in Hindi fields - each word translates
-                      after Space/Enter
-                    </span>
+          {/* Control Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Translation Controls - Hide for language subjects */}
+            {!isLanguageSubject() && (
+              <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-6 rounded-xl border border-blue-100 h-full">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <FiGlobe className="w-6 h-6 text-teal-600" />
+                    <div>
+                      <span className="text-lg font-semibold text-gray-800 block">
+                        Real-time Word Translation
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        Type English words in Hindi fields - each word translates
+                        after Space/Enter
+                      </span>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleManualTranslate}
+                    disabled={isTranslating}
+                    className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                  >
+                    {isTranslating ? (
+                      <>
+                        <FiLoader className="w-4 h-4 animate-spin" />
+                        <span>Translating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiRefreshCw className="w-4 h-4" />
+                        <span>Re-translate All</span>
+                      </>
+                    )}
+                  </button>
                 </div>
+              </div>
+            )}
+
+            {/* LaTeX Controls */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-xl border border-purple-100 flex items-center justify-between h-full">
+              <div className="flex items-center space-x-3">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <span className="text-purple-700 font-bold text-lg">∑x</span>
+                </div>
+                <div>
+                  <span className="text-lg font-semibold text-gray-800 block">
+                    LaTeX Editor Controls
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    Use LaTeX for mathematical equations and symbols
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className={`text-xs font-bold uppercase tracking-wider ${isLatexEnabled ? "text-purple-600" : "text-gray-400"}`}>
+                  {isLatexEnabled ? "ON" : "OFF"}
+                </span>
                 <button
                   type="button"
-                  onClick={handleManualTranslate}
-                  disabled={isTranslating}
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                  onClick={() => setIsLatexEnabled(!isLatexEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                    isLatexEnabled ? "bg-purple-600" : "bg-gray-300"
+                  }`}
                 >
-                  {isTranslating ? (
-                    <>
-                      <FiLoader className="w-4 h-4 animate-spin" />
-                      <span>Translating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiRefreshCw className="w-4 h-4" />
-                      <span>Re-translate All</span>
-                    </>
-                  )}
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isLatexEnabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
                 </button>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Submission Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
@@ -1036,22 +1077,24 @@ const QuestionForm = () => {
                     </p>
                   )}
                   {/* Add Equation button next to the textarea */}
-                  <div className="mt-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openEquationEditor(
-                          "English",
-                          "text",
-                          null,
-                          englishQuestion.text,
-                        )
-                      }
-                      className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
-                    >
-                      Equation
-                    </button>
-                  </div>
+                  {isLatexEnabled && (
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openEquationEditor(
+                            "English",
+                            "text",
+                            null,
+                            englishQuestion.text,
+                          )
+                        }
+                        className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                      >
+                        Equation
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* English Options */}
@@ -1114,22 +1157,24 @@ const QuestionForm = () => {
                           {String.fromCharCode(65 + index)}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openEquationEditor(
-                              "English",
-                              "options",
-                              index,
-                              englishQuestion.options[index],
-                            )
-                          }
-                          className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
-                        >
-                          Eq
-                        </button>
-                      </div>
+                      {isLatexEnabled && (
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openEquationEditor(
+                                "English",
+                                "options",
+                                index,
+                                englishQuestion.options[index],
+                              )
+                            }
+                            className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
+                          >
+                            Eq
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1158,22 +1203,24 @@ const QuestionForm = () => {
                     rows="3"
                   />
                   {/* Remove error message for solution since it's optional */}
-                  <div className="mt-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openEquationEditor(
-                          "English",
-                          "solution",
-                          null,
-                          englishQuestion.solution,
-                        )
-                      }
-                      className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
-                    >
-                      Equation
-                    </button>
-                  </div>
+                  {isLatexEnabled && (
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openEquationEditor(
+                            "English",
+                            "solution",
+                            null,
+                            englishQuestion.solution,
+                          )
+                        }
+                        className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                      >
+                        Equation
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1215,22 +1262,24 @@ const QuestionForm = () => {
                         प्रश्न पाठ आवश्यक है
                       </p>
                     )}
-                    <div className="mt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openEquationEditor(
-                            "Hindi",
-                            "text",
-                            null,
-                            hindiQuestion.text,
-                          )
-                        }
-                        className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
-                      >
-                        Equation
-                      </button>
-                    </div>
+                    {isLatexEnabled && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "Hindi",
+                              "text",
+                              null,
+                              hindiQuestion.text,
+                            )
+                          }
+                          className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                        >
+                          Equation
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Hindi Options */}
@@ -1294,22 +1343,24 @@ const QuestionForm = () => {
                             {String.fromCharCode(65 + index)}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openEquationEditor(
-                                "Hindi",
-                                "options",
-                                index,
-                                hindiQuestion.options[index],
-                              )
-                            }
-                            className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded"
-                          >
-                            Eq
-                          </button>
-                        </div>
+                        {isLatexEnabled && (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openEquationEditor(
+                                  "Hindi",
+                                  "options",
+                                  index,
+                                  hindiQuestion.options[index],
+                                )
+                              }
+                              className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded"
+                            >
+                              Eq
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1337,22 +1388,24 @@ const QuestionForm = () => {
                       rows="3"
                     />
                     {/* Remove error message for solution since it's optional */}
-                    <div className="mt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openEquationEditor(
-                            "Hindi",
-                            "solution",
-                            null,
-                            hindiQuestion.solution,
-                          )
-                        }
-                        className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
-                      >
-                        Equation
-                      </button>
-                    </div>
+                    {isLatexEnabled && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "Hindi",
+                              "solution",
+                              null,
+                              hindiQuestion.solution,
+                            )
+                          }
+                          className="text-sm bg-orange-100 text-orange-800 px-3 py-1 rounded-md hover:bg-orange-200"
+                        >
+                          Equation
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
