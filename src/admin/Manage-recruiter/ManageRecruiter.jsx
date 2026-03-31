@@ -521,11 +521,10 @@ const ManageRecruiter = () => {
                             width: '100%',
                           }}
                         >
-                          <Box>
+                          <Box sx={{ width: '100%' }}>
                             <Typography variant="body2" fontWeight={500} align="center">
                               {params.row.name}
                             </Typography>
-                           
                           </Box>
                         </Box>
                       ),
@@ -538,17 +537,14 @@ const ManageRecruiter = () => {
                       headerName: 'Email',
                       flex: 1,
                       minWidth: 180,
-                      hide: true,
                       headerAlign: 'center',
                       align: 'center',
                     },
-                    
                     {
                       field: 'company',
                       headerName: 'Company',
                       flex: 1,
                       minWidth: 150,
-                      hide: isSmallScreen,
                       sortable: true,
                       filterable: true,
                       headerAlign: 'center',
@@ -566,7 +562,6 @@ const ManageRecruiter = () => {
                       headerName: 'Location',
                       flex: 1,
                       minWidth: 150,
-                      hide: isMediumScreen,
                       sortable: true,
                       filterable: true,
                       headerAlign: 'center',
@@ -615,7 +610,6 @@ const ManageRecruiter = () => {
                       width: 120,
                       sortable: false,
                       filterable: false,
-                      disableColumnMenu: true,
                       headerAlign: 'center',
                       renderCell: (params) => (
                         <Box 
@@ -636,7 +630,6 @@ const ManageRecruiter = () => {
                               <ViewIcon fontSize="large" />
                             </IconButton>
                           </Tooltip>
-                          
                         </Box>
                       ),
                       align: 'center',
@@ -649,15 +642,11 @@ const ManageRecruiter = () => {
                         pageSize: rowsPerPage
                       },
                     },
-                    sorting: {
-                      sortModel: [{ field: 'name', sort: 'asc' }],
-                    },
-                    filter: {
-                      filterModel: {
-                        items: [],
-                        quickFilterValues: [],
-                      },
-                    },
+                  }}
+                  columnVisibilityModel={{
+                    email: false,
+                    company: !isSmallScreen,
+                    location: !isMediumScreen,
                   }}
                   pageSizeOptions={[5, 10, 25, 50]}
                   onPaginationModelChange={(model) => {
@@ -684,7 +673,7 @@ const ManageRecruiter = () => {
                       </Box>
                     ),
                   }}
-                  componentsProps={{
+                  slotProps={{
                     noRowsOverlay: {
                       sx: {
                         flexDirection: 'column',
