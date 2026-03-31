@@ -154,23 +154,28 @@ const ManageExam = () => {
 
   const handleCopyExam = (exam) => {
     setIsCopying(true);
-    const normalize = (v) => {
-      if (!v && v !== 0) return "";
-      if (typeof v === "object")
-        return v.id ? v.id.toString() : (v.name || v.label || "").toString();
-      return v.toString();
+    
+    const findIdByName = (list, val, field = "name") => {
+      if (!val && val !== 0) return "";
+      if (typeof val === "object") return val.id ? val.id.toString() : "";
+      const item = list.find(
+        (i) =>
+          (i[field] && i[field].toString().toLowerCase() === val.toString().toLowerCase()) ||
+          (i.id && i.id.toString() === val.toString())
+      );
+      return item ? item.id.toString() : val.toString();
     };
 
     setFormData({
       set_name: exam.set_name,
       description: exam.description,
-      subject: normalize(exam.subject),
-      level: normalize(exam.level),
-      class_category: normalize(exam.class_category),
+      subject: findIdByName(subjects, exam.subject, "subject_name"),
+      level: findIdByName(level, exam.level),
+      class_category: findIdByName(classCategories, exam.class_category),
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
-      total_questions: exam.total_questions || 10, // Add total_questions when copying
+      total_questions: exam.total_questions || 10,
     });
     setIsModalOpen(true);
   };
@@ -194,23 +199,28 @@ const ManageExam = () => {
 
   const handleEdit = (exam) => {
     setEditingExam(exam);
-    const normalize = (v) => {
-      if (!v && v !== 0) return "";
-      if (typeof v === "object")
-        return v.id ? v.id.toString() : (v.name || v.label || "").toString();
-      return v.toString();
+    
+    const findIdByName = (list, val, field = "name") => {
+      if (!val && val !== 0) return "";
+      if (typeof val === "object") return val.id ? val.id.toString() : "";
+      const item = list.find(
+        (i) =>
+          (i[field] && i[field].toString().toLowerCase() === val.toString().toLowerCase()) ||
+          (i.id && i.id.toString() === val.toString())
+      );
+      return item ? item.id.toString() : val.toString();
     };
 
     setFormData({
-      set_name: exam.set_name || "", // Add the set name from exam
+      set_name: exam.set_name || "",
       description: exam.description,
-      subject: normalize(exam.subject),
-      level: normalize(exam.level),
-      class_category: normalize(exam.class_category),
+      subject: findIdByName(subjects, exam.subject, "subject_name"),
+      level: findIdByName(level, exam.level),
+      class_category: findIdByName(classCategories, exam.class_category),
       total_marks: exam.total_marks,
       duration: exam.duration,
       type: exam.type,
-      total_questions: exam.total_questions || 10, // Add total_questions when editing
+      total_questions: exam.total_questions || 10,
     });
     setIsModalOpen(true);
   };
