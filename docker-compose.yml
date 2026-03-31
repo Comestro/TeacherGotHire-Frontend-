@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: teachergothire-frontend
+    container_name: PTPI-frontend
     ports:
       - "80:80"
     restart: unless-stopped

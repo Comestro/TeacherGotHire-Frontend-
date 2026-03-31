@@ -75,21 +75,19 @@ function AppContent() {
   const location = useLocation();
 
   const title = useMemo(() => {
-    if (location.pathname.startsWith("/admin"))
-      return "Admin Panel - TeacherGotHire";
+    if (location.pathname.startsWith("/admin")) return "Admin Panel - PTPI";
     if (location.pathname.startsWith("/teacher"))
-      return "Teacher Dashboard - TeacherGotHire";
+      return "Teacher Dashboard - PTPI";
     if (location.pathname.startsWith("/recruiter"))
-      return "Recruiter Dashboard - TeacherGotHire";
-    if (location.pathname.startsWith("/exam"))
-      return "Exam Portal - TeacherGotHire";
-    if (location.pathname === "/signin") return "Sign In - TeacherGotHire";
+      return "Recruiter Dashboard - PTPI";
+    if (location.pathname.startsWith("/exam")) return "Exam Portal - PTPI";
+    if (location.pathname === "/signin") return "Sign In - PTPI";
     if (location.pathname === "/signup/teacher")
-      return "Teacher Sign Up - TeacherGotHire";
+      return "Teacher Sign Up - PTPI";
     if (location.pathname === "/signup/recruiter")
-      return "Recruiter Sign Up - TeacherGotHire";
-    if (location.pathname === "/") return "Home - TeacherGotHire";
-    return "TeacherGotHire";
+      return "Recruiter Sign Up - PTPI";
+    if (location.pathname === "/") return "Home - PTPI";
+    return "PTPI";
   }, [location.pathname]);
 
   return (
