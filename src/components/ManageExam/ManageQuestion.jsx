@@ -133,12 +133,12 @@ const ManageQuestion = () => {
       location.state?.exam?.subject_name || 
       "";
     const lowerName = subjectName.toLowerCase();
-    const languages = [
-      "english", "hindi", "sanskrit", "bengali", "marathi", 
-      "gujarati", "tamil", "telugu", "kannada", "malayalam", 
-      "punjabi", "urdu"
+    const nativeLanguages = [
+      "english", "hindi", "urdu", "sanskrit", "bengali", 
+      "maithili", "bhojpuri", "japanese", "french", 
+      "german", "spanish"
     ];
-    return languages.some((lang) => lowerName.includes(lang));
+    return nativeLanguages.some((lang) => lowerName.includes(lang));
   };
 
   const handleDragEnd = async (event) => {
@@ -315,42 +315,40 @@ const ManageQuestion = () => {
         const existingEnglishId = questions.find(q => q.order === currentOrder && q.language === "English")?.id;
         const existingHindiId = questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id;
 
-        // 1. Handle English part
-        if (englishQuestion) {
-          updatedQuestions.push({
-            ...(existingEnglishId ? { id: existingEnglishId } : {}),
-            ...englishQuestion,
-          });
-        } else if (existingEnglishId) {
-          // If English wasn't in formData, but exists in state, include the original
-          const originalEn = questions.find(q => q.id === existingEnglishId);
-          updatedQuestions.push(originalEn);
-        }
+        if (isLanguageSubject()) {
+          // 1. Language subject logic: Push ONLY the edited part
+          if (editingQuestion.language === "English" && englishQuestion) {
+            updatedQuestions.push({
+              id: editingQuestion.id,
+              ...englishQuestion,
+            });
+          } else if (editingQuestion.language === "Hindi" && hindiQuestion) {
+            updatedQuestions.push({
+              id: editingQuestion.id,
+              ...hindiQuestion,
+            });
+          }
+        } else {
+          // 2. Standard subject logic: Always send the full pair
+          if (englishQuestion) {
+            updatedQuestions.push({
+              ...(existingEnglishId ? { id: existingEnglishId } : {}),
+              ...englishQuestion,
+            });
+          } else if (existingEnglishId) {
+            const originalEn = questions.find(q => q.id === existingEnglishId);
+            updatedQuestions.push(originalEn);
+          }
 
-        // 2. Handle Hindi part
-        if (hindiQuestion) {
-          updatedQuestions.push({
-            ...(existingHindiId ? { id: existingHindiId } : {}),
-            ...hindiQuestion,
-          });
-        } else if (isLanguageSubject() && englishQuestion) {
-          // Clone for language subjects if Hindi is missing
-          updatedQuestions.push({
-            ...(existingHindiId ? { id: existingHindiId } : {}),
-            ...englishQuestion,
-            language: "Hindi",
-          });
-        } else if (existingHindiId) {
-          // If Hindi wasn't in formData, but exists in state, include the original
-          const originalHi = questions.find(q => q.id === existingHindiId);
-          updatedQuestions.push(originalHi);
-        } else if (isLanguageSubject() && !englishQuestion && hindiQuestion) {
-           // Inverse clone for language subjects if English is missing
-           updatedQuestions.unshift({
-            ...(existingEnglishId ? { id: existingEnglishId } : {}),
-            ...hindiQuestion,
-            language: "English",
-          });
+          if (hindiQuestion) {
+            updatedQuestions.push({
+              ...(existingHindiId ? { id: existingHindiId } : {}),
+              ...hindiQuestion,
+            });
+          } else if (existingHindiId) {
+            const originalHi = questions.find(q => q.id === existingHindiId);
+            updatedQuestions.push(originalHi);
+          }
         }
 
         const payload = {
