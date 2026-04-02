@@ -286,23 +286,23 @@ const ManageQuestion = () => {
             correct_option: formData.hindi.correct_option || 1,
           }
         : null;
-      const questions = [];
+      const questionsToSave = [];
       if (
         englishQuestion &&
         englishQuestion.text.trim() &&
         englishQuestion.options.length
       ) {
-        questions.push(englishQuestion);
+        questionsToSave.push(englishQuestion);
       }
       if (
         hindiQuestion &&
         hindiQuestion.text.trim() &&
         hindiQuestion.options.length
       ) {
-        questions.push(hindiQuestion);
+        questionsToSave.push(hindiQuestion);
       }
 
-      if (questions.length === 0) {
+      if (questionsToSave.length === 0) {
         toast.error("Please provide at least one complete question");
         return;
       }
@@ -374,7 +374,7 @@ const ManageQuestion = () => {
         const payload = {
           exam: exam.id,
           ...(orderPosition !== null ? { order: orderPosition } : {}),
-          questions: questions,
+          questions: questionsToSave,
         };
 
         const response = await createNewQuestion(payload);
@@ -385,7 +385,7 @@ const ManageQuestion = () => {
           } else {
             setQuestions((prevQuestions) => [...prevQuestions, response]);
           }
-          toast.success(`${questions.length} question(s) created successfully`);
+          toast.success(`${questionsToSave.length} question(s) created successfully`);
         }
       }
       sessionStorage.removeItem("newQuestionOrder");
