@@ -666,9 +666,9 @@ const QuestionModal = ({
       if (editingQuestion) {
         if (editingQuestion.language === "English" || isLanguageSubject()) {
           // If language subject, we are likely editing the "primary" question which acts as English/Main
-          delete formData.hindi;
+          // Stop deleting formData.hindi - we need to send both for the backend pairing.
         } else if (editingQuestion.language === "Hindi") {
-          delete formData.english;
+          // Stop deleting formData.english - we need to send both for the backend pairing.
         }
       }
 

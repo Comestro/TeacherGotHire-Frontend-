@@ -309,70 +309,48 @@ const ManageQuestion = () => {
 
       if (editingQuestion) {
         let updatedQuestions = [];
-        if (editingQuestion.language === "English") {
-          if (
-            englishQuestion &&
-            englishQuestion.text &&
-            englishQuestion.options &&
-            englishQuestion.options.length
-          ) {
-            updatedQuestions.push({
-              id: editingQuestion.id,
-              language: "English",
-              text: englishQuestion.text,
-              solution: englishQuestion.solution,
-              options: englishQuestion.options,
-              correct_option: englishQuestion.correct_option,
-            });
+        
+        // Find existing IDs from state for both parts of the pair
+        const currentOrder = editingQuestion.order;
+        const existingEnglishId = questions.find(q => q.order === currentOrder && q.language === "English")?.id;
+        const existingHindiId = questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id;
 
-            // For language subjects, we must send both English and Hindi twins
-            if (isLanguageSubject()) {
-              const hindiTwin = questions.find(
-                (q) =>
-                  q.order === editingQuestion.order && q.language === "Hindi",
-              );
-              updatedQuestions.push({
-                ...(hindiTwin ? { id: hindiTwin.id } : {}),
-                language: "Hindi",
-                text: englishQuestion.text,
-                solution: englishQuestion.solution,
-                options: englishQuestion.options,
-                correct_option: englishQuestion.correct_option,
-              });
-            }
-          }
-        } else if (editingQuestion.language === "Hindi") {
-          if (
-            hindiQuestion &&
-            hindiQuestion.text &&
-            hindiQuestion.options &&
-            hindiQuestion.options.length
-          ) {
-            updatedQuestions.push({
-              id: editingQuestion.id,
-              language: "Hindi",
-              text: hindiQuestion.text,
-              solution: hindiQuestion.solution,
-              options: hindiQuestion.options,
-              correct_option: hindiQuestion.correct_option,
-            });
+        // 1. Handle English part
+        if (englishQuestion) {
+          updatedQuestions.push({
+            ...(existingEnglishId ? { id: existingEnglishId } : {}),
+            ...englishQuestion,
+          });
+        } else if (existingEnglishId) {
+          // If English wasn't in formData, but exists in state, include the original
+          const originalEn = questions.find(q => q.id === existingEnglishId);
+          updatedQuestions.push(originalEn);
+        }
 
-            // For language subjects, we must send both English and Hindi twins
-            if (isLanguageSubject()) {
-              const englishTwin = questions.find(
-                (q) =>
-                  q.order === editingQuestion.order && q.language === "English",
-              );
-              updatedQuestions.push({
-                ...(englishTwin ? { id: englishTwin.id } : {}),
-                language: "English",
-                text: hindiQuestion.text,
-                solution: hindiQuestion.solution,
-                options: hindiQuestion.options,
-                correct_option: hindiQuestion.correct_option,
-              });
-            }
-          }
+        // 2. Handle Hindi part
+        if (hindiQuestion) {
+          updatedQuestions.push({
+            ...(existingHindiId ? { id: existingHindiId } : {}),
+            ...hindiQuestion,
+          });
+        } else if (isLanguageSubject() && englishQuestion) {
+          // Clone for language subjects if Hindi is missing
+          updatedQuestions.push({
+            ...(existingHindiId ? { id: existingHindiId } : {}),
+            ...englishQuestion,
+            language: "Hindi",
+          });
+        } else if (existingHindiId) {
+          // If Hindi wasn't in formData, but exists in state, include the original
+          const originalHi = questions.find(q => q.id === existingHindiId);
+          updatedQuestions.push(originalHi);
+        } else if (isLanguageSubject() && !englishQuestion && hindiQuestion) {
+           // Inverse clone for language subjects if English is missing
+           updatedQuestions.unshift({
+            ...(existingEnglishId ? { id: existingEnglishId } : {}),
+            ...hindiQuestion,
+            language: "English",
+          });
         }
 
         const payload = {
@@ -384,9 +362,11 @@ const ManageQuestion = () => {
 
         if (response && response.id) {
           setQuestions((prevQuestions) =>
-            prevQuestions.map((q) =>
-              q.id === editingQuestion.id ? response : q,
-            ),
+            prevQuestions.map((q) => {
+              // If it's a single response update current
+              if (q.id === editingQuestion.id) return response;
+              return q;
+            }),
           );
           toast.success("Question updated successfully");
         }
