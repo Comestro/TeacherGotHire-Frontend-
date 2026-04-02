@@ -113,6 +113,7 @@ const ManageQuestion = () => {
         hindiByOrder[orderNum].push(question);
       }
     });
+
     if (englishByOrder[0].length === 0 && hindiByOrder[0].length === 0) {
       englishByOrder.shift();
       hindiByOrder.shift();
@@ -124,6 +125,22 @@ const ManageQuestion = () => {
       maxOrder,
     };
   };
+
+  const isLanguageSubject = () => {
+    const subjectName = 
+      exam?.subject?.subject_name || 
+      exam?.subject_name || 
+      location.state?.exam?.subject_name || 
+      "";
+    const lowerName = subjectName.toLowerCase();
+    const languages = [
+      "english", "hindi", "sanskrit", "bengali", "marathi", 
+      "gujarati", "tamil", "telugu", "kannada", "malayalam", 
+      "punjabi", "urdu"
+    ];
+    return languages.some((lang) => lowerName.includes(lang));
+  };
+
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -300,12 +317,29 @@ const ManageQuestion = () => {
             englishQuestion.options.length
           ) {
             updatedQuestions.push({
+              id: editingQuestion.id,
               language: "English",
               text: englishQuestion.text,
               solution: englishQuestion.solution,
               options: englishQuestion.options,
               correct_option: englishQuestion.correct_option,
             });
+
+            // For language subjects, we must send both English and Hindi twins
+            if (isLanguageSubject()) {
+              const hindiTwin = questions.find(
+                (q) =>
+                  q.order === editingQuestion.order && q.language === "Hindi",
+              );
+              updatedQuestions.push({
+                ...(hindiTwin ? { id: hindiTwin.id } : {}),
+                language: "Hindi",
+                text: englishQuestion.text,
+                solution: englishQuestion.solution,
+                options: englishQuestion.options,
+                correct_option: englishQuestion.correct_option,
+              });
+            }
           }
         } else if (editingQuestion.language === "Hindi") {
           if (
@@ -315,18 +349,35 @@ const ManageQuestion = () => {
             hindiQuestion.options.length
           ) {
             updatedQuestions.push({
+              id: editingQuestion.id,
               language: "Hindi",
               text: hindiQuestion.text,
               solution: hindiQuestion.solution,
               options: hindiQuestion.options,
               correct_option: hindiQuestion.correct_option,
             });
+
+            // For language subjects, we must send both English and Hindi twins
+            if (isLanguageSubject()) {
+              const englishTwin = questions.find(
+                (q) =>
+                  q.order === editingQuestion.order && q.language === "English",
+              );
+              updatedQuestions.push({
+                ...(englishTwin ? { id: englishTwin.id } : {}),
+                language: "English",
+                text: hindiQuestion.text,
+                solution: hindiQuestion.solution,
+                options: hindiQuestion.options,
+                correct_option: hindiQuestion.correct_option,
+              });
+            }
           }
         }
 
         const payload = {
           exam: exam.id,
-          ...updatedQuestions[0],
+          questions: updatedQuestions,
         };
 
         const response = await updateNewQuestion(editingQuestion.id, payload);
