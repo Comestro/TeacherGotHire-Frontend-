@@ -128,9 +128,9 @@ const QuestionForm = () => {
     return languages.some((lang) => lowerName.includes(lang));
   };
 
-  const getPrimaryLanguage = () => {
-    if (!subjectName) return "English";
-    const lowerName = subjectName.toLowerCase();
+  const getPrimaryLanguageFromName = (name) => {
+    if (!name) return "English";
+    const lowerName = name.toLowerCase();
 
     // Map subject names to their language
     if (lowerName.includes("hindi")) return "Hindi";
@@ -158,6 +158,8 @@ const QuestionForm = () => {
 
     return "English"; // Default to English for non-language subjects
   };
+
+  const getPrimaryLanguage = () => getPrimaryLanguageFromName(subjectName);
 
   const [englishQuestion, setEnglishQuestion] = useState({
     language: getPrimaryLanguage(),

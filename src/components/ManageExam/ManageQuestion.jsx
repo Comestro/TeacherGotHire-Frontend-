@@ -326,7 +326,7 @@ const ManageQuestion = () => {
 
         const payload = {
           exam: exam.id,
-          questions: updatedQuestions,
+          ...updatedQuestions[0],
         };
 
         const response = await updateNewQuestion(editingQuestion.id, payload);
