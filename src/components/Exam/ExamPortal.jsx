@@ -20,6 +20,7 @@ const ExamPortal = () => {
   const [warningCount, setWarningCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [securityViolation, setSecurityViolation] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const hasSubmitted = useRef(false);
 
   const toggleModal = () => {
@@ -128,6 +129,7 @@ const ExamPortal = () => {
     // Prevent multiple submissions from timer, security violations, or rapid clicks
     if (hasSubmitted.current) return;
     hasSubmitted.current = true;
+    setIsSubmitting(true);
 
     let correct_answer = 0;
     let incorrect_answer = 0;
@@ -337,6 +339,19 @@ const ExamPortal = () => {
 
   return (
     <div className="flex bg-gray-50 w-full h-full select-none overflow-hidden">
+      {/* Full Page Submission Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Submitting Your Exam</h2>
+              <p className="text-white/70 text-sm">Please wait, do not close this window...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Security Violation Modal */}
       {securityViolation && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
@@ -558,14 +573,14 @@ const ExamPortal = () => {
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    disabled={hasSubmitted.current}
+                    disabled={isSubmitting}
                     className={`flex-1 md:flex-none px-6 py-3 md:py-2.5 rounded-xl font-semibold shadow-md transition-all ${
-                      hasSubmitted.current
+                      isSubmitting
                         ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                         : "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg"
                     }`}
                   >
-                    {hasSubmitted.current ? "Submitting..." : "Submit Exam"}
+                    {isSubmitting ? "Submitting..." : "Submit Exam"}
                   </button>
                 )}
               </div>

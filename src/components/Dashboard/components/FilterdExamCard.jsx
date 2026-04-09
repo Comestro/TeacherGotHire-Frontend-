@@ -1434,39 +1434,65 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 }
                               }
 
-                              // Auto-select first enabled if current selection is invalid
-                              const firstEnabled = enabled[0];
+                              // Count per-language attempts for current exam config
+                              const MAX_ATTEMPTS = 5;
+                              const getLanguageAttemptCount = (lang) => {
+                                return attempts?.filter(
+                                  (a) =>
+                                    a?.exam?.class_category_id === selectedCategory?.id &&
+                                    a?.exam?.subject_id === selectedSubject?.id &&
+                                    a?.exam?.level_code === selectedLevel?.level_code &&
+                                    (a?.language || a?.exam?.language || "").toLowerCase() === lang.toLowerCase()
+                                ).length || 0;
+                              };
+
+                              // Auto-select first available (enabled + not maxed) language
+                              const availableLangs = enabled.filter(
+                                (lang) => getLanguageAttemptCount(lang) < MAX_ATTEMPTS
+                              );
+                              const firstAvailable = availableLangs[0];
                               if (
-                                firstEnabled &&
+                                firstAvailable &&
                                 (!selectedLanguage ||
-                                  !enabled.includes(selectedLanguage))
+                                  !availableLangs.includes(selectedLanguage))
                               ) {
                                 setTimeout(
-                                  () => setSelectedLanguage(firstEnabled),
+                                  () => setSelectedLanguage(firstAvailable),
                                   0,
                                 );
                               }
 
                               return ["English", "Hindi"].map((lang) => {
                                 const isEnabled = enabled.includes(lang);
+                                const attemptCount = getLanguageAttemptCount(lang);
+                                const isMaxed = attemptCount >= MAX_ATTEMPTS;
+                                const isSelectable = isEnabled && !isMaxed;
                                 return (
                                   <button
                                     key={lang}
                                     type="button"
-                                    disabled={!isEnabled}
+                                    disabled={!isSelectable}
                                     onClick={() =>
-                                      isEnabled && setSelectedLanguage(lang)
+                                      isSelectable && setSelectedLanguage(lang)
                                     }
                                     className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors relative ${
-                                      selectedLanguage === lang
+                                      selectedLanguage === lang && isSelectable
                                         ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                                        : isEnabled
+                                        : isSelectable
                                           ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                                           : "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-70"
                                     }`}
                                   >
                                     {lang}
-                                    {!isEnabled && (
+                                    {isMaxed ? (
+                                      <span className="ml-1 text-[10px] text-red-500 font-semibold">
+                                        ({attemptCount}/{MAX_ATTEMPTS} used)
+                                      </span>
+                                    ) : isEnabled ? (
+                                      <span className="ml-1 text-[10px] opacity-70">
+                                        ({attemptCount}/{MAX_ATTEMPTS})
+                                      </span>
+                                    ) : (
                                       <span className="ml-1 text-[10px] opacity-70">
                                         {selectedLevel?.level_code === 1.0
                                           ? "(Passed)"
