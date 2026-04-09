@@ -20,6 +20,7 @@ const ExamPortal = () => {
   const [warningCount, setWarningCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [securityViolation, setSecurityViolation] = useState(null);
+  const hasSubmitted = useRef(false);
 
   const toggleModal = () => {
     setIsOpen(true);
@@ -124,6 +125,10 @@ const ExamPortal = () => {
   };
 
   const handleSubmit = useCallback(() => {
+    // Prevent multiple submissions from timer, security violations, or rapid clicks
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
+
     let correct_answer = 0;
     let incorrect_answer = 0;
     let is_unanswered = 0;
@@ -553,9 +558,14 @@ const ExamPortal = () => {
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    className="flex-1 md:flex-none px-6 py-3 md:py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold shadow-md hover:shadow-lg transition-all"
+                    disabled={hasSubmitted.current}
+                    className={`flex-1 md:flex-none px-6 py-3 md:py-2.5 rounded-xl font-semibold shadow-md transition-all ${
+                      hasSubmitted.current
+                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        : "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg"
+                    }`}
                   >
-                    Submit Exam
+                    {hasSubmitted.current ? "Submitting..." : "Submit Exam"}
                   </button>
                 )}
               </div>
