@@ -330,7 +330,7 @@ const ManageQuestion = () => {
           }
         } else {
           // 2. Standard subject logic: Always send the full pair
-          if (englishQuestion) {
+          if (englishQuestion && englishQuestion.text.trim()) {
             updatedQuestions.push({
               ...(existingEnglishId ? { id: existingEnglishId } : {}),
               ...englishQuestion,
@@ -340,14 +340,19 @@ const ManageQuestion = () => {
             updatedQuestions.push(originalEn);
           }
 
-          if (hindiQuestion) {
+          // Only include Hindi if it has actual content (non-empty text and options)
+          const hindiHasContent = hindiQuestion && 
+            hindiQuestion.text.trim() && 
+            hindiQuestion.options.some(opt => opt.trim() !== "");
+
+          if (hindiHasContent) {
             updatedQuestions.push({
               ...(existingHindiId ? { id: existingHindiId } : {}),
               ...hindiQuestion,
             });
           } else if (existingHindiId) {
             const originalHi = questions.find(q => q.id === existingHindiId);
-            updatedQuestions.push(originalHi);
+            if (originalHi) updatedQuestions.push(originalHi);
           }
         }
 
@@ -358,11 +363,16 @@ const ManageQuestion = () => {
 
         const response = await updateNewQuestion(editingQuestion.id, payload);
 
-        if (response && response.id) {
+        // Response format: { message, english_data, hindi_data }
+        if (response) {
           setQuestions((prevQuestions) =>
             prevQuestions.map((q) => {
-              // If it's a single response update current
-              if (q.id === editingQuestion.id) return response;
+              if (response.english_data && q.id === response.english_data.id) {
+                return response.english_data;
+              }
+              if (response.hindi_data && q.id === response.hindi_data.id) {
+                return response.hindi_data;
+              }
               return q;
             }),
           );
@@ -377,11 +387,13 @@ const ManageQuestion = () => {
 
         const response = await createNewQuestion(payload);
 
-        if (response && response.id) {
-          if (Array.isArray(response)) {
-            setQuestions((prevQuestions) => [...prevQuestions, ...response]);
-          } else {
-            setQuestions((prevQuestions) => [...prevQuestions, response]);
+        if (response) {
+          const newQuestions = [];
+          if (response.english_data) newQuestions.push(response.english_data);
+          if (response.hindi_data) newQuestions.push(response.hindi_data);
+          
+          if (newQuestions.length > 0) {
+            setQuestions((prevQuestions) => [...prevQuestions, ...newQuestions]);
           }
           toast.success(`${questionsToSave.length} question(s) created successfully`);
         }
@@ -391,7 +403,8 @@ const ManageQuestion = () => {
       setEditingQuestion(null);
       await refreshExamData();
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to save question");
+      console.error("Question save error:", error?.response?.data || error);
+      toast.error(error.response?.data?.error || error.response?.data?.message || "Failed to save question");
     }
   };
   const handleDelete = async (questionId) => {

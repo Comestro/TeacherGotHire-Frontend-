@@ -332,8 +332,6 @@ useEffect(() => {
       correct_option: parseInt(currentQuestion.correctAnswer) + 1, 
       exam: selectedExamSet.id,
       language: currentQuestion.language,
-      time: parseInt(currentQuestion.time),
-      status: currentQuestion.status || "draft",
       ...(currentQuestion.solution && { solution: currentQuestion.solution })
     };
 
@@ -400,8 +398,29 @@ useEffect(() => {
       resetQuestionForm();
       setQuestionModalOpen(false);
     } catch (error) {
-      toast.error(error.message || "Failed to submit question");
-      
+      console.error("Question submit error:", error?.response?.data || error);
+      const errData = error?.response?.data;
+      let errorMsg = "Failed to submit question";
+      if (errData) {
+        if (typeof errData === 'string') {
+          errorMsg = errData;
+        } else if (errData.options) {
+          errorMsg = Array.isArray(errData.options) ? errData.options[0] : errData.options;
+        } else if (errData.correct_option) {
+          errorMsg = Array.isArray(errData.correct_option) ? errData.correct_option[0] : errData.correct_option;
+        } else if (errData.language) {
+          errorMsg = Array.isArray(errData.language) ? errData.language[0] : errData.language;
+        } else if (errData.text) {
+          errorMsg = Array.isArray(errData.text) ? errData.text[0] : errData.text;
+        } else if (errData.error) {
+          errorMsg = errData.error;
+        } else {
+          errorMsg = JSON.stringify(errData);
+        }
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
