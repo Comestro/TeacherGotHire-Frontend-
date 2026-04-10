@@ -64,7 +64,7 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
         <div className="flex justify-between h-16 items-center">
           
           {/* Left Section: Logo & Mobile Toggle */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {isSidebarPresent && (
               <button
                 onClick={onToggleSidebar}
@@ -75,23 +75,25 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
               </button>
             )}
             
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-slate-800">
+            <Link to="/" className="flex items-center gap-1.5 text-lg sm:text-xl font-bold text-slate-800">
               <span className="text-teal-600">PTP</span> 
-              <span>INSTITUTE</span>
+              <span className="hidden sm:inline">INSTITUTE</span>
+              <span className="sm:hidden text-slate-400 font-medium">I</span>
             </Link>
           </div>
 
           {/* Center/Right Section: Universal Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             
             {/* Search Teacher Button (Universal) */}
             {!shouldHideButtons && (
               <Link
                 to="/get-preferred-teacher"
-                className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm"
+                className="flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-sm transition-colors"
+                title="शिक्षक खोजें"
               >
-                <FiBriefcase className="w-4 h-4" />
-                <span>शिक्षक खोजें</span>
+                <FiBriefcase className="w-5 h-5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline ml-2 text-sm font-bold">शिक्षक खोजें</span>
               </Link>
             )}
 
@@ -105,7 +107,7 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
                   <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 border border-teal-200">
                     <FiUser size={16} />
                   </div>
-                  <div className="hidden sm:flex flex-col items-start pr-2">
+                  <div className="hidden md:flex flex-col items-start pr-2">
                     <span className="text-xs font-bold text-slate-800 leading-tight">
                       {profile.Fname}
                     </span>
@@ -155,19 +157,21 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
               </div>
             ) : (
               !shouldHideButtons && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <Link
                     to="/signin"
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-teal-600 border border-teal-200 rounded-xl hover:bg-teal-50"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-teal-600 border border-teal-200 rounded-xl hover:bg-teal-50 bg-white"
                   >
-                    Login
+                    <HiMenuAlt2 className="sm:hidden" />
+                    <span className="hidden sm:inline">Login</span>
+                    <span className="sm:hidden">Login</span>
                   </Link>
                   <div className="relative">
                     <button
                       onClick={() => setIsRegisterOpen(!isRegisterOpen)}
-                      className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-white bg-teal-600 rounded-xl hover:bg-teal-700 shadow-sm"
+                      className="flex items-center gap-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-teal-600 rounded-xl hover:bg-teal-700 shadow-sm"
                     >
-                      Join
+                      <span>Join</span>
                       <FiChevronDown className={isRegisterOpen ? 'rotate-180' : ''} />
                     </button>
                     {isRegisterOpen && (
