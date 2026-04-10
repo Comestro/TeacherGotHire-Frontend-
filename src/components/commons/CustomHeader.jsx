@@ -2,14 +2,21 @@ import React from "react";
 import { IoIosNotifications, IoMdMenu } from "react-icons/io";
 import { HiOutlineArrowSmLeft } from "react-icons/hi";
 import { FaUserCircle } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { IoMdHome } from "react-icons/io";
+import { getUserData } from "../../features/authSlice";
 
 const CustomHeader = ({ isOpen, setIsOpen }) => {
-
+  const dispatch = useDispatch();
   const profile = useSelector((state) => state.auth.userData || {});
-  
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token && !profile.email) {
+      dispatch(getUserData());
+    }
+  }, [dispatch, profile.email]);
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-teal-600 text-white shadow-md -z-10 md:z-0">

@@ -11,7 +11,7 @@ import {
   FiChevronDown,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { userLogout } from "../../features/authSlice";
+import { userLogout, getUserData } from "../../features/authSlice";
 import { TeacherEnquiry } from "../enquiry/TeacherEnquiry";
 import { FaSignInAlt } from "react-icons/fa";
 
@@ -36,9 +36,14 @@ const Navbar = ({ links }) => {
     setIsMobileOpen(false); // Close mobile menu if open
   };
 
-  const hiddenPaths = ["/signin", "/signup/teacher"];
+  const hiddenPaths = ["/signin", "/signup/teacher", "/signup/recruiter"];
   const shouldHide = hiddenPaths.includes(location.pathname);
   useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token && !profile.email) {
+      dispatch(getUserData());
+    }
+
     const handleClickOutside = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {
         setIsMobileOpen(false);
@@ -49,7 +54,7 @@ const Navbar = ({ links }) => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [dispatch, profile.email]);
 
   const handleLogout = () => {
     dispatch(userLogout());
