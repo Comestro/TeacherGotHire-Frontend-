@@ -621,69 +621,72 @@ function Login() {
         </div>
       </div>
     );
-  };
-
-  return (
+  };  return (
     <>
       <Helmet>
-        <title>PTPI | Login Page</title>
+        <title>PTPI | Sign In</title>
       </Helmet>
       <UniversalHeader />
       {loading && <Loader />}
-      <div className="flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
-            {/* Left Side: Hero Content (Hidden on mobile) */}
-            <div className="hidden md:block w-1/2 space-y-8 ">
-              <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
-                  Welcome Back to <br />
-                  <span className="text-teal-600">Teacher Got Hired</span>
+      
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50 py-8 sm:py-12">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+            
+            {/* Left Side: Editorial Content */}
+            <div className="hidden lg:block w-1/2 space-y-10">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-100 text-teal-600 text-sm font-bold uppercase tracking-wider">
+                  <FaCheckCircle size={14} />
+                  Institutional Access
+                </div>
+                <h1 className="text-5xl xl:text-6xl font-extrabold text-slate-900 leading-[1.1]">
+                  Elevate Your <br />
+                  <span className="text-teal-600">Teaching Career</span>
                 </h1>
-                <p className="text-lg text-slate-600 max-w-md">
-                  Your gateway to the best teaching opportunities and top-tier
-                  educators. Sign in to continue your journey.
+                <p className="text-xl text-slate-600 max-w-md leading-relaxed">
+                  The gateway to India's most prestigious teaching opportunities and elite educational institutions.
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                    <FaUserTie className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800">For Recruiters</h3>
-                    <p className="text-sm text-slate-500">
-                      Find the perfect candidate efficiently
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+              <div className="grid grid-cols-1 gap-4 max-w-md">
+                <div className="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 hover:border-teal-200 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-200">
                     <FaChalkboardTeacher className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800">For Teachers</h3>
-                    <p className="text-sm text-slate-500">
-                      Access premium job listings instantly
-                    </p>
+                    <h3 className="font-bold text-slate-800">Verified Network</h3>
+                    <p className="text-sm text-slate-500">Access to 1000+ verified schools</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 hover:border-teal-200 transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-white shadow-lg shadow-slate-200">
+                    <FaUserTie className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800">Direct Recruitment</h3>
+                    <p className="text-sm text-slate-500">Connect directly with institutional heads</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Side: Login Form */}
-            <div
-              className="w-full md:w-1/2 max-w-md "
-            >
-              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
+            {/* Right Side: Premium Login Card */}
+            <div className="w-full lg:w-1/2 max-w-[480px]">
+              <div className="bg-white rounded-[2rem] p-8 sm:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100">
                 {renderForm()}
               </div>
 
-              <p className="text-center text-slate-400 text-sm mt-8">
-                &copy; {new Date().getFullYear()} PTPI. All rights reserved.
-              </p>
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-between px-4 gap-4 text-center sm:text-left">
+                <p className="text-slate-400 text-sm font-medium">
+                  &copy; {new Date().getFullYear()} PTPI. Verified Institution.
+                </p>
+                <div className="flex gap-4">
+                  <Link to="/help" className="text-xs font-bold text-slate-400 hover:text-teal-600 uppercase tracking-widest">Help</Link>
+                  <Link to="/privacy" className="text-xs font-bold text-slate-400 hover:text-teal-600 uppercase tracking-widest">Privacy</Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -692,4 +695,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Login;n;
