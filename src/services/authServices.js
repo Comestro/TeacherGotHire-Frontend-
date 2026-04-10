@@ -218,6 +218,11 @@ export const login = async (credentials) => {
         error.is_verified = false;
         throw error;
       }
+      if (err.response.data.is_active === false) {
+        const error = new Error(err.response.data.message || "Something went wrong 000");
+        error.is_active = false;
+        throw error;
+      }
       if (typeof err.response.data === 'string') {
         throw new Error(err.response.data);
       }

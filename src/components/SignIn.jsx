@@ -129,14 +129,21 @@ function Login() {
         }, 2000);
         return;
       }
+
+      // Check if account is deactivated — show error, do NOT redirect to OTP
       if (
+        err.is_active === false ||
+        errorMessage.toLowerCase().includes("deactivated") ||
+        errorMessage.toLowerCase().includes("has been deactivated")
+      ) {
+        setNotification({ message: errorMessage, type: "error" });
+      }
+      // Check if account needs OTP verification
+      else if (
         err.is_verified === false || 
         err.is_pending === true ||
-        errorMessage.toLowerCase().includes("verify") ||
-        errorMessage.toLowerCase().includes("verification") ||
-        errorMessage.toLowerCase().includes("activate") ||
-        errorMessage.toLowerCase().includes("account not active") ||
-        errorMessage.toLowerCase().includes("please verify your account")
+        errorMessage.toLowerCase().includes("verify your account") ||
+        errorMessage.toLowerCase().includes("verification")
       ) {
         const email = getValues("email");
         setUserEmail(email);
