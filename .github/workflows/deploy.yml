@@ -56,4 +56,5 @@ jobs:
               docker-compose up -d --build --remove-orphans
             fi
 
+            echo "Frontend container is listening on http://127.0.0.1:8080"
             docker image prune -f

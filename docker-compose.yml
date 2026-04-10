@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build:
@@ -7,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: PTPI-frontend
     ports:
-      - "80:80"
+      - "127.0.0.1:8080:80"
     restart: unless-stopped
     # If there are environment variables that the build process needs,
     # uncomment block below and provide them or use an env file if frontend needs it at RUNTIME
