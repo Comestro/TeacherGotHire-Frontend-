@@ -77,7 +77,7 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
             
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-slate-800">
               <span className="text-teal-600">PTP</span> 
-              <span className="hidden xs:inline">INSTITUTE</span>
+              <span>INSTITUTE</span>
             </Link>
           </div>
 
@@ -88,11 +88,10 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
             {!shouldHideButtons && (
               <Link
                 to="/get-preferred-teacher"
-                className="hidden xs:flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm"
+                className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm"
               >
                 <FiBriefcase className="w-4 h-4" />
-                <span className="hidden sm:inline">शिक्षक खोजें</span>
-                <span className="sm:hidden text-xs">खोजें</span>
+                <span>शिक्षक खोजें</span>
               </Link>
             )}
 
