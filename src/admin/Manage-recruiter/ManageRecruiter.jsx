@@ -85,34 +85,42 @@ const ManageRecruiter = () => {
     setLoading(true);
     getRecruiter()
       .then(response => {
+        let data = [];
         if (response && Array.isArray(response)) {
-          const formattedRecruiters = response.map(item => ({
-            id: item.id,
+          data = response;
+        } else if (response && response.results && Array.isArray(response.results)) {
+          data = response.results;
+        }
+
+        if (data.length > 0 || (response && Array.isArray(response))) {
+          const formattedRecruiters = data.map(item => ({
+            id: item.id || Math.random(),
             firstName: item.Fname || '',
             lastName: item.Lname || '',
-            name: `${item.Fname || ''} ${item.Lname || ''}`.trim(),
+            name: `${item.Fname || ''} ${item.Lname || ''}`.trim() || 'No Name',
             email: item.email || 'N/A',
             phone: item.profiles?.phone_number || 'N/A',
             gender: item.profiles?.gender || 'N/A',
             status: item.is_verified ? 'Verified' : 'Pending',
             company: item.profiles?.company || 'N/A',
             location: item.profiles?.location || 'N/A',
-            profilePic: item.profiles?.profile_image || null,
-            createdAt: new Date(item.created_at || Date.now()).toLocaleDateString(),
+            profilePic: item.profiles?.profile_picture || null, // Backend uses profile_picture
+            createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A',
           }));
           setRecruiters(formattedRecruiters);
-          setNotification({
-            open: true,
-            message: "Recruiters loaded successfully",
-            type: "success",
-          });
+          if (formattedRecruiters.length > 0) {
+            setNotification({
+              open: true,
+              message: "Recruiters loaded successfully",
+              type: "success",
+            });
+          }
         } else {
-          
-          setError('Failed to load recruiter data. Please try again.');
+          setError('No recruiter data found.');
           setNotification({
             open: true,
-            message: "Failed to fetch recruiters data",
-            type: "error",
+            message: "No recruiters data available",
+            type: "info",
           });
         }
       })
@@ -212,7 +220,9 @@ const ManageRecruiter = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
+    if (!status) return 'default';
+    const s = String(status).toLowerCase();
+    switch (s) {
       case 'verified':
         return 'success';
       case 'pending':
@@ -225,8 +235,10 @@ const ManageRecruiter = () => {
   };
 
   const getInitials = (name) => {
-    if (!name) return '?';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    if (!name || typeof name !== 'string') return '?';
+    const parts = name.trim().split(/\s+/).filter(part => part.length > 0);
+    if (parts.length === 0) return '?';
+    return parts.map(n => n[0]).join('').toUpperCase();
   };
 
   const CustomToolbar = () => {
@@ -627,7 +639,7 @@ const ManageRecruiter = () => {
                               color="primary"
                               onClick={() => handleViewRecruiter(params.row)}
                             >
-                              <ViewIcon fontSize="large" />
+                              <ViewIcon size={24} />
                             </IconButton>
                           </Tooltip>
                         </Box>
