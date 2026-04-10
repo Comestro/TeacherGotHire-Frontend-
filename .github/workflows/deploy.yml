@@ -18,13 +18,11 @@ jobs:
         with:
           node-version: 20
 
-      # FIX 1: Install ALL dependencies (including devDependencies)
       - name: Install dependencies
         run: yarn install
 
-      # FIX 2: Use npx to run vite build
       - name: Build the app
-        run: npx vite build
+        run: yarn build
 
       - name: Deploy to KVM2 via SSH
         uses: appleboy/scp-action@v0.1.4
@@ -33,7 +31,8 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
-          target: "/var/www/ptpinstitute/"
+          target: "/home/ptpinstitute/htdocs/www.ptpinstitute.com/TeacherGotHire-Frontend-/dist/"
+          strip_components: 1
 
       - name: Restart Nginx or PM2
         uses: appleboy/ssh-action@v0.1.10
@@ -42,5 +41,5 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/ptpinstitute
+            cd /home/ptpinstitute/htdocs/www.ptpinstitute.com/TeacherGotHire-Frontend-
             pm2 restart ptp-webhook
