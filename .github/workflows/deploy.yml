@@ -27,7 +27,7 @@ jobs:
       - name: Deploy to KVM2 via SSH
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: 147.93.30.100
+          host: ${{ secrets.HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
@@ -37,7 +37,7 @@ jobs:
       - name: Restart Nginx or PM2
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 147.93.30.100
+          host: ${{ secrets.HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
