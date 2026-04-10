@@ -628,7 +628,7 @@ function Login() {
       </Helmet>
       <UniversalHeader />
       {loading && <Loader />}
-      
+        
       <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50 py-8 sm:py-12">
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
@@ -695,4 +695,4 @@ function Login() {
   );
 }
 
-export default Login;n;
+export default Login;
