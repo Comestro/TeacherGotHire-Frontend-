@@ -207,7 +207,7 @@ export default function ManageCenter() {
     const updated = !center.status;
     setExamCenters((prev) => prev.map((c) => (c.id === center.id ? { ...c, status: updated } : c)));
     try {
-      const payload = { status: updated };
+      const payload = { exam_center: { status: updated } };
       await updateCenterManager(center.id, payload);
       showSnack(`Center ${updated ? "activated" : "deactivated"}`, "success");
     } catch (err) {
