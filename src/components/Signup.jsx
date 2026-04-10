@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
-import CustomHeader from "./commons/CustomHeader";
+import UniversalHeader from "./commons/UniversalHeader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ErrorMessage from "./ErrorMessage";
@@ -547,7 +547,7 @@ function SignUpPage() {
 
   return (
     <>
-      <CustomHeader />
+      <UniversalHeader />
       <Helmet>
         <title>PTPI | Signup Page</title>
       </Helmet>

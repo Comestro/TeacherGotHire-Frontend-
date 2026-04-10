@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import TeacherRecruiterHeader from "./components/RecruiterHeader";
+import UniversalHeader from '../commons/UniversalHeader';
 import { Outlet, useLocation } from "react-router-dom";
 import RecruiterSidebar from "./components/RecruiterSidebar";
 import { Helmet } from "react-helmet-async";
@@ -15,8 +15,11 @@ const RecruiterLayout = () => {
         <title>PTPI | Recruiter Panel</title>
       </Helmet>
       <div className='min-h-screen w-full bg-background'>
-        <TeacherRecruiterHeader isOpen={isOpen} setIsOpen={setIsOpen} />
-        <div className="flex w-full mt-16">
+        <UniversalHeader 
+          onToggleSidebar={() => setIsOpen(!isOpen)} 
+          isSidebarPresent={true} 
+        />
+        <div className="flex w-full">
           {/* Hide sidebar on teacher view page */}
           {!isTeacherViewPage && (
             <div className="md:block">

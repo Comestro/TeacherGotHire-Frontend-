@@ -8,7 +8,7 @@ import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import CustomHeader from "./commons/CustomHeader";
+import UniversalHeader from "./commons/UniversalHeader";
 import Loader from "./Loader";
 import { Helmet } from "react-helmet-async";
 import ErrorMessage from "./ErrorMessage";
@@ -510,7 +510,7 @@ const RecruiterSignUpPage = () => {
       <Helmet>
         <title>PTPI | Recruiter Signup</title>
       </Helmet>
-      <CustomHeader />
+      <UniversalHeader />
       {loading && <Loader />}
       <div className="flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

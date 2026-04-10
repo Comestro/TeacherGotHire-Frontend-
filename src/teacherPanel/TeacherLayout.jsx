@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import UniversalHeader from '../components/commons/UniversalHeader';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -153,115 +154,10 @@ const TeacherLayout = () => {
 
       {/* Main Content */}
       <main className={`transition-all duration-300 lg:pl-72 min-h-screen flex flex-col`}>
-        {/* Header */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleSidebar}
-                className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                {isSidebarOpen ? <HiX size={24} /> : <HiMenuAlt2 size={24} />}
-              </button>
-
-              {/* Breadcrumb / Page Title Placeholder */}
-              {/* You can add dynamic breadcrumbs here if needed */}
-              <h2 className="font-semibold text-slate-800 flex">
-                <span className='hidden sm:block'>Welcome back, </span> <span className='block sm:hidden'>Hi, </span>{" "}{userData?.Fname?.split(' ')[0] || 'Teacher'}!
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-4" ref={profileRef}>
-              <div className="relative">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-3 p-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
-                >
-                  <div className="h-9 w-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-200 shadow-sm">
-                    {userData?.Fname?.[0] || 'T'}
-                  </div>
-                  <HiChevronDown className={`text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                  {isProfileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50"
-                    >
-                      {/* Dropdown Header */}
-                      <div className="p-4 bg-slate-50 border-b border-slate-100">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="h-12 w-12 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-                            {userData?.Fname?.[0] || 'T'}
-                          </div>
-                          <div className="overflow-hidden">
-                            <h3 className="font-bold text-slate-800 truncate">
-                              {userData?.Fname || 'Teacher'}
-                            </h3>
-                            <p className="text-xs text-slate-500 truncate">
-                              {userData?.email || 'Loading...'}
-                            </p>
-                          </div>
-                        </div>
-                        {userData?.user_code && (
-                          <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
-                            <div className="text-xs">
-                              <span className="text-slate-400 font-medium mr-2">ID:</span>
-                              <span className="font-mono font-semibold text-slate-700">{userData.user_code}</span>
-                            </div>
-                            <button
-                              onClick={() => copyToClipboard(userData.user_code)}
-                              className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-md transition-colors"
-                              title="Copy ID"
-                            >
-                              <HiOutlineClipboard size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Dropdown Actions */}
-                      <div className="p-2">
-                        <button
-                          onClick={() => {
-                            navigate('/teacher/personal-profile');
-                            setIsProfileOpen(false);
-                          }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
-                        >
-                          <HiUser className="text-lg" />
-                          My Profile
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate('/teacher/setting');
-                            setIsProfileOpen(false);
-                          }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
-                        >
-                          <IoMdSettings className="text-lg" />
-                          Settings
-                        </button>
-                        <div className="my-1 border-t border-slate-100" />
-                        <button
-                          onClick={() => handleLogout(dispatch, navigate)}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
-                        >
-                          <HiOutlineLogin className="text-lg" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </header>
+        <UniversalHeader 
+          onToggleSidebar={toggleSidebar} 
+          isSidebarPresent={true} 
+        />
 
         {/* Page Content */}
         <div className="flex-1 max-w-8xl mx-auto w-full px-4 sm:px-6 pt-4 py-6">
