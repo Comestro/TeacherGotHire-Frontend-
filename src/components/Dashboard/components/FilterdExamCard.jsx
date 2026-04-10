@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchLevel } from "../../../services/examQuesServices";
 import { examCard } from "../../../features/examSlice";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { setError } from "../../../features/examSlice";
 import {
   FaGraduationCap,
@@ -300,12 +299,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
     setShowInterviewPanel(false);
   };
 
-  const pageTransition = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
-    transition: { duration: 0.3 },
-  };
+
   useEffect(() => {
     if (examReady && examReadyRef.current) {
       const timer = setTimeout(() => {
@@ -385,8 +379,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
       {/* Main selection column */}
       <div className="w-full ">
         {/* Top Error Alert */}
-        <AnimatePresence>
-          {(error || errors) && (
+        {(error || errors) && (
             <ErrorMessage
               message={error || errors}
               onDismiss={() => {
@@ -396,14 +389,12 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
               className="mb-6"
             />
           )}
-        </AnimatePresence>
 
-        <AnimatePresence mode="wait">
+
           {/* Category Panel */}
           {showCategoryPanel && (
-            <motion.div
+            <div
               key="categories"
-              {...pageTransition}
               className="rounded-lg overflow-hidden mb-6 sm:mb-8 px-3" // Use rounded-lg, remove shadow
             >
               <div className="bg-background text-text">
@@ -436,11 +427,10 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         (q) => q.categoryId === category.id,
                       );
                       return (
-                        <motion.button // Change to button
+                        <button
                           key={category.id}
                           type="button" // Add type
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+
                           onClick={() => handleCategorySelect(category)}
                           className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                             // Use button styles, focus ring
@@ -500,7 +490,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                               </div>
                             </div>
                           </div>
-                        </motion.button>
+                        </button>
                       );
                     })}
                   </div>
@@ -533,14 +523,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Subject Panel */}
           {showSubjectPanel && (
-            <motion.div
+            <div
               key="subjects"
-              {...pageTransition}
               className="overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
               <div className="bg-background text-text">
@@ -582,11 +571,10 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                         );
 
                         return (
-                          <motion.button // Change to button
+                          <button
                             key={subject?.id}
                             type="button" // Add type
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+
                             onClick={() => handleSubjectSelect(subject)}
                             className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                               // Use button styles, focus ring
@@ -643,7 +631,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                 </div>
                               </div>
                             </div>
-                          </motion.button>
+                          </button>
                         );
                       })}
                     </div>
@@ -686,14 +674,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Level Panel - Redesigned Flow */}
           {showLevelPanel && (
-            <motion.div
+            <div
               key="levels"
-              {...pageTransition}
               className="md:rounded-lg overflow-hidden mb-6 sm:mb-8"
             >
               <div className="text-text">
@@ -1251,14 +1238,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Interview Panel */}
           {showInterviewPanel && (
-            <motion.div
+            <div
               key="interview"
-              {...pageTransition}
               className=" rounded-lg md:border border-gray-200 overflow-hidden mb-6 sm:mb-8"
             >
               <div className="bg-background p-2 sm:p-6 text-text border-b border-gray-100">
@@ -1294,16 +1280,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   selectedCategory={selectedCategory}
                 />
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
         {/* Loading Overlay */}
         {isLoading && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+            <div
               className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 text-center max-w-sm mx-auto"
             >
               <div className="relative mb-4 sm:mb-6">
@@ -1325,27 +1308,21 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                 {/* Adjust text size */}
                 Please wait a moment...
               </p>
-            </motion.div>
+            </div>
           </div>
         )}
 
         {/* Exam Ready Modal */}
-        <AnimatePresence>
+
           {examReady &&
             selectedLevel &&
             !error &&
             !showInterviewPanel &&
             !isExamCenterModalOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: 0 } }}
+              <div
                 className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
               >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
+                <div
                   className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
                 >
                   {/* Modal Header */}
@@ -1529,10 +1506,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                       </button>
                     </div>
                   </div>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             )}
-        </AnimatePresence>
 
         {/* Initial State / Welcome Message */}
         {!selectedCategory &&
@@ -1540,9 +1516,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
           !selectedLevel &&
           !error &&
           !examReady && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
+            <div
               className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8"
             >
               <div className="bg-background p-6 sm:p-8 text-center">
@@ -1566,7 +1540,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
       </div>
 

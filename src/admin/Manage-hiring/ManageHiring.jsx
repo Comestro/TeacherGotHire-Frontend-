@@ -49,7 +49,7 @@ const ManageHiringRequests = () => {
         if (Array.isArray(response)) {
           // Sort by date descending (newest first)
           const sortedResponse = [...response].sort(
-            (a, b) => new Date(b.date) - new Date(a.date)
+            (a, b) => new Date(b.date) - new Date(a.date),
           );
 
           const formatData = sortedResponse.map((item) => ({
@@ -103,7 +103,7 @@ const ManageHiringRequests = () => {
     setNotification({ show: true, message, type });
     setTimeout(
       () => setNotification({ show: false, message: "", type: "success" }),
-      3000
+      3000,
     );
   };
 
@@ -157,8 +157,8 @@ const ManageHiringRequests = () => {
         prev.map((item) =>
           item.id === selectedRequest.id
             ? { ...item, status: "fulfilled" }
-            : item
-        )
+            : item,
+        ),
       );
       showNotification("Request approved successfully!");
       handleCloseModal();
@@ -188,8 +188,8 @@ const ManageHiringRequests = () => {
         prev.map((item) =>
           item.id === selectedRequest.id
             ? { ...item, status: "rejected" }
-            : item
-        )
+            : item,
+        ),
       );
       showNotification("Request rejected successfully", "warning");
       handleCloseModal();
@@ -256,7 +256,7 @@ const ManageHiringRequests = () => {
   const totalPages = Math.ceil(filteredData.length / paginationModel.pageSize);
   const displayedData = filteredData.slice(
     paginationModel.page * paginationModel.pageSize,
-    (paginationModel.page + 1) * paginationModel.pageSize
+    (paginationModel.page + 1) * paginationModel.pageSize,
   );
 
   return (
@@ -401,7 +401,7 @@ const ManageHiringRequests = () => {
                         <td className="px-3 py-2">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold border capitalize ${getStatusColor(
-                              request.status
+                              request.status,
                             )}`}
                           >
                             {request.status}
@@ -430,7 +430,7 @@ const ManageHiringRequests = () => {
                   {paginationModel.page * paginationModel.pageSize + 1}-
                   {Math.min(
                     (paginationModel.page + 1) * paginationModel.pageSize,
-                    filteredData.length
+                    filteredData.length,
                   )}{" "}
                   of {filteredData.length}
                 </span>
@@ -468,7 +468,7 @@ const ManageHiringRequests = () => {
         {/* Modal - Adjusted for compact style */}
         {modalOpen && selectedRequest && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+            <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden ">
               <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                 <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
                   <FiBriefcase /> Request Details
@@ -516,7 +516,7 @@ const ManageHiringRequests = () => {
                     </span>{" "}
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold border capitalize ${getStatusColor(
-                        selectedRequest.status
+                        selectedRequest.status,
                       )}`}
                     >
                       {selectedRequest.status}
@@ -593,7 +593,7 @@ const ManageHiringRequests = () => {
         {/* Notification Toast */}
         {notification.show && (
           <div
-            className={`fixed bottom-4 right-4 px-4 py-2 rounded shadow-lg flex items-center gap-2 animate-slide-up z-50 text-sm ${
+            className={`fixed bottom-4 right-4 px-4 py-2 rounded shadow-lg flex items-center gap-2  z-50 text-sm ${
               notification.type === "success"
                 ? "bg-teal-600 text-white"
                 : "bg-red-500 text-white"

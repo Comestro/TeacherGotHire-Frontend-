@@ -134,31 +134,14 @@ const Navbar = ({ links }) => {
           <div className="md:hidden">
             <button
               onClick={handleTeacherSearch}
-              className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
-                duration-500 hover:bg-right-bottom px-3 py-2 rounded-xl font-semibold text-white
-                hover:-translate-y-0.5 transform"
+              className="bg-teal-600 px-3 py-2 rounded-xl font-semibold text-white"
             >
-              {/* Content */}
-              <span className="relative flex items-center justify-center gap-2">
-                <FiBriefcase className="w-4 h-4 transition-transform group-hover:rotate-12" />
-                <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
+              <span className="flex items-center justify-center gap-2">
+                <FiBriefcase className="w-4 h-4" />
+                <span className="text-white">
                   शिक्षक खोजें
                 </span>
               </span>
-
-              {/* Shine effect */}
-              <div className="absolute inset-0">
-                <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-              </div>
-
-              {/* Hover border animation */}
-              <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
-
-              {/* Glow effect */}
-              <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
-
-              {/* Ripple effect on hover */}
-              <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
             </button>
           </div>
 
@@ -167,32 +150,16 @@ const Navbar = ({ links }) => {
             {!shouldHide && (
               <button
                 onClick={handleTeacherSearch}
-
-                className="group relative overflow-hidden bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 bg-[length:200%_auto] transition-all 
-                duration-500 hover:bg-right-bottom px-6 py-3 rounded-xl font-semibold text-white
-                hover:-translate-y-0.5 transform"
+                className="bg-teal-600 px-6 py-3 rounded-xl font-semibold text-white"
               >
-                {/* Content */}
-                <span className="relative flex items-center justify-center gap-2">
-                  <FiBriefcase className="w-5 h-5 transition-transform group-hover:rotate-12" />
-                  <span className="bg-gradient-to-r from-white/90 to-white bg-clip-text text-transparent relative animate-pulse">
+                <span className="flex items-center justify-center gap-2">
+                  <FiBriefcase className="w-5 h-5" />
+                  <span className="text-white">
                     शिक्षक खोजें
                   </span>
                 </span>
 
-                {/* Shine effect */}
-                <div className="absolute inset-0">
-                  <div className="absolute inset-0 translate-x-full animate-[shine_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                </div>
 
-                {/* Hover border animation */}
-                <div className="absolute inset-0 rounded-xl border-2 border-white/30 transition-all duration-500 group-hover:border-white/50 group-hover:scale-[0.98]"></div>
-
-                {/* Glow effect */}
-                <div className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-teal-500/20 blur group-hover:animate-pulse -z-10"></div>
-
-                {/* Ripple effect on hover */}
-                <div className="absolute inset-0 rounded-xl group-hover:animate-[ripple_1s_ease-in-out_infinite] bg-gradient-to-r from-teal-400/0 via-teal-400/30 to-teal-400/0 opacity-0 group-hover:opacity-100"></div>
               </button>
             )}
 
@@ -245,8 +212,8 @@ const Navbar = ({ links }) => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200
+        ${isMobileOpen ? "block" : "hidden"}`}
       >
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
@@ -330,30 +297,7 @@ const Navbar = ({ links }) => {
       </div>
 
       <TeacherEnquiry showModal={showEnquiry} setShowModal={setShowEnquiry} />
-      <style>{`
-        @keyframes shine {
-          from {
-            transform: translateX(-100%);
-          }
-          50% {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(100%);
-          }
-        }
 
-        @keyframes ripple {
-          from {
-            transform: scale(1);
-            opacity: 1;
-          }
-          to {
-            transform: scale(1.05);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </nav>
   );
 };

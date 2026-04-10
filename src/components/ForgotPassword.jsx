@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
-import { forgetPassword } from '../services/authServices';
-import Button from './Button';
-import Input from './Input';
-import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaEnvelope } from 'react-icons/fa';
-import { Helmet } from 'react-helmet-async';
-import CustomHeader from './commons/CustomHeader';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import ErrorMessage from './ErrorMessage';
-import { Link } from 'react-router-dom';
-import Loader from './Loader';
+import React, { useState } from "react";
+import { forgetPassword } from "../services/authServices";
+import Button from "./Button";
+import Input from "./Input";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaArrowLeft,
+  FaEnvelope,
+} from "react-icons/fa";
+import { Helmet } from "react-helmet-async";
+import CustomHeader from "./commons/CustomHeader";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ErrorMessage from "./ErrorMessage";
+import { Link } from "react-router-dom";
+import Loader from "./Loader";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const [sentEmail, setSentEmail] = useState('');
+  const [sentEmail, setSentEmail] = useState("");
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
@@ -26,12 +31,12 @@ const ForgotPassword = () => {
     setError(null);
     try {
       await forgetPassword(email);
-      setSuccessMessage('Password reset link has been sent to your email.');
+      setSuccessMessage("Password reset link has been sent to your email.");
       setSentEmail(email);
-      setEmail('');
+      setEmail("");
       setSent(true);
     } catch (error) {
-      setError(error.message || 'Something went wrong. Please try again.');
+      setError(error.message || "Something went wrong. Please try again.");
     }
     setLoading(false);
   };
@@ -52,24 +57,28 @@ const ForgotPassword = () => {
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/30 to-cyan-200/30 blur-3xl animate-float" />
-          <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-l from-purple-200/30 to-indigo-200/30 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-t from-emerald-200/30 to-lime-200/30 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+          <div
+            className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-l from-purple-200/30 to-indigo-200/30 blur-3xl animate-float"
+            style={{ animationDelay: "2s" }}
+          />
+          <div
+            className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-t from-emerald-200/30 to-lime-200/30 blur-3xl animate-float"
+            style={{ animationDelay: "4s" }}
+          />
         </div>
 
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
-
             {/* Left Side: Hero Content (Hidden on mobile) */}
-            <div className="hidden md:block w-1/2 space-y-8 animate-slide-up">
+            <div className="hidden md:block w-1/2 space-y-8 ">
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
                   Recover Your <br />
-                  <span className="text-teal-600">
-                    Account Access
-                  </span>
+                  <span className="text-teal-600">Account Access</span>
                 </h1>
                 <p className="text-lg text-slate-600 max-w-md">
-                  Don't worry, it happens to the best of us. We'll help you get back to your teaching journey in no time.
+                  Don't worry, it happens to the best of us. We'll help you get
+                  back to your teaching journey in no time.
                 </p>
               </div>
 
@@ -80,7 +89,9 @@ const ForgotPassword = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">Enter Email</h3>
-                    <p className="text-sm text-slate-500">Provide your registered email address</p>
+                    <p className="text-sm text-slate-500">
+                      Provide your registered email address
+                    </p>
                   </div>
                 </div>
 
@@ -90,7 +101,9 @@ const ForgotPassword = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">Check Inbox</h3>
-                    <p className="text-sm text-slate-500">Receive a secure password reset link</p>
+                    <p className="text-sm text-slate-500">
+                      Receive a secure password reset link
+                    </p>
                   </div>
                 </div>
 
@@ -100,16 +113,20 @@ const ForgotPassword = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">Reset Password</h3>
-                    <p className="text-sm text-slate-500">Create a new password and log in</p>
+                    <p className="text-sm text-slate-500">
+                      Create a new password and log in
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right Side: Form */}
-            <div className="w-full md:w-1/2 max-w-md animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div
+              className="w-full md:w-1/2 max-w-md "
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
-
                 <div className="space-y-2 mb-8">
                   <Link
                     to="/signin"
@@ -131,15 +148,21 @@ const ForgotPassword = () => {
                     <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FaEnvelope className="text-teal-600 text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">Check your email</h3>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">
+                      Check your email
+                    </h3>
                     <p className="text-slate-600 text-sm mb-6">
                       We sent a password reset link to <br />
-                      <span className="font-medium text-teal-700">{sentEmail}</span>
+                      <span className="font-medium text-teal-700">
+                        {sentEmail}
+                      </span>
                     </p>
 
                     <div className="space-y-3">
                       <Button
-                        onClick={() => window.open('https://gmail.com', '_blank')}
+                        onClick={() =>
+                          window.open("https://gmail.com", "_blank")
+                        }
                         className="w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition-colors font-medium"
                       >
                         Open Email App
@@ -169,7 +192,9 @@ const ForgotPassword = () => {
                       onDismiss={() => setSuccessMessage(null)}
                     />
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-slate-700 ml-1">Email Address</label>
+                      <label className="block text-sm font-medium text-slate-700 ml-1">
+                        Email Address
+                      </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                           <FaEnvelope className="text-slate-400" />
@@ -179,12 +204,13 @@ const ForgotPassword = () => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
-                          className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${email
-                            ? isEmailValid(email)
-                              ? "border-teal-500 bg-teal-50/10"
-                              : "border-red-300 bg-red-50/10"
-                            : "border-slate-200"
-                            }`}
+                          className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${
+                            email
+                              ? isEmailValid(email)
+                                ? "border-teal-500 bg-teal-50/10"
+                                : "border-red-300 bg-red-50/10"
+                              : "border-slate-200"
+                          }`}
                           required
                         />
                         {email && (
@@ -198,27 +224,48 @@ const ForgotPassword = () => {
                         )}
                       </div>
                       {email && !isEmailValid(email) && (
-                        <p className="text-red-500 text-xs mt-1 ml-1">Please enter a valid email address</p>
+                        <p className="text-red-500 text-xs mt-1 ml-1">
+                          Please enter a valid email address
+                        </p>
                       )}
                     </div>
 
                     <Button
                       type="submit"
-                      className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${!email || !isEmailValid(email) || loading
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                        }`}
+                      className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${
+                        !email || !isEmailValid(email) || loading
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      }`}
                       disabled={!email || !isEmailValid(email) || loading}
                     >
                       {loading ? (
                         <span className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Sending Link...
                         </span>
-                      ) : "Send Reset Link"}
+                      ) : (
+                        "Send Reset Link"
+                      )}
                     </Button>
                   </form>
                 )}
@@ -229,7 +276,9 @@ const ForgotPassword = () => {
                       <div className="w-full border-t border-slate-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white text-slate-500 font-medium">Or register as</span>
+                      <span className="px-4 bg-white text-slate-500 font-medium">
+                        Or register as
+                      </span>
                     </div>
                   </div>
 

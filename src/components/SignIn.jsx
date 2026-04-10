@@ -140,7 +140,7 @@ function Login() {
       }
       // Check if account needs OTP verification
       else if (
-        err.is_verified === false || 
+        err.is_verified === false ||
         err.is_pending === true ||
         errorMessage.toLowerCase().includes("verify your account") ||
         errorMessage.toLowerCase().includes("verification")
@@ -216,7 +216,7 @@ function Login() {
           message: "Account verified and logged in successfully!",
           type: "success",
         });
-        
+
         const { access_token, role } = response.data;
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("role", role);
@@ -260,7 +260,7 @@ function Login() {
   const renderForm = () => {
     if (showOTPForm) {
       return (
-        <div className="w-full animate-fadeIn">
+        <div className="w-full">
           <div className="space-y-2 mb-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 mb-4 border border-teal-100">
               <svg
@@ -298,7 +298,7 @@ function Login() {
                 type="text"
                 value={otp}
                 onChange={handleOTPChange}
-                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none"
+                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 outline-none"
                 placeholder="000000"
                 pattern="\d{6}"
                 maxLength={6}
@@ -336,7 +336,7 @@ function Login() {
                   <button
                     type="button"
                     onClick={() => handleResendOTP()}
-                    className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors flex items-center justify-center mx-auto space-x-1"
+                    className="text-sm font-medium text-teal-600 hover:text-teal-700 flex items-center justify-center mx-auto space-x-1"
                   >
                     <svg
                       className="w-4 h-4"
@@ -360,7 +360,7 @@ function Login() {
             <div className="space-y-3">
               <Button
                 type="submit"
-                className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${
+                className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
                   loading || otp.length !== 6
                     ? "opacity-60 cursor-not-allowed"
                     : ""
@@ -402,7 +402,7 @@ function Login() {
                   setShowOTPForm(false);
                   setOtp("");
                 }}
-                className="w-full py-3 text-slate-500 hover:text-slate-700 font-medium transition-colors"
+                className="w-full py-3 text-slate-500 hover:text-slate-700 font-medium"
               >
                 Back to Login
               </button>
@@ -413,7 +413,7 @@ function Login() {
     }
 
     return (
-      <div className="w-full animate-fadeIn">
+      <div className="w-full">
         <div className="space-y-2 mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
           <p className="text-slate-500">Please enter your details to sign in</p>
@@ -449,7 +449,7 @@ function Login() {
                 placeholder="name@example.com"
                 type="email"
                 id="email"
-                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${
+                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl outline-none ${
                   dirtyFields.email
                     ? isEmailValid(watchedFields.email)
                       ? "border-teal-500 bg-teal-50/10"
@@ -503,7 +503,7 @@ function Login() {
                 placeholder="Enter your password"
                 type={showPassword ? "text" : "password"}
                 id="pass"
-                className={`w-full pl-11 pr-12 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${
+                className={`w-full pl-11 pr-12 py-3.5 bg-white border rounded-xl outline-none ${
                   dirtyFields.password
                     ? watchedFields.password?.length >= 6
                       ? "border-teal-500 bg-teal-50/10"
@@ -521,7 +521,7 @@ function Login() {
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -551,7 +551,7 @@ function Login() {
             <div className="text-sm">
               <Link
                 to="/forgot-password"
-                className="font-medium text-teal-600 hover:text-teal-500 transition-colors"
+                className="font-medium text-teal-600 hover:text-teal-500"
               >
                 Forgot password?
               </Link>
@@ -560,7 +560,7 @@ function Login() {
 
           <Button
             type="submit"
-            className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md hover:bg-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 ${
+            className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
               !isValid || loading ? "opacity-60 cursor-not-allowed" : ""
             }`}
             disabled={!isValid || loading}
@@ -613,7 +613,7 @@ function Login() {
             Don't have an account?{" "}
             <Link
               to="/signup/teacher"
-              className="font-bold text-teal-600 hover:text-teal-700 transition-colors"
+              className="font-bold text-teal-600 hover:text-teal-700"
             >
               Create account
             </Link>
@@ -634,7 +634,7 @@ function Login() {
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
             {/* Left Side: Hero Content (Hidden on mobile) */}
-            <div className="hidden md:block w-1/2 space-y-8 animate-slide-up">
+            <div className="hidden md:block w-1/2 space-y-8 ">
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
                   Welcome Back to <br />
@@ -647,7 +647,7 @@ function Login() {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <FaUserTie className="w-6 h-6" />
                   </div>
@@ -659,7 +659,7 @@ function Login() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
                     <FaChalkboardTeacher className="w-6 h-6" />
                   </div>
@@ -675,8 +675,7 @@ function Login() {
 
             {/* Right Side: Login Form */}
             <div
-              className="w-full md:w-1/2 max-w-md animate-slide-up"
-              style={{ animationDelay: "0.2s" }}
+              className="w-full md:w-1/2 max-w-md "
             >
               <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 {renderForm()}

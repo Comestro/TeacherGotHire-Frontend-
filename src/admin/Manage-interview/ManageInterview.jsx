@@ -62,7 +62,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
-      <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden  flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 className="font-bold text-gray-800 text-lg">{title}</h3>
           <button
@@ -147,7 +147,7 @@ export default function InterviewManagementRedesign() {
     setNotification({ show: true, message, type });
     setTimeout(
       () => setNotification({ show: false, message: "", type: "success" }),
-      4000
+      4000,
     );
   };
 
@@ -226,7 +226,7 @@ export default function InterviewManagementRedesign() {
 
   const debouncedSearch = useCallback(
     debounce((value) => setFilters((f) => ({ ...f, searchTerm: value })), 250),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function InterviewManagementRedesign() {
     if (filters.status) out = out.filter((t) => t.status === filters.status);
     if (filters.teacherName)
       out = out.filter((t) =>
-        t.name.toLowerCase().includes(filters.teacherName.toLowerCase())
+        t.name.toLowerCase().includes(filters.teacherName.toLowerCase()),
       );
     if (filters.classCategory)
       out = out.filter((t) => t.classCategory === filters.classCategory);
@@ -265,7 +265,7 @@ export default function InterviewManagementRedesign() {
 
     if (q) {
       out = out.filter((t) =>
-        Object.values(t).some((v) => String(v).toLowerCase().includes(q))
+        Object.values(t).some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -307,7 +307,7 @@ export default function InterviewManagementRedesign() {
         t.scheduledDate || "Not scheduled",
       ]
         .map((cell) => `"${String(cell || "")?.replace(/"/g, '""')}"`)
-        .join(",")
+        .join(","),
     );
     const csv =
       "data:text/csv;charset=utf-8," +
@@ -319,7 +319,7 @@ export default function InterviewManagementRedesign() {
     link.setAttribute("href", encoded);
     link.setAttribute(
       "download",
-      `teacher_interviews_${dayjs().format("YYYY-MM-DD")}.csv`
+      `teacher_interviews_${dayjs().format("YYYY-MM-DD")}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -331,7 +331,7 @@ export default function InterviewManagementRedesign() {
     setSelectedDateTime(
       row.desiredDateTime !== "—"
         ? dayjs(row.desiredDateTime).format("YYYY-MM-DDTHH:mm")
-        : dayjs().format("YYYY-MM-DDTHH:mm")
+        : dayjs().format("YYYY-MM-DDTHH:mm"),
     );
     setMeetingLink(row.link || "");
     setMeetingLinkError(false);
@@ -355,7 +355,7 @@ export default function InterviewManagementRedesign() {
     } catch (err) {
       showNotification(
         err?.response?.data?.message || err?.message || "Failed to schedule",
-        "error"
+        "error",
       );
     } finally {
       setActionLoading(false);
@@ -384,7 +384,7 @@ export default function InterviewManagementRedesign() {
     } catch (err) {
       showNotification(
         err?.response?.data?.message || err?.message || "Failed to reject",
-        "error"
+        "error",
       );
     } finally {
       setActionLoading(false);
@@ -414,7 +414,7 @@ export default function InterviewManagementRedesign() {
     } catch (err) {
       showNotification(
         err?.response?.data?.message || err?.message || "Failed to complete",
-        "error"
+        "error",
       );
     } finally {
       setActionLoading(false);
@@ -455,7 +455,7 @@ export default function InterviewManagementRedesign() {
     } catch (err) {
       showNotification(
         err?.response?.data?.message || err?.message || "Failed to create",
-        "error"
+        "error",
       );
     } finally {
       setActionLoading(false);
@@ -701,7 +701,7 @@ export default function InterviewManagementRedesign() {
                       <td className="px-4 py-3">
                         <span
                           className={`px-2 py-0.5 rounded text-xs font-bold border ${getStatusColor(
-                            row.status
+                            row.status,
                           )}`}
                         >
                           {row.status}
@@ -791,7 +791,7 @@ export default function InterviewManagementRedesign() {
                   </div>
                   <span
                     className={`px-2 py-0.5 rounded text-xs font-bold border ${getStatusColor(
-                      row.status
+                      row.status,
                     )}`}
                   >
                     {row.status}

@@ -131,7 +131,7 @@ const HeroSection = () => {
         {/* Content */}
         <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="pt-20 md:pt-32 pb-10 md:pb-16">
-            <div className="text-center max-w-4xl mx-auto animate-slide-up">
+            <div className="text-center max-w-4xl mx-auto">
               {/* Heading */}
               <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
@@ -166,14 +166,14 @@ const HeroSection = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                 <Link
                   to="/recruiter"
-                  className="w-full sm:w-auto px-8 py-4 bg-teal-600 text-white rounded-xl shadow-sm hover:bg-teal-700 hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 font-bold transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-8 py-4 bg-teal-600 text-white rounded-xl shadow-sm flex items-center justify-center gap-2 font-bold"
                 >
                   <IoSearchOutline className="w-5 h-5" />
                   Find Your Perfect Teacher
                 </Link>
                 <Link
                   to="/teacher"
-                  className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:border-teal-500 hover:text-teal-600 transition-all duration-300 font-bold"
+                  className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold"
                 >
                   Join as a Teacher
                 </Link>
@@ -190,7 +190,7 @@ const HeroSection = () => {
             {highlightItems.map((item) => (
               <div
                 key={item.title}
-                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group h-full flex flex-col"
+                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none h-full flex flex-col"
               >
                 <div
                   className={`mb-6 p-4 rounded-2xl inline-block ${

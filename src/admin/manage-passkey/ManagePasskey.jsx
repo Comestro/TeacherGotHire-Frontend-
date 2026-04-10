@@ -20,12 +20,12 @@ const ErrorMessage = ({ message, type = "error", onClose }) => {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 animate-slide-up px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+      className={`fixed bottom-4 right-4 z-50  px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
         type === "success"
           ? "bg-teal-600 text-white"
           : type === "warning"
-          ? "bg-amber-500 text-white"
-          : "bg-red-500 text-white"
+            ? "bg-amber-500 text-white"
+            : "bg-red-500 text-white"
       }`}
     >
       {type === "success" ? <FiCheck /> : <FiAlertCircle />}
@@ -66,7 +66,7 @@ export default function ManagePasskey() {
     setNotification({ show: true, message, type });
     setTimeout(
       () => setNotification({ show: false, message: "", type: "success" }),
-      4000
+      4000,
     );
   };
 
@@ -115,7 +115,7 @@ export default function ManagePasskey() {
       fulfilled: data.filter((d) => d.status === "fulfilled").length,
       rejected: data.filter((d) => d.status === "rejected").length,
     }),
-    [data]
+    [data],
   );
 
   const handleApprove = async (row) => {
@@ -127,7 +127,7 @@ export default function ManagePasskey() {
         status: "fulfilled",
       });
       setData((prev) =>
-        prev.map((p) => (p.id === row.id ? { ...p, status: "fulfilled" } : p))
+        prev.map((p) => (p.id === row.id ? { ...p, status: "fulfilled" } : p)),
       );
       showNotification("Passkey approved successfully", "success");
       setConfirm({ open: false, type: null, row: null });
@@ -161,8 +161,8 @@ export default function ManagePasskey() {
         prev.map((p) =>
           p.id === row.id
             ? { ...p, status: "rejected", reject_reason: rejectReason }
-            : p
-        )
+            : p,
+        ),
       );
       showNotification("Passkey rejected", "success");
       setConfirm({ open: false, type: null, row: null });
@@ -477,7 +477,7 @@ export default function ManagePasskey() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            detailsModal.row.code || ""
+                            detailsModal.row.code || "",
                           );
                           showNotification("Passkey copied");
                         }}
