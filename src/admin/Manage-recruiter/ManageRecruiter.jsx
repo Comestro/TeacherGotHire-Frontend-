@@ -57,6 +57,14 @@ import Layout from "../Admin/Layout";
 import { getRecruiter } from "../../services/adminManageRecruiter";
 import { Link } from "react-router-dom";
 
+const BIHAR_DISTRICTS = [
+  "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
+  "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur",
+  "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger",
+  "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur",
+  "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
+].sort();
+
 const ManageRecruiter = () => {
   const [recruiters, setRecruiters] = useState([]);
   const [selectedRecruiters, setSelectedRecruiters] = useState([]);
@@ -65,6 +73,7 @@ const ManageRecruiter = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [notification, setNotification] = useState({
     open: false,
     message: "",
@@ -209,18 +218,42 @@ const ManageRecruiter = () => {
     });
   };
 
-  const handleFilterChange = () => {
-    const filtered = recruiters.filter((recruiter) => {
-      return (
-        searchQuery === "" ||
-        recruiter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recruiter.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recruiter.id.toString().includes(searchQuery) ||
-        (recruiter.phone && recruiter.phone.includes(searchQuery))
-      );
+  const filteredRecruiters = React.useMemo(() => {
+    return recruiters.filter((recruiter) => {
+      // 1. Search Query Filter
+      const query = searchQuery ? searchQuery.toLowerCase() : "";
+      const matchesSearch = query === "" ||
+        (recruiter.name && recruiter.name.toLowerCase().includes(query)) ||
+        (recruiter.email && recruiter.email.toLowerCase().includes(query)) ||
+        (recruiter.id && recruiter.id.toString().includes(query)) ||
+        (recruiter.phone && recruiter.phone.includes(query)) ||
+        (recruiter.company && recruiter.company.toLowerCase().includes(query));
+
+      // 2. Status Filter
+      const matchesStatus = selectedStatus === "" || 
+        (recruiter.status && recruiter.status.toLowerCase() === selectedStatus.toLowerCase());
+
+      // 3. Gender Filter
+      const matchesGender = selectedGender === "" || 
+        (recruiter.gender && recruiter.gender.toLowerCase() === selectedGender.toLowerCase());
+
+      // 4. District Filter
+      const matchesDistrict = selectedDistrict === "" || 
+        (recruiter.location && recruiter.location.toLowerCase().includes(selectedDistrict.toLowerCase()));
+
+      return matchesSearch && matchesStatus && matchesGender && matchesDistrict;
     });
-    
-    return filtered;
+  }, [recruiters, searchQuery, selectedStatus, selectedGender, selectedDistrict]);
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedStatus("");
+    setSelectedGender("");
+    setSelectedDistrict("");
+  };
+
+  const handleFilterChange = () => {
+    return filteredRecruiters;
   };
 
   const getStatusColor = (status) => {
@@ -436,7 +469,7 @@ const ManageRecruiter = () => {
         }}
       >
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               placeholder="Search recruiters by name, email or phone..."
@@ -446,13 +479,13 @@ const ManageRecruiter = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               slotProps={{
                 input: {
-                  startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
+                  startAdornment: <SearchIcon color="action" style={{ marginRight: '8px', fontSize: '1.2rem' }} />,
                 }
               }}
             />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={2}>
             <FormControl variant="outlined" fullWidth size="small">
               <InputLabel>Status</InputLabel>
               <Select
@@ -460,9 +493,7 @@ const ManageRecruiter = () => {
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
-                <MenuItem value="">
-                  <em>All Statuses</em>
-                </MenuItem>
+                <MenuItem value=""><em>All Statuses</em></MenuItem>
                 <MenuItem value="verified">Verified</MenuItem>
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="rejected">Rejected</MenuItem>
@@ -478,14 +509,40 @@ const ManageRecruiter = () => {
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
               >
-                <MenuItem value="">
-                  <em>All</em>
-                </MenuItem>
+                <MenuItem value=""><em>All Genders</em></MenuItem>
                 <MenuItem value="male">Male</MenuItem>
                 <MenuItem value="female">Female</MenuItem>
                 <MenuItem value="other">Other</MenuItem>
               </Select>
             </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={2}>
+            <FormControl variant="outlined" fullWidth size="small">
+              <InputLabel>District</InputLabel>
+              <Select
+                label="District"
+                value={selectedDistrict}
+                onChange={(e) => setSelectedDistrict(e.target.value)}
+              >
+                <MenuItem value=""><em>All Districts</em></MenuItem>
+                {BIHAR_DISTRICTS.map(district => (
+                  <MenuItem key={district} value={district}>{district}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={2}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={handleClearFilters}
+              startIcon={<MdRefresh />}
+              sx={{ borderColor: alpha('#0d9488', 0.2), color: '#0d9488' }}
+            >
+              Clear
+            </Button>
           </Grid>
         </Grid>
       </Paper>
