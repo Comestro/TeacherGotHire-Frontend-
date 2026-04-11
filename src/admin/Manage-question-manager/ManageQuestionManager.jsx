@@ -712,8 +712,8 @@ const ManageQuestionManager = () => {
                 px: 3,
               }}
             >
-              <GroupIcon sx={{ fontSize: 80, color: '#64748B', mb: 2, opacity: 0.5 }} />
-              <Typography variant="h6" sx={{ color: '#64748B', mb: 1, fontWeight: 600 }}>
+              <GroupIcon sx={{ fontSize: 64, color: '#e2e8f0', mb: 2 }} />
+              <Typography variant="h6" color="#475569" gutterBottom>
                 {searchTerm ? "No managers found" : "No managers yet"}
               </Typography>
               <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
@@ -768,17 +768,67 @@ const ManageQuestionManager = () => {
                             <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
                               {manager.user?.Fname} {manager.user?.Lname}
                             </Typography>
-                    getRowHeight={() => 'auto'}
-                    getEstimatedRowHeight={() => 60}
-                    sx={{
-                      '& .MuiDataGrid-row': {
-                        minHeight: '52px!important',
-                      },
-                      '& .MuiDataGrid-cell': {
-                        py: 1.5,
-                      },
-                    }}
-                  />
+                            <Typography variant="caption" color="text.secondary">
+                              {manager.user?.email}
+                            </Typography>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Box display="flex" flexWrap="wrap" gap={0.5} mb={0.5}>
+                              {(manager.subject || []).slice(0, 2).map((s, idx) => (
+                                <Chip key={idx} label={s.subject_name} size="small" sx={{ height: 18, fontSize: '0.65rem' }} />
+                              ))}
+                              {(manager.subject || []).length > 2 && (
+                                <Chip label={`+${manager.subject.length - 2}`} size="small" variant="outlined" sx={{ height: 18, fontSize: '0.65rem' }} />
+                              )}
+                            </Box>
+                            <Typography variant="caption" color="#64748b">
+                              {(manager.class || []).map(c => c.name).join(', ')}
+                            </Typography>
+                          </td>
+                          <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                            <Chip
+                              label={manager.status ? 'Active' : 'Inactive'}
+                              size="small"
+                              sx={{
+                                height: 20,
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                bgcolor: manager.status ? alpha('#0d9488', 0.1) : alpha('#ef4444', 0.1),
+                                color: manager.status ? '#0d9488' : '#ef4444',
+                                border: '1px solid',
+                                borderColor: manager.status ? alpha('#0d9488', 0.2) : alpha('#ef4444', 0.2),
+                              }}
+                            />
+                          </td>
+                          <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                            <Stack direction="row" spacing={0.5} justifyContent="center">
+                              <IconButton size="small" onClick={() => handleOpenModal(true, manager)} sx={{ color: '#0d9488' }}>
+                                <EditIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                              <IconButton size="small" onClick={() => handleDeleteConfirm(manager)} sx={{ color: '#ef4444' }}>
+                                <DeleteIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  
+                  <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                    <TablePagination
+                      rowsPerPageOptions={[5, 10, 25]}
+                      component="div"
+                      count={filteredManagers.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={(e, p) => setPage(p)}
+                      onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                      }}
+                    />
+                  </Box>
                 </Box>
               )}
             </>
