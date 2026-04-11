@@ -24,6 +24,8 @@ import {
   Alert,
   Stack,
   Tooltip,
+  TablePagination,
+  alpha,
 } from "@mui/material";
 import {
   Search as SearchIcon,

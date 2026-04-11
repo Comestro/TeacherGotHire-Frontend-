@@ -32,8 +32,9 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  TablePagination,
+  alpha,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -55,14 +56,6 @@ import {
   deleteAssignedUserManager
 } from "../../services/adminManageQuestionManager";
 import { getClasses, getSubjects } from "../../services/adminSubujectApi";
-
-const CustomToolbar = ({ quickFilterValue }) => (
-  <GridToolbarContainer>
-    {/* simple toolbar: export + quickfilter placeholder - extend as needed */}
-    <Box sx={{ flex: 1 }} />
-    <GridToolbarExport />
-  </GridToolbarContainer>
-);
 
 const ManageQuestionManager = () => {
   const theme = useTheme();
