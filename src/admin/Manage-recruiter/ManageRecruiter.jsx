@@ -77,9 +77,13 @@ const ManageRecruiter = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const theme = useTheme();
-  const isXsScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const isMediumScreen = useMediaQuery(theme.breakpoints.down('lg'));
+  // Safe theme properties with fallbacks for MUI v6 stability
+  const safePalette = theme?.palette || { text: { secondary: '#64748b' } };
+  const safeBreakpoints = theme?.breakpoints || { down: () => '@media (max-width:600px)' };
+  
+  const isXsScreen = useMediaQuery(safeBreakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(safeBreakpoints.down('md'));
+  const isMediumScreen = useMediaQuery(safeBreakpoints.down('lg'));
 
   useEffect(() => {
     setLoading(true);
@@ -245,16 +249,16 @@ const ManageRecruiter = () => {
     return (
       <GridToolbarContainer sx={{ p: 1 }}>
         <GridToolbarColumnsButton
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: safePalette.text.secondary }}
         />
         <GridToolbarFilterButton
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: safePalette.text.secondary }}
         />
         <GridToolbarDensitySelector
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: safePalette.text.secondary }}
         />
         <GridToolbarExport
-          sx={{ fontSize: '0.75rem', borderRadius: 1, color: theme.palette.text.secondary }}
+          sx={{ fontSize: '0.75rem', borderRadius: 1, color: safePalette.text.secondary }}
         />
       </GridToolbarContainer>
     );
@@ -602,10 +606,10 @@ const ManageRecruiter = () => {
                         >
                           <Chip
                             size="small"
-                            label={params.value}
+                            label={params.value || 'N/A'}
                             color={getStatusColor(params.value)}
                             variant="outlined"
-                            icon={params.value === 'Verified' ? <VerifiedIcon fontSize="small" /> : undefined}
+                            icon={params.value === 'Verified' ? <VerifiedIcon size={14} /> : undefined}
                             sx={{ minWidth: 85 }}
                           />
                         </Box>
@@ -853,7 +857,7 @@ const ManageRecruiter = () => {
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">Email</Typography>
                 <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                  <EmailIcon fontSize="small" color="action" />
+                  <EmailIcon size={14} color="#64748b" />
                   <Typography variant="body2">{currentRecruiter.email}</Typography>
                 </Box>
               </Grid>
@@ -861,7 +865,7 @@ const ManageRecruiter = () => {
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">Phone</Typography>
                 <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                  <PhoneIcon fontSize="small" color="action" />
+                  <PhoneIcon size={14} color="#64748b" />
                   <Typography variant="body2">{currentRecruiter.phone}</Typography>
                 </Box>
               </Grid>
@@ -869,7 +873,7 @@ const ManageRecruiter = () => {
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">Gender</Typography>
                 <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                  <PersonIcon fontSize="small" color="action" />
+                  <PersonIcon size={14} color="#64748b" />
                   <Typography variant="body2">{currentRecruiter.gender}</Typography>
                 </Box>
               </Grid>

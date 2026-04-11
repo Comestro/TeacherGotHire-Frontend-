@@ -6,6 +6,8 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import Home from "./components/Home/Home";
 import SignUpPage from "./components/Signup";
 import Login from "./components/SignIn";
@@ -70,6 +72,29 @@ import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
 import ManageBackup from "./admin/Manage-backup/ManageBackup";
 import ManageMissingSubject from "./admin/Manage-missing-subject/ManageMissingSubject";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#0d9488", // Teal 600
+    },
+    secondary: {
+      main: "#06b6d4", // Cyan 500
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+        },
+      },
+    },
+  },
+});
 
 function AppContent() {
   const location = useLocation();
@@ -438,9 +463,12 @@ function App() {
             v7_relativeSplatPath: true,
           }}
         >
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
+          </ThemeProvider>
         </BrowserRouter>
       </HelmetProvider>
     </Provider>
