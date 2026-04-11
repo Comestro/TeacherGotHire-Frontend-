@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import Input from "./Input";
 import Button from "./Button";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   createaccount,
   verifyTeacherOtp,
@@ -31,6 +31,17 @@ function SignUpPage() {
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    number: false,
+    special: false,
+  });
+
+  const [userEmail, setUserEmail] = useState("");
+  const [otp, setOtp] = useState("");
 
   useEffect(() => {
     let interval;
@@ -68,18 +79,6 @@ function SignUpPage() {
     criteriaMode: "all",
   });
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordCriteria, setPasswordCriteria] = useState({
-    length: false,
-    number: false,
-    special: false,
-  });
-
-  const [userEmail, setUserEmail] = useState("");
-  const [otp, setOtp] = useState("");
-
   const watchedFields = watch();
   const password = watchedFields.password;
 
@@ -97,16 +96,6 @@ function SignUpPage() {
     setShowPassword(!showPassword);
   };
 
-  const getInputClassName = (fieldName) => {
-    return `w-full border-2 text-sm rounded-xl p-3 ${
-      dirtyFields[fieldName]
-        ? errors[fieldName]
-          ? "border-red-500 focus:border-red-500"
-          : "border-teal-600 focus:border-teal-600"
-        : "border-slate-300 focus:border-teal-600"
-    }`;
-  };
-
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -120,7 +109,6 @@ function SignUpPage() {
 
       if (response.status === "success" && response.data) {
         toast.success("Account verified and logged in successfully!");
-
         const { access_token, role } = response.data;
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("role", role);
@@ -128,8 +116,6 @@ function SignUpPage() {
         setTimeout(() => {
           if (role === "teacher") {
             navigate("/teacher");
-          } else if (role === "admin") {
-            navigate("/admin/dashboard");
           } else {
             navigate("/signin");
           }
@@ -157,8 +143,7 @@ function SignUpPage() {
         setCanResend(false);
       }
     } catch (error) {
-      const errorMessage = error.message || "Failed to create account";
-      setError(errorMessage);
+      setError(error.message || "Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -175,93 +160,43 @@ function SignUpPage() {
     if (showOTPForm) {
       return (
         <div className="w-full">
-          <div className="space-y-2 mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 mb-4 border border-teal-100">
-              <svg
-                className="w-8 h-8 text-teal-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800">Verify Email</h2>
-            <p className="text-slate-500">
-              We've sent a code to{" "}
-              <span className="font-medium text-teal-600">{userEmail}</span>
+          <div className="space-y-4 mb-8">
+            <h2 className="text-2xl font-black text-slate-800">Verify Email</h2>
+            <p className="text-sm font-medium text-slate-500">
+              Check code on <span className="text-teal-600 font-bold">{userEmail}</span>
             </p>
           </div>
 
           <form onSubmit={handleOTPSubmit} className="space-y-6">
             <ErrorMessage message={error} onDismiss={() => setError("")} />
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Enter Verification Code
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Verification Code
               </label>
               <Input
                 type="text"
                 value={otp}
                 onChange={handleOTPChange}
-                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 text-center text-3xl tracking-[0.5em] font-black rounded-lg py-4 outline-none focus:border-teal-600 focus:bg-white transition-all"
                 placeholder="000000"
-                pattern="\d{6}"
                 maxLength={6}
-                inputMode="numeric"
                 required
               />
-              {otp && otp.length < 6 && (
-                <p className="mt-2 text-sm text-red-500 flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Please enter a 6-digit code
-                </p>
-              )}
             </div>
 
             <div className="text-center">
               {timer > 0 ? (
-                <p className="text-sm text-slate-500">
-                  Resend code in{" "}
-                  <span className="text-teal-600 font-bold">{timer}s</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Resend in <span className="text-teal-600">{timer}s</span>
                 </p>
               ) : (
                 canResend && (
                   <button
                     type="button"
                     onClick={handleResendOTP}
-                    className="text-sm font-medium text-teal-600 hover:text-teal-700 flex items-center justify-center mx-auto space-x-1"
+                    className="text-[10px] font-black text-teal-600 hover:text-teal-700 uppercase tracking-widest"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
-                    <span>Resend Verification Code</span>
+                    Resend Code
                   </button>
                 )
               )}
@@ -270,40 +205,12 @@ function SignUpPage() {
             <div className="space-y-3">
               <Button
                 type="submit"
-                className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
-                  loading || otp.length !== 6
-                    ? "opacity-60 cursor-not-allowed"
-                    : ""
+                className={`w-full bg-teal-600 text-white py-4 rounded-lg font-black uppercase tracking-widest ${
+                  loading || otp.length !== 6 ? "opacity-60 cursor-not-allowed" : ""
                 }`}
                 disabled={loading || otp.length !== 6}
               >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Verifying...
-                  </span>
-                ) : (
-                  "Verify & Login"
-                )}
+                {loading ? "Verifying..." : "Verify & Sign In"}
               </Button>
             </div>
           </form>
@@ -314,306 +221,159 @@ function SignUpPage() {
     return (
       <div className="w-full">
         <div className="space-y-2 mb-8">
-          <h2 className="text-2xl font-bold text-slate-800">
-            Join as a Teacher
-          </h2>
-          <p className="text-slate-500">
-            Create your account to start teaching
-          </p>
+          <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Teacher Account</h2>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Create institutional identity</p>
         </div>
 
-        <form onSubmit={handleSubmit(signup)} className="space-y-5">
+        <form onSubmit={handleSubmit(signup)} className="space-y-4">
           <ErrorMessage message={error} onDismiss={() => setError("")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                First Name
-              </label>
-              <div className="relative">
-                <Input
-                className={`w-full px-4 py-3.5 bg-white border rounded-xl outline-none ${
-                    dirtyFields.Fname
-                      ? "border-teal-500 bg-teal-50/10"
-                      : "border-slate-200"
-                  }`}
-                  placeholder="First Name"
-                  {...register("Fname", { required: "First name is required" })}
-                />
-                {dirtyFields.Fname && !errors.Fname && (
-                  <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
-                )}
-              </div>
-              {errors.Fname && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.Fname.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Last Name
-              </label>
-              <div className="relative">
-                <Input
-                  className={`w-full px-4 py-3.5 bg-white border rounded-xl outline-none ${
-                    dirtyFields.Lname
-                      ? "border-teal-500 bg-teal-50/10"
-                      : "border-slate-200"
-                  }`}
-                  placeholder="Last Name"
-                  {...register("Lname", { required: "Last name is required" })}
-                />
-                {dirtyFields.Lname && !errors.Lname && (
-                  <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
-                )}
-              </div>
-              {errors.Lname && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.Lname.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Email Address
-            </label>
-            <div className="relative">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">First Name</label>
               <Input
-                placeholder="name@example.com"
-                type="email"
-                className={`w-full px-4 py-3.5 bg-white border rounded-xl outline-none ${
-                  dirtyFields.email
-                    ? !errors.email
-                      ? "border-teal-500 bg-teal-50/10"
-                      : "border-red-300 bg-red-50/10"
-                    : "border-slate-200"
-                }`}
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Please enter a valid email address",
-                  },
-                })}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-teal-600 focus:bg-white transition-all"
+                placeholder="John"
+                {...register("Fname", { required: "Required" })}
               />
-              {dirtyFields.email && !errors.email && (
-                <FaCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600" />
-              )}
             </div>
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.email.message}
-              </p>
-            )}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Last Name</label>
+              <Input
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-teal-600 focus:bg-white transition-all"
+                placeholder="Doe"
+                {...register("Lname", { required: "Required" })}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Password
-            </label>
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Institutional Email</label>
+            <Input
+              placeholder="teacher@domain.com"
+              type="email"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-teal-600 focus:bg-white transition-all"
+              {...register("email", {
+                required: "Required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email",
+                },
+              })}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Password</label>
             <div className="relative">
               <Input
-                placeholder="Create a password"
+                placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
-                className={`w-full px-4 py-3.5 bg-white border rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all outline-none ${
-                  dirtyFields.password
-                    ? !errors.password
-                      ? "border-teal-500 bg-teal-50/10"
-                      : "border-red-300 bg-red-50/10"
-                    : "border-slate-200"
-                }`}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-teal-600 focus:bg-white transition-all"
                 {...register("password", {
-                  required: "Password is required",
-                  minLength: { value: 8, message: "Min 8 characters" },
-                  validate: (value) => {
-                    if (!/\d/.test(value)) return "Must contain a number";
-                    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value))
-                      return "Must contain special char";
-                    return true;
-                  },
+                  required: "Required",
+                  minLength: { value: 8, message: "Min 8 chars" },
                 })}
               />
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.password.message}
-              </p>
-            )}
+          </div>
 
-            <div className="mt-3 flex gap-2 flex-wrap">
-              <span
-                className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.length ? "bg-teal-50 text-teal-700 border-teal-100" : "bg-slate-50 text-slate-500 border-slate-100"}`}
-              >
-                8+ chars
-              </span>
-              <span
-                className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.number ? "bg-teal-50 text-teal-700 border-teal-100" : "bg-slate-50 text-slate-500 border-slate-100"}`}
-              >
-                Number
-              </span>
-              <span
-                className={`text-xs px-2 py-1 rounded-full border ${passwordCriteria.special ? "bg-teal-50 text-teal-700 border-teal-100" : "bg-slate-50 text-slate-500 border-slate-100"}`}
-              >
-                Special char
-              </span>
-            </div>
+          <div className="flex gap-2 mb-2">
+             {['8+ Chars', 'Number', 'Special'].map((text, i) => (
+                <div key={i} className={`text-[8px] font-black uppercase px-2 py-0.5 rounded border ${
+                    (i === 0 && passwordCriteria.length) || (i === 1 && passwordCriteria.number) || (i === 2 && passwordCriteria.special)
+                    ? "bg-teal-600 text-white border-teal-600"
+                    : "bg-slate-50 text-slate-400 border-slate-200"
+                }`}>
+                    {text}
+                </div>
+             ))}
           </div>
 
           <Button
             type="submit"
-            className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
-              !isValid || loading ? "opacity-60 cursor-not-allowed" : ""
+            className={`w-full bg-teal-600 text-white py-4 rounded-lg font-black uppercase tracking-widest transition-colors ${
+              !isValid || loading ? "opacity-60 cursor-not-allowed" : "hover:bg-teal-700 font-black uppercase"
             }`}
             disabled={!isValid || loading}
           >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Creating Account...
-              </span>
-            ) : (
-              "Create Teacher Account"
-            )}
+            {loading ? "Registering..." : "Create Account"}
           </Button>
         </form>
 
-        <div className="mt-8 space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500 font-medium">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => navigate("/signup/recruiter")}
-              className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 group"
-            >
-              <div className="flex flex-col items-center">
-                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                  Recruiter
-                </span>
-              </div>
-            </button>
-            <button
-              onClick={() => navigate("/signin")}
-              className="flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 group"
-            >
-              <div className="flex flex-col items-center">
-                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                  Sign In
-                </span>
-              </div>
-            </button>
-          </div>
+        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+            <Link to="/signin" className="flex items-center justify-between group">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Already have an account? <span className="text-teal-600">Sign In</span></span>
+                <FaArrowRight size={10} className="text-slate-300 group-hover:text-teal-600 transition-colors" />
+            </Link>
+            <Link to="/signup/recruiter" className="flex items-center justify-between group">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Are you a Recruiter? <span className="text-teal-600">Join Here</span></span>
+                <FaArrowRight size={10} className="text-slate-300 group-hover:text-teal-600 transition-colors" />
+            </Link>
         </div>
       </div>
     );
   };
 
   return (
-    <>
-      <UniversalHeader />
+    <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
       <Helmet>
-        <title>PTPI | Signup Page</title>
+        <title>Teacher Registration | PTP Institute</title>
       </Helmet>
-      {loading && <Loader />}
-      <ToastContainer />
-      <div className=" flex items-center justify-center relative overflow-hidden bg-slate-50 py-5">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
-            {/* Left Side: Hero Content */}
-            <div className="hidden md:block w-1/2 space-y-8 ">
-              <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
-                  Join the Future of <br />
-                  <span className="text-teal-600">Teaching Excellence</span>
-                </h1>
-                <p className="text-lg text-slate-600 max-w-md">
-                  Create your profile today and connect with top educational
-                  institutions looking for talent like you.
-                </p>
+      <UniversalHeader />
+      <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
+      
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-[1000px] flex flex-col md:flex-row bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          {/* Logo/Info Side - Flat Design */}
+          <div className="w-full md:w-5/12 p-8 md:p-12 bg-slate-900 flex flex-col justify-between text-white relative">
+            <div className="relative z-10">
+              <div className="w-10 h-10 bg-teal-600 rounded flex items-center justify-center text-xl font-black mb-8">
+                P
               </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                    <FaUniversity className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800">
-                      Verified Schools
-                    </h3>
-                    <p className="text-sm text-slate-500">
-                      Connect with trusted institutions
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                    <FaRocket className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800">Fast Placement</h3>
-                    <p className="text-sm text-slate-500">
-                      Get hired faster with our platform
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <h1 className="text-3xl lg:text-4xl font-black tracking-tight leading-none mb-6">
+                Institutional <br />
+                <span className="text-teal-400">Onboarding.</span>
+              </h1>
+              <p className="text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+                Connect with India's most prestigious educational institutions.
+              </p>
             </div>
 
-            {/* Right Side: Signup Form */}
-            <div
-              className="w-full md:w-1/2 max-w-md "
-            >
-              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
-                {renderForm()}
-              </div>
+            <div className="relative z-10 pt-10 border-t border-white/10 uppercase tracking-widest">
+               <div className="flex items-center gap-4">
+                 <div className="w-8 h-8 rounded border border-white/20 flex items-center justify-center text-teal-400">
+                    <FaCheck size={12} />
+                 </div>
+                 <div>
+                    <p className="text-[10px] font-black text-white">Verification</p>
+                    <p className="text-[8px] font-bold text-teal-500">Dual-layer Security</p>
+                 </div>
+               </div>
+            </div>
+          </div>
 
-              <p className="text-center text-slate-400 text-sm mt-8">
-                &copy; {new Date().getFullYear()} PTPI. All rights reserved.
-              </p>
+          {/* Form Side - Minimalist */}
+          <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col justify-center">
+            <div className="max-w-sm mx-auto w-full">
+               {renderForm()}
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+
+      <footer className="p-6 text-center border-t border-slate-200 bg-white">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
+          &copy; {new Date().getFullYear()} PTP Institute &bull; Institutional Access Protocol
+        </p>
+      </footer>
+    </div>
   );
 }
 

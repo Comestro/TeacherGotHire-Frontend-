@@ -175,169 +175,144 @@ export default function Sidebar({ isOpen, onToggle }) {
     return (
       <Link
         to={item.link}
-        className={`flex items-center px-3 py-2 mx-2 my-0.5 rounded-md transition-all duration-200 group ${
+        className={`flex items-center px-2 py-1.5 mx-1 rounded transition-all duration-200 group ${
           active
-            ? "bg-teal-600 text-white shadow-sm mx-3"
-            : "text-gray-600 hover:bg-gray-100 hover:text-teal-600"
+            ? "bg-slate-900 text-white"
+            : "text-slate-500 hover:bg-slate-50 hover:text-teal-600"
         }`}
       >
         <div
-          className={`mr-3 p-1 rounded-full flex items-center justify-center transition-colors ${
+          className={`mr-2.5 w-6 h-6 rounded flex items-center justify-center transition-colors ${
             active
               ? "bg-teal-500 text-white"
-              : "bg-teal-50 text-teal-600 group-hover:bg-teal-100"
+              : "bg-slate-100 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-600"
           }`}
         >
-          {React.cloneElement(item.icon, { size: 16 })}
+          {React.cloneElement(item.icon, { size: 12 })}
         </div>
-        <span className="font-medium text-sm tracking-wide">{item.text}</span>
+        <span className="font-black text-[10px] uppercase tracking-wider">{item.text}</span>
       </Link>
     );
   };
 
   const SectionHeader = ({ title }) => (
-    <div className="px-5 py-1.5 mt-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+    <div className="px-4 py-1 mt-2 mb-0.5 text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50">
       {title}
     </div>
   );
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop - Simplified */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 bg-slate-900/40 z-40 transition-opacity duration-300 md:hidden ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onToggle}
       />
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container - Ultra Compact */}
       <nav
-        className={`fixed md:relative z-50 h-screen w-[240px] bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out shadow-xl md:shadow-none ${
+        className={`fixed md:relative z-50 h-screen w-[230px] bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:hidden"
-        } ${
-          // On desktop, if isOpen is false, we might want to hide it completely or show mini sidebar?
-          // Current requirement suggests standard toggle.
-          // Layout.jsx logic handles the main content margin.
-          // This simply handles sidebar visibility.
-          ""
         }`}
-        // If we want permanent sidebar on desktop that can collapse:
-        // We'd need two states: mobileOpen and desktopCollapsed.
-        // For simplicity: isOpen controls both. If desktop & !isOpen -> Hidden.
       >
-        {/* Brand / Logo Area */}
-        <div className="h-14 flex items-center justify-center bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-sm flex-shrink-0">
-          <h1 className="text-xl font-bold tracking-wider text-shadow-sm">
-            PTPI
+        {/* Brand Area - Sharp & Dense */}
+        <div className="h-14 flex items-center px-4 gap-2.5 border-b border-slate-200 flex-shrink-0">
+          <div className="w-7 h-7 rounded bg-slate-900 flex items-center justify-center text-white font-black text-sm">
+            P
+          </div>
+          <h1 className="text-sm font-black text-slate-800 tracking-tighter uppercase">
+            PTPI <span className="text-teal-600">Cabinet</span>
           </h1>
         </div>
 
-        {/* Scrollable Nav Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pb-2 bg-gradient-to-b from-gray-50 to-white">
-          <div className="py-2">
-            {mainItems.map((item, idx) => (
-              <NavItem key={`main-${idx}`} item={item} />
-            ))}
+        {/* Scrollable Nav Content - Dense Typography */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar pt-2 pb-4 px-2 space-y-0.5">
+          <SectionHeader title="Core" />
+          {mainItems.map((item, idx) => (
+            <NavItem key={`main-${idx}`} item={item} />
+          ))}
 
-            <SectionHeader title="Data Management" />
-            {dataItems.map((item, idx) => (
-              <NavItem key={`data-${idx}`} item={item} />
-            ))}
+          <SectionHeader title="Database" />
+          {dataItems.map((item, idx) => (
+            <NavItem key={`data-${idx}`} item={item} />
+          ))}
 
-            <SectionHeader title="Manage Requests" />
-            {requestItems.map((item, idx) => (
-              <NavItem key={`req-${idx}`} item={item} />
-            ))}
+          <SectionHeader title="Verification" />
+          {requestItems.map((item, idx) => (
+            <NavItem key={`req-${idx}`} item={item} />
+          ))}
 
-            <SectionHeader title="Manage Users" />
-            {userItems.map((item, idx) => (
-              <NavItem key={`user-${idx}`} item={item} />
-            ))}
+          <SectionHeader title="Entities" />
+          {userItems.map((item, idx) => (
+            <NavItem key={`user-${idx}`} item={item} />
+          ))}
 
-            <div className="my-2 border-t border-gray-100" />
+          <div className="my-3 border-t border-slate-100" />
 
-            {/* Settings Collapse */}
-            <div className="mx-2 my-0.5">
-              <button
-                onClick={handleCollapseToggle}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-all duration-200 group ${
-                  collapseOpen
-                    ? "bg-gray-100 text-teal-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="mr-3 p-1 rounded-full bg-teal-50 text-teal-600 group-hover:bg-teal-100">
-                    <FiSettings size={16} />
-                  </div>
-                  <span className="font-medium text-sm tracking-wide">
-                    Settings
-                  </span>
-                </div>
-                {collapseOpen ? (
-                  <FiChevronUp size={14} />
-                ) : (
-                  <FiChevronDown size={14} />
-                )}
-              </button>
-
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  collapseOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <Link
-                  to="/admin/change/password"
-                  className={`flex items-center pl-12 pr-4 py-1.5 mt-0.5 rounded-md text-sm font-medium transition-colors ${
-                    isActive("/admin/change/password")
-                      ? "text-teal-600 bg-teal-50"
-                      : "text-gray-500 hover:text-teal-600 hover:bg-gray-50"
-                  }`}
-                >
-                  Change Password
-                </Link>
-                <Link
-                  to="/admin/manage/backup"
-                  className={`flex items-center pl-12 pr-4 py-1.5 mt-0.5 rounded-md text-sm font-medium transition-colors ${
-                    isActive("/admin/manage/backup")
-                      ? "text-teal-600 bg-teal-50"
-                      : "text-gray-500 hover:text-teal-600 hover:bg-gray-50"
-                  }`}
-                >
-                  System Backup
-                </Link>
-              </div>
+          {/* Settings Section - Compact */}
+          <button
+            onClick={handleCollapseToggle}
+            className={`w-full flex items-center justify-between px-2 py-1.5 rounded transition-all duration-200 ${
+              collapseOpen
+                ? "bg-slate-900 text-white"
+                : "text-slate-500 hover:bg-slate-50"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <FiSettings size={12} className={collapseOpen ? "text-teal-400" : "text-slate-400"} />
+              <span className="font-black text-[10px] uppercase tracking-wider">System</span>
             </div>
+            {collapseOpen ? <FiChevronUp size={10} /> : <FiChevronDown size={10} />}
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out bg-slate-50 mx-1 rounded-b ${
+              collapseOpen ? "max-h-40 py-1 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            {[
+              { label: "Credentials", link: "/admin/change/password" },
+              { label: "Archive", link: "/admin/manage/backup" }
+            ].map((sub, i) => (
+              <Link
+                key={i}
+                to={sub.link}
+                className={`flex items-center pl-8 pr-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${
+                  isActive(sub.link)
+                    ? "text-teal-600"
+                    : "text-slate-400 hover:text-teal-600"
+                }`}
+              >
+                {sub.label}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Footer / Logout */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+        {/* User Session Footer - Sharp & Tonal */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex-shrink-0">
           <button
             onClick={() => handleLogout(dispatch, navigate)}
-            className="w-full flex items-center justify-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-medium text-sm shadow-sm group"
+            className="w-full flex items-center justify-center gap-2 py-2 bg-white border border-slate-300 text-slate-800 rounded hover:border-red-500 hover:text-red-600 transition-all font-black text-[9px] uppercase tracking-[0.2em]"
           >
-            <FiLogOut className="mr-2 group-hover:scale-110 transition-transform" />
-            Logout
+            <FiLogOut size={12} />
+            Terminate
           </button>
         </div>
       </nav>
 
-      {/* Styles for custom scrollbar */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
+          width: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: #cbd5e1;
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          border-radius: 0;
         }
       `}</style>
     </>

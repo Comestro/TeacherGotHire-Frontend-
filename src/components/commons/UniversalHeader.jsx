@@ -9,6 +9,7 @@ import {
   FiLogOut,
   FiUserPlus,
   FiChevronDown,
+  FiGrid,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout, getUserData } from "../../features/authSlice";
@@ -58,98 +59,76 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
   return (
     <header 
       ref={navRef}
-      className="sticky top-0 z-50 w-full bg-white border-b border-slate-200"
+      className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 h-14 sm:h-16"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between h-full items-center">
           
-          {/* Left Section: Logo & Mobile Toggle */}
-          <div className="flex items-center gap-2">
+          {/* Logo Section */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {isSidebarPresent && (
               <button
                 onClick={onToggleSidebar}
-                className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                className="lg:hidden p-1.5 text-slate-800 hover:bg-slate-50 border border-slate-100 rounded-lg transition-colors"
                 aria-label="Toggle Sidebar"
               >
-                <HiMenuAlt2 size={24} />
+                <HiMenuAlt2 size={20} />
               </button>
             )}
             
-            <Link to="/" className="flex items-center gap-1.5 text-lg sm:text-xl font-bold text-slate-800">
-              <span className="text-teal-600">PTP</span> 
-              <span className="hidden sm:inline">INSTITUTE</span>
-              <span className="sm:hidden text-slate-400 font-medium">I</span>
+            <Link to="/" className="flex items-center gap-1 font-black text-slate-900 tracking-tighter sm:text-lg">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-slate-900 text-white flex items-center justify-center rounded text-xs sm:text-sm">P</div>
+              <span className="flex flex-col leading-none">
+                 <span className="text-teal-600">PTP</span>
+                 <span className="text-[7px] sm:text-[9px] text-slate-400 font-black tracking-[0.2em] uppercase">Institute</span>
+              </span>
             </Link>
           </div>
 
-          {/* Center/Right Section: Universal Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-3">
             
-            {/* Search Teacher Button (Universal) */}
+            {/* शिक्षक खोजें Button */}
             {!shouldHideButtons && (
               <Link
                 to="/get-preferred-teacher"
-                className="flex items-center justify-center w-10 h-10 sm:w-auto sm:px-4 sm:py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-sm transition-colors"
-                title="शिक्षक खोजें"
+                className="flex items-center justify-center h-8 sm:h-10 px-2 sm:px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-lg border border-teal-700/10 transition-colors"
               >
-                <FiBriefcase className="w-5 h-5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline ml-2 text-sm font-bold">शिक्षक खोजें</span>
+                <FiBriefcase className="w-4 h-4" />
+                <span className="hidden md:inline ml-2 text-[10px] sm:text-xs font-black uppercase tracking-widest">शिक्षक खोजें</span>
               </Link>
             )}
 
-            {/* User Logic */}
+            {/* Auth/User Logic */}
             {profile.email ? (
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 p-1 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100"
+                  className="flex items-center gap-1 sm:gap-2 p-1 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 border border-teal-200">
-                    <FiUser size={16} />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200">
+                    <FiUser size={14} />
                   </div>
-                  <div className="hidden md:flex flex-col items-start pr-2">
-                    <span className="text-xs font-bold text-slate-800 leading-tight">
-                      {profile.Fname}
-                    </span>
-                    <span className="text-[10px] text-slate-500 uppercase tracking-tighter">
-                      {role || 'User'}
-                    </span>
-                  </div>
-                  <FiChevronDown className={`w-4 h-4 text-slate-400 mr-1 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <FiChevronDown size={12} className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                    <div className="p-4 bg-slate-50 border-b border-slate-100">
-                      <p className="text-xs text-slate-400 font-bold uppercase mb-1">Signed in as</p>
-                      <p className="text-sm font-bold text-slate-800 truncate">{profile.email}</p>
+                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="p-3 bg-slate-50 border-b border-slate-100">
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Identity</p>
+                      <p className="text-[10px] font-black text-slate-800 truncate uppercase mt-0.5">{profile.email}</p>
                     </div>
-                    <div className="p-2">
-                      <Link
-                        to={dashboardPath}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                        onClick={() => setIsProfileOpen(false)}
+                    <div className="p-1">
+                      <button
+                        onClick={() => { navigate(dashboardPath); setIsProfileOpen(false); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-teal-600"
                       >
-                        <FiUser className="text-lg" />
-                        Go to Dashboard
-                      </Link>
-                      {role === "teacher" && (
-                        <Link
-                          to="/teacher/setting"
-                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <FiSettings className="text-lg" />
-                          Settings
-                        </Link>
-                      )}
-                      <div className="my-1 border-t border-slate-100" />
+                        <FiGrid size={12} /> Dashboard
+                      </button>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
                       >
-                        <FiLogOut className="text-lg" />
-                        Sign Out
+                        <FiLogOut size={12} /> Terminate
                       </button>
                     </div>
                   </div>
@@ -157,38 +136,36 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
               </div>
             ) : (
               !shouldHideButtons && (
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Link
                     to="/signin"
-                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-teal-600 border border-teal-200 rounded-xl hover:bg-teal-50 bg-white"
+                    className="flex items-center px-2.5 sm:px-4 h-8 sm:h-10 text-[10px] sm:text-xs font-black uppercase tracking-widest text-teal-600 border border-teal-100 rounded-lg hover:bg-teal-50"
                   >
-                    <HiMenuAlt2 className="sm:hidden" />
-                    <span className="hidden sm:inline">Login</span>
-                    <span className="sm:hidden">Login</span>
+                    Login
                   </Link>
                   <div className="relative">
                     <button
                       onClick={() => setIsRegisterOpen(!isRegisterOpen)}
-                      className="flex items-center gap-1 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-teal-600 rounded-xl hover:bg-teal-700 shadow-sm"
+                      className="flex items-center gap-1 px-2.5 sm:px-4 h-8 sm:h-10 text-[10px] sm:text-xs font-black uppercase tracking-widest text-white bg-slate-900 rounded-lg hover:bg-teal-600 transition-colors"
                     >
-                      <span>Join</span>
-                      <FiChevronDown className={isRegisterOpen ? 'rotate-180' : ''} />
+                      Join
+                      <FiChevronDown size={10} />
                     </button>
                     {isRegisterOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                      <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
                         <Link
                           to="/signup/teacher"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-teal-600"
                           onClick={() => setIsRegisterOpen(false)}
                         >
-                          <FiUser className="text-teal-600" /> As Teacher
+                          <FiUser size={12} /> As Teacher
                         </Link>
                         <Link
                           to="/signup/recruiter"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-teal-600"
                           onClick={() => setIsRegisterOpen(false)}
                         >
-                          <FiBriefcase className="text-teal-600" /> As Recruiter
+                          <FiBriefcase size={12} /> As Recruiter
                         </Link>
                       </div>
                     )}
@@ -197,44 +174,43 @@ const UniversalHeader = ({ onToggleSidebar, isSidebarPresent = false }) => {
               )
             )}
 
-            {/* Mobile Menu Toggle (Only if Sidebar NOT present) */}
             {!isSidebarPresent && (
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl"
+                className="lg:hidden p-1.5 text-slate-800 border border-slate-100 rounded-lg hover:bg-slate-50"
               >
-                {isMobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+                {isMobileMenuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu (Overlay) - Only if Sidebar NOT present */}
+      {/* Mobile Actions Drawer */}
       {isMobileMenuOpen && !isSidebarPresent && (
-        <div className="lg:hidden bg-white border-t border-slate-100 p-4 space-y-4 shadow-xl">
+        <div className="lg:hidden bg-white border-t border-slate-100 p-2 space-y-1 shadow-sm">
            <Link
                 to="/get-preferred-teacher"
-                className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-3 rounded-xl font-bold"
+                className="flex items-center justify-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <FiBriefcase /> शिक्षक खोजें
+                <FiBriefcase size={12} /> शिक्षक खोजें
             </Link>
             {!profile.email && (
-              <div className="grid grid-cols-2 gap-3">
-                 <Link
-                    to="/signin"
-                    className="flex justify-center py-3 text-sm font-bold text-teal-600 border border-teal-200 rounded-xl"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
+              <div className="grid grid-cols-2 gap-1.5">
                   <Link
                     to="/signup/teacher"
-                    className="flex justify-center py-3 text-sm font-bold text-white bg-teal-600 rounded-xl"
+                    className="flex justify-center py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-slate-900 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Join Now
+                    Teacher Join
+                  </Link>
+                  <Link
+                    to="/signup/recruiter"
+                    className="flex justify-center py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-slate-800 rounded-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Recruiter Join
                   </Link>
               </div>
             )}

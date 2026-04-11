@@ -1,44 +1,46 @@
 # PTP Institute Modernization Design System (2026)
 
-This document outlines the premium design system and UX principles implemented for the PTP Institute portal modernization.
+This document outlines the **Minimalist Premium** design system and UX principles implemented for the PTP Institute portal modernization.
 
 ## Core Principles
-1. **Institutional Teal Aesthetic**: Transitioned from generic blue to a sophisticated "Teal" palette representing authority and freshness.
-2. **Instant UX (No-Motion Policy)**: Removed all `framer-motion`, `@keyframes`, and CSS transitions to achieve instantaneous interactions, critical for Android WebView performance.
-3. **Editorial Typography**: Using high-contrast font weights and leading-relaxed spacing for a premium, editorial grade feel.
-4. **Tonal Layering**: Utilizing subtle background shifts (Slate-50 to White) and refined border tokens (1px Slate-200) instead of heavy shadows.
+1. **Institutional Teal Aesthetic**: Sophisticated solid Teal palette for a clean, stable professional image.
+2. **Instant UX (No-Motion Policy)**: Zero animations/transitions/gradients for maximum performance and clarity.
+3. **Minimalist Surface Design**: 
+   - **No Shadows**: Components rely on high-precision borders (`1px`) for depth.
+   - **Reduced Radius**: Transitioned from circular to conservative `rounded-xl` (12px) or `rounded-2xl` (16px) for a sharper professional look.
+   - **Solid Colors**: Removal of all gradients to ensure consistent rendering across all device types.
+4. **Editorial Typography**: High-contrast font weights and precise tracking for a structured, publication-grade layout.
 
 ## Color Palette
-| Token | Value | usage |
+| Token | Value | Usage |
 |-------|-------|-------|
-| Primary | `#0D9488` (Teal-600) | Primary Buttons, Active States, Logo |
-| Secondary | `#64748B` (Slate-500) | Captions, Subheaders |
-| Background | `#F8FAFC` (Slate-50) | Global Page Background |
-| Surface | `#FFFFFF` | Cards, Header, Inputs |
-| Border | `#E2E8F0` (Slate-200) | Component Outlines |
+| Primary | `#0D9488` (Teal-600) | Brand colors, Primary Buttons, Active States |
+| Secondary | `#64748B` (Slate-500) | Secondary text, captions, inactive icons |
+| Background | `#F8FAFC` (Slate-50) | Global application background |
+| Surface | `#FFFFFF` | Main UI elements (Cards, Modals, Headers) |
+| Border | `#CBD5E1` (Slate-300) | High-definition component outlines |
 
 ## Component Specs
 
 ### 1. Universal Header
 - **Height**: 64px (h-16)
-- **Blur**: `backdrop-blur-md` (where supported)
-- **Role Awareness**: Switches between Guest, Teacher, Recruiter, and Admin modes dynamically.
-- **Mobile Optimization**: Condenses logo to "PTP I" and uses icon-only search to prevent overcrowding.
+- **Border**: `border-b border-slate-200`
+- **Surface**: Pure solid white (`bg-white`)
+- **Depth**: Zero shadow, relies on border separation.
 
-### 2. Premium Cards (`card-premium`)
-- **Radius**: `2rem` (rounded-[2rem])
-- **Shadow**: `shadow-2xl shadow-slate-200/50`
-- **Border**: `1px border-slate-100`
+### 2. Standard Cards (`card-minimal`)
+- **Radius**: `rounded-xl` (12px)
+- **Shadow**: `shadow-none`
+- **Border**: `1px border-slate-200` (consistent thickness)
+- **Padding**: Focused on spacing efficiency (`p-6` for desktop, `p-4` for mobile).
 
-### 3. Navigation Layouts
-- **Sidebar**: Sticky/Fixed with Slate-50 gradient backgrounds.
-- **Header**: Sticky `top-0` with standard `z-50` depth.
-- **Main Content**: `max-w-7xl` or `max-w-8xl` centering with `px-4`.
+### 3. Sidebar Navigation
+- **Architecture**: Fixed width (`260px`) with high contrast separation.
+- **Header**: High-density brand area with solid teal logo block.
+- **Items**: Tonal active states (`bg-slate-100`) with no transition effects.
 
-## Deployment Branches
-- **Branch**: `design-modernization`
-- **Status**: Active Implementation
-- **Goal**: Full project parity for Web and Android.
+## UI Philosophy: "Flat Authority"
+The system prioritizes functional density and visual clarity. By removing "fluff" like heavy gradients and deep shadows, the interface becomes a high-performance tool tailored for educational institutions.
 
 ---
 *Verified by Antigravity Design Team (Google DeepMind)*
