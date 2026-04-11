@@ -170,7 +170,9 @@ const ManageSkills = () => {
     } catch (error) {
       if (error.response?.data) {
         const responseData = error.response.data;
-        if (responseData.name) {
+        if (responseData.error) {
+          showNotification(responseData.error, "error");
+        } else if (responseData.name) {
           setFormErrors({ name: responseData.name[0] });
           showNotification(responseData.name[0], "error");
         } else if (responseData.message) {
@@ -211,8 +213,11 @@ const ManageSkills = () => {
       showNotification(`Skill "${selectedSkill.name}" deleted successfully`);
       handleCloseDeleteModal();
     } catch (error) {
-      if (error.response?.data?.message) {
-        showNotification(error.response.data.message, "error");
+      const responseData = error.response?.data;
+      if (responseData?.error) {
+        showNotification(responseData.error, "error");
+      } else if (responseData?.message) {
+        showNotification(responseData.message, "error");
       } else {
         showNotification("Failed to delete skill. Please try again.", "error");
       }
@@ -233,7 +238,14 @@ const ManageSkills = () => {
       setSelectedSkills([]);
       showNotification(`${selectedSkills.length} skills deleted successfully`);
     } catch (error) {
-      showNotification("Failed to delete some skills.", "error");
+      const responseData = error.response?.data;
+      if (responseData?.error) {
+        showNotification(responseData.error, "error");
+      } else if (responseData?.message) {
+        showNotification(responseData.message, "error");
+      } else {
+        showNotification("Failed to delete some skills.", "error");
+      }
     } finally {
       setSubmitting(false);
     }
