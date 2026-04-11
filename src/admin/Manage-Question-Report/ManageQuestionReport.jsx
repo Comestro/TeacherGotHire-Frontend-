@@ -25,7 +25,6 @@ import {
   Stack,
   Tooltip,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -492,48 +491,94 @@ export default function ManageQuestionReport() {
           </Paper>
         </Grid>
       </Grid>
-      {/* Content: DataGrid or skeleton / empty */}
-      <Paper sx={{ p: 0 }}>
+      {/* Content: Table or skeleton / empty */}
+      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
         {loading ? (
-          <Box sx={{ p: 6, textAlign: "center" }}>
-            <CircularProgress />
+          <Box sx={{ p: 10, textAlign: "center" }}>
+            <CircularProgress size={32} sx={{ color: 'teal' }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Loading reports...</Typography>
           </Box>
         ) : filtered.length === 0 ? (
-          <Box sx={{ p: 6, textAlign: "center" }}>
+          <Box sx={{ p: 10, textAlign: "center" }}>
             <Typography color="text.secondary">No reports found matching your criteria.</Typography>
           </Box>
         ) : (
-          <Box sx={{ width: "100%" }}>
-            {/* DataGrid with autoHeight and auto row height so long texts are visible */}
-            <DataGrid
-              rows={filtered}
-              columns={columns}
-              autoHeight
-              getRowId={(r) => r.id}
-              pageSize={pageSize}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              pagination
-              paginationMode="client"
-              onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(0); }}
-              page={page}
-              onPageChange={(p) => setPage(p)}
-              density="standard"
-              disableSelectionOnClick
-              sx={{
-                border: "none",
-                "& .MuiDataGrid-columnHeaders": {
-                  background: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
-                  fontWeight: 700,
-                },
-                "& .MuiDataGrid-cell": {
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                  alignItems: "flex-start",
-                  py: 1.5,
-                },
-              }}
-              getRowHeight={() => "auto"}
-            />
+          <Box sx={{ width: "100%", overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Report ID</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Question Info</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Issue / Reporter</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((report) => (
+                  <tr key={report.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                    <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500 }}>
+                      REP-00{report.id}
+                      <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8' }}>
+                        {safeFormatDate(report.created_at, "MMM DD, HH:mm")}
+                      </Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px', maxWidth: '300px' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {safeText(report.question?.text)}
+                      </Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2" sx={{ color: 'teal', fontWeight: 500 }}>
+                        {formatIssueTypes(report.issue_type)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        By {report.user?.Fname || "Guest"} ({report.user?.email || "N/A"})
+                      </Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Chip
+                        label={statusLabels[report.status]}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          bgcolor: report.status ? alpha('#388e3c', 0.1) : alpha('#f9a825', 0.1),
+                          color: report.status ? '#388e3c' : '#f9a825',
+                          border: 'none'
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Stack direction="row" spacing={0.5} justifyContent="center">
+                        <IconButton size="small" sx={{ color: 'teal' }} onClick={() => openReportDetails(report)}>
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        {!report.status && (
+                          <IconButton size="small" color="success" onClick={() => confirmAndMarkDone(report)}>
+                            <CheckIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        )}
+                      </Stack>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={filtered.length}
+                rowsPerPage={pageSize}
+                page={page}
+                onPageChange={(e, p) => setPage(p)}
+                onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(0); }}
+                labelRowsPerPage="Density:"
+              />
+            </Box>
           </Box>
         )}
       </Paper>

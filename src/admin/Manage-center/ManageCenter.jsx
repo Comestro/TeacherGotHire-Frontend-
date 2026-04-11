@@ -41,14 +41,6 @@ import {
   Mail as EmailIcon,
   EditOff as EditOffIcon,
 } from "@mui/icons-material";
-import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
-  GridToolbarExport,
-} from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import {
   createCenterManager,
@@ -536,77 +528,82 @@ export default function ManageCenter() {
         </Grid>
       </Paper>
       {/* Content */}
-      <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden", mb: 3 }}>
+      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden', mb: 3 }}>
         {isLoading ? (
-          <Box p={6} textAlign="center">
-            <CircularProgress />
-            <Typography mt={2} color="text.secondary">Loading exam centers...</Typography>
+          <Box sx={{ p: 10, textAlign: "center" }}>
+            <CircularProgress size={32} sx={{ color: 'teal' }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Loading exam centers...</Typography>
           </Box>
         ) : filteredCenters.length === 0 ? (
-          <Box p={3} textAlign="center">
-            <Alert severity="info">No exam centers found</Alert>
+          <Box p={6} textAlign="center">
+            <Alert severity="info" sx={{ display: 'inline-flex' }}>No exam centers found matching your criteria.</Alert>
           </Box>
         ) : isMobile ? (
           <Box p={2}>{renderMobileCards()}</Box>
         ) : (
-          <Box sx={{ width: "100%" }}>
-            <DataGrid
-
-              rows={dgRows}
-              columns={[
-                { field: "centerName", headerName: "Center Name", flex: 1.5, minWidth: 200 },
-                { field: "location", headerName: "Location", flex: 1.8, minWidth: 250 },
-                { field: "pincode", headerName: "Pincode", width: 110 },
-                { field: "phone", headerName: "Phone", width: 120 },
-                { field: "alt_phone", headerName: "Alt Phone", width: 120 },
-                {
-                  field: "manager",
-                  headerName: "Manager",
-                  flex: 1,
-                  minWidth: 170,
-                },
-                {
-                  field: "status",
-                  headerName: "Status",
-                  width: 120,
-                  renderCell: (p) => (
-                    <Box display="flex" justifyContent="center">
-                      <Switch checked={p.value} onChange={() => handleToggleStatus(p.row.raw)} size="small" color="success" />
-                    </Box>
-                  ),
-                },
-                {
-                  field: "actions",
-                  headerName: "Actions",
-                  width: 140,
-                  sortable: false,
-                  renderCell: (p) => (
-                    <Box display="flex" gap={1} justifyContent="center">
-                      <Tooltip title="Edit">
-                        <IconButton size="small" onClick={() => openEditModal(p.row.raw)}><EditIcon fontSize="small" /></IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton size="small" color="error" onClick={() => confirmDelete(p.row.raw)}><DeleteIcon fontSize="small" /></IconButton>
-                      </Tooltip>
-                    </Box>
-                  ),
-                },
-              ]}
-              getRowId={(r) => r.id}
-              pageSizeOptions={[5, 10, 25, 50]}
-              initialState={{
-                pagination: { paginationModel: { page: pageState.page, pageSize: pageState.pageSize } },
-                sorting: { sortModel: [{ field: "centerName", sort: "asc" }] },
-              }}
-              paginationModel={pageState}
-              onPaginationModelChange={(model) => setPageState(model)}
-              slots={{ toolbar: CustomToolbar }}
-              sx={{
-                border: "none",
-                "& .MuiDataGrid-columnHeaders": { backgroundColor: theme.palette.background.default, fontWeight: 700 },
-                "& .MuiDataGrid-row:nth-of-type(even)": { backgroundColor: theme.palette.mode === "light" ? "#fafafa" : theme.palette.background.default },
-              }}
-            />
+          <Box sx={{ width: "100%", overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Center Info</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Location</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Manager Info</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCenters
+                  .slice(pageState.page * pageState.pageSize, (pageState.page + 1) * pageState.pageSize)
+                  .map((center) => (
+                  <tr key={center.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{center.center_name}</Typography>
+                      <Typography variant="caption" color="text.secondary">{center.phone}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2" color="#475569">{center.area}, {center.city}</Typography>
+                      <Typography variant="caption" color="text.secondary">{center.state} - {center.pincode}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2" color="#1e293b">{center.user ? `${center.user.Fname} ${center.user.Lname}` : 'N/A'}</Typography>
+                      <Typography variant="caption" color="text.secondary">{center.user?.email || 'N/A'}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Switch 
+                        checked={Boolean(center.status)} 
+                        onChange={() => handleToggleStatus(center)} 
+                        size="small" 
+                        color="success" 
+                      />
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Stack direction="row" spacing={0.5} justifyContent="center">
+                        <IconButton size="small" sx={{ color: 'teal' }} onClick={() => openEditModal(center)}>
+                          <EditIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => confirmDelete(center)}>
+                          <DeleteIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Stack>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={filteredCenters.length}
+                rowsPerPage={pageState.pageSize}
+                page={pageState.page}
+                onPageChange={(e, p) => setPageState(prev => ({ ...prev, page: p }))}
+                onRowsPerPageChange={(e) => setPageState({ page: 0, pageSize: parseInt(e.target.value, 10) })}
+                labelRowsPerPage="Density:"
+              />
+            </Box>
           </Box>
         )}
       </Paper>

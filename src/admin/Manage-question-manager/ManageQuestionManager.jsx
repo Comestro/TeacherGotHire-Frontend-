@@ -47,7 +47,6 @@ import {
   WarningAmber as WarningAmberIcon,
   Group as GroupIcon,
 } from "@mui/icons-material";
-import { DataGrid, GridToolbarContainer, GridToolbarExport } from "@mui/x-data-grid";
 import Layout from "../Admin/Layout";
 import {
   getQuestionsManager,
@@ -757,236 +756,25 @@ const ManageQuestionManager = () => {
                   {renderMobileView()}
                 </Box>
               ) : (
-                <Box
-                  sx={{
-                    width: '100%',
-                    '& .MuiDataGrid-root': {
-                      border: 'none',
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                      bgcolor: alpha('#0d9488', 0.05),
-                      borderBottom: '2px solid',
-                      borderColor: '#0d9488',
-                      '& .MuiDataGrid-columnHeaderTitle': {
-                        fontWeight: 700,
-                        color: '#1E293B',
-                      },
-                    },
-                    '& .MuiDataGrid-row': {
-                      '&:hover': {
-                        bgcolor: alpha('#0d9488', 0.04),
-                      },
-                    },
-                    '& .MuiCheckbox-root': {
-                      color: '#0d9488',
-                      '&.Mui-checked': {
-                        color: '#0d9488',
-                      },
-                    },
-                  }}
-                >
-                  <DataGrid
-                    rows={filteredManagers.map(manager => ({
-                      id: manager.id,
-                      name: `${manager.user.Fname} ${manager.user.Lname}`,
-                      email: manager.user.email,
-                      classes: manager.class_category || [],
-                      subjects: manager.subject,
-                      status: manager.status,
-                      rawData: manager
-                    }))}
-                    columns={[
-                      {
-                        field: 'id',
-                        headerName: 'ID',
-                        width: 80,
-                        renderCell: (params) => (
-                          <Chip
-                            label={params.value}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha('#0d9488', 0.1),
-                              color: '#0d9488',
-                              fontWeight: 600,
-                              fontSize: '0.75rem',
-                            }}
-                          />
-                        ),
-                      },
-                      {
-                        field: 'name',
-                        headerName: 'Manager Name',
-                        flex: 1.5,
-                        minWidth: 180,
-                        renderCell: (params) => (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0d9488' }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1E293B' }}>
-                              {params.value}
+                <Box sx={{ width: "100%", overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Manager Info</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Assigned Content</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredManagers
+                        .slice(page * rowsPerPage, (page + 1) * rowsPerPage)
+                        .map((manager) => (
+                        <tr key={manager.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                              {manager.user?.Fname} {manager.user?.Lname}
                             </Typography>
-                          </Box>
-                        ),
-                      },
-                      {
-                        field: 'email',
-                        headerName: 'Email',
-                        flex: 1.5,
-                        minWidth: 200,
-                        renderCell: (params) => (
-                          <Typography variant="body2" sx={{ color: '#64748B' }}>
-                            {params.value}
-                          </Typography>
-                        ),
-                      },
-                      {
-                        field: 'subjects',
-                        headerName: 'Assigned Subjects',
-                        flex: 3,
-                        minWidth: 300,
-                        sortable: false,
-                        filterable: false,
-                        renderCell: (params) => (
-                          <Box 
-                            display="flex" 
-                            flexWrap="wrap" 
-                            gap={0.5} 
-                            sx={{ 
-                              maxHeight: '100%',
-                              overflow: 'auto',
-                              py: 0.5
-                            }}
-                          >
-                            {params.value.map((sub) => {
-                              const category = params.row.classes.find(cat => cat.id === sub.class_category);
-                              const label = category ? `${sub.subject_name} (${category.name})` : sub.subject_name;
-
-                              return (
-                                <Tooltip 
-                                  key={sub.id}
-                                  title={`Subject: ${sub.subject_name} | Category: ${category?.name || 'N/A'}`} 
-                                  arrow
-                                >
-                                  <Chip
-                                    label={label}
-                                    size="small"
-                                    sx={{ 
-                                      m: 0.2,
-                                      maxWidth: 200,
-                                      bgcolor: alpha('#0d9488', 0.1),
-                                      color: '#0d9488',
-                                      fontWeight: 500,
-                                      '& .MuiChip-label': {
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                      }
-                                    }}
-                                  />
-                                </Tooltip>
-                              );
-                            })}
-                          </Box>
-                        ),
-                      },
-                      {
-                        field: 'status',
-                        headerName: 'Status',
-                        width: 170,
-                        renderCell: (params) => (
-                          <Box display="flex" alignItems="center" justifyContent="space-between" width="100%" px={1}>
-                            <Chip
-                              label={params.value ? "Active" : "Inactive"}
-                              size="small"
-                              sx={{ 
-                                borderRadius: '4px',
-                                fontWeight: 600,
-                                px: 1,
-                                bgcolor: params.value ? alpha('#0d9488', 0.1) : alpha('#64748B', 0.1),
-                                color: params.value ? '#0d9488' : '#64748B',
-                              }}
-                            />
-                            <Switch
-                              checked={params.value}
-                              onChange={() => handleToggleStatus(params.row.rawData)}
-                              size="small"
-                              disabled={loadingAction}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: '#0d9488',
-                                  '& + .MuiSwitch-track': {
-                                    backgroundColor: '#0d9488',
-                                  },
-                                },
-                              }}
-                            />
-                          </Box>
-                        ),
-                      },
-                      {
-                        field: 'actions',
-                        headerName: 'Actions',
-                        width: 150,
-                        sortable: false,
-                        filterable: false,
-                        disableColumnMenu: true,
-                        renderCell: (params) => (
-                          <Box display="flex" justifyContent="center" gap={1}>
-                            <Tooltip title="View Details">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenViewDialog(params.row.rawData)}
-                                sx={{
-                                  bgcolor: alpha('#06B6D4', 0.1),
-                                  color: '#06B6D4',
-                                  '&:hover': { bgcolor: alpha('#06B6D4', 0.2) },
-                                }}
-                              >
-                                <VisibilityIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-
-                            <Tooltip title="Edit Manager">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenModal(true, params.row.rawData)}
-                                disabled={loadingAction}
-                                sx={{
-                                  bgcolor: alpha('#0d9488', 0.1),
-                                  color: '#0d9488',
-                                  '&:hover': { bgcolor: alpha('#0d9488', 0.2) },
-                                }}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-
-                            <Tooltip title="Delete Manager">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleDeleteConfirmation(params.row.rawData)}
-                                disabled={loadingAction}
-                                sx={{
-                                  bgcolor: alpha('#ef4444', 0.1),
-                                  color: '#ef4444',
-                                  '&:hover': { bgcolor: alpha('#ef4444', 0.2) },
-                                }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        ),
-                      },
-                    ]}
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={setPaginationModel}
-                    pageSizeOptions={[5, 10, 25, 50]}
-                    sortModel={sortModel}
-                    onSortModelChange={setSortModel}
-                    pagination
-                    disableRowSelectionOnClick
-                    loading={loading}
-                    autoHeight={false}
                     getRowHeight={() => 'auto'}
                     getEstimatedRowHeight={() => 60}
                     sx={{

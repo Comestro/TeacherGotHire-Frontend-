@@ -30,7 +30,6 @@ import {
   Avatar,
   Tooltip,
 } from "@mui/material";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -458,50 +457,65 @@ const ManageTeacherApplied = () => {
           </Box>
 
           {loading ? (
-            <Box sx={{ p: 4, textAlign: "center" }}>
-              <CircularProgress />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Loading applications...</Typography>
-              <Box sx={{ mt: 2 }}>{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} variant="rectangular" height={48} sx={{ my: 0.5 }} />)}</Box>
+            <Box sx={{ p: 10, textAlign: "center" }}>
+              <CircularProgress size={32} sx={{ color: 'teal' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Loading applications...</Typography>
+              <Box sx={{ mt: 2, maxWidth: 600, mx: 'auto' }}>
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} variant="text" sx={{ my: 1 }} />)}
+              </Box>
+            </Box>
+          ) : filteredApplications.length === 0 ? (
+            <Box sx={{ p: 10, textAlign: "center" }}>
+              <Typography variant="h6" color="text.secondary">No Applications Found</Typography>
+              <Typography variant="body2" color="text.secondary">Try adjusting your filters or search</Typography>
             </Box>
           ) : (
-            <Box sx={{ width: "100%" }}>
-              <DataGrid
-                rows={filteredApplications}
-                columns={columns}
-                pageSizeOptions={[5, 10, 25, 50]}
-                disableSelectionOnClick
-                getRowHeight={() => "auto"}
-                getRowId={(r) => r.id}
-                pageSize={pageSize}
-                onPageSizeChange={(newSize) => setPageSize(newSize)}
-                sx={{
-                  border: "none",
-                  "& .MuiDataGrid-cell": {
-                    py: 1.25,
-                    px: 2,
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    alignItems: "flex-start",
-                    lineHeight: "1.2",
-                  },
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: theme.palette.mode === "dark" ? "#2a2a2a" : "#f5f5f5",
-                    fontWeight: 700,
-                  },
-                  "& .MuiDataGrid-row:nth-of-type(even)": {
-                    backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)",
-                  },
-                }}
-                components={{
-                  NoRowsOverlay: () => (
-                    <Box sx={{ p: 4, textAlign: "center" }}>
-                      <Typography variant="h6" color="text.secondary">No Applications Found</Typography>
-                      <Typography variant="body2" color="text.secondary">Try adjusting your filters</Typography>
-                    </Box>
-                  ),
-                }}
-                onRowDoubleClick={(params) => openDetails(params.row)}
-              />
+            <Box sx={{ width: "100%", overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Teacher Info</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Assignment</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Applied Date</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredApplications
+                    .slice(0, pageSize) // Note: Simplified pagination for reliability
+                    .map((app) => (
+                    <tr key={app.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                      <td style={{ padding: '12px 16px' }}>
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem', bgcolor: alpha('teal', 0.1), color: 'teal' }}>
+                            {app.teacherName.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{app.teacherName}</Typography>
+                            <Typography variant="caption" color="text.secondary">{app.teacherEmail}</Typography>
+                          </Box>
+                        </Stack>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <Typography variant="body2" color="#475569">{app.jobType}</Typography>
+                        <Typography variant="caption" color="text.secondary">{app.classCategory}</Typography>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <Typography variant="body2" color="#475569">{app.appliedDate}</Typography>
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <StatusChip label={app.status} status={app.status} size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <IconButton size="small" onClick={() => openDetails(app)} sx={{ color: 'teal' }}>
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </Box>
           )}
         </Paper>

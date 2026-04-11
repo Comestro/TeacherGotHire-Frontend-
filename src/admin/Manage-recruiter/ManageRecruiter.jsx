@@ -32,14 +32,6 @@ import {
   alpha,
   Stack,
 } from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import {
-  GridToolbarContainer,
-  GridToolbarFilterButton,
-  GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbarDensitySelector
-} from '@mui/x-data-grid';
 import {
   MdVisibility as ViewIcon,
   MdGetApp as ExportIcon,
@@ -406,81 +398,83 @@ const ManageRecruiter = () => {
       <Paper
         elevation={0}
         sx={{
-          mb: 1,
+          mb: 2,
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between',
           alignItems: { xs: 'flex-start', md: 'center' },
-          gap: 2
+          gap: 2,
+          p: 1
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ bgcolor: '#0d9488', width: 48, height: 48 }}>
+          <Avatar sx={{ bgcolor: alpha('#0d9488', 0.1), color: '#0d9488', width: 44, height: 44 }}>
             <PersonIcon />
           </Avatar>
           <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: '#0d9488',
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', sm: '2.125rem' }
-              }}
-            >
-              Manage Recruiters
+            <Typography variant="h5" sx={{ color: '#1e293b', fontWeight: 700 }}>
+              Recruiter Management
             </Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
-              {handleFilterChange().length} recruiters found
+            <Typography variant="caption" color="text.secondary">
+              Total {filteredRecruiters.length} recruiters active
             </Typography>
           </Box>
         </Box>
 
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" startIcon={<MdRefresh />} onClick={() => window.location.reload()}>
+          <Button 
+            variant="text" 
+            size="small"
+            startIcon={<MdRefresh />} 
+            onClick={() => window.location.reload()}
+            sx={{ color: '#64748b' }}
+          >
             Refresh
           </Button>
           <Button
             variant="contained"
+            size="small"
             sx={{
-              background: 'linear-gradient(135deg, #0d9488 0%, #06B6D4 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #0b7d6f 0%, #0891b2 100%)',
-              }
+              bgcolor: '#0d9488',
+              '&:hover': { bgcolor: '#0b7d6f' },
+              boxShadow: 'none',
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3
             }}
             startIcon={<ExportIcon />}
             onClick={handleExportData}
-            disabled={handleFilterChange().length === 0 || loading}
-            textTransform="none"
-            minWidth={{ xs: '100%', sm: 'auto' }}
+            disabled={filteredRecruiters.length === 0 || loading}
           >
-            Export Data
+            Export CSV
           </Button>
         </Stack>
       </Paper>
-      {/* Search and filter section */}
+
+      {/* Filter section */}
       <Paper
-        elevation={2}
+        elevation={0}
         sx={{
           mb: 3,
-          p: { xs: 2, sm: 3 },
-          borderRadius: 3,
-          border: `1px solid ${alpha('#0d9488', 0.1)}`,
-          background: `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8fafc', 0.5)} 100%)`,
+          p: 2,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'white',
         }}
       >
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              placeholder="Search recruiters by name, email or phone..."
+              placeholder="Search by name, email or phone..."
               variant="outlined"
               size="small"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: <SearchIcon color="action" style={{ marginRight: '8px', fontSize: '1.2rem' }} />,
-                }
+              InputProps={{
+                startAdornment: <SearchIcon style={{ marginRight: '8px', color: '#94a3b8', fontSize: '1.2rem' }} />,
+                sx: { borderRadius: 1.5, bgcolor: '#f8fafc' }
               }}
             />
           </Grid>
@@ -492,6 +486,7 @@ const ManageRecruiter = () => {
                 label="Status"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
+                sx={{ borderRadius: 1.5, bgcolor: '#f8fafc' }}
               >
                 <MenuItem value=""><em>All Statuses</em></MenuItem>
                 <MenuItem value="verified">Verified</MenuItem>
@@ -508,6 +503,7 @@ const ManageRecruiter = () => {
                 label="Gender"
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
+                sx={{ borderRadius: 1.5, bgcolor: '#f8fafc' }}
               >
                 <MenuItem value=""><em>All Genders</em></MenuItem>
                 <MenuItem value="male">Male</MenuItem>
@@ -524,6 +520,7 @@ const ManageRecruiter = () => {
                 label="District"
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
+                sx={{ borderRadius: 1.5, bgcolor: '#f8fafc' }}
               >
                 <MenuItem value=""><em>All Districts</em></MenuItem>
                 {BIHAR_DISTRICTS.map(district => (
@@ -536,317 +533,96 @@ const ManageRecruiter = () => {
           <Grid item xs={12} md={2}>
             <Button
               fullWidth
-              variant="outlined"
+              size="small"
+              variant="text"
               onClick={handleClearFilters}
-              startIcon={<MdRefresh />}
-              sx={{ borderColor: alpha('#0d9488', 0.2), color: '#0d9488' }}
+              sx={{ color: '#64748b', textTransform: 'none' }}
             >
-              Clear
+              Clear Filters
             </Button>
           </Grid>
         </Grid>
       </Paper>
-      {/* Recruiters data section */}
-      <Paper
-        elevation={2}
-        sx={{
-          borderRadius: 2,
-          overflow: "hidden",
-        }}
-      >
+
+      {/* Main Content */}
+      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" py={6} flexDirection="column" gap={2}>
-            <CircularProgress />
-            <Typography variant="body2" color="text.secondary">Loading recruiters data...</Typography>
+          <Box display="flex" justifyContent="center" alignItems="center" py={10} flexDirection="column" gap={2}>
+            <CircularProgress size={32} sx={{ color: '#0d9488' }} />
+            <Typography variant="body2" color="text.secondary">Fetching data...</Typography>
           </Box>
         ) : error ? (
-          <Box p={3} textAlign="center">
+          <Box p={4} textAlign="center">
             <Alert severity="error">{error}</Alert>
-          </Box>
-        ) : handleFilterChange().length === 0 ? (
-          <Box p={3} textAlign="center">
-            <Alert severity="info">No recruiters found matching your criteria</Alert>
           </Box>
         ) : (
           <>
             {isXsScreen ? (
-              (<Box p={2}>
-                {renderMobileCards()}
-              </Box>)
+              <Box p={2}>{renderMobileCards()}</Box>
             ) : (
-              (<Box sx={{ height: 600, width: '100%' }}>
-                <DataGrid
-                  rows={handleFilterChange()}
-                  getRowId={(row) => row.id}
-                  columns={[
-                    {
-                      field: 'name',
-                      headerName: 'Recruiter',
-                      flex: 2,
-                      minWidth: 220,
-                      headerAlign: 'center',
-                      renderCell: (params) => (
-                        <Box 
-                          display="flex" 
-                          gap={1.5} 
-                          sx={{ 
-                            py: 1.5, 
-                            width: '100%',
-                          }}
-                        >
-                          <Box sx={{ width: '100%' }}>
-                            <Typography variant="body2" fontWeight={500} align="center">
-                              {params.row.name}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      ),
-                      sortable: true,
-                      filterable: true,
-                      align: 'center',
-                    },
-                    {
-                      field: 'email',
-                      headerName: 'Email',
-                      flex: 1,
-                      minWidth: 180,
-                      headerAlign: 'center',
-                      align: 'center',
-                    },
-                    {
-                      field: 'company',
-                      headerName: 'Company',
-                      flex: 1,
-                      minWidth: 150,
-                      sortable: true,
-                      filterable: true,
-                      headerAlign: 'center',
-                      renderCell: (params) => (
-                        <Box sx={{ py: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                          <Typography variant="body2" align="center">
-                            {params.value || 'N/A'}
-                          </Typography>
-                        </Box>
-                      ),
-                      align: 'center',
-                    },
-                    {
-                      field: 'location',
-                      headerName: 'Location',
-                      flex: 1,
-                      minWidth: 150,
-                      sortable: true,
-                      filterable: true,
-                      headerAlign: 'center',
-                      renderCell: (params) => (
-                        <Box sx={{ py: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                          <Typography variant="body2" align="center">
-                            {params.value || 'N/A'}
-                          </Typography>
-                        </Box>
-                      ),
-                      align: 'center',
-                    },
-                    {
-                      field: 'status',
-                      headerName: 'Status',
-                      width: 140,
-                      headerAlign: 'center',
-                      renderCell: (params) => (
-                        <Box 
-                          display="flex" 
-                          justifyContent="center" 
-                          sx={{ 
-                            py: 1, 
-                            width: '100%'
-                          }}
-                        >
+              <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Recruiter</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Company</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Location</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRecruiters
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row) => (
+                      <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                        <td style={{ padding: '12px 16px' }}>
+                          <Typography variant="body2" fontWeight={600} color="#1e293b">{row.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">{row.email}</Typography>
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#475569' }}>{row.company}</td>
+                        <td style={{ padding: '12px 16px', color: '#475569' }}>{row.location}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <Chip
                             size="small"
-                            label={params.value || 'N/A'}
-                            color={getStatusColor(params.value)}
+                            label={row.status}
+                            color={getStatusColor(row.status)}
                             variant="outlined"
-                            icon={params.value === 'Verified' ? <VerifiedIcon size={14} /> : undefined}
-                            sx={{ minWidth: 85 }}
+                            sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600, px: 0.5 }}
                           />
-                        </Box>
-                      ),
-                      sortable: true,
-                      filterable: true,
-                      type: 'singleSelect',
-                      valueOptions: ['Verified', 'Pending', 'Rejected'],
-                      align: 'center',
-                    },
-                    {
-                      field: 'actions',
-                      headerName: 'Actions',
-                      width: 120,
-                      sortable: false,
-                      filterable: false,
-                      headerAlign: 'center',
-                      renderCell: (params) => (
-                        <Box 
-                          display="flex" 
-                          gap={1} 
-                          sx={{ 
-                            py: 1,
-                            width: '100%',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Tooltip title="View Details">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => handleViewRecruiter(params.row)}
-                            >
-                              <ViewIcon size={24} />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      ),
-                      align: 'center',
-                    },
-                  ]}
-                  initialState={{
-                    pagination: {
-                      paginationModel: {
-                        page: page,
-                        pageSize: rowsPerPage
-                      },
-                    },
-                  }}
-                  columnVisibilityModel={{
-                    email: false,
-                    company: !isSmallScreen,
-                    location: !isMediumScreen,
-                  }}
-                  pageSizeOptions={[5, 10, 25, 50]}
-                  onPaginationModelChange={(model) => {
-                    setPage(model.page);
-                    setRowsPerPage(model.pageSize);
-                  }}
-                  disableRowSelectionOnClick
-                  onRowSelectionModelChange={(newSelectionModel) => {
-                    setSelectedRecruiters(newSelectionModel);
-                  }}
-                  rowSelectionModel={selectedRecruiters}
-                  loading={loading}
-                  filterMode="client"
-                  slots={{
-                    toolbar: CustomToolbar,
-                    noRowsOverlay: () => (
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', p: 3 }}>
-                        <Typography variant="h6" color="text.secondary" align="center" gutterBottom>
-                          No recruiters found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" align="center">
-                          Try adjusting your search or filters
-                        </Typography>
-                      </Box>
-                    ),
-                  }}
-                  slotProps={{
-                    noRowsOverlay: {
-                      sx: {
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                      },
-                    },
-                  }}
-                  getRowHeight={() => 'auto'}
-                  getEstimatedRowHeight={() => 80}
-                  sx={{
-                    border: 'none',
-                    '& .MuiDataGrid-cell': {
-                      px: 2,
-                      py: 1.5,
-                      whiteSpace: 'normal',
-                      borderBottom: `1px solid ${alpha('#0d9488', 0.1)}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    },
-                    '& .MuiDataGrid-cell:focus': {
-                      outline: 'none',
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                      background: `linear-gradient(135deg, ${alpha('#0d9488', 0.05)} 0%, ${alpha('#06B6D4', 0.03)} 100%)`,
-                      fontWeight: 600,
-                      borderBottom: `2px solid ${alpha('#0d9488', 0.2)}`,
-                      py: 2,
-                    },
-                    '& .MuiDataGrid-columnHeader': {
-                      px: 2,
-                      py: 0.5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    },
-                    '& .MuiDataGrid-columnHeaderTitle': {
-                      fontWeight: 600,
-                      textAlign: 'center',
-                    },
-                    '& .MuiDataGrid-columnHeaderTitleContainer': {
-                      display: 'flex',
-                      justifyContent: 'center',
-                    },
-                    '& .MuiDataGrid-row': {
-                      '&:hover': {
-                        backgroundColor: alpha('#0d9488', 0.04),
-                      },
-                    },
-                    '& .MuiDataGrid-row:nth-of-type(even)': {
-                      backgroundColor: alpha('#f8fafc', 0.6),
-                    },
-                    '& .MuiDataGrid-toolbarContainer': {
-                      padding: 2,
-                      borderBottom: `1px solid ${alpha('#0d9488', 0.1)}`,
-                    },
-                    '& .MuiButton-root': {
-                      textTransform: 'none',
-                    },
-                    '& .MuiDataGrid-virtualScroller': {
-                      backgroundColor: alpha('#ffffff', 0.8),
-                    },
-                    '& .MuiCheckbox-root': {
-                      color: alpha('#0d9488', 0.6),
-                    },
-                    '& .MuiDataGrid-columnHeaderCheckbox, & .MuiDataGrid-cellCheckbox': {
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }
-                  }}
-                />
-              </Box>)
-            )}
-
-            {/* Remove the existing TablePagination as DataGrid has built-in pagination */}
-            {isXsScreen && (
-              <Box
-                display="flex"
-                justifyContent="flex-end"
-                p={2}
-                sx={{
-                  backgroundColor: theme.palette.background.default,
-                  borderTop: `1px solid ${theme.palette.divider}`
-                }}
-              >
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  component="div"
-                  count={handleFilterChange().length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  labelRowsPerPage={isSmallScreen ? "Rows:" : "Rows per page:"}
-                />
+                        </td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <IconButton size="small" sx={{ color: '#0d9488' }} onClick={() => handleViewRecruiter(row)}>
+                            <ViewIcon size={18} />
+                          </IconButton>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredRecruiters.length === 0 && (
+                      <tr>
+                        <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+                          No results found matching your criteria
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </Box>
             )}
+            
+            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={filteredRecruiters.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                labelRowsPerPage="Density:"
+                sx={{ border: 'none' }}
+              />
+            </Box>
           </>
         )}
       </Paper>

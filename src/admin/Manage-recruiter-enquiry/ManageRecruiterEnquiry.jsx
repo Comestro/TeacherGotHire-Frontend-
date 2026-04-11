@@ -27,7 +27,6 @@ import {
   Skeleton,
   Stack,
 } from '@mui/material';
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -429,39 +428,102 @@ export default function ManageRecruiterEnquiry() {
           </Grid>
         </Collapse>
       </Paper>
-      {/* DataGrid */}
-      <Paper elevation={1} sx={{ borderRadius: 2, mb: 3,display: { xs: 'none', md: 'block' } }}>
+      {/* Table Content */}
+      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden', mb: 3, display: { xs: 'none', md: 'block' } }}>
         {loading ? (
-          <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Box sx={{ p: 10, textAlign: 'center' }}>
             <CircularLoaderFallback />
           </Box>
         ) : filteredInquiries.length === 0 ? (
-          <Box sx={{ p: 6, textAlign: 'center' }}>
+          <Box sx={{ p: 10, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary">No inquiries found</Typography>
             <Typography variant="body2" color="text.secondary">Try adjusting filters or search</Typography>
           </Box>
         ) : (
-          <Box sx={{ height: '100%', width: '100%' }}>
-            <DataGrid
-              rows={filteredInquiries}
-              columns={columns}
-              autoHeight
-              getRowHeight={() => 'auto'}
-              pageSizeOptions={[5, 10, 25, 50]}
-              paginationModel={pageModel}
-              onPaginationModelChange={setPageModel}
-              disableRowSelectionOnClick
-              density={isMobile ? 'compact' : 'standard'}
-              sx={{
-                border: 'none',
-                '& .MuiDataGrid-columnHeaders': { backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5', fontWeight: 700 },
-                '& .MuiDataGrid-cell': { alignItems: 'flex-start', py: 1.5 },
-              }}
-              initialState={{
-                sorting: { sortModel: [{ field: 'createdAt', sort: sortOption === 'newest' ? 'desc' : 'asc' }] },
-              }}
-              onRowDoubleClick={(params) => openDetails(params.row)}
-            />
+          <Box sx={{ width: "100%", overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Recruiter</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Requirements</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Location</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInquiries
+                  .slice(pageModel.page * pageModel.pageSize, (pageModel.page + 1) * pageModel.pageSize)
+                  .map((inq) => (
+                  <tr key={inq.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{safe(inq.recruiterName)}</Typography>
+                      <Typography variant="caption" color="text.secondary">{safe(inq.email)}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Box display="flex" flexWrap="wrap" gap={0.5} mb={0.5}>
+                        {(inq.subjects || []).slice(0, 3).map((s, i) => (
+                          <Chip 
+                            key={i} 
+                            label={s} 
+                            size="small" 
+                            sx={{ height: 18, fontSize: '0.65rem' }} 
+                          />
+                        ))}
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">Type: {safe(inq.teacherType)}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <Typography variant="body2">{[inq.location.city, inq.location.state].filter(Boolean).join(', ') || '—'}</Typography>
+                      <Typography variant="caption" color="text.secondary">{inq.location.area}</Typography>
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Chip
+                        label={inq.status || 'Pending'}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          bgcolor: STATUS_COLORS[inq.status] || 'warning.main',
+                          color: '#fff',
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <Stack direction="row" spacing={0.5} justifyContent="center">
+                        <IconButton size="small" onClick={() => openDetails(inq)}>
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        {inq.status === 'Pending' && (
+                          <>
+                            <IconButton size="small" color="success" onClick={() => handleApprove(inq.id)}>
+                              <CheckIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                            <IconButton size="small" color="error" onClick={() => handleOpenRejectModal(inq)}>
+                              <CloseIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </>
+                        )}
+                      </Stack>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={filteredInquiries.length}
+                rowsPerPage={pageModel.pageSize}
+                page={pageModel.page}
+                onPageChange={(e, p) => setPageModel(prev => ({ ...prev, page: p }))}
+                onRowsPerPageChange={(e) => setPageModel({ page: 0, pageSize: parseInt(e.target.value, 10) })}
+                labelRowsPerPage="Density:"
+              />
+            </Box>
           </Box>
         )}
       </Paper>
