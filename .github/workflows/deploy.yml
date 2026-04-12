@@ -12,7 +12,7 @@ concurrency:
 
 env:
   DEPLOY_PATH: /home/ptpinstitute/htdocs/www.ptpinstitute.com/TeacherGotHire-Frontend-
-  PORT: "22"
+  PORT: ${{ secrets.SSH_PORT || '22' }}
 
 jobs:
   deploy:
