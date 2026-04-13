@@ -166,9 +166,11 @@ export default function ManageQuestionReport() {
       out = out.filter((r) => {
         const reportedBy = `${r.user?.Fname || ""} ${r.user?.Lname || ""}`.toLowerCase();
         const questionText = (r.question?.text || "").toLowerCase();
+        const examInfo = `${r.question?.exam_name || ""} ${r.question?.class_category || ""} ${r.question?.subject || ""}`.toLowerCase();
         const email = (r.user?.email || "").toLowerCase();
         return (
           questionText.includes(q) ||
+          examInfo.includes(q) ||
           reportedBy.includes(q) ||
           email.includes(q) ||
           (r.issue_type || []).some((it) => (it?.issue_type || "").toLowerCase().includes(q))
@@ -525,10 +527,15 @@ export default function ManageQuestionReport() {
                         {safeFormatDate(report.created_at, "MMM DD, HH:mm")}
                       </Typography>
                     </td>
-                    <td style={{ padding: '12px 16px', maxWidth: '300px' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <td style={{ padding: '12px 16px', maxWidth: '350px' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', mb: 0.5, lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {safeText(report.question?.text)}
                       </Typography>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                         <Chip label={report.question?.class_category || "No Category"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#f1f5f9' }} />
+                         <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#e0f2f1', color: 'teal' }} />
+                         <Chip label={report.question?.exam_name || "No Exam"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#fff3e0', color: '#e65100' }} />
+                      </Stack>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       <Typography variant="body2" sx={{ color: 'teal', fontWeight: 500 }}>
@@ -602,7 +609,22 @@ export default function ManageQuestionReport() {
               <Typography sx={{ mb: 1 }}>REP01-00{selectedReport.id}</Typography>
 
               <Typography variant="subtitle2" color="text.secondary">Reported Question</Typography>
-              <Typography sx={{ mb: 1 }}>{selectedReport.question?.text || "N/A"}</Typography>
+              <Typography sx={{ mb: 1.5, fontWeight: 500 }}>{selectedReport.question?.text || "N/A"}</Typography>
+
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Class Category</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedReport.question?.class_category || "N/A"}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Subject</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'teal' }}>{selectedReport.question?.subject || "N/A"}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Exam Name</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#e65100' }}>{selectedReport.question?.exam_name || "N/A"}</Typography>
+                </Grid>
+              </Grid>
 
               <Typography variant="subtitle2" color="text.secondary">Options</Typography>
               <Box sx={{ mb: 1 }}>
