@@ -83,7 +83,7 @@ function useDebounced(value, delay = 300) {
 }
 
 const formatIssueTypes = (issueTypeArray) => {
-  if (!issueTypeArray || !issueTypeArray.length) return "Not specified";
+  if (!issueTypeArray || !issueTypeArray.length) return "General Issue";
   return issueTypeArray
     .map((issue) => issueTypeMapping[issue?.issue_type] || issue?.issue_type || "Unknown")
     .join(", ");
@@ -508,13 +508,6 @@ export default function ManageQuestionReport() {
     </Layout>
   );
 }
-
-const safeFormatDate = (v, fmt = "MMM DD, YYYY") => v ? moment(v).format(fmt) : "—";
-const safeText = (v, fb = "—") => v || fb;
-const formatIssueTypes = (arr) => {
-  if (!arr?.length) return "General Issue";
-  return arr.map(i => i.issue_type).join(", ");
-};
 
 function useDebounced(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
