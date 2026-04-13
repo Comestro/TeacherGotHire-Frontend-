@@ -267,9 +267,10 @@ const ManageQuestion = () => {
     try {
       const storedOrder = sessionStorage.getItem("newQuestionOrder");
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
+      
       const englishQuestion = formData.english
         ? {
-            language: "English",
+            language: formData.english.language || "English",
             text: formData.english.text || "",
             solution: formData.english.solution || "",
             options: formData.english.options || [],
@@ -286,6 +287,7 @@ const ManageQuestion = () => {
             correct_option: formData.hindi.correct_option || 1,
           }
         : null;
+
       const questionsToSave = [];
       if (
         englishQuestion &&
@@ -307,29 +309,26 @@ const ManageQuestion = () => {
         return;
       }
 
+      const currentOrder = editingQuestion?.order;
+      const existingEnglishId = currentOrder !== undefined 
+        ? questions.find(q => q.order === currentOrder && q.language === "English")?.id 
+        : null;
+      const existingHindiId = currentOrder !== undefined 
+        ? questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id 
+        : null;
+
       if (editingQuestion) {
         let updatedQuestions = [];
         
-        // Find existing IDs from state for both parts of the pair
-        const currentOrder = editingQuestion.order;
-        const existingEnglishId = questions.find(q => q.order === currentOrder && q.language === "English")?.id;
-        const existingHindiId = questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id;
-
         if (isLanguageSubject()) {
-          // 1. Language subject logic: Push ONLY the edited part
-          if (editingQuestion.language === "English" && englishQuestion) {
-            updatedQuestions.push({
-              id: editingQuestion.id,
-              ...englishQuestion,
-            });
-          } else if (editingQuestion.language === "Hindi" && hindiQuestion) {
-            updatedQuestions.push({
-              id: editingQuestion.id,
-              ...hindiQuestion,
-            });
-          }
+          // 1. Language subject logic: Push ONLY the edited part with its direct ID
+          updatedQuestions.push({
+            id: editingQuestion.id,
+            ...(editingQuestion.language === "English" ? englishQuestion : hindiQuestion),
+          });
         } else {
-          // 2. Standard subject logic: Always send the full pair
+          // 2. Standard subject logic: Always send/preserve the pair
+          // English Part
           if (englishQuestion && englishQuestion.text.trim()) {
             updatedQuestions.push({
               ...(existingEnglishId ? { id: existingEnglishId } : {}),
@@ -337,13 +336,13 @@ const ManageQuestion = () => {
             });
           } else if (existingEnglishId) {
             const originalEn = questions.find(q => q.id === existingEnglishId);
-            updatedQuestions.push(originalEn);
+            if (originalEn) updatedQuestions.push(originalEn);
           }
 
-          // Only include Hindi if it has actual content (non-empty text and options)
+          // Hindi Part
           const hindiHasContent = hindiQuestion && 
             hindiQuestion.text.trim() && 
-            hindiQuestion.options.some(opt => opt.trim() !== "");
+            hindiQuestion.options.some(opt => opt && opt.trim() !== "");
 
           if (hindiHasContent) {
             updatedQuestions.push({
@@ -361,9 +360,11 @@ const ManageQuestion = () => {
           questions: updatedQuestions,
         };
 
-        const response = await updateNewQuestion(editingQuestion.id, payload);
+        // CRITICAL FIX: Always use the English ID in the URL for paired updates if it exists
+        // as the backend typically treats English as the master record.
+        const updateUrlId = (!isLanguageSubject() && existingEnglishId) || editingQuestion.id;
+        const response = await updateNewQuestion(updateUrlId, payload);
 
-        // Response format: { message, english_data, hindi_data }
         if (response) {
           setQuestions((prevQuestions) =>
             prevQuestions.map((q) => {
@@ -379,6 +380,7 @@ const ManageQuestion = () => {
           toast.success("Question updated successfully");
         }
       } else {
+        // Create Logic
         const payload = {
           exam: exam.id,
           ...(orderPosition !== null ? { order: orderPosition } : {}),
@@ -398,13 +400,26 @@ const ManageQuestion = () => {
           toast.success(`${questionsToSave.length} question(s) created successfully`);
         }
       }
+      
       sessionStorage.removeItem("newQuestionOrder");
       setIsModalOpen(false);
       setEditingQuestion(null);
       await refreshExamData();
     } catch (error) {
       console.error("Question save error:", error?.response?.data || error);
-      toast.error(error.response?.data?.error || error.response?.data?.message || "Failed to save question");
+      
+      // Extract specific field errors from backend (e.g., hindi_errors, english_errors)
+      const errorData = error.response?.data;
+      if (errorData && typeof errorData === 'object') {
+        const specificError = errorData.hindi_errors || errorData.english_errors || errorData.error || errorData.message;
+        if (specificError) {
+          toast.error(typeof specificError === 'string' ? specificError : JSON.stringify(specificError));
+        } else {
+          toast.error("Failed to save question due to a validation error");
+        }
+      } else {
+        toast.error("Failed to save question. Please check your connection.");
+      }
     }
   };
   const handleDelete = async (questionId) => {
