@@ -19,6 +19,7 @@ import {
   FiBarChart2,
   FiPieChart,
   FiTrendingUp,
+  FiInbox,
 } from "react-icons/fi";
 import {
   Chart as ChartJS,
@@ -295,6 +296,13 @@ export default function AdminDashboard() {
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       link: "/admin/manage/teacher/jobtype",
+    },
+    {
+      icon: <FiInbox />,
+      text: "Backup",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+      link: "/admin/manage/backup",
     },
   ];
 

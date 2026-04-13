@@ -36,27 +36,34 @@ const ManageBackup = () => {
     try {
       setLoading(true);
       const data = await getBackups();
-      setBackups(data.backups || []);
-      setBackupInfo({
-        location: data.backup_location,
-        total: data.total_backups,
-        retention: "Last 10 backups are kept",
-      });
+      
+      // Robust response parsing
+      let backupsArray = [];
+      let location = "";
+      let total = 0;
+
+      if (Array.isArray(data)) {
+        backupsArray = data;
+        total = data.length;
+      } else if (data && data.backups) {
+        backupsArray = data.backups;
+        location = data.backup_location || "";
+        total = data.total_backups || backupsArray.length;
+      } else if (data && data.results) {
+        backupsArray = data.results;
+        total = data.count || backupsArray.length;
+      }
+
+      setBackups(backupsArray);
+      setBackupInfo((prev) => ({
+        ...prev,
+        location: location || prev.location,
+        total: total || backupsArray.length,
+      }));
     } catch (err) {
-      toast.error("Failed to fetch backups list");
-      // Fallback/Mock data for demonstration if API fails or isn't ready
-      setBackups([
-        {
-          filename: "default-2025-12-21-143045.backup",
-          size: "15.32 MB",
-          created: "2025-12-21 14:30:45",
-        },
-        {
-          filename: "default-2025-12-14-020000.backup",
-          size: "14.87 MB",
-          created: "2025-12-14 02:00:00",
-        },
-      ]);
+      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Failed to fetch backups list");
+      toast.error(errorMsg);
+      // Keep hard-coded fallback for UI demo if needed, but only if fully empty
     } finally {
       setLoading(false);
     }
@@ -73,7 +80,8 @@ const ManageBackup = () => {
       toast.success(res.message || "Backup created successfully");
       fetchBackupsList();
     } catch (err) {
-      toast.error(err.message || "Failed to create backup");
+      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Failed to create backup");
+      toast.error(errorMsg);
     } finally {
       setCreating(false);
     }
@@ -92,7 +100,8 @@ const ManageBackup = () => {
       const res = await restoreBackup(filename);
       toast.success(res.message || "System restored successfully");
     } catch (err) {
-      toast.error(err.message || "Restore failed");
+      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Restore failed");
+      toast.error(errorMsg);
     } finally {
       setRestoring(null);
     }

@@ -1,7 +1,7 @@
 import apiService from "./apiService";
 
-const BACKUP_ENDPOINT = "/api/admin/backup";
-const RESTORE_ENDPOINT = "/api/admin/restore";
+const BACKUP_ENDPOINT = "/api/backup-db";
+const RESTORE_ENDPOINT = "/api/restore-db";
 
 export const getBackups = async () => {
   try {
