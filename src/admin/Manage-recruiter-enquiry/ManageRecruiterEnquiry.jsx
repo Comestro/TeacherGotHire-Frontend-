@@ -42,8 +42,10 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import Layout from '../Admin/Layout';
-import { getRecruiterEnquiry } from '../../services/adminRecruiterEnquiryApi';
+import { getRecruiterEnquiry, updateRecruiterEnquiry } from '../../services/adminRecruiterEnquiryApi';
 import dayjs from 'dayjs';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 /**
  * ManageRecruiterEnquiry — redesigned, responsive admin UI
@@ -186,9 +188,15 @@ export default function ManageRecruiterEnquiry() {
     setSelectedInquiry(null);
   };
 
-  const handleApprove = (id) => {
-    setInquiries((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'Approved' } : it)));
-    if (selectedInquiry?.id === id) setSelectedInquiry((s) => ({ ...s, status: 'Approved' }));
+  const handleApprove = async (id) => {
+    try {
+      await updateRecruiterEnquiry(id, { status: "Approved" });
+      setInquiries((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'Approved' } : it)));
+      if (selectedInquiry?.id === id) setSelectedInquiry((s) => ({ ...s, status: 'Approved' }));
+      toast.success("Enquiry approved successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to approve enquiry");
+    }
   };
 
   const handleOpenRejectModal = (row) => {
@@ -197,23 +205,40 @@ export default function ManageRecruiterEnquiry() {
     setIsRejectModalOpen(true);
   };
 
-  const handleRejectConfirm = () => {
+  const handleRejectConfirm = async () => {
     if (!selectedInquiry) return;
-    setInquiries((prev) => prev.map((it) =>
-      it.id === selectedInquiry.id ? { ...it, status: 'Rejected', adminNotes: (it.adminNotes ? it.adminNotes + '\n' : '') + `Rejected: ${rejectReason}` } : it
-    ));
-    setSelectedInquiry((s) => s ? { ...s, status: 'Rejected', adminNotes: (s.adminNotes ? s.adminNotes + '\n' : '') + `Rejected: ${rejectReason}` } : s);
-    setIsRejectModalOpen(false);
-    setRejectReason('');
+    try {
+      const updatedNotes = (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + '\n' : '') + `Rejected: ${rejectReason}`;
+      await updateRecruiterEnquiry(selectedInquiry.id, { 
+        status: 'Rejected',
+        adminNotes: updatedNotes
+      });
+      setInquiries((prev) => prev.map((it) =>
+        it.id === selectedInquiry.id ? { ...it, status: 'Rejected', adminNotes: updatedNotes } : it
+      ));
+      setSelectedInquiry((s) => s ? { ...s, status: 'Rejected', adminNotes: updatedNotes } : s);
+      setIsRejectModalOpen(false);
+      setRejectReason('');
+      toast.success("Enquiry rejected");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reject enquiry");
+    }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!selectedInquiry || !adminNote.trim()) return;
-    const noteLine = `${dayjs().format('YYYY-MM-DD')}: ${adminNote.trim()}`;
-    setInquiries((prev) => prev.map((it) => it.id === selectedInquiry.id ? { ...it, adminNotes: (it.adminNotes ? it.adminNotes + '\n' : '') + noteLine } : it));
-    setSelectedInquiry((s) => s ? { ...s, adminNotes: (s.adminNotes ? s.adminNotes + '\n' : '') + noteLine } : s);
-    setAdminNote('');
-    setIsNoteModalOpen(false);
+    try {
+      const noteLine = `${dayjs().format('YYYY-MM-DD')}: ${adminNote.trim()}`;
+      const updatedNotes = (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + '\n' : '') + noteLine;
+      await updateRecruiterEnquiry(selectedInquiry.id, { adminNotes: updatedNotes });
+      setInquiries((prev) => prev.map((it) => it.id === selectedInquiry.id ? { ...it, adminNotes: updatedNotes } : it));
+      setSelectedInquiry((s) => s ? { ...s, adminNotes: updatedNotes } : s);
+      setAdminNote('');
+      setIsNoteModalOpen(false);
+      toast.success("Note added successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add note");
+    }
   };
 
   const handleClearFilters = () => {
@@ -331,6 +356,7 @@ export default function ManageRecruiterEnquiry() {
 
   return (
     <Layout>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Box sx={{ mb: 2,mt: { xs: 2, md: 0 } }}>
         <Typography variant="h4" sx={{fontSize: { xs: '1.5rem', md: '2rem' }}} fontWeight={700}>Manage Recruiter Inquiries</Typography>
         <Typography variant="body2" color="text.secondary">Review, filter and act on recruiter enquiries for teachers</Typography>

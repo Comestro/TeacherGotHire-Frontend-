@@ -1,21 +1,11 @@
-import axios from "axios";
-import { getApiUrl } from "../store/configue";
+import apiService from "./apiService";
 
-const API_URL = getApiUrl();
-const token = localStorage.getItem("access_token");
-
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Token ${token}`
-  },
-});
+const BACKUP_ENDPOINT = "/api/admin/backup";
+const RESTORE_ENDPOINT = "/api/admin/restore";
 
 export const getBackups = async () => {
   try {
-    const response = await axiosInstance.get("/api/admin/backup/");
-    return response.data;
+    return await apiService.getAll(`${BACKUP_ENDPOINT}/`);
   } catch (error) {
     throw error.response?.data || error.message;
   }
@@ -23,8 +13,7 @@ export const getBackups = async () => {
 
 export const createBackup = async () => {
   try {
-    const response = await axiosInstance.post("/api/admin/backup/");
-    return response.data;
+    return await apiService.create(BACKUP_ENDPOINT, {});
   } catch (error) {
     throw error.response?.data || error.message;
   }
@@ -32,8 +21,7 @@ export const createBackup = async () => {
 
 export const restoreBackup = async (filename) => {
   try {
-    const response = await axiosInstance.post("/api/admin/restore/", { filename });
-    return response.data;
+    return await apiService.create(RESTORE_ENDPOINT, { filename });
   } catch (error) {
     throw error.response?.data || error.message;
   }

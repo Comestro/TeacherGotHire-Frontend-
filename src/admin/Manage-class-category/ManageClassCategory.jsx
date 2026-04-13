@@ -475,7 +475,7 @@ const ManageClassCategory = () => {
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1">
                           <button
-                            onClick={() => handleOpenDetailsModal(category)}
+                            onClick={() => handleOpenAddEditModal(category)}
                             className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                             title="View"
                           >

@@ -450,7 +450,7 @@ const ManageLevel = () => {
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1">
                           <button
-                            onClick={() => handleOpenDetailsModal(lvl)}
+                            onClick={() => handleOpenViewModal(lvl)}
                             className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                             title="View Details"
                           >
