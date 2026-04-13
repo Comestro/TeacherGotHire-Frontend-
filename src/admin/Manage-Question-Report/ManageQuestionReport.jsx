@@ -367,7 +367,7 @@ export default function ManageQuestionReport() {
                         </Stack>
                       </td>
                       <td style={{ padding: "20px 24px" }}>
-                        <Typography variant="body2" fontWeight={600} color="teal">
+                        <Typography variant="body2" fontWeight={600} sx={{ color: "teal" }}>
                           {formatIssueTypes(report.issue_type)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
@@ -436,7 +436,7 @@ export default function ManageQuestionReport() {
         <Box sx={{ p: 4, height: "100%", display: "flex", flexDirection: "column" }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
             <Box>
-              <Typography variant="h5" fontWeight={800} color="teal">Report Profile</Typography>
+              <Typography variant="h5" fontWeight={800} sx={{ color: "teal" }}>Report Profile</Typography>
               <Typography variant="caption" color="text.secondary">Transaction ID: PTPI-AUDIT-{selectedReport?.id}</Typography>
             </Box>
             <IconButton onClick={closeReportDetails}><RefreshIcon sx={{ transform: "rotate(45deg)" }} /></IconButton>
@@ -458,7 +458,7 @@ export default function ManageQuestionReport() {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Subject</Typography>
-                  <Typography variant="body2" fontWeight={600} color="teal">{selectedReport.question?.subject || "—"}</Typography>
+                  <Typography variant="body2" fontWeight={600} sx={{ color: "teal" }}>{selectedReport.question?.subject || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
