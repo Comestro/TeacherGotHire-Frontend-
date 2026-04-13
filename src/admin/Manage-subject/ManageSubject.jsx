@@ -21,6 +21,7 @@ import {
   getClasses,
 } from "../../services/adminSubujectApi";
 import ErrorMessage from "../../components/ErrorMessage";
+import DataLoader from "../../components/DataLoader";
 
 const ManageSubject = () => {
   const [subjects, setSubjects] = useState([]);
@@ -433,11 +434,8 @@ const ManageSubject = () => {
           {/* Table */}
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="p-8 text-center text-gray-500 flex flex-col items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mb-2"></div>
-                Loading subjects...
-              </div>
-            ) : sortedSubjects.length === 0 ? (
+              <DataLoader message="Loading subjects..." minHeight="300px" />
+            ) : filteredSubjects.length === 0 ? (
               <div className="p-12 text-center text-gray-500">
                 <FiBook className="mx-auto h-12 w-12 text-gray-300 mb-3" />
                 <h3 className="text-lg font-medium text-gray-900">

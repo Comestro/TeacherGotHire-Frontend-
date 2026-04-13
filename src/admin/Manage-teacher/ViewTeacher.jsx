@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../Admin/Layout";
 import { fetchSingleTeacherById } from "../../services/apiService";
+import DataLoader from "../../components/DataLoader";
+import { FiBook, FiBriefcase, FiMapPin, FiAward, FiStar, FiActivity, FiUser, FiArrowLeft, FiMoreVertical } from "react-icons/fi";
 
 const ViewTeacherAdmin = () => {
   const navigate = useNavigate();
@@ -273,7 +275,7 @@ const ViewTeacherAdmin = () => {
 
           <div className="p-4 md:p-6">
             {loading ? (
-              <div className="text-center py-12">Loading teacher information...</div>
+              <DataLoader message="Compiling teacher dossier..." minHeight="400px" />
             ) : error ? (
               <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded">{error}</div>
             ) : !teacherData ? (
@@ -301,10 +303,10 @@ const ViewTeacherAdmin = () => {
 
                 {/* Right column - Tabs and content */}
                 <div className="md:col-span-2">
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {['Overview','Qualifications','Experience','Attempts','Job Locations','Skills','Preferences','Addresses'].map((label, idx) => (
-                        <button key={label} onClick={() => handleTabChange(idx)} className={`px-3 py-1 rounded text-sm ${tabValue===idx? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>{label}</button>
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Overview', 'Specializations', 'Qualifications', 'Experience', 'Attempts', 'Job Locations', 'Skills', 'Addresses'].map((label, idx) => (
+                        <button key={label} onClick={() => handleTabChange(idx)} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 uppercase tracking-wider ${tabValue === idx ? 'bg-teal-600 text-white shadow-md ring-2 ring-teal-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200'}`}>{label}</button>
                       ))}
                     </div>
 
@@ -328,8 +330,43 @@ const ViewTeacherAdmin = () => {
                         </div>
                       )}
 
-                      {/* Qualifications */}
+                      {/* Specializations */}
                       {tabValue === 1 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                              <FiStar className="text-teal-500" /> Class Categories
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {teacherData?.teacherclasscategory?.length > 0 ? (
+                                teacherData.teacherclasscategory.map((c, i) => (
+                                  <div key={i} className="px-4 py-2 bg-teal-50 border border-teal-100 text-teal-700 rounded-xl text-sm font-semibold shadow-sm">
+                                    {c.class_category?.name || c.name}
+                                  </div>
+                                ))
+                              ) : <span className="text-gray-400 italic text-sm">No class categories assigned</span>}
+                            </div>
+                          </div>
+
+                          <div className="pt-2">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                              <FiBook className="text-teal-500" /> Teaching Subjects
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {teacherData?.teachersubjects?.length > 0 ? (
+                                teacherData.teachersubjects.map((s, i) => (
+                                  <div key={i} className="px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl text-sm font-semibold shadow-sm">
+                                    {s.subject_name || s}
+                                  </div>
+                                ))
+                              ) : <span className="text-gray-400 italic text-sm">No subjects specified</span>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Qualifications */}
+                      {tabValue === 2 && (
                         <div className="space-y-3">
                           {teacherData?.teacherqualifications?.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -346,7 +383,7 @@ const ViewTeacherAdmin = () => {
                       )}
 
                       {/* Experience */}
-                      {tabValue === 2 && (
+                      {tabValue === 3 && (
                         <div className="space-y-3">
                           {teacherData?.teacherexperiences?.length > 0 ? (
                             teacherData.teacherexperiences.map((exp, idx) => (
@@ -366,7 +403,7 @@ const ViewTeacherAdmin = () => {
                       )}
 
                       {/* Attempts */}
-                      {tabValue === 3 && (
+                      {tabValue === 4 && (
                         <div className="space-y-3">
                           {attempts?.length > 0 ? (
                             attempts.map((a, idx) => {
@@ -421,7 +458,7 @@ const ViewTeacherAdmin = () => {
                       )}
 
                       {/* Job Locations */}
-                      {tabValue === 4 && (
+                      {tabValue === 5 && (
                         <div>
                           {jobLocations && jobLocations.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -447,7 +484,7 @@ const ViewTeacherAdmin = () => {
                       )}
 
                       {/* Skills */}
-                      {tabValue === 5 && (
+                      {tabValue === 6 && (
                         <div>
                           {teacherData?.teacherskill?.length > 0 ? (
                             <div className="flex flex-wrap gap-2">

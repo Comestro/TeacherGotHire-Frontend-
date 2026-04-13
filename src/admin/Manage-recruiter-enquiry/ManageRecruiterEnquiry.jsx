@@ -42,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import Layout from '../Admin/Layout';
+import DataLoader from "../../components/DataLoader";
 import { getRecruiterEnquiry, updateRecruiterEnquiry } from '../../services/adminRecruiterEnquiryApi';
 import dayjs from 'dayjs';
 import { toast, ToastContainer } from 'react-toastify';
@@ -267,92 +268,6 @@ export default function ManageRecruiterEnquiry() {
     a.click();
     document.body.removeChild(a);
   };
-  const columns = useMemo(() => ([
-    {
-      field: 'recruiterName',
-      headerName: 'Recruiter',
-      flex: 1.5,
-      minWidth: 200,
-      renderCell: (params) => (
-        <Box>
-          <Typography fontWeight={600}>{safe(params.value)}</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{safe(params.row.email)}</Typography>
-          <Typography variant="caption" color="text.secondary">{safe(params.row.contactNumber)}</Typography>
-        </Box>
-      ),
-    },
-    {
-      field: 'subjects',
-      headerName: 'Requirements',
-      flex: 1.6,
-      minWidth: 220,
-      sortable: false,
-      renderCell: (params) => (
-        <Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
-            {(params.value || []).slice(0, 6).map((s, i) => <Chip key={i} size="small" label={s} />)}
-            {(params.value || []).length > 6 && <Chip size="small" label={`+${(params.value || []).length - 6}`} />}
-          </Box>
-          <Typography variant="caption" color="text.secondary">Type: {safe(params.row.teacherType)}</Typography>
-        </Box>
-      ),
-    },
-    {
-      field: 'location',
-      headerName: 'Location',
-      flex: 1,
-      minWidth: 150,
-      sortable: false,
-      renderCell: (params) => {
-        const loc = params.row.location || {};
-        return (
-          <Box>
-            <Typography>{[loc.city || '', loc.state || ''].filter(Boolean).join(', ') || '—'}</Typography>
-            <Typography variant="caption" color="text.secondary">{[loc.area, loc.pincode].filter(Boolean).join(' - ')}</Typography>
-          </Box>
-        );
-      },
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 140,
-      renderCell: (params) => (
-        <Chip
-          label={safe(params.value, 'Pending')}
-          size="small"
-          sx={{
-            bgcolor: STATUS_COLORS[params.value] ? STATUS_COLORS[params.value] : 'warning.main',
-            color: '#fff',
-          }}
-        />
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 110,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="View">
-            <IconButton size="small" onClick={() => openDetails(params.row)}><VisibilityIcon fontSize="small" /></IconButton>
-          </Tooltip>
-          {params.row.status === 'Pending' && (
-            <>
-              <Tooltip title="Approve">
-                <IconButton size="small" onClick={() => handleApprove(params.row.id)}><CheckIcon fontSize="small" /></IconButton>
-              </Tooltip>
-              <Tooltip title="Reject">
-                <IconButton size="small" color="error" onClick={() => handleOpenRejectModal(params.row)}><CloseIcon fontSize="small" /></IconButton>
-              </Tooltip>
-            </>
-          )}
-        </Box>
-      ),
-    },
-  ]), [inquiries]);
 
   return (
     <Layout>
@@ -457,18 +372,11 @@ export default function ManageRecruiterEnquiry() {
         </Collapse>
       </Paper>
       {/* Table Content */}
-      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden', mb: 3, display: { xs: 'none', md: 'block' } }}>
+      <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
         {loading ? (
-          <Box sx={{ p: 10, textAlign: 'center' }}>
-            <CircularLoaderFallback />
-          </Box>
-        ) : filteredInquiries.length === 0 ? (
-          <Box sx={{ p: 10, textAlign: 'center' }}>
-            <Typography variant="h6" color="text.secondary">No inquiries found</Typography>
-            <Typography variant="body2" color="text.secondary">Try adjusting filters or search</Typography>
-          </Box>
+          <DataLoader message="Fetching recruiter enquiries..." minHeight="400px" />
         ) : (
-          <Box sx={{ width: "100%", overflowX: 'auto' }}>
+          <div className="overflow-x-auto">
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -540,7 +448,7 @@ export default function ManageRecruiterEnquiry() {
               </tbody>
             </table>
             
-            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, 50]}
                 component="div"
@@ -551,10 +459,11 @@ export default function ManageRecruiterEnquiry() {
                 onRowsPerPageChange={(e) => setPageModel({ page: 0, pageSize: parseInt(e.target.value, 10) })}
                 labelRowsPerPage="Density:"
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
-      </Paper>
+      </div>
+      
       {/* Mobile card view (fallback) */}
       <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         {filteredInquiries.map((inq) => (

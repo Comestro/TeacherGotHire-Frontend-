@@ -12,6 +12,8 @@ import {
   FiChevronRight,
   FiUser,
 } from "react-icons/fi";
+import ErrorMessage from "../../components/ErrorMessage";
+import DataLoader from "../../components/DataLoader";
 import Layout from "../Admin/Layout";
 import {
   getHireRequest,
@@ -345,9 +347,7 @@ const ManageHiringRequests = () => {
         {/* Data Table - Compact */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-            </div>
+            <DataLoader message="Fetching job posts..." minHeight="300px" />
           ) : displayedData.length === 0 ? (
             <div className="text-center py-12 bg-gray-50">
               <FiBriefcase className="mx-auto h-10 w-10 text-gray-300 mb-2" />

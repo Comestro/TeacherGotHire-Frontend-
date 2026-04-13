@@ -12,6 +12,7 @@ import {
   FiFile,
   FiInfo,
 } from "react-icons/fi";
+import DataLoader from "../../components/DataLoader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../Admin/Layout";
@@ -230,11 +231,8 @@ const ManageBackup = () => {
                 <tbody className="divide-y divide-gray-50">
                   {loading ? (
                     <tr>
-                      <td colSpan="4" className="py-20 text-center">
-                        <FiRefreshCw className="animate-spin text-teal-600 w-8 h-8 mx-auto mb-4" />
-                        <p className="text-gray-400 font-medium">
-                          Synchronizing backup library...
-                        </p>
+                      <td colSpan="4">
+                        <DataLoader message="Synchronizing backup library..." minHeight="200px" />
                       </td>
                     </tr>
                   ) : backups.length === 0 ? (

@@ -26,6 +26,16 @@ import {
 } from "react-icons/hi";
 import { IoReloadOutline, IoDownloadOutline } from "react-icons/io5";
 import FilterModal from "./FilterModal";
+import DataLoader from "../../components/DataLoader";
+
+const INDIAN_STATES = [
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
+  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", 
+  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", 
+  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", 
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", 
+  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+];
 
 const ManageTeacher = () => {
   const dispatch = useDispatch();
@@ -48,10 +58,12 @@ const ManageTeacher = () => {
   const [locationFilters, setLocationFilters] = useState({
     state: [],
     district: [],
+    pincode: [],
   });
   const [locationInputs, setLocationInputs] = useState({
     state: "",
     district: "",
+    pincode: "",
   });
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [selectedGenders, setSelectedGenders] = useState([]);
@@ -59,8 +71,8 @@ const ManageTeacher = () => {
   const [expandedSections, setExpandedSections] = useState({
     location: false,
     qualification: false,
-    subject: false,
     classCategory: true,
+    subject: false,
     status: false,
     gender: false,
     experience: false,
@@ -113,17 +125,23 @@ const ManageTeacher = () => {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  const availableDistricts = useMemo(() => {
+    const districts = new Set();
+    teachers.forEach((t) => {
+      const d = t.current_address?.district;
+      if (d) districts.add(d);
+    });
+    return Array.from(districts).sort();
+  }, [teachers]);
+
   const filtered = useMemo(() => {
     return teachers.filter((t) => {
       const qNames = (t.teacherqualifications || [])
         .map((q) => q?.qualification?.name?.toLowerCase())
         .filter(Boolean);
-      const subjectNames = (t.teachersubjects || [])
-        .map((s) =>
-          typeof s === "string"
-            ? s.toLowerCase()
-            : s?.subject_name?.toLowerCase?.()
-        )
+      const subjectIds = (t.teachersubjects || [])
+        .map((s) => (typeof s === "object" ? s.id || s.subject_id : null))
         .filter(Boolean);
       const addrObj = t.teachersaddress || {};
       const addresses = [
@@ -134,6 +152,8 @@ const ManageTeacher = () => {
         .map((s) => s.toLowerCase());
       const currentState = t.current_address?.state?.toLowerCase();
       const currentDistrict = t.current_address?.district?.toLowerCase();
+
+      const pincode = String(t.current_address?.pincode || "").toLowerCase();
 
       const nameMatch =
         !searchValue ||
@@ -153,19 +173,21 @@ const ManageTeacher = () => {
 
       const subjectMatch =
         selectedSubjects.length === 0 ||
-        selectedSubjects.some((s) => subjectNames.includes(s));
+        selectedSubjects.some((sId) => subjectIds.includes(sId));
 
       const locationMatch =
-        (locationFilters.state.length === 0 ||
-          locationFilters.state.some(
+        (locationFilters.state?.length === 0 ||
+          locationFilters.state?.some(
             (s) =>
               addresses.includes(s.toLowerCase()) ||
               currentState === s.toLowerCase()
           )) &&
-        (locationFilters.district.length === 0 ||
-          locationFilters.district.some(
+        (locationFilters.district?.length === 0 ||
+          locationFilters.district?.some(
             (d) => currentDistrict === d.toLowerCase()
-          ));
+          )) &&
+        (locationFilters.pincode?.length === 0 ||
+          locationFilters.pincode?.some((p) => pincode.includes(p.toLowerCase())));
 
       const statusMatch =
         selectedStatuses.length === 0 ||
@@ -249,11 +271,11 @@ const ManageTeacher = () => {
     setSelectedQualifications([]);
     setSelectedSubjects([]);
     setSelectedClassCategories([]);
-    setLocationFilters({ state: [], district: [] });
     setSelectedStatuses([]);
     setSelectedGenders([]);
+    setLocationFilters({ state: [], district: [], pincode: [] });
+    setLocationInputs({ state: "", district: "", pincode: "" });
     setExperienceRange({ min: "", max: "" });
-    setLocationInputs({ state: "", district: "" });
   };
 
   const toggleSection = (section) => {
@@ -504,11 +526,7 @@ const ManageTeacher = () => {
 
       {/* List/Card results */}
       {status === "loading" ? (
-        <div className="w-full h-full flex justify-center items-center mt-16">
-          <div className="h-fit mt-20 animate-pulse text-secondary">
-            Loading…
-          </div>
-        </div>
+        <DataLoader message="Fetching teacher profiles..." minHeight="400px" />
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-xl p-8 shadow-sm text-center">
           <div className="text-6xl mb-2">🧑‍🏫</div>
@@ -533,6 +551,11 @@ const ManageTeacher = () => {
                 const subjects =
                   (t.teachersubjects || [])
                     .map((s) => (typeof s === "string" ? s : s?.subject_name))
+                    .filter(Boolean)
+                    .join(", ") || "N/A";
+                const categories =
+                  (t.teacherclasscategory || [])
+                    .map((c) => c?.class_category?.name)
                     .filter(Boolean)
                     .join(", ") || "N/A";
                 const qualifications =
@@ -579,12 +602,12 @@ const ManageTeacher = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-3">
                       <div className="bg-gray-50 p-2 rounded-lg">
                         <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
                           Qualification
                         </p>
-                        <p className="text-gray-700 font-medium truncate">
+                        <p className="text-gray-700 font-medium truncate" title={qualifications}>
                           {qualifications}
                         </p>
                       </div>
@@ -594,6 +617,22 @@ const ManageTeacher = () => {
                         </p>
                         <p className="text-gray-700 font-medium truncate">
                           {currentAddress.district || "—"}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
+                          Category
+                        </p>
+                        <p className="text-gray-700 font-medium truncate" title={categories}>
+                          {categories}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
+                          Subjects
+                        </p>
+                        <p className="text-gray-700 font-medium truncate" title={subjects}>
+                          {subjects}
                         </p>
                       </div>
                     </div>
@@ -631,6 +670,7 @@ const ManageTeacher = () => {
                     <tr className="bg-gray-50/50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                       <th className="px-4 py-3">Teacher</th>
                       <th className="px-4 py-3">Qualification</th>
+                      <th className="px-4 py-3">Class Categories</th>
                       <th className="px-4 py-3">Subjects</th>
                       <th className="px-4 py-3">Location</th>
                       <th className="px-4 py-3 text-center">Status</th>
@@ -652,6 +692,11 @@ const ManageTeacher = () => {
                           .map((s) =>
                             typeof s === "string" ? s : s?.subject_name
                           )
+                          .filter(Boolean)
+                          .join(", ") || "—";
+                      const categories =
+                        (t.teacherclasscategory || [])
+                          .map((c) => c?.class_category?.name)
                           .filter(Boolean)
                           .join(", ") || "—";
                       const qualifications =
@@ -696,6 +741,14 @@ const ManageTeacher = () => {
                               title={qualifications}
                             >
                               {qualifications}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div
+                              className="text-sm text-gray-700 max-w-[150px] truncate"
+                              title={categories}
+                            >
+                              {categories}
                             </div>
                           </td>
                           <td className="px-4 py-3">
@@ -938,6 +991,8 @@ const ManageTeacher = () => {
         expandedSections={expandedSections}
         setExpandedSections={setExpandedSections}
         handleClearFilters={handleClearFilters}
+        indianStates={INDIAN_STATES}
+        availableDistricts={availableDistricts}
       />
     </Layout>
   );
