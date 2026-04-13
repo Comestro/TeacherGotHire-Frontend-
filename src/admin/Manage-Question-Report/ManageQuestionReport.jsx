@@ -81,6 +81,7 @@ function useDebounced(value, delay = 300) {
   }, [value, delay]);
   return debounced;
 }
+
 const formatIssueTypes = (issueTypeArray) => {
   if (!issueTypeArray || !issueTypeArray.length) return "Not specified";
   return issueTypeArray
@@ -89,7 +90,6 @@ const formatIssueTypes = (issueTypeArray) => {
 };
 export default function ManageQuestionReport() {
   const theme = useTheme();
-  const isMobile = /xs|sm/.test(theme.breakpoints.values ? "lg" : ""); // not used heavily, kept for parity
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,9 +99,9 @@ export default function ManageQuestionReport() {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounced(searchTerm, 300);
 
-  const [statusFilter, setStatusFilter] = useState("all"); // all / Pending / Resolved
+  const [statusFilter, setStatusFilter] = useState("all");
   const [issueFilter, setIssueFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("newest"); // newest / oldest / status
+  const [sortOrder, setSortOrder] = useState("newest");
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -130,7 +130,6 @@ export default function ManageQuestionReport() {
           user: r.user || null,
         }))
       );
-      showSnack("Reports loaded", "success");
     } catch (err) {
       const message = err?.response?.data?.detail || err?.message || "Failed to fetch reports";
       setError(message);
@@ -139,16 +138,9 @@ export default function ManageQuestionReport() {
       setLoading(false);
     }
   };
-  const uniqueIssueTypes = useMemo(() => {
-    const set = new Set();
-    reports.forEach((r) =>
-      (r.issue_type || []).forEach((i) => i?.issue_type && set.add(i.issue_type))
-    );
-    return Array.from(set);
-  }, [reports]);
+
   const filtered = useMemo(() => {
     const q = (debouncedSearch || "").toLowerCase().trim();
-
     let out = reports.filter(Boolean);
 
     if (statusFilter !== "all") {
@@ -172,124 +164,25 @@ export default function ManageQuestionReport() {
           questionText.includes(q) ||
           examInfo.includes(q) ||
           reportedBy.includes(q) ||
-          email.includes(q) ||
-          (r.issue_type || []).some((it) => (it?.issue_type || "").toLowerCase().includes(q))
+          email.includes(q)
         );
       });
     }
+
     out.sort((a, b) => {
-        if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
-        if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
-        if (sortOrder === "status") {
-          const score = (r) => (r.status === false ? 1 : r.status === true ? 3 : 2);
-          return score(a) - score(b);
-        }
+      if (sortOrder === "newest") return moment(b.created_at).diff(moment(a.created_at));
+      if (sortOrder === "oldest") return moment(a.created_at).diff(moment(b.created_at));
       return 0;
     });
 
     return out;
   }, [reports, debouncedSearch, statusFilter, issueFilter, sortOrder]);
+
   const paginated = useMemo(() => {
     const start = page * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
-  const columns = useMemo(
-    () => [
-      {
-        field: "id",
-        headerName: "Report ID",
-        width: 110,
-        renderCell: (params) => params.value,
-      },
-      {
-        field: "question",
-        headerName: "Question",
-        flex: 1.6,
-        minWidth: 300,
-        renderCell: (params) => (
-          <Box sx={{ pr: 1 }}>
-            <Typography sx={{ fontWeight: 600 }}>
-              {safeText(params.value?.text, "No question text")}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
-        field: "reporter",
-        headerName: "Reported By",
-        width: 180,
-        renderCell: (params) => (
-          <Box>
-            <Typography>{`${params.row.user?.Fname || ""} ${params.row.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {params.row.user?.email || "—"}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
-        field: "issue_type",
-        headerName: "Issue",
-        width: 220,
-        renderCell: (params) => (
-          <Typography variant="body2">
-            {formatIssueTypes(params.value)}
-          </Typography>
-        ),
-      },
-      {
-        field: "created_at",
-        headerName: "Date",
-        width: 140,
-        renderCell: (params) => safeFormatDate(params.value, "MMM DD, YYYY HH:mm"),
-      },
-      {
-        field: "status",
-        headerName: "Status",
-        width: 120,
-        renderCell: (params) => (
-          <Chip
-            label={statusLabels[params.value] ?? "Unknown"}
-            size="small"
-            sx={{
-              bgcolor: statusColors[String(params.value)] ?? "#999",
-              color: "#fff",
-            }}
-          />
-        ),
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        width: 120,
-        sortable: false,
-        renderCell: (params) => (
-          <Stack direction="row" spacing={0.5}>
-            <Tooltip title="View details">
-              <IconButton size="small" onClick={() => openReportDetails(params.row)}>
-                <VisibilityIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            {params.row.status === false && (
-              <Tooltip title="Mark Done">
-                <span>
-                  <IconButton
-                    size="small"
-                    onClick={() => confirmAndMarkDone(params.row)}
-                    disabled={processing}
-                    color="success"
-                  >
-                    <CheckIcon fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
-          </Stack>
-        ),
-      },
-    ],
-    [processing]
-  );
+
   const openReportDetails = (row) => {
     setSelectedReport(row);
     setAdminNotes("");
@@ -300,387 +193,336 @@ export default function ManageQuestionReport() {
     setSelectedReport(null);
     setDrawerOpen(false);
   };
-  const confirmAndMarkDone = async (row) => {
-    const ok = window.confirm(`Mark report REP01-00${row.id} as Done?`);
-    if (!ok) return;
-    await markAsDone(row.id);
-  };
 
   const markAsDone = async (id) => {
     setProcessing(true);
     try {
-      const reportToUpdate = reports.find((r) => r.id === id);
-      if (!reportToUpdate) throw new Error("Report not found");
+      const r = reports.find((x) => x.id === id);
       const payload = {
         status: true,
-        question: reportToUpdate.question?.id,
-        issue_type: (reportToUpdate.issue_type || []).map((i) => i.id),
+        question: r.question?.id,
+        issue_type: (r.issue_type || []).map((i) => i.id),
       };
-
       await updateQuestionReport(id, payload);
-      setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: true } : r)));
-      showSnack(`Report REP01-00${id} marked as Done`);
+      setReports((prev) => prev.map((x) => (x.id === id ? { ...x, status: true } : x)));
+      showSnack(`Report #${id} marked as Resolved`);
       if (selectedReport?.id === id) closeReportDetails();
     } catch (err) {
-      const msg = err?.response?.data?.detail || err?.message || "Failed to update report";
-      showSnack(msg, "error");
+      showSnack("Failed to update status", "error");
     } finally {
       setProcessing(false);
     }
   };
-  const saveAdminNotes = () => {
-    if (!selectedReport) return;
-    setReports((prev) =>
-      prev.map((r) => (r.id === selectedReport.id ? { ...r, admin_notes: adminNotes || r.admin_notes } : r))
-    );
-    showSnack("Notes saved (locally)");
-  };
-  const exportCsv = () => {
-    const headers = ["Report ID", "Question", "Reporter", "Email", "Issue", "Date", "Status"];
-    const rows = filtered.map((r) => [
-      `REP01-00${r.id}`,
-      `"${(r.question?.text || "").replace(/"/g, '""')}"`,
-      `"${(`${r.user?.Fname || ""} ${r.user?.Lname || ""}`).trim()}"`,
-      `"${r.user?.email || ""}"`,
-      `"${formatIssueTypes(r.issue_type).replace(/"/g, '""')}"`,
-      `"${safeFormatDate(r.created_at, "YYYY-MM-DD HH:mm")}"`,
-      `"${statusLabels[r.status] ?? r.status}"`,
-    ]);
-    const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const encoded = encodeURI(csv);
-    const a = document.createElement("a");
-    a.href = encoded;
-    a.download = `question_reports_${moment().format("YYYY-MM-DD")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-  const statusCounts = useMemo(() => {
+
+  const stats = useMemo(() => {
     const total = reports.length;
-    const pending = reports.filter((r) => r.status === false).length; // false == pending
-    const resolved = reports.filter((r) => r.status === true).length; // true == done
+    const pending = reports.filter((r) => !r.status).length;
+    const resolved = total - pending;
     return { total, pending, resolved };
   }, [reports]);
 
   return (
     <Layout>
-      {/* Snackbar */}
       <Snackbar
         open={snack.open}
-        autoHideDuration={4500}
+        autoHideDuration={4000}
         onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} variant="filled">
+        <Alert severity={snack.severity} variant="filled" sx={{ borderRadius: 2 }}>
           {snack.msg}
         </Alert>
       </Snackbar>
-      <Box sx={{ mb: 1,mt: { xs: 2, md: 0 } }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', md: '2rem' } }} fontWeight={700} color="teal">
-          Manage Question Reports
-        </Typography>
-        <Typography color="text.secondary">Review reported questions and resolve issues.</Typography>
-      </Box>
-      {/* Controls */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search question text, reporter, email or issue..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
-                }
-              }}
-            />
-          </Grid> 
 
-          <Grid item xs={12} md={6} sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-            <Tooltip title="Refresh">
-              <IconButton onClick={fetchReports} disabled={loading}><RefreshIcon /></IconButton>
+      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: "auto" }}>
+        {/* Header Section */}
+        <Box sx={{ mb: 4, display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 2 }}>
+          <Box>
+            <Typography variant="h4" fontWeight={800} sx={{ color: "teal", letterSpacing: "-0.02em", mb: 0.5 }}>
+              Issue Reports
+            </Typography>
+            <Typography variant="body1" color="text.secondary" fontWeight={500}>
+              System-wide question audit and resolution dashboard.
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={1.5}>
+            <Tooltip title="Force Refresh">
+              <IconButton onClick={fetchReports} disabled={loading} sx={{ bgcolor: "white", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", "&:hover": { bgcolor: "#f8fafc" } }}>
+                <RefreshIcon />
+              </IconButton>
             </Tooltip>
-            <Tooltip title="Export CSV">
-              <IconButton onClick={exportCsv}><GetAppIcon /></IconButton>
-            </Tooltip>
-
             <Button
+              variant="contained"
+              disableElevation
               startIcon={<FilterListIcon />}
-              variant={filtersOpen ? "contained" : "outlined"}
-              onClick={() => setFiltersOpen((s) => !s)}
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              sx={{ bgcolor: "teal", borderRadius: 2, px: 3, fontWeight: 600, "&:hover": { bgcolor: "#00695c" } }}
             >
-              {filtersOpen ? "Hide Filters" : "Show Filters"}
+              Filter
             </Button>
-          </Grid>
+          </Stack>
+        </Box>
 
-          {filtersOpen && (
-            <Grid item xs={12}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={4} md={3}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Status</InputLabel>
-                    <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
-                      <MenuItem value="all">All</MenuItem>
-                      <MenuItem value="Pending">Pending</MenuItem>
-                      <MenuItem value="Resolved">Resolved</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+        {/* Stats Grid */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[
+            { label: "Total Reports", value: stats.total, color: "teal", icon: <VisibilityIcon /> },
+            { label: "Pending Resolution", value: stats.pending, color: "#f59e0b", icon: <FilterListIcon /> },
+            { label: "Resolved", value: stats.resolved, color: "#10b981", icon: <CheckIcon /> },
+          ].map((stat, idx) => (
+            <Grid item xs={12} sm={4} key={idx}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", background: `linear-gradient(135deg, white 0%, ${alpha(stat.color, 0.03)} 100%)`, position: "relative", overflow: "hidden" }}>
+                <Box sx={{ position: "absolute", top: -10, right: -10, opacity: 0.05, transform: "scale(2.5)", color: stat.color }}>
+                  {stat.icon}
+                </Box>
+                <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: "0.1em" }}>
+                  {stat.label}
+                </Typography>
+                <Typography variant="h3" fontWeight={800} sx={{ color: stat.color, mt: 0.5 }}>
+                  {stat.value}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
 
-                <Grid item xs={12} sm={4} md={3}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Issue</InputLabel>
-                    <Select value={issueFilter} label="Issue" onChange={(e) => setIssueFilter(e.target.value)}>
-                      <MenuItem value="all">All Issues</MenuItem>
-                      {uniqueIssueTypes.map((it) => (
-                        <MenuItem key={it} value={it}>
-                          {issueTypeMapping[it] || it}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Sort</InputLabel>
-                    <Select value={sortOrder} label="Sort" onChange={(e) => setSortOrder(e.target.value)}>
-                      <MenuItem value="newest">Newest First</MenuItem>
-                      <MenuItem value="oldest">Oldest First</MenuItem>
-                      <MenuItem value="status">By Status</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} md={3} sx={{ display: "flex", gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setStatusFilter("all");
-                      setIssueFilter("all");
-                      setSortOrder("newest");
-                    }}
-                    fullWidth
-                  >
-                    Reset
-                  </Button>
-                </Grid>
+        {/* Search & Filter Bar */}
+        {filtersOpen && (
+          <Paper elevation={0} sx={{ p: 2.5, mb: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "#fbfcfd" }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={5}>
+                <TextField
+                  fullWidth
+                  placeholder="Search questions, context or reporters..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: <SearchIcon sx={{ mr: 1.5, color: "text.secondary" }} />,
+                    sx: { borderRadius: 2, bgcolor: "white" }
+                  }}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={6} md={2.5}>
+                <FormControl fullWidth size="small">
+                  <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} sx={{ borderRadius: 2, bgcolor: "white" }}>
+                    <MenuItem value="all">All Status</MenuItem>
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="Resolved">Resolved</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} md={2.5}>
+                <FormControl fullWidth size="small">
+                  <Select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} sx={{ borderRadius: 2, bgcolor: "white" }}>
+                    <MenuItem value="newest">Newest First</MenuItem>
+                    <MenuItem value="oldest">Oldest First</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <Button fullWidth variant="text" onClick={() => { setSearchTerm(""); setStatusFilter("all"); setSortOrder("newest"); }} sx={{ fontWeight: 600, color: "text.secondary" }}>
+                  Reset All
+                </Button>
               </Grid>
             </Grid>
-          )}
-        </Grid>
-      </Paper>
-      {/* Stats */}
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={4}>
-          <Paper sx={{ p: 2, textAlign: "center" }}>
-            <Typography variant="h5" fontWeight={700}>{statusCounts.total}</Typography>
-            <Typography color="text.secondary">Total Reports</Typography>
           </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.true}` }}>
-            <Typography variant="h5" fontWeight={700}>{statusCounts.pending}</Typography>
-            <Typography color="text.secondary">Pending</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <Paper sx={{ p: 2, textAlign: "center", borderTop: `3px solid ${statusColors.false}` }}>
-            <Typography variant="h5" fontWeight={700}>{statusCounts.resolved}</Typography>
-            <Typography color="text.secondary">Resolved</Typography>
-          </Paper>
-        </Grid>
-      </Grid>
-      {/* Content: Table or skeleton / empty */}
-      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-        {loading ? (
-          <Box sx={{ p: 10, textAlign: "center" }}>
-            <CircularProgress size={32} sx={{ color: 'teal' }} />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Loading reports...</Typography>
-          </Box>
-        ) : filtered.length === 0 ? (
-          <Box sx={{ p: 10, textAlign: "center" }}>
-            <Typography color="text.secondary">No reports found matching your criteria.</Typography>
-          </Box>
-        ) : (
-          <Box sx={{ width: "100%", overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Report ID</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Question Info</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Issue / Reporter</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((report) => (
-                  <tr key={report.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
-                    <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500 }}>
-                      REP-00{report.id}
-                      <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8' }}>
-                        {safeFormatDate(report.created_at, "MMM DD, HH:mm")}
-                      </Typography>
-                    </td>
-                    <td style={{ padding: '12px 16px', maxWidth: '350px' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', mb: 0.5, lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {safeText(report.question?.text)}
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                         <Chip label={report.question?.class_category || "No Category"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#f1f5f9' }} />
-                         <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#e0f2f1', color: 'teal' }} />
-                         <Chip label={report.question?.exam_name || "No Exam"} size="small" sx={{ fontSize: '0.65rem', height: 18, bgcolor: '#fff3e0', color: '#e65100' }} />
-                      </Stack>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Typography variant="body2" sx={{ color: 'teal', fontWeight: 500 }}>
-                        {formatIssueTypes(report.issue_type)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        By {report.user?.Fname || "Guest"} ({report.user?.email || "N/A"})
-                      </Typography>
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Chip
-                        label={statusLabels[report.status]}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          bgcolor: report.status ? alpha('#388e3c', 0.1) : alpha('#f9a825', 0.1),
-                          color: report.status ? '#388e3c' : '#f9a825',
-                          border: 'none'
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Stack direction="row" spacing={0.5} justifyContent="center">
-                        <IconButton size="small" sx={{ color: 'teal' }} onClick={() => openReportDetails(report)}>
-                          <VisibilityIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                        {!report.status && (
-                          <IconButton size="small" color="success" onClick={() => confirmAndMarkDone(report)}>
-                            <CheckIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
-                        )}
-                      </Stack>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <Box display="flex" justifyContent="flex-end" p={1} sx={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                component="div"
-                count={filtered.length}
-                rowsPerPage={pageSize}
-                page={page}
-                onPageChange={(e, p) => setPage(p)}
-                onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(0); }}
-                labelRowsPerPage="Density:"
-              />
-            </Box>
-          </Box>
         )}
-      </Paper>
-      {/* Details Drawer */}
-      <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} slotProps={{
-        paper: { sx: { width: { xs: "100%", sm: 560 } } }
-      }}>
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-            <Typography variant="h6">Report Details</Typography>
-            <Chip label={selectedReport ? statusLabels[selectedReport.status] : "—"} sx={{ bgcolor: selectedReport ? statusColors[String(selectedReport.status)] : "#999", color: "#fff" }} />
+
+        {/* Custom Modern Table */}
+        <Paper elevation={0} sx={{ borderRadius: 4, border: "1px solid", borderColor: "divider", overflow: "hidden", bgcolor: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+          {loading ? (
+            <Box sx={{ p: 12, textAlign: "center" }}>
+              <CircularProgress size={40} sx={{ color: "teal" }} />
+              <Typography sx={{ mt: 2, fontWeight: 500 }} color="text.secondary">Fetching latest reports...</Typography>
+            </Box>
+          ) : filtered.length === 0 ? (
+            <Box sx={{ p: 12, textAlign: "center" }}>
+              <Typography variant="h6" fontWeight={600} color="text.secondary">No Reports Found</Typography>
+              <Typography variant="body2" color="text.secondary">Try adjusting your filters or search keywords.</Typography>
+            </Box>
+          ) : (
+            <Box sx={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #f1f5f9", background: "#f8fafc" }}>
+                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reported Question & Context</th>
+                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Issue Description</th>
+                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reporter Details</th>
+                    <th style={{ padding: "16px 24px", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Status</th>
+                    <th style={{ padding: "16px 24px", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map((report) => (
+                    <tr key={report.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }}>
+                      <td style={{ padding: "20px 24px", width: "35%" }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ color: "#1e293b", mb: 1, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                          {report.question?.text || "—"}
+                        </Typography>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                          <Chip label={report.question?.class_category || "General"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#f1f5f9" }} />
+                          <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("teal", 0.08), color: "teal" }} />
+                          <Chip label={report.question?.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
+                        </Stack>
+                      </td>
+                      <td style={{ padding: "20px 24px" }}>
+                        <Typography variant="body2" fontWeight={600} color="teal">
+                          {formatIssueTypes(report.issue_type)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                          ID: REP-{report.id.toString().padStart(4, "0")}
+                        </Typography>
+                      </td>
+                      <td style={{ padding: "20px 24px" }}>
+                        <Typography variant="body2" fontWeight={600} color="#334155">
+                          {`${report.user?.Fname || "Guest"} ${report.user?.Lname || ""}`.trim()}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {report.user?.email || "anonymous@ptpi.com"}
+                        </Typography>
+                      </td>
+                      <td style={{ padding: "20px 24px", textAlign: "center" }}>
+                        <Chip
+                          label={report.status ? "Resolved" : "Pending"}
+                          size="small"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: "0.65rem",
+                            height: 22,
+                            borderRadius: "6px",
+                            bgcolor: report.status ? alpha("#10b981", 0.1) : alpha("#f59e0b", 0.1),
+                            color: report.status ? "#059669" : "#d97706"
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: "20px 24px", textAlign: "right" }}>
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <Tooltip title="View Details">
+                            <IconButton size="small" onClick={() => openReportDetails(report)} sx={{ color: "teal", bgcolor: alpha("teal", 0.05) }}>
+                              <VisibilityIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </Tooltip>
+                          {!report.status && (
+                            <Tooltip title="Mark Resolved">
+                              <IconButton size="small" color="success" onClick={() => markAsDone(report)} sx={{ bgcolor: alpha("#10b981", 0.05) }}>
+                                <CheckIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderTop: "1px solid #f1f5f9", bgcolor: "#f8fafc" }}>
+                <TablePagination
+                  component="div"
+                  count={filtered.length}
+                  page={page}
+                  onPageChange={(e, p) => setPage(p)}
+                  rowsPerPage={pageSize}
+                  onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(0); }}
+                />
+              </Box>
+            </Box>
+          )}
+        </Paper>
+      </Box>
+
+      {/* Modern Detail Drawer */}
+      <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} PaperProps={{ sx: { width: { xs: "100%", sm: 600 }, p: 0, borderRadius: { xs: 0, sm: "20px 0 0 20px" } } }}>
+        <Box sx={{ p: 4, height: "100%", display: "flex", flexDirection: "column" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+            <Box>
+              <Typography variant="h5" fontWeight={800} color="teal">Report Profile</Typography>
+              <Typography variant="caption" color="text.secondary">Transaction ID: PTPI-AUDIT-{selectedReport?.id}</Typography>
+            </Box>
+            <IconButton onClick={closeReportDetails}><RefreshIcon sx={{ transform: "rotate(45deg)" }} /></IconButton>
           </Box>
 
-          {selectedReport ? (
-            <>
-              <Divider sx={{ mb: 2 }} />
+          {selectedReport && (
+            <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+              <Box sx={{ mb: 4, p: 3, borderRadius: 3, bgcolor: "#f1f5f9" }}>
+                <Typography variant="overline" color="text.secondary" fontWeight={700}>Reported Content</Typography>
+                <Typography variant="body1" fontWeight={600} sx={{ mt: 1, lineHeight: 1.6, color: "#1e293b" }}>
+                  {selectedReport.question?.text}
+                </Typography>
+              </Box>
 
-              <Typography variant="subtitle2" color="text.secondary">Report ID</Typography>
-              <Typography sx={{ mb: 1 }}>REP01-00{selectedReport.id}</Typography>
-
-              <Typography variant="subtitle2" color="text.secondary">Reported Question</Typography>
-              <Typography sx={{ mb: 1.5, fontWeight: 500 }}>{selectedReport.question?.text || "N/A"}</Typography>
-
-              <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={4}>
-                  <Typography variant="subtitle2" color="text.secondary">Class Category</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedReport.question?.class_category || "N/A"}</Typography>
+                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Class</Typography>
+                  <Typography variant="body2" fontWeight={600}>{selectedReport.question?.class_category || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Typography variant="subtitle2" color="text.secondary">Subject</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'teal' }}>{selectedReport.question?.subject || "N/A"}</Typography>
+                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Subject</Typography>
+                  <Typography variant="body2" fontWeight={600} color="teal">{selectedReport.question?.subject || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Typography variant="subtitle2" color="text.secondary">Exam Name</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#e65100' }}>{selectedReport.question?.exam_name || "N/A"}</Typography>
+                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
+                  <Typography variant="body2" fontWeight={600} color="#ea580c">{selectedReport.question?.exam_name || "—"}</Typography>
                 </Grid>
               </Grid>
 
-              <Typography variant="subtitle2" color="text.secondary">Options</Typography>
-              <Box sx={{ mb: 1 }}>
-                {(selectedReport.question?.options || []).map((opt, idx) => (
-                  <Typography key={idx} sx={{ fontWeight: selectedReport.question?.correct_option === idx ? 700 : 400 }}>
-                    {idx + 1}. {opt} {selectedReport.question?.correct_option === idx ? "(Correct)" : ""}
-                  </Typography>
-                ))}
+              <Divider sx={{ mb: 4 }} />
+
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ mb: 1.5, display: "block" }}>Options Check</Typography>
+                <Stack spacing={1}>
+                  {(selectedReport.question?.options || []).map((opt, i) => (
+                    <Box key={i} sx={{ p: 1.5, borderRadius: 2, border: "1px solid", borderColor: selectedReport.question?.correct_option === i + 1 ? "teal" : "divider", bgcolor: selectedReport.question?.correct_option === i + 1 ? alpha("teal", 0.03) : "transparent", display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: selectedReport.question?.correct_option === i + 1 ? "teal" : "#cbd5e1", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700 }}>
+                        {i + 1}
+                      </Box>
+                      <Typography variant="body2" fontWeight={selectedReport.question?.correct_option === i + 1 ? 600 : 400}>
+                        {opt} {selectedReport.question?.correct_option === i + 1 && "(Active Answer)"}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
               </Box>
 
-              <Typography variant="subtitle2" color="text.secondary">Reported By</Typography>
-              <Typography sx={{ mb: 1 }}>{`${selectedReport.user?.Fname || ""} ${selectedReport.user?.Lname || ""}`.trim() || "Unknown"}</Typography>
+              <Divider sx={{ mb: 4 }} />
 
-              <Typography variant="subtitle2" color="text.secondary">Reported At</Typography>
-              <Typography sx={{ mb: 1 }}>{safeFormatDate(selectedReport.created_at, "MMM DD, YYYY HH:mm")}</Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ mb: 1, display: "block" }}>Internal Notes</Typography>
+                <TextField multiline rows={4} fullWidth placeholder="Add administrative notes regarding this audit..." variant="filled" hiddenLabel />
+              </Box>
 
-              <Typography variant="subtitle2" color="text.secondary">Issue Type</Typography>
-              <Typography sx={{ mb: 1 }}>{formatIssueTypes(selectedReport.issue_type)}</Typography>
-
-              <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-              <Typography sx={{ mb: 1 }}>{selectedReport.description || "No description provided"}</Typography>
-
-              <Typography variant="subtitle2" color="text.secondary">Admin Notes</Typography>
-              <TextField
-                multiline
-                rows={4}
-                fullWidth
-                sx={{ mb: 2 }}
-                placeholder="Add notes..."
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-              />
-
-              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                <Button onClick={() => { saveAdminNotes(); closeReportDetails(); }} variant="outlined">Save & Close</Button>
-                {selectedReport.status === false && (
-                  <Button onClick={() => confirmAndMarkDone(selectedReport)} variant="contained" color="success" disabled={processing}>
-                    {processing ? <CircularProgress size={18} color="inherit" /> : "Mark Done"}
+              <Box sx={{ mt: "auto", pt: 4, display: "flex", gap: 2 }}>
+                <Button fullWidth variant="outlined" size="large" onClick={closeReportDetails} sx={{ borderRadius: 3, fontWeight: 700, borderColor: "divider", color: "text.primary" }}>
+                  Cancel
+                </Button>
+                {!selectedReport.status && (
+                  <Button fullWidth variant="contained" size="large" onClick={() => markAsDone(selectedReport.id)} disabled={processing} sx={{ borderRadius: 3, bgcolor: "teal", fontWeight: 700, "&:hover": { bgcolor: "#00695c" } }}>
+                    {processing ? <CircularProgress size={24} color="inherit" /> : "Verify & Close"}
                   </Button>
                 )}
               </Box>
-            </>
-          ) : (
-            <Box sx={{ p: 2 }}>
-              <Typography color="text.secondary">No report selected</Typography>
             </Box>
           )}
         </Box>
       </Drawer>
-      {/* Confirm dialog example (optional) */}
-      <Dialog open={Boolean(processing && false)} /* hidden by default */ onClose={() => {}}>
-        <DialogTitle>Processing</DialogTitle>
-        <DialogContent>
-          <Typography>Working…</Typography>
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
+}
+
+const safeFormatDate = (v, fmt = "MMM DD, YYYY") => v ? moment(v).format(fmt) : "—";
+const safeText = (v, fb = "—") => v || fb;
+const formatIssueTypes = (arr) => {
+  if (!arr?.length) return "General Issue";
+  return arr.map(i => i.issue_type).join(", ");
+};
+
+function useDebounced(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  const timer = useRef();
+  useEffect(() => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer.current);
+  }, [value, delay]);
+  return debounced;
 }
