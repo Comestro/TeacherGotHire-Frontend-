@@ -158,7 +158,7 @@ export default function ManageQuestionReport() {
       out = out.filter((r) => {
         const reportedBy = `${r.user?.Fname || ""} ${r.user?.Lname || ""}`.toLowerCase();
         const questionText = (r.question?.text || "").toLowerCase();
-        const examInfo = `${r.question?.exam_name || ""} ${r.question?.class_category || ""} ${r.question?.subject || ""}`.toLowerCase();
+        const examInfo = `${r.exam_name || ""} ${r.class_category || ""} ${r.subject || ""}`.toLowerCase();
         const email = (r.user?.email || "").toLowerCase();
         return (
           questionText.includes(q) ||
@@ -361,9 +361,9 @@ export default function ManageQuestionReport() {
                           {report.question?.text || "—"}
                         </Typography>
                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                          <Chip label={report.question?.class_category || "General"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#f1f5f9" }} />
-                          <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("#008080", 0.08), color: "#008080" }} />
-                          <Chip label={report.question?.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
+                          <Chip label={report.class_category || "General"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#f1f5f9" }} />
+                          <Chip label={report.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("#008080", 0.08), color: "#008080" }} />
+                          <Chip label={report.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
                         </Stack>
                       </td>
                       <td style={{ padding: "20px 24px" }}>
@@ -453,16 +453,16 @@ export default function ManageQuestionReport() {
 
               <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={4}>
-                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Class</Typography>
-                  <Typography variant="body2" fontWeight={600}>{selectedReport.question?.class_category || "—"}</Typography>
+                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Class Category</Typography>
+                  <Typography variant="body2" fontWeight={600}>{selectedReport.class_category || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Subject</Typography>
-                  <Typography variant="body2" fontWeight={600} sx={{ color: "#008080" }}>{selectedReport.question?.subject || "—"}</Typography>
+                  <Typography variant="body2" fontWeight={600} sx={{ color: "#008080" }}>{selectedReport.subject || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#ea580c">{selectedReport.question?.exam_name || "—"}</Typography>
+                  <Typography variant="body2" fontWeight={600} color="text.primary">{selectedReport.exam_name || "—"}</Typography>
                 </Grid>
               </Grid>
 
