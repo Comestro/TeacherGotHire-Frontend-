@@ -7,7 +7,8 @@ import {
   FiLoader,
   FiRefreshCw,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { translateText } from "../../../services/apiService";
 import {
   createNewQuestion,
@@ -1629,6 +1630,18 @@ const QuestionForm = () => {
           )}
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
   );
 };

@@ -17,7 +17,8 @@ import {
   FiAlertTriangle,
   FiLink,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   DndContext,
   closestCenter,
@@ -1049,6 +1050,18 @@ const ManageQuestion = () => {
           subjectName={exam?.subject?.subject_name}
         />
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
   );
 };
