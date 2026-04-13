@@ -238,7 +238,7 @@ export default function ManageQuestionReport() {
         {/* Header Section */}
         <Box sx={{ mb: 4, display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 2 }}>
           <Box>
-            <Typography variant="h4" fontWeight={800} sx={{ color: "teal", letterSpacing: "-0.02em", mb: 0.5 }}>
+            <Typography variant="h4" fontWeight={800} sx={{ color: "#008080", letterSpacing: "-0.02em", mb: 0.5 }}>
               Issue Reports
             </Typography>
             <Typography variant="body1" color="text.secondary" fontWeight={500}>
@@ -256,7 +256,7 @@ export default function ManageQuestionReport() {
               disableElevation
               startIcon={<FilterListIcon />}
               onClick={() => setFiltersOpen(!filtersOpen)}
-              sx={{ bgcolor: "teal", borderRadius: 2, px: 3, fontWeight: 600, "&:hover": { bgcolor: "#00695c" } }}
+              sx={{ bgcolor: "#008080", borderRadius: 2, px: 3, fontWeight: 600, "&:hover": { bgcolor: "#00695c" } }}
             >
               Filter
             </Button>
@@ -266,7 +266,7 @@ export default function ManageQuestionReport() {
         {/* Stats Grid */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[
-            { label: "Total Reports", value: stats.total, color: "teal", icon: <VisibilityIcon /> },
+            { label: "Total Reports", value: stats.total, color: "#008080", icon: <VisibilityIcon /> },
             { label: "Pending Resolution", value: stats.pending, color: "#f59e0b", icon: <FilterListIcon /> },
             { label: "Resolved", value: stats.resolved, color: "#10b981", icon: <CheckIcon /> },
           ].map((stat, idx) => (
@@ -333,7 +333,7 @@ export default function ManageQuestionReport() {
         <Paper elevation={0} sx={{ borderRadius: 4, border: "1px solid", borderColor: "divider", overflow: "hidden", bgcolor: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
           {loading ? (
             <Box sx={{ p: 12, textAlign: "center" }}>
-              <CircularProgress size={40} sx={{ color: "teal" }} />
+              <CircularProgress size={40} sx={{ color: "#008080" }} />
               <Typography sx={{ mt: 2, fontWeight: 500 }} color="text.secondary">Fetching latest reports...</Typography>
             </Box>
           ) : filtered.length === 0 ? (
@@ -362,12 +362,12 @@ export default function ManageQuestionReport() {
                         </Typography>
                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                           <Chip label={report.question?.class_category || "General"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#f1f5f9" }} />
-                          <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("teal", 0.08), color: "teal" }} />
+                          <Chip label={report.question?.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("#008080", 0.08), color: "#008080" }} />
                           <Chip label={report.question?.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
                         </Stack>
                       </td>
                       <td style={{ padding: "20px 24px" }}>
-                        <Typography variant="body2" fontWeight={600} sx={{ color: "teal" }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ color: "#008080" }}>
                           {formatIssueTypes(report.issue_type)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
@@ -399,7 +399,7 @@ export default function ManageQuestionReport() {
                       <td style={{ padding: "20px 24px", textAlign: "right" }}>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Tooltip title="View Details">
-                            <IconButton size="small" onClick={() => openReportDetails(report)} sx={{ color: "teal", bgcolor: alpha("teal", 0.05) }}>
+                            <IconButton size="small" onClick={() => openReportDetails(report)} sx={{ color: "#008080", bgcolor: alpha("#008080", 0.05) }}>
                               <VisibilityIcon sx={{ fontSize: 18 }} />
                             </IconButton>
                           </Tooltip>
@@ -436,7 +436,7 @@ export default function ManageQuestionReport() {
         <Box sx={{ p: 4, height: "100%", display: "flex", flexDirection: "column" }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
             <Box>
-              <Typography variant="h5" fontWeight={800} sx={{ color: "teal" }}>Report Profile</Typography>
+              <Typography variant="h5" fontWeight={800} sx={{ color: "#008080" }}>Report Profile</Typography>
               <Typography variant="caption" color="text.secondary">Transaction ID: PTPI-AUDIT-{selectedReport?.id}</Typography>
             </Box>
             <IconButton onClick={closeReportDetails}><RefreshIcon sx={{ transform: "rotate(45deg)" }} /></IconButton>
@@ -458,7 +458,7 @@ export default function ManageQuestionReport() {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Subject</Typography>
-                  <Typography variant="body2" fontWeight={600} sx={{ color: "teal" }}>{selectedReport.question?.subject || "—"}</Typography>
+                  <Typography variant="body2" fontWeight={600} sx={{ color: "#008080" }}>{selectedReport.question?.subject || "—"}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
@@ -472,8 +472,8 @@ export default function ManageQuestionReport() {
                 <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ mb: 1.5, display: "block" }}>Options Check</Typography>
                 <Stack spacing={1}>
                   {(selectedReport.question?.options || []).map((opt, i) => (
-                    <Box key={i} sx={{ p: 1.5, borderRadius: 2, border: "1px solid", borderColor: selectedReport.question?.correct_option === i + 1 ? "teal" : "divider", bgcolor: selectedReport.question?.correct_option === i + 1 ? alpha("teal", 0.03) : "transparent", display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: selectedReport.question?.correct_option === i + 1 ? "teal" : "#cbd5e1", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700 }}>
+                    <Box key={i} sx={{ p: 1.5, borderRadius: 2, border: "1px solid", borderColor: selectedReport.question?.correct_option === i + 1 ? "#008080" : "divider", bgcolor: selectedReport.question?.correct_option === i + 1 ? alpha("#008080", 0.03) : "transparent", display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: selectedReport.question?.correct_option === i + 1 ? "#008080" : "#cbd5e1", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700 }}>
                         {i + 1}
                       </Box>
                       <Typography variant="body2" fontWeight={selectedReport.question?.correct_option === i + 1 ? 600 : 400}>
@@ -496,7 +496,7 @@ export default function ManageQuestionReport() {
                   Cancel
                 </Button>
                 {!selectedReport.status && (
-                  <Button fullWidth variant="contained" size="large" onClick={() => markAsDone(selectedReport.id)} disabled={processing} sx={{ borderRadius: 3, bgcolor: "teal", fontWeight: 700, "&:hover": { bgcolor: "#00695c" } }}>
+                  <Button fullWidth variant="contained" size="large" onClick={() => markAsDone(selectedReport.id)} disabled={processing} sx={{ borderRadius: 3, bgcolor: "#008080", fontWeight: 700, "&:hover": { bgcolor: "#00695c" } }}>
                     {processing ? <CircularProgress size={24} color="inherit" /> : "Verify & Close"}
                   </Button>
                 )}
