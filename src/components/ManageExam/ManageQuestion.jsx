@@ -228,52 +228,67 @@ const ManageQuestion = () => {
       if (!activeQuestion) return;
       const overQuestion = questions.find((q) => q.id === over.id);
       if (!overQuestion) return;
+      
       if (activeQuestion.language !== overQuestion.language) {
-        toast.warn(
-          `Cannot reorder between ${activeQuestion.language} and ${overQuestion.language} questions`,
-        );
+        toast.warn(`Cannot reorder between ${activeQuestion.language} and ${overQuestion.language} questions`);
         return;
       }
-      // To maintain pairing, we need to know the mapping of orders
+
       const language = activeQuestion.language;
-      const otherLanguage = language === "English" ? "Hindi" : "English";
-      
-      const activeOrder = activeQuestion.order ?? 0;
-      const overOrder = overQuestion.order ?? 0;
 
-      // Get all unique orders currently in use
-      const uniqueOrders = [...new Set(questions.map(q => q.order ?? 0))].sort((a,b) => a - b);
+      // 1. Group existing questions into clean "slots" based on current order
+      // This helps resolve duplicates (multiple questions with same order)
+      const { englishByOrder, hindiByOrder } = organizeQuestionsByOrder();
+      const maxSlots = Math.max(englishByOrder.length, hindiByOrder.length);
+      const slots = [];
       
-      const oldIdx = uniqueOrders.indexOf(activeOrder);
-      const newIdx = uniqueOrders.indexOf(overOrder);
+      for (let i = 0; i < maxSlots; i++) {
+        const ens = englishByOrder[i] || [];
+        const his = hindiByOrder[i] || [];
+        const subLen = Math.max(ens.length, his.length);
+        
+        // If a slot has multiple questions in one language, split them into separate slots
+        // to fix the "2 questions in one order" issue during reorder
+        for (let j = 0; j < subLen; j++) {
+          slots.push({
+            en: ens[j] || null,
+            hi: his[j] || null
+          });
+        }
+      }
 
-      if (oldIdx === -1 || newIdx === -1) return;
+      // 2. Find the index of the slot containing our active/over questions
+      const activeIdx = slots.findIndex(s => (language === "English" ? s.en?.id : s.hi?.id) === active.id);
+      const overIdx = slots.findIndex(s => (language === "English" ? s.en?.id : s.hi?.id) === over.id);
 
-      const reorderedOrders = arrayMove([...uniqueOrders], oldIdx, newIdx);
-      
-      // Build the map of old order -> new order
-      const orderMap = {};
-      reorderedOrders.forEach((oldOrder, index) => {
-        orderMap[oldOrder] = index;
+      if (activeIdx === -1 || overIdx === -1) return;
+
+      // 3. Perform the move
+      const updatedSlots = arrayMove([...slots], activeIdx, overIdx);
+
+      // 4. Assign new sequential orders 0..N
+      const updatedQuestions = [];
+      const englishIDs = [];
+      const hindiIDs = [];
+
+      updatedSlots.forEach((slot, index) => {
+        if (slot.en) {
+          updatedQuestions.push({ ...slot.en, order: index });
+          englishIDs.push(slot.en.id);
+        }
+        if (slot.hi) {
+          updatedQuestions.push({ ...slot.hi, order: index });
+          hindiIDs.push(slot.hi.id);
+        }
       });
 
-      // Update ALL questions with their new orders based on the map
-      const updatedQuestions = questions.map(q => ({
-        ...q,
-        order: orderMap[q.order ?? 0] ?? (q.order ?? 0)
-      }));
+      // 5. Send reordered IDs to backend for BOTH columns if they exist
+      // Backend reorder helper typically assigns 0..N to the given IDs
+      if (englishIDs.length > 0) await reorderQuestions(englishIDs);
+      if (hindiIDs.length > 0) await reorderQuestions(hindiIDs);
 
-      // Find the specific IDs of the language we are dragging to send to backend reorder
-      // This preserves current backend behavior while maintaining logical pairs in frontend
-      const languageSpecificIds = updatedQuestions
-        .filter(q => q.language === language)
-        .sort((a,b) => (a.order || 0) - (b.order || 0))
-        .map(q => q.id);
-
-      await reorderQuestions(languageSpecificIds);
-      
       setQuestions(updatedQuestions);
-      toast.success(`${language} questions reordered successfully`);
+      toast.success(`${language} questions reordered and synchronized`);
       await refreshExamData();
     } catch (error) {
       toast.error("Failed to reorder questions");
