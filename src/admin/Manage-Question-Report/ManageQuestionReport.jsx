@@ -508,14 +508,3 @@ export default function ManageQuestionReport() {
     </Layout>
   );
 }
-
-function useDebounced(value, delay = 300) {
-  const [debounced, setDebounced] = useState(value);
-  const timer = useRef();
-  useEffect(() => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer.current);
-  }, [value, delay]);
-  return debounced;
-}
