@@ -262,7 +262,7 @@ const BulkUploadModal = ({
         questionsToSubmit.push(engQ);
 
         if (!isLang) {
-          // Format Hindi question
+          // STANDARD SUBJECT: Add Hindi pair
           const hindiQ = {
             language: "Hindi",
             text: item.hindi.text || item.eng.text, // Fallback if empty
@@ -273,15 +273,8 @@ const BulkUploadModal = ({
             solution: item.hindi.solution,
           };
           questionsToSubmit.push(hindiQ);
-        } else {
-          // For language subjects, follow QuestionForm logic: send a pair but duplicate?
-          // Let's stick to what QuestionForm does: Duplicate for Hindi key
-          const hindiPair = {
-            ...engQ,
-            language: "Hindi",
-          };
-          questionsToSubmit.push(hindiPair);
         }
+        // LANGUAGE SUBJECT: Do NOT add a second question — only send the single one
 
         const payload = {
           exam: parseInt(examId),

@@ -312,8 +312,19 @@ const ExamDetails = () => {
       setIsAddModalOpen(false);
       setFormErrors({});
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Action failed.";
-      showNotification(errorMsg, "error");
+      // Show detailed backend errors
+      const errorData = error.response?.data;
+      if (errorData && typeof errorData === 'object') {
+        const msgs = [];
+        if (errorData.hindi_errors) msgs.push(`Hindi: ${errorData.hindi_errors}`);
+        if (errorData.english_errors) msgs.push(`English: ${errorData.english_errors}`);
+        if (errorData.error) msgs.push(errorData.error);
+        if (errorData.message) msgs.push(errorData.message);
+        const errorMsg = msgs.length > 0 ? msgs.join(' | ') : "Action failed.";
+        showNotification(errorMsg, "error");
+      } else {
+        showNotification("Action failed.", "error");
+      }
     } finally {
       setFormSubmitting(false);
     }

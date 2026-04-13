@@ -84,9 +84,19 @@ const QuestionForm = () => {
         if (response && response.subject && response.subject.subject_name) {
           const fetchedSubjectName = response.subject.subject_name;
           setSubjectName(fetchedSubjectName);
-          // Update the language field based on subject - pass the subject name directly
+          // Update the language field based on subject
           const primaryLang = getPrimaryLanguageFromName(fetchedSubjectName);
           setEnglishQuestion((prev) => ({ ...prev, language: primaryLang }));
+          // Set default language mode based on subject
+          const lowerName = fetchedSubjectName.toLowerCase();
+          const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
+          const isLang = langList.some((l) => lowerName.includes(l));
+          if (isLang) {
+            if (lowerName.includes("hindi")) setLanguageMode("hindi");
+            else setLanguageMode("english");
+          } else {
+            setLanguageMode("both");
+          }
         }
       } catch (error) {
         console.error("Failed to fetch exam details:", error);
@@ -182,6 +192,11 @@ const QuestionForm = () => {
   const [duplicateError, setDuplicateError] = useState(null);
   const [englishSectionEmpty, setEnglishSectionEmpty] = useState(false);
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
+  // Language mode: "english" | "hindi" | "both"
+  // Defaults based on subject type
+  const [languageMode, setLanguageMode] = useState(() => {
+    return "both"; // will be updated by useEffect once subject is fetched
+  });
   const [isLatexEnabled, setIsLatexEnabled] = useState(false); // Added toggle state for LaTeX
   const [eqEditorOpen, setEqEditorOpen] = useState(false);
   const [eqEditorValue, setEqEditorValue] = useState("");
@@ -468,28 +483,26 @@ const QuestionForm = () => {
 
     setIsSubmitting(true);
     try {
-      const englishPayload = {
-        language: englishQuestion.language,
-        text: englishQuestion.text.trim(),
-        options: englishQuestion.options.map((opt) => opt.trim()),
-        correct_option: englishQuestion.correct_option + 1,
-      };
-      if (englishQuestion.solution.trim()) {
-        englishPayload.solution = englishQuestion.solution.trim();
+      const questionsToSubmit = [];
+      const showEnglish = languageMode === "english" || languageMode === "both";
+      const showHindi = languageMode === "hindi" || languageMode === "both";
+
+      if (showEnglish) {
+        const englishPayload = {
+          language: languageMode === "english" ? (englishQuestion.language || "English") : "English",
+          text: englishQuestion.text.trim(),
+          options: englishQuestion.options.map((opt) => opt.trim()),
+          correct_option: englishQuestion.correct_option + 1,
+        };
+        if (englishQuestion.solution.trim()) {
+          englishPayload.solution = englishQuestion.solution.trim();
+        }
+        questionsToSubmit.push(englishPayload);
       }
 
-      let hindiPayload;
-      if (isLanguageSubject()) {
-        // For language subjects, duplicate the English content for the second payload
-        // but keep the language key as 'Hindi' if strictly required by backend,
-        // or use the same language. Assuming backend expects a pair.
-        hindiPayload = {
-          ...englishPayload,
-          language: "Hindi", // Or keep it same as English if backend allows
-        };
-      } else {
-        hindiPayload = {
-          language: hindiQuestion.language,
+      if (showHindi) {
+        const hindiPayload = {
+          language: "Hindi",
           text: hindiQuestion.text.trim(),
           options: hindiQuestion.options.map((opt) => opt.trim()),
           correct_option: hindiQuestion.correct_option + 1,
@@ -497,8 +510,8 @@ const QuestionForm = () => {
         if (hindiQuestion.solution.trim()) {
           hindiPayload.solution = hindiQuestion.solution.trim();
         }
+        questionsToSubmit.push(hindiPayload);
       }
-      const questionsToSubmit = [englishPayload, hindiPayload];
 
       const payload = {
         exam: parseInt(examId),
@@ -508,19 +521,38 @@ const QuestionForm = () => {
       const response = await createNewQuestion(payload);
 
       if (response) {
-        toast.success("Questions added successfully in both languages!");
+        const msgs = {
+          english: "English question added successfully!",
+          hindi: "Hindi question added successfully!",
+          both: "Questions added in both languages!",
+        };
+        toast.success(msgs[languageMode]);
         navigate(-1);
       } else {
         throw new Error("Failed to create questions");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add questions");
+      const errorData = error.response?.data;
+      if (errorData && typeof errorData === 'object') {
+        const msgs = [];
+        if (errorData.hindi_errors) msgs.push(`Hindi: ${errorData.hindi_errors}`);
+        if (errorData.english_errors) msgs.push(`English: ${errorData.english_errors}`);
+        if (errorData.error) msgs.push(errorData.error);
+        if (errorData.message) msgs.push(errorData.message);
+        if (msgs.length > 0) {
+          msgs.forEach(m => toast.error(m));
+        } else {
+          toast.error("Failed to add questions");
+        }
+      } else {
+        toast.error(error.response?.data?.message || "Failed to add questions");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
   const checkDuplicateContent = () => {
-    if (isLanguageSubject()) return false;
+    if (languageMode !== "both") return false;
     if (!englishQuestion.text.trim() || !hindiQuestion.text.trim()) {
       setDuplicateError(null);
       return false;
@@ -594,6 +626,8 @@ const QuestionForm = () => {
     if (checkDuplicateContent()) {
       return false;
     }
+    const showEnglish = languageMode === "english" || languageMode === "both";
+    const showHindi = languageMode === "hindi" || languageMode === "both";
     const newFieldErrors = {
       english: {
         text: false,
@@ -608,26 +642,31 @@ const QuestionForm = () => {
     };
 
     let hasError = false;
-    if (!englishQuestion.text.trim()) {
-      newFieldErrors.english.text = true;
-      hasError = true;
-    }
-    englishQuestion.options.forEach((opt, idx) => {
-      if (!opt.trim()) {
-        newFieldErrors.english.options[idx] = true;
+
+    // Validate English if shown
+    if (showEnglish) {
+      if (!englishQuestion.text.trim()) {
+        newFieldErrors.english.text = true;
         hasError = true;
       }
-    });
-    const englishOptions = englishQuestion.options.map((o) =>
-      o.trim().toLowerCase(),
-    );
-    const uniqueEnglishOptions = new Set(englishOptions);
-    if (uniqueEnglishOptions.size !== englishOptions.length) {
-      toast.error("English options must be unique.");
-      return false;
+      englishQuestion.options.forEach((opt, idx) => {
+        if (!opt.trim()) {
+          newFieldErrors.english.options[idx] = true;
+          hasError = true;
+        }
+      });
+      const englishOptions = englishQuestion.options.map((o) =>
+        o.trim().toLowerCase(),
+      );
+      const uniqueEnglishOptions = new Set(englishOptions);
+      if (uniqueEnglishOptions.size !== englishOptions.length) {
+        toast.error("English options must be unique.");
+        return false;
+      }
     }
 
-    if (!isLanguageSubject()) {
+    // Validate Hindi if shown
+    if (showHindi) {
       if (!hindiQuestion.text.trim()) {
         newFieldErrors.hindi.text = true;
         hasError = true;
@@ -650,33 +689,9 @@ const QuestionForm = () => {
 
     setFieldErrors(newFieldErrors);
     if (hasError) {
-      toast.error(
-        isLanguageSubject()
-          ? "Please complete all required fields."
-          : "Both English and Hindi questions must be complete. Please fill in all required fields.",
-      );
+      const modeLabel = languageMode === "both" ? "English and Hindi" : languageMode === "english" ? "English" : "Hindi";
+      toast.error(`Please complete all required ${modeLabel} fields.`);
       return false;
-    }
-    const isEnglishComplete =
-      englishQuestion.text.trim() &&
-      englishQuestion.options.every((opt) => opt.trim());
-
-    if (!isEnglishComplete) {
-      toast.error("Please provide text and all options.");
-      return false;
-    }
-
-    if (!isLanguageSubject()) {
-      const isHindiComplete =
-        hindiQuestion.text.trim() &&
-        hindiQuestion.options.every((opt) => opt.trim());
-
-      if (!isHindiComplete) {
-        toast.error(
-          "Both English and Hindi questions must have text and all options filled",
-        );
-        return false;
-      }
     }
 
     return true;
@@ -686,7 +701,7 @@ const QuestionForm = () => {
     updateEnglishQuestion(field, value, optionIndex);
 
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
-      if (isLanguageSubject()) return;
+      if (languageMode !== "both") return;
       setIsTranslating(true);
       try {
         const response = await translatePreservingLatex(value);
@@ -937,8 +952,8 @@ const QuestionForm = () => {
 
           {/* Control Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Translation Controls - Hide for language subjects */}
-            {!isLanguageSubject() && (
+            {/* Translation Controls - Show only when both languages are active */}
+            {languageMode === "both" && (
               <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-6 rounded-xl border border-blue-100 h-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -1011,13 +1026,58 @@ const QuestionForm = () => {
             </div>
           </div>
 
+          {/* Language Mode Toggle */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-gray-700">Question Language</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Choose which language version(s) to create
+                </p>
+              </div>
+              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5">
+                {[
+                  { key: "english", label: "🇺🇸 English Only", color: "blue" },
+                  { key: "hindi", label: "🇮🇳 Hindi Only", color: "orange" },
+                  { key: "both", label: "Both Languages", color: "teal" },
+                ].map(({ key, label, color }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setLanguageMode(key)}
+                    className={`px-4 py-2 text-xs font-bold rounded-md transition-all whitespace-nowrap ${
+                      languageMode === key
+                        ? `bg-${color}-600 text-white shadow-sm`
+                        : "text-gray-500 hover:text-gray-700 hover:bg-white"
+                    }`}
+                    style={
+                      languageMode === key
+                        ? {
+                            backgroundColor:
+                              color === "blue" ? "#2563eb" :
+                              color === "orange" ? "#ea580c" :
+                              "#0d9488",
+                            color: "#fff",
+                          }
+                        : {}
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Submission Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 text-sm">
               <strong>Important:</strong>{" "}
-              {isLanguageSubject()
-                ? "This is a language subject. Please fill the question in the designated language."
-                : "Both English and Hindi versions are required. Type English words in Hindi fields and press Space/Enter after each word for instant translation. All fields marked with * must be filled."}
+              {languageMode === "both"
+                ? "Both English and Hindi versions will be created. Type English words in Hindi fields and press Space/Enter for instant translation."
+                : languageMode === "english"
+                ? "Only English question will be created. No Hindi version will be generated."
+                : "Only Hindi question will be created. No English version will be generated."}
             </p>
           </div>
 
@@ -1056,13 +1116,14 @@ const QuestionForm = () => {
 
           {/* Side-by-Side Forms */}
           <div
-            className={`grid grid-cols-1 ${isLanguageSubject() ? "" : "lg:grid-cols-2"} gap-8`}
+            className={`grid grid-cols-1 ${languageMode === "both" ? "lg:grid-cols-2" : ""} gap-8`}
           >
             {/* English Form */}
+            {(languageMode === "english" || languageMode === "both") && (
             <div className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                 <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  {isLanguageSubject()
+                  {languageMode === "english" && isLanguageSubject()
                     ? `${subjectName} Question`
                     : "🇺🇸 English Question"}
                   <span className="text-red-500 ml-1">*</span>
@@ -1244,9 +1305,10 @@ const QuestionForm = () => {
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Hindi Form - Hide for language subjects */}
-            {!isLanguageSubject() && (
+            {/* Hindi Form */}
+            {(languageMode === "hindi" || languageMode === "both") && (
               <div className="space-y-6">
                 <div className="bg-orange-50 p-4 rounded-xl border-2 border-orange-200">
                   <h2 className="text-xl font-bold text-orange-800 mb-4 flex items-center">

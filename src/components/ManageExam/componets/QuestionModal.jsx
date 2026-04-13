@@ -153,6 +153,8 @@ const QuestionModal = ({
     hindi: false,
   });
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
+  // Language mode: "english" | "hindi" | "both"
+  const [languageMode, setLanguageMode] = useState("both");
   const [fieldErrors, setFieldErrors] = useState({
     english: {
       text: false,
@@ -171,13 +173,22 @@ const QuestionModal = ({
   useEffect(() => {
     const fetchExamDetails = async () => {
       try {
-        // Assuming getExamById is available or import it. If not passed as prop, we might need to fetch it.
-        // Ideally exam details should be passed to modal, but fetching is also fine.
         const { getExamById } =
           await import("../../../services/adminManageExam");
         const response = await getExamById(examId);
         if (response && response.subject && response.subject.subject_name) {
-          setSubjectName(response.subject.subject_name);
+          const name = response.subject.subject_name;
+          setSubjectName(name);
+          // Set default language mode based on subject
+          const lowerName = name.toLowerCase();
+          const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
+          const isLang = langList.some((l) => lowerName.includes(l));
+          if (isLang) {
+            if (lowerName.includes("hindi")) setLanguageMode("hindi");
+            else setLanguageMode("english");
+          } else {
+            setLanguageMode("both");
+          }
         }
       } catch (error) {
         console.error("Failed to fetch exam details:", error);
@@ -190,7 +201,7 @@ const QuestionModal = ({
 
   useEffect(() => {
     const checkDuplicates = () => {
-      if (isLanguageSubject()) {
+      if (languageMode !== "both") {
         setDuplicateError(null);
         return;
       }
@@ -256,6 +267,15 @@ const QuestionModal = ({
   });
   useEffect(() => {
     if (editingQuestion) {
+      // Auto-set toggle to match the question being edited
+      if (editingQuestion.language === "Hindi") {
+        setLanguageMode("hindi");
+      } else if (editingQuestion.language === "English") {
+        setLanguageMode("english");
+      } else {
+        setLanguageMode("english"); // fallback
+      }
+
       const findCorrespondingHindiQuestion = async () => {
         try {
           // If it's a language subject, we don't need to look for a "Hindi" version pair in the traditional sense
@@ -331,6 +351,16 @@ const QuestionModal = ({
 
       findCorrespondingHindiQuestion();
     } else {
+      // Reset to default based on subject type when creating new
+      const lowerName = (subjectName || "").toLowerCase();
+      const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
+      const isLang = langList.some((l) => lowerName.includes(l));
+      if (isLang) {
+        setLanguageMode(lowerName.includes("hindi") ? "hindi" : "english");
+      } else {
+        setLanguageMode("both");
+      }
+
       setEnglishQuestion({
         language: getPrimaryLanguage(),
         text: "",
@@ -489,6 +519,8 @@ const QuestionModal = ({
     return isEnglishComplete && isHindiComplete;
   };
   const validateForm = () => {
+    const showEnglish = languageMode === "english" || languageMode === "both";
+    const showHindi = languageMode === "hindi" || languageMode === "both";
     const newFieldErrors = {
       english: {
         text: false,
@@ -503,30 +535,26 @@ const QuestionModal = ({
     };
     const newTextErrors = { english: false, hindi: false };
     let hasError = false;
+
     if (editingQuestion) {
+      // When editing, validate only the question being edited
       const isEditingEnglish =
-        editingQuestion.language === "English" || isLanguageSubject(); // Treat language subject edits like English/Primary edits
+        editingQuestion.language === "English" || languageMode === "english";
       const questionToValidate = isEditingEnglish
         ? englishQuestion
         : hindiQuestion;
       const errorField = isEditingEnglish
         ? newFieldErrors.english
         : newFieldErrors.hindi;
-
-      const langLabel = isLanguageSubject()
-        ? getPrimaryLanguage()
-        : isEditingEnglish
-          ? "English"
-          : "Hindi";
+      const langLabel = isEditingEnglish ? "English" : "Hindi";
 
       if (!questionToValidate.text.trim()) {
         if (isEditingEnglish) {
           newTextErrors.english = true;
-          errorField.text = true;
         } else {
           newTextErrors.hindi = true;
-          errorField.text = true;
         }
+        errorField.text = true;
         toast.error(`Question text in ${langLabel} is required`);
         hasError = true;
       }
@@ -543,9 +571,7 @@ const QuestionModal = ({
         questionToValidate.options[questionToValidate.correct_option];
       if (!correctOptionText || !correctOptionText.trim()) {
         errorField.options[questionToValidate.correct_option] = true;
-        toast.error(
-          `The selected correct answer for ${langLabel} cannot be empty`,
-        );
+        toast.error(`The selected correct answer for ${langLabel} cannot be empty`);
         hasError = true;
       }
 
@@ -554,33 +580,31 @@ const QuestionModal = ({
       return !hasError;
     }
 
-    // New Question Validation
-    const primaryLangLabel = getPrimaryLanguage();
-
-    if (!englishQuestion.text.trim()) {
-      newTextErrors.english = true;
-      newFieldErrors.english.text = true;
-      toast.error(`Question text in ${primaryLangLabel} is required`);
-      hasError = true;
-    }
-    englishQuestion.options.forEach((option, idx) => {
-      if (!option.trim()) {
-        newFieldErrors.english.options[idx] = true;
+    // New Question Validation — based on languageMode
+    if (showEnglish) {
+      if (!englishQuestion.text.trim()) {
+        newTextErrors.english = true;
+        newFieldErrors.english.text = true;
+        toast.error("Question text in English is required");
         hasError = true;
       }
-    });
-    if (newFieldErrors.english.options.some((err) => err)) {
-      toast.error(`All options in ${primaryLangLabel} are required`);
-    }
-    if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
-      newFieldErrors.english.options[englishQuestion.correct_option] = true;
-      toast.error(
-        `The selected correct answer for ${primaryLangLabel} cannot be empty`,
-      );
-      hasError = true;
+      englishQuestion.options.forEach((option, idx) => {
+        if (!option.trim()) {
+          newFieldErrors.english.options[idx] = true;
+          hasError = true;
+        }
+      });
+      if (newFieldErrors.english.options.some((err) => err)) {
+        toast.error("All options in English are required");
+      }
+      if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
+        newFieldErrors.english.options[englishQuestion.correct_option] = true;
+        toast.error("The selected correct answer for English cannot be empty");
+        hasError = true;
+      }
     }
 
-    if (!isLanguageSubject()) {
+    if (showHindi) {
       if (!hindiQuestion.text.trim()) {
         newTextErrors.hindi = true;
         newFieldErrors.hindi.text = true;
@@ -605,71 +629,42 @@ const QuestionModal = ({
 
     setFieldErrors(newFieldErrors);
     setTextErrors(newTextErrors);
-
-    if (hasError) {
-      return false;
-    }
-
-    return true;
+    return !hasError;
   };
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      const englishPayload = {
-        language: getPrimaryLanguage(),
-        text: englishQuestion.text.trim(),
-        options: englishQuestion.options.map((opt) => opt.trim()),
-        correct_option: englishQuestion.correct_option + 1,
-      };
+      const showEnglish = languageMode === "english" || languageMode === "both";
+      const showHindi = languageMode === "hindi" || languageMode === "both";
 
-      let formData;
-      if (isLanguageSubject()) {
-        // For language subjects, we need to send two payloads but they can be identical or one can be a "dummy" if valid
-        // Based on previous requirement: duplicate the English content to Hindi payload too?
-        // Or just send both as same.
-        const hindiPayload = {
-          ...englishPayload,
-          language: "Hindi", // Defaulting second payload to Hindi as per previous logic
+      let formData = {};
+
+      if (showEnglish) {
+        const englishPayload = {
+          language: languageMode === "english" ? (englishQuestion.language || "English") : "English",
+          text: englishQuestion.text.trim(),
+          options: englishQuestion.options.map((opt) => opt.trim()),
+          correct_option: englishQuestion.correct_option + 1,
         };
-
-        formData = {
-          english: englishPayload,
-          hindi: hindiPayload,
-        };
-      } else {
-        formData = {
-          english: englishPayload,
-          hindi: {
-            language: "Hindi",
-            text: hindiQuestion.text.trim(),
-            options: hindiQuestion.options.map((opt) => opt.trim()),
-            correct_option: hindiQuestion.correct_option + 1,
-          },
-        };
-      }
-
-      if (englishQuestion.solution.trim()) {
-        formData.english.solution = englishQuestion.solution.trim();
-      }
-
-      if (formData.hindi && hindiQuestion.solution.trim()) {
-        formData.hindi.solution = hindiQuestion.solution.trim();
-      }
-
-      // For language subject, if solution exists in primary, copy to secondary
-      if (isLanguageSubject() && englishQuestion.solution.trim()) {
-        formData.hindi.solution = englishQuestion.solution.trim();
-      }
-
-      if (editingQuestion) {
-        if (editingQuestion.language === "English" || isLanguageSubject()) {
-          // If language subject, we are likely editing the "primary" question which acts as English/Main
-          // Stop deleting formData.hindi - we need to send both for the backend pairing.
-        } else if (editingQuestion.language === "Hindi") {
-          // Stop deleting formData.english - we need to send both for the backend pairing.
+        if (englishQuestion.solution.trim()) {
+          englishPayload.solution = englishQuestion.solution.trim();
         }
+        formData.english = englishPayload;
+      }
+
+      if (showHindi) {
+        const hindiPayload = {
+          language: "Hindi",
+          text: hindiQuestion.text.trim(),
+          options: hindiQuestion.options.map((opt) => opt.trim()),
+          correct_option: hindiQuestion.correct_option + 1,
+        };
+        if (hindiQuestion.solution.trim()) {
+          hindiPayload.solution = hindiQuestion.solution.trim();
+        }
+        formData.hindi = hindiPayload;
       }
 
       await onSubmit(formData);
@@ -789,7 +784,7 @@ const QuestionModal = ({
       return before + wrapped + after;
     };
 
-    if (eqEditorTarget.language === "English" || isLanguageSubject()) {
+    if (eqEditorTarget.language === "English" || languageMode === "english") {
       if (eqEditorTarget.field === "options") {
         const curr = englishQuestion.options[eqEditorTarget.optionIndex] ?? "";
         const updated = replaceInText(curr);
@@ -972,8 +967,8 @@ const QuestionModal = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-          {/* Translation Controls */}
-          {!isLanguageSubject() && (
+          {/* Translation Controls — only when both languages active */}
+          {languageMode === "both" && (
             <div className="bg-gradient-to-r from-blue-50 to-teal-50 p-3 sm:p-4 rounded-xl border border-blue-100 mb-4 sm:mb-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-start sm:items-center gap-3">
@@ -1013,34 +1008,42 @@ const QuestionModal = ({
             </div>
           )}
 
-          {/* Add notice that both languages are required when not in edit mode */}
-          {!editingQuestion && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-blue-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-700">
-                    <strong>Important:</strong> Both English and Hindi versions
-                    are required for new questions. All fields marked with{" "}
-                    <span className="text-red-500">*</span> must be filled.
+          {/* Language Mode Toggle */}
+            <div className="bg-white border border-gray-200 rounded-xl p-3 mb-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 className="text-xs font-bold text-gray-700">Question Language</h3>
+                  <p className="text-[10px] text-gray-500">
+                    {editingQuestion ? "Choose which language to edit" : "Choose which version(s) to create"}
                   </p>
+                </div>
+                <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5">
+                  {[
+                    { key: "english", label: "🇺🇸 English", color: "#2563eb" },
+                    { key: "hindi", label: "🇮🇳 Hindi", color: "#ea580c" },
+                    { key: "both", label: "Both", color: "#0d9488" },
+                  ].map(({ key, label, color }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setLanguageMode(key)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${
+                        languageMode === key
+                          ? "text-white shadow-sm"
+                          : "text-gray-500 hover:text-gray-700 hover:bg-white"
+                      }`}
+                      style={
+                        languageMode === key
+                          ? { backgroundColor: color, color: "#fff" }
+                          : {}
+                      }
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
-          )}
 
           {/* Duplicate Error Banner */}
           {duplicateError && (
@@ -1073,9 +1076,10 @@ const QuestionModal = ({
 
           {/* Side-by-Side Forms */}
           <div
-            className={`grid grid-cols-1 ${isLanguageSubject() ? "" : "lg:grid-cols-2"} gap-6 sm:gap-8`}
+            className={`grid grid-cols-1 ${languageMode === "both" ? "lg:grid-cols-2" : ""} gap-6 sm:gap-8`}
           >
-            {/* English Form - Updated to always be required when not editing */}
+            {/* English Form */}
+            {(languageMode === "english" || languageMode === "both") && (
             <div className="space-y-6">
               <div
                 className={`bg-blue-50 p-4 rounded-xl border-2 ${
@@ -1094,7 +1098,7 @@ const QuestionModal = ({
                   )}
                   {editingQuestion &&
                     editingQuestion.language === "Hindi" &&
-                    !isLanguageSubject() && (
+                    languageMode === "both" && (
                       <span className="ml-2 text-xs sm:text-sm font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
                         View Only
                       </span>
@@ -1276,8 +1280,10 @@ const QuestionModal = ({
               </div>
             </div>
 
-            {/* Hindi Form - Updated to always be required when not editing */}
-            {!isLanguageSubject() && (
+            )}
+
+            {/* Hindi Form */}
+            {(languageMode === "hindi" || languageMode === "both") && (
               <div className="space-y-6">
                 <div
                   className={`bg-orange-50 p-4 rounded-xl border-2 ${
@@ -1500,13 +1506,13 @@ const QuestionModal = ({
 
           {/* Question Preview */}
           <div
-            className={`mt-8 grid grid-cols-1 ${isLanguageSubject() ? "" : "lg:grid-cols-2"} gap-8`}
+            className={`mt-8 grid grid-cols-1 ${languageMode === "both" ? "lg:grid-cols-2" : ""} gap-8`}
           >
             <QuestionPreview
               question={englishQuestion}
               activeLanguage={englishQuestion.language || getPrimaryLanguage()}
             />
-            {!isLanguageSubject() && (
+            {(languageMode === "hindi" || languageMode === "both") && (
               <QuestionPreview
                 question={hindiQuestion}
                 activeLanguage="Hindi"

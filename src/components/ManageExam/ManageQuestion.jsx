@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   FiArrowLeft,
   FiPlus,
@@ -14,6 +14,8 @@ import {
   FiX,
   FiLayers,
   FiBookOpen,
+  FiAlertTriangle,
+  FiLink,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import {
@@ -48,6 +50,7 @@ import { reorderQuestions } from "../../services/apiService";
 const ManageQuestion = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { examId: routeExamId } = useParams();
   const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,8 +64,10 @@ const ManageQuestion = () => {
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [showOrphans, setShowOrphans] = useState(false);
 
-  const examId = location.state?.exam?.id;
+  // Use location.state first, fall back to URL param for direct navigation
+  const examId = location.state?.exam?.id || routeExamId;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -77,26 +82,25 @@ const ManageQuestion = () => {
   useEffect(() => {
     const fetchExamData = async () => {
       try {
-        const examData = location.state?.exam;
-        if (!examData) {
-          toast.error("No exam data found");
+        // Support both state-based and URL param-based navigation
+        const resolvedExamId = location.state?.exam?.id || routeExamId;
+        if (!resolvedExamId) {
           navigate("/manage-exam");
           return;
         }
-        const response = await getExamById(examData.id);
+        const response = await getExamById(resolvedExamId);
 
         setExam(response);
         setQuestions(response.questions || []);
         setLoading(false);
       } catch (error) {
-        toast.error("Failed to fetch exam details");
         setLoading(false);
         navigate("/manage-exam");
       }
     };
 
     fetchExamData();
-  }, [location.state, navigate]);
+  }, [location.state, routeExamId, navigate]);
   const organizeQuestionsByOrder = () => {
     const maxOrder = Math.max(...questions.map((q) => q.order || 0), 0);
     const englishByOrder = Array(maxOrder + 1)
@@ -126,13 +130,17 @@ const ManageQuestion = () => {
     };
   };
 
+  const getSubjectName = () => {
+    return (
+      exam?.subject?.subject_name ||
+      exam?.subject_name ||
+      location.state?.exam?.subject_name ||
+      ""
+    );
+  };
+
   const isLanguageSubject = () => {
-    const subjectName = 
-      exam?.subject?.subject_name || 
-      exam?.subject_name || 
-      location.state?.exam?.subject_name || 
-      "";
-    const lowerName = subjectName.toLowerCase();
+    const lowerName = getSubjectName().toLowerCase();
     const nativeLanguages = [
       "english", "hindi", "urdu", "sanskrit", "bengali", 
       "maithili", "bhojpuri", "japanese", "french", 
@@ -140,6 +148,70 @@ const ManageQuestion = () => {
     ];
     return nativeLanguages.some((lang) => lowerName.includes(lang));
   };
+
+  const getSubjectLanguage = () => {
+    const lowerName = getSubjectName().toLowerCase();
+    if (lowerName.includes("hindi")) return "Hindi";
+    if (lowerName.includes("english")) return "English";
+    return "English"; // Default
+  };
+
+  // Detect orphan/unlinked questions
+  const orphanQuestions = useMemo(() => {
+    if (isLanguageSubject()) return []; // Language subjects don't need pairs
+    const orphans = [];
+    const englishByOrder = {};
+    const hindiByOrder = {};
+
+    questions.forEach((q) => {
+      const order = q.order;
+      if (order === null || order === undefined) {
+        orphans.push({ ...q, reason: "No order assigned" });
+        return;
+      }
+      if (q.language === "English") {
+        if (!englishByOrder[order]) englishByOrder[order] = [];
+        englishByOrder[order].push(q);
+      } else if (q.language === "Hindi") {
+        if (!hindiByOrder[order]) hindiByOrder[order] = [];
+        hindiByOrder[order].push(q);
+      } else {
+        orphans.push({ ...q, reason: `Unknown language: ${q.language}` });
+      }
+    });
+
+    // Find orders with duplicates in the same language
+    Object.entries(englishByOrder).forEach(([order, qs]) => {
+      if (qs.length > 1) {
+        qs.forEach((q) => orphans.push({ ...q, reason: `Duplicate English at order #${Number(order)+1}` }));
+      }
+    });
+    Object.entries(hindiByOrder).forEach(([order, qs]) => {
+      if (qs.length > 1) {
+        qs.forEach((q) => orphans.push({ ...q, reason: `Duplicate Hindi at order #${Number(order)+1}` }));
+      }
+    });
+
+    // Find unpaired orders (English without Hindi or vice-versa)
+    const allOrders = new Set([...Object.keys(englishByOrder), ...Object.keys(hindiByOrder)]);
+    allOrders.forEach((order) => {
+      const hasEn = englishByOrder[order]?.length === 1;
+      const hasHi = hindiByOrder[order]?.length === 1;
+      if (hasEn && !hasHi) {
+        orphans.push({ ...englishByOrder[order][0], reason: `Missing Hindi pair at order #${Number(order)+1}` });
+      } else if (hasHi && !hasEn) {
+        orphans.push({ ...hindiByOrder[order][0], reason: `Missing English pair at order #${Number(order)+1}` });
+      }
+    });
+
+    // Deduplicate by id
+    const seen = new Set();
+    return orphans.filter((q) => {
+      if (seen.has(q.id)) return false;
+      seen.add(q.id);
+      return true;
+    });
+  }, [questions, exam]);
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
@@ -267,8 +339,13 @@ const ManageQuestion = () => {
     try {
       const storedOrder = sessionStorage.getItem("newQuestionOrder");
       const orderPosition = storedOrder ? parseInt(storedOrder) : null;
-      
-      const englishQuestion = formData.english
+
+      // Derive what to save directly from what the modal sent
+      const hasEnglish = formData.english && formData.english.text?.trim();
+      const hasHindi = formData.hindi && formData.hindi.text?.trim();
+      const isSingleLang = hasEnglish !== hasHindi; // XOR — only one provided
+
+      const englishQuestion = hasEnglish
         ? {
             language: formData.english.language || "English",
             text: formData.english.text || "",
@@ -278,7 +355,7 @@ const ManageQuestion = () => {
           }
         : null;
 
-      const hindiQuestion = formData.hindi
+      const hindiQuestion = hasHindi
         ? {
             language: "Hindi",
             text: formData.hindi.text || "",
@@ -288,19 +365,12 @@ const ManageQuestion = () => {
           }
         : null;
 
+      // Build questionsToSave from what was actually provided
       const questionsToSave = [];
-      if (
-        englishQuestion &&
-        englishQuestion.text.trim() &&
-        englishQuestion.options.length
-      ) {
+      if (englishQuestion && englishQuestion.text.trim()) {
         questionsToSave.push(englishQuestion);
       }
-      if (
-        hindiQuestion &&
-        hindiQuestion.text.trim() &&
-        hindiQuestion.options.length
-      ) {
+      if (hindiQuestion && hindiQuestion.text.trim()) {
         questionsToSave.push(hindiQuestion);
       }
 
@@ -310,24 +380,25 @@ const ManageQuestion = () => {
       }
 
       const currentOrder = editingQuestion?.order;
-      const existingEnglishId = currentOrder !== undefined 
-        ? questions.find(q => q.order === currentOrder && q.language === "English")?.id 
+      const existingEnglishId = currentOrder !== undefined
+        ? questions.find(q => q.order === currentOrder && q.language === "English")?.id
         : null;
-      const existingHindiId = currentOrder !== undefined 
-        ? questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id 
+      const existingHindiId = currentOrder !== undefined
+        ? questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id
         : null;
 
       if (editingQuestion) {
         let updatedQuestions = [];
-        
-        if (isLanguageSubject()) {
-          // 1. Language subject logic: Push ONLY the edited part with its direct ID
+
+        if (isSingleLang) {
+          // Single language mode: send only the provided question with its direct ID
+          const questionData = questionsToSave[0];
           updatedQuestions.push({
             id: editingQuestion.id,
-            ...(editingQuestion.language === "English" ? englishQuestion : hindiQuestion),
+            ...questionData,
           });
         } else {
-          // 2. Standard subject logic: Always send/preserve the pair
+          // Both mode: send/preserve the pair
           // English Part
           if (englishQuestion && englishQuestion.text.trim()) {
             updatedQuestions.push({
@@ -340,8 +411,8 @@ const ManageQuestion = () => {
           }
 
           // Hindi Part
-          const hindiHasContent = hindiQuestion && 
-            hindiQuestion.text.trim() && 
+          const hindiHasContent = hindiQuestion &&
+            hindiQuestion.text.trim() &&
             hindiQuestion.options.some(opt => opt && opt.trim() !== "");
 
           if (hindiHasContent) {
@@ -360,9 +431,8 @@ const ManageQuestion = () => {
           questions: updatedQuestions,
         };
 
-        // CRITICAL FIX: Always use the English ID in the URL for paired updates if it exists
-        // as the backend typically treats English as the master record.
-        const updateUrlId = (!isLanguageSubject() && existingEnglishId) || editingQuestion.id;
+        // Use the English ID in the URL for paired updates if it exists
+        const updateUrlId = (!isSingleLang && existingEnglishId) || editingQuestion.id;
         const response = await updateNewQuestion(updateUrlId, payload);
 
         if (response) {
@@ -393,29 +463,40 @@ const ManageQuestion = () => {
           const newQuestions = [];
           if (response.english_data) newQuestions.push(response.english_data);
           if (response.hindi_data) newQuestions.push(response.hindi_data);
-          
+
           if (newQuestions.length > 0) {
             setQuestions((prevQuestions) => [...prevQuestions, ...newQuestions]);
           }
-          toast.success(`${questionsToSave.length} question(s) created successfully`);
+          toast.success(`Question(s) created successfully`);
         }
       }
-      
+
       sessionStorage.removeItem("newQuestionOrder");
       setIsModalOpen(false);
       setEditingQuestion(null);
       await refreshExamData();
     } catch (error) {
       console.error("Question save error:", error?.response?.data || error);
-      
-      // Extract specific field errors from backend (e.g., hindi_errors, english_errors)
+
       const errorData = error.response?.data;
       if (errorData && typeof errorData === 'object') {
-        const specificError = errorData.hindi_errors || errorData.english_errors || errorData.error || errorData.message;
-        if (specificError) {
-          toast.error(typeof specificError === 'string' ? specificError : JSON.stringify(specificError));
+        const errorMessages = [];
+        if (errorData.hindi_errors) errorMessages.push(`Hindi: ${errorData.hindi_errors}`);
+        if (errorData.english_errors) errorMessages.push(`English: ${errorData.english_errors}`);
+        if (errorData.error) errorMessages.push(errorData.error);
+        if (errorData.message) errorMessages.push(errorData.message);
+
+        if (errorMessages.length > 0) {
+          errorMessages.forEach(msg => toast.error(msg));
         } else {
-          toast.error("Failed to save question due to a validation error");
+          const allErrors = Object.entries(errorData)
+            .filter(([k, v]) => typeof v === 'string')
+            .map(([k, v]) => `${k}: ${v}`);
+          if (allErrors.length > 0) {
+            allErrors.forEach(msg => toast.error(msg));
+          } else {
+            toast.error("Failed to save question due to a validation error");
+          }
         }
       } else {
         toast.error("Failed to save question. Please check your connection.");
@@ -467,6 +548,7 @@ const ManageQuestion = () => {
   const { englishCount, hindiCount, totalMarks } = getLanguageStats();
   const { englishByOrder, hindiByOrder, maxOrder } = organizeQuestionsByOrder();
   const filteredByLanguage = getFilteredAndOrganizedQuestions();
+  const orphanCount = orphanQuestions.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-4 sm:p-6">
@@ -540,6 +622,23 @@ const ManageQuestion = () => {
                 {totalMarks}
               </span>
             </div>
+
+            {/* Orphan indicator */}
+            {orphanCount > 0 && (
+              <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+                <button
+                  onClick={() => setShowOrphans(!showOrphans)}
+                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter transition-all ${
+                    showOrphans
+                      ? "bg-amber-100 text-amber-800 border border-amber-200"
+                      : "bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-100"
+                  }`}
+                >
+                  <FiAlertTriangle className="w-3 h-3" />
+                  {orphanCount} Issues
+                </button>
+              </div>
+            )}
 
             <div className="ml-auto flex items-center gap-2">
               <div className="relative">
@@ -639,7 +738,66 @@ const ManageQuestion = () => {
 
         {/* Remove the separate filters section since it's now in the header */}
 
-        {/* Questions Display Area */}
+        {/* Orphan/Unlinked Questions Panel */}
+        {showOrphans && orphanQuestions.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-amber-200 mb-4 overflow-hidden">
+            <div className="bg-amber-50 px-4 py-2.5 border-b border-amber-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FiAlertTriangle className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                  Question Issues ({orphanQuestions.length})
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowOrphans(false)}
+                className="text-amber-400 hover:text-amber-600 p-1"
+              >
+                <FiX className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="divide-y divide-amber-50">
+              {orphanQuestions.map((q) => (
+                <div
+                  key={`orphan-${q.id}`}
+                  className="px-4 py-2.5 flex items-center justify-between hover:bg-amber-50/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                      q.language === "English"
+                        ? "bg-blue-50 text-blue-700"
+                        : "bg-purple-50 text-purple-700"
+                    }`}>
+                      {q.language}
+                    </span>
+                    <span className="text-xs text-gray-700 truncate font-medium">
+                      {q.text?.substring(0, 80)}{q.text?.length > 80 ? "..." : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
+                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                      {q.reason}
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      ID: {q.id}
+                    </span>
+                    <button
+                      onClick={() => handleEdit(q)}
+                      className="text-[10px] font-bold text-teal-600 hover:text-teal-700 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(q.id)}
+                      className="text-[10px] font-bold text-red-500 hover:text-red-700 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
