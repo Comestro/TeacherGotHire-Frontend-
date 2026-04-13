@@ -3,7 +3,7 @@ import Layout from "../Admin/Layout";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchTeachers,
+  fetchAdminTeachers,
   searchTeachers,
 } from "../../features/teacherFilterSlice";
 import { getQualification } from "../../services/adminManageQualificationApi";
@@ -88,7 +88,7 @@ const ManageTeacher = () => {
     status: null,
   });
   useEffect(() => {
-    dispatch(fetchTeachers({}));
+    dispatch(fetchAdminTeachers({}));
     (async () => {
       try {
         const q = await getQualification();
@@ -113,8 +113,8 @@ const ManageTeacher = () => {
   }, [teacherData]);
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchValue.trim()) dispatch(searchTeachers(searchValue));
-      else dispatch(fetchTeachers({}));
+      if (searchValue.trim()) dispatch(fetchAdminTeachers({ search: searchValue }));
+      else dispatch(fetchAdminTeachers({}));
       setCurrentPage(1);
     }, 500);
     return () => clearTimeout(timer);
@@ -548,23 +548,17 @@ const ManageTeacher = () => {
                 const initials = `${t.Fname?.charAt(0) || ""}${
                   t.Lname?.charAt(0) || ""
                 }`.toUpperCase();
-                const subjects =
-                  (t.teachersubjects || [])
-                    .map((s) => (typeof s === "string" ? s : s?.subject_name))
-                    .filter(Boolean)
-                    .join(", ") || "N/A";
-                const categories =
-                  (t.teacherclasscategory || [])
-                    .map((c) => c?.class_category?.name)
-                    .filter(Boolean)
-                    .join(", ") || "N/A";
+                const subNames = t.subjects || (t.teachersubjects || []).map(s => s.subject_name || s.subject?.subject_name || s);
+                const catNames = t.class_categories || (t.teacherclasscategory || []).map(c => c.class_category?.name || c.name);
+
+                const subjects = subNames.filter(Boolean).join(", ") || "—";
+                const categories = catNames.filter(Boolean).join(", ") || "—";
                 const qualifications =
                   (t.teacherqualifications || [])
                     .map((q) => q?.qualification?.name)
                     .filter(Boolean)
                     .join(", ") ||
-                  latestEducation?.qualification?.name ||
-                  "N/A";
+                  "—";
 
                 return (
                   <div
@@ -687,18 +681,11 @@ const ManageTeacher = () => {
                       const initials = `${t.Fname?.charAt(0) || ""}${
                         t.Lname?.charAt(0) || ""
                       }`.toUpperCase();
-                      const subjects =
-                        (t.teachersubjects || [])
-                          .map((s) =>
-                            typeof s === "string" ? s : s?.subject_name
-                          )
-                          .filter(Boolean)
-                          .join(", ") || "—";
-                      const categories =
-                        (t.teacherclasscategory || [])
-                          .map((c) => c?.class_category?.name)
-                          .filter(Boolean)
-                          .join(", ") || "—";
+                      const subNames = t.subjects || (t.teachersubjects || []).map(s => s.subject_name || s.subject?.subject_name || s);
+                      const catNames = t.class_categories || (t.teacherclasscategory || []).map(c => c.class_category?.name || c.name);
+
+                      const subjects = subNames.filter(Boolean).join(", ") || "—";
+                      const categories = catNames.filter(Boolean).join(", ") || "—";
                       const qualifications =
                         (t.teacherqualifications || [])
                           .map((q) => q?.qualification?.name)

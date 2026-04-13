@@ -21,6 +21,22 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+export const fetchAdminTeachers = createAsyncThunk(
+  "teachers/fetchAdminTeachers",
+  async (filters, { rejectWithValue }) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.search) params.append('search', filters.search);
+      
+      const url = params.toString() ? `/api/admin/teacher/list/?${params.toString()}` : '/api/admin/teacher/list/';
+      const response = await axiosInstance.get(url);
+      return response.data; 
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "An error occurred.");
+    }
+  }
+);
+
 export const fetchTeachers = createAsyncThunk(
   "teachers/fetchTeachers",
   async (filters, { rejectWithValue }) => {
@@ -90,6 +106,19 @@ const teacherSlice = createSlice({
         state.data = action.payload; // Store fetched data
       })
       .addCase(fetchTeachers.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
+    builder
+      .addCase(fetchAdminTeachers.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchAdminTeachers.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        // Map backend 'results' to 'data'
+        state.data = action.payload.results || action.payload; 
+      })
+      .addCase(fetchAdminTeachers.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });
