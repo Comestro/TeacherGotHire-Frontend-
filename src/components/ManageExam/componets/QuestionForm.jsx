@@ -89,7 +89,14 @@ const QuestionForm = () => {
           setEnglishQuestion((prev) => ({ ...prev, language: primaryLang }));
           // Set default language mode based on subject
           const lowerName = fetchedSubjectName.toLowerCase();
-          const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
+          const langList = [
+      "english", "hindi", "urdu", "sanskrit", "bengali", 
+      "marathi", "telugu", "tamil", "gujarati", "kannada", 
+      "malayalam", "punjabi", "odia", "assamese", "maithili", 
+      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
+      "dogri", "manipuri", "bodo", "japanese", "french", 
+      "german", "spanish"
+    ];
           const isLang = langList.some((l) => lowerName.includes(l));
           if (isLang) {
             if (lowerName.includes("hindi")) setLanguageMode("hindi");
@@ -719,7 +726,8 @@ const QuestionForm = () => {
         }
         toast.success("Translation completed (LaTeX preserved)");
       } catch (error) {
-        toast.error("Failed to translate text");
+        const errorMsg = error.response?.data?.message || error.message || "Failed to save exam set";
+        toast.error(errorMsg);
       } finally {
         setIsTranslating(false);
       }

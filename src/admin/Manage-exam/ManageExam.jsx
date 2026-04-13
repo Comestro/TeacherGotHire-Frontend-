@@ -101,12 +101,13 @@ export default function ExamManagement() {
 
   // Form Data
   const [formData, setFormData] = useState({
-    name: "",
+    set_name: "",
     subject: "",
     class_category: "",
     level: "",
     total_marks: "",
     duration: "",
+    total_questions: "",
     type: "",
   });
   const [formErrors, setFormErrors] = useState({});
@@ -264,15 +265,25 @@ export default function ExamManagement() {
   };
 
   const handleEdit = (exam) => {
-    setSelectedExam(exam);
+    const getItemId = (list, val, nameField = "name") => {
+      if (!val && val !== 0) return "";
+      if (typeof val === "object") return val.id ? String(val.id) : "";
+      const valStr = String(val).toLowerCase();
+      const item = list.find(i => 
+        String(i.id) === valStr || 
+        (i[nameField] && i[nameField].toLowerCase() === valStr)
+      );
+      return item ? String(item.id) : valStr;
+    }
+
     setFormData({
-      name: exam.name || "",
-      subject: subjects.find((s) => s.subject_name === exam.subject)?.id || "",
-      class_category:
-        classCategories.find((c) => c.name === exam.class_category)?.id || "",
-      level: levels.find((l) => l.name === exam.level)?.id || "",
+      set_name: exam.set_name || exam.name || "",
+      subject: getItemId(subjects, exam.subject, "subject_name"),
+      class_category: getItemId(classCategories, exam.class_category),
+      level: getItemId(levels, exam.level),
       total_marks: exam.total_marks || "",
       duration: exam.duration || "",
+      total_questions: exam.total_questions || "",
       type: exam.type || "",
     });
     setFormErrors({});
@@ -281,7 +292,7 @@ export default function ExamManagement() {
 
   const validateForm = () => {
     const errs = {};
-    if (!formData.name) errs.name = "Required";
+    if (!formData.set_name) errs.set_name = "Required";
     if (!formData.class_category) errs.class_category = "Required";
     if (!formData.subject) errs.subject = "Required";
     if (!formData.level) errs.level = "Required";
@@ -301,12 +312,13 @@ export default function ExamManagement() {
     setLoading(true);
     try {
       const payload = {
-        name: formData.name,
+        set_name: formData.set_name,
         subject: formData.subject,
         class_category: formData.class_category,
         level: formData.level,
         total_marks: formData.total_marks,
         duration: formData.duration,
+        total_questions: formData.total_questions,
         type: formData.type,
       };
 
@@ -742,17 +754,18 @@ export default function ExamManagement() {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
+                    value={formData.set_name}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, set_name: e.target.value })
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                      formErrors.name ? "border-red-500" : "border-gray-300"
+                      formErrors.set_name ? "border-red-500" : "border-gray-300"
                     }`}
+                    placeholder="e.g. Mathematics - Term 1"
                   />
-                  {formErrors.name && (
+                  {formErrors.set_name && (
                     <span className="text-xs text-red-500">
-                      {formErrors.name}
+                      {formErrors.set_name}
                     </span>
                   )}
                 </div>
@@ -898,7 +911,7 @@ export default function ExamManagement() {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Duration (min) *
+                    Duration (mins) *
                   </label>
                   <input
                     type="number"
@@ -915,6 +928,24 @@ export default function ExamManagement() {
                       {formErrors.duration}
                     </span>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Total Questions
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.total_questions}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        total_questions: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    placeholder="e.g. 50"
+                  />
                 </div>
               </div>
 

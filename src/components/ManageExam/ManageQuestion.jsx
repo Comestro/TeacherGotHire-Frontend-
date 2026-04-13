@@ -143,7 +143,10 @@ const ManageQuestion = () => {
     const lowerName = getSubjectName().toLowerCase();
     const nativeLanguages = [
       "english", "hindi", "urdu", "sanskrit", "bengali", 
-      "maithili", "bhojpuri", "japanese", "french", 
+      "marathi", "telugu", "tamil", "gujarati", "kannada", 
+      "malayalam", "punjabi", "odia", "assamese", "maithili", 
+      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
+      "dogri", "manipuri", "bodo", "japanese", "french", 
       "german", "spanish"
     ];
     return nativeLanguages.some((lang) => lowerName.includes(lang));
@@ -230,41 +233,45 @@ const ManageQuestion = () => {
         );
         return;
       }
+      // To maintain pairing, we need to know the mapping of orders
       const language = activeQuestion.language;
-      const sameLanguageQuestions = questions
-        .filter((q) => q.language === language)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-      const oldIndex = sameLanguageQuestions.findIndex(
-        (q) => q.id === active.id,
-      );
-      const newIndex = sameLanguageQuestions.findIndex((q) => q.id === over.id);
+      const otherLanguage = language === "English" ? "Hindi" : "English";
+      
+      const activeOrder = activeQuestion.order ?? 0;
+      const overOrder = overQuestion.order ?? 0;
 
-      if (oldIndex === -1 || newIndex === -1) return;
-      const reorderedQuestions = arrayMove(
-        [...sameLanguageQuestions],
-        oldIndex,
-        newIndex,
-      );
-      const updatedQuestions = reorderedQuestions.map((question, index) => ({
-        ...question,
-        order: index, // Use sequential index as the new order
-      }));
-      const orderedIds = updatedQuestions.map((q) => q.id);
-      await reorderQuestions(orderedIds);
-      setQuestions((prevQuestions) => {
-        const newQuestions = [...prevQuestions];
-        updatedQuestions.forEach((updatedQuestion) => {
-          const index = newQuestions.findIndex(
-            (q) => q.id === updatedQuestion.id,
-          );
-          if (index !== -1) {
-            newQuestions[index] = updatedQuestion;
-          }
-        });
+      // Get all unique orders currently in use
+      const uniqueOrders = [...new Set(questions.map(q => q.order ?? 0))].sort((a,b) => a - b);
+      
+      const oldIdx = uniqueOrders.indexOf(activeOrder);
+      const newIdx = uniqueOrders.indexOf(overOrder);
 
-        return newQuestions;
+      if (oldIdx === -1 || newIdx === -1) return;
+
+      const reorderedOrders = arrayMove([...uniqueOrders], oldIdx, newIdx);
+      
+      // Build the map of old order -> new order
+      const orderMap = {};
+      reorderedOrders.forEach((oldOrder, index) => {
+        orderMap[oldOrder] = index;
       });
 
+      // Update ALL questions with their new orders based on the map
+      const updatedQuestions = questions.map(q => ({
+        ...q,
+        order: orderMap[q.order ?? 0] ?? (q.order ?? 0)
+      }));
+
+      // Find the specific IDs of the language we are dragging to send to backend reorder
+      // This preserves current backend behavior while maintaining logical pairs in frontend
+      const languageSpecificIds = updatedQuestions
+        .filter(q => q.language === language)
+        .sort((a,b) => (a.order || 0) - (b.order || 0))
+        .map(q => q.id);
+
+      await reorderQuestions(languageSpecificIds);
+      
+      setQuestions(updatedQuestions);
       toast.success(`${language} questions reordered successfully`);
       await refreshExamData();
     } catch (error) {
@@ -380,11 +387,15 @@ const ManageQuestion = () => {
       }
 
       const currentOrder = editingQuestion?.order;
-      const existingEnglishId = currentOrder !== undefined
-        ? questions.find(q => q.order === currentOrder && q.language === "English")?.id
+      const existingEnglishId = (currentOrder !== undefined && currentOrder !== null)
+        ? (editingQuestion.language === "English" 
+            ? editingQuestion.id 
+            : questions.find(q => q.order === currentOrder && q.language === "English")?.id)
         : null;
-      const existingHindiId = currentOrder !== undefined
-        ? questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id
+      const existingHindiId = (currentOrder !== undefined && currentOrder !== null)
+        ? (editingQuestion.language === "Hindi" 
+            ? editingQuestion.id 
+            : questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id)
         : null;
 
       if (editingQuestion) {

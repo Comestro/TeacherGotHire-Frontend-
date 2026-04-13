@@ -103,29 +103,12 @@ const QuestionModal = ({
     if (!subjectName) return false;
     const lowerName = subjectName.toLowerCase();
     const languages = [
-      "english",
-      "hindi",
-      "urdu",
-      "sanskrit",
-      "bengali",
-      "marathi",
-      "telugu",
-      "tamil",
-      "gujarati",
-      "kannada",
-      "malayalam",
-      "punjabi",
-      "odia",
-      "assamese",
-      "maithili",
-      "santali",
-      "kashmiri",
-      "nepali",
-      "konkani",
-      "sindhi",
-      "dogri",
-      "manipuri",
-      "bodo",
+      "english", "hindi", "urdu", "sanskrit", "bengali", 
+      "marathi", "telugu", "tamil", "gujarati", "kannada", 
+      "malayalam", "punjabi", "odia", "assamese", "maithili", 
+      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
+      "dogri", "manipuri", "bodo", "japanese", "french", 
+      "german", "spanish"
     ];
     return languages.some((lang) => lowerName.includes(lang));
   };

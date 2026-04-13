@@ -97,7 +97,8 @@ const ExamSetterModal = ({
 
       onClose();
     } catch (error) {
-      toast.error(error.message || "Failed to save exam set");
+      const errorMsg = error.response?.data?.message || error.message || "Failed to save exam set";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

@@ -32,29 +32,12 @@ const BulkUploadModal = ({
     if (!subjectName) return false;
     const lowerName = subjectName.toLowerCase();
     const languages = [
-      "english",
-      "hindi",
-      "urdu",
-      "sanskrit",
-      "bengali",
-      "marathi",
-      "telugu",
-      "tamil",
-      "gujarati",
-      "kannada",
-      "malayalam",
-      "punjabi",
-      "odia",
-      "assamese",
-      "maithili",
-      "santali",
-      "kashmiri",
-      "nepali",
-      "konkani",
-      "sindhi",
-      "dogri",
-      "manipuri",
-      "bodo",
+      "english", "hindi", "urdu", "sanskrit", "bengali", 
+      "marathi", "telugu", "tamil", "gujarati", "kannada", 
+      "malayalam", "punjabi", "odia", "assamese", "maithili", 
+      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
+      "dogri", "manipuri", "bodo", "japanese", "french", 
+      "german", "spanish"
     ];
     return languages.some((lang) => lowerName.includes(lang));
   };
@@ -262,17 +245,19 @@ const BulkUploadModal = ({
         questionsToSubmit.push(engQ);
 
         if (!isLang) {
-          // STANDARD SUBJECT: Add Hindi pair
-          const hindiQ = {
-            language: "Hindi",
-            text: item.hindi.text || item.eng.text, // Fallback if empty
-            options: item.hindi.options.some((o) => o)
-              ? item.hindi.options
-              : item.eng.options,
-            correct_option: item.hindi.correct_option,
-            solution: item.hindi.solution,
-          };
-          questionsToSubmit.push(hindiQ);
+          // STANDARD SUBJECT: Add Hindi pair ONLY if Hindi text is present
+          if (item.hindi && item.hindi.text && item.hindi.text.trim()) {
+            const hindiQ = {
+              language: "Hindi",
+              text: item.hindi.text,
+              options: item.hindi.options.some((o) => o)
+                ? item.hindi.options
+                : item.eng.options, // We keep the option fallback if specific Hindi options aren't provided but text is
+              correct_option: item.hindi.correct_option,
+              solution: item.hindi.solution,
+            };
+            questionsToSubmit.push(hindiQ);
+          }
         }
         // LANGUAGE SUBJECT: Do NOT add a second question — only send the single one
 
