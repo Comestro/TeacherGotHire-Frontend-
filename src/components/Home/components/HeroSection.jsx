@@ -1,4 +1,3 @@
-
 import { IoSearchOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 
@@ -190,15 +189,15 @@ const HeroSection = () => {
             {highlightItems.map((item) => (
               <div
                 key={item.title}
-                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none h-full flex flex-col"
+                className="bg-white p-8 rounded  border border-slate-200 shadow-none h-full flex flex-col"
               >
                 <div
-                  className={`mb-6 p-4 rounded-2xl inline-block ${
+                  className={`mb-6 p-4 rounded  inline-block ${
                     item.color === "indigo"
                       ? "bg-indigo-50 text-indigo-600"
                       : item.color === "purple"
-                      ? "bg-purple-50 text-purple-600"
-                      : "bg-teal-50 text-teal-600"
+                        ? "bg-purple-50 text-purple-600"
+                        : "bg-teal-50 text-teal-600"
                   }`}
                 >
                   {item.icon}
@@ -221,8 +220,8 @@ const HeroSection = () => {
                               item.color === "indigo"
                                 ? "bg-indigo-100 text-indigo-600"
                                 : item.color === "purple"
-                                ? "bg-purple-100 text-purple-600"
-                                : "bg-teal-100 text-teal-600"
+                                  ? "bg-purple-100 text-purple-600"
+                                  : "bg-teal-100 text-teal-600"
                             }`}
                           >
                             {index + 1}

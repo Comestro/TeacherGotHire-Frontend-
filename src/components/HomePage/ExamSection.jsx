@@ -53,11 +53,11 @@ const ExamSection = () => {
             {/* Right Section with Image */}
             <div className="relative lg:h-full flex items-center justify-center">
               <div className="relative w-full max-w-md aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-teal-50 rounded-2xl transform rotate-3" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-teal-50 rounded  transform rotate-3" />
                 <img
                   src="edu.jpg"
                   alt="Classroom"
-                  className="relative z-10 w-full h-full object-cover rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500"
+                  className="relative z-10 w-full h-full object-cover rounded  shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500"
                 />
               </div>
             </div>

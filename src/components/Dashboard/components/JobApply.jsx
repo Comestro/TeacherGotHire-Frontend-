@@ -130,7 +130,7 @@ const ApplicationForm = ({
       if (locations.length === 0) {
         const jobName = getJobTypeName(jobTypes, jobId);
         toast.warning(
-          `You haven't selected any location preference for ${jobName}. Defaulting to state/district if any.`
+          `You haven't selected any location preference for ${jobName}. Defaulting to state/district if any.`,
         );
       }
     }
@@ -203,7 +203,7 @@ const ApplicationForm = ({
                 <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 min-h-[300px] animate-in fade-in duration-200">
                   {(() => {
                     const currentJob = jobTypes?.find(
-                      (j) => j.id === activeTab
+                      (j) => j.id === activeTab,
                     );
                     const isApplying = selectedJobTypes.includes(activeTab);
 
@@ -258,7 +258,7 @@ const ApplicationForm = ({
                                       handleSalaryChange(
                                         activeTab,
                                         "amount",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -280,7 +280,7 @@ const ApplicationForm = ({
                                     handleSalaryChange(
                                       activeTab,
                                       "type",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
@@ -463,7 +463,7 @@ const ApplicationSummary = ({ applications, jobTypes }) => {
 const JobApply = () => {
   const dispatch = useDispatch();
   const { teacherjobRole: jobTypes, status: jobTypesStatus } = useSelector(
-    (state) => state.jobProfile
+    (state) => state.jobProfile,
   );
 
   useEffect(() => {
@@ -498,7 +498,7 @@ const JobApply = () => {
     classCategoryId,
     isEdit = false,
     applicationData = null,
-    subjectName = ""
+    subjectName = "",
   ) => {
     setExpandedForm({
       subjectId,
@@ -526,14 +526,14 @@ const JobApply = () => {
       false,
       salaryData,
       null,
-      isEdit ? "update" : "apply"
+      isEdit ? "update" : "apply",
     );
     handleCollapseForm();
   };
   const handleRevoke = async (subjectId, classCategoryId, subjectName) => {
     if (
       window.confirm(
-        `Are you sure you want to withdraw your application for ${subjectName}? This action cannot be undone immediately.`
+        `Are you sure you want to withdraw your application for ${subjectName}? This action cannot be undone immediately.`,
       )
     ) {
       await handleApply(
@@ -543,7 +543,7 @@ const JobApply = () => {
         true,
         null,
         null,
-        "revoke"
+        "revoke",
       );
     }
   };
@@ -554,7 +554,7 @@ const JobApply = () => {
     currentStatus = false,
     salaryData = null,
     applicationId = null,
-    action = "apply"
+    action = "apply",
   ) => {
     try {
       console.log("=== handleApply Sync Debug ===");
@@ -571,7 +571,9 @@ const JobApply = () => {
           let isSubjectMatch = itemSubjectId === subjectId;
           if (!isSubjectMatch && item.class_category?.subjects) {
             isSubjectMatch = item.class_category.subjects.some((sub) =>
-              typeof sub === "object" ? sub.id === subjectId : sub === subjectId
+              typeof sub === "object"
+                ? sub.id === subjectId
+                : sub === subjectId,
             );
           }
 
@@ -584,7 +586,7 @@ const JobApply = () => {
 
       console.log(
         "DEBUG: Current Applications:",
-        JSON.parse(JSON.stringify(currentApplications))
+        JSON.parse(JSON.stringify(currentApplications)),
       );
       console.log("DEBUG: Selected Job Types:", selectedJobTypes);
 
@@ -601,18 +603,18 @@ const JobApply = () => {
                 salary_expectation: app.salary_expectation,
                 salary_type: app.salary_type || "monthly",
                 status: false,
-              })
+              }),
             );
           }
         });
       } else {
         selectedJobTypes.forEach((jobId) => {
           const existingApp = currentApplications.find(
-            (app) => getJobTypeId(app.teacher_job_type) === jobId
+            (app) => getJobTypeId(app.teacher_job_type) === jobId,
           );
           console.log(
             `DEBUG: Checking Job ID ${jobId}. Existing App Found:`,
-            existingApp ? existingApp.id : "No"
+            existingApp ? existingApp.id : "No",
           );
 
           const salary = salaryDetails[jobId]?.amount || "10000";
@@ -631,7 +633,7 @@ const JobApply = () => {
               isLocationChanged
             ) {
               console.log(
-                `Updating existing app ${existingApp.id} for job ${jobId}`
+                `Updating existing app ${existingApp.id} for job ${jobId}`,
               );
               promises.push(
                 updateJobApply(existingApp.id, {
@@ -648,7 +650,7 @@ const JobApply = () => {
                     post_office: loc.post_office,
                     area: loc.area || "",
                   })),
-                })
+                }),
               );
             }
           } else {
@@ -685,7 +687,7 @@ const JobApply = () => {
                 salary_expectation: app.salary_expectation,
                 salary_type: app.salary_type || "monthly",
                 status: false,
-              })
+              }),
             );
           }
         });
@@ -710,7 +712,7 @@ const JobApply = () => {
           <div className="font-bold">Success</div>
           <div className="text-sm">{messageText}</div>
         </div>,
-        { position: "top-right", className: "bg-green-50 text-green-800" }
+        { position: "top-right", className: "bg-green-50 text-green-800" },
       );
     } catch (error) {
       console.error("❌ Application error:", error);
@@ -723,7 +725,7 @@ const JobApply = () => {
 
       if (errorMessage.includes("job preference location")) {
         toast.error(
-          "Please set your job preference location in the application form."
+          "Please set your job preference location in the application form.",
         );
       } else {
         toast.error(errorMessage);
@@ -745,7 +747,7 @@ const JobApply = () => {
   if (eligibilityError || jobApplyError) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-dashed border-gray-300 text-center">
+        <div className="flex flex-col items-center justify-center p-12 bg-white rounded  border border-dashed border-gray-300 text-center">
           <div className="p-4 bg-red-50 rounded-full mb-4">
             <HiOutlineExclamationTriangle className="h-10 w-10 text-red-500" />
           </div>
@@ -814,7 +816,7 @@ const JobApply = () => {
                         (sub) =>
                           typeof sub === "object"
                             ? sub.id === subjectId
-                            : sub === subjectId
+                            : sub === subjectId,
                       );
                       if (
                         hasSubject &&
@@ -828,14 +830,14 @@ const JobApply = () => {
                     return subjectMatch && categoryMatch;
                   }) || [];
                 const activeApplications = applications.filter(
-                  (app) => app.status === true
+                  (app) => app.status === true,
                 );
                 const isApplied = activeApplications.length > 0;
 
                 return (
                   <div
                     key={`${subjectId}-${classCategoryId}-${index}`}
-                    className={`group bg-white border border-gray-200 rounded-2xl p-0 hover:border-gray-300 transition-all duration-200 overflow-hidden ${
+                    className={`group bg-white border border-gray-200 rounded  p-0 hover:border-gray-300 transition-all duration-200 overflow-hidden ${
                       isApplied
                         ? "ring-1 ring-success/50 border-success/30"
                         : ""
@@ -892,7 +894,7 @@ const JobApply = () => {
                                   classCategoryId,
                                   false,
                                   null,
-                                  subjectName
+                                  subjectName,
                                 )
                               }
                               className="hidden sm:inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
@@ -942,7 +944,7 @@ const JobApply = () => {
                                   classCategoryId,
                                   true,
                                   activeApplications,
-                                  subjectName
+                                  subjectName,
                                 )
                               }
                               className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
@@ -955,7 +957,7 @@ const JobApply = () => {
                                 handleRevoke(
                                   subjectId,
                                   classCategoryId,
-                                  subjectName
+                                  subjectName,
                                 )
                               }
                               className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
@@ -982,7 +984,7 @@ const JobApply = () => {
                                   classCategoryId,
                                   false,
                                   null,
-                                  subjectName
+                                  subjectName,
                                 )
                               }
                               className="w-full inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all"
@@ -999,7 +1001,7 @@ const JobApply = () => {
             </div>
           </div>
         ) : (
-          <div className="p-12 bg-white rounded-2xl border border-slate-200 text-center shadow-sm">
+          <div className="p-12 bg-white rounded  border border-slate-200 text-center shadow-sm">
             <div className="flex flex-col items-center max-w-md mx-auto">
               <div className="p-4 bg-yellow-50 rounded-full mb-6">
                 <HiOutlineInformationCircle

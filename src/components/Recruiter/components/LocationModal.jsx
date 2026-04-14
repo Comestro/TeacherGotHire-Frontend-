@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FiX, FiMapPin, FiCheck, FiCrosshair } from "react-icons/fi";
 import { MdLocationCity, MdLocalPostOffice } from "react-icons/md";
-import { lookupPincode, reverseGeocode } from "../../../services/pincodeService";
+import {
+  lookupPincode,
+  reverseGeocode,
+} from "../../../services/pincodeService";
 const BIHAR_DISTRICTS = [
   "Araria",
   "Arwal",
@@ -81,7 +84,7 @@ const LocationModal = ({
 
           if (result.district) {
             const match = BIHAR_DISTRICTS.find(
-              (d) => d.toLowerCase() === result.district.toLowerCase()
+              (d) => d.toLowerCase() === result.district.toLowerCase(),
             );
             if (match) {
               setFormData((prev) => ({ ...prev, district: match }));
@@ -100,7 +103,7 @@ const LocationModal = ({
       () => {
         setError("Unable to retrieve location");
         setDetecting(false);
-      }
+      },
     );
   };
   useEffect(() => {
@@ -168,7 +171,7 @@ const LocationModal = ({
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="bg-white rounded  w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -328,7 +331,7 @@ const LocationModal = ({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 

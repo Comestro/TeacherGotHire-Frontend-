@@ -91,13 +91,34 @@ const QuestionForm = () => {
           // Set default language mode based on subject
           const lowerName = fetchedSubjectName.toLowerCase();
           const langList = [
-      "english", "hindi", "urdu", "sanskrit", "bengali", 
-      "marathi", "telugu", "tamil", "gujarati", "kannada", 
-      "malayalam", "punjabi", "odia", "assamese", "maithili", 
-      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
-      "dogri", "manipuri", "bodo", "japanese", "french", 
-      "german", "spanish"
-    ];
+            "english",
+            "hindi",
+            "urdu",
+            "sanskrit",
+            "bengali",
+            "marathi",
+            "telugu",
+            "tamil",
+            "gujarati",
+            "kannada",
+            "malayalam",
+            "punjabi",
+            "odia",
+            "assamese",
+            "maithili",
+            "santali",
+            "kashmiri",
+            "nepali",
+            "konkani",
+            "sindhi",
+            "dogri",
+            "manipuri",
+            "bodo",
+            "japanese",
+            "french",
+            "german",
+            "spanish",
+          ];
           const isLang = langList.some((l) => lowerName.includes(l));
           if (isLang) {
             if (lowerName.includes("hindi")) setLanguageMode("hindi");
@@ -308,40 +329,44 @@ const QuestionForm = () => {
 
   const translatePreservingLatex = async (src) => {
     if (!src || !src.trim()) return src || "";
-    
+
     // Split by newlines to preserve paragraph structure
     const lines = src.split(/(\n+)/);
-    
-    const translatedLines = await Promise.all(lines.map(async (line) => {
-      // If it's just newlines, return as is
-      if (/^\n+$/.test(line)) return line;
-      if (!line.trim()) return line;
 
-      const regex =
-        /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
+    const translatedLines = await Promise.all(
+      lines.map(async (line) => {
+        // If it's just newlines, return as is
+        if (/^\n+$/.test(line)) return line;
+        if (!line.trim()) return line;
 
-      const promises = [];
-      let lastIndex = 0;
-      let match;
+        const regex =
+          /(\$\$[\s\S]*?\$\$|\$[^$]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\\[a-zA-Z]+(?:\s*\{[^}]*\})+)/g;
 
-      while ((match = regex.exec(line)) !== null) {
-        if (match.index > lastIndex) {
-          const chunk = line.slice(lastIndex, match.index);
+        const promises = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(line)) !== null) {
+          if (match.index > lastIndex) {
+            const chunk = line.slice(lastIndex, match.index);
+            promises.push(
+              translateText(chunk, "English", "Hindi").catch(() => chunk),
+            );
+          }
+          promises.push(Promise.resolve(match[0]));
+          lastIndex = regex.lastIndex;
+        }
+        if (lastIndex < line.length) {
+          const tail = line.slice(lastIndex);
           promises.push(
-            translateText(chunk, "English", "Hindi").catch(() => chunk),
+            translateText(tail, "English", "Hindi").catch(() => tail),
           );
         }
-        promises.push(Promise.resolve(match[0]));
-        lastIndex = regex.lastIndex;
-      }
-      if (lastIndex < line.length) {
-        const tail = line.slice(lastIndex);
-        promises.push(translateText(tail, "English", "Hindi").catch(() => tail));
-      }
 
-      const parts = await Promise.all(promises);
-      return parts.join("");
-    }));
+        const parts = await Promise.all(promises);
+        return parts.join("");
+      }),
+    );
 
     return translatedLines.join("");
   };
@@ -497,7 +522,10 @@ const QuestionForm = () => {
 
       if (showEnglish) {
         const englishPayload = {
-          language: languageMode === "english" ? (englishQuestion.language || "English") : "English",
+          language:
+            languageMode === "english"
+              ? englishQuestion.language || "English"
+              : "English",
           text: englishQuestion.text.trim(),
           options: englishQuestion.options.map((opt) => opt.trim()),
           correct_option: englishQuestion.correct_option + 1,
@@ -541,14 +569,16 @@ const QuestionForm = () => {
       }
     } catch (error) {
       const errorData = error.response?.data;
-      if (errorData && typeof errorData === 'object') {
+      if (errorData && typeof errorData === "object") {
         const msgs = [];
-        if (errorData.hindi_errors) msgs.push(`Hindi: ${errorData.hindi_errors}`);
-        if (errorData.english_errors) msgs.push(`English: ${errorData.english_errors}`);
+        if (errorData.hindi_errors)
+          msgs.push(`Hindi: ${errorData.hindi_errors}`);
+        if (errorData.english_errors)
+          msgs.push(`English: ${errorData.english_errors}`);
         if (errorData.error) msgs.push(errorData.error);
         if (errorData.message) msgs.push(errorData.message);
         if (msgs.length > 0) {
-          msgs.forEach(m => toast.error(m));
+          msgs.forEach((m) => toast.error(m));
         } else {
           toast.error("Failed to add questions");
         }
@@ -697,7 +727,12 @@ const QuestionForm = () => {
 
     setFieldErrors(newFieldErrors);
     if (hasError) {
-      const modeLabel = languageMode === "both" ? "English and Hindi" : languageMode === "english" ? "English" : "Hindi";
+      const modeLabel =
+        languageMode === "both"
+          ? "English and Hindi"
+          : languageMode === "english"
+            ? "English"
+            : "Hindi";
       toast.error(`Please complete all required ${modeLabel} fields.`);
       return false;
     }
@@ -727,7 +762,10 @@ const QuestionForm = () => {
         }
         toast.success("Translation completed (LaTeX preserved)");
       } catch (error) {
-        const errorMsg = error.response?.data?.message || error.message || "Failed to save exam set";
+        const errorMsg =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to save exam set";
         toast.error(errorMsg);
       } finally {
         setIsTranslating(false);
@@ -739,7 +777,7 @@ const QuestionForm = () => {
 
     if ((e.key === " " || e.key === "Enter") && value.trim()) {
       if (isLanguageSubject()) return;
-      
+
       // Split by whitespace but keep the whitespace segments to preserve them
       const segments = value.split(/(\s+)/);
       let updatedSegments = [...segments];
@@ -752,11 +790,15 @@ const QuestionForm = () => {
           const segment = segments[i];
           // Skip whitespace/empty segments
           if (!segment || !/\S/.test(segment)) continue;
-          
+
           if (isLatexToken(segment)) continue;
           if (isEnglishWord(segment)) {
             try {
-              const translated = await translateText(segment, "English", "Hindi");
+              const translated = await translateText(
+                segment,
+                "English",
+                "Hindi",
+              );
               updatedSegments[i] = translated;
               hasTranslation = true;
             } catch (error) {}
@@ -884,7 +926,10 @@ const QuestionForm = () => {
     const replaceInText = (text) => {
       if (!info) {
         // Preserve all existing whitespace, including newlines, when appending
-        const appended = (text || "") + (text && !text.endsWith(" ") && !text.endsWith("\n") ? " " : "") + `$${val}$`;
+        const appended =
+          (text || "") +
+          (text && !text.endsWith(" ") && !text.endsWith("\n") ? " " : "") +
+          `$${val}$`;
         return appended;
       }
       const before = text.slice(0, info.index);
@@ -941,7 +986,7 @@ const QuestionForm = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-6">
       <div className="max-w-8xl mx-auto">
-        <div className="rounded-2xl p-5">
+        <div className="rounded  p-5">
           <button
             onClick={() => navigate(-1)}
             className="mb-6 flex items-center text-gray-600 hover:text-teal-600 transition-colors group"
@@ -972,8 +1017,8 @@ const QuestionForm = () => {
                         Real-time Word Translation
                       </span>
                       <span className="text-sm text-gray-600">
-                        Type English words in Hindi fields - each word translates
-                        after Space/Enter
+                        Type English words in Hindi fields - each word
+                        translates after Space/Enter
                       </span>
                     </div>
                   </div>
@@ -1015,7 +1060,9 @@ const QuestionForm = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <span className={`text-xs font-bold uppercase tracking-wider ${isLatexEnabled ? "text-purple-600" : "text-gray-400"}`}>
+                <span
+                  className={`text-xs font-bold uppercase tracking-wider ${isLatexEnabled ? "text-purple-600" : "text-gray-400"}`}
+                >
                   {isLatexEnabled ? "ON" : "OFF"}
                 </span>
                 <button
@@ -1039,7 +1086,9 @@ const QuestionForm = () => {
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-gray-700">Question Language</h3>
+                <h3 className="text-sm font-bold text-gray-700">
+                  Question Language
+                </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   Choose which language version(s) to create
                 </p>
@@ -1063,9 +1112,11 @@ const QuestionForm = () => {
                       languageMode === key
                         ? {
                             backgroundColor:
-                              color === "blue" ? "#2563eb" :
-                              color === "orange" ? "#ea580c" :
-                              "#0d9488",
+                              color === "blue"
+                                ? "#2563eb"
+                                : color === "orange"
+                                  ? "#ea580c"
+                                  : "#0d9488",
                             color: "#fff",
                           }
                         : {}
@@ -1085,8 +1136,8 @@ const QuestionForm = () => {
               {languageMode === "both"
                 ? "Both English and Hindi versions will be created. Type English words in Hindi fields and press Space/Enter for instant translation."
                 : languageMode === "english"
-                ? "Only English question will be created. No Hindi version will be generated."
-                : "Only Hindi question will be created. No English version will be generated."}
+                  ? "Only English question will be created. No Hindi version will be generated."
+                  : "Only Hindi question will be created. No English version will be generated."}
             </p>
           </div>
 
@@ -1129,191 +1180,193 @@ const QuestionForm = () => {
           >
             {/* English Form */}
             {(languageMode === "english" || languageMode === "both") && (
-            <div className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
-                  {languageMode === "english" && isLanguageSubject()
-                    ? `${subjectName} Question`
-                    : "🇺🇸 English Question"}
-                  <span className="text-red-500 ml-1">*</span>
-                </h2>
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+                  <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                    {languageMode === "english" && isLanguageSubject()
+                      ? `${subjectName} Question`
+                      : "🇺🇸 English Question"}
+                    <span className="text-red-500 ml-1">*</span>
+                  </h2>
 
-                {/* English Question Text */}
-                <div className="space-y-3 mb-6">
-                  <label className="block text-sm font-semibold text-gray-800">
-                    Question Text <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={englishQuestion.text}
-                    onChange={(e) =>
-                      updateEnglishQuestion("text", e.target.value)
-                    }
-                    onKeyUp={(e) => handleKeyUp(e, "text", e.target.value)}
-                    onBlur={(e) =>
-                      handleEnglishFieldBlur("text", e.target.value)
-                    }
-                    placeholder={`Enter your question in ${isLanguageSubject() ? subjectName : "English"}...`}
-                    className={`w-full p-3 border ${
-                      fieldErrors.english.text
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-200"
-                    } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
-                    rows="3"
-                    required={!englishSectionEmpty}
-                  />
-                  {fieldErrors.english.text && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Question text is required
-                    </p>
-                  )}
-                  {/* Add Equation button next to the textarea */}
-                  {isLatexEnabled && (
-                    <div className="mt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openEquationEditor(
-                            "English",
-                            "text",
-                            null,
-                            englishQuestion.text,
-                          )
-                        }
-                        className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
-                      >
-                        Equation
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* English Options */}
-                <div className="space-y-4 mb-6">
-                  <label className="block text-sm font-semibold text-gray-800">
-                    Answer Options <span className="text-red-500">*</span>
-                  </label>
-                  {englishQuestion.options.map((option, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="english_correct"
-                          checked={englishQuestion.correct_option === index}
-                          onChange={() => {
-                            updateEnglishQuestion("correct_option", index);
-                            setHindiQuestion((prev) => ({
-                              ...prev,
-                              correct_option: index,
-                            }));
-                          }}
-                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                        />
+                  {/* English Question Text */}
+                  <div className="space-y-3 mb-6">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Question Text <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={englishQuestion.text}
+                      onChange={(e) =>
+                        updateEnglishQuestion("text", e.target.value)
+                      }
+                      onKeyUp={(e) => handleKeyUp(e, "text", e.target.value)}
+                      onBlur={(e) =>
+                        handleEnglishFieldBlur("text", e.target.value)
+                      }
+                      placeholder={`Enter your question in ${isLanguageSubject() ? subjectName : "English"}...`}
+                      className={`w-full p-3 border ${
+                        fieldErrors.english.text
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-200"
+                      } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
+                      rows="3"
+                      required={!englishSectionEmpty}
+                    />
+                    {fieldErrors.english.text && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Question text is required
+                      </p>
+                    )}
+                    {/* Add Equation button next to the textarea */}
+                    {isLatexEnabled && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "English",
+                              "text",
+                              null,
+                              englishQuestion.text,
+                            )
+                          }
+                          className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                        >
+                          Equation
+                        </button>
                       </div>
-                      <div className="flex-1 relative">
-                        <input
-                          type="text"
-                          value={option}
-                          onChange={(e) =>
-                            updateEnglishQuestion(
-                              "options",
-                              e.target.value,
-                              index,
-                            )
-                          }
-                          onKeyUp={(e) =>
-                            handleKeyUp(e, "options", e.target.value, index)
-                          }
-                          onBlur={(e) =>
-                            handleEnglishFieldBlur(
-                              "options",
-                              e.target.value,
-                              index,
-                            )
-                          }
-                          placeholder={`Option ${index + 1}`}
-                          className={`w-full p-2 border ${
-                            fieldErrors.english.options[index]
-                              ? "border-red-500 bg-red-50"
-                              : "border-gray-200"
-                          } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10`}
-                          required={!englishSectionEmpty}
-                        />
-                        {fieldErrors.english.options[index] && (
-                          <p className="text-red-500 text-xs mt-1">
-                            Option {index + 1} is required
-                          </p>
-                        )}
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
-                          {String.fromCharCode(65 + index)}
+                    )}
+                  </div>
+
+                  {/* English Options */}
+                  <div className="space-y-4 mb-6">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Answer Options <span className="text-red-500">*</span>
+                    </label>
+                    {englishQuestion.options.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            name="english_correct"
+                            checked={englishQuestion.correct_option === index}
+                            onChange={() => {
+                              updateEnglishQuestion("correct_option", index);
+                              setHindiQuestion((prev) => ({
+                                ...prev,
+                                correct_option: index,
+                              }));
+                            }}
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                          />
                         </div>
-                      </div>
-                      {isLatexEnabled && (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openEquationEditor(
-                                "English",
+                        <div className="flex-1 relative">
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) =>
+                              updateEnglishQuestion(
                                 "options",
+                                e.target.value,
                                 index,
-                                englishQuestion.options[index],
                               )
                             }
-                            className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
-                          >
-                            Eq
-                          </button>
+                            onKeyUp={(e) =>
+                              handleKeyUp(e, "options", e.target.value, index)
+                            }
+                            onBlur={(e) =>
+                              handleEnglishFieldBlur(
+                                "options",
+                                e.target.value,
+                                index,
+                              )
+                            }
+                            placeholder={`Option ${index + 1}`}
+                            className={`w-full p-2 border ${
+                              fieldErrors.english.options[index]
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-200"
+                            } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10`}
+                            required={!englishSectionEmpty}
+                          />
+                          {fieldErrors.english.options[index] && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Option {index + 1} is required
+                            </p>
+                          )}
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-500 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">
+                            {String.fromCharCode(65 + index)}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                        {isLatexEnabled && (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openEquationEditor(
+                                  "English",
+                                  "options",
+                                  index,
+                                  englishQuestion.options[index],
+                                )
+                              }
+                              className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
+                            >
+                              Eq
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
 
-                {/* English Solution */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-gray-800">
-                    Solution/Explanation{" "}
-                    <span className="text-gray-500">(Optional)</span>
-                  </label>
-                  <textarea
-                    value={englishQuestion.solution}
-                    onChange={(e) =>
-                      updateEnglishQuestion("solution", e.target.value)
-                    }
-                    onKeyUp={(e) => handleKeyUp(e, "solution", e.target.value)}
-                    onBlur={(e) =>
-                      handleEnglishFieldBlur("solution", e.target.value)
-                    }
-                    placeholder={`Provide detailed explanation in ${isLanguageSubject() ? subjectName : "English"} (optional)...`}
-                    className={`w-full p-3 border ${
-                      fieldErrors.english.solution
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-200"
-                    } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
-                    rows="3"
-                  />
-                  {/* Remove error message for solution since it's optional */}
-                  {isLatexEnabled && (
-                    <div className="mt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openEquationEditor(
-                            "English",
-                            "solution",
-                            null,
-                            englishQuestion.solution,
-                          )
-                        }
-                        className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
-                      >
-                        Equation
-                      </button>
-                    </div>
-                  )}
+                  {/* English Solution */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Solution/Explanation{" "}
+                      <span className="text-gray-500">(Optional)</span>
+                    </label>
+                    <textarea
+                      value={englishQuestion.solution}
+                      onChange={(e) =>
+                        updateEnglishQuestion("solution", e.target.value)
+                      }
+                      onKeyUp={(e) =>
+                        handleKeyUp(e, "solution", e.target.value)
+                      }
+                      onBlur={(e) =>
+                        handleEnglishFieldBlur("solution", e.target.value)
+                      }
+                      placeholder={`Provide detailed explanation in ${isLanguageSubject() ? subjectName : "English"} (optional)...`}
+                      className={`w-full p-3 border ${
+                        fieldErrors.english.solution
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-200"
+                      } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
+                      rows="3"
+                    />
+                    {/* Remove error message for solution since it's optional */}
+                    {isLatexEnabled && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEquationEditor(
+                              "English",
+                              "solution",
+                              null,
+                              englishQuestion.solution,
+                            )
+                          }
+                          className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-md hover:bg-blue-200"
+                        >
+                          Equation
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
             )}
 
             {/* Hindi Form */}

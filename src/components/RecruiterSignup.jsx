@@ -167,7 +167,7 @@ const RecruiterSignUpPage = () => {
       return (
         <div className="w-full">
           <div className="space-y-2 mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-50 mb-4 border border-teal-100">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded  bg-teal-50 mb-4 border border-teal-100">
               <HiOutlineShieldCheck className="w-8 h-8 text-teal-600" />
             </div>
             <h2 className="text-2xl font-bold text-slate-800">Verify Email</h2>
@@ -529,7 +529,7 @@ const RecruiterSignUpPage = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <HiOutlineUserGroup className="w-6 h-6" />
                   </div>
@@ -543,7 +543,7 @@ const RecruiterSignUpPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
                     <HiOutlineBriefcase className="w-6 h-6" />
                   </div>
@@ -560,10 +560,8 @@ const RecruiterSignUpPage = () => {
             </div>
 
             {/* Right Side: Signup Form */}
-            <div
-              className="w-full md:w-1/2 max-w-md "
-            >
-              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
+            <div className="w-full md:w-1/2 max-w-md ">
+              <div className="bg-white rounded  p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 {renderForm()}
               </div>
 

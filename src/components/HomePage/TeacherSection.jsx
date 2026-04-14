@@ -53,19 +53,19 @@ const TeacherSection = ({ onSelectRole }) => {
 
                 {/* Floating Elements */}
                 <div
-                  className="absolute -top-4 -right-4 bg-white p-4 rounded-2xl shadow-sm animate-float"
+                  className="absolute -top-4 -right-4 bg-white p-4 rounded  shadow-sm animate-float"
                   style={{ animationDelay: "0s" }}
                 >
                   <span className="text-2xl">📚</span>
                 </div>
                 <div
-                  className="absolute bottom-8 -left-4 bg-white p-4 rounded-2xl shadow-sm animate-float"
+                  className="absolute bottom-8 -left-4 bg-white p-4 rounded  shadow-sm animate-float"
                   style={{ animationDelay: "1.5s" }}
                 >
                   <span className="text-2xl">🎓</span>
                 </div>
                 <div
-                  className="absolute top-1/2 -right-8 bg-white p-4 rounded-2xl shadow-sm animate-float"
+                  className="absolute top-1/2 -right-8 bg-white p-4 rounded  shadow-sm animate-float"
                   style={{ animationDelay: "3s" }}
                 >
                   <span className="text-2xl">💡</span>

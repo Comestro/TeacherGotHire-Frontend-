@@ -11,8 +11,8 @@ import Subheader from "./ExamHeader";
 import { IoWarningOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
 import { BsArrowLeftShort, BsArrowRightShort } from "react-icons/bs";
-import { AddReport } from '../../services/examQuesServices';
-import { toast } from 'react-toastify';
+import { AddReport } from "../../services/examQuesServices";
+import { toast } from "react-toastify";
 
 const ExamPortal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,12 +31,17 @@ const ExamPortal = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-
-  const { allQuestion, language: reduxLanguage, loading } = useSelector((state) => state.examQues);
+  const {
+    allQuestion,
+    language: reduxLanguage,
+    loading,
+  } = useSelector((state) => state.examQues);
   const language = location.state?.language || reduxLanguage;
   const questions = [...(allQuestion.questions || [])].sort((a, b) => {
-    const orderA = a.order !== undefined ? Number(a.order) : Number.MAX_SAFE_INTEGER;
-    const orderB = b.order !== undefined ? Number(b.order) : Number.MAX_SAFE_INTEGER;
+    const orderA =
+      a.order !== undefined ? Number(a.order) : Number.MAX_SAFE_INTEGER;
+    const orderB =
+      b.order !== undefined ? Number(b.order) : Number.MAX_SAFE_INTEGER;
     return orderA - orderB;
   });
   const exam = allQuestion.id;
@@ -57,18 +62,21 @@ const ExamPortal = () => {
   const scrollContainerRef = useRef(null);
   const questionRefs = useRef({});
   useEffect(() => {
-    if (scrollContainerRef.current && questionRefs.current[currentQuestionIndex]) {
+    if (
+      scrollContainerRef.current &&
+      questionRefs.current[currentQuestionIndex]
+    ) {
       const container = scrollContainerRef.current;
       const activeElement = questionRefs.current[currentQuestionIndex];
 
       const containerWidth = container.offsetWidth;
       const elementLeft = activeElement.offsetLeft;
       const elementWidth = activeElement.offsetWidth;
-      const scrollLeft = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+      const scrollLeft = elementLeft - containerWidth / 2 + elementWidth / 2;
 
       container.scrollTo({
         left: scrollLeft,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   }, [currentQuestionIndex]);
@@ -78,10 +86,9 @@ const ExamPortal = () => {
       (prevSelected) =>
         prevSelected.includes(optionId)
           ? prevSelected.filter((id) => id !== optionId) // Remove if already selected
-          : [...prevSelected, optionId] // Add if not selected
+          : [...prevSelected, optionId], // Add if not selected
     );
   };
-
 
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
@@ -94,13 +101,13 @@ const ExamPortal = () => {
         issue_type: selectedOption,
       };
       await AddReport(payload);
-      setConfirmationMessage('Your report has been submitted to Admin.');
+      setConfirmationMessage("Your report has been submitted to Admin.");
       setSelectedOption([]);
       setIsOpen(false);
       dispatch(getReport());
     } catch (err) {
-      console.error('Report submit failed', err);
-      setConfirmationMessage('Failed to submit report. Please try again.');
+      console.error("Report submit failed", err);
+      setConfirmationMessage("Failed to submit report. Please try again.");
     } finally {
       setIsSubmittingReport(false);
     }
@@ -146,14 +153,15 @@ const ExamPortal = () => {
       }
     });
 
-
     setResults({
       correct_answer,
       incorrect_answer,
       is_unanswered,
     });
     if (document.exitFullscreen) {
-      document.exitFullscreen().catch((err) => console.error("Error exiting fullscreen:", err));
+      document
+        .exitFullscreen()
+        .catch((err) => console.error("Error exiting fullscreen:", err));
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
     } else if (document.msExitFullscreen) {
@@ -167,12 +175,18 @@ const ExamPortal = () => {
         incorrect_answer,
         is_unanswered,
         language,
-      })
+      }),
     );
     dispatch(attemptsExam());
     navigate("/exam/result", {
-      state: { exam, correct_answer, incorrect_answer, is_unanswered, language },
-      replace: true
+      state: {
+        exam,
+        correct_answer,
+        incorrect_answer,
+        is_unanswered,
+        language,
+      },
+      replace: true,
     });
   }, [questions, selectedAnswers, dispatch, exam, language, navigate]);
   const enterFullscreen = async () => {
@@ -180,9 +194,11 @@ const ExamPortal = () => {
       const elem = document.documentElement;
       if (elem.requestFullscreen) {
         await elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) { /* Safari */
+      } else if (elem.webkitRequestFullscreen) {
+        /* Safari */
         await elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) { /* IE11 */
+      } else if (elem.msRequestFullscreen) {
+        /* IE11 */
         await elem.msRequestFullscreen();
       }
       setIsFullscreen(true);
@@ -195,26 +211,42 @@ const ExamPortal = () => {
     enterFullscreen();
 
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+      if (
+        !document.fullscreenElement &&
+        !document.webkitIsFullScreen &&
+        !document.mozFullScreen &&
+        !document.msFullscreenElement
+      ) {
         setIsFullscreen(false);
-        setWarningCount(prev => prev + 1);
-        setSecurityViolation("You must stay in fullscreen mode during the exam.");
+        setWarningCount((prev) => prev + 1);
+        setSecurityViolation(
+          "You must stay in fullscreen mode during the exam.",
+        );
       } else {
         setIsFullscreen(true);
         setSecurityViolation(null);
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange,
+      );
     };
   }, []);
   useEffect(() => {
@@ -258,7 +290,10 @@ const ExamPortal = () => {
         e.preventDefault();
         toast.warning("Exiting fullscreen is not allowed.");
       }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key === "c" || e.key === "v" || e.key === "x")
+      ) {
         e.preventDefault();
         toast.warning("Copy/Paste shortcuts are disabled.");
       }
@@ -281,13 +316,15 @@ const ExamPortal = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        setWarningCount(prev => prev + 1);
-        setSecurityViolation("Tab switching is not allowed. Your exam will be auto-submitted on repeated violations.");
+        setWarningCount((prev) => prev + 1);
+        setSecurityViolation(
+          "Tab switching is not allowed. Your exam will be auto-submitted on repeated violations.",
+        );
       }
     };
 
     const handleWindowBlur = () => {
-      setWarningCount(prev => prev + 1);
+      setWarningCount((prev) => prev + 1);
       setSecurityViolation("Please keep the exam window focused.");
     };
 
@@ -306,14 +343,16 @@ const ExamPortal = () => {
       window.history.pushState(null, null, window.location.href);
       enterFullscreen();
 
-      setWarningCount(prev => prev + 1);
-      setSecurityViolation("Navigation is disabled. You cannot go back during the exam.");
+      setWarningCount((prev) => prev + 1);
+      setSecurityViolation(
+        "Navigation is disabled. You cannot go back during the exam.",
+      );
     };
 
     const handleBeforeUnload = (e) => {
       e.preventDefault();
-      e.returnValue = ''; // Chrome requires returnValue to be set
-      return '';
+      e.returnValue = ""; // Chrome requires returnValue to be set
+      return "";
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -326,11 +365,12 @@ const ExamPortal = () => {
   }, []);
   useEffect(() => {
     if (warningCount > 3) {
-      toast.error("Maximum security violations exceeded. Auto-submitting exam.");
+      toast.error(
+        "Maximum security violations exceeded. Auto-submitting exam.",
+      );
       handleSubmit();
     }
   }, [warningCount, handleSubmit]);
-
 
   const handleExitExam = () => {
     setShowExitConfirm(true);
@@ -345,8 +385,12 @@ const ExamPortal = () => {
           <div className="flex flex-col items-center gap-6">
             <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-2">Submitting Your Exam</h2>
-              <p className="text-white/70 text-sm">Please wait, do not close this window...</p>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Submitting Your Exam
+              </h2>
+              <p className="text-white/70 text-sm">
+                Please wait, do not close this window...
+              </p>
             </div>
           </div>
         </div>
@@ -355,15 +399,19 @@ const ExamPortal = () => {
       {/* Security Violation Modal */}
       {securityViolation && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl animate-shake">
+          <div className="bg-white rounded  max-w-md w-full p-8 text-center shadow-2xl animate-shake">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <IoWarningOutline className="text-5xl text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Security Warning</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Security Warning
+            </h2>
             <p className="text-gray-600 mb-6 text-lg">{securityViolation}</p>
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="font-bold text-red-800">Warning {warningCount}/3</p>
-              <p className="text-sm text-red-600">Exceeding the limit will auto-submit your exam.</p>
+              <p className="text-sm text-red-600">
+                Exceeding the limit will auto-submit your exam.
+              </p>
             </div>
             <button
               onClick={() => {
@@ -381,9 +429,7 @@ const ExamPortal = () => {
       {/* Sidebar */}
       <div className="hidden md:block w-full sm:w-[30%] md:w-[25%] bg-white shadow-lg border-r border-primary/20 p-4">
         <div className="bg-primary text-white py-4 px-4 rounded-xl mb-4">
-          <h3 className="text-lg font-bold text-center">
-            Questions
-          </h3>
+          <h3 className="text-lg font-bold text-center">Questions</h3>
         </div>
         <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 mb-4">
           <h3 className="text-center font-bold text-primary">
@@ -395,12 +441,13 @@ const ExamPortal = () => {
             <li key={q.id} className="flex">
               <button
                 onClick={() => setCurrentQuestionIndex(index)}
-                className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold transition-all shadow-sm hover:shadow-md ${currentQuestionIndex === index
-                  ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
-                  : selectedAnswers[q.id]
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                  }`}
+                className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold transition-all shadow-sm hover:shadow-md ${
+                  currentQuestionIndex === index
+                    ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
+                    : selectedAnswers[q.id]
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                }`}
               >
                 {index + 1}
               </button>
@@ -420,22 +467,23 @@ const ExamPortal = () => {
           <ul
             ref={scrollContainerRef}
             className="p-3 flex flex-nowrap gap-2 mt-1 overflow-x-auto no-scrollbar scroll-smooth"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {questions.map((q, index) => (
               <li
                 key={q.id}
                 className="flex shrink-0"
-                ref={el => questionRefs.current[index] = el}
+                ref={(el) => (questionRefs.current[index] = el)}
               >
                 <button
                   onClick={() => setCurrentQuestionIndex(index)}
-                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm whitespace-nowrap ${currentQuestionIndex === index
-                    ? "bg-primary text-white ring-2 ring-primary"
-                    : selectedAnswers[q.id]
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                    }`}
+                  className={`flex items-center justify-center w-9 h-9 rounded-lg font-bold transition-all shadow-sm whitespace-nowrap ${
+                    currentQuestionIndex === index
+                      ? "bg-primary text-white ring-2 ring-primary"
+                      : selectedAnswers[q.id]
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-200 text-gray-600"
+                  }`}
                 >
                   {index + 1}
                 </button>
@@ -446,7 +494,9 @@ const ExamPortal = () => {
 
         <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4">
           {errorMessage && (
-            <div className="mb-4 text-red-500 font-semibold">{errorMessage}</div>
+            <div className="mb-4 text-red-500 font-semibold">
+              {errorMessage}
+            </div>
           )}
           {currentQuestion ? (
             <div className="relative bg-white rounded-xl border border-gray-200 p-6 w-full h-fit min-h-0">
@@ -463,16 +513,21 @@ const ExamPortal = () => {
                       Medium: {language}
                     </span>
                   )}
-                  <button onClick={toggleModal} className="p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <button
+                    onClick={toggleModal}
+                    className="p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
                     <IoWarningOutline className="text-2xl text-orange-500" />
-                    <span className="hidden sm:inline">Report This Question</span>
+                    <span className="hidden sm:inline">
+                      Report This Question
+                    </span>
                   </button>
                 </div>
               </div>
               {/* Modal */}
               {isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
+                  <div className="bg-white rounded  w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-fadeIn">
                     <div className="flex justify-between items-center mb-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-orange-100 rounded-lg">
@@ -482,7 +537,10 @@ const ExamPortal = () => {
                           Report Question
                         </h2>
                       </div>
-                      <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <button
+                        onClick={() => setIsOpen(false)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
                         <RxCross2 className="text-xl text-gray-600" />
                       </button>
                     </div>
@@ -491,18 +549,20 @@ const ExamPortal = () => {
                         reportOptions.map((option, index) => (
                           <li
                             key={index}
-                            className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${selectedOption.includes(option.id)
-                              ? "bg-primary/10 border-primary text-primary font-semibold"
-                              : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
-                              }`}
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${
+                              selectedOption.includes(option.id)
+                                ? "bg-primary/10 border-primary text-primary font-semibold"
+                                : "bg-gray-50 border-transparent hover:bg-gray-100 text-gray-700"
+                            }`}
                             onClick={() => handleOptionSelect(option.id)}
                           >
                             <span>{option.issue_type}</span>
                             <IoWarningOutline
-                              className={`text-lg ${selectedOption.includes(option.id)
-                                ? "text-primary"
-                                : "text-gray-400"
-                                }`}
+                              className={`text-lg ${
+                                selectedOption.includes(option.id)
+                                  ? "text-primary"
+                                  : "text-gray-400"
+                              }`}
                             />
                           </li>
                         ))}
@@ -510,22 +570,31 @@ const ExamPortal = () => {
                     <button
                       className="w-full px-4 py-3 bg-primary text-white rounded-xl hover:bg-[#2a7ba0] font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={handleSubmits}
-                      disabled={selectedOption.length === 0 || isSubmittingReport}
+                      disabled={
+                        selectedOption.length === 0 || isSubmittingReport
+                      }
                     >
-                      {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
+                      {isSubmittingReport ? "Submitting..." : "Submit Report"}
                     </button>
                   </div>
                 </div>
               )}
 
-              <p className="text-text text-lg mb-8 leading-relaxed">{currentQuestion.text}</p>
+              <p className="text-text text-lg mb-8 leading-relaxed">
+                {currentQuestion.text}
+              </p>
               <div className="space-y-3">
                 {currentQuestion.options.map((option, idx) => (
-                  <div key={idx} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedAnswers[currentQuestion.id] === idx + 1
-                    ? "bg-primary/10 border-primary shadow-sm"
-                    : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+                  <div
+                    key={idx}
+                    className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                      selectedAnswers[currentQuestion.id] === idx + 1
+                        ? "bg-primary/10 border-primary shadow-sm"
+                        : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
                     }`}
-                    onClick={() => handleAnswerSelect(currentQuestion.id, idx + 1)}
+                    onClick={() =>
+                      handleAnswerSelect(currentQuestion.id, idx + 1)
+                    }
                   >
                     <input
                       type="radio"
@@ -553,10 +622,11 @@ const ExamPortal = () => {
                 <button
                   onClick={handlePrevious}
                   disabled={currentQuestionIndex === 0}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl font-semibold transition-all shadow-md ${currentQuestionIndex === 0
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
-                    }`}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl font-semibold transition-all shadow-md ${
+                    currentQuestionIndex === 0
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
+                  }`}
                 >
                   <BsArrowLeftShort className="size-5" />
                   Previous
@@ -564,8 +634,9 @@ const ExamPortal = () => {
                 {currentQuestionIndex < questions.length - 1 ? (
                   <button
                     onClick={handleNext}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${isNavigating ? 'ring-2 ring-offset-2 ring-green-500' : ''
-                      }`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${
+                      isNavigating ? "ring-2 ring-offset-2 ring-green-500" : ""
+                    }`}
                   >
                     Next
                     <BsArrowRightShort className="size-5" />

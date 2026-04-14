@@ -53,7 +53,6 @@ export default function Subheader({ handleSubmit }) {
     );
   };
 
-
   const handleExitExam = () => {
     setShowExitConfirm(true);
   };
@@ -111,15 +110,18 @@ export default function Subheader({ handleSubmit }) {
       {/* Exit Confirmation Modal */}
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl border border-gray-200 animate-fadeIn">
+          <div className="bg-white rounded  max-w-md w-full p-8 shadow-2xl border border-gray-200 animate-fadeIn">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-red-100 rounded-full">
                 <FiX className="w-8 h-8 text-red-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-text text-center mb-3">Exit Exam?</h3>
+            <h3 className="text-2xl font-bold text-text text-center mb-3">
+              Exit Exam?
+            </h3>
             <p className="text-secondary text-center mb-6 leading-relaxed">
-              Are you sure you want to exit? Your progress will not be saved and this will count as an attempt.
+              Are you sure you want to exit? Your progress will not be saved and
+              this will count as an attempt.
             </p>
             <div className="flex justify-end gap-3">
               <button

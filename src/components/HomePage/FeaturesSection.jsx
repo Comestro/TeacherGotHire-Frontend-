@@ -16,16 +16,24 @@ const FeaturesSection = () => {
     <section className="bg-slate-50 py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
-          Simplified <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500" style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}>5-Step</span> Teacher Hiring Process
+          Simplified{" "}
+          <span
+            className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500"
+            style={{ fontFamily: '"Edu AU VIC WA NT Pre", cursive' }}
+          >
+            5-Step
+          </span>{" "}
+          Teacher Hiring Process
         </h2>
         <p className="text-lg text-slate-600 font-medium max-w-2xl mx-auto mb-16">
-          Join our team in just five easy steps and kickstart your teaching journey.
+          Join our team in just five easy steps and kickstart your teaching
+          journey.
         </p>
 
         <div className="space-y-8">
           {/* First Row */}
           <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-3">
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
+            <div className="bg-white p-8 rounded  border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto bg-teal-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <BiLogInCircle className="text-4xl text-teal-600" />
               </div>
@@ -37,7 +45,7 @@ const FeaturesSection = () => {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
+            <div className="bg-white p-8 rounded  border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto bg-teal-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <HiOutlinePencilSquare className="text-4xl text-teal-600" />
               </div>
@@ -49,7 +57,7 @@ const FeaturesSection = () => {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
+            <div className="bg-white p-8 rounded  border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto bg-teal-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <IoVideocamOutline className="text-4xl text-teal-600" />
               </div>
@@ -64,7 +72,7 @@ const FeaturesSection = () => {
 
           {/* Second Row */}
           <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:mx-32">
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
+            <div className="bg-white p-8 rounded  border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto bg-teal-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <LiaChalkboardTeacherSolid className="text-4xl text-teal-600" />
               </div>
@@ -76,7 +84,7 @@ const FeaturesSection = () => {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
+            <div className="bg-white p-8 rounded  border border-slate-200 shadow-none hover:shadow-sm transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto bg-teal-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <LiaMoneyCheckSolid className="text-4xl text-teal-600" />
               </div>

@@ -38,348 +38,349 @@ import MissingSubjectModal from "./MissingSubjectModal";
 
 import { forwardRef, useImperativeHandle } from "react";
 
-const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { prefrence } = useSelector((state) => state.jobProfile);
-  const classCategories = useSelector(
-    (state) => state.jobProfile.prefrence.class_category,
-  );
-  const { examCards, error } = useSelector((state) => state?.exam);
-  const { attempts } = useSelector((state) => state.examQues);
-
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [selectedLevel, setSelectedLevel] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState(null);
-  const [levels, setLevels] = useState([]);
-  const [examReady, setExamReady] = useState(false);
-  const [showCategoryPanel, setShowCategoryPanel] = useState(true);
-  const [showSubjectPanel, setShowSubjectPanel] = useState(false);
-  const [showLevelPanel, setShowLevelPanel] = useState(false);
-  const [showInterviewPanel, setShowInterviewPanel] = useState(false);
-  const examReadyRef = useRef(null); // Create a ref for the target section
-  const [showErrorDetails, setShowErrorDetails] = useState(false);
-  const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
-  const [showVerificationCard, setShowVerificationCard] = useState(false);
-  const [examCenterData, setExamCenterData] = useState(null);
-  const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [isMissingSubjectModalOpen, setIsMissingSubjectModalOpen] =
-    useState(false);
-
-  const qualifiedSubjects =
-    attempts
-      ?.filter(
-        (item) => item?.exam?.level_code === 2 && item?.isqualified === true,
-      )
-      .map((item) => ({
-        subjectId: item?.exam?.subject_id,
-        subjectName: item?.exam?.subject_name,
-        categoryId: item?.exam?.class_category_id,
-        categoryName: item?.exam?.class_category_name,
-      })) || [];
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const levels = await fetchLevel();
-        setLevels(levels);
-      } catch (error) {}
-    };
-
-    fetchData();
-  }, []);
-  const checkLevelQualification = (categoryId, subjectId, levelCode) => {
-    return attempts?.some(
-      (attempt) =>
-        attempt?.exam?.class_category_id === categoryId &&
-        attempt?.exam?.subject_id === subjectId &&
-        attempt?.exam?.level_code === levelCode &&
-        attempt?.isqualified === true,
+const FilterdExamCard = forwardRef(
+  ({ onExamDataChange, passkeyStatus }, ref) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { prefrence } = useSelector((state) => state.jobProfile);
+    const classCategories = useSelector(
+      (state) => state.jobProfile.prefrence.class_category,
     );
-  };
+    const { examCards, error } = useSelector((state) => state?.exam);
+    const { attempts } = useSelector((state) => state.examQues);
 
-  const isSubjectQualifiedForInterview = (subjectId, categoryId) => {
-    return qualifiedSubjects?.some(
-      (q) => q?.subjectId === subjectId && q?.categoryId === categoryId,
-    );
-  };
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [selectedLevel, setSelectedLevel] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errors, setErrors] = useState(null);
+    const [levels, setLevels] = useState([]);
+    const [examReady, setExamReady] = useState(false);
+    const [showCategoryPanel, setShowCategoryPanel] = useState(true);
+    const [showSubjectPanel, setShowSubjectPanel] = useState(false);
+    const [showLevelPanel, setShowLevelPanel] = useState(false);
+    const [showInterviewPanel, setShowInterviewPanel] = useState(false);
+    const examReadyRef = useRef(null); // Create a ref for the target section
+    const [showErrorDetails, setShowErrorDetails] = useState(false);
+    const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
+    const [showVerificationCard, setShowVerificationCard] = useState(false);
+    const [examCenterData, setExamCenterData] = useState(null);
+    const [selectedLanguage, setSelectedLanguage] = useState("");
+    const [isMissingSubjectModalOpen, setIsMissingSubjectModalOpen] =
+      useState(false);
 
-  const getInterviewStatus = (categoryId, subjectId) => {
-    const relevantAttempt = attempts?.find(
-      (attempt) =>
-        attempt?.exam?.class_category_id === categoryId &&
-        attempt?.exam?.subject_id === subjectId &&
-        attempt?.exam?.level_code === 2.0,
-    );
-
-    if (!relevantAttempt?.interviews?.length) return null;
-
-    const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort(
-      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0),
-    );
-
-    return sortedInterviews[0]?.status;
-  };
-
-  const getPassedLanguage = (categoryId, subjectId, levelCode) => {
-    const relevantAttempt = attempts?.find(
-      (attempt) =>
-        attempt?.exam?.class_category_id === categoryId &&
-        attempt?.exam?.subject_id === subjectId &&
-        attempt?.exam?.level_code === levelCode &&
-        attempt?.isqualified === true,
-    );
-    return relevantAttempt?.exam?.language || relevantAttempt?.language; // Check both potential locations
-  };
-
-  useImperativeHandle(ref, () => ({
-    openInterview: (categoryId, subjectId) => {
-      const category = classCategories?.find((c) => c.id === categoryId);
-      const subject = category?.subjects?.find((s) => s.id === subjectId);
-
-      if (category && subject) {
-        setSelectedCategory(category);
-        setSelectedSubject(subject);
-        setSelectedLevel(null);
-        setExamReady(false);
-        setShowCategoryPanel(false);
-        setShowSubjectPanel(false);
-        setShowLevelPanel(false);
-        setShowInterviewPanel(true);
-      }
-    },
-    resetView: () => {
-      resetSelection();
-    },
-  }));
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setSelectedSubject(null);
-    setSelectedLevel(null);
-    setExamReady(false);
-    dispatch(setError(null));
-    setShowSubjectPanel(true);
-    setShowCategoryPanel(false);
-  };
-
-  const handleSubjectSelect = (subject) => {
-    setSelectedSubject(subject);
-    setSelectedLevel(null);
-    setExamReady(false);
-    dispatch(setError(null));
-    setShowLevelPanel(true);
-    setShowSubjectPanel(false);
-  };
-
-  const handleLevelSelect = async (level) => {
-    if (!selectedSubject || !selectedCategory) {
-      setErrors("Please select both category and subject first");
-      return;
-    }
-    if (level?.level_code >= 2.0) {
-      const isLevel1Qualified = checkLevelQualification(
-        selectedCategory?.id,
-        selectedSubject?.id,
-        1.0,
-      );
-
-      if (!isLevel1Qualified) {
-        setErrors("You must complete Level 1 first");
-        return;
-      }
-    }
-
-    if (level?.level_code === 2.5) {
-      const isOnlineLevel2Qualified = checkLevelQualification(
-        selectedCategory?.id,
-        selectedSubject?.id,
-        2.0,
-      );
-
-      if (!isOnlineLevel2Qualified) {
-        setErrors("You must complete Level 2 (from home) first");
-        return;
-      }
-    }
-
-    try {
-      setIsLoading(true);
-      setErrors(null);
-      setSelectedLevel(level);
-
-      const payload = {
-        subject_id: selectedSubject?.id,
-        class_category_id: selectedCategory?.id,
-        level_id: level?.id,
+    const qualifiedSubjects =
+      attempts
+        ?.filter(
+          (item) => item?.exam?.level_code === 2 && item?.isqualified === true,
+        )
+        .map((item) => ({
+          subjectId: item?.exam?.subject_id,
+          subjectName: item?.exam?.subject_name,
+          categoryId: item?.exam?.class_category_id,
+          categoryName: item?.exam?.class_category_name,
+        })) || [];
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const levels = await fetchLevel();
+          setLevels(levels);
+        } catch (error) {}
       };
 
-      await dispatch(examCard(payload)).unwrap();
-      setExamReady(true);
-    } catch (err) {
-      setErrors("Failed to load exam data. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      fetchData();
+    }, []);
+    const checkLevelQualification = (categoryId, subjectId, levelCode) => {
+      return attempts?.some(
+        (attempt) =>
+          attempt?.exam?.class_category_id === categoryId &&
+          attempt?.exam?.subject_id === subjectId &&
+          attempt?.exam?.level_code === levelCode &&
+          attempt?.isqualified === true,
+      );
+    };
 
-  const handleInterviewSelect = () => {
-    setShowLevelPanel(false);
-    setShowInterviewPanel(true);
-    window.scrollTo(0, 0);
-  };
+    const isSubjectQualifiedForInterview = (subjectId, categoryId) => {
+      return qualifiedSubjects?.some(
+        (q) => q?.subjectId === subjectId && q?.categoryId === categoryId,
+      );
+    };
 
-  const resetSelection = () => {
-    setSelectedCategory(null);
-    setSelectedSubject(null);
-    setSelectedLevel(null);
-    setExamReady(false);
-    dispatch(setError(null));
-    setShowCategoryPanel(true);
-    setShowSubjectPanel(false);
-    setShowLevelPanel(false);
-    setShowInterviewPanel(false);
-  };
+    const getInterviewStatus = (categoryId, subjectId) => {
+      const relevantAttempt = attempts?.find(
+        (attempt) =>
+          attempt?.exam?.class_category_id === categoryId &&
+          attempt?.exam?.subject_id === subjectId &&
+          attempt?.exam?.level_code === 2.0,
+      );
 
-  const handleExam = async () => {
-    if (selectedLevel?.level_code === 2.5) {
-      try {
-        let examid = examCards?.id;
-        if (!examid) {
-          const payload = {
-            subject_id: selectedSubject?.id,
-            class_category_id: selectedCategory?.id,
-            level_id: selectedLevel?.id,
-          };
-          const data = await dispatch(examCard(payload)).unwrap();
-          examid = data?.id;
+      if (!relevantAttempt?.interviews?.length) return null;
+
+      const sortedInterviews = [...(relevantAttempt?.interviews || [])].sort(
+        (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0),
+      );
+
+      return sortedInterviews[0]?.status;
+    };
+
+    const getPassedLanguage = (categoryId, subjectId, levelCode) => {
+      const relevantAttempt = attempts?.find(
+        (attempt) =>
+          attempt?.exam?.class_category_id === categoryId &&
+          attempt?.exam?.subject_id === subjectId &&
+          attempt?.exam?.level_code === levelCode &&
+          attempt?.isqualified === true,
+      );
+      return relevantAttempt?.exam?.language || relevantAttempt?.language; // Check both potential locations
+    };
+
+    useImperativeHandle(ref, () => ({
+      openInterview: (categoryId, subjectId) => {
+        const category = classCategories?.find((c) => c.id === categoryId);
+        const subject = category?.subjects?.find((s) => s.id === subjectId);
+
+        if (category && subject) {
+          setSelectedCategory(category);
+          setSelectedSubject(subject);
+          setSelectedLevel(null);
+          setExamReady(false);
+          setShowCategoryPanel(false);
+          setShowSubjectPanel(false);
+          setShowLevelPanel(false);
+          setShowInterviewPanel(true);
         }
-        if (!examid) throw new Error("Exam is not ready yet");
+      },
+      resetView: () => {
+        resetSelection();
+      },
+    }));
 
-        const response = await checkPasskey({ exam: examid });
-        if (response?.passkey === true) {
-          setExamCenterData(response.center);
-          setShowVerificationCard(true);
-        } else {
-          setShowVerificationCard(false);
-        }
-        setIsExamCenterModalOpen(true);
-      } catch (err) {
-        setErrors("Failed to check exam status. Please try again.");
-      }
-    } else {
-      if (!selectedLanguage) {
-        alert("Please select a language");
+    const handleCategorySelect = (category) => {
+      setSelectedCategory(category);
+      setSelectedSubject(null);
+      setSelectedLevel(null);
+      setExamReady(false);
+      dispatch(setError(null));
+      setShowSubjectPanel(true);
+      setShowCategoryPanel(false);
+    };
+
+    const handleSubjectSelect = (subject) => {
+      setSelectedSubject(subject);
+      setSelectedLevel(null);
+      setExamReady(false);
+      dispatch(setError(null));
+      setShowLevelPanel(true);
+      setShowSubjectPanel(false);
+    };
+
+    const handleLevelSelect = async (level) => {
+      if (!selectedSubject || !selectedCategory) {
+        setErrors("Please select both category and subject first");
         return;
       }
-      navigate("/exam", { state: { language: selectedLanguage } });
-    }
-  };
+      if (level?.level_code >= 2.0) {
+        const isLevel1Qualified = checkLevelQualification(
+          selectedCategory?.id,
+          selectedSubject?.id,
+          1.0,
+        );
 
-  const handleBackToCategories = () => {
-    setShowCategoryPanel(true);
-    setShowSubjectPanel(false);
-    setExamReady(false);
-    setSelectedSubject(null);
-    setSelectedLevel(null);
-    dispatch(setError(null));
-  };
+        if (!isLevel1Qualified) {
+          setErrors("You must complete Level 1 first");
+          return;
+        }
+      }
 
-  const handleBackToSubjects = () => {
-    setShowSubjectPanel(true);
-    setShowLevelPanel(false);
-    setExamReady(false);
-    setSelectedLevel(null);
-    dispatch(setError(null));
-  };
+      if (level?.level_code === 2.5) {
+        const isOnlineLevel2Qualified = checkLevelQualification(
+          selectedCategory?.id,
+          selectedSubject?.id,
+          2.0,
+        );
 
-  const handleBackToLevels = () => {
-    setShowLevelPanel(true);
-    setShowInterviewPanel(false);
-  };
+        if (!isOnlineLevel2Qualified) {
+          setErrors("You must complete Level 2 (from home) first");
+          return;
+        }
+      }
 
+      try {
+        setIsLoading(true);
+        setErrors(null);
+        setSelectedLevel(level);
 
-  useEffect(() => {
-    if (examReady && examReadyRef.current) {
-      const timer = setTimeout(() => {
-        examReadyRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100); // Small delay
-      return () => clearTimeout(timer); // Cleanup timer on unmount or change
-    }
-  }, [examReady]);
-  const hasLevel1Qualified = useMemo(
-    () =>
-      selectedCategory && selectedSubject
-        ? checkLevelQualification(
-            selectedCategory?.id,
-            selectedSubject?.id,
-            1.0,
-          )
-        : false,
-    [selectedCategory, selectedSubject, attempts],
-  );
+        const payload = {
+          subject_id: selectedSubject?.id,
+          class_category_id: selectedCategory?.id,
+          level_id: level?.id,
+        };
 
-  const hasLevel2Qualified = useMemo(
-    () =>
-      selectedCategory && selectedSubject
-        ? checkLevelQualification(
-            selectedCategory?.id,
-            selectedSubject?.id,
-            2.0,
-          )
-        : false,
-    [selectedCategory, selectedSubject, attempts],
-  );
+        await dispatch(examCard(payload)).unwrap();
+        setExamReady(true);
+      } catch (err) {
+        setErrors("Failed to load exam data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const currentStep = useMemo(() => {
-    if (selectedLevel?.level_code === 2.5) return 3;
-    if (selectedLevel?.level_code === 2.0 || hasLevel2Qualified) return 2;
-    if (selectedLevel?.level_code === 1.0 || hasLevel1Qualified) return 1;
-    return 0;
-  }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
+    const handleInterviewSelect = () => {
+      setShowLevelPanel(false);
+      setShowInterviewPanel(true);
+      window.scrollTo(0, 0);
+    };
 
-  const isJobEligible = useMemo(() => {
-    if (!selectedCategory || !selectedSubject) return false;
-    const relevantAttempt = attempts?.find(
-      (attempt) =>
-        attempt?.exam?.class_category_id === selectedCategory?.id &&
-        attempt?.exam?.subject_id === selectedSubject?.id &&
-        (attempt?.exam?.level_code === 2.0 || attempt?.exam?.level_code === 2),
+    const resetSelection = () => {
+      setSelectedCategory(null);
+      setSelectedSubject(null);
+      setSelectedLevel(null);
+      setExamReady(false);
+      dispatch(setError(null));
+      setShowCategoryPanel(true);
+      setShowSubjectPanel(false);
+      setShowLevelPanel(false);
+      setShowInterviewPanel(false);
+    };
+
+    const handleExam = async () => {
+      if (selectedLevel?.level_code === 2.5) {
+        try {
+          let examid = examCards?.id;
+          if (!examid) {
+            const payload = {
+              subject_id: selectedSubject?.id,
+              class_category_id: selectedCategory?.id,
+              level_id: selectedLevel?.id,
+            };
+            const data = await dispatch(examCard(payload)).unwrap();
+            examid = data?.id;
+          }
+          if (!examid) throw new Error("Exam is not ready yet");
+
+          const response = await checkPasskey({ exam: examid });
+          if (response?.passkey === true) {
+            setExamCenterData(response.center);
+            setShowVerificationCard(true);
+          } else {
+            setShowVerificationCard(false);
+          }
+          setIsExamCenterModalOpen(true);
+        } catch (err) {
+          setErrors("Failed to check exam status. Please try again.");
+        }
+      } else {
+        if (!selectedLanguage) {
+          alert("Please select a language");
+          return;
+        }
+        navigate("/exam", { state: { language: selectedLanguage } });
+      }
+    };
+
+    const handleBackToCategories = () => {
+      setShowCategoryPanel(true);
+      setShowSubjectPanel(false);
+      setExamReady(false);
+      setSelectedSubject(null);
+      setSelectedLevel(null);
+      dispatch(setError(null));
+    };
+
+    const handleBackToSubjects = () => {
+      setShowSubjectPanel(true);
+      setShowLevelPanel(false);
+      setExamReady(false);
+      setSelectedLevel(null);
+      dispatch(setError(null));
+    };
+
+    const handleBackToLevels = () => {
+      setShowLevelPanel(true);
+      setShowInterviewPanel(false);
+    };
+
+    useEffect(() => {
+      if (examReady && examReadyRef.current) {
+        const timer = setTimeout(() => {
+          examReadyRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100); // Small delay
+        return () => clearTimeout(timer); // Cleanup timer on unmount or change
+      }
+    }, [examReady]);
+    const hasLevel1Qualified = useMemo(
+      () =>
+        selectedCategory && selectedSubject
+          ? checkLevelQualification(
+              selectedCategory?.id,
+              selectedSubject?.id,
+              1.0,
+            )
+          : false,
+      [selectedCategory, selectedSubject, attempts],
     );
 
-    if (!relevantAttempt?.interviews?.length) {
-      return checkLevelQualification(
+    const hasLevel2Qualified = useMemo(
+      () =>
+        selectedCategory && selectedSubject
+          ? checkLevelQualification(
+              selectedCategory?.id,
+              selectedSubject?.id,
+              2.0,
+            )
+          : false,
+      [selectedCategory, selectedSubject, attempts],
+    );
+
+    const currentStep = useMemo(() => {
+      if (selectedLevel?.level_code === 2.5) return 3;
+      if (selectedLevel?.level_code === 2.0 || hasLevel2Qualified) return 2;
+      if (selectedLevel?.level_code === 1.0 || hasLevel1Qualified) return 1;
+      return 0;
+    }, [selectedLevel, hasLevel1Qualified, hasLevel2Qualified]);
+
+    const isJobEligible = useMemo(() => {
+      if (!selectedCategory || !selectedSubject) return false;
+      const relevantAttempt = attempts?.find(
+        (attempt) =>
+          attempt?.exam?.class_category_id === selectedCategory?.id &&
+          attempt?.exam?.subject_id === selectedSubject?.id &&
+          (attempt?.exam?.level_code === 2.0 ||
+            attempt?.exam?.level_code === 2),
+      );
+
+      if (!relevantAttempt?.interviews?.length) {
+        return checkLevelQualification(
+          selectedCategory?.id,
+          selectedSubject?.id,
+          2.5,
+        );
+      }
+
+      const sortedInterviews = [...relevantAttempt.interviews].sort(
+        (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0),
+      );
+
+      const latest = sortedInterviews[0];
+      const isInterviewQualified =
+        latest?.status === "fulfilled" && latest?.grade >= 6;
+      const isCenterExamQualified = checkLevelQualification(
         selectedCategory?.id,
         selectedSubject?.id,
         2.5,
       );
-    }
+      return isInterviewQualified || isCenterExamQualified;
+    }, [selectedCategory, selectedSubject, attempts]);
 
-    const sortedInterviews = [...relevantAttempt.interviews].sort(
-      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0),
-    );
-
-    const latest = sortedInterviews[0];
-    const isInterviewQualified =
-      latest?.status === "fulfilled" && latest?.grade >= 6;
-    const isCenterExamQualified = checkLevelQualification(
-      selectedCategory?.id,
-      selectedSubject?.id,
-      2.5,
-    );
-    return isInterviewQualified || isCenterExamQualified;
-  }, [selectedCategory, selectedSubject, attempts]);
-
-  return (
-    <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
-      {/* Main selection column */}
-      <div className="w-full ">
-        {/* Top Error Alert */}
-        {(error || errors) && (
+    return (
+      <div className=" min-h-screen w-full flex flex-col md:flex-row gap-0">
+        {/* Main selection column */}
+        <div className="w-full ">
+          {/* Top Error Alert */}
+          {(error || errors) && (
             <ErrorMessage
               message={error || errors}
               onDismiss={() => {
@@ -389,7 +390,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
               className="mb-6"
             />
           )}
-
 
           {/* Category Panel */}
           {showCategoryPanel && (
@@ -430,7 +430,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                         <button
                           key={category.id}
                           type="button" // Add type
-
                           onClick={() => handleCategorySelect(category)}
                           className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                             // Use button styles, focus ring
@@ -574,7 +573,6 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                           <button
                             key={subject?.id}
                             type="button" // Add type
-
                             onClick={() => handleSubjectSelect(subject)}
                             className={`text-left w-full rounded-lg border-2 transition-all overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                               // Use button styles, focus ring
@@ -737,7 +735,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                       return (
                         <div
                           key={level.id}
-                          className={`relative rounded-2xl border transition-all duration-300 overflow-hidden group ${
+                          className={`relative rounded  border transition-all duration-300 overflow-hidden group ${
                             isQualified
                               ? "bg-white border-teal-200 shadow-sm hover:shadow-md"
                               : "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-300"
@@ -747,7 +745,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                             {/* Content Section */}
                             <div className="flex-1 text-left flex gap-3">
                               <div
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded  flex items-center justify-center shrink-0 shadow-inner transition-colors ${
                                   isQualified
                                     ? "bg-teal-50 text-teal-600"
                                     : "bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:scale-105 transition-transform duration-300"
@@ -836,7 +834,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                       return (
                         <div
                           key={level.id}
-                          className={`relative rounded-2xl border transition-all duration-300 overflow-hidden group ${
+                          className={`relative rounded  border transition-all duration-300 overflow-hidden group ${
                             isLocked
                               ? "bg-slate-50 border-slate-200 opacity-80"
                               : isQualified
@@ -859,7 +857,7 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                             {/* Content Section */}
                             <div className="flex-1 text-left flex gap-3">
                               <div
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded  flex items-center justify-center shrink-0 shadow-inner transition-colors ${
                                   isLocked
                                     ? "bg-slate-200 text-slate-400"
                                     : isQualified
@@ -1027,12 +1025,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                                     <button
                                       onClick={() => handleLevelSelect(level)}
                                       className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                                        passkeyStatus?.status === 'requested' 
-                                          ? "bg-teal-600 hover:bg-teal-700 text-white" 
+                                        passkeyStatus?.status === "requested"
+                                          ? "bg-teal-600 hover:bg-teal-700 text-white"
                                           : "bg-purple-600 hover:bg-purple-700 text-white"
                                       }`}
                                     >
-                                      {passkeyStatus?.status === 'requested' ? "View Assigned Center" : "Select Center"}
+                                      {passkeyStatus?.status === "requested"
+                                        ? "View Assigned Center"
+                                        : "Select Center"}
                                     </button>
                                   )}
                                 </div>
@@ -1172,14 +1172,14 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                       <div
                         animate={{ opacity: 1, y: 0 }}
                         initial={{ opacity: 0, y: 20 }}
-                        className="relative rounded-2xl border border-green-200 bg-green-50/30 shadow-sm hover:shadow-md transition-all p-5 sm:p-6 overflow-hidden"
+                        className="relative rounded  border border-green-200 bg-green-50/30 shadow-sm hover:shadow-md transition-all p-5 sm:p-6 overflow-hidden"
                       >
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                           <FaUserTie size={100} className="text-green-600" />
                         </div>
 
                         <div className="relative flex flex-col md:flex-row items-center gap-6">
-                          <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                          <div className="w-16 h-16 rounded  bg-green-100 text-green-600 flex items-center justify-center text-3xl shrink-0 shadow-sm">
                             <FaCheckCircle />
                           </div>
 
@@ -1211,9 +1211,9 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                     /* Locked Guide Card */
                     <>
                       <div className="hidden lg:block h-6 w-0.5 bg-gray-200 mx-auto opacity-50" />
-                      <div className="relative rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-5 sm:p-6 text-center md:text-left transition-all hover:bg-gray-50 group cursor-default">
+                      <div className="relative rounded  border border-dashed border-gray-300 bg-gray-50/50 p-5 sm:p-6 text-center md:text-left transition-all hover:bg-gray-50 group cursor-default">
                         <div className="flex flex-col md:flex-row items-center gap-6 opacity-60 group-hover:opacity-80 transition-opacity">
-                          <div className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                          <div className="w-14 h-14 rounded  bg-gray-100 text-gray-400 flex items-center justify-center text-2xl shrink-0 shadow-inner">
                             <FaLock />
                           </div>
 
@@ -1287,48 +1287,42 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
             </div>
           )}
 
-        {/* Loading Overlay */}
-        {isLoading && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div
-              className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 text-center max-w-sm mx-auto"
-            >
-              <div className="relative mb-4 sm:mb-6">
-                {" "}
-                {/* Adjust margin */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-accent/20 rounded-full mx-auto flex items-center justify-center">
-                  <FaSpinner
-                    className="text-accent text-2xl sm:text-3xl animate-spin"
-                    aria-hidden="true"
-                  />
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 text-center max-w-sm mx-auto">
+                <div className="relative mb-4 sm:mb-6">
+                  {" "}
+                  {/* Adjust margin */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-accent/20 rounded-full mx-auto flex items-center justify-center">
+                    <FaSpinner
+                      className="text-accent text-2xl sm:text-3xl animate-spin"
+                      aria-hidden="true"
+                    />
+                  </div>
                 </div>
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
-                Preparing Exam
-              </h3>{" "}
-              {/* Adjust text size */}
-              <p className="text-sm sm:text-base text-gray-600">
-                {" "}
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                  Preparing Exam
+                </h3>{" "}
                 {/* Adjust text size */}
-                Please wait a moment...
-              </p>
+                <p className="text-sm sm:text-base text-gray-600">
+                  {" "}
+                  {/* Adjust text size */}
+                  Please wait a moment...
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Exam Ready Modal */}
+          {/* Exam Ready Modal */}
 
           {examReady &&
             selectedLevel &&
             !error &&
             !showInterviewPanel &&
             !isExamCenterModalOpen && (
-              <div
-                className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              >
-                <div
-                  className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
-                >
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200">
                     <div className="flex items-center gap-3">
@@ -1418,18 +1412,28 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
                               // Count per-language attempts for current exam config
                               const MAX_ATTEMPTS = 5;
                               const getLanguageAttemptCount = (lang) => {
-                                return attempts?.filter(
-                                  (a) =>
-                                    a?.exam?.class_category_id === selectedCategory?.id &&
-                                    a?.exam?.subject_id === selectedSubject?.id &&
-                                    a?.exam?.level_code === selectedLevel?.level_code &&
-                                    (a?.language || a?.exam?.language || "").toLowerCase() === lang.toLowerCase()
-                                ).length || 0;
+                                return (
+                                  attempts?.filter(
+                                    (a) =>
+                                      a?.exam?.class_category_id ===
+                                        selectedCategory?.id &&
+                                      a?.exam?.subject_id ===
+                                        selectedSubject?.id &&
+                                      a?.exam?.level_code ===
+                                        selectedLevel?.level_code &&
+                                      (
+                                        a?.language ||
+                                        a?.exam?.language ||
+                                        ""
+                                      ).toLowerCase() === lang.toLowerCase(),
+                                  ).length || 0
+                                );
                               };
 
                               // Auto-select first available (enabled + not maxed) language
                               const availableLangs = enabled.filter(
-                                (lang) => getLanguageAttemptCount(lang) < MAX_ATTEMPTS
+                                (lang) =>
+                                  getLanguageAttemptCount(lang) < MAX_ATTEMPTS,
                               );
                               const firstAvailable = availableLangs[0];
                               if (
@@ -1445,7 +1449,8 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
 
                               return ["English", "Hindi"].map((lang) => {
                                 const isEnabled = enabled.includes(lang);
-                                const attemptCount = getLanguageAttemptCount(lang);
+                                const attemptCount =
+                                  getLanguageAttemptCount(lang);
                                 const isMaxed = attemptCount >= MAX_ATTEMPTS;
                                 const isSelectable = isEnabled && !isMaxed;
                                 return (
@@ -1514,60 +1519,59 @@ const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) =>
               </div>
             )}
 
-        {/* Initial State / Welcome Message */}
-        {!selectedCategory &&
-          !selectedSubject &&
-          !selectedLevel &&
-          !error &&
-          !examReady && (
-            <div
-              className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8"
-            >
-              <div className="bg-background p-6 sm:p-8 text-center">
-                <div className="w-full mx-auto">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                    <FaGraduationCap
-                      className="text-slate-500 text-2xl sm:text-3xl"
-                      aria-hidden="true"
-                    />
+          {/* Initial State / Welcome Message */}
+          {!selectedCategory &&
+            !selectedSubject &&
+            !selectedLevel &&
+            !error &&
+            !examReady && (
+              <div className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8">
+                <div className="bg-background p-6 sm:p-8 text-center">
+                  <div className="w-full mx-auto">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                      <FaGraduationCap
+                        className="text-slate-500 text-2xl sm:text-3xl"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-400 mb-2 sm:mb-3">
+                      Start Your Assessment / परीक्षा शुरू करें
+                    </h3>{" "}
+                    {/* Adjust text size/margin */}
+                    <p className="text-sm sm:text-base text-gray-400">
+                      {" "}
+                      {/* Adjust text size */}
+                      Follow the steps above: select category, subject, and
+                      level to begin. <br /> ऊपर दिए गए चरणों का पालन करें: शुरू
+                      करने के लिए श्रेणी, विषय और स्तर चुनें।
+                    </p>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-400 mb-2 sm:mb-3">
-                    Start Your Assessment / परीक्षा शुरू करें
-                  </h3>{" "}
-                  {/* Adjust text size/margin */}
-                  <p className="text-sm sm:text-base text-gray-400">
-                    {" "}
-                    {/* Adjust text size */}
-                    Follow the steps above: select category, subject, and level
-                    to begin. <br /> ऊपर दिए गए चरणों का पालन करें: शुरू करने के
-                    लिए श्रेणी, विषय और स्तर चुनें।
-                  </p>
                 </div>
               </div>
-            </div>
-          )}
-      </div>
+            )}
+        </div>
 
-      {/* Exam Center Modal */}
-      {isExamCenterModalOpen && (
-        <ExamCenterModal
-          isOpen={isExamCenterModalOpen}
-          onClose={() => {
-            setIsExamCenterModalOpen(false);
-            setShowVerificationCard(false);
-          }}
-          isverifyCard={showVerificationCard}
-          examCenterData={examCenterData}
-          examCards={examCards}
-          onPasskeyGenerated={onExamDataChange}
+        {/* Exam Center Modal */}
+        {isExamCenterModalOpen && (
+          <ExamCenterModal
+            isOpen={isExamCenterModalOpen}
+            onClose={() => {
+              setIsExamCenterModalOpen(false);
+              setShowVerificationCard(false);
+            }}
+            isverifyCard={showVerificationCard}
+            examCenterData={examCenterData}
+            examCards={examCards}
+            onPasskeyGenerated={onExamDataChange}
+          />
+        )}
+        <MissingSubjectModal
+          isOpen={isMissingSubjectModalOpen}
+          onClose={() => setIsMissingSubjectModalOpen(false)}
         />
-      )}
-      <MissingSubjectModal
-        isOpen={isMissingSubjectModalOpen}
-        onClose={() => setIsMissingSubjectModalOpen(false)}
-      />
-    </div>
-  );
-});
+      </div>
+    );
+  },
+);
 
 export default FilterdExamCard;

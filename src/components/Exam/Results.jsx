@@ -13,14 +13,16 @@ import { HiTrophy, HiFaceFrown } from "react-icons/hi2";
 
 const ResultPage = () => {
   const location = useLocation();
-  const { correct_answer, incorrect_answer, is_unanswered } = location.state || {
-    correct_answer: 0,
-    incorrect_answer: 0,
-    is_unanswered: 0,
-  };
+  const { correct_answer, incorrect_answer, is_unanswered } =
+    location.state || {
+      correct_answer: 0,
+      incorrect_answer: 0,
+      is_unanswered: 0,
+    };
 
   const totalQuestion = correct_answer + incorrect_answer + is_unanswered;
-  const percentage = totalQuestion > 0 ? ((correct_answer / totalQuestion) * 100).toFixed(1) : 0;
+  const percentage =
+    totalQuestion > 0 ? ((correct_answer / totalQuestion) * 100).toFixed(1) : 0;
   const isQualified = percentage >= 60;
 
   const fireConfetti = () => {
@@ -74,12 +76,13 @@ const ResultPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+        className="w-full max-w-2xl bg-white rounded  shadow-sm border border-slate-200 overflow-hidden"
       >
         {/* Header Section */}
         <div
-          className={`relative px-4 py-8 sm:px-8 sm:py-12 text-center ${isQualified ? "bg-teal-600" : "bg-slate-700"
-            }`}
+          className={`relative px-4 py-8 sm:px-8 sm:py-12 text-center ${
+            isQualified ? "bg-teal-600" : "bg-slate-700"
+          }`}
         >
           <motion.div
             initial={{ scale: 0 }}
@@ -107,15 +110,19 @@ const ResultPage = () => {
         {/* Score Section */}
         <div className="px-4 py-6 sm:px-8 sm:py-8">
           <div className="flex flex-col items-center -mt-12 sm:-mt-16 mb-6 sm:mb-8">
-            <div className="relative bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-sm border border-slate-100 text-center">
+            <div className="relative bg-white rounded  shadow-lg p-4 sm:p-6 w-full max-w-sm border border-slate-100 text-center">
               <p className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">
                 Total Score
               </p>
               <div className="flex items-baseline justify-center gap-1">
-                <span className={`text-4xl sm:text-5xl font-bold ${isQualified ? "text-teal-600" : "text-slate-700"}`}>
+                <span
+                  className={`text-4xl sm:text-5xl font-bold ${isQualified ? "text-teal-600" : "text-slate-700"}`}
+                >
                   {percentage}%
                 </span>
-                <span className="text-slate-400 font-medium text-sm sm:text-base">/ 100%</span>
+                <span className="text-slate-400 font-medium text-sm sm:text-base">
+                  / 100%
+                </span>
               </div>
               <div className="mt-4 w-full bg-slate-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
                 <motion.div
@@ -132,20 +139,32 @@ const ResultPage = () => {
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
             <div className="p-2 sm:p-4 rounded-xl bg-teal-50 border border-teal-100 text-center">
               <HiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-teal-700">{correct_answer}</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-teal-600 uppercase tracking-wide">Correct</p>
+              <p className="text-xl sm:text-2xl font-bold text-teal-700">
+                {correct_answer}
+              </p>
+              <p className="text-[10px] sm:text-xs font-semibold text-teal-600 uppercase tracking-wide">
+                Correct
+              </p>
             </div>
 
             <div className="p-2 sm:p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
               <HiXCircle className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-rose-600">{incorrect_answer}</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-rose-500 uppercase tracking-wide">Incorrect</p>
+              <p className="text-xl sm:text-2xl font-bold text-rose-600">
+                {incorrect_answer}
+              </p>
+              <p className="text-[10px] sm:text-xs font-semibold text-rose-500 uppercase tracking-wide">
+                Incorrect
+              </p>
             </div>
 
             <div className="p-2 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
               <HiMinusCircle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-slate-600">{is_unanswered}</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Skipped</p>
+              <p className="text-xl sm:text-2xl font-bold text-slate-600">
+                {is_unanswered}
+              </p>
+              <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Skipped
+              </p>
             </div>
           </div>
 

@@ -9,8 +9,19 @@ import {
   delEducationProfile,
   resetError,
 } from "../../../features/jobProfileSlice";
-import { HiOutlineAcademicCap, HiOutlineTrash, HiOutlinePencil, HiOutlineBookOpen, HiOutlinePresentationChartBar, HiOutlineClipboard } from "react-icons/hi";
-import { HiOutlinePlusCircle, HiOutlineXMark, HiOutlineXCircle } from "react-icons/hi2";
+import {
+  HiOutlineAcademicCap,
+  HiOutlineTrash,
+  HiOutlinePencil,
+  HiOutlineBookOpen,
+  HiOutlinePresentationChartBar,
+  HiOutlineClipboard,
+} from "react-icons/hi";
+import {
+  HiOutlinePlusCircle,
+  HiOutlineXMark,
+  HiOutlineXCircle,
+} from "react-icons/hi2";
 import { HiOutlineCheck, HiOutlineEye } from "react-icons/hi";
 import Loader from "../../Loader";
 import ErrorMessage from "../../ErrorMessage";
@@ -18,15 +29,12 @@ import ErrorMessage from "../../ErrorMessage";
 const Education = () => {
   const dispatch = useDispatch();
   const qualification = useSelector(
-    (state) => state?.jobProfile?.qualification
+    (state) => state?.jobProfile?.qualification,
   );
-
 
   const { error, educationData } = useSelector(
-    (state) => state.jobProfile || []
+    (state) => state.jobProfile || [],
   );
-
-
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
@@ -44,7 +52,7 @@ const Education = () => {
     formState: { errors },
   } = useForm();
   const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [subjectInput, setSubjectInput] = useState({ name: '', marks: '' });
+  const [subjectInput, setSubjectInput] = useState({ name: "", marks: "" });
   const [viewDetailsModal, setViewDetailsModal] = useState(false);
   const [selectedEducation, setSelectedEducation] = useState(null);
   const [generalError, setGeneralError] = useState(null);
@@ -78,54 +86,62 @@ const Education = () => {
     { value: "Other", label: "Other" },
   ];
   const matricSubjects = [
-    "Mathematics", "Science", "English", "Hindi", "Social Science",
-    "Sanskrit", "Computer Science", "Physical Education"
+    "Mathematics",
+    "Science",
+    "English",
+    "Hindi",
+    "Social Science",
+    "Sanskrit",
+    "Computer Science",
+    "Physical Education",
   ];
   const qualificationOrder = {
-    "Matriculation": 1,
-    "Matric": 1,
-    "SSC": 1,
+    Matriculation: 1,
+    Matric: 1,
+    SSC: 1,
     "10th": 1,
-    "Intermediate": 2,
-    "HSSC": 2,
-    "Inter": 2,
+    Intermediate: 2,
+    HSSC: 2,
+    Inter: 2,
     "12th": 2,
-    "Associate": 3,
-    "Bachelor": 3,
+    Associate: 3,
+    Bachelor: 3,
     "Bachelor's": 3,
-    "BS": 3,
-    "BSc": 3,
-    "BA": 3,
-    "BBA": 3,
+    BS: 3,
+    BSc: 3,
+    BA: 3,
+    BBA: 3,
     "B.Tech": 3,
-    "Master": 4,
+    Master: 4,
     "Master's": 4,
-    "MS": 4,
-    "MSc": 4,
-    "MA": 4,
-    "MBA": 4,
+    MS: 4,
+    MSc: 4,
+    MA: 4,
+    MBA: 4,
     "M.Tech": 4,
     "M.Phil": 5,
-    "MPhil": 5,
-    "PhD": 6,
-    "Doctorate": 6,
+    MPhil: 5,
+    PhD: 6,
+    Doctorate: 6,
     "Post Doctorate": 7,
-    "Diploma": 8,
-    "Certificate": 9,
+    Diploma: 8,
+    Certificate: 9,
   };
   const handleAddSubject = () => {
     if (subjectInput.name && subjectInput.marks) {
       const percentage = parseFloat(subjectInput.marks);
       if (percentage >= 0 && percentage <= 100) {
-        setSelectedSubjects(prev => [...prev, { ...subjectInput }]);
-        setSubjectInput({ name: '', marks: '' }); // Reset input
+        setSelectedSubjects((prev) => [...prev, { ...subjectInput }]);
+        setSubjectInput({ name: "", marks: "" }); // Reset input
       } else {
-        setGeneralError("Percentage must be between 0 and 100 / प्रतिशत 0 से 100 के बीच होना चाहिए");
+        setGeneralError(
+          "Percentage must be between 0 and 100 / प्रतिशत 0 से 100 के बीच होना चाहिए",
+        );
       }
     }
   };
   const handleRemoveSubject = (index) => {
-    setSelectedSubjects(prev => prev.filter((_, i) => i !== index));
+    setSelectedSubjects((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleQualificationChange = (e) => {
@@ -149,11 +165,11 @@ const Education = () => {
       return [1]; // Only allow Matriculation to start
     }
     const existingLevels = new Set();
-    existingEducations.forEach(education => {
+    existingEducations.forEach((education) => {
       let qualName = "";
       if (education.qualification?.name) {
         qualName = education.qualification.name;
-      } else if (typeof education.qualification === 'string') {
+      } else if (typeof education.qualification === "string") {
         qualName = education.qualification;
       } else {
         qualName = education.qualification_name || "";
@@ -163,7 +179,8 @@ const Education = () => {
         existingLevels.add(level);
       }
     });
-    const maxLevel = existingLevels.size > 0 ? Math.max(...Array.from(existingLevels)) : 0;
+    const maxLevel =
+      existingLevels.size > 0 ? Math.max(...Array.from(existingLevels)) : 0;
     const allowedLevels = [];
     for (let i = 1; i <= maxLevel; i++) {
       if (!existingLevels.has(i)) {
@@ -182,7 +199,7 @@ const Education = () => {
     }
     const allowedLevels = getNextAllowedQualificationLevels(educationData);
     return [...qualifications]
-      .filter(qual => {
+      .filter((qual) => {
         const level = qualificationOrder[qual.name] || 100;
         return allowedLevels.includes(level);
       })
@@ -199,11 +216,11 @@ const Education = () => {
     const sorted = [...data].sort((a, b) => {
       let qualA = a.qualification?.name;
       let qualB = b.qualification?.name;
-      if (typeof a.qualification === 'string') {
+      if (typeof a.qualification === "string") {
         qualA = a.qualification;
       }
 
-      if (typeof b.qualification === 'string') {
+      if (typeof b.qualification === "string") {
         qualB = b.qualification;
       }
       qualA = qualA || a.qualification_name || "";
@@ -223,7 +240,6 @@ const Education = () => {
   };
   const onSubmit = async (data) => {
     try {
-
       setLoading(true);
       setGeneralError(null);
       setSuccessMessage(null);
@@ -233,13 +249,15 @@ const Education = () => {
       if (selectedQualification === "Intermediate" && selectedStream) {
         streamOrDegree = selectedStream;
       } else if (selectedQualification === "Bachelor" && selectedDegreeType) {
-        streamOrDegree = selectedDegreeType === "Other"
-          ? data.customDegree || ""
-          : selectedDegreeType;
+        streamOrDegree =
+          selectedDegreeType === "Other"
+            ? data.customDegree || ""
+            : selectedDegreeType;
       } else if (selectedQualification === "Master" && selectedDegreeType) {
-        streamOrDegree = selectedDegreeType === "Other"
-          ? data.customDegree || ""
-          : selectedDegreeType;
+        streamOrDegree =
+          selectedDegreeType === "Other"
+            ? data.customDegree || ""
+            : selectedDegreeType;
       }
 
       const payload = {
@@ -250,10 +268,10 @@ const Education = () => {
         session: data.session || "",
         board_or_university: data.board_or_university || "",
         stream_or_degree: streamOrDegree, // Add stream/degree as separate field
-        subjects: selectedSubjects.map(subject => ({
+        subjects: selectedSubjects.map((subject) => ({
           name: subject.name,
-          marks: parseFloat(subject.marks)
-        }))
+          marks: parseFloat(subject.marks),
+        })),
       };
 
       if (editingIndex !== null) {
@@ -262,11 +280,15 @@ const Education = () => {
         fetchProfile();
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
-        setSuccessMessage("Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!");
+        setSuccessMessage(
+          "Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!",
+        );
       } else {
         await dispatch(postEducationProfile(payload)).unwrap();
         fetchProfile();
-        setSuccessMessage("Education details added successfully! / शिक्षा विवरण सफलतापूर्वक जोड़ा गया!");
+        setSuccessMessage(
+          "Education details added successfully! / शिक्षा विवरण सफलतापूर्वक जोड़ा गया!",
+        );
       }
 
       setIsEditing(false);
@@ -276,7 +298,8 @@ const Education = () => {
       setSelectedDegreeType("");
       reset();
     } catch (err) {
-      let errorMessage = "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
+      let errorMessage =
+        "Failed to save education details / शिक्षा विवरण सहेजने में विफल";
 
       if (err?.error) {
         errorMessage = err.error;
@@ -314,7 +337,7 @@ const Education = () => {
 
       if (educationToDelete.qualification?.name) {
         qualName = educationToDelete.qualification.name;
-      } else if (typeof educationToDelete.qualification === 'string') {
+      } else if (typeof educationToDelete.qualification === "string") {
         qualName = educationToDelete.qualification;
       } else {
         qualName = educationToDelete.qualification_name || "";
@@ -327,7 +350,7 @@ const Education = () => {
         let eduQualName = "";
         if (edu.qualification?.name) {
           eduQualName = edu.qualification.name;
-        } else if (typeof edu.qualification === 'string') {
+        } else if (typeof edu.qualification === "string") {
           eduQualName = edu.qualification;
         } else {
           eduQualName = edu.qualification_name || "";
@@ -338,7 +361,7 @@ const Education = () => {
       });
       if (hasHigherLevels) {
         setGeneralError(
-          "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।"
+          "Cannot delete this qualification! Please delete higher level qualifications first. / इस योग्यता को हटाया नहीं जा सकता! कृपया पहले उच्च स्तर की योग्यता हटाएं।",
         );
         return;
       }
@@ -348,10 +371,14 @@ const Education = () => {
       fetchProfile();
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
-      setSuccessMessage("Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!");
+      setSuccessMessage(
+        "Education details deleted successfully! / शिक्षा विवरण सफलतापूर्वक हटाया गया!",
+      );
     } catch (err) {
-
-      setGeneralError(err.response?.data?.message || "Failed to delete education details / शिक्षा विवरण हटाने में विफल");
+      setGeneralError(
+        err.response?.data?.message ||
+          "Failed to delete education details / शिक्षा विवरण हटाने में विफल",
+      );
     }
   };
 
@@ -375,7 +402,10 @@ const Education = () => {
         <div className="mb-0">
           <h2 className="text-lg md:text-2xl font-bold text-text flex items-center gap-3">
             <div className="bg-primary/10 rounded-lg">
-              <HiOutlineAcademicCap className="text-2xl text-primary" aria-hidden="true" />
+              <HiOutlineAcademicCap
+                className="text-2xl text-primary"
+                aria-hidden="true"
+              />
             </div>
             Education Qualification
           </h2>
@@ -400,15 +430,22 @@ const Education = () => {
       {educationData.length < 1 && !isEditing && (
         <div className="p-8 text-center rounded-xl bg-background border-2 border-dashed border-secondary/10">
           <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-            <HiOutlineAcademicCap className="h-10 w-10 text-primary" aria-hidden="true" />
+            <HiOutlineAcademicCap
+              className="h-10 w-10 text-primary"
+              aria-hidden="true"
+            />
           </div>
-          <h3 className="text-text font-bold text-lg mb-1">No education added yet</h3>
+          <h3 className="text-text font-bold text-lg mb-1">
+            No education added yet
+          </h3>
           <p className="text-sm text-secondary mb-3">
             Click 'Add Education' to get started
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
             <HiOutlineAcademicCap className="h-5 w-5" />
-            <span className="font-medium">Start with Matriculation / मैट्रिक से शुरू करें</span>
+            <span className="font-medium">
+              Start with Matriculation / मैट्रिक से शुरू करें
+            </span>
           </div>
         </div>
       )}
@@ -418,7 +455,10 @@ const Education = () => {
           {/* Mobile Cards View */}
           <div className="block lg:hidden space-y-4">
             {getSortedEducationData(educationData).map((education, index) => (
-              <div key={index} className="bg-[#3E98C7]/5 rounded-xl p-4 border border-[#3E98C7]/20 hover:border-[#3E98C7]/30 hover:shadow-md transition-all">
+              <div
+                key={index}
+                className="bg-[#3E98C7]/5 rounded-xl p-4 border border-[#3E98C7]/20 hover:border-[#3E98C7]/30 hover:shadow-md transition-all"
+              >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 text-sm">
@@ -454,27 +494,37 @@ const Education = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-500">Session:</span>
-                      <p className="font-medium text-gray-700">{education.session || "N/A"}</p>
+                      <p className="font-medium text-gray-700">
+                        {education.session || "N/A"}
+                      </p>
                     </div>
                     <div>
                       <span className="text-gray-500">Year:</span>
-                      <p className="font-medium text-gray-700">{education.year_of_passing || "N/A"}</p>
+                      <p className="font-medium text-gray-700">
+                        {education.year_of_passing || "N/A"}
+                      </p>
                     </div>
                   </div>
 
                   <div>
                     <span className="text-gray-500">Institution:</span>
-                    <p className="font-medium text-gray-700 break-words">{education.institution || "N/A"}</p>
+                    <p className="font-medium text-gray-700 break-words">
+                      {education.institution || "N/A"}
+                    </p>
                   </div>
 
                   <div>
                     <span className="text-gray-500">Board/University:</span>
-                    <p className="font-medium text-gray-700 break-words">{education.board_or_university || "N/A"}</p>
+                    <p className="font-medium text-gray-700 break-words">
+                      {education.board_or_university || "N/A"}
+                    </p>
                   </div>
 
                   <div>
                     <span className="text-gray-500">Grade/Marks:</span>
-                    <p className="font-medium text-gray-700">{education.grade_or_percentage || "N/A"}</p>
+                    <p className="font-medium text-gray-700">
+                      {education.grade_or_percentage || "N/A"}
+                    </p>
                   </div>
 
                   <div className="pt-2 mt-2 border-t border-gray-200">
@@ -499,82 +549,100 @@ const Education = () => {
             <table className="w-full border-collapse">
               <thead className="bg-[#3E98C7]/8">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Course Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Stream/Degree</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Session</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Passing Year</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Institution</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Board/University</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Result/Marks(%)</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Course Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Stream/Degree
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Session
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Passing Year
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Institution
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Board/University
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Result/Marks(%)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {getSortedEducationData(educationData).map((education, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b text-sm">
-                      <span className="font-semibold text-gray-900">
-                        {education.qualification?.name || "N/A"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      {education.stream_or_degree ? (
-                        <span className="inline-block px-3 py-1 bg-[#3E98C7]/15 text-[#3E98C7] rounded-full text-xs font-semibold">
-                          {education.stream_or_degree}
+                {getSortedEducationData(educationData).map(
+                  (education, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b text-sm">
+                        <span className="font-semibold text-gray-900">
+                          {education.qualification?.name || "N/A"}
                         </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      <span className="font-medium text-gray-700">
-                        {education.session || "N/A"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      {education.year_of_passing || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      {education.institution || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      {education.board_or_university || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      {education.grade_or_percentage || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            handleEdit(index);
-                            setIsEditing(true);
-                            setEditingRowIndex(index);
-                          }}
-                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
-                        >
-                          <HiOutlinePencil className="size-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(index)}
-                          className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
-                        >
-                          <HiOutlineTrash className="size-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedEducation(education);
-                            setViewDetailsModal(true);
-                          }}
-                          className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
-                          title="View Full Details"
-                        >
-                          <HiOutlineEye className="size-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        {education.stream_or_degree ? (
+                          <span className="inline-block px-3 py-1 bg-[#3E98C7]/15 text-[#3E98C7] rounded-full text-xs font-semibold">
+                            {education.stream_or_degree}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        <span className="font-medium text-gray-700">
+                          {education.session || "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        {education.year_of_passing || "N/A"}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        {education.institution || "N/A"}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        {education.board_or_university || "N/A"}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        {education.grade_or_percentage || "N/A"}
+                      </td>
+                      <td className="px-4 py-3 border-b text-sm">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              handleEdit(index);
+                              setIsEditing(true);
+                              setEditingRowIndex(index);
+                            }}
+                            className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
+                          >
+                            <HiOutlinePencil className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(index)}
+                            className="p-1.5 text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all"
+                          >
+                            <HiOutlineTrash className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedEducation(education);
+                              setViewDetailsModal(true);
+                            }}
+                            className="p-1.5 text-gray-500 hover:text-[#3E98C7] rounded-lg hover:bg-[#3E98C7]/10 transition-all"
+                            title="View Full Details"
+                          >
+                            <HiOutlineEye className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>
@@ -593,7 +661,12 @@ const Education = () => {
                 <HiOutlineAcademicCap className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-bold text-text">Step 1: Qualification Level <span className="text-secondary font-normal">/ योग्यता स्तर</span></h3>
+                <h3 className="text-sm font-bold text-text">
+                  Step 1: Qualification Level{" "}
+                  <span className="text-secondary font-normal">
+                    / योग्यता स्तर
+                  </span>
+                </h3>
               </div>
             </div>
 
@@ -607,18 +680,29 @@ const Education = () => {
               </option>
               {qualification.map((role) => {
                 const qualLevel = qualificationOrder[role.name] || 100;
-                const allowedLevels = getNextAllowedQualificationLevels(educationData);
-                const alreadyAdded = educationData.some(edu =>
-                  (edu.qualification?.name === role.name) ||
-                  (typeof edu.qualification === 'string' && edu.qualification === role.name)
+                const allowedLevels =
+                  getNextAllowedQualificationLevels(educationData);
+                const alreadyAdded = educationData.some(
+                  (edu) =>
+                    edu.qualification?.name === role.name ||
+                    (typeof edu.qualification === "string" &&
+                      edu.qualification === role.name),
                 );
-                const isDisabled = alreadyAdded &&
-                  (editingIndex === null || educationData[editingIndex]?.qualification?.name !== role.name);
-                const isCurrentlyEditing = editingIndex !== null &&
-                  educationData[editingIndex]?.qualification?.name === role.name;
-                const isEnabled = isCurrentlyEditing || (allowedLevels.includes(qualLevel) && !isDisabled);
+                const isDisabled =
+                  alreadyAdded &&
+                  (editingIndex === null ||
+                    educationData[editingIndex]?.qualification?.name !==
+                      role.name);
+                const isCurrentlyEditing =
+                  editingIndex !== null &&
+                  educationData[editingIndex]?.qualification?.name ===
+                    role.name;
+                const isEnabled =
+                  isCurrentlyEditing ||
+                  (allowedLevels.includes(qualLevel) && !isDisabled);
                 const getDisabledReason = () => {
-                  if (alreadyAdded) return " (Already added / पहले से जोड़ा गया)";
+                  if (alreadyAdded)
+                    return " (Already added / पहले से जोड़ा गया)";
                   if (!allowedLevels.includes(qualLevel)) {
                     if (educationData.length === 0 && qualLevel !== 1) {
                       return " (Add Matriculation first / पहले मैट्रिक जोड़ें)";
@@ -637,7 +721,8 @@ const Education = () => {
                     disabled={!isEnabled}
                     className={!isEnabled ? "text-gray-400" : ""}
                   >
-                    {role.name}{getDisabledReason()}
+                    {role.name}
+                    {getDisabledReason()}
                   </option>
                 );
               })}
@@ -653,7 +738,12 @@ const Education = () => {
                     <div className="p-1.5 bg-accent/10 rounded-lg">
                       <HiOutlineBookOpen className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="text-sm font-bold text-text">Step 2: Select Stream <span className="text-secondary font-normal">/ स्ट्रीम चुनें</span></h3>
+                    <h3 className="text-sm font-bold text-text">
+                      Step 2: Select Stream{" "}
+                      <span className="text-secondary font-normal">
+                        / स्ट्रीम चुनें
+                      </span>
+                    </h3>
                   </div>
 
                   <select
@@ -678,7 +768,12 @@ const Education = () => {
                     <div className="p-1.5 bg-accent/10 rounded-lg">
                       <HiOutlineAcademicCap className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
+                    <h3 className="text-sm font-bold text-text">
+                      Step 2: Select Degree{" "}
+                      <span className="text-secondary font-normal">
+                        / डिग्री चुनें
+                      </span>
+                    </h3>
                   </div>
 
                   <select
@@ -701,7 +796,10 @@ const Education = () => {
                       placeholder="Enter degree name / डिग्री का नाम"
                       className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
                       {...register("customDegree", {
-                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false
+                        required:
+                          selectedDegreeType === "Other"
+                            ? "Please enter degree name"
+                            : false,
                       })}
                     />
                   )}
@@ -714,7 +812,12 @@ const Education = () => {
                     <div className="p-1.5 bg-accent/10 rounded-lg">
                       <HiOutlineAcademicCap className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="text-sm font-bold text-text">Step 2: Select Degree <span className="text-secondary font-normal">/ डिग्री चुनें</span></h3>
+                    <h3 className="text-sm font-bold text-text">
+                      Step 2: Select Degree{" "}
+                      <span className="text-secondary font-normal">
+                        / डिग्री चुनें
+                      </span>
+                    </h3>
                   </div>
 
                   <select
@@ -737,7 +840,10 @@ const Education = () => {
                       placeholder="Enter degree name / डिग्री का नाम"
                       className="w-full mt-2 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-accent text-sm transition-all"
                       {...register("customDegree", {
-                        required: selectedDegreeType === "Other" ? "Please enter degree name" : false
+                        required:
+                          selectedDegreeType === "Other"
+                            ? "Please enter degree name"
+                            : false,
                       })}
                     />
                   )}
@@ -751,8 +857,16 @@ const Education = () => {
                     <HiOutlineClipboard className="w-5 h-5 text-secondary" />
                   </div>
                   <h3 className="text-sm font-bold text-text">
-                    Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "3" : "2"}: Basic Information
-                    <span className="text-secondary font-normal ml-1">/ जानकारी</span>
+                    Step{" "}
+                    {selectedQualification === "Intermediate" ||
+                    selectedQualification === "Bachelor" ||
+                    selectedQualification === "Master"
+                      ? "3"
+                      : "2"}
+                    : Basic Information
+                    <span className="text-secondary font-normal ml-1">
+                      / जानकारी
+                    </span>
                   </h3>
                 </div>
 
@@ -848,7 +962,9 @@ const Education = () => {
                             if (isGrade) {
                               return true;
                             } else if (isPercentage) {
-                              const numericValue = parseFloat(value.replace("%", ""));
+                              const numericValue = parseFloat(
+                                value.replace("%", ""),
+                              );
                               if (numericValue >= 0 && numericValue <= 100) {
                                 return true;
                               }
@@ -875,23 +991,35 @@ const Education = () => {
                     <HiOutlinePresentationChartBar className="w-5 h-5 text-success" />
                   </div>
                   <h3 className="text-sm font-bold text-text">
-                    Step {selectedQualification === "Intermediate" || selectedQualification === "Bachelor" || selectedQualification === "Master" ? "4" : "3"}: Subjects
-                    <span className="text-secondary font-normal ml-1">/ विषय (Optional)</span>
+                    Step{" "}
+                    {selectedQualification === "Intermediate" ||
+                    selectedQualification === "Bachelor" ||
+                    selectedQualification === "Master"
+                      ? "4"
+                      : "3"}
+                    : Subjects
+                    <span className="text-secondary font-normal ml-1">
+                      / विषय (Optional)
+                    </span>
                   </h3>
                 </div>
 
                 {/* Quick Add for Matric Subjects */}
                 {selectedQualification === "Matriculation" && (
                   <div className="mb-3 p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-                    <p className="text-xs font-medium text-text mb-2">Quick Select:</p>
+                    <p className="text-xs font-medium text-text mb-2">
+                      Quick Select:
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {matricSubjects.map((subject) => (
                         <button
                           key={subject}
                           type="button"
                           onClick={() => {
-                            if (!selectedSubjects.find(s => s.name === subject)) {
-                              setSubjectInput({ name: subject, marks: '' });
+                            if (
+                              !selectedSubjects.find((s) => s.name === subject)
+                            ) {
+                              setSubjectInput({ name: subject, marks: "" });
                             }
                           }}
                           className="px-2 py-1 text-xs bg-white border border-primary/30 text-primary rounded hover:bg-primary/10 transition-all"
@@ -909,14 +1037,24 @@ const Education = () => {
                       type="text"
                       placeholder="Subject Name"
                       value={subjectInput.name}
-                      onChange={(e) => setSubjectInput(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setSubjectInput((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="flex-1 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
                     />
                     <input
                       type="number"
                       placeholder="%"
                       value={subjectInput.marks}
-                      onChange={(e) => setSubjectInput(prev => ({ ...prev, marks: e.target.value }))}
+                      onChange={(e) =>
+                        setSubjectInput((prev) => ({
+                          ...prev,
+                          marks: e.target.value,
+                        }))
+                      }
                       min="0"
                       max="100"
                       className="w-20 px-3 py-2 border border-secondary/30 rounded-lg focus:ring-2 focus:ring-success text-sm transition-all"
@@ -934,7 +1072,9 @@ const Education = () => {
                   {/* Selected Subjects List */}
                   {selectedSubjects.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-text mb-2">Added ({selectedSubjects.length}):</p>
+                      <p className="text-xs font-medium text-text mb-2">
+                        Added ({selectedSubjects.length}):
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {selectedSubjects.map((subject, index) => (
                           <div
@@ -996,8 +1136,14 @@ const Education = () => {
       )}
       {/* View Details Modal */}
       {viewDetailsModal && selectedEducation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setViewDetailsModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setViewDetailsModal(false)}
+        >
+          <div
+            className="bg-white rounded  shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="sticky top-0 bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
@@ -1007,7 +1153,9 @@ const Education = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold">Education Details</h3>
-                    <p className="text-sm text-white/80">Complete qualification information</p>
+                    <p className="text-sm text-white/80">
+                      Complete qualification information
+                    </p>
                   </div>
                 </div>
                 <button
@@ -1036,7 +1184,9 @@ const Education = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-600">Year of Passing</div>
-                    <div className="text-xl font-bold text-[#3E98C7]">{selectedEducation.year_of_passing}</div>
+                    <div className="text-xl font-bold text-[#3E98C7]">
+                      {selectedEducation.year_of_passing}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1046,65 +1196,87 @@ const Education = () => {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <HiOutlineBookOpen className="h-5 w-5 text-[#3E98C7]" />
-                    <span className="text-sm font-semibold text-gray-600">Institution</span>
+                    <span className="text-sm font-semibold text-gray-600">
+                      Institution
+                    </span>
                   </div>
-                  <p className="text-gray-900 font-medium">{selectedEducation.institution || "N/A"}</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedEducation.institution || "N/A"}
+                  </p>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <HiOutlineAcademicCap className="h-5 w-5 text-[#3E98C7]" />
-                    <span className="text-sm font-semibold text-gray-600">Board/University</span>
+                    <span className="text-sm font-semibold text-gray-600">
+                      Board/University
+                    </span>
                   </div>
-                  <p className="text-gray-900 font-medium">{selectedEducation.board_or_university || "N/A"}</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedEducation.board_or_university || "N/A"}
+                  </p>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <HiOutlineClipboard className="h-5 w-5 text-[#3E98C7]" />
-                    <span className="text-sm font-semibold text-gray-600">Session</span>
+                    <span className="text-sm font-semibold text-gray-600">
+                      Session
+                    </span>
                   </div>
-                  <p className="text-gray-900 font-medium">{selectedEducation.session || "N/A"}</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedEducation.session || "N/A"}
+                  </p>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
                     <HiOutlinePresentationChartBar className="h-5 w-5 text-[#3E98C7]" />
-                    <span className="text-sm font-semibold text-gray-600">Grade/Percentage</span>
+                    <span className="text-sm font-semibold text-gray-600">
+                      Grade/Percentage
+                    </span>
                   </div>
-                  <p className="text-gray-900 font-medium">{selectedEducation.grade_or_percentage || "N/A"}</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedEducation.grade_or_percentage || "N/A"}
+                  </p>
                 </div>
               </div>
 
               {/* Subjects Section */}
-              {selectedEducation.subjects && selectedEducation.subjects.length > 0 && (
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <HiOutlinePresentationChartBar className="h-6 w-6 text-[#3E98C7]" />
-                    <h5 className="text-lg font-bold text-gray-900">Subjects & Percentage</h5>
+              {selectedEducation.subjects &&
+                selectedEducation.subjects.length > 0 && (
+                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <HiOutlinePresentationChartBar className="h-6 w-6 text-[#3E98C7]" />
+                      <h5 className="text-lg font-bold text-gray-900">
+                        Subjects & Percentage
+                      </h5>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {selectedEducation.subjects.map((subject, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between px-4 py-3 bg-white border border-[#3E98C7]/30 rounded-lg shadow-sm hover:shadow-md transition-all"
+                        >
+                          <span className="text-sm font-semibold text-gray-700">
+                            {subject.name}
+                          </span>
+                          <span className="text-sm font-bold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] px-3 py-1.5 rounded-full">
+                            {subject.marks}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {selectedEducation.subjects.map((subject, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between px-4 py-3 bg-white border border-[#3E98C7]/30 rounded-lg shadow-sm hover:shadow-md transition-all"
-                      >
-                        <span className="text-sm font-semibold text-gray-700">
-                          {subject.name}
-                        </span>
-                        <span className="text-sm font-bold text-white bg-gradient-to-r from-[#3E98C7] to-[#67B3DA] px-3 py-1.5 rounded-full">
-                          {subject.marks}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
 
-              {(!selectedEducation.subjects || selectedEducation.subjects.length === 0) && (
+              {(!selectedEducation.subjects ||
+                selectedEducation.subjects.length === 0) && (
                 <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                   <HiOutlinePresentationChartBar className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No subjects added for this qualification</p>
+                  <p className="text-gray-500 text-sm">
+                    No subjects added for this qualification
+                  </p>
                 </div>
               )}
             </div>

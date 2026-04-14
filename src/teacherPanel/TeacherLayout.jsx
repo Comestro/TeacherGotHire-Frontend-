@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from "react";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   HiViewGrid,
   HiUser,
@@ -10,23 +10,24 @@ import {
   HiMenuAlt2,
   HiX,
   HiChevronDown,
-  HiOutlineClipboard
-} from 'react-icons/hi';
+  HiOutlineClipboard,
+} from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
-import { getUserData } from '../features/authSlice';
-import { handleLogout } from '../services/authUtils';
+import { getUserData } from "../features/authSlice";
+import { handleLogout } from "../services/authUtils";
 
 const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
   <NavLink
     to={to}
     onClick={onClick}
-    end={to === '/teacher' || to === '/teacher/'}
+    end={to === "/teacher" || to === "/teacher/"}
     className={({ isActive }) =>
-      `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-        ? 'bg-teal-600 text-white'
-        : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'
+      `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+        isActive
+          ? "bg-teal-600 text-white"
+          : "text-slate-600 hover:bg-slate-50 hover:text-teal-600"
       }`
     }
   >
@@ -50,8 +51,8 @@ const TeacherLayout = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const copyToClipboard = (text) => {
@@ -76,8 +77,12 @@ const TeacherLayout = () => {
             P
           </div>
           <div>
-            <h1 className="font-bold text-xl text-slate-800 tracking-tight">PTPI</h1>
-            <p className="text-lg text-slate-500 font-medium">Teacher Profile</p>
+            <h1 className="font-bold text-xl text-slate-800 tracking-tight">
+              PTPI
+            </h1>
+            <p className="text-lg text-slate-500 font-medium">
+              Teacher Profile
+            </p>
           </div>
         </div>
       </div>
@@ -90,10 +95,10 @@ const TeacherLayout = () => {
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-sm text-slate-800 truncate">
-              {userData?.Fname || 'Teacher'}
+              {userData?.Fname || "Teacher"}
             </h3>
             <p className="text-xs text-slate-500 truncate">
-              {userData?.email || 'Loading...'}
+              {userData?.email || "Loading..."}
             </p>
           </div>
         </div>
@@ -105,14 +110,30 @@ const TeacherLayout = () => {
           Main Menu
         </div>
         <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
-        <SidebarItem to="/teacher/personal-profile" icon={HiUser} label="Personal Details" />
-        <SidebarItem to="view-attempts" icon={HiMiniEye} label="View Exam Attempts" />
-        <SidebarItem to="job-apply" icon={HiBriefcase} label="Job Applications" />
+        <SidebarItem
+          to="/teacher/personal-profile"
+          icon={HiUser}
+          label="Personal Details"
+        />
+        <SidebarItem
+          to="view-attempts"
+          icon={HiMiniEye}
+          label="View Exam Attempts"
+        />
+        <SidebarItem
+          to="job-apply"
+          icon={HiBriefcase}
+          label="Job Applications"
+        />
 
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">
           System
         </div>
-        <SidebarItem to="/teacher/setting" icon={IoMdSettings} label="Settings" />
+        <SidebarItem
+          to="/teacher/setting"
+          icon={IoMdSettings}
+          label="Settings"
+        />
       </nav>
 
       {/* Logout */}
@@ -145,14 +166,17 @@ const TeacherLayout = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-slate-200 lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-slate-200 lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {sidebarContent}
       </aside>
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 lg:pl-72 min-h-screen flex flex-col`}>
+      <main
+        className={`transition-all duration-300 lg:pl-72 min-h-screen flex flex-col`}
+      >
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
@@ -167,7 +191,9 @@ const TeacherLayout = () => {
               {/* Breadcrumb / Page Title Placeholder */}
               {/* You can add dynamic breadcrumbs here if needed */}
               <h2 className="font-semibold text-slate-800 flex">
-                <span className='hidden sm:block'>Welcome back, </span> <span className='block sm:hidden'>Hi, </span>{" "}{userData?.Fname?.split(' ')[0] || 'Teacher'}!
+                <span className="hidden sm:block">Welcome back, </span>{" "}
+                <span className="block sm:hidden">Hi, </span>{" "}
+                {userData?.Fname?.split(" ")[0] || "Teacher"}!
               </h2>
             </div>
 
@@ -178,9 +204,11 @@ const TeacherLayout = () => {
                   className="flex items-center gap-3 p-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
                 >
                   <div className="h-9 w-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm border border-teal-200 shadow-sm">
-                    {userData?.Fname?.[0] || 'T'}
+                    {userData?.Fname?.[0] || "T"}
                   </div>
-                  <HiChevronDown className={`text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <HiChevronDown
+                    className={`text-slate-400 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 <AnimatePresence>
@@ -190,31 +218,37 @@ const TeacherLayout = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-72 bg-white rounded  shadow-xl border border-slate-200 overflow-hidden z-50"
                     >
                       {/* Dropdown Header */}
                       <div className="p-4 bg-slate-50 border-b border-slate-100">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="h-12 w-12 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-                            {userData?.Fname?.[0] || 'T'}
+                            {userData?.Fname?.[0] || "T"}
                           </div>
                           <div className="overflow-hidden">
                             <h3 className="font-bold text-slate-800 truncate">
-                              {userData?.Fname || 'Teacher'}
+                              {userData?.Fname || "Teacher"}
                             </h3>
                             <p className="text-xs text-slate-500 truncate">
-                              {userData?.email || 'Loading...'}
+                              {userData?.email || "Loading..."}
                             </p>
                           </div>
                         </div>
                         {userData?.user_code && (
                           <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
                             <div className="text-xs">
-                              <span className="text-slate-400 font-medium mr-2">ID:</span>
-                              <span className="font-mono font-semibold text-slate-700">{userData.user_code}</span>
+                              <span className="text-slate-400 font-medium mr-2">
+                                ID:
+                              </span>
+                              <span className="font-mono font-semibold text-slate-700">
+                                {userData.user_code}
+                              </span>
                             </div>
                             <button
-                              onClick={() => copyToClipboard(userData.user_code)}
+                              onClick={() =>
+                                copyToClipboard(userData.user_code)
+                              }
                               className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-md transition-colors"
                               title="Copy ID"
                             >
@@ -228,7 +262,7 @@ const TeacherLayout = () => {
                       <div className="p-2">
                         <button
                           onClick={() => {
-                            navigate('/teacher/personal-profile');
+                            navigate("/teacher/personal-profile");
                             setIsProfileOpen(false);
                           }}
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
@@ -238,7 +272,7 @@ const TeacherLayout = () => {
                         </button>
                         <button
                           onClick={() => {
-                            navigate('/teacher/setting');
+                            navigate("/teacher/setting");
                             setIsProfileOpen(false);
                           }}
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"

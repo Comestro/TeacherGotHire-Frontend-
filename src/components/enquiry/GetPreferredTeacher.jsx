@@ -77,7 +77,7 @@ export const GetPreferredTeacher = () => {
 
   const handleSubjectToggle = (subjectId) => {
     setSelectedSubjects((prev) =>
-      prev.includes(subjectId) ? [] : [subjectId]
+      prev.includes(subjectId) ? [] : [subjectId],
     );
   };
 
@@ -143,7 +143,7 @@ export const GetPreferredTeacher = () => {
           let detectedDistrict = "";
           if (result.district) {
             const match = BIHAR_DISTRICTS.find(
-              (d) => d.toLowerCase() === result.district.toLowerCase()
+              (d) => d.toLowerCase() === result.district.toLowerCase(),
             );
             if (match) detectedDistrict = match;
           }
@@ -202,7 +202,7 @@ export const GetPreferredTeacher = () => {
       (error) => {
         setMessage({ text: "Unable to retrieve location.", type: "error" });
         setLoadingPincode(false);
-      }
+      },
     );
   };
 
@@ -255,7 +255,7 @@ export const GetPreferredTeacher = () => {
       // Using 'subject' key instead of 'subjects'
       const subjectNames = selectedSubjects.map((id) => {
         const cat = classCategories.find(
-          (c) => c.id === parseInt(selectedClassCategory)
+          (c) => c.id === parseInt(selectedClassCategory),
         );
         const sub = cat?.subjects?.find((s) => s.id === id);
         return sub ? sub.subject_name : id;
@@ -266,7 +266,7 @@ export const GetPreferredTeacher = () => {
     if (selectedClassCategory) {
       // Using 'class_category' key
       const cat = classCategories.find(
-        (c) => c.id === parseInt(selectedClassCategory)
+        (c) => c.id === parseInt(selectedClassCategory),
       );
       if (cat) queryParams.append("class_category", cat.name);
       else queryParams.append("class_category", selectedClassCategory);
@@ -280,7 +280,7 @@ export const GetPreferredTeacher = () => {
 
   const getSelectedCategorySubjects = () => {
     const category = classCategories.find(
-      (c) => c.id === parseInt(selectedClassCategory)
+      (c) => c.id === parseInt(selectedClassCategory),
     );
     return category ? category.subjects : [];
   };
@@ -371,8 +371,8 @@ export const GetPreferredTeacher = () => {
                     index === currentStep
                       ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30 scale-110"
                       : index < currentStep
-                      ? "bg-teal-500/20 text-teal-400"
-                      : "bg-slate-800 text-slate-600 group-hover:bg-slate-700"
+                        ? "bg-teal-500/20 text-teal-400"
+                        : "bg-slate-800 text-slate-600 group-hover:bg-slate-700"
                   }`}
                 >
                   {index < currentStep ? (
@@ -437,7 +437,7 @@ export const GetPreferredTeacher = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {loading
                   ? Array.from({ length: 6 }).map((_, i) => (
-                      <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                      <Skeleton key={i} className="h-24 w-full rounded " />
                     ))
                   : jobTypes.map((type) => (
                       <button
@@ -446,7 +446,7 @@ export const GetPreferredTeacher = () => {
                           setSelectedJobType(type.teacher_job_name);
                           setCurrentStep(1);
                         }}
-                        className={`group relative p-5 rounded-2xl border text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
+                        className={`group relative p-5 rounded  border text-left transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
                           selectedJobType === type.teacher_job_name
                             ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-md shadow-teal-500/10"
                             : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
@@ -550,7 +550,7 @@ export const GetPreferredTeacher = () => {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <div className="bg-white p-6 rounded  shadow-sm border border-slate-200">
                 <div className="flex flex-wrap gap-2">
                   {getSelectedCategorySubjects().map((subject) => (
                     <button
@@ -595,7 +595,7 @@ export const GetPreferredTeacher = () => {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+              <div className="bg-white p-6 rounded  shadow-sm border border-slate-200 space-y-5">
                 <div className="grid grid-cols-2 gap-3 md:gap-5">
                   {/* State */}
                   <div className="group">

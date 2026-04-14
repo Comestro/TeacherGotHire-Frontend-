@@ -2,7 +2,7 @@ import React from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 const FeatureCard = ({ icon, title, description, quote }) => (
-  <div className="bg-white border border-slate-200 shadow-none hover:shadow-sm rounded-2xl p-8 text-left transition-all duration-300 group h-full flex flex-col">
+  <div className="bg-white border border-slate-200 shadow-none hover:shadow-sm rounded  p-8 text-left transition-all duration-300 group h-full flex flex-col">
     <div className="mb-6 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
       {icon}
     </div>

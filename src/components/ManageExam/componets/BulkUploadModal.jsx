@@ -32,12 +32,33 @@ const BulkUploadModal = ({
     if (!subjectName) return false;
     const lowerName = subjectName.toLowerCase();
     const languages = [
-      "english", "hindi", "urdu", "sanskrit", "bengali", 
-      "marathi", "telugu", "tamil", "gujarati", "kannada", 
-      "malayalam", "punjabi", "odia", "assamese", "maithili", 
-      "santali", "kashmiri", "nepali", "konkani", "sindhi", 
-      "dogri", "manipuri", "bodo", "japanese", "french", 
-      "german", "spanish"
+      "english",
+      "hindi",
+      "urdu",
+      "sanskrit",
+      "bengali",
+      "marathi",
+      "telugu",
+      "tamil",
+      "gujarati",
+      "kannada",
+      "malayalam",
+      "punjabi",
+      "odia",
+      "assamese",
+      "maithili",
+      "santali",
+      "kashmiri",
+      "nepali",
+      "konkani",
+      "sindhi",
+      "dogri",
+      "manipuri",
+      "bodo",
+      "japanese",
+      "french",
+      "german",
+      "spanish",
     ];
     return languages.some((lang) => lowerName.includes(lang));
   };
@@ -290,7 +311,7 @@ const BulkUploadModal = ({
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col border border-gray-100 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded  shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col border border-gray-100 animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
             <FiFileText className="text-teal-600" />
@@ -330,7 +351,7 @@ const BulkUploadModal = ({
           {!file ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-all group"
+              className="border-2 border-dashed border-gray-200 rounded  p-10 flex flex-col items-center justify-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-all group"
             >
               <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <FiUpload className="w-8 h-8 text-teal-600" />

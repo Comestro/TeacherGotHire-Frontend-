@@ -103,7 +103,7 @@ const ResetPassword = () => {
         </div>
 
         <div className="w-full max-w-md px-4 relative z-10">
-          <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden ">
+          <div className="bg-white rounded  p-8 sm:p-10 border border-slate-200 relative overflow-hidden ">
             {success ? (
               <div className="text-center py-8 animate-fadeIn">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

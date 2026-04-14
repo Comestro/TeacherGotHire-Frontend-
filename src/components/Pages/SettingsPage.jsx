@@ -51,7 +51,10 @@ export default function SettingsPage() {
         confirmPassword: "",
       });
     } catch (err) {
-      setGeneralError(err.message || "Failed to change password. Please check your current password.");
+      setGeneralError(
+        err.message ||
+          "Failed to change password. Please check your current password.",
+      );
     } finally {
       setPasswordLoading(false);
     }
@@ -59,7 +62,7 @@ export default function SettingsPage() {
 
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, label: "", color: "" };
-    
+
     let strength = 0;
     if (password.length >= 8) strength++;
     if (password.length >= 12) strength++;
@@ -68,8 +71,10 @@ export default function SettingsPage() {
     if (/[0-9]/.test(password)) strength++;
     if (/[^a-zA-Z0-9]/.test(password)) strength++;
 
-    if (strength <= 2) return { strength: 33, label: "Weak", color: "bg-red-500" };
-    if (strength <= 4) return { strength: 66, label: "Medium", color: "bg-yellow-500" };
+    if (strength <= 2)
+      return { strength: 33, label: "Weak", color: "bg-red-500" };
+    if (strength <= 4)
+      return { strength: 66, label: "Medium", color: "bg-yellow-500" };
     return { strength: 100, label: "Strong", color: "bg-green-500" };
   };
 
@@ -85,8 +90,12 @@ export default function SettingsPage() {
               <FiSettings className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Account Settings</h1>
-              <p className="text-slate-500 mt-1">Manage your password and security</p>
+              <h1 className="text-3xl font-bold text-slate-900">
+                Account Settings
+              </h1>
+              <p className="text-slate-500 mt-1">
+                Manage your password and security
+              </p>
             </div>
           </div>
         </div>
@@ -105,7 +114,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Change Password Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded  border border-slate-200 overflow-hidden">
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
             <div className="flex items-center gap-3">
@@ -113,8 +122,12 @@ export default function SettingsPage() {
                 <FiLock className="w-6 h-6 text-teal-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Change Password</h2>
-                <p className="text-sm text-slate-500 mt-0.5">Update your password to keep your account secure</p>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Change Password
+                </h2>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Update your password to keep your account secure
+                </p>
               </div>
             </div>
           </div>
@@ -157,22 +170,28 @@ export default function SettingsPage() {
                     minLength={8}
                   />
                 </div>
-                
+
                 {/* Password Strength Indicator */}
                 {passwordData.newPassword && (
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-slate-600">Password Strength</span>
-                      <span className={`text-xs font-semibold ${
-                        passwordStrength.label === 'Weak' ? 'text-red-600' :
-                        passwordStrength.label === 'Medium' ? 'text-yellow-600' :
-                        'text-green-600'
-                      }`}>
+                      <span className="text-xs font-medium text-slate-600">
+                        Password Strength
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          passwordStrength.label === "Weak"
+                            ? "text-red-600"
+                            : passwordStrength.label === "Medium"
+                              ? "text-yellow-600"
+                              : "text-green-600"
+                        }`}
+                      >
                         {passwordStrength.label}
                       </span>
                     </div>
                     <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                         style={{ width: `${passwordStrength.strength}%` }}
                       />
@@ -199,15 +218,20 @@ export default function SettingsPage() {
                 </div>
                 {passwordData.confirmPassword && (
                   <div className="flex items-center gap-2 mt-2">
-                    {passwordData.newPassword === passwordData.confirmPassword ? (
+                    {passwordData.newPassword ===
+                    passwordData.confirmPassword ? (
                       <>
                         <FiCheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="text-xs text-green-600 font-medium">Passwords match</span>
+                        <span className="text-xs text-green-600 font-medium">
+                          Passwords match
+                        </span>
                       </>
                     ) : (
                       <>
                         <div className="w-4 h-4 rounded-full border-2 border-red-500" />
-                        <span className="text-xs text-red-600 font-medium">Passwords do not match</span>
+                        <span className="text-xs text-red-600 font-medium">
+                          Passwords do not match
+                        </span>
                       </>
                     )}
                   </div>
@@ -218,26 +242,52 @@ export default function SettingsPage() {
               <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                 <div className="flex items-start gap-2 mb-2">
                   <FiShield className="w-4 h-4 text-slate-600 mt-0.5" />
-                  <h4 className="text-sm font-semibold text-slate-700">Password Requirements</h4>
+                  <h4 className="text-sm font-semibold text-slate-700">
+                    Password Requirements
+                  </h4>
                 </div>
                 <ul className="text-xs text-slate-600 space-y-1 ml-6">
                   <li className="flex items-center gap-2">
-                    <span className={passwordData.newPassword.length >= 8 ? 'text-green-600' : ''}>
+                    <span
+                      className={
+                        passwordData.newPassword.length >= 8
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
                       • At least 8 characters long
                     </span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-600' : ''}>
+                    <span
+                      className={
+                        /[A-Z]/.test(passwordData.newPassword)
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
                       • Contains an uppercase letter
                     </span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className={/[a-z]/.test(passwordData.newPassword) ? 'text-green-600' : ''}>
+                    <span
+                      className={
+                        /[a-z]/.test(passwordData.newPassword)
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
                       • Contains a lowercase letter
                     </span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-600' : ''}>
+                    <span
+                      className={
+                        /[0-9]/.test(passwordData.newPassword)
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
                       • Contains a number
                     </span>
                   </li>
@@ -248,7 +298,12 @@ export default function SettingsPage() {
               <div className="flex justify-end pt-4">
                 <button
                   type="submit"
-                  disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                  disabled={
+                    passwordLoading ||
+                    !passwordData.currentPassword ||
+                    !passwordData.newPassword ||
+                    !passwordData.confirmPassword
+                  }
                   className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-teal-200"
                 >
                   {passwordLoading ? (
@@ -272,7 +327,10 @@ export default function SettingsPage() {
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-500">
             For profile information updates, please visit your{" "}
-            <a href="/teacher/personal-profile" className="text-teal-600 hover:text-teal-700 font-medium underline">
+            <a
+              href="/teacher/personal-profile"
+              className="text-teal-600 hover:text-teal-700 font-medium underline"
+            >
               Personal Profile Settings
             </a>
           </p>

@@ -83,7 +83,7 @@ const ForgotPassword = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <span className="font-bold text-xl">1</span>
                   </div>
@@ -95,7 +95,7 @@ const ForgotPassword = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <span className="font-bold text-xl">2</span>
                   </div>
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
                     <span className="font-bold text-xl">3</span>
                   </div>
@@ -126,7 +126,7 @@ const ForgotPassword = () => {
               className="w-full md:w-1/2 max-w-md "
               style={{ animationDelay: "0.2s" }}
             >
-              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
+              <div className="bg-white rounded  p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 <div className="space-y-2 mb-8">
                   <Link
                     to="/signin"

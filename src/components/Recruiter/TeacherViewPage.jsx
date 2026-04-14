@@ -188,14 +188,14 @@ export default function TeacherViewPageFull() {
     if (!selectedClassCategory) return [];
     // Try nested first
     const cat = globalClassCategories?.find(
-      (c) => c.id.toString() === selectedClassCategory.toString()
+      (c) => c.id.toString() === selectedClassCategory.toString(),
     );
     if (cat?.subjects && cat.subjects.length > 0) return cat.subjects;
 
     // Fallback: filter global subjects if they have class_category property
     if (allSubjects?.length > 0) {
       return allSubjects.filter(
-        (s) => s.class_category === parseInt(selectedClassCategory)
+        (s) => s.class_category === parseInt(selectedClassCategory),
       );
     }
     return [];
@@ -234,7 +234,7 @@ export default function TeacherViewPageFull() {
           return (
             decoded === catName || decoded === catName.replace(/class\s+/i, "")
           );
-        })
+        }),
       );
       if (foundCat) {
         setSelectedClassCategory(foundCat.id);
@@ -249,7 +249,7 @@ export default function TeacherViewPageFull() {
           const decoded = decodeURIComponent(urlName).trim().toLowerCase();
           const subName = s.subject_name.trim().toLowerCase();
           return decoded === subName;
-        })
+        }),
       );
 
       if (foundSub) {
@@ -285,7 +285,7 @@ export default function TeacherViewPageFull() {
             c.name
               .trim()
               .toLowerCase()
-              .replace(/class\s+/i, "") === urlName
+              .replace(/class\s+/i, "") === urlName,
         );
         if (found) finalClassId = found.id;
       }
@@ -311,7 +311,7 @@ export default function TeacherViewPageFull() {
             if (!isNaN(val)) return parseInt(val);
             // Try map name
             const foundJob = teacherjobRole?.find(
-              (r) => r.teacher_job_name.toLowerCase() === val.toLowerCase()
+              (r) => r.teacher_job_name.toLowerCase() === val.toLowerCase(),
             );
             return foundJob;
           })
@@ -329,11 +329,11 @@ export default function TeacherViewPageFull() {
       if (!finalClassId) {
         if (prefilledFilters.class_category?.length > 0) {
           setSubmitError(
-            `Class Category '${prefilledFilters.class_category[0]}' not found. Please select from the dropdown.`
+            `Class Category '${prefilledFilters.class_category[0]}' not found. Please select from the dropdown.`,
           );
         } else {
           setSubmitError(
-            "Could not determine Class Category. Please check filters."
+            "Could not determine Class Category. Please check filters.",
           );
         }
         setModalLoading(false);
@@ -342,7 +342,7 @@ export default function TeacherViewPageFull() {
       if (!finalSubjectId) {
         if (prefilledFilters.subject?.length > 0) {
           setSubmitError(
-            `Subject '${prefilledFilters.subject[0]}' not found. Please check for typos or select from the dropdown.`
+            `Subject '${prefilledFilters.subject[0]}' not found. Please check for typos or select from the dropdown.`,
           );
         } else {
           setSubmitError("Could not determine Subject. Please check filters.");
@@ -363,7 +363,7 @@ export default function TeacherViewPageFull() {
     } catch (err) {
       console.error(err);
       setSubmitError(
-        `Failed to request teacher: ${err?.message || "Unknown error"}`
+        `Failed to request teacher: ${err?.message || "Unknown error"}`,
       );
     } finally {
       setModalLoading(false);
@@ -421,7 +421,7 @@ export default function TeacherViewPageFull() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Profile Header Hero */}
         {/* Profile Header Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+        <section className="bg-white rounded  shadow-sm border border-slate-100 relative overflow-hidden group">
           <div className="px-6 pb-6 sm:px-8  relative">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar Column */}
@@ -788,7 +788,7 @@ export default function TeacherViewPageFull() {
                               <span className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-md border border-teal-100">
                                 {calculateDuration(
                                   exp.start_date,
-                                  exp.end_date
+                                  exp.end_date,
                                 )}
                               </span>
                             </div>
@@ -845,7 +845,7 @@ export default function TeacherViewPageFull() {
                           // Nested Structure (ExamResult -> Interviews)
                           interview =
                             a.interviews.find(
-                              (i) => i.status === "fulfilled"
+                              (i) => i.status === "fulfilled",
                             ) || a.interviews[0];
                           title = a.exam?.name || a.exam_name || "Assessment";
                           date = interview.created_at || a.created_at;
@@ -924,7 +924,7 @@ export default function TeacherViewPageFull() {
                       (a) =>
                         (a.interviews &&
                           a.interviews.some((i) => i.status === "fulfilled")) ||
-                        (a.status === "fulfilled" && a.grade !== undefined)
+                        (a.status === "fulfilled" && a.grade !== undefined),
                     ).length === 0 && (
                       <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
                         <FaStar className="mx-auto text-4xl text-slate-200 mb-3" />
@@ -981,7 +981,7 @@ export default function TeacherViewPageFull() {
       {/* Request Modal - Cleaned up */}
       {openRequestModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all scale-100">
+          <div className="bg-white rounded  max-w-md w-full overflow-hidden shadow-2xl transform transition-all scale-100">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h3 className="font-bold text-lg text-slate-800">
                 Request Interview
@@ -1035,7 +1035,7 @@ export default function TeacherViewPageFull() {
                         {/* Job Types */}
                         {prefilledFilters.job_type?.map((id) => {
                           const role = teacherjobRole?.find(
-                            (r) => r.id.toString() === id.toString()
+                            (r) => r.id.toString() === id.toString(),
                           );
                           return role ? (
                             <span
@@ -1061,10 +1061,10 @@ export default function TeacherViewPageFull() {
                               ? globalClassCategories?.find(
                                   (c) =>
                                     c.id.toString() ===
-                                    selectedClassCategory.toString()
+                                    selectedClassCategory.toString(),
                                 )?.name
                               : decodeURIComponent(
-                                  prefilledFilters.class_category[0]
+                                  prefilledFilters.class_category[0],
                                 )}
                           </span>
                         )}
@@ -1082,7 +1082,7 @@ export default function TeacherViewPageFull() {
                                   .find(
                                     (s) =>
                                       s.id.toString() ===
-                                      selectedSubject.toString()
+                                      selectedSubject.toString(),
                                   )?.subject_name
                               : decodeURIComponent(prefilledFilters.subject[0])}
                           </span>

@@ -178,7 +178,7 @@ const ManageBackup = () => {
             ].map((stat, i) => (
               <div
                 key={i}
-                className={`p-5 rounded-2xl border border-white shadow-sm flex items-center gap-4 ${stat.bg}`}
+                className={`p-5 rounded  border border-white shadow-sm flex items-center gap-4 ${stat.bg}`}
               >
                 <div className="bg-white p-3 rounded-xl shadow-sm text-xl">
                   {stat.icon}
@@ -196,7 +196,7 @@ const ManageBackup = () => {
           </div>
 
           {/* Info Alert */}
-          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 flex gap-3 mb-8">
+          <div className="bg-teal-50 border border-teal-100 rounded  p-4 flex gap-3 mb-8">
             <FiInfo className="text-teal-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-teal-800 leading-relaxed font-medium">
               System backups are automatically scheduled every{" "}
@@ -328,7 +328,7 @@ const ManageBackup = () => {
                 Advanced Recovery
               </h4>
             </div>
-            <div className="bg-white rounded-2xl border-2 border-red-50 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-red-100">
+            <div className="bg-white rounded  border-2 border-red-50 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-red-100">
               <div>
                 <p className="font-bold text-gray-900">
                   Immediate Disaster Recovery

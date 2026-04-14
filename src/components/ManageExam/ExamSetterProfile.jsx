@@ -77,7 +77,7 @@ const ExamSetterProfile = () => {
           {/* Left Column - Personal Info */}
           <div className="lg:col-span-1 space-y-6">
             {/* Contact Information */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-teal-500">
+            <div className="bg-white rounded  shadow-lg p-6 border-l-4 border-teal-500">
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <FiMail className="w-5 h-5 text-teal-600 mr-2" />
                 Contact Information
@@ -98,7 +98,7 @@ const ExamSetterProfile = () => {
             </div>
 
             {/* Status Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500">
+            <div className="bg-white rounded  shadow-lg p-6 border-l-4 border-green-500">
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <FiAward className="w-5 h-5 text-green-600 mr-2" />
                 Status
@@ -119,7 +119,7 @@ const ExamSetterProfile = () => {
           {/* Right Column - Academic Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Class Categories */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded  shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                 <IoSchoolOutline className="w-6 h-6 text-teal-600 mr-3" />
                 Class Categories
@@ -170,7 +170,7 @@ const ExamSetterProfile = () => {
         </div>
 
         {/* Footer Stats */}
-        <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+        <div className="mt-8 bg-white rounded  shadow-lg p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">

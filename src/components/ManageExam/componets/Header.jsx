@@ -1,13 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiLogOut, FiChevronDown, FiBell, FiUser, FiSettings } from 'react-icons/fi';
-import { handleLogout } from '../../../services/authUtils';
-import { getSetterInfo } from '../../../features/examQuesSlice';
+import { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FiLogOut,
+  FiChevronDown,
+  FiBell,
+  FiUser,
+  FiSettings,
+} from "react-icons/fi";
+import { handleLogout } from "../../../services/authUtils";
+import { getSetterInfo } from "../../../features/examQuesSlice";
 
 const Header = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(3); // Example notification count
   const dropdownRef = useRef(null);
@@ -21,8 +27,8 @@ const Header = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (!user) return null;
@@ -44,7 +50,9 @@ const Header = () => {
                 <span className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                   PTP INSTITUTE
                 </span>
-                <div className="text-xs text-gray-500 font-medium">Learning Excellence</div>
+                <div className="text-xs text-gray-500 font-medium">
+                  Learning Excellence
+                </div>
               </div>
             </Link>
           </div>
@@ -73,7 +81,8 @@ const Header = () => {
                 <div className="flex-shrink-0 relative">
                   <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
                     <span className="text-white font-semibold text-sm">
-                      {user.Fname[0]}{user.Lname[0]}
+                      {user.Fname[0]}
+                      {user.Lname[0]}
                     </span>
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
@@ -87,18 +96,21 @@ const Header = () => {
                     Subject Expert
                   </div>
                 </div>
-                <FiChevronDown className={`w-4 h-4 text-gray-500 transition-all duration-300 ${dropdownOpen ? 'transform rotate-180 text-teal-600' : ''}`} />
+                <FiChevronDown
+                  className={`w-4 h-4 text-gray-500 transition-all duration-300 ${dropdownOpen ? "transform rotate-180 text-teal-600" : ""}`}
+                />
               </button>
 
               {/* Enhanced Dropdown Menu */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-3 w-64 bg-white backdrop-blur-md rounded-2xl shadow-xl py-2 border border-gray-200/50 animate-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-64 bg-white backdrop-blur-md rounded  shadow-xl py-2 border border-gray-200/50 animate-in slide-in-from-top-2 duration-200">
                   {/* User Info Section */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
                       <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center">
                         <span className="text-white font-semibold">
-                          {user.Fname[0]}{user.Lname[0]}
+                          {user.Fname[0]}
+                          {user.Lname[0]}
                         </span>
                       </div>
                       <div>
@@ -111,7 +123,7 @@ const Header = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Menu Items */}
                   <div className="py-1">
                     <Link
@@ -124,12 +136,11 @@ const Header = () => {
                       </div>
                       <span className="font-medium">View Profile</span>
                     </Link>
-                    
                   </div>
 
                   {/* Divider */}
                   <div className="border-t border-gray-100 my-1"></div>
-                  
+
                   {/* Logout Button */}
                   <button
                     onClick={() => handleLogout(dispatch, navigate)}

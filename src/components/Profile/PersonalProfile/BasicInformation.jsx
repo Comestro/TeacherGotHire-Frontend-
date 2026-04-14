@@ -4,7 +4,14 @@ import { updateBasicProfile } from "../../../services/profileServices";
 import { getBasic } from "../../../features/personalProfileSlice";
 import { getUserData } from "../../../features/authSlice";
 import Loader from "../../Loader";
-import { HiOutlineUser, HiOutlinePencilAlt, HiOutlineCheck, HiOutlineX, HiChevronDown, HiCamera } from "react-icons/hi";
+import {
+  HiOutlineUser,
+  HiOutlinePencilAlt,
+  HiOutlineCheck,
+  HiOutlineX,
+  HiChevronDown,
+  HiCamera,
+} from "react-icons/hi";
 import ErrorMessage from "../../ErrorMessage";
 const hiLabels = {
   "Profile Picture": "प्रोफ़ाइल चित्र",
@@ -13,20 +20,20 @@ const hiLabels = {
   "Email Address": "ईमेल पता",
   "Contact No": "संपर्क नंबर",
   "Languages you can speek": "भाषाएँ जो आप बोल सकते हैं",
-  "Gender": "लिंग",
+  Gender: "लिंग",
   "Marital Status": "वैवाहिक स्थिति",
-  "Religion": "धर्म",
+  Religion: "धर्म",
   "Edit Profile": "प्रोफ़ाइल संपादित करें",
   "Save Changes": "परिवर्तन सहेजें",
-  "Cancel": "रद्द करें",
-  "Male": "पुरुष",
-  "Female": "महिला",
-  "Other": "अन्य",
-  "Unmarried": "अविवाहित",
-  "Married": "विवाहित",
+  Cancel: "रद्द करें",
+  Male: "पुरुष",
+  Female: "महिला",
+  Other: "अन्य",
+  Unmarried: "अविवाहित",
+  Married: "विवाहित",
   "Not Disclosed": "नहीं दिखाई देना",
-  "English": "अंग्रेज़ी",
-  "Hindi": "हिंदी",
+  English: "अंग्रेज़ी",
+  Hindi: "हिंदी",
 };
 
 const bi = (en) => (hiLabels[en] ? `${en} / ${hiLabels[en]}` : en);
@@ -37,7 +44,10 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -45,7 +55,13 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedValues = Array.isArray(value) ? value : (value ? String(value).split(',').map(v => v.trim()) : []);
+  const selectedValues = Array.isArray(value)
+    ? value
+    : value
+      ? String(value)
+          .split(",")
+          .map((v) => v.trim())
+      : [];
 
   const handleSelect = (optionValue) => {
     if (!selectedValues.includes(optionValue)) {
@@ -65,19 +81,21 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
     <div className="relative w-full" ref={containerRef}>
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`min-h-[42px] border rounded-lg px-3 py-2 flex flex-wrap gap-2 items-center transition-all ${disabled
-          ? "bg-slate-50 border-slate-200 cursor-default"
-          : "bg-white border-slate-300 cursor-pointer hover:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20"
-          }`}
+        className={`min-h-[42px] border rounded-lg px-3 py-2 flex flex-wrap gap-2 items-center transition-all ${
+          disabled
+            ? "bg-slate-50 border-slate-200 cursor-default"
+            : "bg-white border-slate-300 cursor-pointer hover:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20"
+        }`}
       >
         {selectedValues.length > 0 ? (
           selectedValues.map((val) => (
             <span
               key={val}
-              className={`text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border ${disabled
-                ? "bg-slate-200 text-slate-600 border-slate-300"
-                : "bg-teal-50 text-teal-700 border-teal-100"
-                }`}
+              className={`text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1 border ${
+                disabled
+                  ? "bg-slate-200 text-slate-600 border-slate-300"
+                  : "bg-teal-50 text-teal-700 border-teal-100"
+              }`}
             >
               {val}
               {!disabled && (
@@ -95,7 +113,9 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
         )}
         {!disabled && (
           <div className="ml-auto text-slate-400">
-            <HiChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <HiChevronDown
+              className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            />
           </div>
         )}
       </div>
@@ -113,7 +133,8 @@ const MultiSelect = ({ options, value, onChange, disabled }) => {
                 {bi(option.label)}
               </div>
             ))}
-          {options.filter((opt) => !selectedValues.includes(opt.value)).length === 0 && (
+          {options.filter((opt) => !selectedValues.includes(opt.value))
+            .length === 0 && (
             <div className="px-3 py-2 text-sm text-slate-400 italic">
               No more options
             </div>
@@ -184,18 +205,20 @@ const BasicInformation = () => {
       if (Array.isArray(parsed)) return parsed;
       return [String(parsed)];
     } catch (e) {
-      return String(val).split(',').map(v => v.trim());
+      return String(val)
+        .split(",")
+        .map((v) => v.trim());
     }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, profile_picture: file }));
+      setFormData((prev) => ({ ...prev, profile_picture: file }));
       setPreviewImage(URL.createObjectURL(file));
     }
   };
@@ -205,7 +228,9 @@ const BasicInformation = () => {
     setGeneralError(null);
     setSuccessMessage(null);
     if (formData.phone_number && String(formData.phone_number).length !== 10) {
-      setGeneralError("Please enter a valid 10-digit phone number / कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें");
+      setGeneralError(
+        "Please enter a valid 10-digit phone number / कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें",
+      );
       setLoading(false);
       return;
     }
@@ -230,10 +255,14 @@ const BasicInformation = () => {
       await dispatch(getBasic());
       await dispatch(getUserData());
 
-      setSuccessMessage("Profile updated successfully! / प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!");
+      setSuccessMessage(
+        "Profile updated successfully! / प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!",
+      );
       setIsEditing(false);
     } catch (error) {
-      const msg = error.response?.data?.message || "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।";
+      const msg =
+        error.response?.data?.message ||
+        "An error occurred. Please try again. / कोई त्रुटि हुई। कृपया पुनः प्रयास करें।";
       setGeneralError(msg);
     } finally {
       setLoading(false);
@@ -258,7 +287,7 @@ const BasicInformation = () => {
   if (!dataLoaded) return <Loader />;
 
   return (
-    <div className="w-full mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="w-full mx-auto bg-white rounded  shadow-sm border border-slate-200 overflow-hidden">
       {loading && <Loader />}
 
       {/* Header */}
@@ -268,8 +297,12 @@ const BasicInformation = () => {
             <HiOutlineUser className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-800">{bi("Basic Information")}</h2>
-            <p className="text-slate-500 text-xs">Manage your personal details</p>
+            <h2 className="text-lg font-bold text-slate-800">
+              {bi("Basic Information")}
+            </h2>
+            <p className="text-slate-500 text-xs">
+              Manage your personal details
+            </p>
           </div>
         </div>
 
@@ -340,10 +373,11 @@ const BasicInformation = () => {
                 value={formData.Fname}
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("Fname", e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
-                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
-                  }`}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
                 placeholder="Enter your full name"
               />
             </div>
@@ -357,11 +391,17 @@ const BasicInformation = () => {
                 type="tel"
                 value={formData.phone_number}
                 disabled={!isEditing}
-                onChange={(e) => handleInputChange("phone_number", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${isEditing
-                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
-                  }`}
+                onChange={(e) =>
+                  handleInputChange(
+                    "phone_number",
+                    e.target.value.replace(/\D/g, "").slice(0, 10),
+                  )
+                }
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
                 placeholder="10-digit mobile number"
               />
             </div>
@@ -388,10 +428,11 @@ const BasicInformation = () => {
                 value={formData.gender}
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("gender", e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
-                  }`}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
               >
                 <option value="">Select Gender</option>
                 <option value="male">{bi("Male")}</option>
@@ -408,11 +449,14 @@ const BasicInformation = () => {
               <select
                 value={formData.marital_status}
                 disabled={!isEditing}
-                onChange={(e) => handleInputChange("marital_status", e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
-                  }`}
+                onChange={(e) =>
+                  handleInputChange("marital_status", e.target.value)
+                }
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
               >
                 <option value="">Select Status</option>
                 <option value="unmarried">{bi("Unmarried")}</option>
@@ -429,10 +473,11 @@ const BasicInformation = () => {
                 value={formData.religion}
                 disabled={!isEditing}
                 onChange={(e) => handleInputChange("religion", e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${isEditing
-                  ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
-                  }`}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all appearance-none ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
               >
                 <option value="">Select Religion</option>
                 <option value="Hindu">Hindu</option>
@@ -447,16 +492,20 @@ const BasicInformation = () => {
             {/* Languages */}
             <div className="col-span-1 md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                {bi("Languages you can speek")} 
+                {bi("Languages you can speek")}
               </label>
-              
+
               {!isEditing ? (
                 <div className="flex flex-wrap gap-2">
                   {(() => {
-                    const selectedValues = Array.isArray(formData.language) 
-                      ? formData.language 
-                      : (formData.language ? String(formData.language).split(',').map(v => v.trim()) : []);
-                    
+                    const selectedValues = Array.isArray(formData.language)
+                      ? formData.language
+                      : formData.language
+                        ? String(formData.language)
+                            .split(",")
+                            .map((v) => v.trim())
+                        : [];
+
                     return selectedValues.length > 0 ? (
                       selectedValues.map((lang) => (
                         <span
@@ -467,7 +516,9 @@ const BasicInformation = () => {
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-slate-400 italic">No languages selected</span>
+                      <span className="text-sm text-slate-400 italic">
+                        No languages selected
+                      </span>
                     );
                   })()}
                 </div>
@@ -482,18 +533,22 @@ const BasicInformation = () => {
                     { value: "Urdu", label: "Urdu" },
                     { value: "Other", label: "Other" },
                   ].map((lang) => {
-                    const selectedValues = Array.isArray(formData.language) 
-                      ? formData.language 
-                      : (formData.language ? String(formData.language).split(',').map(v => v.trim()) : []);
+                    const selectedValues = Array.isArray(formData.language)
+                      ? formData.language
+                      : formData.language
+                        ? String(formData.language)
+                            .split(",")
+                            .map((v) => v.trim())
+                        : [];
                     const isChecked = selectedValues.includes(lang.value);
-                    
+
                     return (
                       <label
                         key={lang.value}
                         className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                           isChecked
-                            ? 'border-teal-500 bg-teal-50'
-                            : 'border-slate-200 hover:border-teal-300 bg-white'
+                            ? "border-teal-500 bg-teal-50"
+                            : "border-slate-200 hover:border-teal-300 bg-white"
                         }`}
                       >
                         <input
@@ -501,14 +556,22 @@ const BasicInformation = () => {
                           checked={isChecked}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              handleInputChange("language", [...selectedValues, lang.value]);
+                              handleInputChange("language", [
+                                ...selectedValues,
+                                lang.value,
+                              ]);
                             } else {
-                              handleInputChange("language", selectedValues.filter(v => v !== lang.value));
+                              handleInputChange(
+                                "language",
+                                selectedValues.filter((v) => v !== lang.value),
+                              );
                             }
                           }}
                           className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-2 focus:ring-teal-500"
                         />
-                        <span className={`text-sm font-medium ${isChecked ? 'text-teal-700' : 'text-slate-700'}`}>
+                        <span
+                          className={`text-sm font-medium ${isChecked ? "text-teal-700" : "text-slate-700"}`}
+                        >
                           {bi(lang.label)}
                         </span>
                       </label>

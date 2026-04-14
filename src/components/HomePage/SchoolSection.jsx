@@ -18,7 +18,7 @@ const SchoolSection = ({ onSelectRole }) => {
                 <img
                   src="https://img.freepik.com/premium-vector/teacher-teaching-classroom-vector-illustration_1253202-25002.jpg?ga=GA1.1.1207010740.1728043749&semt=ais_hybrid"
                   alt="Classroom"
-                  className="relative z-10 w-full h-full object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500 rounded-2xl"
+                  className="relative z-10 w-full h-full object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500 rounded "
                 />
               </div>
             </div>
