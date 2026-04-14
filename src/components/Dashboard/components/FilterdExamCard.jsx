@@ -38,7 +38,7 @@ import MissingSubjectModal from "./MissingSubjectModal";
 
 import { forwardRef, useImperativeHandle } from "react";
 
-const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
+const FilterdExamCard = forwardRef(({ onExamDataChange, passkeyStatus }, ref) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { prefrence } = useSelector((state) => state.jobProfile);
@@ -1026,9 +1026,13 @@ const FilterdExamCard = forwardRef(({ onExamDataChange }, ref) => {
                                   ) : (
                                     <button
                                       onClick={() => handleLevelSelect(level)}
-                                      className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm"
+                                      className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                                        passkeyStatus?.status === 'requested' 
+                                          ? "bg-teal-600 hover:bg-teal-700 text-white" 
+                                          : "bg-purple-600 hover:bg-purple-700 text-white"
+                                      }`}
                                     >
-                                      Select Center
+                                      {passkeyStatus?.status === 'requested' ? "View Assigned Center" : "Select Center"}
                                     </button>
                                   )}
                                 </div>
