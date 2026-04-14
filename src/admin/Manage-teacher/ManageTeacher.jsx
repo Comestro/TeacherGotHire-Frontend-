@@ -634,6 +634,18 @@ const ManageTeacher = () => {
                           {subjects}
                         </p>
                       </div>
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
+                          Joined
+                        </p>
+                        <p className="text-gray-700 font-medium truncate">
+                          {t.date ? new Date(t.date).toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          }) : "—"}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -672,6 +684,7 @@ const ManageTeacher = () => {
                       <th className="px-4 py-3">Class Categories</th>
                       <th className="px-4 py-3">Subjects</th>
                       <th className="px-4 py-3">Location</th>
+                      <th className="px-4 py-3">Joined Date</th>
                       <th className="px-4 py-3 text-center">Status</th>
                       <th className="px-4 py-3 text-right">Actions</th>
                     </tr>
@@ -693,11 +706,17 @@ const ManageTeacher = () => {
                       const categories = catNames.filter(Boolean).join(", ") || "—";
                       const qualifications =
                         (t.teacherqualifications || [])
-                          .map((q) => q?.qualification?.name)
-                          .filter(Boolean)
-                          .join(", ") ||
+                           .map((q) => q?.qualification?.name)
+                           .filter(Boolean)
+                           .join(", ") ||
                         latestEducation?.qualification?.name ||
                         "—";
+                      
+                      const joinDate = t.date ? new Date(t.date).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      }) : "—";
 
                       return (
                         <tr
@@ -761,6 +780,11 @@ const ManageTeacher = () => {
                               )}
                             </div>
                           </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm text-gray-700">
+                              {joinDate}
+                            </div>
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
@@ -773,7 +797,7 @@ const ManageTeacher = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-2 group-hover:opacity-100 transition-opacity">
                               <Link
                                 to={`/admin/view/teacher/${t.id}`}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 ring-1 ring-inset ring-indigo-100 transition-all"

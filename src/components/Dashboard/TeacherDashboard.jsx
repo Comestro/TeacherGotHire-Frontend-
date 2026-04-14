@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -263,34 +263,32 @@ function TeacherDashboard() {
                 {/* Assigned Exam Center Info */}
                 {passkeyStatus?.passkey && passkeyStatus?.center && passkeyStatus?.status === 'requested' && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm"
+                    className="mb-6 rounded-lg bg-white border border-slate-100"
                   >
-                    <div className="bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="flex items-center gap-2 text-lg font-bold text-white">
-                          <FaBuilding /> Assigned Exam Center / आवंटित परीक्षा केंद्र
-                        </h3>
-                        <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                          Verification Pending
-                        </span>
-                      </div>
+                    <div className="bg-slate-50 border-b border-slate-100 px-5 py-3 flex items-center justify-between">
+                      <h3 className="flex items-center gap-2 text-base font-semibold text-slate-800">
+                        <FaBuilding className="text-teal-600" /> Assigned Exam Center / आवंटित परीक्षा केंद्र
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-teal-100 text-teal-700">
+                        Pending Verification
+                      </span>
                     </div>
-                    <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div className="p-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Center Name</p>
-                            <h4 className="text-xl font-bold text-slate-800">{passkeyStatus.center.name}</h4>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Center Details</p>
+                            <h4 className="text-lg font-bold text-slate-800">{passkeyStatus.center.name}</h4>
                           </div>
-                          <div className="flex items-start gap-3">
-                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-teal-600 shrink-0">
-                              <FaMapMarkerAlt />
-                            </div>
+
+                          <div className="flex gap-3">
+                            <FaMapMarkerAlt className="mt-1 text-slate-400 shrink-0" />
                             <div>
-                              <p className="text-xs font-medium text-slate-400">Address / पता</p>
-                              <p className="text-slate-600 text-sm leading-relaxed">
+                              <p className="text-xs font-semibold text-slate-500 mb-0.5">Address / पता</p>
+                              <p className="text-slate-600 text-sm">
                                 {passkeyStatus.center.area && `${passkeyStatus.center.area}, `}
                                 {passkeyStatus.center.city}, {passkeyStatus.center.state} - {passkeyStatus.center.pincode}
                               </p>
@@ -299,42 +297,36 @@ function TeacherDashboard() {
                         </div>
 
                         <div className="space-y-4">
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-colors">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-teal-500 shadow-sm">
-                                <FaPhoneAlt />
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Contact Information</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-50 text-teal-600">
+                                <FaPhoneAlt size={14} />
                               </div>
-                              <div>
-                                <p className="text-xs font-medium text-slate-400">Contact Number</p>
-                                <a href={`tel:${passkeyStatus.center.phone}`} className="text-lg font-bold text-slate-800 hover:text-teal-600 transition-colors">
-                                  {passkeyStatus.center.phone}
-                                </a>
-                              </div>
+                              <a href={`tel:${passkeyStatus.center.phone}`} className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">
+                                {passkeyStatus.center.phone}
+                              </a>
                             </div>
 
                             {passkeyStatus.center.alt_phone && (
-                              <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-colors">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-500 shadow-sm">
-                                  <FaPhoneAlt />
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-50 text-slate-600">
+                                  <FaPhoneAlt size={14} />
                                 </div>
-                                <div>
-                                  <p className="text-xs font-medium text-slate-400">Alternate Number</p>
-                                  <a href={`tel:${passkeyStatus.center.alt_phone}`} className="text-lg font-bold text-slate-800 hover:text-emerald-600 transition-colors">
-                                    {passkeyStatus.center.alt_phone}
-                                  </a>
-                                </div>
+                                <a href={`tel:${passkeyStatus.center.alt_phone}`} className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">
+                                  {passkeyStatus.center.alt_phone}
+                                </a>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-6 flex items-start gap-3 rounded-xl bg-amber-50 p-4 border border-amber-100">
-                        <FaExclamationTriangle className="mt-1 text-amber-500 shrink-0" />
-                        <div>
-                          <p className="text-sm font-semibold text-amber-800">Reach out to the center</p>
-                          <p className="text-xs text-amber-700 mt-1">
-                            Please contact the center manager at the number provided above to collect your examination passkey and schedule your verification slot.
+                      <div className="mt-5 pt-4 border-t border-slate-50">
+                        <div className="flex items-start gap-2 text-slate-500">
+                          <FaExclamationTriangle className="mt-0.5 text-amber-500 shrink-0" size={12} />
+                          <p className="text-xs leading-relaxed">
+                            <span className="font-bold text-slate-700">Next Step:</span> Please contact the center manager to collect your examination passkey and schedule your verification slot.
                           </p>
                         </div>
                       </div>
