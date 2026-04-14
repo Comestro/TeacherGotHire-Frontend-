@@ -105,11 +105,16 @@ const ManageTeacher = () => {
     })();
   }, [dispatch]);
   useEffect(() => {
+    let rawList = [];
     if (teacherData?.results && Array.isArray(teacherData.results)) {
-      setTeachers(teacherData.results.map((item) => item.teacher));
+      rawList = teacherData.results;
     } else if (Array.isArray(teacherData)) {
-      setTeachers(teacherData);
+      rawList = teacherData;
     }
+    
+    // Normalize: some API versions wrap in 'teacher', others don't
+    const normalized = rawList.map(item => item.teacher ? { ...item.teacher, ...item, teacher: undefined } : item);
+    setTeachers(normalized);
   }, [teacherData]);
   useEffect(() => {
     const timer = setTimeout(() => {
