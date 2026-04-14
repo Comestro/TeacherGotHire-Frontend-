@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import {
   Box,
   Typography,
@@ -28,7 +34,7 @@ import {
   Stack,
   TablePagination,
   alpha,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -38,15 +44,18 @@ import {
   Notes as NotesIcon,
   Visibility as VisibilityIcon,
   Replay as ReplayIcon,
-  GetApp as GetAppIcon
-} from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
-import Layout from '../Admin/Layout';
+  GetApp as GetAppIcon,
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import Layout from "../Admin/Layout";
 import DataLoader from "../../components/DataLoader";
-import { getRecruiterEnquiry, updateRecruiterEnquiry } from '../../services/adminRecruiterEnquiryApi';
-import dayjs from 'dayjs';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import {
+  getRecruiterEnquiry,
+  updateRecruiterEnquiry,
+} from "../../services/adminRecruiterEnquiryApi";
+import dayjs from "dayjs";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /**
  * ManageRecruiterEnquiry — redesigned, responsive admin UI
@@ -59,12 +68,13 @@ import 'react-toastify/dist/ReactToastify.css';
  */
 
 const STATUS_COLORS = {
-  Pending: 'warning.main',
-  Approved: 'success.main',
-  Rejected: 'error.main',
+  Pending: "warning.main",
+  Approved: "success.main",
+  Rejected: "error.main",
 };
 
-const safe = (v, fallback = '—') => (v === null || v === undefined || v === '' ? fallback : v);
+const safe = (v, fallback = "—") =>
+  v === null || v === undefined || v === "" ? fallback : v;
 
 const useDebouncedValue = (value, delay = 250) => {
   const [debounced, setDebounced] = useState(value);
@@ -81,27 +91,27 @@ const useDebouncedValue = (value, delay = 250) => {
 
 export default function ManageRecruiterEnquiry() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState(null);
-  const [sortOption, setSortOption] = useState('newest');
+  const [sortOption, setSortOption] = useState("newest");
   const [filters, setFilters] = useState({
-    teacherType: '',
-    state: '',
+    teacherType: "",
+    state: "",
     status: [],
   });
 
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReason, setRejectReason] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [adminNote, setAdminNote] = useState('');
+  const [adminNote, setAdminNote] = useState("");
 
   const [pageModel, setPageModel] = useState({ page: 0, pageSize: 10 });
   useEffect(() => {
@@ -114,20 +124,27 @@ export default function ManageRecruiterEnquiry() {
         const transformed = Array.isArray(resp)
           ? resp.map((item) => ({
               id: item.id,
-              recruiterName: safe(item.user.Fname + " " + item.user.Lname, 'Unknown'),
-              email: safe(item.email, ''),
-              contactNumber: safe(item.contact, ''),
-              subjects: Array.isArray(item.subject) ? item.subject.map((s) => s.subject_name) : [],
-              teacherType: safe(item.teachertype, ''),
+              recruiterName: safe(
+                item.user.Fname + " " + item.user.Lname,
+                "Unknown",
+              ),
+              email: safe(item.email, ""),
+              contactNumber: safe(item.contact, ""),
+              subjects: Array.isArray(item.subject)
+                ? item.subject.map((s) => s.subject_name)
+                : [],
+              teacherType: safe(item.teachertype, ""),
               location: {
-                city: safe(item.city, ''),
-                state: safe(item.state, ''),
-                area: safe(item.area, ''),
-                pincode: safe(item.pincode, ''),
+                city: safe(item.city, ""),
+                state: safe(item.state, ""),
+                area: safe(item.area, ""),
+                pincode: safe(item.pincode, ""),
               },
-              status: 'Pending',
-              createdAt: item.created_at ? item.created_at : new Date().toISOString(),
-              adminNotes: item.adminNotes || '',
+              status: "Pending",
+              createdAt: item.created_at
+                ? item.created_at
+                : new Date().toISOString(),
+              adminNotes: item.adminNotes || "",
               raw: item,
             }))
           : [];
@@ -136,17 +153,19 @@ export default function ManageRecruiterEnquiry() {
         setFilteredInquiries(transformed);
       } catch (err) {
         if (!mounted) return;
-        setError('Failed to load inquiries');
+        setError("Failed to load inquiries");
       } finally {
         if (mounted) setLoading(false);
       }
     };
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
   useEffect(() => {
     let out = [...inquiries];
-    const q = (debouncedSearch || '').trim().toLowerCase();
+    const q = (debouncedSearch || "").trim().toLowerCase();
     if (q) {
       out = out.filter((it) => {
         const hay = [
@@ -157,7 +176,9 @@ export default function ManageRecruiterEnquiry() {
           it.location.city,
           it.location.state,
           ...(it.subjects || []),
-        ].join(' ').toLowerCase();
+        ]
+          .join(" ")
+          .toLowerCase();
         return hay.includes(q);
       });
     }
@@ -173,7 +194,7 @@ export default function ManageRecruiterEnquiry() {
     out.sort((a, b) => {
       const da = new Date(a.createdAt).getTime();
       const db = new Date(b.createdAt).getTime();
-      return sortOption === 'newest' ? db - da : da - db;
+      return sortOption === "newest" ? db - da : da - db;
     });
 
     setFilteredInquiries(out);
@@ -192,8 +213,11 @@ export default function ManageRecruiterEnquiry() {
   const handleApprove = async (id) => {
     try {
       await updateRecruiterEnquiry(id, { status: "Approved" });
-      setInquiries((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'Approved' } : it)));
-      if (selectedInquiry?.id === id) setSelectedInquiry((s) => ({ ...s, status: 'Approved' }));
+      setInquiries((prev) =>
+        prev.map((it) => (it.id === id ? { ...it, status: "Approved" } : it)),
+      );
+      if (selectedInquiry?.id === id)
+        setSelectedInquiry((s) => ({ ...s, status: "Approved" }));
       toast.success("Enquiry approved successfully");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to approve enquiry");
@@ -202,24 +226,32 @@ export default function ManageRecruiterEnquiry() {
 
   const handleOpenRejectModal = (row) => {
     setSelectedInquiry(row);
-    setRejectReason('');
+    setRejectReason("");
     setIsRejectModalOpen(true);
   };
 
   const handleRejectConfirm = async () => {
     if (!selectedInquiry) return;
     try {
-      const updatedNotes = (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + '\n' : '') + `Rejected: ${rejectReason}`;
-      await updateRecruiterEnquiry(selectedInquiry.id, { 
-        status: 'Rejected',
-        adminNotes: updatedNotes
+      const updatedNotes =
+        (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + "\n" : "") +
+        `Rejected: ${rejectReason}`;
+      await updateRecruiterEnquiry(selectedInquiry.id, {
+        status: "Rejected",
+        adminNotes: updatedNotes,
       });
-      setInquiries((prev) => prev.map((it) =>
-        it.id === selectedInquiry.id ? { ...it, status: 'Rejected', adminNotes: updatedNotes } : it
-      ));
-      setSelectedInquiry((s) => s ? { ...s, status: 'Rejected', adminNotes: updatedNotes } : s);
+      setInquiries((prev) =>
+        prev.map((it) =>
+          it.id === selectedInquiry.id
+            ? { ...it, status: "Rejected", adminNotes: updatedNotes }
+            : it,
+        ),
+      );
+      setSelectedInquiry((s) =>
+        s ? { ...s, status: "Rejected", adminNotes: updatedNotes } : s,
+      );
       setIsRejectModalOpen(false);
-      setRejectReason('');
+      setRejectReason("");
       toast.success("Enquiry rejected");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to reject enquiry");
@@ -229,12 +261,22 @@ export default function ManageRecruiterEnquiry() {
   const handleAddNote = async () => {
     if (!selectedInquiry || !adminNote.trim()) return;
     try {
-      const noteLine = `${dayjs().format('YYYY-MM-DD')}: ${adminNote.trim()}`;
-      const updatedNotes = (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + '\n' : '') + noteLine;
-      await updateRecruiterEnquiry(selectedInquiry.id, { adminNotes: updatedNotes });
-      setInquiries((prev) => prev.map((it) => it.id === selectedInquiry.id ? { ...it, adminNotes: updatedNotes } : it));
-      setSelectedInquiry((s) => s ? { ...s, adminNotes: updatedNotes } : s);
-      setAdminNote('');
+      const noteLine = `${dayjs().format("YYYY-MM-DD")}: ${adminNote.trim()}`;
+      const updatedNotes =
+        (selectedInquiry.adminNotes ? selectedInquiry.adminNotes + "\n" : "") +
+        noteLine;
+      await updateRecruiterEnquiry(selectedInquiry.id, {
+        adminNotes: updatedNotes,
+      });
+      setInquiries((prev) =>
+        prev.map((it) =>
+          it.id === selectedInquiry.id
+            ? { ...it, adminNotes: updatedNotes }
+            : it,
+        ),
+      );
+      setSelectedInquiry((s) => (s ? { ...s, adminNotes: updatedNotes } : s));
+      setAdminNote("");
       setIsNoteModalOpen(false);
       toast.success("Note added successfully");
     } catch (err) {
@@ -243,27 +285,39 @@ export default function ManageRecruiterEnquiry() {
   };
 
   const handleClearFilters = () => {
-    setFilters({ teacherType: '', state: '', status: [] });
-    setSearchTerm('');
+    setFilters({ teacherType: "", state: "", status: [] });
+    setSearchTerm("");
   };
 
   const exportCsv = () => {
-    const headers = ['Recruiter', 'Email', 'Contact', 'Subjects', 'Teacher Type', 'Location', 'Status', 'Applied'];
-    const rows = filteredInquiries.map((r) => [
-      `"${r.recruiterName.replace(/"/g, '""')}"`,
-      `"${r.email.replace(/"/g, '""')}"`,
-      `"${r.contactNumber.replace(/"/g, '""')}"`,
-      `"${(r.subjects || []).join('; ').replace(/"/g, '""')}"`,
-      `"${r.teacherType.replace(/"/g, '""')}"`,
-      `"${[r.location.area, r.location.city, r.location.state, r.location.pincode].filter(Boolean).join(', ').replace(/"/g, '""')}"`,
-      `"${r.status}"`,
-      `"${dayjs(r.createdAt).format('YYYY-MM-DD')}"`,
-    ].join(','));
-    const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const headers = [
+      "Recruiter",
+      "Email",
+      "Contact",
+      "Subjects",
+      "Teacher Type",
+      "Location",
+      "Status",
+      "Applied",
+    ];
+    const rows = filteredInquiries.map((r) =>
+      [
+        `"${r.recruiterName.replace(/"/g, '""')}"`,
+        `"${r.email.replace(/"/g, '""')}"`,
+        `"${r.contactNumber.replace(/"/g, '""')}"`,
+        `"${(r.subjects || []).join("; ").replace(/"/g, '""')}"`,
+        `"${r.teacherType.replace(/"/g, '""')}"`,
+        `"${[r.location.area, r.location.city, r.location.state, r.location.pincode].filter(Boolean).join(", ").replace(/"/g, '""')}"`,
+        `"${r.status}"`,
+        `"${dayjs(r.createdAt).format("YYYY-MM-DD")}"`,
+      ].join(","),
+    );
+    const csv =
+      "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
     const encoded = encodeURI(csv);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = encoded;
-    a.download = `recruiter_inquiries_${dayjs().format('YYYY-MM-DD')}.csv`;
+    a.download = `recruiter_inquiries_${dayjs().format("YYYY-MM-DD")}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -272,13 +326,24 @@ export default function ManageRecruiterEnquiry() {
   return (
     <Layout>
       <ToastContainer position="top-right" autoClose={3000} />
-      <Box sx={{ mb: 2,mt: { xs: 2, md: 0 } }}>
-        <Typography variant="h4" sx={{fontSize: { xs: '1.5rem', md: '2rem' }}} fontWeight={700}>Manage Recruiter Inquiries</Typography>
-        <Typography variant="body2" color="text.secondary">Review, filter and act on recruiter enquiries for teachers</Typography>
+      <Box sx={{ mb: 2, mt: { xs: 2, md: 0 } }}>
+        <Typography
+          variant="h4"
+          sx={{ fontSize: { xs: "1.5rem", md: "2rem" } }}
+          fontWeight={700}
+        >
+          Manage Recruiter Inquiries
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Review, filter and act on recruiter enquiries for teachers
+        </Typography>
       </Box>
       {/* Sticky filter bar */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3, position: 'sticky', top: 8, zIndex: 10 }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+      <Paper
+        elevation={2}
+        sx={{ p: 2, mb: 3, position: "sticky", top: 8, zIndex: 10 }}
+      >
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", mb: 1 }}>
           <TextField
             size="small"
             placeholder="Search by name, email, subject or location..."
@@ -286,25 +351,47 @@ export default function ManageRecruiterEnquiry() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             slotProps={{
-              input: { startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }
+              input: {
+                startAdornment: (
+                  <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+                ),
+              },
             }}
           />
 
           <Tooltip title="Refresh">
-            <IconButton onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); }, 600); }}><ReplayIcon /></IconButton>
+            <IconButton
+              onClick={() => {
+                setLoading(true);
+                setTimeout(() => {
+                  setLoading(false);
+                }, 600);
+              }}
+            >
+              <ReplayIcon />
+            </IconButton>
           </Tooltip>
 
           <Tooltip title="Export CSV">
-            <IconButton onClick={exportCsv}><GetAppIcon /></IconButton>
+            <IconButton onClick={exportCsv}>
+              <GetAppIcon />
+            </IconButton>
           </Tooltip>
 
-          <IconButton color={isFilterExpanded ? 'primary' : 'default'} onClick={() => setIsFilterExpanded((s) => !s)}>
+          <IconButton
+            color={isFilterExpanded ? "primary" : "default"}
+            onClick={() => setIsFilterExpanded((s) => !s)}
+          >
             <FilterListIcon />
           </IconButton>
 
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Sort</InputLabel>
-            <Select value={sortOption} label="Sort" onChange={(e) => setSortOption(e.target.value)}>
+            <Select
+              value={sortOption}
+              label="Sort"
+              onChange={(e) => setSortOption(e.target.value)}
+            >
               <MenuItem value="newest">Newest First</MenuItem>
               <MenuItem value="oldest">Oldest First</MenuItem>
             </Select>
@@ -319,12 +406,14 @@ export default function ManageRecruiterEnquiry() {
                 <Select
                   label="Teacher Type"
                   value={filters.teacherType}
-                  onChange={(e) => setFilters((f) => ({ ...f, teacherType: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((f) => ({ ...f, teacherType: e.target.value }))
+                  }
                 >
-                  <MenuItem value=''>All Types</MenuItem>
-                  <MenuItem value='School Teacher'>School Teacher</MenuItem>
-                  <MenuItem value='Tutor'>Tutor</MenuItem>
-                  <MenuItem value='Coaching Faculty'>Coaching Faculty</MenuItem>
+                  <MenuItem value="">All Types</MenuItem>
+                  <MenuItem value="School Teacher">School Teacher</MenuItem>
+                  <MenuItem value="Tutor">Tutor</MenuItem>
+                  <MenuItem value="Coaching Faculty">Coaching Faculty</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -335,153 +424,326 @@ export default function ManageRecruiterEnquiry() {
                 <Select
                   label="State"
                   value={filters.state}
-                  onChange={(e) => setFilters((f) => ({ ...f, state: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((f) => ({ ...f, state: e.target.value }))
+                  }
                 >
-                  <MenuItem value=''>All States</MenuItem>
-                  <MenuItem value='Bihar'>Bihar</MenuItem>
-                  <MenuItem value='Delhi'>Delhi</MenuItem>
-                  <MenuItem value='Maharashtra'>Maharashtra</MenuItem>
+                  <MenuItem value="">All States</MenuItem>
+                  <MenuItem value="Bihar">Bihar</MenuItem>
+                  <MenuItem value="Delhi">Delhi</MenuItem>
+                  <MenuItem value="Maharashtra">Maharashtra</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Grid
+              item
+              xs={12}
+              md={4}
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
               <Chip
                 label="Pending"
                 clickable
-                color={filters.status.includes('Pending') ? 'primary' : 'default'}
-                onClick={() => setFilters((f) => ({ ...f, status: f.status.includes('Pending') ? f.status.filter(s => s !== 'Pending') : [...f.status, 'Pending'] }))}
+                color={
+                  filters.status.includes("Pending") ? "primary" : "default"
+                }
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    status: f.status.includes("Pending")
+                      ? f.status.filter((s) => s !== "Pending")
+                      : [...f.status, "Pending"],
+                  }))
+                }
               />
               <Chip
                 label="Approved"
                 clickable
-                color={filters.status.includes('Approved') ? 'success' : 'default'}
-                onClick={() => setFilters((f) => ({ ...f, status: f.status.includes('Approved') ? f.status.filter(s => s !== 'Approved') : [...f.status, 'Approved'] }))}
+                color={
+                  filters.status.includes("Approved") ? "success" : "default"
+                }
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    status: f.status.includes("Approved")
+                      ? f.status.filter((s) => s !== "Approved")
+                      : [...f.status, "Approved"],
+                  }))
+                }
               />
               <Chip
                 label="Rejected"
                 clickable
-                color={filters.status.includes('Rejected') ? 'error' : 'default'}
-                onClick={() => setFilters((f) => ({ ...f, status: f.status.includes('Rejected') ? f.status.filter(s => s !== 'Rejected') : [...f.status, 'Rejected'] }))}
+                color={
+                  filters.status.includes("Rejected") ? "error" : "default"
+                }
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    status: f.status.includes("Rejected")
+                      ? f.status.filter((s) => s !== "Rejected")
+                      : [...f.status, "Rejected"],
+                  }))
+                }
               />
-              <Box sx={{ ml: 'auto' }}>
-                <Button size="small" onClick={handleClearFilters}>Clear</Button>
+              <Box sx={{ ml: "auto" }}>
+                <Button size="small" onClick={handleClearFilters}>
+                  Clear
+                </Button>
               </Box>
             </Grid>
           </Grid>
         </Collapse>
       </Paper>
       {/* Table Content */}
-      <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+      <div className="bg-white rounded overflow-hidden shadow-xl border border-gray-100">
         {loading ? (
-          <DataLoader message="Fetching recruiter enquiries..." minHeight="400px" />
+          <DataLoader
+            message="Fetching recruiter enquiries..."
+            minHeight="400px"
+          />
         ) : (
           <div className="overflow-x-auto">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "0.875rem",
+              }}
+            >
               <thead>
-                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Recruiter</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Requirements</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Location</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Actions</th>
+                <tr
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    borderBottom: "1px solid #e2e8f0",
+                  }}
+                >
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Recruiter
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Requirements
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Location
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "center",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Status
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "center",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredInquiries
-                  .slice(pageModel.page * pageModel.pageSize, (pageModel.page + 1) * pageModel.pageSize)
+                  .slice(
+                    pageModel.page * pageModel.pageSize,
+                    (pageModel.page + 1) * pageModel.pageSize,
+                  )
                   .map((inq) => (
-                  <tr key={inq.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{safe(inq.recruiterName)}</Typography>
-                      <Typography variant="caption" color="text.secondary">{safe(inq.email)}</Typography>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Box display="flex" flexWrap="wrap" gap={0.5} mb={0.5}>
-                        {(inq.subjects || []).slice(0, 3).map((s, i) => (
-                          <Chip 
-                            key={i} 
-                            label={s} 
-                            size="small" 
-                            sx={{ height: 18, fontSize: '0.65rem' }} 
-                          />
-                        ))}
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">Type: {safe(inq.teacherType)}</Typography>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Typography variant="body2">{[inq.location.city, inq.location.state].filter(Boolean).join(', ') || '—'}</Typography>
-                      <Typography variant="caption" color="text.secondary">{inq.location.area}</Typography>
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Chip
-                        label={inq.status || 'Pending'}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          bgcolor: STATUS_COLORS[inq.status] || 'warning.main',
-                          color: '#fff',
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Stack direction="row" spacing={0.5} justifyContent="center">
-                        <IconButton size="small" onClick={() => openDetails(inq)}>
-                          <VisibilityIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                        {inq.status === 'Pending' && (
-                          <>
-                            <IconButton size="small" color="success" onClick={() => handleApprove(inq.id)}>
-                              <CheckIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                            <IconButton size="small" color="error" onClick={() => handleOpenRejectModal(inq)}>
-                              <CloseIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </>
-                        )}
-                      </Stack>
-                    </td>
-                  </tr>
-                ))}
+                    <tr
+                      key={inq.id}
+                      style={{
+                        borderBottom: "1px solid #f1f5f9",
+                        transition: "background-color 0.2s",
+                      }}
+                    >
+                      <td style={{ padding: "12px 16px" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 600, color: "#1e293b" }}
+                        >
+                          {safe(inq.recruiterName)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {safe(inq.email)}
+                        </Typography>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <Box display="flex" flexWrap="wrap" gap={0.5} mb={0.5}>
+                          {(inq.subjects || []).slice(0, 3).map((s, i) => (
+                            <Chip
+                              key={i}
+                              label={s}
+                              size="small"
+                              sx={{ height: 18, fontSize: "0.65rem" }}
+                            />
+                          ))}
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Type: {safe(inq.teacherType)}
+                        </Typography>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <Typography variant="body2">
+                          {[inq.location.city, inq.location.state]
+                            .filter(Boolean)
+                            .join(", ") || "—"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {inq.location.area}
+                        </Typography>
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <Chip
+                          label={inq.status || "Pending"}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            bgcolor:
+                              STATUS_COLORS[inq.status] || "warning.main",
+                            color: "#fff",
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          justifyContent="center"
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() => openDetails(inq)}
+                          >
+                            <VisibilityIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          {inq.status === "Pending" && (
+                            <>
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => handleApprove(inq.id)}
+                              >
+                                <CheckIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleOpenRejectModal(inq)}
+                              >
+                                <CloseIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </>
+                          )}
+                        </Stack>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
-            
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                padding: "4px",
+                backgroundColor: "#f8fafc",
+                borderTop: "1px solid #e2e8f0",
+              }}
+            >
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, 50]}
                 component="div"
                 count={filteredInquiries.length}
                 rowsPerPage={pageModel.pageSize}
                 page={pageModel.page}
-                onPageChange={(e, p) => setPageModel(prev => ({ ...prev, page: p }))}
-                onRowsPerPageChange={(e) => setPageModel({ page: 0, pageSize: parseInt(e.target.value, 10) })}
+                onPageChange={(e, p) =>
+                  setPageModel((prev) => ({ ...prev, page: p }))
+                }
+                onRowsPerPageChange={(e) =>
+                  setPageModel({
+                    page: 0,
+                    pageSize: parseInt(e.target.value, 10),
+                  })
+                }
                 labelRowsPerPage="Density:"
               />
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Mobile card view (fallback) */}
-      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+      <Box sx={{ display: { xs: "block", md: "none" } }}>
         {filteredInquiries.map((inq) => (
           <Card key={inq.id} sx={{ mb: 2 }}>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                }}
+              >
                 <Box>
                   <Typography fontWeight={700}>{inq.recruiterName}</Typography>
-                  <Typography variant="caption" color="text.secondary">{inq.email}</Typography>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {(inq.subjects || []).slice(0, 4).map((s, i) => <Chip key={i} label={s} size="small" />)}
-                    {(inq.subjects || []).length > 4 && <Chip label={`+${(inq.subjects || []).length - 4}`} size="small" />}
+                  <Typography variant="caption" color="text.secondary">
+                    {inq.email}
+                  </Typography>
+                  <Box
+                    sx={{ mt: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}
+                  >
+                    {(inq.subjects || []).slice(0, 4).map((s, i) => (
+                      <Chip key={i} label={s} size="small" />
+                    ))}
+                    {(inq.subjects || []).length > 4 && (
+                      <Chip
+                        label={`+${(inq.subjects || []).length - 4}`}
+                        size="small"
+                      />
+                    )}
                   </Box>
                 </Box>
-                <Box sx={{ textAlign: 'right' }}>
-                  <Chip label={inq.status} size="small" sx={{ bgcolor: STATUS_COLORS[inq.status], color: '#fff' }} />
+                <Box sx={{ textAlign: "right" }}>
+                  <Chip
+                    label={inq.status}
+                    size="small"
+                    sx={{ bgcolor: STATUS_COLORS[inq.status], color: "#fff" }}
+                  />
                   <Box sx={{ mt: 1 }}>
-                    <IconButton size="small" onClick={() => openDetails(inq)}><VisibilityIcon /></IconButton>
+                    <IconButton size="small" onClick={() => openDetails(inq)}>
+                      <VisibilityIcon />
+                    </IconButton>
                   </Box>
                 </Box>
               </Box>
@@ -491,25 +753,37 @@ export default function ManageRecruiterEnquiry() {
       </Box>
       {/* Drawer for details */}
       <Drawer
-        anchor={isMobile ? 'bottom' : 'right'}
+        anchor={isMobile ? "bottom" : "right"}
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         slotProps={{
-          paper: { sx: { width: isMobile ? '100%' : 420, p: 2 } }
+          paper: { sx: { width: isMobile ? "100%" : 420, p: 2 } },
         }}
       >
         {selectedInquiry ? (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <Typography variant="h6">Inquiry Details</Typography>
-              <IconButton onClick={() => setIsDrawerOpen(false)}><CloseIcon /></IconButton>
+              <IconButton onClick={() => setIsDrawerOpen(false)}>
+                <CloseIcon />
+              </IconButton>
             </Box>
 
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle2">Recruiter</Typography>
-            <Typography fontWeight={600}>{selectedInquiry.recruiterName}</Typography>
-            <Typography variant="body2" color="text.secondary">{selectedInquiry.email} • {selectedInquiry.contactNumber}</Typography>
+            <Typography fontWeight={600}>
+              {selectedInquiry.recruiterName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {selectedInquiry.email} • {selectedInquiry.contactNumber}
+            </Typography>
 
             <Divider sx={{ my: 2 }} />
 
@@ -520,37 +794,86 @@ export default function ManageRecruiterEnquiry() {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="subtitle2">Status</Typography>
-                <Chip label={selectedInquiry.status} size="small" sx={{ bgcolor: STATUS_COLORS[selectedInquiry.status], color: '#fff' }} />
+                <Chip
+                  label={selectedInquiry.status}
+                  size="small"
+                  sx={{
+                    bgcolor: STATUS_COLORS[selectedInquiry.status],
+                    color: "#fff",
+                  }}
+                />
               </Grid>
 
               <Grid item xs={12}>
                 <Typography variant="subtitle2">Subjects</Typography>
-                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 1 }}>
-                  {(selectedInquiry.subjects || []).map((s, i) => <Chip key={i} label={s} size="small" />)}
+                <Box
+                  sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}
+                >
+                  {(selectedInquiry.subjects || []).map((s, i) => (
+                    <Chip key={i} label={s} size="small" />
+                  ))}
                 </Box>
               </Grid>
 
               <Grid item xs={12}>
                 <Typography variant="subtitle2">Location</Typography>
-                <Typography>{[selectedInquiry.location.area, selectedInquiry.location.city, selectedInquiry.location.state, selectedInquiry.location.pincode].filter(Boolean).join(', ')}</Typography>
+                <Typography>
+                  {[
+                    selectedInquiry.location.area,
+                    selectedInquiry.location.city,
+                    selectedInquiry.location.state,
+                    selectedInquiry.location.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </Typography>
               </Grid>
 
               <Grid item xs={12}>
                 <Typography variant="subtitle2">Admin Notes</Typography>
-                <Paper variant="outlined" sx={{ p: 1, mt: 1, minHeight: 80, whiteSpace: 'pre-wrap' }}>
-                  {selectedInquiry.adminNotes || <Typography color="text.secondary">No notes yet</Typography>}
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 1, mt: 1, minHeight: 80, whiteSpace: "pre-wrap" }}
+                >
+                  {selectedInquiry.adminNotes || (
+                    <Typography color="text.secondary">No notes yet</Typography>
+                  )}
                 </Paper>
               </Grid>
             </Grid>
 
-            <Box sx={{ display: 'flex', flexDirection: "column", gap: 1, mt: 2 }}>
-              {selectedInquiry.status === 'Pending' && (
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}
+            >
+              {selectedInquiry.status === "Pending" && (
                 <>
-                  <Button variant="contained" sx={{backgroundColor:"teal"}} startIcon={<CheckIcon />} onClick={() => handleApprove(selectedInquiry.id)} fullWidth>Approve</Button>
-                  <Button variant="outlined" color="error" startIcon={<CloseIcon />} onClick={() => handleOpenRejectModal(selectedInquiry)} fullWidth>Reject</Button>
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: "teal" }}
+                    startIcon={<CheckIcon />}
+                    onClick={() => handleApprove(selectedInquiry.id)}
+                    fullWidth
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<CloseIcon />}
+                    onClick={() => handleOpenRejectModal(selectedInquiry)}
+                    fullWidth
+                  >
+                    Reject
+                  </Button>
                 </>
               )}
-              <Button variant="outlined" startIcon={<NotesIcon />} onClick={() => setIsNoteModalOpen(true)}>Add Note</Button>
+              <Button
+                variant="outlined"
+                startIcon={<NotesIcon />}
+                onClick={() => setIsNoteModalOpen(true)}
+              >
+                Add Note
+              </Button>
             </Box>
           </Box>
         ) : (
@@ -560,39 +883,79 @@ export default function ManageRecruiterEnquiry() {
         )}
       </Drawer>
       {/* Reject dialog */}
-      <Dialog open={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Reject Inquiry</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ mb: 1 }}>Please choose or write a reason for rejection.</Typography>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Please choose or write a reason for rejection.
+          </Typography>
           <FormControl fullWidth size="small" sx={{ mb: 2 }}>
             <InputLabel>Reason</InputLabel>
-            <Select value={rejectReason} label="Reason" onChange={(e) => setRejectReason(e.target.value)}>
+            <Select
+              value={rejectReason}
+              label="Reason"
+              onChange={(e) => setRejectReason(e.target.value)}
+            >
               <MenuItem value="">Select reason</MenuItem>
-              <MenuItem value="Incomplete information">Incomplete information</MenuItem>
-              <MenuItem value="Not matching requirements">Not matching requirements</MenuItem>
-              <MenuItem value="No available teachers">No available teachers</MenuItem>
+              <MenuItem value="Incomplete information">
+                Incomplete information
+              </MenuItem>
+              <MenuItem value="Not matching requirements">
+                Not matching requirements
+              </MenuItem>
+              <MenuItem value="No available teachers">
+                No available teachers
+              </MenuItem>
               <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
 
-          {rejectReason === 'Other' && (
-            <TextField fullWidth multiline rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Write reason" />
+          {rejectReason === "Other" && (
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Write reason"
+            />
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsRejectModalOpen(false)}>Cancel</Button>
-          <Button onClick={handleRejectConfirm} color="error">Reject</Button>
+          <Button onClick={handleRejectConfirm} color="error">
+            Reject
+          </Button>
         </DialogActions>
       </Dialog>
       {/* Add note dialog */}
-      <Dialog open={isNoteModalOpen} onClose={() => setIsNoteModalOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Add Admin Note</DialogTitle>
         <DialogContent>
-          <TextField fullWidth multiline rows={4} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} placeholder="Enter note..." />
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            value={adminNote}
+            onChange={(e) => setAdminNote(e.target.value)}
+            placeholder="Enter note..."
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsNoteModalOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddNote} disabled={!adminNote.trim()}>Add</Button>
+          <Button onClick={handleAddNote} disabled={!adminNote.trim()}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
     </Layout>
@@ -603,9 +966,11 @@ export default function ManageRecruiterEnquiry() {
 function CircularLoaderFallback() {
   return (
     <Stack spacing={1} alignItems="center">
-      <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'grey.200' }} />
+      <Box
+        sx={{ width: 48, height: 48, borderRadius: "50%", bgcolor: "grey.200" }}
+      />
       <Typography>Loading inquiries…</Typography>
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: "100%" }}>
         <Skeleton variant="rectangular" height={36} sx={{ mb: 1 }} />
         <Skeleton variant="rectangular" height={36} sx={{ mb: 1 }} />
         <Skeleton variant="rectangular" height={36} />

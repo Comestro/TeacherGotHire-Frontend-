@@ -4,7 +4,7 @@ const TeacherSection = ({ onSelectRole }) => {
   return (
     <div className="relative py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
+        <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden relative">
           {/* Decorative background elements */}
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-teal-50/50 to-transparent" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-50/50 rounded-full blur-3xl" />

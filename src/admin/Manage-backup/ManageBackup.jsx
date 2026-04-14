@@ -37,7 +37,7 @@ const ManageBackup = () => {
     try {
       setLoading(true);
       const data = await getBackups();
-      
+
       // Robust response parsing
       let backupsArray = [];
       let location = "";
@@ -62,7 +62,11 @@ const ManageBackup = () => {
         total: total || backupsArray.length,
       }));
     } catch (err) {
-      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Failed to fetch backups list");
+      const errorMsg =
+        err.message ||
+        (typeof err === "string"
+          ? err
+          : err.error || err.detail || "Failed to fetch backups list");
       toast.error(errorMsg);
       // Keep hard-coded fallback for UI demo if needed, but only if fully empty
     } finally {
@@ -81,7 +85,11 @@ const ManageBackup = () => {
       toast.success(res.message || "Backup created successfully");
       fetchBackupsList();
     } catch (err) {
-      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Failed to create backup");
+      const errorMsg =
+        err.message ||
+        (typeof err === "string"
+          ? err
+          : err.error || err.detail || "Failed to create backup");
       toast.error(errorMsg);
     } finally {
       setCreating(false);
@@ -91,7 +99,7 @@ const ManageBackup = () => {
   const handleRestore = async (filename) => {
     if (
       !window.confirm(
-        `Are you sure you want to restore "${filename}"? Current data will be overwritten.`
+        `Are you sure you want to restore "${filename}"? Current data will be overwritten.`,
       )
     )
       return;
@@ -101,7 +109,11 @@ const ManageBackup = () => {
       const res = await restoreBackup(filename);
       toast.success(res.message || "System restored successfully");
     } catch (err) {
-      const errorMsg = err.message || (typeof err === 'string' ? err : err.error || err.detail || "Restore failed");
+      const errorMsg =
+        err.message ||
+        (typeof err === "string"
+          ? err
+          : err.error || err.detail || "Restore failed");
       toast.error(errorMsg);
     } finally {
       setRestoring(null);
@@ -198,7 +210,7 @@ const ManageBackup = () => {
           </div>
 
           {/* Backup Table */}
-          <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+          <div className="bg-white rounded overflow-hidden shadow-xl border border-gray-100">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800 flex items-center gap-2">
                 <FiClock className="text-teal-600" /> Recent Backups
@@ -232,7 +244,10 @@ const ManageBackup = () => {
                   {loading ? (
                     <tr>
                       <td colSpan="4">
-                        <DataLoader message="Synchronizing backup library..." minHeight="200px" />
+                        <DataLoader
+                          message="Synchronizing backup library..."
+                          minHeight="200px"
+                        />
                       </td>
                     </tr>
                   ) : backups.length === 0 ? (
