@@ -536,7 +536,7 @@ const ManageQuestionManager = () => {
 
   return (
     <Layout>
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{display:"flex", flexDirection:"column",margin:2 }}>
         {/* Compact Header */}
         <Box
           sx={{

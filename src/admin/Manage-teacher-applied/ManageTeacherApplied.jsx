@@ -336,7 +336,7 @@ const ManageTeacherApplied = () => {
     <Layout>
       <Box>
         {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, alignItems: "center", mb: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, alignItems: "center", m: 2, flexWrap: "wrap" }}>
           <Box>
             <Typography variant={isMobile ? "h5" : "h4"} fontWeight={800} color="teal">
               Teacher Job Applications
@@ -358,7 +358,7 @@ const ManageTeacherApplied = () => {
         </Box>
 
         {/* Search & Filters */}
-        <Paper sx={{ p: { xs: 1.25, sm: 2 }, mb: 3, borderRadius: 2 }} elevation={1}>
+        <Paper sx={{ p: { xs: 1.25, sm: 2 }, m: 3, borderRadius: 2 }} elevation={1}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={7}>
               <TextField
@@ -429,7 +429,7 @@ const ManageTeacherApplied = () => {
 
         {/* Summary cards */}
         {!loading && !error && (
-          <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", gap: 2, m: 3, flexWrap: "wrap" }}>
             <Paper sx={{ p: 2, minWidth: 160 }}>
               <Typography variant="caption" color="text.secondary">Total</Typography>
               <Typography variant="h5" fontWeight={700}>{applications.length}</Typography>
@@ -453,7 +453,7 @@ const ManageTeacherApplied = () => {
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         {/* DataGrid */}
-        <Paper sx={{ borderRadius: 2, overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
+        <Paper sx={{ borderRadius: 2, overflow: "hidden", border: "1px solid", borderColor: "divider" , margin:2}}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
             <Typography variant="subtitle1" fontWeight={700}>Applications {loading ? "" : `(${filteredApplications.length})`}</Typography>
           </Box>
@@ -490,7 +490,7 @@ const ManageTeacherApplied = () => {
                     <tr key={app.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
                       <td style={{ padding: '12px 16px' }}>
                         <Stack direction="row" spacing={1.5} alignItems="center">
-                          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem', bgcolor: alpha('teal', 0.1), color: 'teal' }}>
+                          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem', bgcolor: alpha('#0d9488', 0.1), color: '#0d9488' }}>
                             {app.teacherName.charAt(0)}
                           </Avatar>
                           <Box>

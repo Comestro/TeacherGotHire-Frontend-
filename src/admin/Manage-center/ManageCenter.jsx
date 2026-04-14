@@ -477,7 +477,7 @@ export default function ManageCenter() {
           mb: 1,
         }}
       >
-        <Box display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={2}>
+        <Box display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={2} margin={2}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: "teal" }}>
               Manage Exam Centers
