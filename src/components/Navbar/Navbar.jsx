@@ -117,7 +117,7 @@ const Navbar = ({ links }) => {
   return (
     <nav ref={navRef} className="bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-20 items-center">
           {/* Left Section */}
           <div className="flex items-center">
             <button
@@ -126,8 +126,8 @@ const Navbar = ({ links }) => {
             >
               {isMobileOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
-            <Link to="/" className="text-xl font-bold text-slate-800">
-              PTP <span className="text-teal-600">INSTITUTE</span>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/logo-portal.png" alt="PTP Institute" className="h-14 md:h-16 w-auto object-contain mix-blend-multiply" />
             </Link>
           </div>
 
@@ -217,9 +217,9 @@ const Navbar = ({ links }) => {
       >
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-slate-800">
-              PTP <span className="text-teal-600">INSTITUTE</span>
-            </span>
+            <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
+              <img src="/logo-portal.png" alt="PTP Institute" className="h-10 w-auto object-contain mix-blend-multiply" />
+            </Link>
             <button
               className="p-2 text-slate-600 hover:text-teal-600"
               onClick={() => setIsMobileOpen(false)}
