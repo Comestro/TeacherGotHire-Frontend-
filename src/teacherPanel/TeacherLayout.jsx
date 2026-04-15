@@ -24,7 +24,7 @@ const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
     onClick={onClick}
     end={to === "/teacher" || to === "/teacher/"}
     className={({ isActive }) =>
-      `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
         isActive
           ? "bg-teal-600 text-white"
           : "text-slate-600 hover:bg-slate-50 hover:text-teal-600"
@@ -73,7 +73,7 @@ const TeacherLayout = () => {
       {/* Logo Area */}
       <div className="p-6 pb-2">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-xl">
+          <div className="w-10 h-10 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-xl">
             P
           </div>
           <div>
@@ -89,7 +89,7 @@ const TeacherLayout = () => {
 
       {/* User Profile Card */}
       <div className="px-4 py-4">
-        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+        <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
             <BsPerson size={20} />
           </div>
@@ -140,7 +140,7 @@ const TeacherLayout = () => {
       <div className="p-4 border-t border-slate-100">
         <button
           onClick={() => handleLogout(dispatch, navigate)}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group"
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group"
         >
           <HiOutlineLogin className="text-xl group-hover:scale-110 transition-transform" />
           <span className="font-medium">Sign Out</span>
@@ -218,7 +218,7 @@ const TeacherLayout = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-72 bg-white rounded  shadow-xl border border-slate-200 overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-72 bg-white rounded-lg  shadow-xl border border-slate-200 overflow-hidden z-50"
                     >
                       {/* Dropdown Header */}
                       <div className="p-4 bg-slate-50 border-b border-slate-100">
@@ -265,7 +265,7 @@ const TeacherLayout = () => {
                             navigate("/teacher/personal-profile");
                             setIsProfileOpen(false);
                           }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-teal-600 transition-colors"
                         >
                           <HiUser className="text-lg" />
                           My Profile
@@ -275,7 +275,7 @@ const TeacherLayout = () => {
                             navigate("/teacher/setting");
                             setIsProfileOpen(false);
                           }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-teal-600 transition-colors"
                         >
                           <IoMdSettings className="text-lg" />
                           Settings
@@ -283,7 +283,7 @@ const TeacherLayout = () => {
                         <div className="my-1 border-t border-slate-100" />
                         <button
                           onClick={() => handleLogout(dispatch, navigate)}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                         >
                           <HiOutlineLogin className="text-lg" />
                           Sign Out

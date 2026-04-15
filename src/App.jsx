@@ -166,10 +166,26 @@ function AppContent() {
           <Route path="profile" element={<ExamSetterProfile />} />
         </Route>
 
-        {/* Recruiter Routes - Now Public with Conditions */}
+        {/* Recruiter Routes - Protected by role */}
         <Route path="recruiter" element={<RecruiterLayout />}>
-          <Route index element={<TeacherRecruiter />} />
-          <Route path="teacher/:id" element={<TeacherViewPage />} />
+          <Route
+            index
+            element={
+              <RoleBasedRoute
+                element={<TeacherRecruiter />}
+                allowedRoles={["recruiter"]}
+              />
+            }
+          />
+          <Route
+            path="teacher/:id"
+            element={
+              <RoleBasedRoute
+                element={<TeacherViewPage />}
+                allowedRoles={["recruiter"]}
+              />
+            }
+          />
         </Route>
 
         {/* Admin Routes */}

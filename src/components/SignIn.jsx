@@ -262,7 +262,7 @@ function Login() {
       return (
         <div className="w-full">
           <div className="space-y-2 mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded  bg-teal-50 mb-4 border border-teal-100">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg  bg-teal-50 mb-4 border border-teal-100">
               <svg
                 className="w-8 h-8 text-teal-600"
                 fill="none"
@@ -298,7 +298,7 @@ function Login() {
                 type="text"
                 value={otp}
                 onChange={handleOTPChange}
-                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-xl p-4 outline-none"
+                className="w-full bg-white border border-slate-200 text-center text-2xl tracking-[0.5em] font-bold rounded-lg p-4 outline-none"
                 placeholder="000000"
                 pattern="\d{6}"
                 maxLength={6}
@@ -360,7 +360,7 @@ function Login() {
             <div className="space-y-3">
               <Button
                 type="submit"
-                className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
+                className={`w-full bg-teal-600 text-white py-4 rounded-lg font-bold shadow-sm ${
                   loading || otp.length !== 6
                     ? "opacity-60 cursor-not-allowed"
                     : ""
@@ -449,7 +449,7 @@ function Login() {
                 placeholder="name@example.com"
                 type="email"
                 id="email"
-                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-xl outline-none ${
+                className={`w-full pl-11 pr-10 py-3.5 bg-white border rounded-lg outline-none ${
                   dirtyFields.email
                     ? isEmailValid(watchedFields.email)
                       ? "border-teal-500 bg-teal-50/10"
@@ -503,7 +503,7 @@ function Login() {
                 placeholder="Enter your password"
                 type={showPassword ? "text" : "password"}
                 id="pass"
-                className={`w-full pl-11 pr-12 py-3.5 bg-white border rounded-xl outline-none ${
+                className={`w-full pl-11 pr-12 py-3.5 bg-white border rounded-lg outline-none ${
                   dirtyFields.password
                     ? watchedFields.password?.length >= 6
                       ? "border-teal-500 bg-teal-50/10"
@@ -560,7 +560,7 @@ function Login() {
 
           <Button
             type="submit"
-            className={`w-full bg-teal-600 text-white py-4 rounded-xl font-bold shadow-md ${
+            className={`w-full bg-teal-600 text-white py-4 rounded-lg font-bold shadow-sm ${
               !isValid || loading ? "opacity-60 cursor-not-allowed" : ""
             }`}
             disabled={!isValid || loading}
@@ -647,7 +647,7 @@ function Login() {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-lg  border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                     <FaUserTie className="w-6 h-6" />
                   </div>
@@ -659,7 +659,7 @@ function Login() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4 bg-white p-5 rounded  border border-slate-200 shadow-sm">
+                <div className="flex items-center space-x-4 bg-white p-5 rounded-lg  border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
                     <FaChalkboardTeacher className="w-6 h-6" />
                   </div>
@@ -675,7 +675,7 @@ function Login() {
 
             {/* Right Side: Login Form */}
             <div className="w-full md:w-1/2 max-w-md ">
-              <div className="bg-white rounded  p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
+              <div className="bg-white rounded-lg  p-8 sm:p-10 border border-slate-200 relative overflow-hidden">
                 {renderForm()}
               </div>
 
