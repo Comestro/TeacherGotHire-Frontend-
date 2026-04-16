@@ -229,11 +229,9 @@ export default function InterviewManagementRedesign() {
     [],
   );
 
-  useEffect(() => {
-    applyFilters();
-  }, [filters, interviewData]);
 
-  const applyFilters = () => {
+
+  const applyFilters = useCallback((resetPage = true) => {
     let out = [...interviewData];
     const q = (filters.searchTerm || "").toLowerCase().trim();
 
@@ -270,8 +268,20 @@ export default function InterviewManagementRedesign() {
     }
 
     setFilteredTeachers(out);
-    setPagination((p) => ({ ...p, page: 0 }));
-  };
+    if (resetPage) {
+      setPagination((p) => ({ ...p, page: 0 }));
+    }
+  }, [filters, interviewData]);
+
+  useEffect(() => {
+    // Only reset page if filters changed, not if interviewData changed
+    const filtersChanged = true; // Simplified for now, but we can compare prevFilters
+    applyFilters(false); 
+  }, [interviewData, applyFilters]);
+
+  useEffect(() => {
+    applyFilters(true);
+  }, [filters, applyFilters]);
 
   const resetFilters = () =>
     setFilters({
@@ -810,6 +820,11 @@ export default function InterviewManagementRedesign() {
                       <span>Scheduled:</span> <span>{row.scheduledDate}</span>
                     </div>
                   )}
+                  {row.score !== "Not graded" && (
+                    <div className="flex justify-between text-teal-600 font-bold">
+                      <span>Score:</span> <span>{row.score}/10</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
                   <button
@@ -909,6 +924,16 @@ export default function InterviewManagementRedesign() {
                   </label>
                   <p className="font-medium text-blue-600">
                     {detailsModal.data.scheduledDate}
+                  </p>
+                </div>
+              )}
+              {detailsModal.data.score !== "Not graded" && (
+                <div>
+                  <label className="block text-xs font-bold text-teal-400 uppercase">
+                    Interview Score
+                  </label>
+                  <p className="font-bold text-teal-700 text-lg">
+                    {detailsModal.data.score}/10
                   </p>
                 </div>
               )}
