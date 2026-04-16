@@ -5,8 +5,6 @@ import SchoolSection from "../HomePage/SchoolSection";
 import FeaturesSection from "../HomePage/FeaturesSection";
 import ExamSection from "../HomePage/ExamSection";
 import DetailSection from "../HomePage/DetailSection";
-import TutorCategoriesSection from "../HomePage/TutorCategoriesSection";
-import TeacherProfiles from "../HomePage/Review/TeacherProfile";
 import { Helmet } from "react-helmet-async";
 import HeroSection from "./components/HeroSection";
 
@@ -22,15 +20,13 @@ const Home = () => {
       <Helmet>
         <title>Home | PTPI</title>
       </Helmet>
-      <div className="space-y-0 pb-0">
+      <div className="space-y-8 pb-10">
         <HeroSection />
-        <DetailSection />
         <TeacherSection onSelectRole={handleRoleSelection} />
         <SchoolSection onSelectRole={handleRoleSelection} />
-        <FeaturesSection />
-        <ExamSection />
-        <TutorCategoriesSection />
-        <TeacherProfiles />
+        {/* <ExamSection /> */}
+        {/* <FeaturesSection /> */}
+        <DetailSection />
       </div>
     </>
   );

@@ -64,11 +64,11 @@ const Navbar = ({ links }) => {
   const UserDropdown = ({ isMobile = false }) => (
     <div
       className={`${isMobile ? "w-full" : "absolute right-0 mt-3 w-48"
-        } bg-white z-50 rounded-lg border border-slate-100 ${!isMobile && "shadow-sm"}`}
+        } bg-white z-50 rounded-xl border border-slate-100 ${!isMobile && "shadow-sm"}`}
     >
       <Link
         to={role === "teacher" ? "/teacher" : "/recruiter"}
-        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-lg"
+        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-xl"
         onClick={() => setIsProfileOpen(false)}
       >
         <FiUser className="mr-3" /> Dashboard
@@ -85,7 +85,7 @@ const Navbar = ({ links }) => {
       )}
       <button
         onClick={handleLogout}
-        className="w-full flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-b-lg"
+        className="w-full flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-b-xl"
       >
         <FiLogOut className="mr-3" /> Logout
       </button>
@@ -95,18 +95,18 @@ const Navbar = ({ links }) => {
   const RegisterDropdown = ({ isMobile = false }) => (
     <div
       className={`${isMobile ? "w-full pl-4 mt-2" : "absolute right-0 mt-3 w-56"
-        } bg-white z-50 rounded-lg border border-slate-100 ${!isMobile && "shadow-sm"}`}
+        } bg-white z-50 rounded-xl border border-slate-100 ${!isMobile && "shadow-sm"}`}
     >
       <Link
         to="/signup/teacher"
-        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-lg"
+        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-xl"
         onClick={() => { setIsRegisterOpen(false); setIsMobileOpen(false); }}
       >
         <FiUserPlus className="mr-3 text-teal-600" /> As a Teacher
       </Link>
       <Link
         to="/signup/recruiter"
-        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-b-lg"
+        className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-b-xl"
         onClick={() => { setIsRegisterOpen(false); setIsMobileOpen(false); }}
       >
         <FiBriefcase className="mr-3 text-teal-600" /> As a Recruiter
@@ -117,7 +117,7 @@ const Navbar = ({ links }) => {
   return (
     <nav ref={navRef} className="bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
+        <div className="flex justify-between h-16 items-center">
           {/* Left Section */}
           <div className="flex items-center">
             <button
@@ -126,15 +126,15 @@ const Navbar = ({ links }) => {
             >
               {isMobileOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/logo-portal.png" alt="PTP Institute" className="h-14 md:h-16 w-auto object-contain mix-blend-multiply" />
+            <Link to="/" className="text-xl font-bold text-slate-800">
+              PTP <span className="text-teal-600">INSTITUTE</span>
             </Link>
           </div>
 
           <div className="md:hidden">
             <button
               onClick={handleTeacherSearch}
-              className="bg-teal-600 px-3 py-2 rounded-lg font-semibold text-white"
+              className="bg-teal-600 px-3 py-2 rounded-xl font-semibold text-white"
             >
               <span className="flex items-center justify-center gap-2">
                 <FiBriefcase className="w-4 h-4" />
@@ -150,7 +150,7 @@ const Navbar = ({ links }) => {
             {!shouldHide && (
               <button
                 onClick={handleTeacherSearch}
-                className="bg-teal-600 px-6 py-3 rounded-lg font-semibold text-white"
+                className="bg-teal-600 px-6 py-3 rounded-xl font-semibold text-white"
               >
                 <span className="flex items-center justify-center gap-2">
                   <FiBriefcase className="w-5 h-5" />
@@ -186,7 +186,7 @@ const Navbar = ({ links }) => {
                 <div className="flex gap-2">
                   <Link
                     to="/signin"
-                    className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border border-teal-200 rounded-lg hover:bg-teal-50 hover:border-teal-300"
+                    className="flex items-center gap-2 px-5 py-2.5 font-medium text-teal-600 transition-all duration-300 border border-teal-200 rounded-xl hover:bg-teal-50 hover:border-teal-300"
                   >
                     <FiUser className="w-5 h-5" />
                     <span>Login</span>
@@ -195,7 +195,7 @@ const Navbar = ({ links }) => {
                   <div className="relative">
                     <button
                       onClick={() => setIsRegisterOpen(!isRegisterOpen)}
-                      className="flex items-center gap-2 px-5 py-2.5 font-medium text-white transition-all duration-300 bg-teal-600 rounded-lg hover:bg-teal-700"
+                      className="flex items-center gap-2 px-5 py-2.5 font-medium text-white transition-all duration-300 bg-teal-600 rounded-xl hover:bg-teal-700"
                     >
                       <FiUserPlus className="w-5 h-5" />
                       <span>Register</span>
@@ -217,9 +217,9 @@ const Navbar = ({ links }) => {
       >
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
-            <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
-              <img src="/logo-portal.png" alt="PTP Institute" className="h-10 w-auto object-contain mix-blend-multiply" />
-            </Link>
+            <span className="text-lg font-bold text-slate-800">
+              PTP <span className="text-teal-600">INSTITUTE</span>
+            </span>
             <button
               className="p-2 text-slate-600 hover:text-teal-600"
               onClick={() => setIsMobileOpen(false)}
@@ -253,7 +253,7 @@ const Navbar = ({ links }) => {
                 <Link
                   to="/signin"
                   onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2 w-full px-4 py-3 font-medium text-teal-600 transition-all duration-300 border border-teal-200 rounded-lg hover:bg-teal-50 justify-center"
+                  className="flex items-center gap-2 w-full px-4 py-3 font-medium text-teal-600 transition-all duration-300 border border-teal-200 rounded-xl hover:bg-teal-50 justify-center"
                 >
                   <FiUser className="w-5 h-5" />
                   <span>Login</span>
@@ -262,7 +262,7 @@ const Navbar = ({ links }) => {
                 <div className="space-y-2">
                   <button
                     onClick={() => setIsRegisterOpen(!isRegisterOpen)}
-                    className="flex items-center justify-between w-full px-4 py-3 font-medium text-slate-700 transition-all duration-300 bg-slate-50 rounded-lg hover:bg-slate-100"
+                    className="flex items-center justify-between w-full px-4 py-3 font-medium text-slate-700 transition-all duration-300 bg-slate-50 rounded-xl hover:bg-slate-100"
                   >
                     <div className="flex items-center gap-2">
                       <FiUserPlus className="w-5 h-5 text-teal-600" />
